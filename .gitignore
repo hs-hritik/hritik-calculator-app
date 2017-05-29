@@ -1,0 +1,6 @@
+/*.log
+.DS_Store
+.vscode/
+node_modules/
+resources/static/build/
+resources/static/__tests__/build/
