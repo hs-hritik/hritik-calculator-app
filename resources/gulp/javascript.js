@@ -86,7 +86,7 @@ gulp.task ("babel", function () {
 gulp.task ("uglify", function () {
   return gulp.src (PATHS.uglify)
     .pipe (uglify ())
-    .pipe (gulp.dest ("static/"))
+    .pipe (gulp.dest (PATHS.build))
     .pipe (print (function (filepath) {
       return `Uglified: ${filepath}`;
     }));
