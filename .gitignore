@@ -8,3 +8,4 @@ resources/static/css/
 *.scssc
 *.css
 .gem/
+resources/static/scripts/gunpowder

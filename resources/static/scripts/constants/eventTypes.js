@@ -10,6 +10,7 @@ define ("constants/eventTypes",
 
     return {
       SDK_JS_LOADED: "sdk-js-loaded",
-      SDK_INITIALISED: "sdk-initialised"
+      SDK_INITIALISED: "sdk-initialised",
+      API_SET_USER: "api-set-user"
     };
   });

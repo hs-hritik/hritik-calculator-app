@@ -6,14 +6,14 @@
  */
 
 define ("components/app",
-  ["reducers/rootReducer",
+  ["store",
     "utils/postMessage",
-    "constants/eventTypes"],
-  function (rootReducer, postMessage, EVENT_TYPES) {
+    "constants/eventTypes",
+    "actions/appStateActions"],
+  function (store, postMessage, EVENT_TYPES, appStateActions) {
     "use strict";
 
-    const Provider = ReactRedux.Provider,
-          createStore = Redux.createStore;
+    const Provider = ReactRedux.Provider;
 
     /**
      * Main wrapper component for React application.
@@ -27,8 +27,8 @@ define ("components/app",
       }
     });
 
-    const init = function () {
-      const store = createStore (rootReducer);
+    const init = function (config) {
+      store.dispatch (appStateActions.setConfig (config));
 
       ReactDOM.render (
         <Provider store={store}>

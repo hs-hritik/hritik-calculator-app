@@ -5,18 +5,29 @@
  */
 
 define ("reducers/entitiesReducer",
-  ["reducers/issuesReducer",
-    "reducers/messagesReducer",
-    "reducers/authorsReducer",
-    "reducers/faqsReducer"],
-  function (issuesReducer, messagesReducer, authorsReducer, faqsReducer) {
+  ["constants/actionTypes"],
+  function (ACTION_TYPES) {
     "use strict";
 
-    return Redux.combineReducers ({
-      issues: issuesReducer,
-      messages: messagesReducer,
-      authors: authorsReducer,
-      faqs: faqsReducer
-    });
+    const update = React.addons.update;
+
+    const INITIAL_STATE = {
+      issues: {},
+      messages: {},
+      authors: {},
+      faqs: {}
+    };
+
+    return function (state = INITIAL_STATE, action) {
+      switch (action.type) {
+        case ACTION_TYPES.SET_ENTITIES:
+          return update (state, {
+            $merge: action.entities
+          });
+
+        default:
+          return state;
+      }
+    };
   }
 );

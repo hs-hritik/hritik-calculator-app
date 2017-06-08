@@ -21,7 +21,8 @@
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
-    SDK_INITIALISED: "sdk-initialised"
+    SDK_INITIALISED: "sdk-initialised",
+    API_SET_USER: "api-set-user"
   };
 
   // @TODO: Figure out if we have to move styles to css file for this file,
@@ -174,6 +175,16 @@
           break;
       }
     }, false);
+  };
+
+  /**
+   * API to set user.
+   * @param {String} id - user id.
+   */
+  Helpshift.setUser = function (id) {
+    _postMessage (EVENT_TYPES.API_SET_USER, {
+      id
+    });
   };
 
 }) (window, document);

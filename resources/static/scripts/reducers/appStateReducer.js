@@ -4,9 +4,12 @@
  * @created June 1, 2017
  */
 
-define ("reducers/appStateReducer", [],
-  function () {
+define ("reducers/appStateReducer",
+  ["constants/actionTypes"],
+  function (ACTION_TYPES) {
     "use strict";
+
+    const update = React.addons.update;
 
     const INITIAL_STATE = {
       collapsed: true,
@@ -15,11 +18,26 @@ define ("reducers/appStateReducer", [],
        */
       activeWindow: "chat",
       activeIssueId: "",
-      currentUserId: ""
+      currentUserId: "",
+      appId: "",
+      apiToken: "",
+      domain: ""
     };
 
     return function (state = INITIAL_STATE, action) {
       switch (action.type) {
+        case ACTION_TYPES.SET_USER_ID:
+          return update (state, {
+            currentUserId: {$set: action.id}
+          });
+
+        case ACTION_TYPES.SET_CONFIG:
+          return update (state, {
+            appId: {$set: action.config.appId},
+            apiToken: {$set: action.config.apiToken},
+            domain: {$set: action.config.domain}
+          });
+
         default:
           return state;
       }

@@ -5,12 +5,24 @@
  */
 
 require (
-  ["helpers/messageHandler",
+  [
     "utils/postMessage",
-    "constants/eventTypes"],
-  function (messageHandler, postMessage, EVENT_TYPES) {
+    "constants/eventTypes",
+    "extras/api"
+  ],
+  function (postMessage, EVENT_TYPES, api) {
     "use strict";
 
-    messageHandler.init ();
+    /**
+     * Receive Message and take required action.
+     * @param {Event} event
+     */
+    const onMessage = function (event) {
+      const {type, data} = JSON.parse (event.data);
+      api.handle (type, data);
+    };
+
+    window.addEventListener ("message", onMessage, false);
+
     postMessage (EVENT_TYPES.SDK_JS_LOADED);
   });
