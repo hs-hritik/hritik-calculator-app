@@ -47,6 +47,13 @@
     "cursor": "pointer"
   };
 
+  const MESSENGER_IFRAME_STYLES = {
+    "position": "fixed",
+    "bottom": "100px",
+    "right": "20px",
+    "border-color": "#000000"
+  };
+
   // Reference for web sdk iframe.
   let webSdkIframe;
 
@@ -103,6 +110,7 @@
    */
   const createWebSdkIframe = function () {
     const iframe = doc.createElement ("iframe");
+    setStyle (iframe, MESSENGER_IFRAME_STYLES);
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
     return iframe;
