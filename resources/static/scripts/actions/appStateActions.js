@@ -89,19 +89,56 @@ define ("actions/appStateActions",
             "platform-id": appState.appId
           },
           onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.issues);
+            const entities = createEntities (response);
 
             // @TODO: Explore helpers to dispatch multiple actions once.
             // Use them if they are useful.
             dispatch (setUserId (id));
-            dispatch (setActiveIssue (normalizedData.entities.issues));
-            dispatch (entitiesActions.setEntities (normalizedData.entities));
+            dispatch (setActiveIssue (entities.issues));
+            dispatch (entitiesActions.setEntities (entities));
           },
           onFailure: () => {
             // @TODO: Handler failure.
           }
         });
       };
+    };
+
+    /**
+     * Create messages entity.
+     * @param {Object} messages - normalized messages.
+     * @returns {Object} - processed messages entity.
+     */
+    const createMessagesEntity = (messages) => {
+      const processedMessages = {};
+
+      objUtils.forEachKey (messages, (id) => {
+        const msg = messages [id];
+        processedMessages [id] = {
+          id: msg.id,
+          type: msg.type,
+          body: msg.body,
+          state: msg.state,
+          createdTs: new Date (msg.created_at),
+          author: msg.author,
+          isCustomerMsg: (msg.origin !== "admin")
+        };
+      });
+
+      return processedMessages;
+    };
+
+    /**
+     * Normalize and process the entities.
+     * @param {Object} response - issues xhr response.
+     * @returns {Object} - normalized and processed entities.
+     */
+    const createEntities = (response) => {
+      const normalizedData = normalize (response, entitySchema.issues);
+      const entities = normalizedData.entities;
+
+      entities.messages = createMessagesEntity (entities.messages);
+      return entities;
     };
 
     return {
