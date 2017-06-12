@@ -20,11 +20,10 @@ define ("extras/api",
 
     const handleApis = function (type, data) {
       switch (type) {
-        // @TODO: Rename SDK_INITIALISED to CMD_INITIALISE
-        case EVENT_TYPES.SDK_INITIALISED:
+        case EVENT_TYPES.CMD_INITIALISE:
           app.init (data);
           break;
-        case EVENT_TYPES.API_SET_USER:
+        case EVENT_TYPES.CMD_SET_USER:
           setUser (data);
           break;
       }

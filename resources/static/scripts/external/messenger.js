@@ -22,7 +22,8 @@
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_INITIALISED: "sdk-initialised",
-    API_SET_USER: "api-set-user"
+    CMD_INITIALISE: "cmd-initialise",
+    CMD_SET_USER: "cmd-set-user"
   };
 
   // @TODO: Figure out if we have to move styles to css file for this file,
@@ -166,7 +167,7 @@
           // SDK_JS_LOADED event represents that the web sdk's javascript is loaded.
           // Once the sdk's js has loaded, the sdk needs to be initialised with a config.
           // After the sdk has been initialised the parent page can use the api.
-          _postMessage (EVENT_TYPES.SDK_INITIALISED, config);
+          _postMessage (EVENT_TYPES.CMD_INITIALISE, config);
           break;
         case EVENT_TYPES.SDK_INITIALISED:
           // SDK_INITIALISED event represents that the web sdk is initialised
@@ -182,7 +183,7 @@
    * @param {String} id - user id.
    */
   Helpshift.setUser = function (id) {
-    _postMessage (EVENT_TYPES.API_SET_USER, {
+    _postMessage (EVENT_TYPES.CMD_SET_USER, {
       id
     });
   };
