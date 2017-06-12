@@ -38,6 +38,11 @@ define ("reducers/appStateReducer",
             domain: {$set: action.config.domain}
           });
 
+        case ACTION_TYPES.SET_ACTIVE_ISSUE:
+          return update (state, {
+            activeIssueId: {$set: action.id}
+          });
+
         default:
           return state;
       }
