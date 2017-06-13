@@ -8,9 +8,10 @@ define ("components/chatView",
   [
     "components/messageList",
     "constants/propTypes",
-    "constants/chatView"
+    "constants/chatView",
+    "components/containers/replyBox"
   ],
-  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS) {
+  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, ReplyBoxContainer) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -35,8 +36,9 @@ define ("components/chatView",
        */
       _renderFooterComponent () {
         if (this.props.activeFooter === ACTIVE_FOOTER.REPLY) {
-          // @TODO: Return ReplyBox
+          return <ReplyBoxContainer />;
         }
+
         return null;
       }
     });
@@ -59,6 +61,5 @@ define ("components/chatView",
         );
       }
     });
-
   }
 );

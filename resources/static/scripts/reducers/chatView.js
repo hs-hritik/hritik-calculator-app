@@ -6,11 +6,13 @@
 
 define ("reducers/chatView",
   [
-    "constants/chatView"
+    "constants/chatView",
+    "constants/actionTypes"
   ],
-  function (CHAT_VIEW_CONSTANTS) {
+  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES) {
     "use strict";
 
+    const update = React.addons.update;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_STATE = {
@@ -24,6 +26,13 @@ define ("reducers/chatView",
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.UPDATE_REPLY_TEXT:
+          return update (state, {
+            replyBox: {
+              value: {$set: action.value}
+            }
+          });
+
         default:
           return state;
       }
