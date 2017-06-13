@@ -1,23 +1,16 @@
 /**
- * Chat view reducer.
+ * FAQ view reducer.
  * @author Manish Garg <manish@helpshift.com>
  * @created June 1, 2017
  */
 
-define ("reducers/chatViewReducer", [],
+define ("reducers/faqView",
   function () {
     "use strict";
 
     const INITIAL_STATE = {
-      replyBox: {
-        value: "",
-        attachments: [],
-        loading: false
-      },
-      /**
-       * Possible values: "reply", "faqFeedback", "issueFeedback", "csatRating"
-       */
-      activeFooter: "reply"
+      activeFaqId: "",
+      loading: false
     };
 
     return function (state = INITIAL_STATE, action) {

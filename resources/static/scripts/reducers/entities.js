@@ -4,7 +4,7 @@
  * @created June 1, 2017
  */
 
-define ("reducers/entitiesReducer",
+define ("reducers/entities",
   ["constants/actionTypes"],
   function (ACTION_TYPES) {
     "use strict";

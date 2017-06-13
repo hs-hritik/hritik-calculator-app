@@ -4,7 +4,7 @@
  * @created June 7, 2017
  */
 
-define ("actions/appStateActions",
+define ("actions/appState",
   [
     "constants/actionTypes",
     "constants/routes",
@@ -12,7 +12,7 @@ define ("actions/appStateActions",
     "helpers/entitySchema",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
-    "actions/entitiesActions"
+    "actions/entities"
   ],
   function (ACTION_TYPES, routes, normalizr, entitySchema, xhr, objUtils, entitiesActions) {
     "use strict";

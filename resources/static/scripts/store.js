@@ -5,7 +5,7 @@
  */
 
 define ("store",
-  ["reducers/rootReducer",
+  ["reducers/root",
     "reduxThunk"],
   function (rootReducer, ReduxThunk) {
     "use strict";

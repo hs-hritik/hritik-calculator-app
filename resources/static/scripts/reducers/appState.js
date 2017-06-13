@@ -4,7 +4,7 @@
  * @created June 1, 2017
  */
 
-define ("reducers/appStateReducer",
+define ("reducers/appState",
   ["constants/actionTypes"],
   function (ACTION_TYPES) {
     "use strict";

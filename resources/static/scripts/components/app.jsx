@@ -9,7 +9,7 @@ define ("components/app",
   ["store",
     "utils/postMessage",
     "constants/eventTypes",
-    "actions/appStateActions"],
+    "actions/appState"],
   function (store, postMessage, EVENT_TYPES, appStateActions) {
     "use strict";
 

@@ -8,7 +8,7 @@ define ("extras/api",
   [
     "store",
     "constants/eventTypes",
-    "actions/appStateActions",
+    "actions/appState",
     "components/app"
   ],
   function (store, EVENT_TYPES, appStateActions, app) {

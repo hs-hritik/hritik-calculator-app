@@ -4,12 +4,12 @@
  * @created June 1, 2017
  */
 
-define ("reducers/rootReducer",
-  ["reducers/uiReducer",
-    "reducers/appStateReducer",
-    "reducers/entitiesReducer",
-    "reducers/chatViewReducer",
-    "reducers/faqViewReducer"],
+define ("reducers/root",
+  ["reducers/ui",
+    "reducers/appState",
+    "reducers/entities",
+    "reducers/chatView",
+    "reducers/faqView"],
   function (uiReducer, appStateReducer, entitiesReducer, chatViewReducer, faqViewReducer) {
     "use strict";
 

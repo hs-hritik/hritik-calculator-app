@@ -4,7 +4,7 @@
  * @created June 7, 2017
  */
 
-define ("actions/entitiesActions",
+define ("actions/entities",
   ["constants/actionTypes"],
   function (ACTION_TYPES) {
     "use strict";

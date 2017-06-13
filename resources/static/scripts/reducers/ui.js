@@ -4,7 +4,7 @@
  * @created June 1, 2017
  */
 
-define ("reducers/uiReducer", [],
+define ("reducers/ui",
   function () {
     "use strict";
 
