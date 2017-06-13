@@ -17,7 +17,7 @@ require (
      * Receive Message and take required action.
      * @param {Event} event
      */
-    const onMessage = function (event) {
+    const onMessage = (event) => {
       const {type, data} = JSON.parse (event.data);
       api.handle (type, data);
     };

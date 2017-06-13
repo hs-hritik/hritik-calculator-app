@@ -13,7 +13,7 @@ define ("utils/postMessage",
      * @param {string} type - type of message.
      * @param {object} [data] - data for the message.
      */
-    return function (type, data) {
+    return (type, data) => {
       window.parent.postMessage (JSON.stringify ({
         type,
         data

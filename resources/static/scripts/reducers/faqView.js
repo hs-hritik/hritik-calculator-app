@@ -13,7 +13,7 @@ define ("reducers/faqView",
       loading: false
     };
 
-    return function (state = INITIAL_STATE, action) {
+    return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         default:
           return state;

@@ -9,7 +9,7 @@ define ("actions/entities",
   function (ACTION_TYPES) {
     "use strict";
 
-    const setEntities = function (entities) {
+    const setEntities = (entities) => {
       return {
         type: ACTION_TYPES.SET_ENTITIES,
         entities

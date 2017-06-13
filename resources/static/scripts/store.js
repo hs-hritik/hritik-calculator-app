@@ -5,8 +5,10 @@
  */
 
 define ("store",
-  ["reducers/root",
-    "reduxThunk"],
+  [
+    "reducers/root",
+    "reduxThunk"
+  ],
   function (rootReducer, ReduxThunk) {
     "use strict";
     const createStore = Redux.createStore,

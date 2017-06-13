@@ -64,7 +64,7 @@
    * @param {Element} el - The element to which styles have to be applied.
    * @param {Object} styles - key-value pair of styles to be applied.
    */
-  const setStyle = function (el, styles) {
+  const setStyle = (el, styles) => {
     for (const key in styles) {
       if (styles.hasOwnProperty (key)) {
         el.style [key] = styles [key];
@@ -79,7 +79,7 @@
    * @param {String} type - type of message.
    * @param {Object} [data] - data for the message.
    */
-  const _postMessage = function (type, data) {
+  const _postMessage = (type, data) => {
     webSdkIframe.contentWindow.postMessage (JSON.stringify ({
       type,
       data
@@ -90,7 +90,7 @@
    * Create launcher iframe and set styles.
    * @returns {Element} - launcher iframe.
    */
-  const createLauncherIframe = function () {
+  const createLauncherIframe = () => {
     const launcherIframe = doc.createElement ("iframe");
     setStyle (launcherIframe, LAUNCHER_IFRAME_STYLES);
     return launcherIframe;
@@ -100,7 +100,7 @@
    * Create launcher button div and set styles.
    * @returns {Element} - launcher button div.
    */
-  const createLauncherButton = function () {
+  const createLauncherButton = () => {
     const launcherBtn = doc.createElement ("a");
     setStyle (launcherBtn, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherBtn;
@@ -110,7 +110,7 @@
    * Create web sdk iframe.
    * @returns {Element} - web sdk iframe.
    */
-  const createWebSdkIframe = function () {
+  const createWebSdkIframe = () => {
     const iframe = doc.createElement ("iframe");
     setStyle (iframe, MESSENGER_IFRAME_STYLES);
     iframe.id = "hs-web-sdk-iframe";
@@ -121,7 +121,7 @@
   /**
    * Show/hide web sdk iframe.
    */
-  const toggleWebSdkIframe = function () {
+  const toggleWebSdkIframe = () => {
     if (webSdkIframe.style.display === "none") {
       webSdkIframe.style.display = "block";
     } else {
@@ -137,7 +137,7 @@
    * event is fired, API won't work as expected (because sdk javascript has
    * not loaded yet or the sdk has not initialised yet.)
    */
-  const fireWebSdkReadyEvent = function () {
+  const fireWebSdkReadyEvent = () => {
     const event = new Event(HS_SDK_LOAD_EVENT);
     doc.dispatchEvent (event);
   };
@@ -145,7 +145,7 @@
   /**
    * Entry point for rendering iframe on the client page.
    */
-  Helpshift.init = function (config) {
+  Helpshift.init = (config) => {
     const launcherIframe = createLauncherIframe (),
           launcherBtn = createLauncherButton ();
 
@@ -182,7 +182,7 @@
    * API to set user.
    * @param {String} id - user id.
    */
-  Helpshift.setUser = function (id) {
+  Helpshift.setUser = (id) => {
     _postMessage (EVENT_TYPES.CMD_SET_USER, {
       id
     });

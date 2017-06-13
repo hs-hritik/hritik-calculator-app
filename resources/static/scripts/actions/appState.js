@@ -24,7 +24,7 @@ define ("actions/appState",
      * @param {Object} config
      * @returns {Object} - action
      */
-    const setConfig = function (config) {
+    const setConfig = (config) => {
       return {
         type: ACTION_TYPES.SET_CONFIG,
         config
@@ -36,7 +36,7 @@ define ("actions/appState",
      * @param {String} id - user id.
      * @returns {Object} - action
      */
-    const setUserId = function (id) {
+    const setUserId = (id) => {
       return {
         type: ACTION_TYPES.SET_USER_ID,
         id
@@ -79,7 +79,7 @@ define ("actions/appState",
      * @param {String} id - user id.
      * @returns {Function} - async action.
      */
-    const setUser = function (id) {
+    const setUser = (id) => {
       return (dispatch, getState) => {
         const appState = getState ().appState;
         xhr ({

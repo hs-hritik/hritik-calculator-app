@@ -14,11 +14,11 @@ define ("extras/api",
   function (store, EVENT_TYPES, appStateActions, app) {
     "use strict";
 
-    const setUser = function (data) {
+    const setUser = (data) => {
       store.dispatch (appStateActions.setUser (data.id));
     };
 
-    const handleApis = function (type, data) {
+    const handleApis = (type, data) => {
       switch (type) {
         case EVENT_TYPES.CMD_INITIALISE:
           app.init (data);

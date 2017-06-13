@@ -18,7 +18,7 @@ define ("reducers/entities",
       faqs: {}
     };
 
-    return function (state = INITIAL_STATE, action) {
+    return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.SET_ENTITIES:
           return update (state, {

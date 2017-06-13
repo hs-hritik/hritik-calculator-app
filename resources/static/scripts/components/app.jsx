@@ -6,10 +6,12 @@
  */
 
 define ("components/app",
-  ["store",
+  [
+    "store",
     "utils/postMessage",
     "constants/eventTypes",
-    "actions/appState"],
+    "actions/appState"
+  ],
   function (store, postMessage, EVENT_TYPES, appStateActions) {
     "use strict";
 
@@ -20,14 +22,14 @@ define ("components/app",
      */
     const App = React.createClass ({
       displayName: "App",
-      render: function () {
+      render () {
         return (
           <div>Chat With us</div>
         );
       }
     });
 
-    const init = function (config) {
+    const init = (config) => {
       store.dispatch (appStateActions.setConfig (config));
 
       ReactDOM.render (

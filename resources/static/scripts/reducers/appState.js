@@ -24,7 +24,7 @@ define ("reducers/appState",
       domain: ""
     };
 
-    return function (state = INITIAL_STATE, action) {
+    return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.SET_USER_ID:
           return update (state, {

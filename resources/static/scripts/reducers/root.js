@@ -5,11 +5,13 @@
  */
 
 define ("reducers/root",
-  ["reducers/ui",
+  [
+    "reducers/ui",
     "reducers/appState",
     "reducers/entities",
     "reducers/chatView",
-    "reducers/faqView"],
+    "reducers/faqView"
+  ],
   function (uiReducer, appStateReducer, entitiesReducer, chatViewReducer, faqViewReducer) {
     "use strict";
 
