@@ -5,8 +5,13 @@
  */
 
 define ("reducers/chatView",
-  function () {
+  [
+    "constants/chatView"
+  ],
+  function (CHAT_VIEW_CONSTANTS) {
     "use strict";
+
+    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_STATE = {
       replyBox: {
@@ -14,10 +19,7 @@ define ("reducers/chatView",
         attachments: [],
         loading: false
       },
-      /**
-       * Possible values: "reply", "faqFeedback", "issueFeedback", "csatRating"
-       */
-      activeFooter: "reply"
+      activeFooter: ACTIVE_FOOTER.REPLY
     };
 
     return (state = INITIAL_STATE, action) => {

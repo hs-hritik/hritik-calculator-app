@@ -10,9 +10,10 @@ define ("components/app",
     "store",
     "utils/postMessage",
     "constants/eventTypes",
-    "actions/appState"
+    "actions/appState",
+    "components/containers/viewWrapper"
   ],
-  function (store, postMessage, EVENT_TYPES, appStateActions) {
+  function (store, postMessage, EVENT_TYPES, appStateActions, ViewWrapperContainer) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
@@ -23,9 +24,7 @@ define ("components/app",
     const App = React.createClass ({
       displayName: "App",
       render () {
-        return (
-          <div>Chat With us</div>
-        );
+        return (<ViewWrapperContainer />);
       }
     });
 

@@ -23,6 +23,7 @@ define ("helpers/entitySchema",
           };
 
     return {
-      issues
+      issues,
+      issue
     };
   });
