@@ -141,8 +141,21 @@ define ("actions/appState",
       return entities;
     };
 
+    /**
+     * Return action to update the active view
+     * @param {String} view - update the active view to
+     * @returns {Object} - the action object
+     */
+    const updateActiveView = (view) => {
+      return {
+        type: ACTION_TYPES.UPDATE_ACTIVE_VIEW,
+        view
+      };
+    };
+
     return {
       setConfig,
-      setUser
+      setUser,
+      updateActiveView
     };
   });

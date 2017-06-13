@@ -1,5 +1,5 @@
 /**
- * Helpshift API hanlder.
+ * Helpshift API handler.
  * @author Manish Garg <manish@helpshift.com>
  * @created May 31, 2017
  */

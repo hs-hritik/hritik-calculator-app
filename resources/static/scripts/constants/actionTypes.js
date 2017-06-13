@@ -13,6 +13,7 @@ define ("constants/actionTypes",
       SET_USER_ID: "SET_USER_ID",
       SET_CONFIG: "SET_CONFIG",
       SET_ENTITIES: "SET_ENTITIES",
-      SET_ACTIVE_ISSUE: "SET_ACTIVE_ISSUE"
+      SET_ACTIVE_ISSUE: "SET_ACTIVE_ISSUE",
+      UPDATE_ACTIVE_VIEW: "UPDATE_ACTIVE_VIEW"
     };
   });

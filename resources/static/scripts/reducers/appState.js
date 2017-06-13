@@ -5,18 +5,18 @@
  */
 
 define ("reducers/appState",
-  ["constants/actionTypes"],
-  function (ACTION_TYPES) {
+  [
+    "constants/actionTypes",
+    "constants/activeView"
+  ],
+  function (ACTION_TYPES, ACTIVE_VIEW) {
     "use strict";
 
     const update = React.addons.update;
 
     const INITIAL_STATE = {
       collapsed: true,
-      /**
-       * Possible values: "chat", "conversations", "faq"
-       */
-      activeWindow: "chat",
+      activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
       currentUserId: "",
       appId: "",
@@ -42,6 +42,14 @@ define ("reducers/appState",
           return update (state, {
             activeIssueId: {$set: action.id}
           });
+
+        case ACTION_TYPES.UPDATE_ACTIVE_VIEW:
+          if (action.view !== state.activeView) {
+            return update (state, {
+              activeView: {$set: action.view}
+            });
+          }
+          return state;
 
         default:
           return state;
