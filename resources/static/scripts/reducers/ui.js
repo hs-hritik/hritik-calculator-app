@@ -10,13 +10,13 @@ define ("reducers/ui",
 
     const INITIAL_STATE = {
       text: {
-        chatHeader: "Chat with us",
+        chatViewHeader: "Chat with us",
         faqMessageHeader: "Do these FAQs solve your problem?",
         faqHelpful: "Yes, they were helpful",
         faqNotHelpful: "No, I want to talk to agent",
         problemSolved: "Yes, Thanks!",
         problemNotSolved: "No",
-        faqWindowHeader: "Back to messages"
+        faqViewHeader: "Back to messages"
       }
     };
 

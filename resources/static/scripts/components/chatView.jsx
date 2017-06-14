@@ -9,9 +9,11 @@ define ("components/chatView",
     "components/messageList",
     "constants/propTypes",
     "constants/chatView",
-    "components/containers/replyBox"
+    "components/containers/replyBox",
+    "components/commons/viewHeader"
   ],
-  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, ReplyBoxContainer) {
+  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, ReplyBoxContainer,
+            ViewHeader) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -49,12 +51,16 @@ define ("components/chatView",
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
         )).isRequired,
-        activeFooter: PropTypes.string.isRequired
+        activeFooter: PropTypes.string.isRequired,
+        text: PropTypes.shape ({
+          chatViewHeader: PropTypes.string.isRequired
+        }).isRequired
       },
 
       render () {
         return (
           <div>
+            <ViewHeader title={this.props.text.chatViewHeader} />
             <MessageList messages={this.props.messages} />
             <ChatViewFooter activeFooter={this.props.activeFooter} />
           </div>

@@ -22,7 +22,8 @@ define ("components/containers/chatView",
 
       return {
         messages,
-        activeFooter: state.chatView.activeFooter
+        activeFooter: state.chatView.activeFooter,
+        text: state.ui.text
       };
     };
 
