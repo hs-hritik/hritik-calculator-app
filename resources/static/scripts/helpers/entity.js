@@ -1,0 +1,54 @@
+/**
+ * Entity related helpers.
+ * @author Manish Garg <manish@helpshift.com>
+ * @created June 14, 2017
+ */
+
+define ("helpers/entity",
+  [
+    "gunpowder/utils/object"
+  ],
+  function (objUtils) {
+    "use strict";
+
+    /**
+     * Return processed message entities.
+     * @param {Object} messages - unprocessed message entities.
+     * @returns {Object} - processed message entities.
+     */
+    const getProcessedMessageEntities = (messages) => {
+      const processedMessages = {};
+
+      objUtils.forEachKey (messages, (id) => {
+        const msg = messages [id];
+        processedMessages [id] = {
+          id: msg.id,
+          type: msg.type,
+          body: msg.body,
+          state: msg.state,
+          createdTs: new Date (msg.created_at),
+          author: msg.author,
+          isCustomerMsg: (msg.origin !== "admin")
+        };
+      });
+
+      return processedMessages;
+    };
+
+    /**
+     * Return processed entities.
+     * @param {Object} entities - unprocessed entities.
+     * @returns {Object} - processed entities.
+     */
+    const getProcessedEntities = (entities) => {
+      if (entities.messages) {
+        entities.messages = getProcessedMessageEntities (entities.messages);
+      }
+
+      return entities;
+    };
+
+    return {
+      getProcessedEntities
+    };
+  });

@@ -22,7 +22,19 @@ define ("reducers/entities",
       switch (action.type) {
         case ACTION_TYPES.SET_ENTITIES:
           return update (state, {
-            $merge: action.entities
+            issues: {$merge: action.entities.issues || {}},
+            messages: {$merge: action.entities.messages || {}},
+            authors: {$merge: action.entities.authors || {}},
+            faqs: {$merge: action.entities.faqs || {}}
+          });
+
+        case ACTION_TYPES.ADD_MESSAGE:
+          return update (state, {
+            issues: {
+              [action.issueId]: {
+                messages: {$push: [action.msgId]}
+              }
+            }
           });
 
         default:

@@ -12,9 +12,11 @@ define ("actions/appState",
     "helpers/entitySchema",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
-    "actions/entities"
+    "actions/entities",
+    "helpers/entity"
   ],
-  function (ACTION_TYPES, routes, normalizr, entitySchema, xhr, objUtils, entitiesActions) {
+  function (ACTION_TYPES, routes, normalizr, entitySchema, xhr, objUtils,
+    entitiesActions, entityHelpers) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -89,13 +91,14 @@ define ("actions/appState",
             "platform-id": appState.appId
           },
           onSuccess: (response) => {
-            const entities = createEntities (response);
+            const normalizedData = normalize (response, entitySchema.issues);
+            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
 
             // @TODO: Explore helpers to dispatch multiple actions once.
             // Use them if they are useful.
             dispatch (setUserId (id));
-            dispatch (setActiveIssue (entities.issues));
-            dispatch (entitiesActions.setEntities (entities));
+            dispatch (setActiveIssue (processedEntities.issues));
+            dispatch (entitiesActions.setEntities (processedEntities));
           },
           onFailure: () => {
             // @TODO: Handler failure.
@@ -104,42 +107,6 @@ define ("actions/appState",
       };
     };
 
-    /**
-     * Create messages entity.
-     * @param {Object} messages - normalized messages.
-     * @returns {Object} - processed messages entity.
-     */
-    const createMessagesEntity = (messages) => {
-      const processedMessages = {};
-
-      objUtils.forEachKey (messages, (id) => {
-        const msg = messages [id];
-        processedMessages [id] = {
-          id: msg.id,
-          type: msg.type,
-          body: msg.body,
-          state: msg.state,
-          createdTs: new Date (msg.created_at),
-          author: msg.author,
-          isCustomerMsg: (msg.origin !== "admin")
-        };
-      });
-
-      return processedMessages;
-    };
-
-    /**
-     * Normalize and process the entities.
-     * @param {Object} response - issues xhr response.
-     * @returns {Object} - normalized and processed entities.
-     */
-    const createEntities = (response) => {
-      const normalizedData = normalize (response, entitySchema.issues);
-      const entities = normalizedData.entities;
-
-      entities.messages = createMessagesEntity (entities.messages);
-      return entities;
-    };
 
     /**
      * Return action to update the active view

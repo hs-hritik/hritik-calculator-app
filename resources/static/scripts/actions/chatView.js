@@ -9,16 +9,17 @@ define ("actions/chatView",
     "constants/actionTypes",
     "constants/routes",
     "gunpowder/utils/xhr",
-    "actions/appState",
     "actions/entities",
     "normalizr",
     "helpers/entitySchema",
-    "constants/message"
+    "constants/message",
+    "helpers/entity"
   ],
-  function (ACTION_TYPES, routes, xhr, appStateActions, entitiesActions, normalizr,
-    entitySchema, MESSAGE_CONSTANTS) {
+  function (ACTION_TYPES, routes, xhr, entitiesActions, normalizr,
+    entitySchema, MESSAGE_CONSTANTS, entityHelpers) {
     "use strict";
 
+    const {normalize} = normalizr;
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
 
     /**
@@ -30,6 +31,20 @@ define ("actions/chatView",
       return {
         type: ACTION_TYPES.UPDATE_REPLY_TEXT,
         value
+      };
+    };
+
+    /**
+     * Action to add new message.
+     * @param {String} issueId - issue id
+     * @param {String} msgId - message id
+     * @returns {Object} - action
+     */
+    const addMessage = (issueId, msgId) => {
+      return {
+        type: ACTION_TYPES.ADD_MESSAGE,
+        issueId,
+        msgId
       };
     };
 
@@ -59,9 +74,13 @@ define ("actions/chatView",
             "message-type": MESSAGE_TYPE.TEXT
           },
           method: "POST",
-          onSuccess: () => {
+          onSuccess: (response) => {
+            const normalizedData = normalize (response, entitySchema.message);
+            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+
             dispatch (udpateReplyText (""));
-            // @TODO: Normalize message and add it in store.
+            dispatch (entitiesActions.setEntities (processedEntities));
+            dispatch (addMessage (appState.activeIssueId, response.id));
           },
           onFailure: () => {
             // @TODO: Handler failure.

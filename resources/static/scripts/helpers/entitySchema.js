@@ -24,6 +24,7 @@ define ("helpers/entitySchema",
 
     return {
       issues,
-      issue
+      issue,
+      message
     };
   });
