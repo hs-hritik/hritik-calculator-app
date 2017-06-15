@@ -13,10 +13,11 @@ define ("actions/appState",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "actions/entities",
-    "helpers/entity"
+    "helpers/entity",
+    "actions/chatView"
   ],
   function (ACTION_TYPES, routes, normalizr, entitySchema, xhr, objUtils,
-    entitiesActions, entityHelpers) {
+    entitiesActions, entityHelpers, chatViewActions) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -46,20 +47,30 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set active issue.
+     * Find active issue in the given issues object,
+     * and return the active issue id.
+     * If there is no active issue, return null.
      * @param {Object} issues - issues entity.
-     * @returns {Object} - action
+     * @returns {String|null} - active issue id or null
      */
-    const setActiveIssue = (issues) => {
-      let activeIssueId = "";
+    const _getActiveIssueId = (issues) => {
+      let activeIssueId = null;
 
-      objUtils.forEachKey (issues, (id) => {
-        const issue = issues [id];
+      objUtils.forEachKey (issues, (id, issue) => {
         if (_isIssueInProgress (issue.state_data.state)) {
           activeIssueId = id;
         }
       });
 
+      return activeIssueId;
+    };
+
+    /**
+     * Action to set active issue.
+     * @param {String} activeIssueId - active issue id.
+     * @returns {Object} - action
+     */
+    const setActiveIssue = (activeIssueId) => {
       return {
         type: ACTION_TYPES.SET_ACTIVE_ISSUE,
         id: activeIssueId
@@ -85,7 +96,7 @@ define ("actions/appState",
       return (dispatch, getState) => {
         const appState = getState ().appState;
         xhr ({
-          route: routes.myIssues (appState.domain),
+          route: routes.getMyIssues (appState.domain),
           data: {
             "identifier": id,
             "platform-id": appState.appId
@@ -97,8 +108,16 @@ define ("actions/appState",
             // @TODO: Explore helpers to dispatch multiple actions once.
             // Use them if they are useful.
             dispatch (setUserId (id));
-            dispatch (setActiveIssue (processedEntities.issues));
             dispatch (entitiesActions.setEntities (processedEntities));
+
+            const activeIssueId = _getActiveIssueId (processedEntities.issues);
+
+            if (activeIssueId) {
+              // Active issue workflow
+              dispatch (setActiveIssue (activeIssueId));
+              chatViewActions.startPollingForMessages ();
+            }
+            // @TODO: Else new issue worflow
           },
           onFailure: () => {
             // @TODO: Handler failure.

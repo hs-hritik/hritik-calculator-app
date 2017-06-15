@@ -21,7 +21,8 @@ define ("reducers/chatView",
         attachments: [],
         loading: false
       },
-      activeFooter: ACTIVE_FOOTER.REPLY
+      activeFooter: ACTIVE_FOOTER.REPLY,
+      activeIssueMsgCursor: null
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -31,6 +32,11 @@ define ("reducers/chatView",
             replyBox: {
               value: {$set: action.value}
             }
+          });
+
+        case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
+          return update (state, {
+            activeIssueMsgCursor: {$set: action.msgCursor}
           });
 
         default:

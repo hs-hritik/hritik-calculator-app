@@ -28,11 +28,18 @@ define ("reducers/entities",
             faqs: {$merge: action.entities.faqs || {}}
           });
 
-        case ACTION_TYPES.ADD_MESSAGE:
+        case ACTION_TYPES.ADD_MESSAGES:
+          // To avoid duplication of message ids, filter the incoming message ids
+          // using the current message ids.
+          const currentMsgIds = state.issues [action.issueId].messages;
+          const msgIdsToAdd = action.msgIds.filter ((msgId) => {
+            return currentMsgIds.indexOf (msgId) === -1;
+          });
+
           return update (state, {
             issues: {
               [action.issueId]: {
-                messages: {$push: [action.msgId]}
+                messages: {$push: msgIdsToAdd}
               }
             }
           });

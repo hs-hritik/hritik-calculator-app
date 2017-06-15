@@ -10,11 +10,14 @@ define ("constants/routes",
 
     const BASE = "http://api.helpshift.mobi/v1/";
 
-    const myIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
-    const userReply = (domain, issueId) => `${BASE}${domain}/webm/issues/${issueId}/messages/user`;
+    const getMyIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
+    const postUserReply = (domain, issueId) =>
+                           `${BASE}${domain}/webm/issues/${issueId}/messages/user`;
+    const getMessages = (domain, issueId) => `${BASE}${domain}/webm/issues/${issueId}/messages`;
 
     return {
-      myIssues,
-      userReply
+      getMyIssues,
+      postUserReply,
+      getMessages
     };
   });

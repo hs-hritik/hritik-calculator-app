@@ -6,6 +6,7 @@
 
 define ("actions/chatView",
   [
+    "store",
     "constants/actionTypes",
     "constants/routes",
     "gunpowder/utils/xhr",
@@ -15,12 +16,17 @@ define ("actions/chatView",
     "constants/message",
     "helpers/entity"
   ],
-  function (ACTION_TYPES, routes, xhr, entitiesActions, normalizr,
+  function (store, ACTION_TYPES, routes, xhr, entitiesActions, normalizr,
     entitySchema, MESSAGE_CONSTANTS, entityHelpers) {
     "use strict";
 
     const {normalize} = normalizr;
+    const MESSAGES_POLLING_TIMEOUT = 3000; // milliseconds
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+
+    let pollingEnabled = false,
+        fetchMessagesXhr = null,
+        fetchMessagesTimer = null;
 
     /**
      * Action to update reply text.
@@ -35,17 +41,94 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to add new message.
+     * Action to add messages to an issue.
      * @param {String} issueId - issue id
-     * @param {String} msgId - message id
+     * @param {Array} msgIds - array of message ids
      * @returns {Object} - action
      */
-    const addMessage = (issueId, msgId) => {
+    const addMessages = (issueId, msgIds) => {
       return {
-        type: ACTION_TYPES.ADD_MESSAGE,
+        type: ACTION_TYPES.ADD_MESSAGES,
         issueId,
-        msgId
+        msgIds
       };
+    };
+
+    /**
+     * Start polling for messages.
+     * Also clear previous polling, if any.
+     */
+    const startPollingForMessages = () => {
+      window.clearTimeout (fetchMessagesTimer);
+
+      if (fetchMessagesXhr) {
+        fetchMessagesXhr.abort ();
+        fetchMessagesXhr = null;
+      }
+
+      pollingEnabled = true;
+      fetchMessages ();
+    };
+
+    /**
+     * Action to set active issue message cursor.
+     * @param {Number} msgCursor - message cursor (unix timestamp)
+     * @returns {Object} - action
+     */
+    const setActiveIssueMsgCursor = (msgCursor) => {
+      return {
+        type: ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR,
+        msgCursor
+      };
+    };
+
+    /**
+     * Xhr to fetch active issue messages.
+     * On success, add messages to the store and also update the active
+     * issue message cursor.
+     * If polling is enabled, call itself when the xhr ends.
+     */
+    const fetchMessages = () => {
+      const state = store.getState ();
+      const appState = state.appState;
+
+      const xhrData = {
+        "identifier": appState.currentUserId,
+        "issue-id": appState.activeIssueId
+      };
+
+      if (state.chatView.activeIssueMsgCursor) {
+        xhrData ["messages-cursor"] = state.chatView.activeIssueMsgCursor;
+      }
+
+      fetchMessagesXhr = xhr ({
+        route: routes.getMessages (appState.domain, appState.activeIssueId),
+        data: xhrData,
+        method: "GET",
+        onSuccess: (response) => {
+          if (response.messages.length) {
+            const normalizedData = normalize (response, entitySchema.messages);
+            const processedEntities = entityHelpers.getProcessedEntities (
+              normalizedData.entities
+            );
+            store.dispatch (entitiesActions.setEntities (processedEntities));
+            store.dispatch (addMessages (
+              appState.activeIssueId,
+              normalizedData.result.messages
+            ));
+            store.dispatch (setActiveIssueMsgCursor (response.messages_cursor));
+          }
+        },
+        onFailure: () => {
+          // @TODO: Handler failure.
+        },
+        onEnd: () => {
+          if (pollingEnabled) {
+            fetchMessagesTimer = window.setTimeout (fetchMessages,
+                                                    MESSAGES_POLLING_TIMEOUT);
+          }
+        }
+      });
     };
 
     /**
@@ -66,7 +149,7 @@ define ("actions/chatView",
         // @TODO: Update code to send attachments.
 
         xhr ({
-          route: routes.userReply (appState.domain, appState.activeIssueId),
+          route: routes.postUserReply (appState.domain, appState.activeIssueId),
           data: {
             "identifier": appState.currentUserId,
             "issue-id": appState.activeIssueId,
@@ -80,7 +163,7 @@ define ("actions/chatView",
 
             dispatch (udpateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (addMessage (appState.activeIssueId, response.id));
+            dispatch (addMessages (appState.activeIssueId, [normalizedData.result]));
           },
           onFailure: () => {
             // @TODO: Handler failure.
@@ -91,6 +174,7 @@ define ("actions/chatView",
 
     return {
       udpateReplyText,
-      submitReply
+      submitReply,
+      startPollingForMessages
     };
   });

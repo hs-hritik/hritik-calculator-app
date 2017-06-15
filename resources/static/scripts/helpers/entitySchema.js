@@ -18,6 +18,9 @@ define ("helpers/entitySchema",
           issue = new schema.Entity ("issues", {
             messages: [message]
           }),
+          messages = {
+            messages: [message]
+          },
           issues = {
             issues: [issue]
           };
@@ -25,6 +28,7 @@ define ("helpers/entitySchema",
     return {
       issues,
       issue,
-      message
+      message,
+      messages
     };
   });
