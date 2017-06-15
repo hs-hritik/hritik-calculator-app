@@ -16,7 +16,10 @@ define ("reducers/ui",
         faqNotHelpful: "No, I want to talk to agent",
         problemSolved: "Yes, Thanks!",
         problemNotSolved: "No",
-        faqViewHeader: "Back to messages"
+        faqViewHeader: "Back to messages",
+        faqFooter: "Was this helpful?",
+        faqFooterHelpfulBtn: "Yes",
+        faqFooterNotHelpfulBtn: "No"
       }
     };
 

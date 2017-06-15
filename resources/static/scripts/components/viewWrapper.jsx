@@ -6,10 +6,11 @@
 
 define ("components/viewWrapper",
   [
+    "constants/activeView",
     "components/containers/chatView",
-    "constants/activeView"
+    "components/containers/faqView"
   ],
-  function (ChatViewContainer, ACTIVE_VIEW) {
+  function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -36,6 +37,8 @@ define ("components/viewWrapper",
         switch (this.props.activeView) {
           case ACTIVE_VIEW.CHAT:
             return <ChatViewContainer />;
+          case ACTIVE_VIEW.FAQ:
+            return <FaqViewContainer />;
           default:
             return null;
         }

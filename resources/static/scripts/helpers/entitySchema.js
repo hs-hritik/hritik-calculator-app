@@ -23,12 +23,14 @@ define ("helpers/entitySchema",
           },
           issues = {
             issues: [issue]
-          };
+          },
+          faq = new schema.Entity ("faqs");
 
     return {
       issues,
       issue,
       message,
-      messages
+      messages,
+      faq
     };
   });

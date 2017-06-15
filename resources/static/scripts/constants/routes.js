@@ -11,13 +11,27 @@ define ("constants/routes",
     const BASE = "http://api.helpshift.mobi/v1/";
 
     const getMyIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
+
     const postUserReply = (domain, issueId) =>
                            `${BASE}${domain}/webm/issues/${issueId}/messages/user`;
+
     const getMessages = (domain, issueId) => `${BASE}${domain}/webm/issues/${issueId}/messages`;
+
+    const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
+
+    const putFaqFeedback = (domain, faqId, isHelpful) => {
+      if (isHelpful) {
+        return `${BASE}${domain}/webm/faqs/${faqId}/helpful`;
+      } else {
+        return `${BASE}${domain}/webm/faqs/${faqId}/unhelpful`;
+      }
+    };
 
     return {
       getMyIssues,
       postUserReply,
-      getMessages
+      getMessages,
+      getFaq,
+      putFaqFeedback
     };
   });

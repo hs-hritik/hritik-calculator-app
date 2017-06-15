@@ -5,8 +5,11 @@
  */
 
 define ("reducers/faqView",
-  function () {
+  ["constants/actionTypes"],
+  function (ACTION_TYPES) {
     "use strict";
+
+    const update = React.addons.update;
 
     const INITIAL_STATE = {
       activeFaqId: "",
@@ -15,6 +18,10 @@ define ("reducers/faqView",
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.SET_ACTIVE_FAQ_ID:
+          return update (state, {
+            activeFaqId: action.faqId
+          });
         default:
           return state;
       }

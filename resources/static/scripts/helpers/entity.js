@@ -36,6 +36,29 @@ define ("helpers/entity",
     };
 
     /**
+     * Return processed faqs entity.
+     * @param {Object} faqs - unprocessed faqs entitiy.
+     * @returns {Object} - processed faqs entities.
+     */
+    const getProcessedFaqEntities = (faqs) => {
+      const processedFaqs = {};
+
+      objUtils.forEachKey (faqs, (id, faq) => {
+        processedFaqs [id] = {
+          id: faq.id,
+          sectionId: faq.section_id,
+          isPublished: faq ["published?"],
+          issueTags: faq.issue_tags,
+          updatedAt: new Date (faq.updated_at),
+          createdAt: new Date (faq.created_at),
+          translations: faq.translations
+        };
+      });
+
+      return processedFaqs;
+    };
+
+    /**
      * Return processed entities.
      * @param {Object} entities - unprocessed entities.
      * @returns {Object} - processed entities.
@@ -43,6 +66,9 @@ define ("helpers/entity",
     const getProcessedEntities = (entities) => {
       if (entities.messages) {
         entities.messages = getProcessedMessageEntities (entities.messages);
+      }
+      if (entities.faqs) {
+        entities.faqs = getProcessedFaqEntities (entities.faqs);
       }
 
       return entities;
