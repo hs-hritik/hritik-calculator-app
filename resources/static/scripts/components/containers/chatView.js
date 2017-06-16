@@ -16,8 +16,8 @@ define ("components/containers/chatView",
     const {denormalize} = normalizr;
 
     const mapStateToProps = (state) => {
-      const activeIssueId = state.appState.activeIssueId;
-      const issue = denormalize (activeIssueId, entitySchema.issue, state.entities);
+      const issueId = state.appState.activeIssueId || state.appState.dummyIssueId;
+      const issue = denormalize (issueId, entitySchema.issue, state.entities);
       const messages = issue ? issue.messages : [];
 
       return {

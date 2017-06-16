@@ -14,10 +14,11 @@ define ("actions/chatView",
     "normalizr",
     "helpers/entitySchema",
     "constants/message",
-    "helpers/entity"
+    "helpers/entity",
+    "helpers/chatView"
   ],
   function (store, ACTION_TYPES, routes, xhr, entitiesActions, normalizr,
-    entitySchema, MESSAGE_CONSTANTS, entityHelpers) {
+    entitySchema, MESSAGE_CONSTANTS, entityHelpers, chatViewHelpers) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -158,6 +159,29 @@ define ("actions/chatView",
           return;
         }
 
+        // If there is no active issue, create user message and add it in dummy issue.
+        if (!appState.activeIssueId) {
+          const userMsg = chatViewHelpers.createTextMessage (replyBox.value, {
+            isCustomerMsg: true
+          });
+
+          // As this message is created on frontend,
+          // it is already in normalized and processed format.
+          // So, directly udpating the entities in the store.
+          dispatch (entitiesActions.setEntities ({
+            messages: {
+              [userMsg.id]: userMsg
+            }
+          }));
+          dispatch (addMessages (appState.dummyIssueId, [userMsg.id]));
+          dispatch (udpateReplyText (""));
+          // @TODO: Fire faq suggestions xhr.
+          // on success create FAQMessage Object.
+          // add that message to dummy issue using addMessages
+          // Also change the chat view footer, so that user can't send more messages.
+          return;
+        }
+
         // @TODO: Update code to send attachments.
 
         xhr ({
@@ -221,6 +245,7 @@ define ("actions/chatView",
       udpateReplyText,
       submitReply,
       startPollingForMessages,
-      getFaqSuggestions
+      getFaqSuggestions,
+      addMessages
     };
   });

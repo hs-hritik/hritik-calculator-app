@@ -10,14 +10,15 @@ define ("actions/appState",
     "constants/routes",
     "normalizr",
     "helpers/entitySchema",
+    "helpers/entity",
+    "helpers/chatView",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "actions/entities",
-    "helpers/entity",
     "actions/chatView"
   ],
-  function (ACTION_TYPES, routes, normalizr, entitySchema, xhr, objUtils,
-    entitiesActions, entityHelpers, chatViewActions) {
+  function (ACTION_TYPES, routes, normalizr, entitySchema, entityHelpers,
+    chatViewHelpers, xhr, objUtils, entitiesActions, chatViewActions) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -94,7 +95,9 @@ define ("actions/appState",
      */
     const setUser = (id) => {
       return (dispatch, getState) => {
-        const appState = getState ().appState;
+        const state = getState ();
+        const appState = state.appState;
+
         xhr ({
           route: routes.getMyIssues (appState.domain),
           data: {
@@ -116,8 +119,30 @@ define ("actions/appState",
               // Active issue workflow
               dispatch (setActiveIssue (activeIssueId));
               chatViewActions.startPollingForMessages ();
+            } else {
+              // The initial conversation on the web sdk would not be part of an
+              // issue created on the server. So, we need to create a dummy issue
+              // on frontend and add messages to it.
+
+              const defaultAgentMsgText = state.ui.text.defaultAgentMessage;
+              const agentMsg = chatViewHelpers.createTextMessage (defaultAgentMsgText, {
+                isCustomerMsg: false
+              });
+
+              // As this issue and message is created on frontend (and not on the
+              // server/backend), we can directly udpate the entities in the store.
+              // No need to normalize and process.
+              dispatch (entitiesActions.setEntities ({
+                issues: {
+                  [appState.dummyIssueId]: {
+                    messages: [agentMsg.id]
+                  }
+                },
+                messages: {
+                  [agentMsg.id]: agentMsg
+                }
+              }));
             }
-            // @TODO: Else new issue worflow
           },
           onFailure: () => {
             // @TODO: Handler failure.

@@ -11,6 +11,7 @@ define ("reducers/ui",
     const INITIAL_STATE = {
       text: {
         chatViewHeader: "Chat with us",
+        defaultAgentMessage: "Hi. How may we help you today?",
         faqMessageHeader: "Do these FAQs solve your problem?",
         faqHelpful: "Yes, they were helpful",
         faqNotHelpful: "No, I want to talk to agent",
