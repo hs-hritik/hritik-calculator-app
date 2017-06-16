@@ -27,11 +27,14 @@ define ("constants/routes",
       }
     };
 
+    const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
+
     return {
       getMyIssues,
       postUserReply,
       getMessages,
       getFaq,
-      putFaqFeedback
+      putFaqFeedback,
+      getFaqSuggestions
     };
   });

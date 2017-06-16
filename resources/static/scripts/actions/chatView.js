@@ -132,6 +132,18 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set FAQ suggestions to the store.
+     * @param {Array} faqs - List of faq objects
+     * @returns {Object} - action
+     */
+    const setFaqSuggestions = (faqs) => {
+      return {
+        type: ACTION_TYPES.SET_FAQ_SUGGESTIONS,
+        faqs
+      };
+    };
+
+    /**
      * Action to submit reply.
      * @returns {Object} - action
      */
@@ -172,9 +184,43 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to get FAQ suggestions based on the message text.
+     * @param {String} searchText - search text to pass on to the API to get FAQs
+     * @param {Function} successCallback. The action caller should be responsible
+     *                   for handling changes other than setting suggested FAQs to
+     *                   the store.
+     * @returns {Object} - action
+     */
+    const getFaqSuggestions = (searchText, successCallback) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const appState = state.appState;
+
+        xhr ({
+          route: routes.getFaqSuggestions (appState.domain),
+          data: {
+            text: searchText
+          },
+          onSuccess: (response) => {
+            // The response would contain a list of faq objects,
+            // dispatch an action to set it to the store.
+            dispatch (setFaqSuggestions (response));
+            if (successCallback) {
+              successCallback ();
+            }
+          },
+          onFailure: () => {
+            // @TODO: Handler failure.
+          }
+        });
+      };
+    };
+
     return {
       udpateReplyText,
       submitReply,
-      startPollingForMessages
+      startPollingForMessages,
+      getFaqSuggestions
     };
   });
