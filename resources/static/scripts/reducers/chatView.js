@@ -45,6 +45,11 @@ define ("reducers/chatView",
             suggestedFaqs: {$set: action.faqs}
           });
 
+        case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
+          return update (state, {
+            activeFooter: {$set: action.footer}
+          });
+
         default:
           return state;
       }

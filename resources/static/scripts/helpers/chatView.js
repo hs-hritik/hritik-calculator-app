@@ -19,16 +19,34 @@ define ("helpers/chatView",
      * @returns {Object} - message object.
      */
     const createTextMessage = (body, options = {}) => {
+      const {isCustomerMsg = true} = options;
+
       return {
         id: `dummy_msg_${msgIdCounter++}`,
         type: MESSAGE_CONSTANTS.TYPE.TEXT,
         body,
         createdTs: new Date (),
-        isCustomerMsg: options.isCustomerMsg || true
+        isCustomerMsg
+      };
+    };
+
+    /**
+     * Create FAQ message object.
+     * @param {Array} faqs - array of faq objects (id and title).
+     * @returns {Object} - faq message object.
+     */
+    const createFaqMessage = (faqs = []) => {
+      return {
+        id: `dummy_msg_${msgIdCounter++}`,
+        type: MESSAGE_CONSTANTS.TYPE.FAQ,
+        createdTs: new Date (),
+        isCustomerMsg: false,
+        suggestedFaqs: faqs.slice (0, 3)
       };
     };
 
     return {
-      createTextMessage
+      createTextMessage,
+      createFaqMessage
     };
   });

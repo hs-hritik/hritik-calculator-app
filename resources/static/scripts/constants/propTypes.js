@@ -13,7 +13,7 @@ define ("constants/propTypes",
     const MESSAGE = {
       id: PropTypes.string.isRequired,
       type: PropTypes.string.isRequired,
-      body: PropTypes.string.isRequired,
+      body: PropTypes.string,
       isCustomerMsg: PropTypes.bool.isRequired,
       createdTs: PropTypes.instanceOf (Date).isRequired,
       author: PropTypes.shape ({

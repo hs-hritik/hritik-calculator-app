@@ -7,23 +7,26 @@
 define ("actions/chatView",
   [
     "store",
+    "normalizr",
     "constants/actionTypes",
     "constants/routes",
+    "constants/chatView",
+    "constants/message",
     "gunpowder/utils/xhr",
     "actions/entities",
-    "normalizr",
     "helpers/entitySchema",
-    "constants/message",
     "helpers/entity",
     "helpers/chatView"
   ],
-  function (store, ACTION_TYPES, routes, xhr, entitiesActions, normalizr,
-    entitySchema, MESSAGE_CONSTANTS, entityHelpers, chatViewHelpers) {
+  function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
+    MESSAGE_CONSTANTS, xhr, entitiesActions, entitySchema,
+    entityHelpers, chatViewHelpers) {
     "use strict";
 
     const {normalize} = normalizr;
     const MESSAGES_POLLING_TIMEOUT = 3000; // milliseconds
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     let pollingEnabled = false,
         fetchMessagesXhr = null,
@@ -145,6 +148,18 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to change chat view footer.
+     * @param {String} footer
+     * @returns {Object} - action
+     */
+    const setChatViewFooter = (footer) => {
+      return {
+        type: ACTION_TYPES.SET_CHAT_VIEW_FOOTER,
+        footer
+      };
+    };
+
+    /**
      * Action to submit reply.
      * @returns {Object} - action
      */
@@ -174,11 +189,23 @@ define ("actions/chatView",
             }
           }));
           dispatch (addMessages (appState.dummyIssueId, [userMsg.id]));
+
+          // Get faq suggestions for the given user message.
+          // @TODO: Add handler to stop firing multiple xhrs on multiple user messages.
+          dispatch (getFaqSuggestions (replyBox.value, (faqs) => {
+            const faqMsg = chatViewHelpers.createFaqMessage (faqs);
+
+            dispatch (entitiesActions.setEntities ({
+              messages: {
+                [faqMsg.id]: faqMsg
+              }
+            }));
+
+            dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_FEEDBACK));
+          }));
+
           dispatch (udpateReplyText (""));
-          // @TODO: Fire faq suggestions xhr.
-          // on success create FAQMessage Object.
-          // add that message to dummy issue using addMessages
-          // Also change the chat view footer, so that user can't send more messages.
           return;
         }
 
@@ -231,7 +258,7 @@ define ("actions/chatView",
             // dispatch an action to set it to the store.
             dispatch (setFaqSuggestions (response));
             if (successCallback) {
-              successCallback ();
+              successCallback (response);
             }
           },
           onFailure: () => {
