@@ -20,7 +20,7 @@ define ("reducers/faqView",
       switch (action.type) {
         case ACTION_TYPES.SET_ACTIVE_FAQ_ID:
           return update (state, {
-            activeFaqId: action.faqId
+            activeFaqId: {$set: action.faqId}
           });
         default:
           return state;

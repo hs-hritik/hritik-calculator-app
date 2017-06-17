@@ -8,22 +8,21 @@ define ("components/messageList",
   [
     "components/message",
     "constants/propTypes",
-    "gunpowder/utils/date",
-    "constants/message"
+    "gunpowder/utils/date"
   ],
-  function (Message, PROP_TYPES, dateUtils, MESSAGE_CONSTANTS) {
+  function (Message, PROP_TYPES, dateUtils) {
     "use strict";
 
     const PropTypes = React.PropTypes;
     const CONVERSATION_DATE_FORMAT = "{mmm} {dd}, {yyyy}";
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
 
     return React.createClass ({
       displayName: "MessageList",
       propTypes: {
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
-        )).isRequired
+        )).isRequired,
+        onSuggestedFaqClick: PropTypes.func
       },
 
       render () {
@@ -42,7 +41,8 @@ define ("components/messageList",
           return (
             <div key={message.id}>
               {this._renderTimestamp (index)}
-              {this._renderMessage (message)}
+              <Message {...message}
+                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
           );
         });
@@ -67,20 +67,6 @@ define ("components/messageList",
         return (
           <span>{dateStr}</span>
         );
-      },
-
-      /**
-       * Render component according to message type.
-       */
-      _renderMessage (message) {
-        // @TODO: Render FAQ Message
-        if (message.type === MESSAGE_TYPE.TEXT) {
-          return (
-            <Message {...message} />
-          );
-        }
-
-        return null;
       }
     });
   }

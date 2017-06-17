@@ -51,6 +51,7 @@ define ("components/chatView",
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
         )).isRequired,
+        onSuggestedFaqClick: PropTypes.func,
         activeFooter: PropTypes.string.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired
@@ -61,7 +62,8 @@ define ("components/chatView",
         return (
           <div>
             <ViewHeader title={this.props.text.chatViewHeader} />
-            <MessageList messages={this.props.messages} />
+            <MessageList messages={this.props.messages}
+                         onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             <ChatViewFooter activeFooter={this.props.activeFooter} />
           </div>
         );

@@ -20,12 +20,13 @@ define ("constants/propTypes",
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired
       }),
-      faqs: PropTypes.arrayOf (
-          PropTypes.shape ({
-            id: PropTypes.string.isRequired,
-            title: PropTypes.string.isRequired
-          })
-        )
+      suggestedFaqs: PropTypes.arrayOf (
+        PropTypes.shape ({
+          id: PropTypes.string.isRequired,
+          title: PropTypes.string.isRequired
+        })
+      ),
+      onSuggestedFaqClick: PropTypes.func
     };
 
     return {

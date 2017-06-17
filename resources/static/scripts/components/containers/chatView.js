@@ -7,10 +7,11 @@
 define ("components/containers/chatView",
   [
     "normalizr",
-    "components/chatView",
-    "helpers/entitySchema"
+    "helpers/entitySchema",
+    "actions/faqView",
+    "components/chatView"
   ],
-  function (normalizr, ChatView, entitySchema) {
+  function (normalizr, entitySchema, faqViewActions, ChatView) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -27,6 +28,14 @@ define ("components/containers/chatView",
       };
     };
 
-    return ReactRedux.connect (mapStateToProps) (ChatView);
+    const mapDispatchToProps = (dispatch) => {
+      return {
+        onSuggestedFaqClick: (faqId) => {
+          dispatch (faqViewActions.getFaq (faqId));
+        }
+      };
+    };
+
+    return ReactRedux.connect (mapStateToProps, mapDispatchToProps) (ChatView);
   }
 );

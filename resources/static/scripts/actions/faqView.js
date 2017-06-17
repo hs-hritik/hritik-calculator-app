@@ -46,6 +46,9 @@ define ("actions/faqView",
 
         xhr ({
           route: routes.getFaq (appState.domain, faqId),
+          data: {
+            "faq-id": faqId
+          },
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.faq);
             const processedEntities = entityHelpers.getProcessedEntities (
