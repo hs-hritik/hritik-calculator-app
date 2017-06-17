@@ -141,6 +141,13 @@ define ("actions/chatView",
             ));
             store.dispatch (setActiveIssueMsgCursor (response.messages_cursor));
           }
+
+          // If issue is resolved or rejected, stop polling and ask user for feedback.
+          const issueState = response.issue_state_data.state;
+          if (issueState === "resolved" || issueState === "rejected") {
+            pollingEnabled = false;
+            store.dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
+          }
         },
         onFailure: () => {
           // @TODO: Handler failure.
