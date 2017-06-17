@@ -13,17 +13,18 @@ define ("actions/chatView",
     "constants/chatView",
     "constants/message",
     "gunpowder/utils/xhr",
+    "gunpowder/utils/array",
     "actions/entities",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/chatView"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    MESSAGE_CONSTANTS, xhr, entitiesActions, entitySchema,
+    MESSAGE_CONSTANTS, xhr, arrayUtils, entitiesActions, entitySchema,
     entityHelpers, chatViewHelpers) {
     "use strict";
 
-    const {normalize} = normalizr;
+    const {normalize, denormalize} = normalizr;
     const MESSAGES_POLLING_TIMEOUT = 3000; // milliseconds
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
@@ -46,6 +47,7 @@ define ("actions/chatView",
 
     /**
      * Action to add messages to an issue.
+     * This action will push given messages to the issue's messages array.
      * @param {String} issueId - issue id
      * @param {Array} msgIds - array of message ids
      * @returns {Object} - action
@@ -53,6 +55,23 @@ define ("actions/chatView",
     const addMessages = (issueId, msgIds) => {
       return {
         type: ACTION_TYPES.ADD_MESSAGES,
+        issueId,
+        msgIds
+      };
+    };
+
+    /**
+     * Action to set messages to an issue.
+     * This action will replace the current messages array with the
+     * given messages array. If you want to push messages to an issue,
+     * use addMessages action.
+     * @param {String} issueId - issue id
+     * @param {Array} msgIds - array of message ids
+     * @returns {Object} - action
+     */
+    const setMessages = (issueId, msgIds) => {
+      return {
+        type: ACTION_TYPES.SET_MESSAGES,
         issueId,
         msgIds
       };
@@ -236,6 +255,60 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to create new issue.
+     * @returns {Object} - action
+     */
+    const createIssue = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {appState} = state;
+        const {dummyIssueId} = appState;
+        const dummyIssue = denormalize (
+          appState.dummyIssueId,
+          entitySchema.issue,
+          state.entities
+        );
+
+        const firstUserMsg = arrayUtils.find (dummyIssue.messages, (message) => {
+          return message.isCustomerMsg;
+        });
+
+        xhr ({
+          route: routes.postIssue (appState.domain),
+          data: {
+            "identifier": appState.currentUserId,
+            "platform-id": appState.appId,
+            "message-body": firstUserMsg.body
+          },
+          method: "POST",
+          onSuccess: (response) => {
+            const normalizedData = normalize (response, entitySchema.issue);
+            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+            dispatch (entitiesActions.setEntities (processedEntities));
+
+            // Replace frontend created user message with backend message,
+            // and add all dummy issue messages to the active issue.
+            const dummyIssueMsgIds = state.entities.issues [dummyIssueId].messages.slice ();
+            dummyIssueMsgIds.splice (
+              dummyIssueMsgIds.indexOf (firstUserMsg.id),
+              1,
+              response.messages [0].id
+            );
+
+            const newIssueId = response.id;
+            dispatch (setMessages (newIssueId, dummyIssueMsgIds));
+            // @TODO: Set active issue and start polling.
+            // @TODO: Remove dummy issue from entities.
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+          },
+          onFailure: () => {
+            // @TODO: Handler failure.
+          }
+        });
+      };
+    };
+
+    /**
      * Action to get FAQ suggestions based on the message text.
      * @param {String} searchText - search text to pass on to the API to get FAQs
      * @param {Function} successCallback. The action caller should be responsible
@@ -273,6 +346,8 @@ define ("actions/chatView",
       submitReply,
       startPollingForMessages,
       getFaqSuggestions,
-      addMessages
+      addMessages,
+      setMessages,
+      createIssue
     };
   });

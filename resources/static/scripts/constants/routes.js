@@ -29,12 +29,15 @@ define ("constants/routes",
 
     const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
 
+    const postIssue = (domain) => `${BASE}${domain}/webm/issues`;
+
     return {
       getMyIssues,
       postUserReply,
       getMessages,
       getFaq,
       putFaqFeedback,
-      getFaqSuggestions
+      getFaqSuggestions,
+      postIssue
     };
   });

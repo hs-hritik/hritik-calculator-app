@@ -44,6 +44,15 @@ define ("reducers/entities",
             }
           });
 
+        case ACTION_TYPES.SET_MESSAGES:
+          return update (state, {
+            issues: {
+              [action.issueId]: {
+                messages: {$set: action.msgIds}
+              }
+            }
+          });
+
         default:
           return state;
       }
