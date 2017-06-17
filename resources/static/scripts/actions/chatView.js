@@ -328,6 +328,45 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to update csat rating in store.
+     * @param {Number} rating - csat rating
+     * @returns {Object} - action
+     */
+    const updateCSATRating = (rating) => {
+      return {
+        type: ACTION_TYPES.UPDATE_CSAT_RATING,
+        rating
+      };
+    };
+
+    /**
+     * Action to post csat rating and save it in store.
+     * @param {Number} rating - csat rating
+     * @returns {Object} - action
+     */
+    const submitCSAT = (rating) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const appState = state.appState;
+
+        // @TODO: Need UX decision to update the rating on the UI instantly,
+        // or wait for xhr response.
+        dispatch (updateCSATRating (rating));
+
+        xhr ({
+          route: routes.postCSAT (appState.domain, appState.activeIssueId),
+          data: {
+            "identifier": appState.currentUserId,
+            "issue-id": appState.activeIssueId,
+            "platform-id": appState.appId,
+            "rating": rating
+          },
+          method: "POST"
+        });
+      };
+    };
+
     const createIssue = () => {
       return (dispatch, getState) => {
         const state = getState ();
@@ -420,6 +459,7 @@ define ("actions/chatView",
       setMessages,
       createIssue,
       rejectSolution,
-      acceptSolution
+      acceptSolution,
+      submitCSAT
     };
   });

@@ -31,6 +31,8 @@ define ("constants/routes",
 
     const postIssue = (domain) => `${BASE}${domain}/webm/issues`;
 
+    const postCSAT = (domain, issueId) => `${BASE}${domain}/webm/issues/${issueId}/csat`;
+
     return {
       getMyIssues,
       postUserReply,
@@ -38,6 +40,7 @@ define ("constants/routes",
       getFaq,
       putFaqFeedback,
       getFaqSuggestions,
-      postIssue
+      postIssue,
+      postCSAT
     };
   });
