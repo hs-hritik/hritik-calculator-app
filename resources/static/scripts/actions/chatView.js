@@ -179,6 +179,36 @@ define ("actions/chatView",
     };
 
     /**
+     * Fire xhr to post message as a user.
+     * @param {Object} config - data required for xhr. Required keys:
+     *                          domain, activeIssueId, currentUserId, msgBody, msgType,
+     * @param {Object} [callbacks] - optional callbacks
+     */
+    const postUserMessage = (config, callbacks = {}) => {
+      xhr ({
+        route: routes.postUserReply (config.domain, config.activeIssueId),
+        data: {
+          "identifier": config.currentUserId,
+          "issue-id": config.activeIssueId,
+          "message-body": config.msgBody,
+          "message-type": config.msgType
+        },
+        method: "POST",
+        onSuccess: (response) => {
+          const normalizedData = normalize (response, entitySchema.message);
+          const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess (response, processedEntities);
+          }
+        },
+        onFailure: () => {
+          // @TODO: Handler failure.
+        }
+      });
+    };
+
+    /**
      * Action to submit reply.
      * @returns {Object} - action
      */
@@ -230,34 +260,74 @@ define ("actions/chatView",
 
         // @TODO: Update code to send attachments.
 
-        xhr ({
-          route: routes.postUserReply (appState.domain, appState.activeIssueId),
-          data: {
-            "identifier": appState.currentUserId,
-            "issue-id": appState.activeIssueId,
-            "message-body": replyBox.value,
-            "message-type": MESSAGE_TYPE.TEXT
-          },
-          method: "POST",
-          onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.message);
-            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
-
+        postUserMessage ({
+          domain: appState.domain,
+          activeIssueId: appState.activeIssueId,
+          currentUserId: appState.currentUserId,
+          msgBody: replyBox.value,
+          msgType: MESSAGE_TYPE.TEXT
+        }, {
+          onSuccess: (response, processedEntities) => {
             dispatch (udpateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (addMessages (appState.activeIssueId, [normalizedData.result]));
-          },
-          onFailure: () => {
-            // @TODO: Handler failure.
+            dispatch (addMessages (appState.activeIssueId, [response.id]));
           }
         });
       };
     };
 
     /**
-     * Action to create new issue.
+     * Action to reject the solution.
      * @returns {Object} - action
      */
+    const rejectSolution = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const appState = state.appState;
+
+        postUserMessage ({
+          domain: appState.domain,
+          activeIssueId: appState.activeIssueId,
+          currentUserId: appState.currentUserId,
+          msgBody: state.ui.text.rejectSolutionMessage,
+          msgType: MESSAGE_TYPE.CONFIRMATION_REJECTED
+        }, {
+          onSuccess: (response, processedEntities) => {
+            dispatch (entitiesActions.setEntities (processedEntities));
+            dispatch (addMessages (appState.activeIssueId, [response.id]));
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+            startPollingForMessages ();
+          }
+        });
+
+      };
+    };
+
+    /**
+     * Action to accept the solution.
+     * @returns {Object} - action
+     */
+    const acceptSolution = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const appState = state.appState;
+
+        postUserMessage ({
+          domain: appState.domain,
+          activeIssueId: appState.activeIssueId,
+          currentUserId: appState.currentUserId,
+          msgBody: state.ui.text.acceptSolutionMessage,
+          msgType: MESSAGE_TYPE.CONFIRMATION_ACCEPTED
+        }, {
+          onSuccess: (response, processedEntities) => {
+            dispatch (entitiesActions.setEntities (processedEntities));
+            dispatch (addMessages (appState.activeIssueId, [response.id]));
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.CSAT));
+          }
+        });
+      };
+    };
+
     const createIssue = () => {
       return (dispatch, getState) => {
         const state = getState ();
@@ -348,6 +418,8 @@ define ("actions/chatView",
       getFaqSuggestions,
       addMessages,
       setMessages,
-      createIssue
+      createIssue,
+      rejectSolution,
+      acceptSolution
     };
   });

@@ -20,7 +20,9 @@ define ("reducers/ui",
         faqViewHeader: "Back to messages",
         faqFooter: "Was this helpful?",
         faqFooterHelpfulBtn: "Yes",
-        faqFooterNotHelpfulBtn: "No"
+        faqFooterNotHelpfulBtn: "No",
+        acceptSolutionMessage: "Accepted the solution",
+        rejectSolutionMessage: "Rejected the solution"
       }
     };
 

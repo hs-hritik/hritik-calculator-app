@@ -10,7 +10,9 @@ define ("constants/message",
 
     const TYPE = {
       TEXT: "Text",
-      FAQ: "Faq"
+      FAQ: "Faq",
+      CONFIRMATION_ACCEPTED: "Confirmation Accepted",
+      CONFIRMATION_REJECTED: "Confirmation Rejected"
     };
 
     return {
