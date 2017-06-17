@@ -7,11 +7,12 @@
 define ("components/containers/chatView",
   [
     "normalizr",
+    "components/chatView",
     "helpers/entitySchema",
-    "actions/faqView",
-    "components/chatView"
+    "actions/chatView",
+    "actions/faqView"
   ],
-  function (normalizr, entitySchema, faqViewActions, ChatView) {
+  function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -24,6 +25,7 @@ define ("components/containers/chatView",
       return {
         messages,
         activeFooter: state.chatView.activeFooter,
+        csatRating: state.chatView.csatRating,
         text: state.ui.text
       };
     };
@@ -32,6 +34,26 @@ define ("components/containers/chatView",
       return {
         onSuggestedFaqClick: (faqId) => {
           dispatch (faqViewActions.getFaq (faqId));
+        },
+        onFaqSuggestionFeedback: (feedback) => {
+          if (feedback === "no") {
+            dispatch (chatViewActions.createIssue ());
+          } else {
+            // @TODO: Confirm UX
+          }
+        },
+        onIssueFeedback: (feedback) => {
+          if (feedback === "no") {
+            dispatch (chatViewActions.rejectSolution ());
+          } else {
+            dispatch (chatViewActions.acceptSolution ());
+          }
+        },
+        onSubmitCsatRating: (rating) => {
+          dispatch (chatViewActions.submitCsat (rating));
+        },
+        onStartNewConversation: () => {
+          // @TODO: Dispatch action to start new conversation.
         }
       };
     };

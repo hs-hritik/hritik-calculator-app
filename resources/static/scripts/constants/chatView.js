@@ -10,7 +10,7 @@ define ("constants/chatView",
 
     const ACTIVE_FOOTER = {
       REPLY: "reply",
-      FAQ_FEEDBACK: "faqFeedback",
+      FAQ_SUGGESTIONS_FEEDBACK: "faqSuggestionsFeedback",
       ISSUE_FEEDBACK: "issueFeedback",
       CSAT: "csat"
     };

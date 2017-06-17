@@ -13,8 +13,8 @@ define ("reducers/ui",
         chatViewHeader: "Chat with us",
         defaultAgentMessage: "Hi. How may we help you today?",
         faqMessageHeader: "Do these FAQs solve your problem?",
-        faqHelpful: "Yes, they were helpful",
-        faqNotHelpful: "No, I want to talk to agent",
+        faqSuggestionsHelpful: "Yes, they were helpful",
+        faqSuggestionsNotHelpful: "No, I want to talk to agent",
         problemSolved: "Yes, Thanks!",
         problemNotSolved: "No",
         faqViewHeader: "Back to messages",
@@ -22,7 +22,9 @@ define ("reducers/ui",
         faqFooterHelpfulBtn: "Yes",
         faqFooterNotHelpfulBtn: "No",
         acceptSolutionMessage: "Accepted the solution",
-        rejectSolutionMessage: "Rejected the solution"
+        rejectSolutionMessage: "Rejected the solution",
+        csatReviewResponse: "Thanks for the feedback.",
+        startNewConversationBtn: "Start a new conversation"
       }
     };
 

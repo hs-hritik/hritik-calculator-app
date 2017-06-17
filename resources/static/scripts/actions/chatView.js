@@ -258,7 +258,7 @@ define ("actions/chatView",
             }));
 
             dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_FEEDBACK));
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
           }));
 
           dispatch (udpateReplyText (""));
@@ -352,7 +352,7 @@ define ("actions/chatView",
      * @param {Number} rating - csat rating
      * @returns {Object} - action
      */
-    const submitCSAT = (rating) => {
+    const submitCsat = (rating) => {
       return (dispatch, getState) => {
         const state = getState ();
         const appState = state.appState;
@@ -467,6 +467,6 @@ define ("actions/chatView",
       createIssue,
       rejectSolution,
       acceptSolution,
-      submitCSAT
+      submitCsat
     };
   });
