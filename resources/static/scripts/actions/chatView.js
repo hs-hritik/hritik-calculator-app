@@ -413,7 +413,8 @@ define ("actions/chatView",
 
             const newIssueId = response.id;
             dispatch (setMessages (newIssueId, dummyIssueMsgIds));
-            // @TODO: Set active issue and start polling.
+            dispatch (setActiveIssue (newIssueId));
+            startPollingForMessages ();
             // @TODO: Remove dummy issue from entities.
             dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           },
@@ -457,6 +458,18 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to set active issue.
+     * @param {String} activeIssueId - active issue id.
+     * @returns {Object} - action
+     */
+    const setActiveIssue = (activeIssueId) => {
+      return {
+        type: ACTION_TYPES.SET_ACTIVE_ISSUE,
+        id: activeIssueId
+      };
+    };
+
     return {
       udpateReplyText,
       submitReply,
@@ -467,6 +480,7 @@ define ("actions/chatView",
       createIssue,
       rejectSolution,
       acceptSolution,
-      submitCsat
+      submitCsat,
+      setActiveIssue
     };
   });

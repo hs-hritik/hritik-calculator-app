@@ -67,18 +67,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set active issue.
-     * @param {String} activeIssueId - active issue id.
-     * @returns {Object} - action
-     */
-    const setActiveIssue = (activeIssueId) => {
-      return {
-        type: ACTION_TYPES.SET_ACTIVE_ISSUE,
-        id: activeIssueId
-      };
-    };
-
-    /**
      * Returns true if the issue is in progress.
      * Any issue that is not "resolved" or "rejected" is considered in progress.
      * @param {String} state - issue state.
@@ -117,7 +105,7 @@ define ("actions/appState",
 
             if (activeIssueId) {
               // Active issue workflow
-              dispatch (setActiveIssue (activeIssueId));
+              dispatch (chatViewActions.setActiveIssue (activeIssueId));
               chatViewActions.startPollingForMessages ();
             } else {
               // The initial conversation on the web sdk would not be part of an
