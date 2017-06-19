@@ -1,0 +1,414 @@
+// Styles for Helpshift Admin Dashboard
+// [helpshift.com](https://helpshift.com)
+// Copyright 2016, Helpshift Inc.
+
+///
+/// @group functions
+///
+
+/// Finds a value in a nested map
+/// @link https://css-tricks.com/snippets/sass/deep-getset-maps/ Deep Get/Set in Maps
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {Map} $map - Map you want to pull the value from
+/// @param {String} $keys... - Keys to use when looking for a value
+///
+/// @returns {Mixed} The value found in the map.
+///
+/// @example scss - Fetch value of keyZ inside a nested map
+///   $nested-map: {
+///     keyX: {
+///       keyY: {
+///         keyZ: value
+///       }
+///     }
+///   }
+///
+///   map-fetch($nested-map, keyX, keyY, keyZ)
+@function map-fetch($map, $keys...) {
+  @each $key in $keys {
+    @if map-has-key($map, $key) {
+      $map: map-get($map, $key);
+    } @else {
+      @error "The map doesn't have the key '#{$key}'. Available keys: #{map-keys($map)}.";
+    }
+  }
+  @return $map;
+}
+
+/// Map a function on a list
+///
+/// @param {Function} $func
+/// @param {List} $list
+@function f-map($func, $list) {
+  $new-list: ();
+  @each $item in $list {
+    $item: call($func, $item);
+    $new-list: append($new-list, $item);
+  }
+  @return $new-list;
+}
+
+/// Gets number of hues in palette
+@function hue-count() {
+  @return length(map-keys($_palettes));
+}
+
+@function shade-count($hue-shades-pair) {
+  @return length(nth($hue-shades-pair, 2));
+}
+
+@function shade-max() {
+  @return max(f-map(shade-count, $_palettes)...);
+}
+
+/// Get a palette's shade from $_palettes map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {Keyword} $palette - Hue of the palette
+/// @param {Keyword} $shade [base] - Variation of lightness on the chosen hue
+///
+/// @returns {Color} Color value in Hex
+@function palette($palette, $shade: base) {
+  @if map-has-key($_palettes, $palette) {
+    @return map-fetch($_palettes, $palette, $shade);
+  } @else {
+    @error "Palettes map doesn't have the palette:#{$palette} with shade:#{$shade}";
+    @return "";
+  }
+}
+
+/// Get a color from $_colors map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {Keyword} $color - Color type
+/// @param {Keyword} $shade [base] - Variation of lightness on the chosen color. Pass `all` as the argument to get all shades for a color
+///
+/// @returns {Color} Color value in Hex
+@function color($color, $shade: base) {
+  @if map-has-key($_colors, $color) {
+    @if $shade == all {
+      @return map-fetch($_colors, $color);
+    } @else {
+      @return map-fetch($_colors, $color, $shade);
+    }
+  } @else {
+    @error "Colors map doesn't have the color:#{$color} with shade:#{$shade}";
+    @return "";
+  }
+}
+
+/// Scales a color to be lighter if it's light, or darker if it's dark. Use this function to tint a color appropriate to its lightness.
+///
+/// @param {Color} $color - Color to scale.
+/// @param {Percentage} $scale [5%] - Amount to scale up or down.
+/// @param {Percentage} $threshold [40%] - Threshold of lightness to check against.
+///
+/// @returns {Color} A scaled color.
+@function smart-scale($color, $scale: 5%, $threshold: 40%) {
+  @if lightness($color) > $threshold {
+    $scale: -$scale;
+  }
+  @return scale-color($color, $lightness: $scale);
+}
+
+/// Get a font-size value from $_font-sizes map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {List} $keys - List of values to fetch from $_font-sizes map
+///
+/// @returns {Number} Font size in pixels
+@function font-size($keys...) {
+  @if length($keys) == 1 {
+    $keys: append($keys, base); // Add 'base' to $keys
+  }
+
+  $size: map-fetch($_font-sizes, $keys...);
+
+  // Return font-size with 'px' unit if $_font-sizes map contains unitless values
+  $size: _add-px($size);
+
+  @return $size;
+}
+
+/// Get the line-heights from $_line-heights map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {List} $element [base] - Element fetch from $_font-sizes map
+///
+/// @returns {Number} Line height as unitless value or in px
+@function line-height($element: base) {
+  @if map-has-key($_line-heights, $element) {
+    @return map-get($_line-heights, $element);
+  } @else {
+    $valid-keys: false;
+    $i: 1;
+
+    @each $key, $value in $_line-heights {
+      $separator: ", ";
+
+      @if $i == (length($_line-heights) - 1) {
+        $separator: " or ";
+      }
+
+      @if $i == length($_line-heights) {
+        $separator: "";
+      }
+
+      @if $valid-keys {
+        $valid-keys: $valid-keys + $key + $separator;
+      } @else {
+        $valid-keys: $key + $separator;
+      }
+
+      $i: $i + 1;
+    }
+
+    @if type-of($element) == "number" {
+      @error "line-height() only accepts: #{$valid-keys} as an argument. Was `#{$element}`."
+    }
+  }
+}
+
+/// Get a font-weight value from $_font-weights map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {String} $weight [normal] - Font weight to fetch from $_font-weights map
+///
+/// @returns {Number} Font weight
+@function font-weight($weight: normal) {
+  @return map-fetch($_font-weights, $weight);
+}
+
+/// Get gutter values
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {Number|List} $type [20] - Gutter value(s)
+///
+/// @returns {Number|List} Gutter value(s) in px
+@function gutter($value: 20) {
+  $base: _add-px($_gutter-base);
+
+  $warning-message: _warn-if-not-multiple-of-gutter-base($value, $base);
+
+  @if $warning-message {
+    @warn $warning-message;
+  }
+
+  @if type-of($value) == "number" {
+    @return _add-px($value);
+  }
+
+  @if type-of($value) == "list"  {
+    $gutter: false;
+
+    @each $v in $value {
+      $v: _add-px($v);
+
+      @if $gutter == false {
+        $gutter: $v;
+      } @else {
+        $gutter: append($gutter, $v);
+      }
+    }
+
+    @return $gutter;
+  }
+}
+
+// Private helper function to render a warning when a non-standard gutter is used.
+//
+// Only applies to gutter values >= 6px.
+//
+// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+//
+@function _warn-if-not-multiple-of-gutter-base($val, $base) {
+  $warning-message: false;
+
+  @if type-of($val) == "number" and $val > 6 {
+    @if not _is-multiple-of-gutter-base($val, $base) {
+      $val: _add-px($val);
+      $warning-message: "Gutter #{$val} is not a multiple of gutter base (#{$base}).";
+    }
+  }
+
+  @if type-of($val) == "list" {
+    $warn-gutter: false;
+
+    @each $v in $val {
+      $v: _add-px($v);
+
+      @if $v > 6px {
+        @if not _is-multiple-of-gutter-base($v, $base) {
+          @if $warn-gutter == false {
+            $warn-gutter: $v;
+          } @else {
+            $warn-gutter: append($warn-gutter, $v);
+          }
+        }
+      }
+    }
+
+    @if $warn-gutter != false and length($warn-gutter) > 0 {
+
+      @if length($warn-gutter) == 1 {
+        $warning-message: "Gutter #{$warn-gutter} in gutter(#{$val}) is not a multiple of gutter base (#{$base}).";
+      } @else {
+        $warning-message: "Gutters (#{$warn-gutter}) in gutter(#{$val}) are not multiples of gutter base (#{$base}).";
+      }
+    }
+  }
+
+  @return $warning-message;
+}
+
+// Private helper function to check if the gutter value is a multiple of the gutter-base
+//
+// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+@function _is-multiple-of-gutter-base($val, $base) {
+  $val: _remove-px($val);
+  $base: _remove-px($base);
+
+  @if $val % $base == 0 {
+    @return true;
+  } @else {
+    @return false;
+  }
+}
+
+// Private helper function to add `px` units if it's a unitless number
+//
+// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+@function _add-px($value) {
+  @if unitless($value) {
+    @return $value * 1px;
+  }
+
+  @return $value;
+}
+
+// Private helper function to remove `px` units from a number
+//
+// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+@function _remove-px($value) {
+  @if not (unitless($value)) {
+    @return $value / 1px;
+  }
+
+  @return $value;
+}
+
+/// Get the border-radius value from $_radius map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {String} $val [normal] - Type of radius to fetch from $_radius map
+///
+/// @returns {Number} Border radius in px
+@function radius($val: base) {
+  $base: _remove-px(map-fetch($_radius, base));
+  $small: _remove-px(map-fetch($_radius, small));
+
+  @if type-of($val) != "string" {
+    $radii: false;
+
+    @each $v in $val {
+      @if _is-radius-allowed($v) {
+        @if $radii == false {
+          $radii: _add-px($v);
+        } @else {
+          $radii: append($radii, _add-px($v));
+        }
+      } @else {
+        @error "border-radius() can only have 0, #{_add-px($small)} or #{_add-px($base)} as the values. Was `#{_add-px($v)}`.";
+      }
+    }
+
+    @return $radii;
+
+  } @else {
+    @if map-has-key($_radius, $val) {
+      @return _add-px(map-fetch($_radius, $val));
+    } @else {
+      @error "radius() can only take `base`, `small` or numbers (0, 2px, 4px) as the arguments. Was `#{$val}`.";
+    }
+  }
+}
+
+// Private helper function to check if the radius is a standard value
+//
+// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+@function _is-radius-allowed($val) {
+  $base: _remove-px(map-fetch($_radius, base));
+  $small: _remove-px(map-fetch($_radius, small));
+
+  $val: _remove-px($val);
+
+  @if not (($val == $base) or ($val == $small) or ($val == 0)){
+    @return false;
+  } @else {
+    @return true;
+  }
+}
+
+
+/// Get the z-index value of an element
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {List} $keys - List of values to fetch from $_z-index map
+///
+/// @returns {Number} z-index value of the element
+@function z-index($keys...) {
+  $z: map-fetch($_z-index, $keys...);
+
+  @return $z;
+}
+
+@function z($keys...) {
+  @return z-index($keys...);
+}
+
+
+/// Get the width of an element from the global widths map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {List} $keys - List of values to fetch from $_widths map
+///
+/// @returns {Number} Width of the element
+@function width($keys...) {
+  @if length($keys) == 1 {
+    $keys: append($keys, base); // Add 'base' to $keys
+  }
+
+  $width: map-fetch($_widths, $keys...);
+
+  // Return width in 'px' if $_widths map contains unitless values
+  $width: _add-px($width);
+
+  @return $width;
+}
+
+/// Get a icon-size value from $_icon-sizes map
+///
+/// @author: Bhargava Chowdary M <bhargava@helpshift.com>
+///
+/// @param {List} $keys - List of values to fetch from $_icon-sizes map
+///
+/// @returns {Number} Icon size in pixels
+@function icon-size($key: base) {
+  $size: map-fetch($_icon-sizes, $key);
+
+  // Return font-size with 'px' unit if $_icon-sizes map contains unitless values
+  $size: _add-px($size);
+
+  @return $size;
+}
