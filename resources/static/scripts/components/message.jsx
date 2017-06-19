@@ -24,38 +24,54 @@ define ("components/message",
         // @TODO: Add CSS to differentiate user and agent messages.
         return (
           <div>
-            {this._renderMessageBody ()}
-            {this._renderCreatedTimestamp ()}
+            {this._renderMessage ()}
           </div>
         );
       },
 
       /**
-       * Render the body of a message. Messages can be of type - text or faq, so
-       * they have to be handled differently.
+       * Render the message according to its type.
        */
-      _renderMessageBody () {
-        const {type, body, suggestedFaqs, onSuggestedFaqClick} = this.props;
+      _renderMessage () {
+        const {type, suggestedFaqs = []} = this.props;
 
         if (type === MESSAGE_TYPE.TEXT) {
-          /* eslint-disable react/no-danger */
+          return this._renderTextMessage ();
+        } else if (type === MESSAGE_TYPE.FAQ && suggestedFaqs.length) {
+          return this._renderFaqMessage ();
+        }
+
+        return null;
+      },
+
+      /**
+       * Render text message.
+       */
+      _renderTextMessage () {
+        /* eslint-disable react/no-danger */
+        return (
+          <div>
+            <div dangerouslySetInnerHTML={{__html: this.props.body}} />
+            {this._renderCreatedTimestamp ()}
+          </div>
+        );
+        /* eslint-enable react/no-danger */
+      },
+
+      /**
+       * Render FAQ suggestions message.
+       */
+      _renderFaqMessage () {
+        const {suggestedFaqs, onSuggestedFaqClick} = this.props;
+
+        return suggestedFaqs.map ((faq) => {
           return (
-            <div dangerouslySetInnerHTML={{__html: body}} />
-          );
-          /* eslint-enable react/no-danger */
-        } else if (type === MESSAGE_TYPE.FAQ &&
-                   suggestedFaqs.length) {
-          return suggestedFaqs.map ((faq) => {
-            return (
               <div key={faq.id}
                    onClick={onSuggestedFaqClick.bind (this, faq.id)}>
                 {faq.title}
               </div>
-            );
-          });
-        }
-
-        return null;
+          );
+        });
       },
 
       /**
