@@ -78,6 +78,8 @@ define ("actions/faqView",
         const faqId = state.faqView.activeFaqId;
         const isFeedbackHelpful = feedback === "yes";
 
+        dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.CHAT));
+
         xhr ({
           route: routes.putFaqFeedback (appState.domain, faqId, isFeedbackHelpful),
           data: {

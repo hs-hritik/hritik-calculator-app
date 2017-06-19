@@ -53,14 +53,16 @@ define ("components/faqView",
       render () {
         const {title, body, text, onFaqFeedbackClick} = this.props;
 
+        /* eslint-disable react/no-danger */
         return (
           <div>
             <div>{title}</div>
-            <div>{body}</div>
+            <div dangerouslySetInnerHTML={{__html: body}} />
             <FaqViewFooter text={text}
                            onFeedbackClick={onFaqFeedbackClick} />
           </div>
         );
+        /* eslint-enable react/no-danger */
       }
     });
 
