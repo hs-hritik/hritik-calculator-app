@@ -10,10 +10,11 @@ define ("components/chatView",
     "constants/propTypes",
     "constants/chatView",
     "components/containers/replyBox",
-    "components/commons/viewHeader"
+    "components/commons/viewHeader",
+    "components/starRating"
   ],
   function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, ReplyBoxContainer,
-            ViewHeader) {
+    ViewHeader, StarRating) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -89,8 +90,12 @@ define ("components/chatView",
             <span>{this.props.text.csatReviewResponse}</span>
           );
         }
-        // @TODO: Render CSAT Rating component.
-        return null;
+
+        return (
+          <StarRating name="csat"
+                      value={this.props.csatRating}
+                      onStarClick={this._onStarClick} />
+        );
       },
 
       /**
@@ -161,6 +166,14 @@ define ("components/chatView",
        */
       _onIssueFeedbackClick (feedback) {
         this.props.onIssueFeedback (feedback);
+      },
+
+      /**
+       * Click handler for star
+       * @param {Number} value - star index which is clicked
+       */
+      _onStarClick (value) {
+        this.props.onSubmitCsatRating (value);
       }
     });
 
