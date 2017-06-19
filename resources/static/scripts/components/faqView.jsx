@@ -6,8 +6,10 @@
  */
 
 define ("components/faqView",
-  [],
-  function () {
+  [
+    "components/commons/viewHeader"
+  ],
+  function (ViewHeader) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -46,16 +48,22 @@ define ("components/faqView",
       propTypes: {
         title: PropTypes.string.isRequired,
         body: PropTypes.string.isRequired,
-        text: PropTypes.object.isRequired,
-        onFaqFeedbackClick: PropTypes.func.isRequired
+        onFaqFeedbackClick: PropTypes.func.isRequired,
+        onBackBtnClick: PropTypes.func.isRequired,
+        text: PropTypes.shape ({
+          faqViewHeader: PropTypes.string.isRequired
+        }).isRequired
       },
 
       render () {
-        const {title, body, text, onFaqFeedbackClick} = this.props;
+        const {title, body, text, onFaqFeedbackClick, onBackBtnClick} = this.props;
 
         /* eslint-disable react/no-danger */
         return (
           <div>
+            <ViewHeader title={text.faqViewHeader}
+                        showBackBtn={true}
+                        onBackBtnClick={onBackBtnClick} />
             <div>{title}</div>
             <div dangerouslySetInnerHTML={{__html: body}} />
             <FaqViewFooter text={text}

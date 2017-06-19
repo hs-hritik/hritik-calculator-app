@@ -10,9 +10,12 @@ define ("components/containers/faqView",
     "normalizr",
     "components/faqView",
     "actions/faqView",
-    "helpers/entitySchema"
+    "actions/appState",
+    "helpers/entitySchema",
+    "constants/activeView"
   ],
-  function (normalizr, FaqView, faqViewActions, entitySchema) {
+  function (normalizr, FaqView, faqViewActions, appStateActions, entitySchema,
+    ACTIVE_VIEW) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -35,6 +38,9 @@ define ("components/containers/faqView",
       return {
         onFaqFeedbackClick: (feedback) => {
           dispatch (faqViewActions.submitFaqFeedback (feedback));
+        },
+        onBackBtnClick: () => {
+          dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.CHAT));
         }
       };
     };

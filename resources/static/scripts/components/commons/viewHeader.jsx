@@ -16,7 +16,7 @@ define ("components/commons/viewHeader",
       propTypes: {
         title: PropTypes.string.isRequired,
         showBackBtn: PropTypes.bool,
-        onBackButtonClick: PropTypes.func
+        onBackBtnClick: PropTypes.func
       },
 
       render () {
@@ -38,7 +38,7 @@ define ("components/commons/viewHeader",
 
         // @TODO: Replace ← with icon.
         return (
-          <button onClick={this.props.onBackButtonClick}>
+          <button onClick={this.props.onBackBtnClick}>
             ←
           </button>
         );
