@@ -481,6 +481,7 @@ define ("actions/chatView",
       rejectSolution,
       acceptSolution,
       submitCsat,
-      setActiveIssue
+      setActiveIssue,
+      setChatViewFooter
     };
   });

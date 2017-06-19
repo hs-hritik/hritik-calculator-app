@@ -64,6 +64,9 @@ define ("components/chatView",
           case ACTIVE_FOOTER.CSAT:
             return this._renderCSATFooter ();
 
+          case ACTIVE_FOOTER.NEW_CONVERSATION:
+            return this._renderNewConversationBtn ();
+
           default:
             return null;
         }
@@ -76,7 +79,7 @@ define ("components/chatView",
         return (
           <div>
             {this._renderCSATRating ()}
-            {this._renderStartConversationBtn ()}
+            {this._renderNewConversationBtn ()}
           </div>
         );
       },
@@ -101,7 +104,7 @@ define ("components/chatView",
       /**
        * Render "Start new conversation" button.
        */
-      _renderStartConversationBtn () {
+      _renderNewConversationBtn () {
         return (
           <button onClick={this._onStartNewConversationClick}>
             {this.props.text.startNewConversationBtn}
