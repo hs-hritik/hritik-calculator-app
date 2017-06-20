@@ -12,6 +12,7 @@ define ("reducers/ui",
       text: {
         chatViewHeader: "Chat with us",
         defaultAgentMessage: "Hi. How may we help you today?",
+        createIssueUserMessage: "No, I want to talk to agent.",
         faqMessageHeader: "Do these FAQs solve your problem?",
         faqSuggestionsHelpful: "Yes, they were helpful",
         faqSuggestionsNotHelpful: "No, I want to talk to agent",

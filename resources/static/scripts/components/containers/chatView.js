@@ -41,7 +41,7 @@ define ("components/containers/chatView",
         },
         onFaqSuggestionFeedback: (feedback) => {
           if (feedback === "no") {
-            dispatch (chatViewActions.createIssue ());
+            dispatch (chatViewActions.rejectFaqSuggestions ());
           } else {
             dispatch (chatViewActions.setChatViewFooter (ACTIVE_FOOTER.NEW_CONVERSATION));
           }

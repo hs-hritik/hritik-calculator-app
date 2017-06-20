@@ -519,6 +519,28 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to reject FAQ suggestions.
+     * @returns {Object} - action
+     */
+    const rejectFaqSuggestions = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+
+        const userMsg = chatViewHelpers.createTextMessage (state.ui.text.createIssueUserMessage, {
+          isCustomerMsg: true
+        });
+
+        dispatch (entitiesActions.setEntities ({
+          messages: {
+            [userMsg.id]: userMsg
+          }
+        }));
+        dispatch (addMessages (state.appState.dummyIssueId, [userMsg.id]));
+        dispatch (createIssue ());
+      };
+    };
+
     return {
       udpateReplyText,
       submitReply,
@@ -526,11 +548,11 @@ define ("actions/chatView",
       getFaqSuggestions,
       addMessages,
       setMessages,
-      createIssue,
       rejectSolution,
       acceptSolution,
       submitCsat,
       setActiveIssue,
-      setChatViewFooter
+      setChatViewFooter,
+      rejectFaqSuggestions
     };
   });
