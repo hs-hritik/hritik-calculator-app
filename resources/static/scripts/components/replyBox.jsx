@@ -19,22 +19,28 @@ define ("components/replyBox",
          */
         value: PropTypes.string.isRequired,
         attachments: PropTypes.array,
-        loading: PropTypes.bool,
+        disabled: PropTypes.bool,
         onChangeReplyBoxValue: PropTypes.func.isRequired,
-        onSubmitReply: PropTypes.func.isRequired
+        onSubmitReply: PropTypes.func.isRequired,
+        text: PropTypes.shape ({
+          replyBtn: PropTypes.string.isRequired,
+          replyBtnPlaceholder: PropTypes.string.isRequired
+        }).isRequired
       },
 
       render () {
-        // @TODO: Use store saved values for Reply button and reply placeholder.
+        const {text, disabled} = this.props;
+
         return (
           <div>
             <textarea value={this.props.value}
                       onKeyDown={this._onReplyTextKeyDown}
                       onChange={this._onReplyTextChange}
-                      placeholder="Enter your reply"
+                      placeholder={text.replyBtnPlaceholder}
+                      disabled={disabled}
                       autoFocus />
             <button onClick={this._onReplyClick}>
-              Reply
+              {text.replyBtn}
             </button>
           </div>
         );

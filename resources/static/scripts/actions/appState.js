@@ -80,7 +80,7 @@ define ("actions/appState",
 
     /**
      * Action to start new conversation.
-     * Creates dummy issue and add default agent message to it.
+     * Creates dummy issue and adds default agent message to it.
      * The initial conversation on the web sdk would not be part of an
      * issue created on the server. So, we need to create a dummy issue
      * on frontend and add messages to it.

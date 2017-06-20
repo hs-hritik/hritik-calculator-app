@@ -13,11 +13,13 @@ define ("components/containers/replyBox",
     "use strict";
 
     const mapStateToProps = (state) => {
-      const {value, attachments, loading} = state.chatView.replyBox;
+      const {value, attachments, disabled} = state.chatView.replyBox;
+
       return {
         value,
         attachments,
-        loading
+        disabled,
+        text: state.ui.text
       };
     };
 

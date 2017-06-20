@@ -211,8 +211,34 @@ define ("actions/chatView",
         },
         onFailure: () => {
           // @TODO: Handler failure.
+        },
+        onEnd: () => {
+          if (callbacks.onEnd) {
+            callbacks.onEnd ();
+          }
         }
       });
+    };
+
+
+    /**
+     * Action to disable reply box.
+     * @returns {Object} - action
+     */
+    const disableReplyBox = () => {
+      return {
+        type: ACTION_TYPES.DISABLE_REPLY_BOX
+      };
+    };
+
+    /**
+     * Action to enable reply box.
+     * @returns {Object} - action
+     */
+    const enableReplyBox = () => {
+      return {
+        type: ACTION_TYPES.ENABLE_REPLY_BOX
+      };
     };
 
     /**
@@ -225,10 +251,10 @@ define ("actions/chatView",
         const appState = state.appState;
         const replyBox = state.chatView.replyBox;
 
-        // @TODO: Add validations.
-        if (replyBox.loading || !replyBox.value) {
+        if (replyBox.disabled || !replyBox.value) {
           return;
         }
+        dispatch (disableReplyBox ());
 
         // If there is no active issue, create user message and add it in dummy issue.
         if (!appState.activeIssueId) {
@@ -248,22 +274,26 @@ define ("actions/chatView",
 
           // Get faq suggestions for the given user message.
           // @TODO: Add handler to stop firing multiple xhrs on multiple user messages.
-          dispatch (getFaqSuggestions (replyBox.value, (faqs) => {
+          dispatch (getFaqSuggestions (replyBox.value, {
+            onSuccess: (faqs) => {
+              // If there are no faq suggestions, create new issue,
+              // otherwise create faw message.
+              if (!faqs.length) {
+                dispatch (createIssue ());
+              } else {
+                const faqMsg = chatViewHelpers.createFaqMessage (faqs);
+                dispatch (entitiesActions.setEntities ({
+                  messages: {
+                    [faqMsg.id]: faqMsg
+                  }
+                }));
 
-            // If there are no faq suggestions, create new issue,
-            // otherwise create faw message.
-            if (!faqs.length) {
-              dispatch (createIssue ());
-            } else {
-              const faqMsg = chatViewHelpers.createFaqMessage (faqs);
-              dispatch (entitiesActions.setEntities ({
-                messages: {
-                  [faqMsg.id]: faqMsg
-                }
-              }));
-
-              dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
-              dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+                dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
+                dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+              }
+            },
+            onEnd: () => {
+              dispatch (enableReplyBox ());
             }
           }));
 
@@ -284,6 +314,9 @@ define ("actions/chatView",
             dispatch (udpateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (addMessages (appState.activeIssueId, [response.id]));
+          },
+          onEnd: () => {
+            dispatch (enableReplyBox ());
           }
         });
       };
@@ -395,6 +428,8 @@ define ("actions/chatView",
           return message.isCustomerMsg;
         });
 
+        dispatch (disableReplyBox ());
+
         xhr ({
           route: routes.postIssue (appState.domain),
           data: {
@@ -427,6 +462,9 @@ define ("actions/chatView",
           },
           onFailure: () => {
             // @TODO: Handler failure.
+          },
+          onEnd: () => {
+            dispatch (enableReplyBox ());
           }
         });
       };
@@ -435,12 +473,10 @@ define ("actions/chatView",
     /**
      * Action to get FAQ suggestions based on the message text.
      * @param {String} searchText - search text to pass on to the API to get FAQs
-     * @param {Function} successCallback. The action caller should be responsible
-     *                   for handling changes other than setting suggested FAQs to
-     *                   the store.
+     * @param {Object} [callbacks] - optional callbacks
      * @returns {Object} - action
      */
-    const getFaqSuggestions = (searchText, successCallback) => {
+    const getFaqSuggestions = (searchText, callbacks = {}) => {
       return (dispatch, getState) => {
         const state = getState ();
         const appState = state.appState;
@@ -455,12 +491,17 @@ define ("actions/chatView",
             // dispatch an action to set it to the store.
             const faqs = response.suggested_faqs;
             dispatch (setFaqSuggestions (faqs));
-            if (successCallback) {
-              successCallback (faqs);
+            if (callbacks.onSuccess) {
+              callbacks.onSuccess (faqs);
             }
           },
           onFailure: () => {
             // @TODO: Handler failure.
+          },
+          onEnd: () => {
+            if (callbacks.onEnd) {
+              callbacks.onEnd ();
+            }
           }
         });
       };

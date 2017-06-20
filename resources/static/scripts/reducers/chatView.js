@@ -19,7 +19,7 @@ define ("reducers/chatView",
       replyBox: {
         value: "",
         attachments: [],
-        loading: false
+        disabled: false
       },
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
@@ -54,6 +54,20 @@ define ("reducers/chatView",
         case ACTION_TYPES.UPDATE_CSAT_RATING:
           return update (state, {
             csatRating: {$set: action.rating}
+          });
+
+        case ACTION_TYPES.DISABLE_REPLY_BOX:
+          return update (state, {
+            replyBox: {
+              disabled: {$set: true}
+            }
+          });
+
+        case ACTION_TYPES.ENABLE_REPLY_BOX:
+          return update (state, {
+            replyBox: {
+              disabled: {$set: false}
+            }
           });
 
         default:
