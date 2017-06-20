@@ -8,13 +8,20 @@ define ("components/messageList",
   [
     "components/message",
     "constants/propTypes",
+    "constants/message",
     "gunpowder/utils/date"
   ],
-  function (Message, PROP_TYPES, dateUtils) {
+  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, dateUtils) {
     "use strict";
 
     const PropTypes = React.PropTypes;
     const CONVERSATION_DATE_FORMAT = "{mmm} {dd}, {yyyy}";
+    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+
+    const MESSAGE_TYPES_TO_RENDER = [
+      MESSAGE_TYPE.TEXT,
+      MESSAGE_TYPE.FAQ
+    ];
 
     return React.createClass ({
       displayName: "MessageList",
@@ -38,6 +45,11 @@ define ("components/messageList",
        */
       _renderMessages () {
         return this.props.messages.map ((message, index) => {
+          // Avoid rendering of unnecessary message types.
+          if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
+            return null;
+          }
+
           return (
             <div key={message.id}>
               {this._renderTimestamp (index)}
