@@ -22,6 +22,7 @@
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_INITIALISED: "sdk-initialised",
+    SDK_ISSUES_LOADED: "sdk-issues-loaded",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_USER: "cmd-set-user"
   };
@@ -62,7 +63,8 @@
     "border": "none",
     "border-radius": "8px",
     "z-index": "9999999",
-    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
+    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)",
+    "display": "none"
   };
 
   // const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
@@ -202,7 +204,7 @@
 
     // Start listening for the iframe messages.
     win.addEventListener ("message", (event) => {
-      const {type} = JSON.parse (event.data);
+      const {type, data} = JSON.parse (event.data);
 
       switch (type) {
         case EVENT_TYPES.SDK_JS_LOADED:
@@ -216,6 +218,11 @@
           // SDK_INITIALISED event represents that the web sdk is initialised
           // with required config. Now parent can start calling Helpshift APIs.
           fireWebSdkReadyEvent ();
+          break;
+        case EVENT_TYPES.SDK_ISSUES_LOADED:
+          if (data.hasActiveIssue) {
+            // @TODO: Show some indication to the user.
+          }
           break;
       }
     }, false);

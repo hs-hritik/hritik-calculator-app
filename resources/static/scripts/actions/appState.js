@@ -9,6 +9,7 @@ define ("actions/appState",
     "constants/actionTypes",
     "constants/chatView",
     "constants/routes",
+    "constants/eventTypes",
     "normalizr",
     "helpers/entitySchema",
     "helpers/entity",
@@ -16,10 +17,12 @@ define ("actions/appState",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "actions/entities",
-    "actions/chatView"
+    "actions/chatView",
+    "utils/postMessage"
   ],
-  function (ACTION_TYPES, CHAT_VIEW_CONSTANTS, routes, normalizr, entitySchema, entityHelpers,
-    chatViewHelpers, xhr, objUtils, entitiesActions, chatViewActions) {
+  function (ACTION_TYPES, CHAT_VIEW_CONSTANTS, routes, EVENT_TYPES,
+    normalizr, entitySchema, entityHelpers, chatViewHelpers, xhr,
+    objUtils, entitiesActions, chatViewActions, postMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -198,6 +201,9 @@ define ("actions/appState",
             } else {
               dispatch (startNewConversation ());
             }
+            postMessage (EVENT_TYPES.SDK_ISSUES_LOADED, {
+              hasActiveIssue: !!activeIssueId
+            });
           },
           onFailure: () => {
             // @TODO: Handler failure.
