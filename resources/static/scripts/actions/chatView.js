@@ -249,16 +249,22 @@ define ("actions/chatView",
           // Get faq suggestions for the given user message.
           // @TODO: Add handler to stop firing multiple xhrs on multiple user messages.
           dispatch (getFaqSuggestions (replyBox.value, (faqs) => {
-            const faqMsg = chatViewHelpers.createFaqMessage (faqs);
 
-            dispatch (entitiesActions.setEntities ({
-              messages: {
-                [faqMsg.id]: faqMsg
-              }
-            }));
+            // If there are no faq suggestions, create new issue,
+            // otherwise create faw message.
+            if (!faqs.length) {
+              dispatch (createIssue ());
+            } else {
+              const faqMsg = chatViewHelpers.createFaqMessage (faqs);
+              dispatch (entitiesActions.setEntities ({
+                messages: {
+                  [faqMsg.id]: faqMsg
+                }
+              }));
 
-            dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+              dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
+              dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+            }
           }));
 
           dispatch (udpateReplyText (""));
@@ -446,9 +452,10 @@ define ("actions/chatView",
           onSuccess: (response) => {
             // The response would contain a list of faq objects,
             // dispatch an action to set it to the store.
-            dispatch (setFaqSuggestions (response));
+            const faqs = response.suggested_faqs;
+            dispatch (setFaqSuggestions (faqs));
             if (successCallback) {
-              successCallback (response);
+              successCallback (faqs);
             }
           },
           onFailure: () => {
