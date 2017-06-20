@@ -11,10 +11,11 @@ define ("components/containers/chatView",
     "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView",
+    "actions/appState",
     "constants/chatView"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    CHAT_VIEW_CONSTANTS) {
+    appStateActions, CHAT_VIEW_CONSTANTS) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -56,7 +57,7 @@ define ("components/containers/chatView",
           dispatch (chatViewActions.submitCsat (rating));
         },
         onStartNewConversation: () => {
-          // @TODO: Dispatch action to start new conversation.
+          dispatch (appStateActions.startNewConversation ());
         }
       };
     };

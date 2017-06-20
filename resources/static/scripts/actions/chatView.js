@@ -421,7 +421,8 @@ define ("actions/chatView",
             dispatch (setMessages (newIssueId, dummyIssueMsgIds));
             dispatch (setActiveIssue (newIssueId));
             startPollingForMessages ();
-            // @TODO: Remove dummy issue from entities.
+            // Remove messages from dummy issue.
+            dispatch (setMessages (dummyIssueId, []));
             dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           },
           onFailure: () => {

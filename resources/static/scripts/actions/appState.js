@@ -7,6 +7,7 @@
 define ("actions/appState",
   [
     "constants/actionTypes",
+    "constants/chatView",
     "constants/routes",
     "normalizr",
     "helpers/entitySchema",
@@ -17,11 +18,12 @@ define ("actions/appState",
     "actions/entities",
     "actions/chatView"
   ],
-  function (ACTION_TYPES, routes, normalizr, entitySchema, entityHelpers,
+  function (ACTION_TYPES, CHAT_VIEW_CONSTANTS, routes, normalizr, entitySchema, entityHelpers,
     chatViewHelpers, xhr, objUtils, entitiesActions, chatViewActions) {
     "use strict";
 
     const {normalize} = normalizr;
+    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     /**
      * Action to set config.
@@ -77,6 +79,40 @@ define ("actions/appState",
     };
 
     /**
+     * Action to start new conversation.
+     * Creates dummy issue and add default agent message to it.
+     * The initial conversation on the web sdk would not be part of an
+     * issue created on the server. So, we need to create a dummy issue
+     * on frontend and add messages to it.
+     * @returns {Function} - action.
+     */
+    const startNewConversation = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const defaultAgentMsgText = state.ui.text.defaultAgentMessage;
+        const agentMsg = chatViewHelpers.createTextMessage (defaultAgentMsgText, {
+          isCustomerMsg: false
+        });
+
+        // As this issue and message is created on frontend (and not on the
+        // server/backend), we can directly udpate the entities in the store.
+        // No need to normalize and process.
+        dispatch (entitiesActions.setEntities ({
+          issues: {
+            [state.appState.dummyIssueId]: {
+              messages: [agentMsg.id]
+            }
+          },
+          messages: {
+            [agentMsg.id]: agentMsg
+          }
+        }));
+        dispatch (chatViewActions.setActiveIssue (null));
+        dispatch (chatViewActions.setChatViewFooter (ACTIVE_FOOTER.REPLY));
+      };
+    };
+
+    /**
      * Action to fetch the user issues and normalize the data.
      * @param {String} id - user id.
      * @returns {Function} - async action.
@@ -108,28 +144,7 @@ define ("actions/appState",
               dispatch (chatViewActions.setActiveIssue (activeIssueId));
               chatViewActions.startPollingForMessages ();
             } else {
-              // The initial conversation on the web sdk would not be part of an
-              // issue created on the server. So, we need to create a dummy issue
-              // on frontend and add messages to it.
-
-              const defaultAgentMsgText = state.ui.text.defaultAgentMessage;
-              const agentMsg = chatViewHelpers.createTextMessage (defaultAgentMsgText, {
-                isCustomerMsg: false
-              });
-
-              // As this issue and message is created on frontend (and not on the
-              // server/backend), we can directly udpate the entities in the store.
-              // No need to normalize and process.
-              dispatch (entitiesActions.setEntities ({
-                issues: {
-                  [appState.dummyIssueId]: {
-                    messages: [agentMsg.id]
-                  }
-                },
-                messages: {
-                  [agentMsg.id]: agentMsg
-                }
-              }));
+              dispatch (startNewConversation ());
             }
           },
           onFailure: () => {
@@ -155,6 +170,7 @@ define ("actions/appState",
     return {
       setConfig,
       setUser,
-      updateActiveView
+      updateActiveView,
+      startNewConversation
     };
   });
