@@ -14,8 +14,8 @@ define ("extras/api",
   function (store, EVENT_TYPES, appStateActions, app) {
     "use strict";
 
-    const setUser = (data) => {
-      store.dispatch (appStateActions.setUser (data.id));
+    const setUser = (user) => {
+      store.dispatch (appStateActions.setUser (user));
     };
 
     const handleApis = (type, data) => {
@@ -24,7 +24,7 @@ define ("extras/api",
           app.init (data);
           break;
         case EVENT_TYPES.CMD_SET_USER:
-          setUser (data);
+          setUser (data.user);
           break;
       }
     };

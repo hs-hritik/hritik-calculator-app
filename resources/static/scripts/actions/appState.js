@@ -114,18 +114,70 @@ define ("actions/appState",
 
     /**
      * Action to fetch the user issues and normalize the data.
-     * @param {String} id - user id.
+     * @param {Object} user - user object. Contains id, name and email.
      * @returns {Function} - async action.
      */
-    const setUser = (id) => {
+    const setUser = (user) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const domain = state.appState.domain;
+
+        registerUserProfile (user, domain, {
+          onSuccess: () => {
+            dispatch (getIssues (user));
+          }
+        });
+      };
+    };
+
+    /**
+     * Fire xhr to register user profile.
+     * @param {Object} user - user object. Contains id, name and email.
+     * @param {String} domain - domain name.
+     * @param {Object} [callbacks] - optional callbacks
+     */
+    const registerUserProfile = (user, domain, callbacks = {}) => {
+      const {id, name, email} = user;
+
+      const xhrData = {
+        identifier: id
+      };
+
+      if (name) {
+        xhrData.name = name;
+      }
+      if (email) {
+        xhrData.email = email;
+      }
+
+      xhr ({
+        route: routes.postProfile (domain, id),
+        method: "POST",
+        data: xhrData,
+        onSuccess: (response) => {
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess (response);
+          }
+        },
+        onFailure: () => {
+            // @TODO: Handler failure.
+        }
+      });
+    };
+
+    /**
+     * Action to get user issues.
+     * @param {Object} user - user object. Contains id, name and email.
+     * @returns {Object} - action
+     */
+    const getIssues = (user) => {
       return (dispatch, getState) => {
         const state = getState ();
         const appState = state.appState;
-
         xhr ({
           route: routes.getMyIssues (appState.domain),
           data: {
-            "identifier": id,
+            "identifier": user.id,
             "platform-id": appState.appId
           },
           onSuccess: (response) => {
@@ -134,7 +186,7 @@ define ("actions/appState",
 
             // @TODO: Explore helpers to dispatch multiple actions once.
             // Use them if they are useful.
-            dispatch (setUserId (id));
+            dispatch (setUserId (user.id));
             dispatch (entitiesActions.setEntities (processedEntities));
 
             const activeIssueId = _getActiveIssueId (processedEntities.issues);
@@ -153,7 +205,6 @@ define ("actions/appState",
         });
       };
     };
-
 
     /**
      * Return action to update the active view

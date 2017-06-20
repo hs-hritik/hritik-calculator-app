@@ -186,11 +186,11 @@
 
   /**
    * API to set user.
-   * @param {String} id - user id.
+   * @param {Object} user - user object. Contains id, name and email.
    */
-  Helpshift.setUser = (id) => {
+  Helpshift.setUser = (user) => {
     _postMessage (EVENT_TYPES.CMD_SET_USER, {
-      id
+      user
     });
   };
 

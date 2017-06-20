@@ -21,6 +21,7 @@ define ("reducers/appState",
       dummyIssueId: "DUMMY_ISSUE",
       currentUserId: "",
       appId: "",
+      profileId: "",
       apiToken: "",
       domain: ""
     };
@@ -36,7 +37,8 @@ define ("reducers/appState",
           return update (state, {
             appId: {$set: action.config.appId},
             apiToken: {$set: action.config.apiToken},
-            domain: {$set: action.config.domain}
+            domain: {$set: action.config.domain},
+            profileId: {$set: action.config.profileId}
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
