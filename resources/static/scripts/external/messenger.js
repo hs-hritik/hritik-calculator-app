@@ -12,7 +12,7 @@
   win.Helpshift = {};
 
   // @TODO: Change it to use different url based on env
-  const WEB_SDK_URL = "http://localhost:3000";
+  const WEB_SDK_URL = "http://localhost:3000/static/html/";
 
   /**
    * The event that the parent has to listen before calling Helpshift APIs.
@@ -53,7 +53,13 @@
     "position": "fixed",
     "bottom": "100px",
     "right": "20px",
-    "border-color": "#000000"
+    "min-height": "280px",
+    "max-height": "600px",
+    "width": "360px",
+    "border": "none",
+    "border-radius": "8px",
+    "z-index": "9999999",
+    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
 
   // Reference for web sdk iframe.

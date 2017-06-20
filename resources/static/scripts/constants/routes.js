@@ -8,7 +8,7 @@ define ("constants/routes",
   function () {
     "use strict";
 
-    const BASE = "http://api.helpshift.mobi/v1/";
+    const BASE = "https://api.helpshift.com/v1/";
 
     const getMyIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
 
