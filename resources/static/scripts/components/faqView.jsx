@@ -60,11 +60,11 @@ define ("components/faqView",
 
         /* eslint-disable react/no-danger */
         return (
-          <div>
+          <div className="hs-view">
             <ViewHeader title={text.faqViewHeader}
                         showBackBtn={true}
                         onBackBtnClick={onBackBtnClick} />
-            <div>{title}</div>
+            <h3>{title}</h3>
             <div dangerouslySetInnerHTML={{__html: body}} />
             <FaqViewFooter text={text}
                            onFeedbackClick={onFaqFeedbackClick} />

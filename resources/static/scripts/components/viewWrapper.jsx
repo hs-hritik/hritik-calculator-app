@@ -23,11 +23,7 @@ define ("components/viewWrapper",
 
       render () {
         // @TODO: Add header component.
-        return (
-          <div>
-            {this._renderActiveViewComponent ()}
-          </div>
-        );
+        return this._renderActiveViewComponent ();
       },
 
       /**

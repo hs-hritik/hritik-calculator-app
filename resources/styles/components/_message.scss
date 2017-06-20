@@ -1,0 +1,66 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group conversation
+///
+
+@include component(message) {
+
+  $message-width: 88%;
+  $message-bg-color: color(bg, light);
+  $faq-container-border-color: color(border, light);
+  $faq-container-bg-color: color(bg, white);
+  $faq-border-color: color(border, light);
+  $right-bg-color: color(bg, xx-light);
+  $right-border-color: color(border, light);
+
+  .hs-message {
+    flex: 0 0 auto;
+    width: $message-width;
+    padding: gutter(8 12);
+    margin-bottom: gutter(16);
+    line-height: 1.5;
+    background-color: $message-bg-color;
+    border-radius: radius(4 4 4 0);
+
+    &--faq-container {
+      padding: gutter(8);
+      background-color: $faq-container-bg-color;
+      border: 1px solid $faq-container-border-color;
+    }
+
+    &--faq {
+      padding: gutter(8 0);
+      overflow: hidden;
+      cursor: pointer;
+      border-bottom: 1px solid $faq-border-color;
+
+      &:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      &:first-child {
+        padding-top: 0;
+      }
+
+      &::after {
+        float: right;
+        content: "\2192"; /// right arrow
+      }
+    }
+
+    &--right {
+      margin-left: auto;
+      background-color: $right-bg-color;
+      border: 1px solid $right-border-color;
+      border-radius: radius(4 4 0 4);
+    }
+  }
+}

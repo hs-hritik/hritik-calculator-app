@@ -5,8 +5,11 @@
  */
 
 define ("components/replyBox",
-  ["constants/keyCodes"],
-  function (KEY_CODES) {
+  [
+    "constants/keyCodes",
+    "gunpowder/utils/classes"
+  ],
+  function (KEY_CODES, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -30,16 +33,24 @@ define ("components/replyBox",
 
       render () {
         const {text, disabled} = this.props;
+        // @TODO: Use store saved values for Reply button and reply placeholder.
+        const btnClasses = classes ("hs-button",
+                                    "hs-button--hollow",
+                                    "hs-button--no-border",
+                                    "hs-button--xx-small",
+                                    "hs-reply-box__submit-btn");
 
         return (
-          <div>
+          <div className="hs-reply-box">
             <textarea value={this.props.value}
+                      className="hs-reply-box__textarea"
                       onKeyDown={this._onReplyTextKeyDown}
                       onChange={this._onReplyTextChange}
                       placeholder={text.replyBtnPlaceholder}
                       disabled={disabled}
                       autoFocus />
-            <button onClick={this._onReplyClick}>
+            <button onClick={this._onReplyClick}
+                    className={btnClasses}>
               {text.replyBtn}
             </button>
           </div>

@@ -41,7 +41,7 @@ define ("components/chatView",
 
       render () {
         return (
-          <div>
+          <div className="hs-footer">
             {this._renderFooterComponent ()}
           </div>
         );
@@ -120,10 +120,12 @@ define ("components/chatView",
 
         return (
           <div>
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "yes")}>
+            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "yes")}
+                    className="hs-button hs-button--hollow hs-button--x-small">
               {faqSuggestionsHelpful}
             </button>
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "no")}>
+            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "no")}
+                    className="hs-button hs-button--hollow hs-button--x-small">
               {faqSuggestionsNotHelpful}
             </button>
           </div>
@@ -200,10 +202,12 @@ define ("components/chatView",
 
       render () {
         return (
-          <div>
+          <div className="hs-view">
             <ViewHeader title={this.props.text.chatViewHeader} />
-            <MessageList messages={this.props.messages}
-                         onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+            <div className="hs-view__content">
+              <MessageList messages={this.props.messages}
+                           onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+            </div>
             <ChatViewFooter activeFooter={this.props.activeFooter}
                             onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
                             onIssueFeedback={this.props.onIssueFeedback}

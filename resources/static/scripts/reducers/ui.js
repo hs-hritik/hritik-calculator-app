@@ -26,8 +26,8 @@ define ("reducers/ui",
         rejectSolutionMessage: "Rejected the solution",
         csatReviewResponse: "Thanks for the feedback.",
         startNewConversationBtn: "Start a new conversation",
-        replyBtn: "Reply",
-        replyBtnPlaceholder: "Enter your reply"
+        replyBtn: "Send",
+        replyBtnPlaceholder: "Send a message..."
       }
     };
 

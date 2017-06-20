@@ -129,20 +129,20 @@ $_colors: (
     nav-active: palette(red, dark),
   ),
   primary: (
-    x-dark: palette(blue, x-dark),
-    dark: palette(blue, dark),
-    base: palette(blue),
-    light: palette(blue, light),
-    x-light: palette(blue, x-light),
-    xx-light: palette(blue, xx-light),
-  ),
-  secondary: (
     x-dark: palette(red, x-dark),
     dark: palette(red, dark),
     base: palette(red),
     light: palette(red, light),
     x-light: palette(red, x-light),
     xx-light: palette(red, xx-light),
+  ),
+  secondary: (
+    x-dark: palette(blue, x-dark),
+    dark: palette(blue, dark),
+    base: palette(blue),
+    light: palette(blue, light),
+    x-light: palette(blue, x-light),
+    xx-light: palette(blue, xx-light),
   ),
   success: (
     bg: palette(green, xx-light),
@@ -283,7 +283,7 @@ $_font-family-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxy
 
 /// Default font stack for all elements.
 /// @type String | List
-$_font-family: "myriad-pro", #{$_font-family-system};
+$_font-family: #{$_font-family-system};
 
 /// Font stack used for elements that use monospaced type, such as code samples
 /// @type String | List
@@ -307,6 +307,11 @@ $_body-antialiased: true;
 
 @mixin hs-global-styles() {
   @include _hs-normalize;
+
+  html,
+  body {
+    height: 100%;
+  }
 
   html {
     font-size: font-size(body);

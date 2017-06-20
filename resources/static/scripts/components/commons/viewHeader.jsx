@@ -21,7 +21,7 @@ define ("components/commons/viewHeader",
 
       render () {
         return (
-          <div>
+          <div className="hs-header">
             {this._renderBackButton ()}
             <span>{this.props.title}</span>
           </div>

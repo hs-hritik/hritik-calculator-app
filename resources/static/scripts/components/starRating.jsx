@@ -55,11 +55,9 @@ define ("components/starRating",
         };
 
         return (
-          <span style={starStyles}
-                key={idx}
-                onClick={this._onStarClick.bind (this, idx)}>
-                &#9733;
-          </span>
+          <i className="ion-star" style={starStyles}
+             key={idx}
+             onClick={this._onStarClick.bind (this, idx)} />
         );
       },
 

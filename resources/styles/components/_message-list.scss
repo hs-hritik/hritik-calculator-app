@@ -1,0 +1,29 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group conversation
+///
+
+@include component(message-list) {
+
+  $timestamp-color: color(text, light);
+
+  .hs-message-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+
+    &__timestamp {
+      margin: gutter(4 0);
+      color: $timestamp-color;
+      text-align: center;
+    }
+  }
+}

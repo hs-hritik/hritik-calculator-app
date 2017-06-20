@@ -19,3 +19,14 @@
 @include hs-global-styles;
 @include hs-typography-resets;
 @include hs-typography-styles;
+
+// Generic Components
+@import "components/button";
+
+@import "components/page";
+@import "components/view";
+@import "components/header";
+@import "components/message-list";
+@import "components/message";
+@import "components/footer";
+@import "components/reply-box";

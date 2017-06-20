@@ -35,7 +35,8 @@
     "width": "60px",
     "height": "60px",
     "border-radius": "50%",
-    "border-color": "#000000"
+    "border": "none",
+    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
 
   const LAUNCHER_BUTTON_WRAPPER_STYLES = {
@@ -44,23 +45,57 @@
     "left": 0,
     "width": "60px",
     "height": "60px",
-    "background": "#1e90ff",
+    "background": "#f66",
     "border-radius": "50%",
-    "cursor": "pointer"
+    "cursor": "pointer",
+    "box-sizing": "border-box",
+    "padding": "12px 10px 8px"
   };
 
   const MESSENGER_IFRAME_STYLES = {
     "position": "fixed",
     "bottom": "100px",
     "right": "20px",
-    "min-height": "280px",
-    "max-height": "600px",
-    "width": "360px",
+    "min-height": "520px",
+    "max-height": "640px",
+    "width": "340px",
     "border": "none",
     "border-radius": "8px",
     "z-index": "9999999",
     "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
+
+  // const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+  //                       viewBox="0 0 560 560">
+  //                       <polygon fill="#FFFFFF" fill-rule="evenodd"
+  //                         points="470 127.997 432.003 90 280 242.003 127.997 90 90
+  //                                 127.997 242.003 280 90 432.003 127.997 470 280 317.997
+  //                                 432.003 470 470 432.003 317.997 280"/>
+  //                     </svg>`;
+
+  const MESSAGES_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+                          viewBox="0 0 560 560">
+                          <g fill="#FFFFFF" fill-rule="evenodd" transform="translate(60 77)">
+                            <path d="M363.373365,0 L10.16125,0 C5.42701923,0 0,3.96105769
+                                    0,8.62971154 L0,235.205385 C0,239.872981 5.42701923,244.326923
+                                    10.16125,244.326923 L70.8653846,244.326923
+                                    L70.8653846,338.349423 L166.193077,244.326923
+                                    L363.373365,244.326923 C368.108654,244.326923
+                                    371.25,239.872981 371.25,235.205385
+                                    L371.25,8.62971154 C371.25,3.96105769 368.107596,
+                                    0 363.373365,0 L363.373365,0 Z"/>
+                            <path d="M431.957308,66.6346154 L397.692308,66.6346154
+                                    L397.692308,242.814423 C397.692308,259.72375
+                                    390.378365,270.769231 371.089231,270.769231
+                                    L179.909231,270.769231 L138.759712,312.019231
+                                    L275.929712,312.019231 L371.25,406.153846
+                                    L371.25,312.019231 L431.957308,312.019231
+                                    C436.693654,312.019231 440,307.511346
+                                    440,302.836346 L440,76.2627885 C440,71.5941346
+                                    436.693654,66.6346154 431.957308,66.6346154
+                                    L431.957308,66.6346154 Z"/>
+                          </g>
+                        </svg>`;
 
   // Reference for web sdk iframe.
   let webSdkIframe;
@@ -108,6 +143,8 @@
    */
   const createLauncherButton = () => {
     const launcherBtn = doc.createElement ("a");
+    // launcherBtn.innerHTML = "&#128172;";
+    launcherBtn.innerHTML = MESSAGES_ICON;
     setStyle (launcherBtn, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherBtn;
   };

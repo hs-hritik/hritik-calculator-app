@@ -34,7 +34,7 @@ define ("components/messageList",
 
       render () {
         return (
-          <div>
+          <div className="hs-message-list">
             {this._renderMessages ()}
           </div>
         );

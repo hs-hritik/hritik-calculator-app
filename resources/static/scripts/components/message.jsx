@@ -8,9 +8,10 @@ define ("components/message",
   [
     "constants/propTypes",
     "constants/message",
-    "gunpowder/utils/date"
+    "gunpowder/utils/date",
+    "gunpowder/utils/classes"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils) {
+  function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils, classes) {
     "use strict";
 
     const MESSAGE_TIMESTAP_FORMAT = "{hh}:{MM} {a}";
@@ -21,9 +22,15 @@ define ("components/message",
       propTypes: PROP_TYPES.MESSAGE,
 
       render () {
-        // @TODO: Add CSS to differentiate user and agent messages.
+        const {isCustomerMsg} = this.props;
+        const msgClasses = classes (
+          "hs-message", {
+            "hs-message--right": isCustomerMsg
+          }
+        );
+
         return (
-          <div>
+          <div className={msgClasses}>
             {this._renderMessage ()}
           </div>
         );
@@ -66,10 +73,10 @@ define ("components/message",
 
         return suggestedFaqs.map ((faq) => {
           return (
-              <div key={faq.id}
-                   onClick={onSuggestedFaqClick.bind (this, faq.id)}>
-                {faq.title}
-              </div>
+            <div key={faq.id}
+                 onClick={onSuggestedFaqClick.bind (this, faq.id)}>
+              {faq.title}
+            </div>
           );
         });
       },
