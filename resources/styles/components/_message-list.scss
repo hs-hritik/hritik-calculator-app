@@ -20,7 +20,7 @@
     flex-direction: column;
     overflow-y: auto;
 
-    &__timestamp {
+    &__date-separator {
       margin: gutter(4 0);
       color: $timestamp-color;
       text-align: center;

@@ -14,8 +14,8 @@
 
   $message-width: 88%;
   $message-bg-color: color(bg, light);
-  $faq-container-border-color: color(border, light);
-  $faq-container-bg-color: color(bg, white);
+  $suggested-faqs-border-color: color(border, light);
+  $suggested-faqs-bg-color: color(bg, white);
   $faq-border-color: color(border, light);
   $right-bg-color: color(bg, xx-light);
   $right-border-color: color(border, light);
@@ -29,17 +29,17 @@
     background-color: $message-bg-color;
     border-radius: radius(4 4 4 0);
 
-    &--faq-container {
+    &--suggested-faqs {
       padding: gutter(8);
-      background-color: $faq-container-bg-color;
-      border: 1px solid $faq-container-border-color;
+      background-color: $suggested-faqs-bg-color;
+      border: 1px solid $suggested-faqs-border-color;
     }
 
     &--faq {
       padding: gutter(8 0);
       overflow: hidden;
       cursor: pointer;
-      border-bottom: 1px solid $faq-border-color;
+      border-bottom: 1px solid $suggested-faqs-border-color;
 
       &:last-child {
         padding-bottom: 0;

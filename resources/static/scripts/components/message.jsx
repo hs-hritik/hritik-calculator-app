@@ -69,11 +69,23 @@ define ("components/message",
        * Render FAQ suggestions message.
        */
       _renderFaqMessage () {
+        return (
+          <div className="hs-message--suggested-faqs">
+            {this._renderFaqs ()}
+          </div>
+        );
+      },
+
+      /**
+       * Render an faq, which is a part of the faq message.
+       */
+      _renderFaqs () {
         const {suggestedFaqs, onSuggestedFaqClick} = this.props;
 
         return suggestedFaqs.map ((faq) => {
           return (
             <div key={faq.id}
+                 className="hs-suggested-faq"
                  onClick={onSuggestedFaqClick.bind (this, faq.id)}>
               {faq.title}
             </div>
@@ -88,7 +100,7 @@ define ("components/message",
         const timeStr = dateUtils.format (this.props.createdTs, MESSAGE_TIMESTAP_FORMAT);
 
         return (
-          <span>{timeStr}</span>
+          <small>{timeStr}</small>
         );
       }
     });

@@ -52,7 +52,7 @@ define ("components/messageList",
 
           return (
             <div key={message.id}>
-              {this._renderTimestamp (index)}
+              {this._renderDateSaparator (index)}
               <Message {...message}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
@@ -64,7 +64,7 @@ define ("components/messageList",
        * Render timestamp if the next message is on different
        * day than the previous message.
        */
-      _renderTimestamp (msgIndex) {
+      _renderDateSaparator (msgIndex) {
         const messages = this.props.messages,
               prevMsg = messages [msgIndex - 1],
               nextMsg = messages [msgIndex];
@@ -77,7 +77,7 @@ define ("components/messageList",
         const dateStr = dateUtils.format (nextMsg.createdTs, CONVERSATION_DATE_FORMAT);
 
         return (
-          <span>{dateStr}</span>
+          <div className="hs-message-list__date-separator">{dateStr}</div>
         );
       }
     });

@@ -12,10 +12,18 @@
 
 @include component(message-container) {
 
+  $timestamp-color: color(text, light);
+
   .hs-message-container {
     display: flex;
     flex: 1;
     flex-direction: column;
     overflow-y: auto;
+
+    &__timestamp {
+      margin: gutter(4 0);
+      color: $timestamp-color;
+      text-align: center;
+    }
   }
 }
