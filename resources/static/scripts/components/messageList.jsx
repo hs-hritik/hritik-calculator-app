@@ -35,7 +35,8 @@ define ("components/messageList",
 
       render () {
         return (
-          <div className="hs-message-list">
+          <div className="hs-message-list"
+               ref={this._refCallback}>
             {this._renderMessages ()}
           </div>
         );
@@ -81,6 +82,42 @@ define ("components/messageList",
         return (
           <div className="hs-message-list__date-separator">{dateStr}</div>
         );
+      },
+
+      _messageListRef: null,
+
+      /**
+       * Ref callback handler.
+       */
+      _refCallback (ref) {
+        this._messageListRef = ref;
+      },
+
+      /**
+       * Scroll message list to the given position.
+       * @param {Number} position - scrollTop position.
+       */
+      _scrollTo (position) {
+        const node = ReactDOM.findDOMNode (this._messageListRef);
+        node.scrollTop = position;
+      },
+
+      /**
+       * Scroll to bottom if messages length is increased.
+       */
+      componentDidUpdate (prevProps) {
+        if (this.props.messages.length > prevProps.messages.length) {
+          const node = ReactDOM.findDOMNode (this._messageListRef);
+          this._scrollTo (node.scrollHeight);
+        }
+      },
+
+      /**
+       * Scroll the bottom when the component is mounted.
+       */
+      componentDidMount () {
+        const node = ReactDOM.findDOMNode (this._messageListRef);
+        this._scrollTo (node.scrollHeight);
       }
     });
   }
