@@ -34,6 +34,7 @@ define ("components/chatView",
           faqSuggestionsNotHelpful: PropTypes.string.isRequired,
           problemSolved: PropTypes.string.isRequired,
           problemNotSolved: PropTypes.string.isRequired,
+          csatReviewRequest: PropTypes.string.isRequired,
           csatReviewResponse: PropTypes.string.isRequired,
           startNewConversationBtn: PropTypes.string.isRequired
         }).isRequired
@@ -88,16 +89,21 @@ define ("components/chatView",
        * Render CSAT Rating component if the user hasn't already given any rating.
        */
       _renderCSATRating () {
+        const {text} = this.props;
+
         if (this.props.csatRating) {
           return (
-            <span>{this.props.text.csatReviewResponse}</span>
+            <span>{text.csatReviewResponse}</span>
           );
         }
 
         return (
-          <StarRating name="csat"
-                      value={this.props.csatRating}
-                      onStarClick={this._onStarClick} />
+          <div>
+            <span>{text.csatReviewRequest}</span>
+            <StarRating name="csat"
+                        value={this.props.csatRating}
+                        onStarClick={this._onStarClick} />
+          </div>
         );
       },
 
