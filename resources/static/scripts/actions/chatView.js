@@ -114,6 +114,7 @@ define ("actions/chatView",
      */
     const fetchMessages = () => {
       const state = store.getState ();
+      const dispatch = store.dispatch;
       const appState = state.appState;
 
       const xhrData = {
@@ -135,19 +136,29 @@ define ("actions/chatView",
             const processedEntities = entityHelpers.getProcessedEntities (
               normalizedData.entities
             );
-            store.dispatch (entitiesActions.setEntities (processedEntities));
-            store.dispatch (addMessages (
+            dispatch (entitiesActions.setEntities (processedEntities));
+            dispatch (addMessages (
               appState.activeIssueId,
               normalizedData.result.messages
             ));
-            store.dispatch (setActiveIssueMsgCursor (response.messages_cursor));
+            dispatch (setActiveIssueMsgCursor (response.messages_cursor));
           }
 
           // If issue is resolved or rejected, stop polling and ask user for feedback.
           const issueState = response.issue_state_data.state;
           if (issueState === "resolved" || issueState === "rejected") {
             pollingEnabled = false;
-            store.dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
+            const {problemSolvedAgentMessage} = state.ui.text;
+            const agentMsg = chatViewHelpers.createTextMessage (problemSolvedAgentMessage, {
+              isCustomerMsg: false
+            });
+            dispatch (entitiesActions.setEntities ({
+              messages: {
+                [agentMsg.id]: agentMsg
+              }
+            }));
+            dispatch (addMessages (appState.activeIssueId, [agentMsg.id]));
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
           }
         },
         onFailure: () => {
