@@ -27,7 +27,7 @@ define ("reducers/ui",
         acceptSolutionMessage: "Accepted the solution",
         rejectSolutionMessage: "Rejected the solution",
         csatReviewRequest: "What's your feedback about our customer support?",
-        csatReviewResponse: "Thanks for the feedback.",
+        csatReviewResponse: "Thanks for your feedback!",
         startNewConversationBtn: "Start a new conversation",
         replyBtn: "Send",
         replyBtnPlaceholder: "Send a message..."

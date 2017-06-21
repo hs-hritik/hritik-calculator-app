@@ -9,11 +9,12 @@ define ("components/chatView",
     "components/messageList",
     "constants/propTypes",
     "constants/chatView",
+    "gunpowder/utils/classes",
     "components/containers/replyBox",
     "components/commons/viewHeader",
     "components/starRating"
   ],
-  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, ReplyBoxContainer,
+  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, classes, ReplyBoxContainer,
     ViewHeader, StarRating) {
     "use strict";
 
@@ -89,11 +90,13 @@ define ("components/chatView",
        * Render CSAT Rating component if the user hasn't already given any rating.
        */
       _renderCSATRating () {
-        const {text} = this.props;
+        const {text, csatRating} = this.props;
 
-        if (this.props.csatRating) {
+        if (csatRating) {
           return (
-            <span>{text.csatReviewResponse}</span>
+            <div className="hs-csat">
+              <span>{text.csatReviewResponse}</span>
+            </div>
           );
         }
 
@@ -101,7 +104,7 @@ define ("components/chatView",
           <div>
             <span>{text.csatReviewRequest}</span>
             <StarRating name="csat"
-                        value={this.props.csatRating}
+                        value={csatRating}
                         onStarClick={this._onStarClick} />
           </div>
         );
@@ -111,10 +114,19 @@ define ("components/chatView",
        * Render "Start new conversation" button.
        */
       _renderNewConversationBtn () {
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-button--small"
+        );
+
         return (
-          <button onClick={this._onStartNewConversationClick}>
-            {this.props.text.startNewConversationBtn}
-          </button>
+          <div className="hs-start-conv">
+            <button onClick={this._onStartNewConversationClick}
+                    className={btnClasses}>
+              {this.props.text.startNewConversationBtn}
+            </button>
+          </div>
         );
       },
 
@@ -123,15 +135,21 @@ define ("components/chatView",
        */
       _renderFaqSuggestionsFeedback () {
         const {faqSuggestionsHelpful, faqSuggestionsNotHelpful} = this.props.text;
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-button--x-small",
+          "hs-faq-suggestions-feedback__btn"
+        );
 
         return (
-          <div>
+          <div className="hs-faq-suggestions-feedback">
             <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "yes")}
-                    className="hs-button hs-button--hollow hs-button--x-small">
+                    className={btnClasses}>
               {faqSuggestionsHelpful}
             </button>
             <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "no")}
-                    className="hs-button hs-button--hollow hs-button--x-small">
+                    className={btnClasses}>
               {faqSuggestionsNotHelpful}
             </button>
           </div>
@@ -143,13 +161,21 @@ define ("components/chatView",
        */
       _renderIssueFeedback () {
         const {problemSolved, problemNotSolved} = this.props.text;
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-button--x-small",
+          "hs-issue-feedback__btn"
+        );
 
         return (
-          <div>
-            <button onClick={this._onIssueFeedbackClick.bind (this, "yes")}>
+          <div className="hs-issue-feedback">
+            <button onClick={this._onIssueFeedbackClick.bind (this, "yes")}
+                    className={btnClasses}>
               {problemSolved}
             </button>
-            <button onClick={this._onIssueFeedbackClick.bind (this, "no")}>
+            <button onClick={this._onIssueFeedbackClick.bind (this, "no")}
+                    className={btnClasses}>
               {problemNotSolved}
             </button>
           </div>

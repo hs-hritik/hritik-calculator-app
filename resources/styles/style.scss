@@ -10,6 +10,7 @@
 
 @import "global";
 @import "typography";
+@import "icons";
 @import "forms";
 
 @import "animations/animations";
@@ -30,4 +31,8 @@
 @import "components/message";
 @import "components/suggested-faq";
 @import "components/footer";
+@import "components/faq-suggestions-feedback";
+@import "components/start-conv";
+@import "components/issue-feedback";
+@import "components/csat";
 @import "components/reply-box";

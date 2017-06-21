@@ -10,14 +10,16 @@
 /// @group footer
 ///
 
-@include component(footer) {
+@include component(issue-feedback) {
 
-  $bg-color: color(bg, white);
-  $border-color: color(border, light);
+  .hs-issue-feedback {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: gutter(16 12);
 
-  .hs-footer {
-    flex: 0 0 auto;
-    background-color: $bg-color;
-    border-top: 1px solid $border-color;
+    &__btn {
+      margin: gutter(0 4);
+    }
   }
 }

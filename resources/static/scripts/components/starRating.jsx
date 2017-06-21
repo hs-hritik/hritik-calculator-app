@@ -28,7 +28,8 @@ define ("components/starRating",
 
       render () {
         return (
-          <div>
+          <div className="hs-csat">
+            <h5>What's your feedback about our customer support?</h5>
             {this._renderStars ()}
           </div>
         );
@@ -54,10 +55,21 @@ define ("components/starRating",
           color: value >= idx ? "#ffb400" : "#333"
         };
 
+        // TODO We have to use icons here, but there seems to be an issue
+        // with how it's used. Using unicode chars for now.
+        // return (
+        //   <i className="ion-star" style={starStyles}
+        //      key={idx}
+        //      onClick={this._onStarClick.bind (this, idx)} />
+        // );
+
         return (
-          <i className="ion-star" style={starStyles}
-             key={idx}
-             onClick={this._onStarClick.bind (this, idx)} />
+          <span style={starStyles}
+                key={idx}
+                onClick={this._onStarClick.bind (this, idx)}
+                className="hs-csat__star">
+                &#9733;
+          </span>
         );
       },
 

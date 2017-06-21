@@ -10,14 +10,10 @@
 /// @group footer
 ///
 
-@include component(footer) {
+@include component(start-conv) {
 
-  $bg-color: color(bg, white);
-  $border-color: color(border, light);
-
-  .hs-footer {
-    flex: 0 0 auto;
-    background-color: $bg-color;
-    border-top: 1px solid $border-color;
+  .hs-start-conv {
+    padding: gutter(16);
+    text-align: center;
   }
 }

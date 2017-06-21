@@ -7,23 +7,20 @@
 // - - - - - - - - - - - - - - -
 
 ///
-/// @group conversation
+/// @group footer
 ///
 
-@include component(message-container) {
+@include component(faq-suggestions-feedback) {
 
-  $timestamp-color: color(text, light);
-
-  .hs-message-container {
+  .hs-faq-suggestions-feedback {
     display: flex;
-    flex: 1;
+    align-items: flex-end;
     flex-direction: column;
-    overflow-y: auto;
+    justify-content: flex-end;
+    padding: gutter(16 12);
 
-    &__timestamp {
+    &__btn {
       margin: gutter(4 0);
-      color: $timestamp-color;
-      text-align: center;
     }
   }
 }
