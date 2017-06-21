@@ -227,6 +227,29 @@
           break;
       }
     }, false);
+
+    // Start - Prevent parent page to scroll from within the iframe
+    // See https://stackoverflow.com/a/32283373/1093247
+    const scrollOptions = {
+      insideIframe: false
+    };
+
+    webSdkIframe.addEventListener ("mouseenter", function () {
+      scrollOptions.insideIframe = true;
+      scrollOptions.scrollX = win.scrollX;
+      scrollOptions.scrollY = win.scrollY;
+    });
+
+    webSdkIframe.addEventListener ("mouseleave", function () {
+      scrollOptions.insideIframe = false;
+    });
+
+    win.document.addEventListener ("scroll", function () {
+      if (scrollOptions.insideIframe) {
+        win.scrollTo (scrollOptions.scrollX, scrollOptions.scrollY);
+      }
+    });
+    // End - Prevent parent page to scroll from within the iframe
   };
 
   /**
