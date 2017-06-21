@@ -7,9 +7,10 @@
 
 define ("components/faqView",
   [
+    "gunpowder/utils/classes",
     "components/commons/viewHeader"
   ],
-  function (ViewHeader) {
+  function (classes, ViewHeader) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -28,16 +29,25 @@ define ("components/faqView",
 
       render () {
         const {text, onFeedbackClick} = this.props;
+        const btnClasses = classes ("hs-button",
+                                    "hs-button--hollow",
+                                    "hs-button--no-border",
+                                    "hs-button--xx-small");
+
         return (
-          <div>
-            <div>{text.faqFooter}</div>
-            <div>
-              <button onClick={onFeedbackClick.bind (this, "yes")}>
-                {text.faqFooterHelpfulBtn}
-              </button>
-              <button onClick={onFeedbackClick.bind (this, "no")}>
-                {text.faqFooterNotHelpfulBtn}
-              </button>
+          <div className="hs-footer">
+            <div className="hs-faq-footer">
+              <div>{text.faqFooter}</div>
+              <div>
+                <button className={btnClasses}
+                        onClick={onFeedbackClick.bind (this, "yes")}>
+                  {text.faqFooterHelpfulBtn}
+                </button>
+                <button className={btnClasses}
+                        onClick={onFeedbackClick.bind (this, "no")}>
+                  {text.faqFooterNotHelpfulBtn}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -66,8 +76,10 @@ define ("components/faqView",
             <ViewHeader title={text.faqViewHeader}
                         showBackBtn={true}
                         onBackBtnClick={onBackBtnClick} />
-            <h3>{title}</h3>
-            <div dangerouslySetInnerHTML={{__html: body}} />
+            <div className="hs-view__content">
+              <h3>{title}</h3>
+              <div dangerouslySetInnerHTML={{__html: body}} />
+            </div>
           </div>
         );
         /* eslint-enable react/no-danger */

@@ -14,6 +14,7 @@
   $padding: gutter(12);
   $bg-color: palette(red, base);
   $color: color(text, white);
+  $link-color: color(text, white);
 
   .hs-header {
     flex: 0 0 auto;
@@ -21,5 +22,10 @@
     font-weight: font-weight(bold);
     color: $color;
     background-color: $bg-color;
+
+    &__link {
+      padding: gutter(0 8 0 0);
+      color: $link-color;
+    }
   }
 }

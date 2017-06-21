@@ -38,9 +38,7 @@ define ("components/commons/viewHeader",
 
         // @TODO: Replace ← with icon.
         return (
-          <button onClick={this.props.onBackBtnClick}>
-            ←
-          </button>
+          <a className="hs-header__link" onClick={this.props.onBackBtnClick}>←</a>
         );
       }
     });
