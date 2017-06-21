@@ -206,6 +206,7 @@ define ("components/chatView",
             <ViewHeader title={this.props.text.chatViewHeader} />
             <div className="hs-view__content">
               <MessageList messages={this.props.messages}
+                           text={this.props.text}
                            onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
             <ChatViewFooter activeFooter={this.props.activeFooter}

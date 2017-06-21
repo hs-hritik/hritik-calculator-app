@@ -25,8 +25,7 @@ define ("constants/propTypes",
           id: PropTypes.string.isRequired,
           title: PropTypes.string.isRequired
         })
-      ),
-      onSuggestedFaqClick: PropTypes.func
+      )
     };
 
     return {

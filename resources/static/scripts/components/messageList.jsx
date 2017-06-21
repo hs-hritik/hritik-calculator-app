@@ -29,7 +29,8 @@ define ("components/messageList",
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
         )).isRequired,
-        onSuggestedFaqClick: PropTypes.func
+        onSuggestedFaqClick: PropTypes.func,
+        text: PropTypes.object.isRequired
       },
 
       render () {
@@ -52,8 +53,9 @@ define ("components/messageList",
 
           return (
             <div key={message.id}>
-              {this._renderDateSaparator (index)}
-              <Message {...message}
+              {this._renderDateSeparator (index)}
+              <Message message={message}
+                       text={this.props.text}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
           );
@@ -61,10 +63,10 @@ define ("components/messageList",
       },
 
       /**
-       * Render timestamp if the next message is on different
+       * Render date if the next message is on different
        * day than the previous message.
        */
-      _renderDateSaparator (msgIndex) {
+      _renderDateSeparator (msgIndex) {
         const messages = this.props.messages,
               prevMsg = messages [msgIndex - 1],
               nextMsg = messages [msgIndex];

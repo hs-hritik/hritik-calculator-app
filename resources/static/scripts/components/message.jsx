@@ -16,13 +16,20 @@ define ("components/message",
 
     const MESSAGE_TIMESTAP_FORMAT = "{hh}:{MM} {a}";
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+    const PropTypes = React.PropTypes;
 
     return React.createClass ({
       displayName: "Message",
-      propTypes: PROP_TYPES.MESSAGE,
+      propTypes: {
+        message: PropTypes.shape (PROP_TYPES.MESSAGE).isRequired,
+        onSuggestedFaqClick: PropTypes.func,
+        text: PropTypes.shape ({
+          faqSuggestionsMsgTitle: PropTypes.string.isRequired
+        }).isRequired
+      },
 
       render () {
-        const {isCustomerMsg} = this.props;
+        const {isCustomerMsg} = this.props.message;
         const msgClasses = classes (
           "hs-message", {
             "hs-message--right": isCustomerMsg
@@ -40,7 +47,7 @@ define ("components/message",
        * Render the message according to its type.
        */
       _renderMessage () {
-        const {type, suggestedFaqs = []} = this.props;
+        const {type, suggestedFaqs = []} = this.props.message;
 
         if (type === MESSAGE_TYPE.TEXT) {
           return this._renderTextMessage ();
@@ -58,7 +65,7 @@ define ("components/message",
         /* eslint-disable react/no-danger */
         return (
           <div>
-            <div dangerouslySetInnerHTML={{__html: this.props.body}} />
+            <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
             {this._renderCreatedTimestamp ()}
           </div>
         );
@@ -80,13 +87,13 @@ define ("components/message",
        * Render an faq, which is a part of the faq message.
        */
       _renderFaqs () {
-        const {suggestedFaqs, onSuggestedFaqClick} = this.props;
+        const {suggestedFaqs} = this.props.message;
 
         return suggestedFaqs.map ((faq) => {
           return (
             <div key={faq.id}
                  className="hs-suggested-faq"
-                 onClick={onSuggestedFaqClick.bind (this, faq.id)}>
+                 onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
               {faq.title}
             </div>
           );
@@ -97,7 +104,7 @@ define ("components/message",
        * Render message's created at timestamp.
        */
       _renderCreatedTimestamp () {
-        const timeStr = dateUtils.format (this.props.createdTs, MESSAGE_TIMESTAP_FORMAT);
+        const timeStr = dateUtils.format (this.props.message.createdTs, MESSAGE_TIMESTAP_FORMAT);
 
         return (
           <small>{timeStr}</small>
