@@ -17,11 +17,12 @@ define ("actions/chatView",
     "actions/entities",
     "helpers/entitySchema",
     "helpers/entity",
-    "helpers/chatView"
+    "helpers/chatView",
+    "helpers/xhr"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     MESSAGE_CONSTANTS, xhr, arrayUtils, entitiesActions, entitySchema,
-    entityHelpers, chatViewHelpers) {
+    entityHelpers, chatViewHelpers, xhrHelpers) {
     "use strict";
 
     const {normalize, denormalize} = normalizr;
@@ -127,7 +128,7 @@ define ("actions/chatView",
       fetchMessagesXhr = xhr ({
         route: routes.getMessages (appState.domain, appState.activeIssueId),
         data: xhrData,
-        method: "GET",
+        headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           if (response.messages.length) {
             const normalizedData = normalize (response, entitySchema.messages);
@@ -201,6 +202,7 @@ define ("actions/chatView",
           "message-type": config.msgType
         },
         method: "POST",
+        headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           const normalizedData = normalize (response, entitySchema.message);
           const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
@@ -408,6 +410,7 @@ define ("actions/chatView",
             "platform-id": appState.appId,
             "rating": rating
           },
+          headers: xhrHelpers.getCommonHeaders (),
           method: "POST"
         });
       };
@@ -437,6 +440,7 @@ define ("actions/chatView",
             "platform-id": appState.appId,
             "message-body": firstUserMsg.body
           },
+          headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.issue);
@@ -486,6 +490,7 @@ define ("actions/chatView",
           data: {
             text: searchText
           },
+          headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
             // The response would contain a list of faq objects,
             // dispatch an action to set it to the store.

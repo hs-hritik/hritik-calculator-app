@@ -14,6 +14,7 @@ define ("actions/appState",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/chatView",
+    "helpers/xhr",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "actions/entities",
@@ -21,7 +22,7 @@ define ("actions/appState",
     "utils/postMessage"
   ],
   function (ACTION_TYPES, CHAT_VIEW_CONSTANTS, routes, EVENT_TYPES,
-    normalizr, entitySchema, entityHelpers, chatViewHelpers, xhr,
+    normalizr, entitySchema, entityHelpers, chatViewHelpers, xhrHelpers, xhr,
     objUtils, entitiesActions, chatViewActions, postMessage) {
     "use strict";
 
@@ -157,6 +158,7 @@ define ("actions/appState",
         route: routes.postProfile (domain, id),
         method: "POST",
         data: xhrData,
+        headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           if (callbacks.onSuccess) {
             callbacks.onSuccess (response);
@@ -183,6 +185,7 @@ define ("actions/appState",
             "identifier": user.id,
             "platform-id": appState.appId
           },
+          headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.issues);
             const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);

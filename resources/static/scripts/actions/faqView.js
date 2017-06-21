@@ -6,6 +6,7 @@
 
 define ("actions/faqView",
   [
+    "store",
     "normalizr",
     "constants/actionTypes",
     "constants/routes",
@@ -13,11 +14,12 @@ define ("actions/faqView",
     "gunpowder/utils/xhr",
     "helpers/entitySchema",
     "helpers/entity",
+    "helpers/xhr",
     "actions/appState",
     "actions/entities"
   ],
-  function (normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, xhr, entitySchema,
-    entityHelpers, appStateActions, entitiesActions) {
+  function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, xhr, entitySchema,
+    entityHelpers, xhrHelpers, appStateActions, entitiesActions) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -49,6 +51,7 @@ define ("actions/faqView",
           data: {
             "faq-id": faqId
           },
+          headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.faq);
             const processedEntities = entityHelpers.getProcessedEntities (
@@ -87,6 +90,7 @@ define ("actions/faqView",
             "faq-id": faqId
           },
           method: "PUT",
+          headers: xhrHelpers.getCommonHeaders (),
           onSuccess: () => {
             // @TODO: Handle success.
           },
