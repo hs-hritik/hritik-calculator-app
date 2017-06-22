@@ -9,15 +9,14 @@
 
 @font-face {
   font-family: "hesticons";
-  src: url("../static/fonts/hesticons/hesticons.eot?t=20160928");
-  src: url("../static/fonts/hesticons/hesticons.eot?t=20160928#iefix") format("eot"),
-  url("../static/fonts/hesticons/hesticons.woff?t=20160928") format("woff"),
-  url("../static/fonts/hesticons/hesticons.ttf?t=20160928") format("truetype"),
-  url("../static/fonts/hesticons/hesticons.svg?t=20160928#hesticons") format("svg");
+  src: url("/static/fonts/hesticons/hesticons.eot?t=20160928");
+  src: url("/static/fonts/hesticons/hesticons.eot?t=20160928#iefix") format("eot"),
+  url("/static/fonts/hesticons/hesticons.woff?t=20160928") format("woff"),
+  url("/static/fonts/hesticons/hesticons.ttf?t=20160928") format("truetype"),
+  url("/static/fonts/hesticons/hesticons.svg?t=20160928#hesticons") format("svg");
   font-weight: normal;
   font-style: normal;
 }
-
 
 %ion {
   display: inline-block;

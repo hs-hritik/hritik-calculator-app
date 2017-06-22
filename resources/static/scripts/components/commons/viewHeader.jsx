@@ -38,7 +38,9 @@ define ("components/commons/viewHeader",
 
         // @TODO: Replace ← with icon.
         return (
-          <a className="hs-header__link" onClick={this.props.onBackBtnClick}>←</a>
+          <a className="hs-header__link" onClick={this.props.onBackBtnClick}>
+            <i className="ion-arrow-thin-left" />
+          </a>
         );
       }
     });

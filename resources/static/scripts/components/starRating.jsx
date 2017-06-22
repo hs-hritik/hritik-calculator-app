@@ -63,26 +63,16 @@ define ("components/starRating",
         // @TODO: Move styles to css.
         const starStyles = {
           cursor: editing ? "pointer" : "default",
-          color: activeStarValue >= idx ? "#ffb400" : "#333"
+          color: activeStarValue >= idx ? "#ffb400" : "#b6c3cc"
         };
 
-        // @TODO: We have to use icons here, but there seems to be an issue
-        // with how it's used. Using unicode chars for now.
-        // return (
-        //   <i className="ion-star" style={starStyles}
-        //      key={idx}
-        //      onClick={this._onStarClick.bind (this, idx)} />
-        // );
-
         return (
-          <span style={starStyles}
-                key={idx}
-                onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
-                onMouseLeave={this._onStarMouseLeave}
-                onClick={this._onStarClick.bind (this, idx)}
-                className="hs-csat__star">
-                &#9733;
-          </span>
+          <i className="ion-star hs-csat__star"
+             style={starStyles}
+             onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
+             onMouseLeave={this._onStarMouseLeave}
+             key={idx}
+             onClick={this._onStarClick.bind (this, idx)} />
         );
       },
 
