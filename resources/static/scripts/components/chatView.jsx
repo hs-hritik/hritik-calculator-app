@@ -135,7 +135,14 @@ define ("components/chatView",
        */
       _renderFaqSuggestionsFeedback () {
         const {faqSuggestionsHelpful, faqSuggestionsNotHelpful} = this.props.text;
-        const btnClasses = classes (
+        const helpfulBtnClasses = classes (
+          "hs-button",
+          "hs-button--secondary",
+          "hs-button--hollow",
+          "hs-button--x-small",
+          "hs-faq-suggestions-feedback__btn"
+        );
+        const notHelpfulBtnClasses = classes (
           "hs-button",
           "hs-button--hollow",
           "hs-button--x-small",
@@ -145,11 +152,11 @@ define ("components/chatView",
         return (
           <div className="hs-faq-suggestions-feedback">
             <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "yes")}
-                    className={btnClasses}>
+                    className={helpfulBtnClasses}>
               {faqSuggestionsHelpful}
             </button>
             <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "no")}
-                    className={btnClasses}>
+                    className={notHelpfulBtnClasses}>
               {faqSuggestionsNotHelpful}
             </button>
           </div>
