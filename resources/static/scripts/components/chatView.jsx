@@ -101,7 +101,7 @@ define ("components/chatView",
         }
 
         return (
-          <div>
+          <div className="hs-csat">
             <span>{text.csatReviewRequest}</span>
             <StarRating name="csat"
                         value={csatRating}

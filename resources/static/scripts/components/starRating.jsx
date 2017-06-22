@@ -28,8 +28,7 @@ define ("components/starRating",
 
       render () {
         return (
-          <div className="hs-csat">
-            <h5>What's your feedback about our customer support?</h5>
+          <div>
             {this._renderStars ()}
           </div>
         );
