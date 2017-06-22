@@ -33,26 +33,9 @@
       padding: gutter(8);
       background-color: $suggested-faqs-bg-color;
       border: 1px solid $suggested-faqs-border-color;
-    }
 
-    &--faq {
-      padding: gutter(8 0);
-      overflow: hidden;
-      cursor: pointer;
-      border-bottom: 1px solid $suggested-faqs-border-color;
-
-      &:last-child {
-        padding-bottom: 0;
-        border-bottom: 0;
-      }
-
-      &:first-child {
-        padding-top: 0;
-      }
-
-      &::after {
-        float: right;
-        content: "\2192"; /// right arrow
+      &__title {
+        padding-bottom: gutter(12);
       }
     }
 

@@ -76,9 +76,16 @@ define ("components/message",
        * Render FAQ suggestions message.
        */
       _renderFaqMessage () {
+        const {text} = this.props;
+
         return (
-          <div className="hs-message--suggested-faqs">
-            {this._renderFaqs ()}
+          <div>
+            <div className="hs-message--suggested-faqs__title">
+              {text.faqSuggestionsMsgTitle}
+            </div>
+            <div className="hs-message--suggested-faqs">
+              {this._renderFaqs ()}
+            </div>
           </div>
         );
       },

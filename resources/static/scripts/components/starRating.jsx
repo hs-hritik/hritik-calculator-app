@@ -54,7 +54,7 @@ define ("components/starRating",
           color: value >= idx ? "#ffb400" : "#333"
         };
 
-        // TODO We have to use icons here, but there seems to be an issue
+        // @TODO: We have to use icons here, but there seems to be an issue
         // with how it's used. Using unicode chars for now.
         // return (
         //   <i className="ion-star" style={starStyles}
