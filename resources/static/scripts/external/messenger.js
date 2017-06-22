@@ -68,15 +68,20 @@
     "display": "none"
   };
 
-  // const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
-  //                       viewBox="0 0 560 560">
-  //                       <polygon fill="#FFFFFF" fill-rule="evenodd"
-  //                         points="470 127.997 432.003 90 280 242.003 127.997 90 90
-  //                                 127.997 242.003 280 90 432.003 127.997 470 280 317.997
-  //                                 432.003 470 470 432.003 317.997 280"/>
-  //                     </svg>`;
+  const LAUNCHER_ICON = {
+    CLOSE: "CLOSE",
+    MESSENGER: "MESSENGER"
+  };
 
-  const MESSAGES_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+  const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+                        viewBox="0 0 560 560">
+                        <polygon fill="#FFFFFF" fill-rule="evenodd"
+                          points="470 127.997 432.003 90 280 242.003 127.997 90 90
+                                  127.997 242.003 280 90 432.003 127.997 470 280 317.997
+                                  432.003 470 470 432.003 317.997 280"/>
+                      </svg>`;
+
+  const MESSENGER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
                           viewBox="0 0 560 560">
                           <g fill="#FFFFFF" fill-rule="evenodd" transform="translate(60 77)">
                             <path d="M363.373365,0 L10.16125,0 C5.42701923,0 0,3.96105769
@@ -101,7 +106,7 @@
                         </svg>`;
 
   // Reference for web sdk iframe.
-  let webSdkIframe;
+  let webSdkIframe, launcherBtn;
 
   /**
    * Util to set style for a given element.
@@ -131,6 +136,26 @@
   };
 
   /**
+   * Update the icon of the launcher button.
+   * @param {String} icon - the icon that needs to be set
+   */
+  const updateLauncherBtnIcon = (icon) => {
+    if (icon === LAUNCHER_ICON.CLOSE) {
+      launcherBtn.innerHTML = CLOSE_ICON;
+      // Due the the size and geometry of the close icon, update the
+      // padding of the container element.
+      setStyle (launcherBtn, {
+        padding: "16px"
+      });
+    } else {
+      launcherBtn.innerHTML = MESSENGER_ICON;
+      setStyle (launcherBtn, {
+        padding: "12px 10px 8px"
+      });
+    }
+  };
+
+  /**
    * Create launcher iframe and set styles.
    * @returns {Element} - launcher iframe.
    */
@@ -145,11 +170,10 @@
    * @returns {Element} - launcher button div.
    */
   const createLauncherButton = () => {
-    const launcherBtn = doc.createElement ("a");
-    // launcherBtn.innerHTML = "&#128172;";
-    launcherBtn.innerHTML = MESSAGES_ICON;
-    setStyle (launcherBtn, LAUNCHER_BUTTON_WRAPPER_STYLES);
-    return launcherBtn;
+    const launcherButton = doc.createElement ("a");
+    launcherButton.innerHTML = MESSENGER_ICON;
+    setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
+    return launcherButton;
   };
 
   /**
@@ -170,8 +194,10 @@
   const toggleWebSdkIframe = () => {
     if (webSdkIframe.style.display === "none") {
       webSdkIframe.style.display = "block";
+      updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
     } else {
       webSdkIframe.style.display = "none";
+      updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
   };
 
@@ -192,8 +218,9 @@
    * Entry point for rendering iframe on the client page.
    */
   Helpshift.init = (config) => {
-    const launcherIframe = createLauncherIframe (),
-          launcherBtn = createLauncherButton ();
+    const launcherIframe = createLauncherIframe ();
+
+    launcherBtn = createLauncherButton ();
 
     doc.body.appendChild (launcherIframe);
 
