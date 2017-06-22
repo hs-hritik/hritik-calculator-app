@@ -26,6 +26,12 @@ define ("components/starRating",
         };
       },
 
+      getInitialState () {
+        return {
+          hoverValue: 0
+        };
+      },
+
       render () {
         return (
           <div>
@@ -47,11 +53,17 @@ define ("components/starRating",
 
       _renderStar (idx) {
         const {editing, value} = this.props;
+        const {hoverValue} = this.state;
+        let activeStarValue = value;
+
+        if (hoverValue > 0) {
+          activeStarValue = hoverValue;
+        }
 
         // @TODO: Move styles to css.
         const starStyles = {
           cursor: editing ? "pointer" : "default",
-          color: value >= idx ? "#ffb400" : "#333"
+          color: activeStarValue >= idx ? "#ffb400" : "#333"
         };
 
         // @TODO: We have to use icons here, but there seems to be an issue
@@ -65,11 +77,36 @@ define ("components/starRating",
         return (
           <span style={starStyles}
                 key={idx}
+                onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
+                onMouseLeave={this._onStarMouseLeave}
                 onClick={this._onStarClick.bind (this, idx)}
                 className="hs-csat__star">
                 &#9733;
           </span>
         );
+      },
+
+      /**
+       * Handler for mouse enter event.
+       */
+      _onStarMouseEnter (val) {
+        this._updateHoverValue (val);
+      },
+
+      /**
+       * Handler for mouse leave event.
+       */
+      _onStarMouseLeave () {
+        this._updateHoverValue (0);
+      },
+
+      /**
+       * Update hover value.
+       */
+      _updateHoverValue (value) {
+        this.setState ({
+          hoverValue: value
+        });
       },
 
       /**

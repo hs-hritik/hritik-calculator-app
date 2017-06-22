@@ -21,7 +21,7 @@
     border-bottom: 1px solid $border-color;
 
     &__star {
-      margin: gutter(0 8);
+      padding: gutter(0 8);
       font-size: $star-font-size;
     }
   }
