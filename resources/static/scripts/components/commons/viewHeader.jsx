@@ -22,24 +22,27 @@ define ("components/commons/viewHeader",
       render () {
         return (
           <div className="hs-header">
-            {this._renderBackButton ()}
-            <span>{this.props.title}</span>
+            {this._renderTitle ()}
           </div>
         );
       },
 
       /**
-       * Render back button if required.
+       * Render title text and the back button if required
        */
-      _renderBackButton () {
+      _renderTitle () {
+        const titleText = (
+          <span>{this.props.title}</span>
+        );
+
         if (!this.props.showBackBtn) {
-          return null;
+          return titleText;
         }
 
-        // @TODO: Replace ← with icon.
         return (
           <a className="hs-header__link" onClick={this.props.onBackBtnClick}>
-            <i className="ion-arrow-thin-left" />
+            <i className="ion-chevron-left hs-header__back-icon" />
+            {titleText}
           </a>
         );
       }

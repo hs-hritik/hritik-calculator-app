@@ -24,10 +24,13 @@
     background-color: $bg-color;
 
     &__link {
-      position: relative;
-      top: gutter(4);
-      padding: gutter(0 8 0 0);
+      display: flex;
+      align-items: center;
       color: $link-color;
+    }
+
+    &__back-icon {
+      margin-right: gutter(4);
     }
   }
 }
