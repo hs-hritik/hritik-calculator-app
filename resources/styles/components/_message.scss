@@ -25,9 +25,14 @@
     width: $message-width;
     padding: gutter(8 12);
     margin-bottom: gutter(16);
+    overflow: hidden;
     line-height: 1.5;
     background-color: $message-bg-color;
     border-radius: radius(4 4 4 0);
+
+    &__timestamp {
+      float: right;
+    }
 
     &--suggested-faqs {
       padding: gutter(8);

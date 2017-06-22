@@ -114,7 +114,7 @@ define ("components/message",
         const timeStr = dateUtils.format (this.props.message.createdTs, MESSAGE_TIMESTAP_FORMAT);
 
         return (
-          <small>{timeStr}</small>
+          <small className="hs-message__timestamp">{timeStr}</small>
         );
       }
     });
