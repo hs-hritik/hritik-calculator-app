@@ -14,6 +14,7 @@ define ("components/faqView",
 
     const PropTypes = React.PropTypes;
 
+    /*
     const FaqViewFooter = React.createClass ({
       displayName: "FaqViewFooter",
       propTypes: {
@@ -42,6 +43,7 @@ define ("components/faqView",
         );
       }
     });
+    */
 
     return React.createClass ({
       displayName: "FaqView",
@@ -56,7 +58,7 @@ define ("components/faqView",
       },
 
       render () {
-        const {title, body, text, onFaqFeedbackClick, onBackBtnClick} = this.props;
+        const {title, body, text, onBackBtnClick} = this.props;
 
         /* eslint-disable react/no-danger */
         return (
@@ -66,8 +68,6 @@ define ("components/faqView",
                         onBackBtnClick={onBackBtnClick} />
             <h3>{title}</h3>
             <div dangerouslySetInnerHTML={{__html: body}} />
-            <FaqViewFooter text={text}
-                           onFeedbackClick={onFaqFeedbackClick} />
           </div>
         );
         /* eslint-enable react/no-danger */
