@@ -183,7 +183,7 @@ define ("actions/appState",
           route: routes.getMyIssues (appState.domain),
           data: {
             "identifier": user.id,
-            "platform-id": appState.appId
+            "platform-id": appState.platformId
           },
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {

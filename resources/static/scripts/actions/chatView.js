@@ -418,7 +418,7 @@ define ("actions/chatView",
           data: {
             "identifier": appState.currentUserId,
             "issue-id": appState.activeIssueId,
-            "platform-id": appState.appId,
+            "platform-id": appState.platformId,
             "rating": rating
           },
           headers: xhrHelpers.getCommonHeaders (),
@@ -448,7 +448,7 @@ define ("actions/chatView",
           route: routes.postIssue (appState.domain),
           data: {
             "identifier": appState.currentUserId,
-            "platform-id": appState.appId,
+            "platform-id": appState.platformId,
             "message-body": firstUserMsg.body
           },
           headers: xhrHelpers.getCommonHeaders (),
