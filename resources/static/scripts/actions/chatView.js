@@ -499,7 +499,8 @@ define ("actions/chatView",
         xhr ({
           route: routes.getFaqSuggestions (appState.domain),
           data: {
-            text: searchText
+            "text": searchText,
+            "app-id": appState.appId
           },
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {

@@ -23,7 +23,8 @@ define ("reducers/appState",
       platformId: "",
       profileId: "",
       apiToken: "",
-      domain: ""
+      domain: "",
+      appId: ""
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -38,7 +39,8 @@ define ("reducers/appState",
             platformId: {$set: action.config.platformId},
             apiToken: {$set: action.config.apiToken},
             domain: {$set: action.config.domain},
-            profileId: {$set: action.config.profileId}
+            profileId: {$set: action.config.profileId},
+            appId: {$set: action.config.appId}
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
