@@ -25,21 +25,24 @@ ifdef GERRIT_CHANGE_ID
 	eslint_prefixed_js_diff = $(addprefix -f ,$(js_diff))
 	styles_diff = $(shell sh -c "echo $(git_diff) | grep 'styles/.*\.scss'")
 	makefile_diff = $(shell sh -c "echo $(git_diff) | grep Makefile")
+
 	ifneq ($(eslint_prefixed_js_diff),)
-		TEST_TARGETS := $(TEST_TARGETS) npminstall reactjs eslint
+		TEST_TARGETS := $(TEST_TARGETS) npminstall gunpowder reactjs eslint
 		JS_TEST_TARGETS := $(JS_TEST_TARGETS) eslint
 	endif
+
 	ifneq ($(styles_diff),)
 		TEST_TARGETS := $(TEST_TARGETS) sass-lint
 	endif
+
 	ifneq ($(makefile_diff),)
-		TEST_TARGETS := reactjs sass-lint
+		TEST_TARGETS := gunpowder reactjs sass-lint
 	endif
 else
-	TEST_TARGETS := eslint reactjs sass-lint
+	TEST_TARGETS := eslint gunpowder reactjs sass-lint
 endif
 
-static: npminstall styles reactjs compress-js js-libs
+static: npminstall styles gunpowder reactjs compress-js js-libs
 
 bundlerinstall:
 	@echo "\nEnsuring Bundler Installation for SCSS compilation..."
@@ -76,6 +79,11 @@ js-libs: npminstall
 	@echo "\nOverwrite minified libs..."
 	@cd resources && $(GULP) overwrite-min
 	@echo "\nDone..."
+
+gunpowder: npminstall
+	@echo "\nInstalling the gunpowder npm package"
+	@mkdir -p resources/static/scripts/gunpowder/node_modules;
+	$(NPM) install --prefix resources/static/scripts/gunpowder;
 
 jstests: $(JS_TEST_TARGETS)
 

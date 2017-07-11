@@ -13,13 +13,15 @@ const gutil = require ("gulp-util");
 
 
 const PATHS = {
-  scripts    : ["static/scripts/**/*.+(js|jsx)"],
+  scripts    : ["static/scripts/**/*.+(js|jsx)", "!static/scripts/gunpowder/**/*.*"],
   build      : "static/build",
   libsMin    : ["static/libs/*-min.js"],
   libs       : "static/libs",
   uglify     : ["static/build/**/*.js"],
   testsSrc   : ["static/__tests__/src/**/*.+(js|jsx)"],
-  testsBuild : "static/__tests__/build"
+  testsBuild : "static/__tests__/build",
+  gunpowderSrc: "static/scripts/gunpowder/node_modules/@helpshiftdev/gunpowder/resources/static/scripts/**/*.+(js|jsx)",
+  gunpowderBuild: "static/build/gunpowder"
 };
 
 
@@ -66,16 +68,19 @@ gulp.task ("babel", function () {
   if (argv.production || argv.prod) {
     // Doesn't compile test files.
     babelCompile (PATHS.scripts, PATHS.build);
+    babelCompile (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
   } else if (argv.compile) {
     // Compile files from jsx, scripts & tests
     console.log ("Compiling...");
     babelCompile (PATHS.scripts, PATHS.build);
     babelCompile (PATHS.testsSrc, PATHS.testsBuild);
+    babelCompile (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
   } else {
     // Watch files from jsx, scripts & tests
     console.log ("Compiling & watching...");
     babelWatch (PATHS.scripts, PATHS.build);
     babelWatch (PATHS.testsSrc, PATHS.testsBuild, "/src/");
+    babelWatch (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
   }
 });
 
