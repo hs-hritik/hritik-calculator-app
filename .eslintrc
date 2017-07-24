@@ -17,7 +17,11 @@
   },
   "globals": {
     "React": true,
-    "ReactDOM": true
+    "ReactDOM": true,
+    "Redux": true,
+    "ReactRedux": true,
+    "Helpshift": true,
+    "ReduxThunk": true
   },
   "rules": {
     // Check ESLint documentation (http://eslint.org/docs/rules/<a-specific-rule>)

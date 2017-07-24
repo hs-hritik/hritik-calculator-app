@@ -1,0 +1,22 @@
+/**
+ * Chat view related constants.
+ * @author Manish Garg <manish@helpshift.com>
+ * @created June 14, 2017
+ */
+
+define ("constants/chatView",
+  function () {
+    "use strict";
+
+    const ACTIVE_FOOTER = {
+      REPLY: "REPLY",
+      FAQ_SUGGESTIONS_FEEDBACK: "FAQ_SUGGESTIONS_FEEDBACK",
+      ISSUE_FEEDBACK: "ISSUE_FEEDBACK",
+      CSAT: "CSAT",
+      NEW_CONVERSATION: "NEW_CONVERSATION"
+    };
+
+    return {
+      ACTIVE_FOOTER
+    };
+  });

@@ -1,0 +1,28 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group csat
+///
+
+@include component(csat) {
+
+  $border-color: color(border, light);
+  $star-font-size: icon-size(xxx-large);
+
+  .hs-csat {
+    padding: gutter(16);
+    text-align: center;
+    border-bottom: 1px solid $border-color;
+
+    &__star {
+      padding: gutter(0 8);
+      font-size: $star-font-size;
+    }
+  }
+}

@@ -1,0 +1,47 @@
+@charset "UTF-8";
+
+/// @component icons
+/// Generate icon styles for given selector and icons code set.
+
+
+@import "./data/hesticons-icon-code";
+
+
+@font-face {
+  font-family: "hesticons";
+  src: url("/static/fonts/hesticons/hesticons.eot?t=20160928");
+  src: url("/static/fonts/hesticons/hesticons.eot?t=20160928#iefix") format("eot"),
+  url("/static/fonts/hesticons/hesticons.woff?t=20160928") format("woff"),
+  url("/static/fonts/hesticons/hesticons.ttf?t=20160928") format("truetype"),
+  url("/static/fonts/hesticons/hesticons.svg?t=20160928#hesticons") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+%ion {
+  display: inline-block;
+  font-family: "hesticons";
+  font-size: 20px;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+}
+
+@each $icon-name, $icon-code in $hesticons-icon-code {
+
+  // don't make properties like font-size too specific
+  // they should be overridable by a bem like convention
+  .ion-#{$icon-name} {
+    @extend %ion;
+  }
+
+  // let codepoint be specific, adhering to our convention of
+  // icons being only applicable to <i> tags
+  i.ion-#{$icon-name} {
+    &::before {
+      content: "#{$icon-code}";
+    }
+  }
+}

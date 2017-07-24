@@ -1,0 +1,315 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+//
+// Author: Bhargava Chowdary Mutyala (bhargava@helpshift.com)
+
+// - - - - - - - - - - - - - - -
+// Global Form Styles
+// - - - - - - - - - - - - - - -
+
+/// Background color for <input> elements.
+/// @type Color
+$_input-bg: color(bg);
+
+/// Background color for readonly <input> elements.
+/// @type Color
+$_input-readonly-bg: color(bg, lightgray);
+
+
+/// Border color for <input> elements.
+/// @type Color
+$_input-border: color(border, dark);
+
+/// Border color for <input> elements in focussed state.
+/// @type Color
+$_input-focus-border: color(primary);
+
+/// Border color for <input> elements on error state.
+/// @type Color
+$_input-error-border: color(error, border);
+
+/// Border color for <input> elements on success state.
+/// @type Color
+$_input-success-border: color(success, border);
+
+/// Text color for <input> elements.
+/// @type Color
+$_input-color: color(text);
+
+/// Text color for <input> elements in focussed state.
+/// @type Color
+$_input-focus-color: color(text, dark);
+
+/// Input size map.
+/// @type Map
+$_input-size: (
+  base: (
+    font-size: font-size(body),
+    spacing: gutter(8 12),
+  ),
+  small: (
+    font-size: font-size(body),
+    spacing: gutter(4 8),
+  ),
+  x-small: (
+    font-size: font-size(body, small),
+    spacing: gutter(4 8),
+  )
+);
+
+/// Input style map.
+/// @type Map
+$_input-style: (
+  default: (
+    bg: $_input-bg,
+    border: 1px solid $_input-border,
+    color: $_input-color,
+  ),
+  focus: (
+    bg: $_input-bg,
+    border: 1px solid $_input-focus-border,
+    color: $_input-focus-color,
+  ),
+  disabled: (
+    bg: $_input-readonly-bg,
+    border: 1px solid $_input-border,
+    color: color(text, light),
+  ),
+  readonly: (
+    bg: $_input-readonly-bg,
+    border: 1px solid $_input-border,
+    color: $_input-focus-color,
+  ),
+  error: (
+    bg: $_input-bg,
+    border: 1px solid $_input-error-border,
+    color: $_input-color,
+  ),
+  success: (
+    bg: $_input-bg,
+    border: 1px solid $_input-success-border,
+    color: $_input-color,
+  )
+);
+
+// Non-standard line height for inputs to force the
+// overall height of the input fields to be multiples of 4!
+$_input-line-height: 1.6;
+
+/// Placeholder text color for <input> elements.
+/// @type Color
+$_input-placeholder-color: color(text, x-light);
+
+/// Border radius for all input fields.
+/// @type Number
+$_input-radius: radius();
+
+/// Inset box shadows for all input fields.
+/// @type String
+$_input-box-shadow: rgba(0, 0, 0, .12) 0 1px 4px inset;
+
+/// Cursor style for disabled input fields.
+/// @type List
+$_input-disabled-cursor: not-allowed;
+
+/// The default height for <textarea> inputs.
+/// The value 108px is taken from the old codebase.
+/// @type Number
+$_textarea-base-height: 108px;
+
+/// The height for <textarea> inputs in smaller screens.
+/// The value 90px is taken from the old codebase.
+/// @type Number
+$_textarea-small-height: 90px;
+
+/// Text color for input labels.
+/// @type Color
+$_label-color: $header-color;
+
+
+/// Background Color for Dropdown Titles.
+/// @type Color
+$_dropdown-title-bg: color(bg);
+
+/// Background Color for readonly Dropdown Titles.
+/// @type Color
+$_dropdown-title-readonly-bg: color(bg, lightgray);
+
+/// Border Color for Dropdown Titles.
+/// @type Color
+$_dropdown-title-border: color(border, dark);
+
+/// Border Color for Dropdown Titles in active state.
+/// @type Color
+$_dropdown-title-active-border: color(primary);
+
+/// Text Color for Dropdown Titles.
+/// @type Color
+$_dropdown-title-color: color(text);
+
+/// Text Color for Dropdown Titles in hover and active.
+/// @type Color
+$_dropdown-title-active-color: color(text, dark);
+
+/// Box shadow for Dropdown Titles.
+/// @type String
+$_dropdown-title-box-shadow: rgba(0, 0, 0, .12) 0 1px 6px;
+
+/// Spacing between Dropdown Title and Content.
+/// @type String
+$_dropdown-content-gap: gutter(4);
+
+/// Background color for Dropdown Content.
+/// @type String
+$_dropdown-content-bg: color(bg);
+
+/// Box shadow for Dropdown Content.
+/// @type String
+$_dropdown-content-box-shadow: rgba(0, 0, 0, .16) 0 1px 8px;
+
+/// Dropdown item highlight background.
+/// @type Color
+$_dropdown-item-highlight-bg: color(primary, xx-light);
+
+/// Dropdown item selected background.
+/// @type Color
+$_dropdown-item-selected-bg: color(primary, xx-light);
+
+/// Dropdown item selected color.
+/// @type Color
+$_dropdown-item-color: color(text);
+
+/// Dropdown item selected color.
+/// @type Color
+$_dropdown-item-hover-color: color(text, dark);
+
+/// Dropdown item selected color.
+/// @type Color
+$_dropdown-item-selected-color: color(primary);
+
+/// Spacing for Dropdown content items
+/// @type String
+$_dropdown-item-spacing: gutter(12 24 12 12);
+
+
+@mixin input-base($size: base, $style: default) {
+  @include set-default-type;
+
+  height: auto;
+  margin: 0;
+  font-size: map-fetch($_input-size, $size, font-size);
+  line-height: $_input-line-height;
+  padding: map-fetch($_input-size, $size, spacing);
+  outline: 0;
+  transition: border-color .125s ease-out;
+}
+
+@mixin input-expand($expand: true) {
+  @if $expand {
+    width: 100%;
+  } @else {
+    width: auto;
+  }
+}
+
+@mixin input-style($type: default) {
+  $bg: map-fetch($_input-style, $type, bg);
+  $border: map-fetch($_input-style, $type, border);
+  $color: map-fetch($_input-style, $type, color);
+
+  color: $color;
+  border-radius: $_input-radius;
+
+  @if ($type != disabled and $type != readonly) {
+    background: $bg;
+    border: $border;
+    box-shadow: $_input-box-shadow;
+  } @else {
+    background: $bg !important;
+    border: $border !important;
+    box-shadow: none;
+  }
+
+  @if ($type == disabled) {
+    cursor: not-allowed;
+  }
+
+  @if ($type == focus) {
+    outline-width: 0;
+  }
+}
+
+
+input[type="text"],
+input[type="password"],
+input[type="search"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  @include input-base;
+  @include input-expand(true);
+  @include input-style;
+
+  // scss-lint:disable VendorPrefix
+  &::-webkit-input-placeholder,
+  &::-moz-placeholder,
+  &:-ms-input-placeholder {
+    color: $_input-placeholder-color;
+  }
+  // scss-lint:enable VendorPrefix
+
+  &:focus,
+  &.focus {
+    @include input-style(focus);
+  }
+
+  &[readonly],
+  &[readonly="readonly"],
+  &.readonly {
+    @include input-style(readonly);
+
+    &:focus {
+      @include input-style(readonly);
+    }
+  }
+
+  &[disabled],
+  &[disabled="disabled"],
+  &.disabled {
+    @include input-style(disabled);
+  }
+
+  &.error,
+  &.error-highlight {
+    @include input-style(error);
+  }
+
+  &.success,
+  &.success-highlight {
+    @include input-style(success);
+  }
+
+  &.small {
+    @include input-base(small);
+  }
+
+  &.x-small {
+    @include input-base(x-small);
+  }
+}
+
+textarea {
+  height: $_textarea-base-height;
+  min-height: $_textarea-base-height;
+
+  &.small {
+    height: $_textarea-small-height;
+    min-height: $_textarea-small-height;
+  }
+}
+
+label {
+  color: $_label-color;
+}

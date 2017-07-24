@@ -1,3 +1,39 @@
 // Styles for Helpshift Web SDK UI
 // [helpshift.com](https://helpshift.com)
 // Copyright 2017, Helpshift Inc.
+
+@charset "UTF-8";
+
+@import "vendor/normalize";
+@import "utils/functions";
+@import "utils/mixins";
+
+@import "global";
+@import "typography";
+@import "icons";
+@import "forms";
+
+@import "animations/animations";
+
+// Include hs-global and hs-typography styles
+
+@include hs-global-styles;
+@include hs-typography-resets;
+@include hs-typography-styles;
+
+// Generic Components
+@import "components/button";
+
+@import "components/page";
+@import "components/view";
+@import "components/header";
+@import "components/message-list";
+@import "components/message";
+@import "components/suggested-faq";
+@import "components/footer";
+@import "components/faq-suggestions-feedback";
+@import "components/start-conv";
+@import "components/issue-feedback";
+@import "components/csat";
+@import "components/faq-footer";
+@import "components/reply-box";

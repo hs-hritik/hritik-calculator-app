@@ -1,0 +1,305 @@
+// Styles for Helpshift Admin Dashboard
+// [helpshift.com](https://helpshift.com)
+// Copyright 2016, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Animations!!
+// - - - - - - - - - - - - - - -
+
+////
+/// @group Animation
+////
+
+$duration: .25s;
+$delay: 0s;
+$function: ease;
+$fill: both;
+$visibility: hidden;
+$count: 1;
+
+// You can use any of the animations listed in the
+// following map by calling the `animation` mixin.
+//
+// Example: @include animation(fade-in);
+//
+// Refer to the animation mixin at the end of this file
+// for more details
+//
+//
+// Note: For new animations add an entry in this map,
+// along with the properties and you're good to go!
+$animations: (
+  fade-in: (
+    0%: (
+      opacity: "0"
+    ),
+
+    100%: (
+      opacity: "1"
+    )
+  ),
+  fade-in-up: (
+    0%: (
+      transform: "translateY(400px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-up-small: (
+    0%: (
+      transform: "translateY(20px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    )
+  ),
+  dd-center-fade-in-up-small: (
+    0%: (
+      transform: "translateX(-50%) translateY(20px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(-50%) translateY(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-up-tiny: (
+    0%: (
+      transform: "translateY(10px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-left: (
+    0%: (
+      transform: "translateX(400px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-left-small: (
+    0%: (
+      transform: "translateX(20px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0)",
+      opacity: "1"
+    )
+  ),
+  dd-middle-fade-in-left-small: (
+    0%: (
+      transform: "translateX(20px) translateY(50%)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0) translateY(50%)",
+      opacity: "1"
+    )
+  ),
+  fade-in-left-tiny: (
+    0%: (
+      transform: "translateX(10px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-right: (
+    0%: (
+      transform: "translateX(-400px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-right-small: (
+    0%: (
+      transform: "translateX(-20px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0)",
+      opacity: "1"
+    )
+  ),
+  dd-middle-fade-in-right-small: (
+    0%: (
+      transform: "translateX(-20px) translateY(50%)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0) translateY(50%)",
+      opacity: "1"
+    )
+  ),
+  fade-in-right-tiny: (
+    0%: (
+      transform: "translateX(-10px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(0)",
+      opacity: "1"
+    )
+  ),
+  fade-in-down-small: (
+    0%: (
+      transform: "translateY(-20px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    )
+  ),
+  dd-center-fade-in-down-small: (
+    0%: (
+      transform: "translateX(-50%) translateY(-20px)",
+      opacity: "0"
+    ),
+
+    100%: (
+      transform: "translateX(-50%) translateY(0)",
+      opacity: "1"
+    )
+  ),
+  fade-out: (
+    0%: (
+      opacity: "1"
+    ),
+
+    100%: (
+      opacity: "0"
+    )
+  ),
+  fade-out-up-small: (
+    0%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    ),
+
+    100%: (
+      transform: "translateY(-20px)",
+      opacity: "0"
+    )
+  ),
+  fade-out-down: (
+    0%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    ),
+
+    100%: (
+      transform: "translateY(400px)",
+      opacity: "0"
+    )
+  ),
+  fade-out-down-small: (
+    0%: (
+      transform: "translateY(0)",
+      opacity: "1"
+    ),
+
+    100%: (
+      transform: "translateY(20px)",
+      opacity: "0"
+    )
+  ),
+  move: (
+    0%: (
+      background-position: "0 0"
+    ),
+    100%: (
+      background-position: "50px 50px"
+    )
+  ),
+  rotate360: (
+    0%: (
+      transform: "rotate(0deg)"
+    ),
+
+    100%: (
+      transform: "rotate(360deg)"
+    )
+  ),
+  wobble: (
+    0%: (
+      transform: "rotateZ(0deg)",
+    ),
+    25%: (
+      transform: "rotateZ(1deg)",
+    ),
+    75%: (
+      transform: "rotateZ(-1deg)",
+    ),
+    100%: (
+      transform: "rotateZ(0deg)",
+    ),
+  ),
+);
+//
+// Note: For new animations add an entry in the above map,
+// along with the properties and you're good to go!
+//
+
+@mixin keyframes($name, $kpv-map, $debug: true) {
+  @keyframes hs-#{$name} {
+    @each $frame, $properties in $kpv-map {
+
+      #{$frame} {
+        @each $prop, $value in $properties {
+          #{unquote($prop)}: #{unquote($value)};
+        }
+      }
+    }
+  }
+}
+
+@mixin generate-keyframes() {
+  @each $name, $properties in $animations {
+    @include keyframes($name, $properties);
+  }
+}
+
+@mixin animation($name, $duration: $duration, $delay: $delay,
+                 $function: $function, $fill: $fill,
+                 $visibility: $visibility, $count: $count) {
+  animation-name: hs-#{$name};
+  animation-duration: #{$duration};
+  animation-delay: #{$delay};
+  animation-timing-function: #{$function};
+  animation-fill-mode: #{$fill};
+  backface-visibility: #{$visibility};
+  animation-iteration-count: #{$count};
+}
+
+@include generate-keyframes;

@@ -1,0 +1,9 @@
+{
+  "name": "mirkwood-gunpowder",
+  "version": "1.0.0",
+  "description": "Common JavaScript utilities for Helpshift web messenger",
+  "author": "Helpshift Dev <dev@helpshift.com> (https://helpshift.com)",
+  "dependencies": {
+    "@helpshiftdev/gunpowder": "~1.0.7"
+  }
+}

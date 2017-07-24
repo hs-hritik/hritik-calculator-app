@@ -1,0 +1,19 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group footer
+///
+
+@include component(start-conv) {
+
+  .hs-start-conv {
+    padding: gutter(16);
+    text-align: center;
+  }
+}

@@ -1,0 +1,26 @@
+/**
+ * Root reducer.
+ * @author Manish Garg <manish@helpshift.com>
+ * @created June 1, 2017
+ */
+
+define ("reducers/root",
+  [
+    "reducers/ui",
+    "reducers/appState",
+    "reducers/entities",
+    "reducers/chatView",
+    "reducers/faqView"
+  ],
+  function (uiReducer, appStateReducer, entitiesReducer, chatViewReducer, faqViewReducer) {
+    "use strict";
+
+    return Redux.combineReducers ({
+      appState: appStateReducer,
+      ui: uiReducer,
+      entities: entitiesReducer,
+      chatView: chatViewReducer,
+      faqView: faqViewReducer
+    });
+  }
+);
