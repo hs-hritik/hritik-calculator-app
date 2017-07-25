@@ -9,8 +9,6 @@
 (function (win, doc) {
   "use strict";
 
-  win.Helpshift = {};
-
   // @TODO: Change it to use different url based on env
   // const WEB_SDK_URL = "https://hsmirkwood.helpshift.com/static/html/";
   const WEB_SDK_URL = "http://localhost:3000/static/html/";
@@ -28,6 +26,12 @@
     CMD_IFRAME_TOGGLED: "cmd-iframe-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_USER: "cmd-set-user"
+  };
+
+  // Errors message strings
+  const ERROR_MSG = {
+    NO_API_NAME: "API name is not passed with the Helpshift call",
+    API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported"
   };
 
   // @TODO: Figure out if we have to move styles to css file for this file,
@@ -220,7 +224,7 @@
    * This event has to be consumed by parent page.
    * After this event is fired, parent can start communicating with
    * web sdk using APIs. If the parent tries to call APIs before this
-   * event is fired, API won't work as expected (because sdk javascript has
+   * event is fired, API won't work as expected (because sdk JavaScript has
    * not loaded yet or the sdk has not initialised yet.)
    */
   const fireWebSdkReadyEvent = () => {
@@ -231,7 +235,7 @@
   /**
    * Entry point for rendering iframe on the client page.
    */
-  Helpshift.init = (config) => {
+  const init = (config) => {
     const launcherIframe = createLauncherIframe ();
 
     launcherBtn = createLauncherButton ();
@@ -304,10 +308,41 @@
    * API to set user.
    * @param {Object} user - user object. Contains id, name and email.
    */
-  Helpshift.setUser = (user) => {
+  const setUser = (user) => {
     _postMessage (EVENT_TYPES.CMD_SET_USER, {
       user
     });
   };
 
+  // A map with all the supported APIs. The global Helpshift () call looks
+  // into this map to get the definition of the called API.
+  const helpshiftApis = {
+    init,
+    setUser
+  };
+
+  /**
+   * The global Helpshift function to handle the APIs. It relies on the
+   * following invocation pattern.
+   *
+   * // Call the addMessage api
+   * Helpshift ("addMessage", apiArguments)
+   * where addMessage is the name of the API and apiArguments is the argument
+   * that is further passed to the api call.
+   *
+   * The number of arguments passed to this function may vary depending on which
+   * API is called. The API should throw exception(s) based on its requirements.
+   */
+  win.Helpshift = function (api, ...apiArguments) {
+    if (typeof api !== "string") {
+      // Throw an error back to the client if an API is not called
+      throw new Error (ERROR_MSG.NO_API_NAME);
+    } else if (typeof helpshiftApis [api] !== "function") {
+      // Throw an error if the API is not supported
+      throw new Error (ERROR_MSG.API_NOT_SUPPORTED);
+    }
+
+    // Call the Helpshift api with the arguments
+    helpshiftApis [api].apply (null, apiArguments);
+  };
 }) (window, document);
