@@ -15,7 +15,7 @@ define ("reducers/appState",
     const update = React.addons.update;
 
     const INITIAL_STATE = {
-      collapsed: true,
+      minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
@@ -55,6 +55,11 @@ define ("reducers/appState",
             });
           }
           return state;
+
+        case ACTION_TYPES.TOGGLE_MINIMIZED:
+          return update (state, {
+            minimized: {$set: action.minimized}
+          });
 
         default:
           return state;

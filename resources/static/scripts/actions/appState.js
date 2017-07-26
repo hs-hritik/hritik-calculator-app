@@ -227,10 +227,23 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to update the minimized flag.
+     * @param {Boolean} minimized - Whether to set flag to true or false.
+     * @returns {Object} - Action
+     */
+    const toggleMinimized = (minimized) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_MINIMIZED,
+        minimized
+      };
+    };
+
     return {
       setConfig,
       setUser,
       updateActiveView,
-      startNewConversation
+      startNewConversation,
+      toggleMinimized
     };
   });

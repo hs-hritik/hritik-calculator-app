@@ -14,17 +14,16 @@ define ("extras/api",
   function (store, EVENT_TYPES, appStateActions, app) {
     "use strict";
 
-    const setUser = (user) => {
-      store.dispatch (appStateActions.setUser (user));
-    };
-
     const handleApis = (type, data) => {
       switch (type) {
         case EVENT_TYPES.CMD_INITIALISE:
           app.init (data);
           break;
         case EVENT_TYPES.CMD_SET_USER:
-          setUser (data.user);
+          store.dispatch (appStateActions.setUser (data.user));
+          break;
+        case EVENT_TYPES.CMD_IFRAME_TOGGLED:
+          store.dispatch (appStateActions.toggleMinimized (data.minimized));
           break;
       }
     };

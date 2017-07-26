@@ -12,6 +12,8 @@ define ("constants/eventTypes",
       SDK_JS_LOADED: "sdk-js-loaded",
       SDK_INITIALISED: "sdk-initialised",
       SDK_ISSUES_LOADED: "sdk-issues-loaded",
+      SDK_TOGGLE_IFRAME: "sdk-toggle-iframe",
+      CMD_IFRAME_TOGGLED: "cmd-iframe-toggled",
       CMD_INITIALISE: "cmd-initialise",
       CMD_SET_USER: "cmd-set-user"
     };

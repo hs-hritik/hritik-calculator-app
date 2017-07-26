@@ -24,6 +24,8 @@
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_INITIALISED: "sdk-initialised",
     SDK_ISSUES_LOADED: "sdk-issues-loaded",
+    SDK_TOGGLE_IFRAME: "sdk-toggle-iframe",
+    CMD_IFRAME_TOGGLED: "cmd-iframe-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_USER: "cmd-set-user"
   };
@@ -190,15 +192,27 @@
 
   /**
    * Show/hide web sdk iframe.
+   * @param {Object} [config]
+   * @param {Boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
    */
-  const toggleWebSdkIframe = () => {
-    if (webSdkIframe.style.display === "none") {
+  const toggleWebSdkIframe = (config = {}) => {
+    const currentlyMinimized = webSdkIframe.style.display === "none";
+
+    if (currentlyMinimized === config.minimized) {
+      return;
+    }
+
+    if (currentlyMinimized) {
       webSdkIframe.style.display = "block";
       updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
     } else {
       webSdkIframe.style.display = "none";
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
+
+    _postMessage (EVENT_TYPES.CMD_IFRAME_TOGGLED, {
+      minimized: !currentlyMinimized
+    });
   };
 
   /**
@@ -224,7 +238,10 @@
 
     doc.body.appendChild (launcherIframe);
 
-    launcherBtn.addEventListener ("click", toggleWebSdkIframe);
+    launcherBtn.addEventListener ("click", () => {
+      toggleWebSdkIframe ();
+    });
+
     launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
     webSdkIframe = createWebSdkIframe ();
@@ -252,6 +269,10 @@
             // @TODO: Show some indication to the user.
           }
           break;
+        case EVENT_TYPES.SDK_TOGGLE_IFRAME:
+          toggleWebSdkIframe ({
+            minimized: data.minimized
+          });
       }
     }, false);
 
