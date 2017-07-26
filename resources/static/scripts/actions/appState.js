@@ -28,13 +28,13 @@ define ("actions/appState",
     const {normalize} = normalizr;
 
     /**
-     * Action to set config.
+     * Action to set client's configuration like platform id, domain, etc.
      * @param {Object} config
      * @returns {Object} - action
      */
-    const setConfig = (config) => {
+    const setClientConfig = (config) => {
       return {
-        type: ACTION_TYPES.SET_CONFIG,
+        type: ACTION_TYPES.SET_CLIENT_CONFIG,
         config
       };
     };
@@ -229,7 +229,7 @@ define ("actions/appState",
     };
 
     return {
-      setConfig,
+      setClientConfig,
       setUser,
       updateActiveView,
       startNewConversation,

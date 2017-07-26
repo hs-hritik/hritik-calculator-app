@@ -29,7 +29,7 @@ define ("components/app",
     });
 
     const init = (config) => {
-      store.dispatch (appStateActions.setConfig (config));
+      store.dispatch (appStateActions.setClientConfig (config));
 
       ReactDOM.render (
         <Provider store={store}>

@@ -46,7 +46,7 @@ define ("reducers/appState",
             currentUserId: {$set: action.id}
           });
 
-        case ACTION_TYPES.SET_CONFIG:
+        case ACTION_TYPES.SET_CLIENT_CONFIG:
           return update (state, {
             platformId: {$set: action.config.platformId},
             apiToken: {$set: action.config.apiToken},
