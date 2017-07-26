@@ -30,6 +30,7 @@ define ("components/containers/chatView",
         messages,
         activeFooter: state.chatView.activeFooter,
         csatRating: state.chatView.csatRating,
+        isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
         text: state.ui.text
       };
     };

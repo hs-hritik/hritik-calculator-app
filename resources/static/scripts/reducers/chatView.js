@@ -24,7 +24,9 @@ define ("reducers/chatView",
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
       suggestedFaqs: [],
-      csatRating: 0
+      csatRating: 0,
+      systemTyping: false,
+      agentTyping: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -68,6 +70,11 @@ define ("reducers/chatView",
             replyBox: {
               disabled: {$set: false}
             }
+          });
+
+        case ACTION_TYPES.TOGGLE_SYSTEM_TYPING:
+          return update (state, {
+            systemTyping: {$set: action.typing}
           });
 
         default:

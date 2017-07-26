@@ -30,6 +30,7 @@ define ("components/messageList",
           PROP_TYPES.MESSAGE
         )).isRequired,
         onSuggestedFaqClick: PropTypes.func,
+        isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
       },
 
@@ -38,6 +39,7 @@ define ("components/messageList",
           <div className="hs-message-list"
                ref={this._refCallback}>
             {this._renderMessages ()}
+            {this._renderTypingIndicator ()}
           </div>
         );
       },
@@ -81,6 +83,20 @@ define ("components/messageList",
 
         return (
           <div className="hs-message-list__date-separator">{dateStr}</div>
+        );
+      },
+
+      /**
+       * Render the typing indicator.
+       */
+      _renderTypingIndicator () {
+        if (!this.props.isTyping) {
+          return null;
+        }
+
+        // @TODO: Add css and typing icon.
+        return (
+          <span>Typing</span>
         );
       },
 

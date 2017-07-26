@@ -15,13 +15,14 @@ define ("actions/chatView",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "actions/entities",
+    "actions/batch",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    MESSAGE_CONSTANTS, xhr, arrayUtils, entitiesActions, entitySchema,
+    MESSAGE_CONSTANTS, xhr, arrayUtils, entitiesActions, batchActions, entitySchema,
     entityHelpers, chatViewHelpers, xhrHelpers) {
     "use strict";
 
@@ -29,6 +30,7 @@ define ("actions/chatView",
     const MESSAGES_POLLING_TIMEOUT = 3000; // milliseconds
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+    let systemTypingTimerId = null;
 
     let pollingEnabled = false,
         fetchMessagesXhr = null,
@@ -36,7 +38,7 @@ define ("actions/chatView",
 
     /**
      * Action to update reply text.
-     * @param {Object} value - new reply value.
+     * @param {String} value - new reply value.
      * @returns {Object} - action
      */
     const udpateReplyText = (value) => {
@@ -113,9 +115,9 @@ define ("actions/chatView",
      * If polling is enabled, call itself when the xhr ends.
      */
     const fetchMessages = () => {
-      const state = store.getState ();
-      const dispatch = store.dispatch;
-      const appState = state.appState;
+      const state = store.getState (),
+            {dispatch} = store,
+            {appState} = state;
 
       const xhrData = {
         "identifier": appState.currentUserId,
@@ -149,15 +151,14 @@ define ("actions/chatView",
           if (issueState === "resolved" || issueState === "rejected") {
             pollingEnabled = false;
             const {problemSolvedAgentMessage} = state.ui.text;
-            const agentMsg = chatViewHelpers.createTextMessage (problemSolvedAgentMessage, {
+
+            dispatch (createTextMessage ({
+              text: problemSolvedAgentMessage,
               isCustomerMsg: false
-            });
-            dispatch (entitiesActions.setEntities ({
-              messages: {
-                [agentMsg.id]: agentMsg
-              }
+            }, {
+              typingTimer: null,
+              issueId: appState.activeIssueId
             }));
-            dispatch (addMessages (appState.activeIssueId, [agentMsg.id]));
             dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
           }
         },
@@ -260,9 +261,9 @@ define ("actions/chatView",
      */
     const submitReply = () => {
       return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-        const replyBox = state.chatView.replyBox;
+        const state = getState (),
+              {appState} = state,
+              {replyBox} = state.chatView;
 
         if (replyBox.disabled || !replyBox.value) {
           return;
@@ -271,19 +272,13 @@ define ("actions/chatView",
 
         // If there is no active issue, create user message and add it in dummy issue.
         if (!appState.activeIssueId) {
-          const userMsg = chatViewHelpers.createTextMessage (replyBox.value, {
+          dispatch (createTextMessage ({
+            text: replyBox.value,
             isCustomerMsg: true
-          });
-
-          // As this message is created on frontend,
-          // it is already in normalized and processed format.
-          // So, directly udpating the entities in the store.
-          dispatch (entitiesActions.setEntities ({
-            messages: {
-              [userMsg.id]: userMsg
-            }
+          }, {
+            typingTimer: null,
+            issueId: appState.dummyIssueId
           }));
-          dispatch (addMessages (appState.dummyIssueId, [userMsg.id]));
 
           // Get faq suggestions for the given user message.
           // @TODO: Add handler to stop firing multiple xhrs on multiple user messages.
@@ -543,18 +538,81 @@ define ("actions/chatView",
     const rejectFaqSuggestions = () => {
       return (dispatch, getState) => {
         const state = getState ();
-
-        const userMsg = chatViewHelpers.createTextMessage (state.ui.text.createIssueUserMessage, {
+        dispatch (createTextMessage ({
+          text: state.ui.text.createIssueUserMessage,
           isCustomerMsg: true
+        }, {
+          typingTimer: null,
+          issueId: state.appState.dummyIssueId
+        }));
+
+        dispatch (createIssue ());
+      };
+    };
+
+    /**
+     * Action to toggle system typing flag.
+     * @param {Boolean} typing - Set typing to true or false.
+     * @returns {Object} - Action
+     */
+    const toggleSystemTyping = (typing) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_SYSTEM_TYPING,
+        typing
+      };
+    };
+
+    /**
+     * Action to create text message along with optionally showing system typing indicator.
+     * Pass the message object related data in the config object,
+     * and additional meta data in options object.
+     * @param {Object} config - Data required for creating the message.
+     * @param {String} config.text - Message text.
+     * @param {Boolean} [config.isCustomerMsg] - Agent message or customer message.
+     * @param {Object} options - Additional options for the action.
+     * @param {String} options.issueId - The issue id to which issue belongs.
+     * @param {Number} [options.typingTimer] - If the issue has to be added after sometime,
+     *                                         pass the time in milliseconds. Typing indicator
+     *                                         would be shown for that time period.
+     * @returns {Object} - Action
+     */
+    const createTextMessage = (config, options) => {
+      return (dispatch) => {
+        const {typingTimer, issueId} = options;
+        const {text, isCustomerMsg} = config;
+        const msg = chatViewHelpers.createTextMessage (text, {
+          isCustomerMsg
         });
 
-        dispatch (entitiesActions.setEntities ({
-          messages: {
-            [userMsg.id]: userMsg
+        // As this message is created on frontend,
+        // it is already in normalized and processed format.
+        // So, directly udpating the entities in the store.
+        const actionsToDispatch = [
+          entitiesActions.setEntities ({
+            messages: {
+              [msg.id]: msg
+            }
+          }),
+          addMessages (issueId, [msg.id])
+        ];
+
+        if (typingTimer) {
+          dispatch (toggleSystemTyping (true));
+
+          if (systemTypingTimerId) {
+            window.clearTimeout (systemTypingTimerId);
+            systemTypingTimerId = null;
           }
-        }));
-        dispatch (addMessages (state.appState.dummyIssueId, [userMsg.id]));
-        dispatch (createIssue ());
+
+          systemTypingTimerId = window.setTimeout (() => {
+            dispatch (batchActions ([
+              toggleSystemTyping (false),
+              ...actionsToDispatch
+            ]));
+          }, typingTimer);
+        } else {
+          dispatch (batchActions (actionsToDispatch));
+        }
       };
     };
 

@@ -228,6 +228,7 @@ define ("components/chatView",
           PROP_TYPES.MESSAGE
         )).isRequired,
         onSuggestedFaqClick: PropTypes.func,
+        isTyping: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onIssueFeedback: PropTypes.func.isRequired,
@@ -245,6 +246,7 @@ define ("components/chatView",
             <ViewHeader title={this.props.text.chatViewHeader} />
             <div className="hs-view__content">
               <MessageList messages={this.props.messages}
+                           isTyping={this.props.isTyping}
                            text={this.props.text}
                            onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
