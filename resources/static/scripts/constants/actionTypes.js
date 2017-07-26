@@ -9,6 +9,7 @@ define ("constants/actionTypes",
     "use strict";
 
     return {
+      BATCH_ACTIONS: "BATCH_ACTIONS",
       SET_USER: "SET_USER",
       SET_USER_ID: "SET_USER_ID",
       SET_CONFIG: "SET_CONFIG",
