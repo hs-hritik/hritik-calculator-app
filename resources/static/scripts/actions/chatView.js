@@ -280,32 +280,8 @@ define ("actions/chatView",
             issueId: appState.dummyIssueId
           }));
 
-          // Get faq suggestions for the given user message.
-          // @TODO: Add handler to stop firing multiple xhrs on multiple user messages.
-          dispatch (getFaqSuggestions (replyBox.value, {
-            onSuccess: (faqs) => {
-              // If there are no faq suggestions, create new issue,
-              // otherwise create faw message.
-              if (!faqs.length) {
-                dispatch (createIssue ());
-              } else {
-                const faqMsg = chatViewHelpers.createFaqMessage (faqs);
-                dispatch (entitiesActions.setEntities ({
-                  messages: {
-                    [faqMsg.id]: faqMsg
-                  }
-                }));
-
-                dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
-                dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
-              }
-            },
-            onEnd: () => {
-              dispatch (enableReplyBox ());
-            }
-          }));
-
           dispatch (udpateReplyText (""));
+          dispatch (startNextPreChatFeature ());
           return;
         }
 
@@ -546,7 +522,7 @@ define ("actions/chatView",
           issueId: state.appState.dummyIssueId
         }));
 
-        dispatch (createIssue ());
+        dispatch (startNextPreChatFeature ());
       };
     };
 
@@ -616,6 +592,133 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to add greeting message.
+     * @returns {Object} - Action
+     */
+    const addGreetingMessage = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const defaultAgentMsgText = state.ui.text.defaultAgentMessage;
+
+        dispatch (createTextMessage ({
+          text: defaultAgentMsgText,
+          isCustomerMsg: false
+        }, {
+          typingTimer: null,
+          issueId: state.appState.dummyIssueId
+        }));
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+      };
+    };
+
+    /**
+     * Action to start answer bot workflow (FAQ suggestions).
+     * @param {String} searchText - Text for which faq suggestions have to be fetched.
+     * @returns {Object} - Action
+     */
+    const startAnswerBot = (searchText) => {
+      return (dispatch, getState) => {
+        const state = getState (),
+              {appState} = state;
+
+        // Get faq suggestions for the given user message.
+        dispatch (getFaqSuggestions (searchText, {
+          onSuccess: (faqs) => {
+            // If there are no faq suggestions, create new issue,
+            // otherwise create faq message.
+            if (!faqs.length) {
+              dispatch (startNextPreChatFeature ());
+            } else {
+              const faqMsg = chatViewHelpers.createFaqMessage (faqs);
+              dispatch (entitiesActions.setEntities ({
+                messages: {
+                  [faqMsg.id]: faqMsg
+                }
+              }));
+
+              dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
+              dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+            }
+          },
+          onEnd: () => {
+            dispatch (enableReplyBox ());
+          }
+        }));
+      };
+    };
+
+    /**
+     * Action to start get info bot workflow.
+     * @returns {Object} - Action
+     */
+    const startGetInfoBot = () => {
+      return (dispatch) => {
+        // @TODO
+        dispatch (startNextPreChatFeature ());
+      };
+    };
+
+    /**
+     * Action to increment pre-chat features index.
+     * @returns {Object} - Action
+     */
+    const incrementPreChatFeatureIndex = () => {
+      return {
+        type: ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX
+      };
+    };
+
+    /**
+     * Action to start next pre-chat feature.
+     * If all pre-chat features are completed, create new issue.
+     * @returns {Object} - Action
+     */
+    const startNextPreChatFeature = () => {
+      return (dispatch, getState) => {
+        const {appState} = getState ();
+        const {preChatfeaturesOrder, featuresEnabled, preChatfeatureIndex} = appState;
+
+        // If the preChatfeatureIndex has reached the length of preChatfeaturesOrder list,
+        // it means all the pre-chat features are executed and create new issue.
+        if (preChatfeatureIndex >= preChatfeaturesOrder.length) {
+          dispatch (createIssue ());
+          return;
+        }
+
+        const feature = preChatfeaturesOrder [preChatfeatureIndex];
+        dispatch (incrementPreChatFeatureIndex ());
+
+        if (featuresEnabled [feature]) {
+          // If the feature is enabled, start the feature.
+          dispatch (startFeature (feature));
+        } else {
+          // If the feature is disabled, start the next feature.
+          dispatch (startNextPreChatFeature ());
+        }
+      };
+    };
+
+    /**
+     * Action to start a particular feature.
+     * @returns {Object} - Action
+     */
+    const startFeature = (feature) => {
+      return (dispatch) => {
+        switch (feature) {
+          case "greeting":
+            dispatch (addGreetingMessage ());
+            break;
+          case "answerBot":
+            dispatch (startAnswerBot ());
+            break;
+          case "getInfoBot":
+            dispatch (startGetInfoBot ());
+            break;
+        }
+      };
+    };
+
     return {
       udpateReplyText,
       submitReply,
@@ -628,6 +731,7 @@ define ("actions/chatView",
       submitCsat,
       setActiveIssue,
       setChatViewFooter,
-      rejectFaqSuggestions
+      rejectFaqSuggestions,
+      startNextPreChatFeature
     };
   });

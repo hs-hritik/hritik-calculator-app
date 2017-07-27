@@ -7,7 +7,6 @@
 define ("actions/appState",
   [
     "constants/actionTypes",
-    "constants/chatView",
     "constants/routes",
     "constants/eventTypes",
     "normalizr",
@@ -21,13 +20,12 @@ define ("actions/appState",
     "actions/chatView",
     "utils/postMessage"
   ],
-  function (ACTION_TYPES, CHAT_VIEW_CONSTANTS, routes, EVENT_TYPES,
-    normalizr, entitySchema, entityHelpers, chatViewHelpers, xhrHelpers, xhr,
-    objUtils, entitiesActions, chatViewActions, postMessage) {
+  function (ACTION_TYPES, routes, EVENT_TYPES, normalizr, entitySchema,
+    entityHelpers, chatViewHelpers, xhrHelpers, xhr, objUtils,
+    entitiesActions, chatViewActions, postMessage) {
     "use strict";
 
     const {normalize} = normalizr;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     /**
      * Action to set config.
@@ -84,7 +82,7 @@ define ("actions/appState",
 
     /**
      * Action to start new conversation.
-     * Creates dummy issue and adds default agent message to it.
+     * Creates dummy issue entity.
      * The initial conversation on the web sdk would not be part of an
      * issue created on the server. So, we need to create a dummy issue
      * on frontend and add messages to it.
@@ -93,26 +91,17 @@ define ("actions/appState",
     const startNewConversation = () => {
       return (dispatch, getState) => {
         const state = getState ();
-        const defaultAgentMsgText = state.ui.text.defaultAgentMessage;
-        const agentMsg = chatViewHelpers.createTextMessage (defaultAgentMsgText, {
-          isCustomerMsg: false
-        });
-
-        // As this issue and message is created on frontend (and not on the
-        // server/backend), we can directly udpate the entities in the store.
-        // No need to normalize and process.
+        // Create dummy issue entity.
         dispatch (entitiesActions.setEntities ({
           issues: {
             [state.appState.dummyIssueId]: {
-              messages: [agentMsg.id]
+              messages: []
             }
-          },
-          messages: {
-            [agentMsg.id]: agentMsg
           }
         }));
         dispatch (chatViewActions.setActiveIssue (null));
-        dispatch (chatViewActions.setChatViewFooter (ACTIVE_FOOTER.REPLY));
+        // @TODO: Dispatch action to set active footer to blocked.
+        dispatch (chatViewActions.startNextPreChatFeature ());
       };
     };
 

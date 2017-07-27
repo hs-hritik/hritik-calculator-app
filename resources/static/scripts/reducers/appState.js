@@ -7,12 +7,14 @@
 define ("reducers/appState",
   [
     "constants/actionTypes",
-    "constants/activeView"
+    "constants/activeView",
+    "constants/appState"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS) {
     "use strict";
 
     const update = React.addons.update;
+    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
       minimized: true,
@@ -24,7 +26,17 @@ define ("reducers/appState",
       profileId: "",
       apiToken: "",
       domain: "",
-      appId: ""
+      appId: "",
+      issueState: ISSUE_STATE.PRE_CHAT,
+      featuresEnabled: {
+        greeting: true,
+        answerBot: true,
+        getInfoBot: true,
+        csat: true
+      },
+      preChatfeaturesOrder: ["greeting", "answerBot", "getInfoBot"],
+      preChatfeatureIndex: 0
+
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -59,6 +71,11 @@ define ("reducers/appState",
         case ACTION_TYPES.TOGGLE_MINIMIZED:
           return update (state, {
             minimized: {$set: action.minimized}
+          });
+
+        case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
+          return update (state, {
+            preChatfeatureIndex: {$set: state.preChatfeatureIndex + 1}
           });
 
         default:
