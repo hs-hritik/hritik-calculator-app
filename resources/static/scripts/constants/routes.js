@@ -10,6 +10,9 @@ define ("constants/routes",
 
     const BASE = "https://api.helpshift.com/v1/";
 
+    // @TODO: Update this route when HS API is ready.
+    const getWmConfig = (domain) => `${BASE}${domain}/webm/config`;
+
     const getMyIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
 
     const postUserReply = (domain, issueId) =>
@@ -36,6 +39,7 @@ define ("constants/routes",
     const postProfile = (domain) => `${BASE}${domain}/webm/profiles`;
 
     return {
+      getWmConfig,
       getMyIssues,
       postUserReply,
       getMessages,

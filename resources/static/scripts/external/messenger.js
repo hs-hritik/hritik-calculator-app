@@ -21,10 +21,12 @@
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_INITIALISED: "sdk-initialised",
+    SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_ISSUES_LOADED: "sdk-issues-loaded",
     SDK_TOGGLE_IFRAME: "sdk-toggle-iframe",
     CMD_IFRAME_TOGGLED: "cmd-iframe-toggled",
     CMD_INITIALISE: "cmd-initialise",
+    CMD_SET_CONFIG: "cmd-set-config",
     CMD_SET_USER: "cmd-set-user"
   };
 
@@ -233,11 +235,18 @@
   };
 
   /**
+   * Process web messenger config to update the behavior of the widget.
+   * @param {Object} - the config object
+   */
+  // const processWmConfig = (config) => {
+  //   // @TODO: Use the web messenger config to set appearance, etc
+  // };
+
+  /**
    * Entry point for rendering iframe on the client page.
    */
-  const init = (config) => {
+  const init = (clientConfig) => {
     const launcherIframe = createLauncherIframe ();
-
     launcherBtn = createLauncherButton ();
 
     doc.body.appendChild (launcherIframe);
@@ -251,21 +260,37 @@
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
 
-    // Start listening for the iframe messages.
+    // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
       const {type, data} = JSON.parse (event.data);
 
       switch (type) {
         case EVENT_TYPES.SDK_JS_LOADED:
-          // SDK loading is separated into two parts: load and initialise.
-          // SDK_JS_LOADED event represents that the web sdk's javascript is loaded.
-          // Once the sdk's js has loaded, the sdk needs to be initialised with a config.
-          // After the sdk has been initialised the parent page can use the api.
-          _postMessage (EVENT_TYPES.CMD_INITIALISE, config);
+          // Before web messenger APIs can be called by the client, following
+          // events should occur (in the given order).
+          //
+          // SDK_JS_LOADED: Represents the execution completion of the web sdk
+          // entry point (webSdk.js).
+          // SDK_CONFIG_LOADED: Represents the loading of web messenger
+          // config, which along with other settings, determines whether
+          // the widget should load or not.
+          // SDK_INITIALISED: Represents the loading of the wm React app.
+
+          // Set the client and wm configs to the app.
+          _postMessage (EVENT_TYPES.CMD_SET_CONFIG, clientConfig);
+          break;
+        case EVENT_TYPES.SDK_CONFIG_LOADED:
+          // Process wm config to set appearance, etc.
+          // wmConfig = data.wmConfig;
+
+          // @TODO Using CMD_INITIALISE to mount the app. A different event e.g.
+          // CMD_TRIGGER_MESSENGER would be used to initialise the app once
+          // it's implemented.
+          _postMessage (EVENT_TYPES.CMD_INITIALISE);
           break;
         case EVENT_TYPES.SDK_INITIALISED:
-          // SDK_INITIALISED event represents that the web sdk is initialised
-          // with required config. Now parent can start calling Helpshift APIs.
+          // @TODO: This event will be obsolete once initialization is handled
+          // by other events like CMD_TRIGGER_MESSENGER.
           fireWebSdkReadyEvent ();
           break;
         case EVENT_TYPES.SDK_ISSUES_LOADED:

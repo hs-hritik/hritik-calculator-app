@@ -32,24 +32,130 @@ define ("actions/appState",
      * @param {Object} config
      * @returns {Object} - action
      */
-    const setClientConfig = (config) => {
-      return {
-        type: ACTION_TYPES.SET_CLIENT_CONFIG,
-        config
+    const setClientConfig = (config) => ({
+      type: ACTION_TYPES.SET_CLIENT_CONFIG,
+      config
+    });
+
+    /**
+     * Action to set the web messenger configuration set by the Helpshift admin
+     * and set it to the store. Post message to the client with the config.
+     * This configuration contains settings like if wm is enabled, appearance,
+     * answer bot, etc.
+     */
+    const setWmConfig = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {domain, platformId} = state.appState;
+
+        getWmConfig (domain, platformId, {
+          onSuccess: (response) => {
+            // Set the config values to the store
+            const wmConfig = _getProcessedWmConfig (response);
+            dispatch (setWmConfigValues (wmConfig));
+            // Send the config event loaded back to the client
+            // @TODO Strip this object down to send only relevant config
+            postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
+              wmConfig
+            });
+          }
+        });
       };
     };
+
+    /**
+     * Get web messenger config via the HS API.
+     * @param {String} domain
+     * @param {String} platformId
+     * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
+     */
+    const getWmConfig = (domain, platformId, callbacks) => {
+      xhr ({
+        route: routes.getWmConfig (domain),
+        data: {
+          "platform-id": platformId
+        },
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess: (response) => {
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess (response);
+          }
+        },
+        onFailure: () => {
+          // @TODO: Because this XHR is not ready yet, the failure
+          // callback would be executed. Calling the onSuccess callback with a
+          // dummy response here in order to test the flow.
+          // This is temporary and will be removed.
+          const response = {
+            widget_enabled: true,
+            agent_nickname_enabled: false,
+            answer_bot_enabled: false,
+            user_info_bot_enabled: false,
+            csat_bot_enabled: false,
+            greeting_msg: "Hi! How can I help you today?",
+            appearance: {
+              widget_title: "Chat with us",
+              primary_color: "#43BF6C"
+            },
+            user_info_bot: {
+              selection: ["name"]
+            },
+            csat_bot: {
+              req_msg: "Thanks! Would you like to fill this?",
+              form_msg: "Your feedback helps us improve"
+            }
+          };
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess (response);
+          }
+        }
+      });
+    };
+
+    /**
+     * Process web messenger config raw data and return an object
+     */
+    const _getProcessedWmConfig = (data) => {
+      return {
+        widgetEnabled: data.widget_enabled,
+        agentNicknameEnabled: data.agent_nickname_enabled,
+        ansBotEnabled: data.answer_bot_enabled,
+        userInfoBotEnabled: data.user_info_bot_enabled,
+        csatBotEnbaled: data.csat_bot_enabled,
+        greetingMsg: data.greeting_msg,
+        appearance: {
+          widgetTitle: data.appearance.widget_title,
+          primaryColor: data.appearance.primary_color
+        },
+        userInfoBot: {
+          selection: data.user_info_bot.selection
+        },
+        csatBot: {
+          requestMsg: data.csat_bot.req_msg,
+          formMsg: data.csat_bot.form_msg
+        }
+      };
+    };
+
+    /**
+     * Action to set wm config to the store.
+     * @param {Object} config.
+     * @returns {Object} - action
+     */
+    const setWmConfigValues = (config) => ({
+      type: ACTION_TYPES.SET_WM_CONFIG,
+      config
+    });
 
     /**
      * Action to set user id.
      * @param {String} id - user id.
      * @returns {Object} - action
      */
-    const setUserId = (id) => {
-      return {
-        type: ACTION_TYPES.SET_USER_ID,
-        id
-      };
-    };
+    const setUserId = (id) => ({
+      type: ACTION_TYPES.SET_USER_ID,
+      id
+    });
 
     /**
      * Find active issue in the given issues object,
@@ -116,9 +222,7 @@ define ("actions/appState",
         const domain = state.appState.domain;
 
         registerUserProfile (user, domain, {
-          onSuccess: () => {
-            dispatch (getIssues (user));
-          }
+          onSuccess: () => dispatch (getIssues (user))
         });
       };
     };
@@ -154,7 +258,7 @@ define ("actions/appState",
           }
         },
         onFailure: () => {
-            // @TODO: Handler failure.
+          // @TODO: Handler failure.
         }
       });
     };
@@ -209,12 +313,10 @@ define ("actions/appState",
      * @param {String} view - update the active view to
      * @returns {Object} - the action object
      */
-    const updateActiveView = (view) => {
-      return {
-        type: ACTION_TYPES.UPDATE_ACTIVE_VIEW,
-        view
-      };
-    };
+    const updateActiveView = (view) => ({
+      type: ACTION_TYPES.UPDATE_ACTIVE_VIEW,
+      view
+    });
 
     /**
      * Action to update the minimized flag.
@@ -230,6 +332,7 @@ define ("actions/appState",
 
     return {
       setClientConfig,
+      setWmConfig,
       setUser,
       updateActiveView,
       startNewConversation,

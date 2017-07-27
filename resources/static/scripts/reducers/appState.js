@@ -35,12 +35,38 @@ define ("reducers/appState",
         csat: true
       },
       preChatfeaturesOrder: ["greeting", "answerBot", "getInfoBot"],
-      preChatfeatureIndex: 0
-
+      preChatfeatureIndex: 0,
+      // @TODO: Update this based on the updated structure of the state
+      // that has featuresEnabled, etc. Also, move the text values to the ui
+      // reducer.
+      wmConfig: {
+        widgetEnabled: false,
+        agentNicknameEnabled: false,
+        ansBotEnabled: false,
+        userInfoBotEnabled: false,
+        csatBotEnbaled: false,
+        greetingMsg: "Hi! How can I help you today?",
+        appearance: {
+          widgetTitle: "Chat with us",
+          primaryColor: "#43BF6C"
+        },
+        userInfoBot: {
+          selection: ["name"]
+        },
+        csatBot: {
+          requestMsg: "Thanks! Would you like to fill this?",
+          formMsg: "Your feedback helps us improve"
+        }
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.SET_WM_CONFIG:
+          return update (state, {
+            wmConfig: {$set: action.config}
+          });
+
         case ACTION_TYPES.SET_USER_ID:
           return update (state, {
             currentUserId: {$set: action.id}
