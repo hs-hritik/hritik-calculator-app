@@ -23,8 +23,8 @@
     SDK_INITIALISED: "sdk-initialised",
     SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_ISSUES_LOADED: "sdk-issues-loaded",
-    SDK_TOGGLE_IFRAME: "sdk-toggle-iframe",
-    CMD_IFRAME_TOGGLED: "cmd-iframe-toggled",
+    SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
+    CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_SET_USER: "cmd-set-user"
@@ -216,7 +216,7 @@
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
 
-    _postMessage (EVENT_TYPES.CMD_IFRAME_TOGGLED, {
+    _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
       minimized: !currentlyMinimized
     });
   };
@@ -298,7 +298,7 @@
             // @TODO: Show some indication to the user.
           }
           break;
-        case EVENT_TYPES.SDK_TOGGLE_IFRAME:
+        case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
           toggleWebSdkIframe ({
             minimized: data.minimized
           });

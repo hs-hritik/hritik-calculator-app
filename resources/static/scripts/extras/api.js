@@ -34,7 +34,7 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_USER:
           store.dispatch (appStateActions.setUser (data.user));
           break;
-        case EVENT_TYPES.CMD_IFRAME_TOGGLED:
+        case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
           store.dispatch (appStateActions.toggleMinimized (data.minimized));
           break;
       }
