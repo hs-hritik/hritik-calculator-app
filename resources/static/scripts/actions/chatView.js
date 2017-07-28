@@ -26,13 +26,12 @@ define ("actions/chatView",
     entityHelpers, chatViewHelpers, xhrHelpers) {
     "use strict";
 
-    const {normalize, denormalize} = normalizr;
-    const MESSAGES_POLLING_TIMEOUT = 3000; // milliseconds
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
-    let systemTypingTimerId = null;
+    const {normalize, denormalize} = normalizr,
+          MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
+          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS;
 
-    let pollingEnabled = false,
+    let systemTypingTimerId = null,
+        pollingEnabled = false,
         fetchMessagesXhr = null,
         fetchMessagesTimer = null;
 
@@ -152,8 +151,8 @@ define ("actions/chatView",
             pollingEnabled = false;
             const {problemSolvedAgentMessage} = state.ui.text;
 
-            dispatch (createTextMessage ({
-              text: problemSolvedAgentMessage,
+            dispatch (createMessage (MESSAGE_TYPE.TEXT, {
+              body: problemSolvedAgentMessage,
               isCustomerMsg: false
             }, {
               typingTimer: null,
@@ -272,8 +271,8 @@ define ("actions/chatView",
 
         // If there is no active issue, create user message and add it in dummy issue.
         if (!appState.activeIssueId) {
-          dispatch (createTextMessage ({
-            text: replyBox.value,
+          dispatch (createMessage (MESSAGE_TYPE.TEXT, {
+            body: replyBox.value,
             isCustomerMsg: true
           }, {
             typingTimer: null,
@@ -514,8 +513,9 @@ define ("actions/chatView",
     const rejectFaqSuggestions = () => {
       return (dispatch, getState) => {
         const state = getState ();
-        dispatch (createTextMessage ({
-          text: state.ui.text.createIssueUserMessage,
+
+        dispatch (createMessage (MESSAGE_TYPE.TEXT, {
+          body: state.ui.text.createIssueUserMessage,
           isCustomerMsg: true
         }, {
           typingTimer: null,
@@ -539,26 +539,25 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to create text message along with optionally showing system typing indicator.
+     * Action to create a message of given type along with
+     * optionally showing system typing indicator.
      * Pass the message object related data in the config object,
      * and additional meta data in options object.
+     * @param {String} messageType - Message type.
      * @param {Object} config - Data required for creating the message.
-     * @param {String} config.text - Message text.
-     * @param {Boolean} [config.isCustomerMsg] - Agent message or customer message.
      * @param {Object} options - Additional options for the action.
      * @param {String} options.issueId - The issue id to which issue belongs.
      * @param {Number} [options.typingTimer] - If the issue has to be added after sometime,
      *                                         pass the time in milliseconds. Typing indicator
      *                                         would be shown for that time period.
+     * @param {Function} [options.onAddMessage] - The callback function to be executed when the
+     *                                            message is added to the store.
      * @returns {Object} - Action
      */
-    const createTextMessage = (config, options) => {
+    const createMessage = (messageType, config, options) => {
       return (dispatch) => {
-        const {typingTimer, issueId} = options;
-        const {text, isCustomerMsg} = config;
-        const msg = chatViewHelpers.createTextMessage (text, {
-          isCustomerMsg
-        });
+        const {typingTimer, issueId, onAddMessage} = options;
+        const msg = chatViewHelpers.createMessage (messageType, config);
 
         // As this message is created on frontend,
         // it is already in normalized and processed format.
@@ -585,9 +584,15 @@ define ("actions/chatView",
               toggleSystemTyping (false),
               ...actionsToDispatch
             ]));
+            if (onAddMessage) {
+              onAddMessage ();
+            }
           }, typingTimer);
         } else {
           dispatch (batchActions (actionsToDispatch));
+          if (onAddMessage) {
+            onAddMessage ();
+          }
         }
       };
     };
@@ -601,8 +606,8 @@ define ("actions/chatView",
         const state = getState ();
         const defaultAgentMsgText = state.ui.text.greetingMsg;
 
-        dispatch (createTextMessage ({
-          text: defaultAgentMsgText,
+        dispatch (createMessage (MESSAGE_TYPE.TEXT, {
+          body: defaultAgentMsgText,
           isCustomerMsg: false
         }, {
           typingTimer: null,
@@ -619,30 +624,33 @@ define ("actions/chatView",
      */
     const startAnswerBot = (searchText) => {
       return (dispatch, getState) => {
-        const state = getState (),
-              {appState} = state;
+        const {appState} = getState ();
 
+        dispatch (toggleSystemTyping (true));
         // Get faq suggestions for the given user message.
         dispatch (getFaqSuggestions (searchText, {
           onSuccess: (faqs) => {
-            // If there are no faq suggestions, create new issue,
+            // If there are no faq suggestions, move to next pre-chat feature,
             // otherwise create faq message.
             if (!faqs.length) {
               dispatch (startNextPreChatFeature ());
             } else {
-              const faqMsg = chatViewHelpers.createFaqMessage (faqs);
-              dispatch (entitiesActions.setEntities ({
-                messages: {
-                  [faqMsg.id]: faqMsg
+              dispatch (createMessage (MESSAGE_TYPE.FAQ, {
+                faqs
+              }, {
+                typingTimer: null,
+                issueId: appState.dummyIssueId,
+                onAddMessage: () => {
+                  dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
                 }
               }));
-
-              dispatch (addMessages (appState.dummyIssueId, [faqMsg.id]));
-              dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
             }
           },
           onEnd: () => {
-            dispatch (enableReplyBox ());
+            dispatch (batchActions ([
+              enableReplyBox (),
+              toggleSystemTyping (false)
+            ]));
           }
         }));
       };

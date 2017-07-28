@@ -16,7 +16,10 @@ define ("constants/chatView",
       NEW_CONVERSATION: "NEW_CONVERSATION"
     };
 
+    const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
+
     return {
-      ACTIVE_FOOTER
+      ACTIVE_FOOTER,
+      MESSAGES_POLLING_TIMEOUT
     };
   });
