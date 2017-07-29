@@ -51,12 +51,11 @@ define ("actions/appState",
         getWmConfig (domain, platformId, {
           onSuccess: (response) => {
             // Set the config values to the store
-            const wmConfig = _getProcessedWmConfig (response);
-            dispatch (setWmConfigValues (wmConfig));
+            dispatch (setWmConfigValues (response));
+
             // Send the config event loaded back to the client
-            // @TODO Strip this object down to send only relevant config
             postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
-              wmConfig
+              wmConfig: getClientWmConfig (response)
             });
           }
         });
@@ -92,16 +91,16 @@ define ("actions/appState",
             answer_bot_enabled: false,
             user_info_bot_enabled: false,
             csat_bot_enabled: false,
-            greeting_msg: "Hi! How can I help you today?",
+            greeting_msg: "Hello! How can I help you today?",
             appearance: {
-              widget_title: "Chat with us",
-              primary_color: "#43BF6C"
+              widget_title: "Chat with us!",
+              primary_color: "#00b6fc"
             },
             user_info_bot: {
               selection: ["name"]
             },
             csat_bot: {
-              req_msg: "Thanks! Would you like to fill this?",
+              req_msg: "Thank you! Would you like to fill this?",
               form_msg: "Your feedback helps us improve"
             }
           };
@@ -113,27 +112,14 @@ define ("actions/appState",
     };
 
     /**
-     * Process web messenger config raw data and return an object
+     * Return client relevant web messenger config object
+     * @param {Object} response - the GET wm config response object
+     * @returns {Object} - the config object for client
      */
-    const _getProcessedWmConfig = (data) => {
+    const getClientWmConfig = (response) => {
       return {
-        widgetEnabled: data.widget_enabled,
-        agentNicknameEnabled: data.agent_nickname_enabled,
-        ansBotEnabled: data.answer_bot_enabled,
-        userInfoBotEnabled: data.user_info_bot_enabled,
-        csatBotEnbaled: data.csat_bot_enabled,
-        greetingMsg: data.greeting_msg,
-        appearance: {
-          widgetTitle: data.appearance.widget_title,
-          primaryColor: data.appearance.primary_color
-        },
-        userInfoBot: {
-          selection: data.user_info_bot.selection
-        },
-        csatBot: {
-          requestMsg: data.csat_bot.req_msg,
-          formMsg: data.csat_bot.form_msg
-        }
+        widgetEnabled: response.widget_enabled,
+        primaryColor: response.appearance.primary_color
       };
     };
 

@@ -17,6 +17,7 @@ define ("reducers/appState",
     const {ISSUE_STATE} = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
+      wmEnabled: false,
       minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
@@ -30,41 +31,28 @@ define ("reducers/appState",
       issueState: ISSUE_STATE.PRE_CHAT,
       featuresEnabled: {
         greeting: true,
-        answerBot: true,
-        getInfoBot: true,
-        csat: true
+        answerBot: false,
+        getInfoBot: false,
+        csatBot: false,
+        agentNickname: false
       },
       preChatfeaturesOrder: ["greeting", "answerBot", "getInfoBot"],
-      preChatfeatureIndex: 0,
-      // @TODO: Update this based on the updated structure of the state
-      // that has featuresEnabled, etc. Also, move the text values to the ui
-      // reducer.
-      wmConfig: {
-        widgetEnabled: false,
-        agentNicknameEnabled: false,
-        ansBotEnabled: false,
-        userInfoBotEnabled: false,
-        csatBotEnbaled: false,
-        greetingMsg: "Hi! How can I help you today?",
-        appearance: {
-          widgetTitle: "Chat with us",
-          primaryColor: "#43BF6C"
-        },
-        userInfoBot: {
-          selection: ["name"]
-        },
-        csatBot: {
-          requestMsg: "Thanks! Would you like to fill this?",
-          formMsg: "Your feedback helps us improve"
-        }
-      }
+      preChatfeatureIndex: 0
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
+          const {config} = action;
+
           return update (state, {
-            wmConfig: {$set: action.config}
+            wmEnabled: {$set: config.widget_enabled},
+            featuresEnabled: {
+              answerBot: {$set: config.answer_bot_enabled},
+              getInfoBot: {$set: config.user_info_bot_enabled},
+              csatBot: {$set: config.csat_bot_enabled},
+              agentNickname: {$set: config.agent_nickname_enabled}
+            }
           });
 
         case ACTION_TYPES.SET_USER_ID:

@@ -599,7 +599,7 @@ define ("actions/chatView",
     const addGreetingMessage = () => {
       return (dispatch, getState) => {
         const state = getState ();
-        const defaultAgentMsgText = state.ui.text.defaultAgentMessage;
+        const defaultAgentMsgText = state.ui.text.greetingMsg;
 
         dispatch (createTextMessage ({
           text: defaultAgentMsgText,

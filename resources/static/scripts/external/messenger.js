@@ -238,9 +238,10 @@
    * Process web messenger config to update the behavior of the widget.
    * @param {Object} - the config object
    */
-  // const processWmConfig = (config) => {
-  //   // @TODO: Use the web messenger config to set appearance, etc
-  // };
+  const processWmConfig = (config) => {
+    // @TODO: Use the web messenger config to set appearance, etc.
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = config.primaryColor;
+  };
 
   /**
    * Entry point for rendering iframe on the client page.
@@ -281,7 +282,7 @@
           break;
         case EVENT_TYPES.SDK_CONFIG_LOADED:
           // Process wm config to set appearance, etc.
-          // wmConfig = data.wmConfig;
+          processWmConfig (data.wmConfig);
 
           // @TODO Using CMD_INITIALISE to mount the app. A different event e.g.
           // CMD_TRIGGER_MESSENGER would be used to initialise the app once
