@@ -241,23 +241,27 @@
   const processWmConfig = (config) => {
     // @TODO: Use the web messenger config to set appearance, etc.
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = config.primaryColor;
+
+    if (config.widgetEnabled) {
+      // If the widget is enabled, create the launcher iframe+button and append
+      // it to the document.
+      const launcherIframe = createLauncherIframe ();
+      launcherBtn = createLauncherButton ();
+
+      doc.body.appendChild (launcherIframe);
+
+      launcherBtn.addEventListener ("click", () => {
+        toggleWebSdkIframe ();
+      });
+      launcherIframe.contentDocument.body.appendChild (launcherBtn);
+    }
+    // @TODO: Handle the case for when the widget is not enabled.
   };
 
   /**
    * Entry point for rendering iframe on the client page.
    */
   const init = (clientConfig) => {
-    const launcherIframe = createLauncherIframe ();
-    launcherBtn = createLauncherButton ();
-
-    doc.body.appendChild (launcherIframe);
-
-    launcherBtn.addEventListener ("click", () => {
-      toggleWebSdkIframe ();
-    });
-
-    launcherIframe.contentDocument.body.appendChild (launcherBtn);
-
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
 
@@ -283,15 +287,8 @@
         case EVENT_TYPES.SDK_CONFIG_LOADED:
           // Process wm config to set appearance, etc.
           processWmConfig (data.wmConfig);
-
-          // @TODO Using CMD_INITIALISE to mount the app. A different event e.g.
-          // CMD_TRIGGER_MESSENGER would be used to initialise the app once
-          // it's implemented.
-          _postMessage (EVENT_TYPES.CMD_INITIALISE);
           break;
         case EVENT_TYPES.SDK_INITIALISED:
-          // @TODO: This event will be obsolete once initialization is handled
-          // by other events like CMD_TRIGGER_MESSENGER.
           fireWebSdkReadyEvent ();
           break;
         case EVENT_TYPES.SDK_ISSUES_LOADED:

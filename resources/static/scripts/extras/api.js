@@ -8,19 +8,41 @@ define ("extras/api",
   [
     "store",
     "constants/eventTypes",
+    "utils/postMessage",
     "actions/appState",
     "components/app"
   ],
-  function (store, EVENT_TYPES, appStateActions, app) {
+  function (store, EVENT_TYPES, postMessage, appStateActions, app) {
     "use strict";
 
     /**
      * Set client and wm configs to the store
+     * @param {Object} clientConfig
      */
-    const setConfig = (config) => {
+    const setConfig = (clientConfig) => {
       // @TODO: Use batch actions to dispatch the two actions here
-      store.dispatch (appStateActions.setClientConfig (config));
+      store.dispatch (appStateActions.setClientConfig (clientConfig));
       store.dispatch (appStateActions.setWmConfig ());
+    };
+
+    /**
+     * Handle messenger toggle. Mount the top level React component if it's
+     * not mounted already. Dispatch the action to update the messenger-
+     * minimized flag.
+     * @param {Boolean} minimized - If the messenger is in minimized state
+     */
+    const handleMessengerToggle = (minimized) => {
+      // If the messenger is to be maximized and
+      // the React app is not mounted already, mount it.
+      // Let the client know that the app is mounted.
+      if (!minimized && !app.isMounted ()) {
+        app.init ();
+        // @TODO: Temp. SDK_INITIALIZED wouldn't be required when client called
+        // APIs are queued and executed subsequently.
+        postMessage (EVENT_TYPES.SDK_INITIALISED);
+      }
+
+      store.dispatch (appStateActions.toggleMinimized (minimized));
     };
 
     const handleApis = (type, data) => {
@@ -35,7 +57,7 @@ define ("extras/api",
           store.dispatch (appStateActions.setUser (data.user));
           break;
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
-          store.dispatch (appStateActions.toggleMinimized (data.minimized));
+          handleMessengerToggle (data.minimized);
           break;
       }
     };
