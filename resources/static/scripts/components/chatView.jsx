@@ -31,8 +31,8 @@ define ("components/chatView",
         onStartNewConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
         text: PropTypes.shape ({
-          faqSuggestionsHelpful: PropTypes.string.isRequired,
-          faqSuggestionsNotHelpful: PropTypes.string.isRequired,
+          faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
+          faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
           problemSolved: PropTypes.string.isRequired,
           problemNotSolved: PropTypes.string.isRequired,
           csatReviewRequest: PropTypes.string.isRequired,
@@ -134,7 +134,10 @@ define ("components/chatView",
        * Render FAQ suggestions feedback footer.
        */
       _renderFaqSuggestionsFeedback () {
-        const {faqSuggestionsHelpful, faqSuggestionsNotHelpful} = this.props.text;
+        const {faqSuggestionsAdditionalHelpRequiredBtn,
+               faqSuggestionsAdditionalHelpNotRequiredBtn} = this.props.text;
+
+        // @TODO: Change classes, both buttons will have same css.
         const helpfulBtnClasses = classes (
           "hs-button",
           "hs-button--secondary",
@@ -149,15 +152,19 @@ define ("components/chatView",
           "hs-faq-suggestions-feedback__btn"
         );
 
+        // If user does not need additional help (clicking on no), pass true indicating that
+        // faq suggestions were helpful.
+        // If user needs additional help (clicking on yes), pass false indicating that
+        // faq suggestions were not helpful.
         return (
           <div className="hs-faq-suggestions-feedback">
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "yes")}
+            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, true)}
                     className={helpfulBtnClasses}>
-              {faqSuggestionsHelpful}
+              {faqSuggestionsAdditionalHelpNotRequiredBtn}
             </button>
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "no")}
+            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, false)}
                     className={notHelpfulBtnClasses}>
-              {faqSuggestionsNotHelpful}
+              {faqSuggestionsAdditionalHelpRequiredBtn}
             </button>
           </div>
         );

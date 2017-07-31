@@ -15,11 +15,10 @@ define ("components/containers/chatView",
     "constants/chatView"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    appStateActions, CHAT_VIEW_CONSTANTS) {
+    appStateActions) {
     "use strict";
 
     const {denormalize} = normalizr;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const mapStateToProps = (state) => {
       const issueId = state.appState.activeIssueId || state.appState.dummyIssueId;
@@ -40,11 +39,11 @@ define ("components/containers/chatView",
         onSuggestedFaqClick: (faqId) => {
           dispatch (faqViewActions.getFaq (faqId));
         },
-        onFaqSuggestionFeedback: (feedback) => {
-          if (feedback === "no") {
-            dispatch (chatViewActions.rejectFaqSuggestions ());
+        onFaqSuggestionFeedback: (feedbackHelpful) => {
+          if (feedbackHelpful) {
+            dispatch (chatViewActions.acceptFaqSuggestions ());
           } else {
-            dispatch (chatViewActions.setChatViewFooter (ACTIVE_FOOTER.NEW_CONVERSATION));
+            dispatch (chatViewActions.rejectFaqSuggestions ());
           }
         },
         onIssueFeedback: (feedback) => {

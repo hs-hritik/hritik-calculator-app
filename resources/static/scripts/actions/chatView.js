@@ -28,6 +28,7 @@ define ("actions/chatView",
 
     const {normalize, denormalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
+          MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS;
 
     let systemTypingTimerId = null,
@@ -511,18 +512,28 @@ define ("actions/chatView",
      * @returns {Object} - action
      */
     const rejectFaqSuggestions = () => {
+      return (dispatch) => {
+        dispatch (startNextPreChatFeature ());
+      };
+    };
+
+    /**
+     * Action to accept FAQ suggestions.
+     * @returns {Object} - Action
+     */
+    const acceptFaqSuggestions = () => {
       return (dispatch, getState) => {
         const state = getState ();
 
         dispatch (createMessage (MESSAGE_TYPE.TEXT, {
-          body: state.ui.text.createIssueUserMessage,
-          isCustomerMsg: true
+          body: state.ui.text.problemSolvedByFaqSuggestionsMessage,
+          isCustomerMsg: false
         }, {
           typingTimer: null,
           issueId: state.appState.dummyIssueId
         }));
 
-        dispatch (startNextPreChatFeature ());
+        // @TODO: Change state and active footer to closed.
       };
     };
 
@@ -640,9 +651,7 @@ define ("actions/chatView",
               }, {
                 typingTimer: null,
                 issueId: appState.dummyIssueId,
-                onAddMessage: () => {
-                  dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
-                }
+                onAddMessage: onFaqSuggestionMessageAdd
               }));
             }
           },
@@ -654,6 +663,23 @@ define ("actions/chatView",
           }
         }));
       };
+    };
+
+    /**
+     * Callback handler after the faq suggestions message is added.
+     */
+    const onFaqSuggestionMessageAdd = () => {
+      const state = store.getState ();
+      store.dispatch (createMessage (MESSAGE_TYPE.TEXT, {
+        body: state.ui.text.faqSuggestionsAdditionalHelpMessage,
+        isCustomerMsg: false
+      }, {
+        typingTimer: MESSAGE_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
+        issueId: state.appState.dummyIssueId,
+        onAddMessage: () => {
+          store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+        }
+      }));
     };
 
     /**
@@ -718,6 +744,7 @@ define ("actions/chatView",
             dispatch (addGreetingMessage ());
             break;
           case "answerBot":
+            // @TODO: Pass end user first msg as param.
             dispatch (startAnswerBot ());
             break;
           case "getInfoBot":
@@ -740,6 +767,7 @@ define ("actions/chatView",
       setActiveIssue,
       setChatViewFooter,
       rejectFaqSuggestions,
+      acceptFaqSuggestions,
       startNextPreChatFeature
     };
   });
