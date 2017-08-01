@@ -13,6 +13,10 @@
   // const WEB_SDK_URL = "https://hsmirkwood.helpshift.com/static/html/";
   const WEB_SDK_URL = "http://localhost:3000/static/html/";
 
+  const state = {
+    unreadCount: 0
+  };
+
   /**
    * The event that the parent has to listen before calling Helpshift APIs.
    */
@@ -24,6 +28,7 @@
     SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_ISSUES_LOADED: "sdk-issues-loaded",
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
+    UPDATE_UNREAD_COUNT: "update-unread-count",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -219,6 +224,7 @@
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
       minimized: !currentlyMinimized
     });
+    // @TODO: Show count badge if messenger is minimized
   };
 
   /**
@@ -256,6 +262,15 @@
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
     }
     // @TODO: Handle the case for when the widget is not enabled.
+  };
+
+  /**
+   * Update the unread messages count.
+   * @param {Number} count - unread messages count.
+   */
+  const updateUnreadCount = (count) => {
+    state.unreadCount = count;
+    // @TODO: Update the count badge if messenger is currently minimized.
   };
 
   /**
@@ -300,6 +315,10 @@
           toggleWebSdkIframe ({
             minimized: data.minimized
           });
+          break;
+        case EVENT_TYPES.UPDATE_UNREAD_COUNT:
+          updateUnreadCount (data.count);
+          break;
       }
     }, false);
 

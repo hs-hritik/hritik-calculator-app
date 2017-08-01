@@ -26,7 +26,8 @@ define ("reducers/chatView",
       suggestedFaqs: [],
       csatRating: 0,
       systemTyping: false,
-      agentTyping: false
+      agentTyping: false,
+      unreadCount: 0
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -75,6 +76,11 @@ define ("reducers/chatView",
         case ACTION_TYPES.TOGGLE_SYSTEM_TYPING:
           return update (state, {
             systemTyping: {$set: action.typing}
+          });
+
+        case ACTION_TYPES.SET_UNREAD_COUNT:
+          return update (state, {
+            unreadCount: {$set: action.count}
           });
 
         default:

@@ -11,6 +11,8 @@ define ("actions/chatView",
     "constants/actionTypes",
     "constants/routes",
     "constants/chatView",
+    "constants/eventTypes",
+    "constants/activeView",
     "constants/message",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
@@ -19,11 +21,13 @@ define ("actions/chatView",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/chatView",
-    "helpers/xhr"
+    "helpers/xhr",
+    "utils/postMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    MESSAGE_CONSTANTS, xhr, arrayUtils, entitiesActions, batchActions, entitySchema,
-    entityHelpers, chatViewHelpers, xhrHelpers) {
+    EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, xhr, arrayUtils,
+    entitiesActions, batchActions, entitySchema, entityHelpers,
+    chatViewHelpers, xhrHelpers, postMessage) {
     "use strict";
 
     const {normalize, denormalize} = normalizr,
@@ -109,6 +113,45 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set unread messages count.
+     * @param {Number} count - unread count.
+     * @returns {Object} - action
+     */
+    const setUnreadCount = (count) => {
+      return {
+        type: ACTION_TYPES.SET_UNREAD_COUNT,
+        count
+      };
+    };
+
+    /**
+     * Action to mark messages seen.
+     * Also set the unread messages count to zero.
+     * @returns {Object} - action
+     */
+    const markMessagesSeen = () => {
+      return (dispatch, getState) => {
+        const {appState} = getState ();
+
+        // @TODO: Confirm if we should skip this postMessage call if unread count is already zero.
+        postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
+          count: 0
+        });
+        dispatch (setUnreadCount (0));
+
+        xhr ({
+          route: routes.putMessagesSeen (appState.domain, appState.activeIssueId),
+          data: {
+            "identifier": appState.currentUserId,
+            "issue-id": appState.activeIssueId
+          },
+          method: "PUT",
+          headers: xhrHelpers.getCommonHeaders ()
+        });
+      };
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -133,17 +176,32 @@ define ("actions/chatView",
         data: xhrData,
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
+          const latestState = store.getState ();
+
           if (response.messages.length) {
             const normalizedData = normalize (response, entitySchema.messages);
             const processedEntities = entityHelpers.getProcessedEntities (
               normalizedData.entities
             );
-            dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (addMessages (
-              appState.activeIssueId,
-              normalizedData.result.messages
-            ));
-            dispatch (setActiveIssueMsgCursor (response.messages_cursor));
+
+            dispatch (batchActions ([
+              entitiesActions.setEntities (processedEntities),
+              addMessages (appState.activeIssueId, normalizedData.result.messages),
+              setActiveIssueMsgCursor (response.messages_cursor)
+            ]));
+
+            // If the chat view is active, that means the user has seen the messages.
+            // @TODO: Set unread count to zero when active view changes to chat.
+            if (ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
+              dispatch (markMessagesSeen ());
+            } else {
+              const unreadCount = response.messages.length + latestState.chatView.unreadCount;
+              dispatch (setUnreadCount (unreadCount));
+
+              postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
+                count: unreadCount
+              });
+            }
           }
 
           // If issue is resolved or rejected, stop polling and ask user for feedback.

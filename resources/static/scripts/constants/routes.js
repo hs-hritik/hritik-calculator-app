@@ -38,6 +38,9 @@ define ("constants/routes",
 
     const postProfile = (domain) => `${BASE}${domain}/webm/profiles`;
 
+    const putMessagesSeen = (domain, issueId) =>
+                             `${BASE}${domain}/webm/issues/${issueId}/messages-seen`;
+
     return {
       getWmConfig,
       getMyIssues,
@@ -48,6 +51,7 @@ define ("constants/routes",
       getFaqSuggestions,
       postIssue,
       postCSAT,
-      postProfile
+      postProfile,
+      putMessagesSeen
     };
   });

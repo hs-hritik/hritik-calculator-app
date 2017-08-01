@@ -87,10 +87,10 @@ define ("actions/appState",
           // This is temporary and will be removed.
           const response = {
             widget_enabled: true,
-            agent_nickname_enabled: false,
-            answer_bot_enabled: false,
-            user_info_bot_enabled: false,
-            csat_bot_enabled: false,
+            agent_nickname_enabled: true,
+            answer_bot_enabled: true,
+            user_info_bot_enabled: true,
+            csat_bot_enabled: true,
             greeting_msg: "Hello! How can I help you today?",
             appearance: {
               widget_title: "Chat with us!",
