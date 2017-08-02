@@ -20,7 +20,6 @@ define ("extras/api",
      * @param {Object} clientConfig
      */
     const setConfig = (clientConfig) => {
-      // @TODO: Use batch actions to dispatch the two actions here
       store.dispatch (appStateActions.setClientConfig (clientConfig));
       store.dispatch (appStateActions.setWmConfig ());
     };

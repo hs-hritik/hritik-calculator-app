@@ -16,12 +16,13 @@ define ("actions/appState",
     "helpers/xhr",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
+    "store",
     "actions/entities",
     "actions/chatView",
     "utils/postMessage"
   ],
   function (ACTION_TYPES, routes, EVENT_TYPES, normalizr, entitySchema,
-    entityHelpers, chatViewHelpers, xhrHelpers, xhr, objUtils,
+    entityHelpers, chatViewHelpers, xhrHelpers, xhr, objUtils, store,
     entitiesActions, chatViewActions, postMessage) {
     "use strict";
 
@@ -57,6 +58,11 @@ define ("actions/appState",
             postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
               wmConfig: getClientWmConfig (response)
             });
+
+            // A side-effect of getting the web messenger config would be to
+            // add the stylesheet with the primary color (and any other
+            // configurable CSS value) to the document head.
+            setStyles ();
           }
         });
       };
@@ -132,6 +138,129 @@ define ("actions/appState",
       type: ACTION_TYPES.SET_WM_CONFIG,
       config
     });
+
+    /**
+     * Get CSS over the wire, add it to the document and
+     * update the custom CSS variables.
+     */
+    const setStyles = () => {
+      getCss ({
+        onSuccess: (css) => {
+          // Check if CSS variable is supported by the client. If yes,
+          // use "style.setProperty" to update the CSS variables with the
+          // configured values. If it's not supported (IE and Edge),
+          // find and replace the CSS variable strings
+          // (e.g. "var(--hs-custom-primary-color)" with the configured values.
+          // The order of appending the CSS to the document and replacing the
+          // variables depends on the support.
+          // For supported browsers -
+          // 1. Append the CSS to the document
+          // 2. Replace the variables.
+          // For unsupported browsers - the reverse.
+          // @TODO: Use a utility function to determine the support.
+          const isCssVarSupported = true;
+
+          const {ui} = store.getState ();
+          const cssConfig = {
+            primaryColor: ui.color.primary
+          };
+
+          if (isCssVarSupported) {
+            _addStyleToDocument (css);
+            _updateCssVars (cssConfig);
+          } else {
+            const updatedCss = _getCssVarsUpdatedCss (css, cssConfig);
+            _addStyleToDocument (updatedCss);
+          }
+        }
+      });
+    };
+
+    /**
+     * Get CSS string via an XHR.
+     * @param {Object} - callbacks, the object typically with onSuccess, etc.
+     */
+    const getCss = (callbacks) => {
+      xhr ({
+        route: routes.getCss (),
+        parse: false,
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess: (response) => {
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess (response);
+          }
+        }
+      });
+    };
+
+    /**
+     * Create a style tag and add it to document's head.
+     * @param {String} - css, a string with the CSS styles
+     */
+    // @TODO: Check if we should move this to a utility module, or a helper.
+    const _addStyleToDocument = (css) => {
+      const head = document.head,
+            style = document.createElement ("style");
+
+      style.type = "text/css";
+      style.appendChild (document.createTextNode (css));
+
+      head.appendChild (style);
+    };
+
+    /**
+     * Update CSS variables with the configured values and set the values in
+     * the document's css.
+     * @param {Object} - cssConfig, the object with css configured values
+     */
+    const _updateCssVars = (cssConfig) => {
+      document.body.style.setProperty (
+        "--hs-custom-primary-color", cssConfig.primaryColor
+      );
+    };
+
+    /**
+     * Update and return the css string with variables
+     * replaced by the configured values
+     * @param {String} - css, the css string
+     * @param {Object} - cssConfig, the object with css configured values
+     */
+    const _getCssVarsUpdatedCss = (css, cssConfig) => {
+      // Because we need to replace variable strings containing special chars
+      // like "(" and ")", we need to escape these chars when creating the
+      // regular expression. A list with all regexp strings params for the vars.
+      const cssVarsRegexpList = ["var\\(--hs-custom-primary-color\\)"];
+
+      // When regular expression matches, we need to replace the matches
+      // with the configured values. Mapping all such matches with the values to
+      // be replaced.
+      const cssVarsValuesMap = {
+        "var(--hs-custom-primary-color)": cssConfig.primaryColor
+      };
+
+      return replaceAll (css, cssVarsRegexpList, cssVarsValuesMap);
+    };
+
+    /**
+     * Find and replace all occurrences of a string by another string.
+     *
+     * Pass a list of regexp param strings with regexpList and an object with
+     * the mapping of all the matches as key and the string that replaces
+     * it as the value of the corresponding key in the valuesMap.
+     *
+     * @param {String} - str, the source string
+     * @param {Array} - regexpList
+     * @param {Object} - valuesMap
+     * @returns {String} - the updated string
+     */
+    // @TODO: Move this to a gunpowder utility module.
+    const replaceAll = (str, regexpList, valuesMap) => {
+      const re = new RegExp (regexpList.join ("|"), "gi");
+
+      return str.replace (re, (matched) => {
+        return valuesMap [matched.toLowerCase ()];
+      });
+    };
 
     /**
      * Action to set user id.

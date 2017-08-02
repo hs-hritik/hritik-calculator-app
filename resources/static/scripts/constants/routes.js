@@ -13,6 +13,8 @@ define ("constants/routes",
     // @TODO: Update this route when HS API is ready.
     const getWmConfig = (domain) => `${BASE}${domain}/webm/config`;
 
+    const getCss = () => "/static/css/style.css";
+
     const getMyIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
 
     const postUserReply = (domain, issueId) =>
@@ -43,6 +45,7 @@ define ("constants/routes",
 
     return {
       getWmConfig,
+      getCss,
       getMyIssues,
       postUserReply,
       getMessages,
