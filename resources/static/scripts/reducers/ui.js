@@ -39,7 +39,7 @@ define ("reducers/ui",
         replyBtnPlaceholder: "Send a message...",
         csatBotRequestMsg: "Thanks! Would you like to fill this?",
         csatBotFormMsg: "Your feedback helps us improve",
-        getInfoRequestMsg: "Before we begin, we need some more information."
+        infoBotRequestMsg: "Before we begin, we need some more information."
       },
       color: {
         primary: "#43BF6C"

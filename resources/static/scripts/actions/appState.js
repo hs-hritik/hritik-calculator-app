@@ -95,14 +95,14 @@ define ("actions/appState",
             widget_enabled: true,
             agent_nickname_enabled: true,
             answer_bot_enabled: true,
-            user_info_bot_enabled: true,
+            info_bot_enabled: true,
             csat_bot_enabled: true,
             greeting_msg: "Hello! How can I help you today?",
             appearance: {
               widget_title: "Chat with us!",
               primary_color: "#00b6fc"
             },
-            user_info_bot: {
+            info_bot: {
               selection: ["name", "email"]
             },
             csat_bot: {

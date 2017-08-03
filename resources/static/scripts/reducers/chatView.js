@@ -31,7 +31,7 @@ define ("reducers/chatView",
       agentTyping: false,
       endUserFirstMsg: null,
       unreadCount: 0,
-      getInfoBot: {
+      infoBot: {
         fieldsRequired: ["name", "email"],
         currentField: "",
         data: {
@@ -110,21 +110,21 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.SET_WM_CONFIG:
           return update (state, {
-            getInfoBot: {
+            infoBot: {
               fieldsRequired: {
-                $set: action.config.user_info_bot.selection
+                $set: action.config.info_bot.selection
               },
               currentField: {
-                $set: action.config.user_info_bot.selection [0]
+                $set: action.config.info_bot.selection [0]
               }
             }
           });
 
-        case ACTION_TYPES.UPDATE_GET_INFO_FIELD_VALUE:
+        case ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE:
           return update (state, {
-            getInfoBot: {
+            infoBot: {
               data: {
-                [state.getInfoBot.currentField]: {
+                [state.infoBot.currentField]: {
                   value: {
                     value: {$set: action.value}
                   }
@@ -133,13 +133,13 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.CHANGE_GET_INFO_CURRENT_FIELD:
-          const {fieldsRequired, currentField} = state.getInfoBot;
+        case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
+          const {fieldsRequired, currentField} = state.infoBot;
           const currentFieldIndex = fieldsRequired.indexOf (currentField);
           const newCurrentField = fieldsRequired [currentFieldIndex + 1] || null;
 
           return update (state, {
-            getInfoBot: {
+            infoBot: {
               currentField: {$set: newCurrentField}
             }
           });

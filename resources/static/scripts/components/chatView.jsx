@@ -24,7 +24,7 @@ define ("components/chatView",
           {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
-    const GET_INFO_FIELD_PROPS = PropTypes.shape ({
+    const INFO_BOT_FIELD_PROPS = PropTypes.shape ({
       title: PropTypes.string.isRequired,
       value: PropTypes.instanceOf (Input).isRequired
     });
@@ -39,9 +39,9 @@ define ("components/chatView",
         onStartNewConversation: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
-        getInfoField: GET_INFO_FIELD_PROPS,
-        onSubmitGetInfoField: PropTypes.func.isRequired,
-        onValueChangeGetInfoField: PropTypes.func.isRequired,
+        infoBotField: INFO_BOT_FIELD_PROPS,
+        onSubmitInfoBotField: PropTypes.func.isRequired,
+        onValueChangeInfoBotField: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
           faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
@@ -82,8 +82,8 @@ define ("components/chatView",
           case ACTIVE_FOOTER.NEW_CONVERSATION:
             return this._renderNewConversationBtn ();
 
-          case ACTIVE_FOOTER.GET_INFO_BOT:
-            return this._renderGetInfoBot ();
+          case ACTIVE_FOOTER.INFO_BOT:
+            return this._renderInfoBotFooter ();
 
           case ACTIVE_FOOTER.BLOCKED:
             return this._renderBlockedFooter ();
@@ -128,17 +128,17 @@ define ("components/chatView",
       },
 
       /**
-       * Render get info bot footer.
+       * Render info bot footer.
        */
-      _renderGetInfoBot () {
-        const field = this.props.getInfoField;
+      _renderInfoBotFooter () {
+        const field = this.props.infoBotField;
 
         return (
           <div>
             <span>{field.title}</span>
             <input value={field.value.value}
-                   onChange={this._onGetInfoFieldValueChange}
-                   onKeyUp={this._onGetInfoFieldKeyUp} />
+                   onChange={this._onInfoBotFieldValueChange}
+                   onKeyUp={this._onInfoBotFieldKeyUp} />
           </div>
         );
       },
@@ -304,22 +304,22 @@ define ("components/chatView",
       },
 
       /**
-       * Change handler for get info field.
+       * Change handler for info bot field.
        * @param {Object} event
        */
-      _onGetInfoFieldValueChange (ev) {
-        this.props.onValueChangeGetInfoField (ev.target.value);
+      _onInfoBotFieldValueChange (ev) {
+        this.props.onValueChangeInfoBotField (ev.target.value);
       },
 
       /**
-       * Key up handler for get info field.
+       * Key up handler for info bot field.
        * @param {Object} event
        */
-      _onGetInfoFieldKeyUp (ev) {
+      _onInfoBotFieldKeyUp (ev) {
         if (ev.keyCode === KEY_CODES.ESCAPE) {
           ev.target.blur ();
         } else if (ev.keyCode === KEY_CODES.ENTER) {
-          this.props.onSubmitGetInfoField ();
+          this.props.onSubmitInfoBotField ();
         }
       }
     });
@@ -339,9 +339,9 @@ define ("components/chatView",
         onStartNewConversation: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
-        getInfoField: GET_INFO_FIELD_PROPS,
-        onSubmitGetInfoField: PropTypes.func.isRequired,
-        onValueChangeGetInfoField: PropTypes.func.isRequired,
+        infoBotField: INFO_BOT_FIELD_PROPS,
+        onSubmitInfoBotField: PropTypes.func.isRequired,
+        onValueChangeInfoBotField: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired
         }).isRequired
@@ -364,9 +364,9 @@ define ("components/chatView",
                             onStartNewConversation={this.props.onStartNewConversation}
                             onCloseConversation={this.props.onCloseConversation}
                             csatRating={this.props.csatRating}
-                            getInfoField={this.props.getInfoField}
-                            onSubmitGetInfoField={this.props.onSubmitGetInfoField}
-                            onValueChangeGetInfoField={this.props.onValueChangeGetInfoField}
+                            infoBotField={this.props.infoBotField}
+                            onSubmitInfoBotField={this.props.onSubmitInfoBotField}
+                            onValueChangeInfoBotField={this.props.onValueChangeInfoBotField}
                             text={this.props.text} />
           </div>
         );

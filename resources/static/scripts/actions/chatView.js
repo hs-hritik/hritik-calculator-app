@@ -772,45 +772,45 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to update get info field value.
+     * Action to update info bot field value.
      * @param {String} value
      * @returns {Object} - Action
      */
-    const updateGetInfoFieldValue = (value) => {
+    const updateInfoBotFieldValue = (value) => {
       return {
-        type: ACTION_TYPES.UPDATE_GET_INFO_FIELD_VALUE,
+        type: ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE,
         value
       };
     };
 
     /**
-     * Action to change the current get info field.
+     * Action to change the current info bot field.
      * @returns {Object} - Action
      */
-    const changeGetInfoCurrentField = () => {
+    const changeInfoBotCurrentField = () => {
       return {
-        type: ACTION_TYPES.CHANGE_GET_INFO_CURRENT_FIELD
+        type: ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD
       };
     };
 
     /**
-     * Action to start get info bot workflow.
+     * Action to start info bot workflow.
      * @returns {Object} - Action
      */
-    const startGetInfoBot = () => {
+    const startInfoBot = () => {
       return (dispatch, getState) => {
         const state = getState ();
 
         // @TODO: Change active footer to blocked.
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.getInfoRequestMsg,
+            body: state.ui.text.infoBotRequestMsg,
             isCustomerMsg: false
           }, {
-            typingTimer: MESSAGE_TIMEOUT.GET_INFO_REQUEST,
+            typingTimer: MESSAGE_TIMEOUT.INFO_BOT_REQUEST,
             issueId: state.appState.dummyIssueId,
             onAddMessage: () => {
-              dispatch (askGetInfoField ());
+              dispatch (askInfoBotField ());
             }
           })
         );
@@ -818,14 +818,14 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to ask info about get info field.
+     * Action to ask details of info bot field.
      * @returns {Object} - Action
      */
-    const askGetInfoField = () => {
+    const askInfoBotField = () => {
       return (dispatch, getState) => {
         const state = getState ();
-        const {getInfoBot} = state.chatView;
-        const currentField = getInfoBot.data [getInfoBot.currentField];
+        const {infoBot} = state.chatView;
+        const currentField = infoBot.data [infoBot.currentField];
         // @TODO: Change active footer to blocked.
         // dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
 
@@ -835,10 +835,10 @@ define ("actions/chatView",
               body: currentField.msg,
               isCustomerMsg: false
             }, {
-              typingTimer: MESSAGE_TIMEOUT.GET_INFO_FIELD,
+              typingTimer: MESSAGE_TIMEOUT.INFO_BOT_FIELD,
               issueId: state.appState.dummyIssueId,
               onAddMessage: () => {
-                dispatch (setChatViewFooter (ACTIVE_FOOTER.GET_INFO_BOT));
+                dispatch (setChatViewFooter (ACTIVE_FOOTER.INFO_BOT));
               }
             })
          );
@@ -847,17 +847,17 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to submit get info field.
+     * Action to submit info bot field.
      * Add user message using the user input and
-     * change the current get info bot field.
+     * change the current info bot field.
      * @returns {Object} - Action
      */
-    const submitGetInfoField = () => {
+    const submitInfoBotField = () => {
       return (dispatch, getState) => {
         // @TODO: Add validations
         const state = getState ();
-        const {getInfoBot} = state.chatView;
-        const currentField = getInfoBot.data [getInfoBot.currentField];
+        const {infoBot} = state.chatView;
+        const currentField = infoBot.data [infoBot.currentField];
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
@@ -869,19 +869,19 @@ define ("actions/chatView",
           })
        );
 
-        dispatch (changeGetInfoCurrentField ());
+        dispatch (changeInfoBotCurrentField ());
 
         const newState = getState ();
 
-        // If all get info bot fields are asked, move to next pre-chat feature,
-        // otherwise ask next get info field.
-        if (!newState.chatView.getInfoBot.currentField) {
+        // If all info bot fields are asked, move to next pre-chat feature,
+        // otherwise ask next info bot field.
+        if (!newState.chatView.infoBot.currentField) {
           // @TODO: Change active footer to blocked instead of reply
           // Temporary switching to ACTIVE_FOOTER.REPLY to avoid errors.
           dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           dispatch (startNextPreChatFeature ());
         } else {
-          dispatch (askGetInfoField ());
+          dispatch (askInfoBotField ());
         }
       };
     };
@@ -942,8 +942,8 @@ define ("actions/chatView",
             // @TODO: Pass end user first msg as param.
             dispatch (startAnswerBot ());
             break;
-          case "getInfoBot":
-            dispatch (startGetInfoBot ());
+          case "infoBot":
+            dispatch (startInfoBot ());
             break;
         }
       };
@@ -964,7 +964,7 @@ define ("actions/chatView",
       rejectFaqSuggestions,
       acceptFaqSuggestions,
       startNextPreChatFeature,
-      updateGetInfoFieldValue,
-      submitGetInfoField
+      updateInfoBotFieldValue,
+      submitInfoBotField
     };
   });

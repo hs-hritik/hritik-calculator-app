@@ -32,11 +32,11 @@ define ("reducers/appState",
       featuresEnabled: {
         greeting: true,
         answerBot: false,
-        getInfoBot: false,
+        infoBot: false,
         csatBot: false,
         agentNickname: false
       },
-      preChatfeaturesOrder: ["greeting", "answerBot", "getInfoBot"],
+      preChatfeaturesOrder: ["greeting", "answerBot", "infoBot"],
       preChatfeatureIndex: 0
     };
 
@@ -49,7 +49,7 @@ define ("reducers/appState",
             wmEnabled: {$set: config.widget_enabled},
             featuresEnabled: {
               answerBot: {$set: config.answer_bot_enabled},
-              getInfoBot: {$set: config.user_info_bot_enabled},
+              infoBot: {$set: config.info_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled}
             }
