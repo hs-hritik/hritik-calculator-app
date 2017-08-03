@@ -316,6 +316,17 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set end user first message.
+     * @returns {Object} - action
+     */
+    const setEndUserFirstMessage = (msg) => {
+      return {
+        type: ACTION_TYPES.SET_END_USER_FIRST_MESSAGE,
+        msg
+      };
+    };
+
+    /**
      * Action to submit reply.
      * @returns {Object} - action
      */
@@ -338,12 +349,20 @@ define ("actions/chatView",
               isCustomerMsg: true
             }, {
               typingTimer: null,
-              issueId: appState.dummyIssueId
+              issueId: appState.dummyIssueId,
+              onAddMessage: (msg) => {
+                dispatch (
+                  batchActions ([
+                    setEndUserFirstMessage (msg),
+                    udpateReplyText ("")
+                  ])
+                );
+
+                dispatch (startNextPreChatFeature ());
+              }
             })
           );
 
-          dispatch (udpateReplyText (""));
-          dispatch (startNextPreChatFeature ());
           return;
         }
 
@@ -660,13 +679,13 @@ define ("actions/chatView",
               ...actionsToDispatch
             ]));
             if (onAddMessage) {
-              onAddMessage ();
+              onAddMessage (msg);
             }
           }, typingTimer);
         } else {
           dispatch (batchActions (actionsToDispatch));
           if (onAddMessage) {
-            onAddMessage ();
+            onAddMessage (msg);
           }
         }
       };

@@ -29,6 +29,7 @@ define ("reducers/chatView",
       csatRating: 0,
       systemTyping: false,
       agentTyping: false,
+      endUserFirstMsg: null,
       unreadCount: 0,
       getInfoBot: {
         fieldsRequired: ["name", "email"],
@@ -141,6 +142,11 @@ define ("reducers/chatView",
             getInfoBot: {
               currentField: {$set: newCurrentField}
             }
+          });
+
+        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE:
+          return update (state, {
+            endUserFirstMsg: {$set: action.msg}
           });
 
         default:
