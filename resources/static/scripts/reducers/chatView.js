@@ -40,6 +40,7 @@ define ("reducers/chatView",
             msg: "What's your name?",
             value: new Input ({
               value: "",
+              // @TODO: Confirm if custom errorMsg is required.
               validations: ["required"]
             })
           },
@@ -121,13 +122,26 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE:
+          let valueUpdateObj;
+
+          // action.value can either be string or the input object.
+          if (typeof action.value === "string") {
+            valueUpdateObj = {
+              value: {
+                $set: action.value
+              }
+            };
+          } else {
+            valueUpdateObj = {
+              $set: action.value
+            };
+          }
+
           return update (state, {
             infoBot: {
               data: {
                 [state.infoBot.currentField]: {
-                  value: {
-                    value: {$set: action.value}
-                  }
+                  value: valueUpdateObj
                 }
               }
             }

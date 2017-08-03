@@ -773,7 +773,7 @@ define ("actions/chatView",
 
     /**
      * Action to update info bot field value.
-     * @param {String} value
+     * @param {String|Object} value
      * @returns {Object} - Action
      */
     const updateInfoBotFieldValue = (value) => {
@@ -854,10 +854,17 @@ define ("actions/chatView",
      */
     const submitInfoBotField = () => {
       return (dispatch, getState) => {
-        // @TODO: Add validations
-        const state = getState ();
-        const {infoBot} = state.chatView;
+        const state = getState (),
+              {infoBot} = state.chatView;
+
         const currentField = infoBot.data [infoBot.currentField];
+        const errorMsg = currentField.value.isValid ();
+        currentField.value.errorMsg = errorMsg;
+        dispatch (updateInfoBotFieldValue (currentField.value));
+
+        if (errorMsg) {
+          return;
+        }
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {

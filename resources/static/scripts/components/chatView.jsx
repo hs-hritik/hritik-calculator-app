@@ -139,7 +139,25 @@ define ("components/chatView",
             <input value={field.value.value}
                    onChange={this._onInfoBotFieldValueChange}
                    onKeyUp={this._onInfoBotFieldKeyUp} />
+            {this._renderInfoBotFieldError ()}
           </div>
+        );
+      },
+
+      /**
+       * Render info bot field error message.
+       */
+      _renderInfoBotFieldError () {
+        const {errorMsg} = this.props.infoBotField.value;
+        if (!errorMsg) {
+          return null;
+        }
+
+        // @TODO: Add error classes.
+        return (
+          <span>
+            {errorMsg}
+          </span>
         );
       },
 
