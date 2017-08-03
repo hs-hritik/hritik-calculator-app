@@ -14,7 +14,8 @@ define ("constants/chatView",
       ISSUE_FEEDBACK: "ISSUE_FEEDBACK",
       CSAT: "CSAT",
       NEW_CONVERSATION: "NEW_CONVERSATION",
-      GET_INFO_BOT: "GET_INFO_BOT"
+      GET_INFO_BOT: "GET_INFO_BOT",
+      BLOCKED: "BLOCKED"
     };
 
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds

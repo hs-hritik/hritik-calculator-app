@@ -83,9 +83,22 @@ define ("components/chatView",
           case ACTIVE_FOOTER.GET_INFO_BOT:
             return this._renderGetInfoBot ();
 
+          case ACTIVE_FOOTER.BLOCKED:
+            return this._renderBlockedFooter ();
+
           default:
             return null;
         }
+      },
+
+      /**
+       * Render blocked footer
+       */
+      _renderBlockedFooter () {
+        // @TODO: Add css.
+        return (
+          <div />
+        );
       },
 
       /**
