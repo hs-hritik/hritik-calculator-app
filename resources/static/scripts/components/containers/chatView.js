@@ -24,12 +24,14 @@ define ("components/containers/chatView",
       const issueId = state.appState.activeIssueId || state.appState.dummyIssueId;
       const issue = denormalize (issueId, entitySchema.issue, state.entities);
       const messages = issue ? issue.messages : [];
+      const {getInfoBot} = state.chatView;
 
       return {
         messages,
         activeFooter: state.chatView.activeFooter,
         csatRating: state.chatView.csatRating,
         isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
+        getInfoField: getInfoBot.data [getInfoBot.currentField],
         text: state.ui.text
       };
     };
@@ -58,6 +60,12 @@ define ("components/containers/chatView",
         },
         onStartNewConversation: () => {
           dispatch (appStateActions.startNewConversation ());
+        },
+        onValueChangeGetInfoField: (value) => {
+          dispatch (chatViewActions.updateGetInfoFieldValue (value));
+        },
+        onSubmitGetInfoField: () => {
+          dispatch (chatViewActions.submitGetInfoField ());
         }
       };
     };

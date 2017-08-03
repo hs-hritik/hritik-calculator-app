@@ -21,7 +21,7 @@ define ("reducers/ui",
         faqSuggestionsAdditionalHelpMessage: "Do you still need additional help from an agent?",
         faqSuggestionsAdditionalHelpRequiredBtn: "Yes",
         faqSuggestionsAdditionalHelpNotRequiredBtn: "No",
-        problemSolvedByFaqSuggestionsMessage: "Glad I could help you today",
+        problemSolvedByFaqSuggestionsMessage: "Glad I could help you today.",
         faqSuggestionsMsgTitle: "Do these FAQs solve your problem?",
         problemSolved: "Yes, Thanks!",
         problemNotSolved: "No",
@@ -37,7 +37,8 @@ define ("reducers/ui",
         replyBtn: "Send",
         replyBtnPlaceholder: "Send a message...",
         csatBotRequestMsg: "Thanks! Would you like to fill this?",
-        csatBotFormMsg: "Your feedback helps us improve"
+        csatBotFormMsg: "Your feedback helps us improve",
+        getInfoRequestMsg: "Before we begin, we need some more information."
       },
       color: {
         primary: "#43BF6C"

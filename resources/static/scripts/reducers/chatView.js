@@ -7,13 +7,15 @@
 define ("reducers/chatView",
   [
     "constants/chatView",
-    "constants/actionTypes"
+    "constants/actionTypes",
+    "gunpowder/utils/schema"
   ],
-  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES) {
+  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES, schema) {
     "use strict";
 
-    const update = React.addons.update;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+    const update = React.addons.update,
+          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS,
+          {Input} = schema;
 
     const INITIAL_STATE = {
       replyBox: {
@@ -27,7 +29,29 @@ define ("reducers/chatView",
       csatRating: 0,
       systemTyping: false,
       agentTyping: false,
-      unreadCount: 0
+      unreadCount: 0,
+      getInfoBot: {
+        fieldsRequired: ["name", "email"],
+        currentField: "",
+        data: {
+          name: {
+            title: "Your Name",
+            msg: "What's your name?",
+            value: new Input ({
+              value: "",
+              validations: ["required"]
+            })
+          },
+          email: {
+            title: "Your Email Address",
+            msg: "What's your email?",
+            value: new Input ({
+              value: "",
+              validations: ["required", "email"]
+            })
+          }
+        }
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -81,6 +105,42 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_UNREAD_COUNT:
           return update (state, {
             unreadCount: {$set: action.count}
+          });
+
+        case ACTION_TYPES.SET_WM_CONFIG:
+          return update (state, {
+            getInfoBot: {
+              fieldsRequired: {
+                $set: action.config.user_info_bot.selection
+              },
+              currentField: {
+                $set: action.config.user_info_bot.selection [0]
+              }
+            }
+          });
+
+        case ACTION_TYPES.UPDATE_GET_INFO_FIELD_VALUE:
+          return update (state, {
+            getInfoBot: {
+              data: {
+                [state.getInfoBot.currentField]: {
+                  value: {
+                    value: {$set: action.value}
+                  }
+                }
+              }
+            }
+          });
+
+        case ACTION_TYPES.CHANGE_GET_INFO_CURRENT_FIELD:
+          const {fieldsRequired, currentField} = state.getInfoBot;
+          const currentFieldIndex = fieldsRequired.indexOf (currentField);
+          const newCurrentField = fieldsRequired [currentFieldIndex + 1] || null;
+
+          return update (state, {
+            getInfoBot: {
+              currentField: {$set: newCurrentField}
+            }
           });
 
         default:

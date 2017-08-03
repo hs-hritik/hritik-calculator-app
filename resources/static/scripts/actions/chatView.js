@@ -210,13 +210,15 @@ define ("actions/chatView",
             pollingEnabled = false;
             const {problemSolvedAgentMessage} = state.ui.text;
 
-            dispatch (createMessage (MESSAGE_TYPE.TEXT, {
-              body: problemSolvedAgentMessage,
-              isCustomerMsg: false
-            }, {
-              typingTimer: null,
-              issueId: appState.activeIssueId
-            }));
+            dispatch (
+              createMessage (MESSAGE_TYPE.TEXT, {
+                body: problemSolvedAgentMessage,
+                isCustomerMsg: false
+              }, {
+                typingTimer: null,
+                issueId: appState.activeIssueId
+              })
+            );
             dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
           }
         },
@@ -330,13 +332,15 @@ define ("actions/chatView",
 
         // If there is no active issue, create user message and add it in dummy issue.
         if (!appState.activeIssueId) {
-          dispatch (createMessage (MESSAGE_TYPE.TEXT, {
-            body: replyBox.value,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: appState.dummyIssueId
-          }));
+          dispatch (
+            createMessage (MESSAGE_TYPE.TEXT, {
+              body: replyBox.value,
+              isCustomerMsg: true
+            }, {
+              typingTimer: null,
+              issueId: appState.dummyIssueId
+            })
+          );
 
           dispatch (udpateReplyText (""));
           dispatch (startNextPreChatFeature ());
@@ -583,13 +587,15 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
 
-        dispatch (createMessage (MESSAGE_TYPE.TEXT, {
-          body: state.ui.text.problemSolvedByFaqSuggestionsMessage,
-          isCustomerMsg: false
-        }, {
-          typingTimer: null,
-          issueId: state.appState.dummyIssueId
-        }));
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: state.ui.text.problemSolvedByFaqSuggestionsMessage,
+            isCustomerMsg: false
+          }, {
+            typingTimer: null,
+            issueId: state.appState.dummyIssueId
+          })
+        );
 
         // @TODO: Change state and active footer to closed.
       };
@@ -675,13 +681,15 @@ define ("actions/chatView",
         const state = getState ();
         const defaultAgentMsgText = state.ui.text.greetingMsg;
 
-        dispatch (createMessage (MESSAGE_TYPE.TEXT, {
-          body: defaultAgentMsgText,
-          isCustomerMsg: false
-        }, {
-          typingTimer: null,
-          issueId: state.appState.dummyIssueId
-        }));
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: defaultAgentMsgText,
+            isCustomerMsg: false
+          }, {
+            typingTimer: null,
+            issueId: state.appState.dummyIssueId
+          })
+        );
         dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
       };
     };
@@ -704,13 +712,15 @@ define ("actions/chatView",
             if (!faqs.length) {
               dispatch (startNextPreChatFeature ());
             } else {
-              dispatch (createMessage (MESSAGE_TYPE.FAQ, {
-                faqs
-              }, {
-                typingTimer: null,
-                issueId: appState.dummyIssueId,
-                onAddMessage: onFaqSuggestionMessageAdd
-              }));
+              dispatch (
+                createMessage (MESSAGE_TYPE.FAQ, {
+                  faqs
+                }, {
+                  typingTimer: null,
+                  issueId: appState.dummyIssueId,
+                  onAddMessage: onFaqSuggestionMessageAdd
+                })
+              );
             }
           },
           onEnd: () => {
@@ -728,16 +738,40 @@ define ("actions/chatView",
      */
     const onFaqSuggestionMessageAdd = () => {
       const state = store.getState ();
-      store.dispatch (createMessage (MESSAGE_TYPE.TEXT, {
-        body: state.ui.text.faqSuggestionsAdditionalHelpMessage,
-        isCustomerMsg: false
-      }, {
-        typingTimer: MESSAGE_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
-        issueId: state.appState.dummyIssueId,
-        onAddMessage: () => {
-          store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
-        }
-      }));
+      store.dispatch (
+        createMessage (MESSAGE_TYPE.TEXT, {
+          body: state.ui.text.faqSuggestionsAdditionalHelpMessage,
+          isCustomerMsg: false
+        }, {
+          typingTimer: MESSAGE_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
+          issueId: state.appState.dummyIssueId,
+          onAddMessage: () => {
+            store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+          }
+        })
+      );
+    };
+
+    /**
+     * Action to update get info field value.
+     * @param {String} value
+     * @returns {Object} - Action
+     */
+    const updateGetInfoFieldValue = (value) => {
+      return {
+        type: ACTION_TYPES.UPDATE_GET_INFO_FIELD_VALUE,
+        value
+      };
+    };
+
+    /**
+     * Action to change the current get info field.
+     * @returns {Object} - Action
+     */
+    const changeGetInfoCurrentField = () => {
+      return {
+        type: ACTION_TYPES.CHANGE_GET_INFO_CURRENT_FIELD
+      };
     };
 
     /**
@@ -745,9 +779,91 @@ define ("actions/chatView",
      * @returns {Object} - Action
      */
     const startGetInfoBot = () => {
-      return (dispatch) => {
-        // @TODO
-        dispatch (startNextPreChatFeature ());
+      return (dispatch, getState) => {
+        const state = getState ();
+
+        // @TODO: Change active footer to blocked.
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: state.ui.text.getInfoRequestMsg,
+            isCustomerMsg: false
+          }, {
+            typingTimer: MESSAGE_TIMEOUT.GET_INFO_REQUEST,
+            issueId: state.appState.dummyIssueId,
+            onAddMessage: () => {
+              dispatch (askGetInfoField ());
+            }
+          })
+        );
+      };
+    };
+
+    /**
+     * Action to ask info about get info field.
+     * @returns {Object} - Action
+     */
+    const askGetInfoField = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {getInfoBot} = state.chatView;
+        const currentField = getInfoBot.data [getInfoBot.currentField];
+        // @TODO: Change active footer to blocked.
+        // dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
+
+        if (currentField) {
+          dispatch (
+            createMessage (MESSAGE_TYPE.TEXT, {
+              body: currentField.msg,
+              isCustomerMsg: false
+            }, {
+              typingTimer: MESSAGE_TIMEOUT.GET_INFO_FIELD,
+              issueId: state.appState.dummyIssueId,
+              onAddMessage: () => {
+                dispatch (setChatViewFooter (ACTIVE_FOOTER.GET_INFO_BOT));
+              }
+            })
+         );
+        }
+      };
+    };
+
+    /**
+     * Action to submit get info field.
+     * Add user message using the user input and
+     * change the current get info bot field.
+     * @returns {Object} - Action
+     */
+    const submitGetInfoField = () => {
+      return (dispatch, getState) => {
+        // @TODO: Add validations
+        const state = getState ();
+        const {getInfoBot} = state.chatView;
+        const currentField = getInfoBot.data [getInfoBot.currentField];
+
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: currentField.value.value,
+            isCustomerMsg: true
+          }, {
+            typingTimer: null,
+            issueId: state.appState.dummyIssueId
+          })
+       );
+
+        dispatch (changeGetInfoCurrentField ());
+
+        const newState = getState ();
+
+        // If all get info bot fields are asked, move to next pre-chat feature,
+        // otherwise ask next get info field.
+        if (!newState.chatView.getInfoBot.currentField) {
+          // @TODO: Change active footer to blocked instead of reply
+          // Temporary switching to ACTIVE_FOOTER.REPLY to avoid errors.
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+          dispatch (startNextPreChatFeature ());
+        } else {
+          dispatch (askGetInfoField ());
+        }
       };
     };
 
@@ -774,7 +890,9 @@ define ("actions/chatView",
         // If the preChatfeatureIndex has reached the length of preChatfeaturesOrder list,
         // it means all the pre-chat features are executed and create new issue.
         if (preChatfeatureIndex >= preChatfeaturesOrder.length) {
+          // @TODO: Fire xhr to register user.
           dispatch (createIssue ());
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           return;
         }
 
@@ -826,6 +944,8 @@ define ("actions/chatView",
       setChatViewFooter,
       rejectFaqSuggestions,
       acceptFaqSuggestions,
-      startNextPreChatFeature
+      startNextPreChatFeature,
+      updateGetInfoFieldValue,
+      submitGetInfoField
     };
   });

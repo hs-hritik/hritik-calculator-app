@@ -9,17 +9,25 @@ define ("components/chatView",
     "components/messageList",
     "constants/propTypes",
     "constants/chatView",
+    "constants/keyCodes",
     "gunpowder/utils/classes",
+    "gunpowder/utils/schema",
     "components/containers/replyBox",
     "components/commons/viewHeader",
     "components/starRating"
   ],
-  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, classes, ReplyBoxContainer,
-    ViewHeader, StarRating) {
+  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, KEY_CODES,
+    classes, schema, ReplyBoxContainer, ViewHeader, StarRating) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+    const PropTypes = React.PropTypes,
+          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS,
+          {Input} = schema;
+
+    const GET_INFO_FIELD_PROPS = PropTypes.shape ({
+      title: PropTypes.string.isRequired,
+      value: PropTypes.instanceOf (Input).isRequired
+    });
 
     const ChatViewFooter = React.createClass ({
       displayName: "ChatViewFooter",
@@ -30,6 +38,9 @@ define ("components/chatView",
         onSubmitCsatRating: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
+        getInfoField: GET_INFO_FIELD_PROPS,
+        onSubmitGetInfoField: PropTypes.func.isRequired,
+        onValueChangeGetInfoField: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
           faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
@@ -69,9 +80,28 @@ define ("components/chatView",
           case ACTIVE_FOOTER.NEW_CONVERSATION:
             return this._renderNewConversationBtn ();
 
+          case ACTIVE_FOOTER.GET_INFO_BOT:
+            return this._renderGetInfoBot ();
+
           default:
             return null;
         }
+      },
+
+      /**
+       * Render get info bot footer.
+       */
+      _renderGetInfoBot () {
+        const field = this.props.getInfoField;
+
+        return (
+          <div>
+            <span>{field.title}</span>
+            <input value={field.value.value}
+                   onChange={this._onGetInfoFieldValueChange}
+                   onKeyUp={this._onGetInfoFieldKeyUp} />
+          </div>
+        );
       },
 
       /**
@@ -225,6 +255,26 @@ define ("components/chatView",
        */
       _onStarClick (value) {
         this.props.onSubmitCsatRating (value);
+      },
+
+      /**
+       * Change handler for get info field.
+       * @param {Object} event
+       */
+      _onGetInfoFieldValueChange (ev) {
+        this.props.onValueChangeGetInfoField (ev.target.value);
+      },
+
+      /**
+       * Key up handler for get info field.
+       * @param {Object} event
+       */
+      _onGetInfoFieldKeyUp (ev) {
+        if (ev.keyCode === KEY_CODES.ESCAPE) {
+          ev.target.blur ();
+        } else if (ev.keyCode === KEY_CODES.ENTER) {
+          this.props.onSubmitGetInfoField ();
+        }
       }
     });
 
@@ -242,6 +292,9 @@ define ("components/chatView",
         onSubmitCsatRating: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
+        getInfoField: GET_INFO_FIELD_PROPS,
+        onSubmitGetInfoField: PropTypes.func.isRequired,
+        onValueChangeGetInfoField: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired
         }).isRequired
@@ -263,6 +316,9 @@ define ("components/chatView",
                             onSubmitCsatRating={this.props.onSubmitCsatRating}
                             onStartNewConversation={this.props.onStartNewConversation}
                             csatRating={this.props.csatRating}
+                            getInfoField={this.props.getInfoField}
+                            onSubmitGetInfoField={this.props.onSubmitGetInfoField}
+                            onValueChangeGetInfoField={this.props.onValueChangeGetInfoField}
                             text={this.props.text} />
           </div>
         );

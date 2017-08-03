@@ -103,7 +103,7 @@ define ("actions/appState",
               primary_color: "#00b6fc"
             },
             user_info_bot: {
-              selection: ["name"]
+              selection: ["name", "email"]
             },
             csat_bot: {
               req_msg: "Thank you! Would you like to fill this?",

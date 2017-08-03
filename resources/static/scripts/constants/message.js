@@ -17,7 +17,9 @@ define ("constants/message",
 
     // Timeout (in milliseconds) for different system generated message.
     const TIMEOUT = {
-      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 10000
+      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 10000,
+      GET_INFO_REQUEST: 3000,
+      GET_INFO_FIELD: 3000
     };
 
     return {
