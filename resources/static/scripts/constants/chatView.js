@@ -15,7 +15,8 @@ define ("constants/chatView",
       CSAT: "CSAT",
       NEW_CONVERSATION: "NEW_CONVERSATION",
       GET_INFO_BOT: "GET_INFO_BOT",
-      BLOCKED: "BLOCKED"
+      BLOCKED: "BLOCKED",
+      CLOSED: "CLOSED"
     };
 
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds

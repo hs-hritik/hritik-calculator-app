@@ -37,6 +37,7 @@ define ("components/chatView",
         onIssueFeedback: PropTypes.func.isRequired,
         onSubmitCsatRating: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
+        onCloseConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
         getInfoField: GET_INFO_FIELD_PROPS,
         onSubmitGetInfoField: PropTypes.func.isRequired,
@@ -48,7 +49,8 @@ define ("components/chatView",
           problemNotSolved: PropTypes.string.isRequired,
           csatReviewRequest: PropTypes.string.isRequired,
           csatReviewResponse: PropTypes.string.isRequired,
-          startNewConversationBtn: PropTypes.string.isRequired
+          startNewConversationBtn: PropTypes.string.isRequired,
+          closeConversationBtn: PropTypes.string.isRequired
         }).isRequired
       },
 
@@ -86,6 +88,9 @@ define ("components/chatView",
           case ACTIVE_FOOTER.BLOCKED:
             return this._renderBlockedFooter ();
 
+          case ACTIVE_FOOTER.CLOSED:
+            return this._renderClosedConversationFooter ();
+
           default:
             return null;
         }
@@ -98,6 +103,27 @@ define ("components/chatView",
         // @TODO: Add css.
         return (
           <div />
+        );
+      },
+
+      /**
+       * Render closed conversation footer.
+       */
+      _renderClosedConversationFooter () {
+        // @TODO: Update classes.
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-button--small"
+        );
+
+        return (
+          <div>
+            <button onClick={this._onCloseConversationClick}
+                    className={btnClasses}>
+              {this.props.text.closeConversationBtn}
+            </button>
+          </div>
         );
       },
 
@@ -271,6 +297,13 @@ define ("components/chatView",
       },
 
       /**
+       * Click handler for close button.
+       */
+      _onCloseConversationClick () {
+        this.props.onCloseConversation ();
+      },
+
+      /**
        * Change handler for get info field.
        * @param {Object} event
        */
@@ -304,6 +337,7 @@ define ("components/chatView",
         onIssueFeedback: PropTypes.func.isRequired,
         onSubmitCsatRating: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
+        onCloseConversation: PropTypes.func.isRequired,
         csatRating: PropTypes.number,
         getInfoField: GET_INFO_FIELD_PROPS,
         onSubmitGetInfoField: PropTypes.func.isRequired,
@@ -328,6 +362,7 @@ define ("components/chatView",
                             onIssueFeedback={this.props.onIssueFeedback}
                             onSubmitCsatRating={this.props.onSubmitCsatRating}
                             onStartNewConversation={this.props.onStartNewConversation}
+                            onCloseConversation={this.props.onCloseConversation}
                             csatRating={this.props.csatRating}
                             getInfoField={this.props.getInfoField}
                             onSubmitGetInfoField={this.props.onSubmitGetInfoField}

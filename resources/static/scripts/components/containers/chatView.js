@@ -66,6 +66,10 @@ define ("components/containers/chatView",
         },
         onSubmitGetInfoField: () => {
           dispatch (chatViewActions.submitGetInfoField ());
+        },
+        onCloseConversation: () => {
+          // @TODO: Call action to reset conversation (when done),
+          // and call event to minimize the wm.
         }
       };
     };
