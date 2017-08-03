@@ -933,14 +933,14 @@ define ("actions/chatView",
      * @returns {Object} - Action
      */
     const startFeature = (feature) => {
-      return (dispatch) => {
+      return (dispatch, getState) => {
         switch (feature) {
           case "greeting":
             dispatch (addGreetingMessage ());
             break;
           case "answerBot":
-            // @TODO: Pass end user first msg as param.
-            dispatch (startAnswerBot ());
+            const state = getState ();
+            dispatch (startAnswerBot (state.chatView.endUserFirstMsg.body));
             break;
           case "infoBot":
             dispatch (startInfoBot ());
