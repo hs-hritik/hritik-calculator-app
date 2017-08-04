@@ -28,10 +28,7 @@ define ("reducers/appState",
       // @TODO: Check if currentUserId is really required.
       currentUserId: "",
       platformId: "",
-      profileId: "",
-      apiToken: "",
       domain: "",
-      appId: "",
       issueState: ISSUE_STATE.PRE_CHAT,
       featuresEnabled: {
         greeting: true,
@@ -72,10 +69,7 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_CLIENT_CONFIG:
           return update (state, {
             platformId: {$set: action.config.platformId},
-            apiToken: {$set: action.config.apiToken},
             domain: {$set: action.config.domain},
-            profileId: {$set: action.config.profileId},
-            appId: {$set: action.config.appId},
             userId: {$set: action.config.userId}
           });
 
