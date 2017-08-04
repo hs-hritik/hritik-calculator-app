@@ -11,6 +11,7 @@ define ("constants/actionTypes",
     return {
       BATCH_ACTIONS: "BATCH_ACTIONS",
       SET_USER: "SET_USER",
+      SET_UUID: "SET_UUID",
       SET_USER_ID: "SET_USER_ID",
       SET_WM_CONFIG: "SET_WM_CONFIG",
       SET_CLIENT_CONFIG: "SET_CLIENT_CONFIG",

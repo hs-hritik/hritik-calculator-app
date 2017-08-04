@@ -276,12 +276,17 @@
   /**
    * Entry point for rendering iframe on the client page.
    */
-  const init = (clientConfig) => {
+  const init = () => {
+    const clientConfig = window.helpshiftConfig;
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
 
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
+      // @TODO Event origin domain check should also be added. As something else
+      // besides the Helpshift sdk, maybe the client's own code, can trigger
+      // window.onmessage which will throw error if data is of not the required
+      // format.
       const {type, data} = JSON.parse (event.data);
 
       switch (type) {

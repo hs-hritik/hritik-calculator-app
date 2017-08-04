@@ -14,19 +14,108 @@ define ("actions/appState",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr",
+    "helpers/localStorage",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
+    "gunpowder/utils/uuid",
     "store",
     "actions/entities",
     "actions/chatView",
     "utils/postMessage"
   ],
   function (ACTION_TYPES, routes, EVENT_TYPES, normalizr, entitySchema,
-    entityHelpers, chatViewHelpers, xhrHelpers, xhr, objUtils, store,
-    entitiesActions, chatViewActions, postMessage) {
+    entityHelpers, chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils,
+    uuidGenerator, store, entitiesActions, chatViewActions, postMessage) {
     "use strict";
 
     const {normalize} = normalizr;
+
+    // Constant indicating whether to skip checking a value in localstorage or not
+    const SKIP_LS_CHECK = true;
+
+    /**
+     * Set the uuid in the state to identify the user (or the chat session).
+     * The creation of a new uuid depends on the userId passed here.
+     * If the current userId is different than the one stored in the
+     * localstorage, we create a new uuid and update the value.
+     * For details about implementation see -
+     * https://helpshift.atlassian.net/wiki/display/FRON/Possible+Solution+for+Identity+Problem
+     * @param {String} - userId
+     */
+    const setUuid = (userId) => {
+      return () => {
+        const prevUserId = lsHelper.getUserId ();
+        const uuid = uuidGenerator ();
+
+        if (isUserIdValid (prevUserId)) {
+          if (!isUserIdValid (userId)) {
+            // User A -> null
+            // If a uuid does not exist, set one in state and localstorage.
+            dispatchAndSetUuid (uuid);
+          } else if (userId !== prevUserId) {
+            // User A -> User B
+            // Set the userId in localstorage.
+            // Set the uuid in state and localstorage.
+            lsHelper.setUserId (userId);
+            dispatchAndSetUuid (uuid, SKIP_LS_CHECK);
+            // @TODO Clear the conversation.
+          } else {
+            // User A -> User A
+            // User id - No action.
+            // Set the uuid in state
+            dispatchAndSetUuid (uuid);
+          }
+        } else if (isUserIdValid (userId)) {
+          // null -> User A
+          // Set the userId in localstorage.
+          // If a uuid does not exist, set one in state and localstorage.
+          lsHelper.setUserId (userId);
+          dispatchAndSetUuid (uuid);
+        } else {
+          // null -> null
+          // There would be no userId in localstorage, no action.
+          // If a uuid does not exist, set one in state and localstorage.
+          dispatchAndSetUuid (uuid);
+        }
+      };
+    };
+
+    /**
+     * Auxiliary function to dispatch and set the uuid to app state and
+     * localstorage respectively if uuid isn't present in localstorage.
+     * @param {String} - uuid
+     * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
+     * to be checked if uuid exists.
+     */
+    const dispatchAndSetUuid = (uuid, skipLsCheck) => {
+      if (skipLsCheck || !lsHelper.getUuid ()) {
+        store.dispatch (setUuidValue (uuid));
+        lsHelper.setUuid (uuid);
+      } else {
+        // If a new uuid is not set in the state and ls, set the uuid
+        // stored in the localstorage to the sate because the initial state
+        // does not have a uuid.
+        const currentUuid = lsHelper.getUuid ();
+        store.dispatch (setUuidValue (currentUuid));
+      }
+    };
+
+    /**
+     * Return true if the passed user id valid.
+     * @param {String} - userId
+     * @returns {Boolean}
+     */
+    const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
+
+    /**
+     * Action to set uuid.
+     * @param {String} id - uuid
+     * @returns {Object} - action
+     */
+    const setUuidValue = (id) => ({
+      type: ACTION_TYPES.SET_UUID,
+      id
+    });
 
     /**
      * Action to set client's configuration like platform id, domain, etc.
@@ -446,6 +535,7 @@ define ("actions/appState",
     };
 
     return {
+      setUuid,
       setClientConfig,
       setWmConfig,
       setUser,

@@ -23,6 +23,10 @@ define ("reducers/appState",
       activeIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
       identifier: "",
+      userId: "",
+      uuid: "",
+      // @TODO: Check if currentUserId is really required.
+      currentUserId: "",
       platformId: "",
       profileId: "",
       apiToken: "",
@@ -55,6 +59,11 @@ define ("reducers/appState",
             }
           });
 
+        case ACTION_TYPES.SET_UUID:
+          return update (state, {
+            uuid: {$set: action.id}
+          });
+
         case ACTION_TYPES.SET_USER_ID:
           return update (state, {
             identifier: {$set: action.id}
@@ -66,7 +75,8 @@ define ("reducers/appState",
             apiToken: {$set: action.config.apiToken},
             domain: {$set: action.config.domain},
             profileId: {$set: action.config.profileId},
-            appId: {$set: action.config.appId}
+            appId: {$set: action.config.appId},
+            userId: {$set: action.config.userId}
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
