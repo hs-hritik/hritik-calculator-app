@@ -22,7 +22,7 @@ define ("reducers/appState",
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
-      currentUserId: "",
+      identifier: "",
       platformId: "",
       profileId: "",
       apiToken: "",
@@ -57,7 +57,7 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_USER_ID:
           return update (state, {
-            currentUserId: {$set: action.id}
+            identifier: {$set: action.id}
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:

@@ -16,9 +16,9 @@ define ("helpers/xhr",
      * @returns {Object} - header key-value pairs.
      */
     const getCommonHeaders = () => {
-      const apiToken = store.getState ().appState.apiToken;
+      const {platformId} = store.getState ().appState;
       return {
-        authorization: "Basic " + btoa (apiToken + ":")
+        authorization: "Basic " + btoa (platformId + ":")
       };
     };
 

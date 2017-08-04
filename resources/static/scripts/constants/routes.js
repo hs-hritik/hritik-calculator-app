@@ -8,40 +8,40 @@ define ("constants/routes",
   function () {
     "use strict";
 
-    const BASE = "https://api.helpshift.com/v1/";
+    const BASE = "https://api.helpshift.mobi/v1/";
 
     // @TODO: Update this route when HS API is ready.
-    const getWmConfig = (domain) => `${BASE}${domain}/webm/config`;
+    const getWmConfig = (domain) => `${BASE}${domain}/websdk/config`;
 
     const getCss = () => "/static/css/style.css";
 
-    const getMyIssues = (domain) => `${BASE}${domain}/webm/my-issues`;
+    const getMyIssues = (domain) => `${BASE}${domain}/websdk/my-issues`;
 
     const postUserReply = (domain, issueId) =>
-                           `${BASE}${domain}/webm/issues/${issueId}/messages/user`;
+                           `${BASE}${domain}/websdk/issues/${issueId}/messages/user`;
 
-    const getMessages = (domain, issueId) => `${BASE}${domain}/webm/issues/${issueId}/messages`;
+    const getMessages = (domain, issueId) => `${BASE}${domain}/websdk/issues/${issueId}/messages`;
 
-    const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
+    const getFaq = (domain, faqId) => `${BASE}${domain}/websdk/faqs/${faqId}`;
 
     const putFaqFeedback = (domain, faqId, isHelpful) => {
       if (isHelpful) {
-        return `${BASE}${domain}/webm/faqs/${faqId}/helpful`;
+        return `${BASE}${domain}/websdk/faqs/${faqId}/helpful`;
       } else {
-        return `${BASE}${domain}/webm/faqs/${faqId}/unhelpful`;
+        return `${BASE}${domain}/websdk/faqs/${faqId}/unhelpful`;
       }
     };
 
-    const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
+    const getFaqSuggestions = (domain) => `${BASE}${domain}/websdk/faqs/suggest`;
 
-    const postIssue = (domain) => `${BASE}${domain}/webm/issues`;
+    const postIssue = (domain) => `${BASE}${domain}/websdk/issues`;
 
-    const postCSAT = (domain, issueId) => `${BASE}${domain}/webm/issues/${issueId}/csat`;
+    const postCSAT = (domain, issueId) => `${BASE}${domain}/websdk/issues/${issueId}/csat`;
 
-    const postProfile = (domain) => `${BASE}${domain}/webm/profiles`;
+    const postProfile = (domain) => `${BASE}${domain}/websdk/profiles`;
 
     const putMessagesSeen = (domain, issueId) =>
-                             `${BASE}${domain}/webm/issues/${issueId}/messages-seen`;
+                             `${BASE}${domain}/websdk/issues/${issueId}/messages-seen`;
 
     return {
       getWmConfig,

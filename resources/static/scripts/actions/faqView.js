@@ -86,7 +86,7 @@ define ("actions/faqView",
         xhr ({
           route: routes.putFaqFeedback (appState.domain, faqId, isFeedbackHelpful),
           data: {
-            "identifier": appState.currentUserId,
+            "identifier": appState.identifier,
             "faq-id": faqId
           },
           method: "PUT",

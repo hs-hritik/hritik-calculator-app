@@ -142,7 +142,7 @@ define ("actions/chatView",
         xhr ({
           route: routes.putMessagesSeen (appState.domain, appState.activeIssueId),
           data: {
-            "identifier": appState.currentUserId,
+            "identifier": appState.identifier,
             "issue-id": appState.activeIssueId
           },
           method: "PUT",
@@ -163,7 +163,7 @@ define ("actions/chatView",
             {appState} = state;
 
       const xhrData = {
-        "identifier": appState.currentUserId,
+        "identifier": appState.identifier,
         "issue-id": appState.activeIssueId
       };
 
@@ -261,14 +261,14 @@ define ("actions/chatView",
     /**
      * Fire xhr to post message as a user.
      * @param {Object} config - data required for xhr. Required keys:
-     *                          domain, activeIssueId, currentUserId, msgBody, msgType,
+     *                          domain, activeIssueId, identifier, msgBody, msgType,
      * @param {Object} [callbacks] - optional callbacks
      */
     const postUserMessage = (config, callbacks = {}) => {
       xhr ({
         route: routes.postUserReply (config.domain, config.activeIssueId),
         data: {
-          "identifier": config.currentUserId,
+          "identifier": config.identifier,
           "issue-id": config.activeIssueId,
           "message-body": config.msgBody,
           "message-type": config.msgType
@@ -371,7 +371,7 @@ define ("actions/chatView",
         postUserMessage ({
           domain: appState.domain,
           activeIssueId: appState.activeIssueId,
-          currentUserId: appState.currentUserId,
+          identifier: appState.identifier,
           msgBody: replyBox.value,
           msgType: MESSAGE_TYPE.TEXT
         }, {
@@ -399,7 +399,7 @@ define ("actions/chatView",
         postUserMessage ({
           domain: appState.domain,
           activeIssueId: appState.activeIssueId,
-          currentUserId: appState.currentUserId,
+          identifier: appState.identifier,
           msgBody: state.ui.text.rejectSolutionMessage,
           msgType: MESSAGE_TYPE.CONFIRMATION_REJECTED
         }, {
@@ -426,7 +426,7 @@ define ("actions/chatView",
         postUserMessage ({
           domain: appState.domain,
           activeIssueId: appState.activeIssueId,
-          currentUserId: appState.currentUserId,
+          identifier: appState.identifier,
           msgBody: state.ui.text.acceptSolutionMessage,
           msgType: MESSAGE_TYPE.CONFIRMATION_ACCEPTED
         }, {
@@ -468,7 +468,7 @@ define ("actions/chatView",
         xhr ({
           route: routes.postCSAT (appState.domain, appState.activeIssueId),
           data: {
-            "identifier": appState.currentUserId,
+            "identifier": appState.identifier,
             "issue-id": appState.activeIssueId,
             "platform-id": appState.platformId,
             "rating": rating
@@ -499,7 +499,7 @@ define ("actions/chatView",
         xhr ({
           route: routes.postIssue (appState.domain),
           data: {
-            "identifier": appState.currentUserId,
+            "identifier": appState.identifier,
             "platform-id": appState.platformId,
             "message-body": firstUserMsg.body
           },
@@ -552,7 +552,7 @@ define ("actions/chatView",
           route: routes.getFaqSuggestions (appState.domain),
           data: {
             "text": searchText,
-            "app-id": appState.appId
+            "platform-id": appState.platformId
           },
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
