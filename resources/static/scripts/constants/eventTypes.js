@@ -18,6 +18,7 @@ define ("constants/eventTypes",
       CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
       CMD_INITIALISE: "cmd-initialise",
       CMD_SET_CONFIG: "cmd-set-config",
-      CMD_SET_USER: "cmd-set-user"
+      CMD_SET_USER: "cmd-set-user",
+      CMD_RESET: "cmd-reset"
     };
   });

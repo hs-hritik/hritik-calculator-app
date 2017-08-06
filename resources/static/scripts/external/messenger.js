@@ -32,7 +32,8 @@
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
-    CMD_SET_USER: "cmd-set-user"
+    CMD_SET_USER: "cmd-set-user",
+    CMD_RESET: "cmd-reset"
   };
 
   // Errors message strings
@@ -274,6 +275,7 @@
   };
 
   /**
+   * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
   const init = () => {
@@ -352,7 +354,7 @@
   };
 
   /**
-   * API to set user.
+   * JS API to set user.
    * @param {Object} user - user object. Contains id, name and email.
    */
   const setUser = (user) => {
@@ -361,11 +363,39 @@
     });
   };
 
+  /**
+   * JS API to open/maximize/show the messenger widget
+   */
+  const open = () => {
+    toggleWebSdkIframe ({
+      minimized: false
+    });
+  };
+
+  /**
+   * JS API to close/minimize/hide the messenger widget
+   */
+  const close = () => {
+    toggleWebSdkIframe ({
+      minimized: true
+    });
+  };
+
+  /**
+   * JS API to reset the conversation
+   */
+  const reset = () => {
+    _postMessage (EVENT_TYPES.CMD_RESET);
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
-    setUser
+    setUser,
+    open,
+    close,
+    reset
   };
 
   /**

@@ -59,6 +59,9 @@ define ("extras/api",
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
           handleMessengerToggle (data.minimized);
           break;
+        case EVENT_TYPES.CMD_RESET:
+          // @TODO: Call the action to reset the conversation (when ready)
+          break;
       }
     };
 
