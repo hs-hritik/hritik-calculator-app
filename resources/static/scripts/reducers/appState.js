@@ -96,6 +96,11 @@ define ("reducers/appState",
             preChatfeatureIndex: {$set: state.preChatfeatureIndex + 1}
           });
 
+        case ACTION_TYPES.UPDATE_ISSUE_STATE:
+          return update (state, {
+            issueState: {$set: action.state}
+          });
+
         default:
           return state;
       }

@@ -14,6 +14,7 @@ define ("actions/chatView",
     "constants/eventTypes",
     "constants/activeView",
     "constants/message",
+    "constants/appState",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "actions/entities",
@@ -25,7 +26,7 @@ define ("actions/chatView",
     "utils/postMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, xhr, arrayUtils,
+    EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, xhr, arrayUtils,
     entitiesActions, batchActions, entitySchema, entityHelpers,
     chatViewHelpers, xhrHelpers, postMessage) {
     "use strict";
@@ -33,7 +34,8 @@ define ("actions/chatView",
     const {normalize, denormalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
-          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS;
+          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
+          {ISSUE_STATE} = APP_STATE_CONSTANTS;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -339,9 +341,9 @@ define ("actions/chatView",
         if (replyBox.disabled || !replyBox.value) {
           return;
         }
-        dispatch (disableReplyBox ());
 
         // If there is no active issue, create user message and add it in dummy issue.
+        // TODO: Check for issue state (PRE_CHAT) instead of activeIssueId.
         if (!appState.activeIssueId) {
           dispatch (
             createMessage (MESSAGE_TYPE.TEXT, {
@@ -353,6 +355,7 @@ define ("actions/chatView",
               onAddMessage: (msg) => {
                 dispatch (
                   batchActions ([
+                    setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
                     setEndUserFirstMessage (msg),
                     udpateReplyText ("")
                   ])
@@ -366,7 +369,7 @@ define ("actions/chatView",
           return;
         }
 
-        // @TODO: Update code to send attachments.
+        dispatch (disableReplyBox ());
 
         postUserMessage ({
           domain: appState.domain,
@@ -594,6 +597,7 @@ define ("actions/chatView",
      */
     const rejectFaqSuggestions = () => {
       return (dispatch) => {
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
         dispatch (startNextPreChatFeature ());
       };
     };
@@ -616,7 +620,25 @@ define ("actions/chatView",
           })
         );
 
-        // @TODO: Change state and active footer to closed.
+        dispatch (
+          batchActions ([
+            updateIssueState (ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS),
+            setChatViewFooter (ACTIVE_FOOTER.CLOSED)
+          ])
+        );
+      };
+    };
+
+
+    /**
+     * Action to update issue state.
+     * @param {String} state - new state.
+     * @returns {Object} - action
+     */
+    const updateIssueState = (state) => {
+      return {
+        type: ACTION_TYPES.UPDATE_ISSUE_STATE,
+        state
       };
     };
 
@@ -743,10 +765,7 @@ define ("actions/chatView",
             }
           },
           onEnd: () => {
-            dispatch (batchActions ([
-              enableReplyBox (),
-              toggleSystemTyping (false)
-            ]));
+            dispatch (toggleSystemTyping (false));
           }
         }));
       };
@@ -801,7 +820,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
 
-        // @TODO: Change active footer to blocked.
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
             body: state.ui.text.infoBotRequestMsg,
@@ -826,8 +845,8 @@ define ("actions/chatView",
         const state = getState ();
         const {infoBot} = state.chatView;
         const currentField = infoBot.data [infoBot.currentField];
-        // @TODO: Change active footer to blocked.
-        // dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
+
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
 
         if (currentField) {
           dispatch (
@@ -883,9 +902,7 @@ define ("actions/chatView",
         // If all info bot fields are asked, move to next pre-chat feature,
         // otherwise ask next info bot field.
         if (!newState.chatView.infoBot.currentField) {
-          // @TODO: Change active footer to blocked instead of reply
-          // Temporary switching to ACTIVE_FOOTER.REPLY to avoid errors.
-          dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
           dispatch (startNextPreChatFeature ());
         } else {
           dispatch (askInfoBotField ());
