@@ -9,9 +9,10 @@ define ("components/message",
     "constants/propTypes",
     "constants/message",
     "gunpowder/utils/date",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/utils/object"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils, classes) {
+  function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils, classes, objUtils) {
     "use strict";
 
     const MESSAGE_TIMESTAP_FORMAT = "{hh}:{MM} {a}";
@@ -22,10 +23,19 @@ define ("components/message",
       displayName: "Message",
       propTypes: {
         message: PropTypes.shape (PROP_TYPES.MESSAGE).isRequired,
+        showAgentNickname: PropTypes.bool,
+        isLastMessage: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         text: PropTypes.shape ({
           faqSuggestionsMsgTitle: PropTypes.string.isRequired
         }).isRequired
+      },
+
+      getDefaultProps () {
+        return {
+          showAgentNickname: false,
+          isLastMessage: false
+        };
       },
 
       render () {
@@ -39,6 +49,7 @@ define ("components/message",
         return (
           <div className={msgClasses}>
             {this._renderMessage ()}
+            {this._renderAgentNameAndTimestamp ()}
           </div>
         );
       },
@@ -66,7 +77,6 @@ define ("components/message",
         return (
           <div>
             <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
-            {this._renderCreatedTimestamp ()}
           </div>
         );
         /* eslint-enable react/no-danger */
@@ -105,6 +115,46 @@ define ("components/message",
             </div>
           );
         });
+      },
+
+      /**
+       * Render agent name and message timestamp.
+       */
+      _renderAgentNameAndTimestamp () {
+        if (!this.props.isLastMessage) {
+          return null;
+        }
+
+        const {message, showAgentNickname} = this.props;
+        let agentName = null;
+
+        if (showAgentNickname && !message.isCustomerMsg) {
+          // There won't be any author for system generated messages.
+          // @TODO: Backend change to pass agent nickname pending.
+          // @TODO: Confirm from PM/design if we have to show agent's actual
+          // name if showAgentNickname is disabled.
+          agentName = objUtils.getIn (message, ["author", "name"]);
+        }
+
+        const timeAgoMs = Date.now () - message.createdTs;
+        let timeAgoStr;
+
+        // If the message came in the last one minute, show "Just now".
+        if (timeAgoMs < 60000) {
+          timeAgoStr = "Just now";
+        } else {
+          timeAgoStr = dateUtils.humanizeDuration (timeAgoMs, {
+            shortForm: true,
+            maxUnits: 1
+          });
+        }
+
+        return (
+          <div>
+            <span>{agentName}</span>
+            <span>{timeAgoStr}</span>
+          </div>
+        );
       },
 
       /**

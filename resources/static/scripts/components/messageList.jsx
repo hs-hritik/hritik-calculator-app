@@ -29,6 +29,7 @@ define ("components/messageList",
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
         )).isRequired,
+        showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
@@ -48,16 +49,18 @@ define ("components/messageList",
        * Render messages and timestamp.
        */
       _renderMessages () {
-        return this.props.messages.map ((message, index) => {
+        const {messages} = this.props;
+
+        return messages.map ((message, index) => {
           // Avoid rendering of unnecessary message types.
           if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
             return null;
           }
-
           return (
             <div key={message.id}>
-              {this._renderDateSeparator (index)}
               <Message message={message}
+                       isLastMessage={messages.length === (index + 1)}
+                       showAgentNickname={this.props.showAgentNickname}
                        text={this.props.text}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>

@@ -32,6 +32,7 @@ define ("components/containers/chatView",
         csatRating: state.chatView.csatRating,
         isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
         infoBotField: infoBot.data [infoBot.currentField],
+        showAgentNickname: state.appState.featuresEnabled.agentNickname,
         text: state.ui.text
       };
     };
