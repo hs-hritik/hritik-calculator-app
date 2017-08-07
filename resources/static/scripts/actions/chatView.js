@@ -237,18 +237,6 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to set FAQ suggestions to the store.
-     * @param {Array} faqs - List of faq objects
-     * @returns {Object} - action
-     */
-    const setFaqSuggestions = (faqs) => {
-      return {
-        type: ACTION_TYPES.SET_FAQ_SUGGESTIONS,
-        faqs
-      };
-    };
-
-    /**
      * Action to change chat view footer.
      * @param {String} footer
      * @returns {Object} - action
@@ -598,7 +586,6 @@ define ("actions/chatView",
             // The response would contain a list of faq objects,
             // dispatch an action to set it to the store.
             const faqs = response.suggested_faqs;
-            dispatch (setFaqSuggestions (faqs));
             if (callbacks.onSuccess) {
               callbacks.onSuccess (faqs);
             }

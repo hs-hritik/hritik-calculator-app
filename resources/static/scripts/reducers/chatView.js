@@ -25,7 +25,6 @@ define ("reducers/chatView",
       },
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
-      suggestedFaqs: [],
       csatRating: 0,
       systemTyping: false,
       agentTyping: false,
@@ -68,11 +67,6 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
           return update (state, {
             activeIssueMsgCursor: {$set: action.msgCursor}
-          });
-
-        case ACTION_TYPES.SET_FAQ_SUGGESTIONS:
-          return update (state, {
-            suggestedFaqs: {$set: action.faqs}
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
