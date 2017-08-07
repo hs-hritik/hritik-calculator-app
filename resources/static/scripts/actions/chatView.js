@@ -604,7 +604,9 @@ define ("actions/chatView",
             }
           },
           onFailure: () => {
-            // @TODO: Handler failure.
+            if (callbacks.onFailure) {
+              callbacks.onFailure ();
+            }
           },
           onEnd: () => {
             if (callbacks.onEnd) {
@@ -786,6 +788,7 @@ define ("actions/chatView",
           onSuccess: (faqs) => {
             // If there are no faq suggestions, move to next pre-chat feature,
             // otherwise create faq message.
+            dispatch (toggleSystemTyping (false));
             if (!faqs.length) {
               dispatch (startNextPreChatFeature ());
             } else {
@@ -800,7 +803,8 @@ define ("actions/chatView",
               );
             }
           },
-          onEnd: () => {
+          onFailure: () => {
+            // @TODO: Handle faq suggestions xhr failure.
             dispatch (toggleSystemTyping (false));
           }
         }));
