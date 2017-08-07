@@ -418,58 +418,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to fetch the user issues and normalize the data.
-     * @param {Object} user - user object. Contains id, name and email.
-     * @returns {Function} - async action.
-     */
-    const setUser = (user) => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const domain = state.appState.domain;
-
-        registerUserProfile (user, domain, {
-          onSuccess: () => dispatch (getIssues (user))
-        });
-      };
-    };
-
-    /**
-     * Fire xhr to register user profile.
-     * @param {Object} user - user object. Contains id, name and email.
-     * @param {String} domain - domain name.
-     * @param {Object} [callbacks] - optional callbacks
-     */
-    const registerUserProfile = (user, domain, callbacks = {}) => {
-      const {id, name, email} = user;
-
-      const xhrData = {
-        identifier: id
-      };
-
-      if (name) {
-        xhrData.name = name;
-      }
-      if (email) {
-        xhrData.email = email;
-      }
-
-      xhr ({
-        route: routes.postProfile (domain, id),
-        method: "POST",
-        data: xhrData,
-        headers: xhrHelpers.getCommonHeaders (),
-        onSuccess: (response) => {
-          if (callbacks.onSuccess) {
-            callbacks.onSuccess (response);
-          }
-        },
-        onFailure: () => {
-          // @TODO: Handler failure.
-        }
-      });
-    };
-
-    /**
      * Action to get user issues.
      * @param {Object} user - user object. Contains id, name and email.
      * @returns {Object} - action
@@ -541,7 +489,6 @@ define ("actions/appState",
       setIdentifier,
       setClientConfig,
       setWmConfig,
-      setUser,
       updateActiveView,
       startNewConversation,
       toggleMinimized

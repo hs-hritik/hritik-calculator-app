@@ -32,7 +32,6 @@
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
-    CMD_SET_USER: "cmd-set-user",
     CMD_RESET: "cmd-reset"
   };
 
@@ -354,16 +353,6 @@
   };
 
   /**
-   * JS API to set user.
-   * @param {Object} user - user object. Contains id, name and email.
-   */
-  const setUser = (user) => {
-    _postMessage (EVENT_TYPES.CMD_SET_USER, {
-      user
-    });
-  };
-
-  /**
    * JS API to open/maximize/show the messenger widget
    */
   const open = () => {
@@ -392,7 +381,6 @@
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
-    setUser,
     open,
     close,
     reset
