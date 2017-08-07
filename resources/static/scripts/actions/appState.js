@@ -34,86 +34,98 @@ define ("actions/appState",
     const SKIP_LS_CHECK = true;
 
     /**
-     * Set the uuid in the state to identify the user (or the chat session).
-     * The creation of a new uuid depends on the userId passed here.
+     * Set the identifier in the state to identify the user (or the chat session).
+     * The creation of a new identifier depends on the userId passed here.
      * If the current userId is different than the one stored in the
-     * localstorage, we create a new uuid and update the value.
+     * localstorage, we create a new identifier and update the value.
      * For details about implementation see -
      * https://helpshift.atlassian.net/wiki/display/FRON/Possible+Solution+for+Identity+Problem
-     * @param {String} - userId
+     * @param {String} userId
      */
-    const setUuid = (userId) => {
+    const setIdentifier = (userId) => {
       return () => {
         const prevUserId = lsHelper.getUserId ();
-        const uuid = uuidGenerator ();
+        // identifier is the uuid (Universally unique identifier)
+        const identifier = uuidGenerator ();
 
         if (isUserIdValid (prevUserId)) {
           if (!isUserIdValid (userId)) {
             // User A -> null
-            // If a uuid does not exist, set one in state and localstorage.
-            dispatchAndSetUuid (uuid);
+            // If an identifier does not exist, set one in state and localstorage.
+            dispatchAndSetIdentifier (identifier);
           } else if (userId !== prevUserId) {
             // User A -> User B
             // Set the userId in localstorage.
-            // Set the uuid in state and localstorage.
+            // Set the identifier in state and localstorage.
             lsHelper.setUserId (userId);
-            dispatchAndSetUuid (uuid, SKIP_LS_CHECK);
+            dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
             // @TODO Clear the conversation.
           } else {
             // User A -> User A
             // User id - No action.
-            // Set the uuid in state
-            dispatchAndSetUuid (uuid);
+            // Set the identifier in state
+            dispatchAndSetIdentifier (identifier);
           }
         } else if (isUserIdValid (userId)) {
           // null -> User A
           // Set the userId in localstorage.
-          // If a uuid does not exist, set one in state and localstorage.
+          // If an identifier does not exist, set one in state and localstorage.
           lsHelper.setUserId (userId);
-          dispatchAndSetUuid (uuid);
+          dispatchAndSetIdentifier (identifier);
         } else {
           // null -> null
           // There would be no userId in localstorage, no action.
-          // If a uuid does not exist, set one in state and localstorage.
-          dispatchAndSetUuid (uuid);
+          // If an identifier does not exist, set one in state and localstorage.
+          dispatchAndSetIdentifier (identifier);
         }
       };
     };
 
     /**
-     * Auxiliary function to dispatch and set the uuid to app state and
-     * localstorage respectively if uuid isn't present in localstorage.
-     * @param {String} - uuid
+     * Auxiliary function to dispatch and set the identifier to app state and
+     * localstorage respectively if identifier isn't present in localstorage.
+     * @param {String} identifier - identifier
      * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
-     * to be checked if uuid exists.
+     * to be checked if identifier exists.
      */
-    const dispatchAndSetUuid = (uuid, skipLsCheck) => {
-      if (skipLsCheck || !lsHelper.getUuid ()) {
-        store.dispatch (setUuidValue (uuid));
-        lsHelper.setUuid (uuid);
+    const dispatchAndSetIdentifier = (identifier, skipLsCheck) => {
+      if (skipLsCheck || !lsHelper.getIdentifier ()) {
+        store.dispatch (setIdentifierValue (identifier));
+        lsHelper.setIdentifier (identifier);
+        // If we are creating a new identifier, that means the conversation is new.
+        store.dispatch (startNewConversation ());
       } else {
-        // If a new uuid is not set in the state and ls, set the uuid
+        // If a new identifier is not set in the state and ls, set the identifier
         // stored in the localstorage to the sate because the initial state
-        // does not have a uuid.
-        const currentUuid = lsHelper.getUuid ();
-        store.dispatch (setUuidValue (currentUuid));
+        // does not have an identifier.
+        const currentIdentifier = lsHelper.getIdentifier ();
+        store.dispatch (setIdentifierValue (currentIdentifier));
+        // If identifier already exists, there can be 2 cases:
+        // (i) - User is registerd.
+        //       (If the user refreshes the page after the issue creation is done)
+        // (ii) - User is not registerd.
+        //       (If the user refreshes the page before the issue creation is done)
+        // For case (i), call the getIssues API to get existing issue.
+        // For case (ii), start new conversation.
+        // @TODO: For both cases, conversation should continue from local storage.
+        store.dispatch (getIssues (currentIdentifier));
       }
     };
 
     /**
      * Return true if the passed user id valid.
-     * @param {String} - userId
+     * @param {String} userId
      * @returns {Boolean}
      */
     const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
 
     /**
-     * Action to set uuid.
-     * @param {String} id - uuid
+     * Action to set identifier.
+     * @param {String} id - identifier
      * @returns {Object} - action
      */
-    const setUuidValue = (id) => ({
-      type: ACTION_TYPES.SET_UUID,
+    const setIdentifierValue = (id) => ({
+      type: ACTION_TYPES.SET_IDENTIFIER,
       id
     });
 
@@ -220,7 +232,7 @@ define ("actions/appState",
 
     /**
      * Action to set wm config to the store.
-     * @param {Object} config.
+     * @param {Object} config
      * @returns {Object} - action
      */
     const setWmConfigValues = (config) => ({
@@ -352,16 +364,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set user id.
-     * @param {String} id - user id.
-     * @returns {Object} - action
-     */
-    const setUserId = (id) => ({
-      type: ACTION_TYPES.SET_USER_ID,
-      id
-    });
-
-    /**
      * Find active issue in the given issues object,
      * and return the active issue id.
      * If there is no active issue, return null.
@@ -472,14 +474,14 @@ define ("actions/appState",
      * @param {Object} user - user object. Contains id, name and email.
      * @returns {Object} - action
      */
-    const getIssues = (user) => {
+    const getIssues = (identifier) => {
       return (dispatch, getState) => {
         const state = getState ();
         const appState = state.appState;
         xhr ({
           route: routes.getMyIssues (appState.domain),
           data: {
-            "identifier": user.id,
+            "identifier": identifier,
             "platform-id": appState.platformId
           },
           headers: xhrHelpers.getCommonHeaders (),
@@ -487,9 +489,6 @@ define ("actions/appState",
             const normalizedData = normalize (response, entitySchema.issues);
             const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
 
-            // @TODO: Explore helpers to dispatch multiple actions once.
-            // Use them if they are useful.
-            dispatch (setUserId (user.id));
             dispatch (entitiesActions.setEntities (processedEntities));
 
             const activeIssueId = _getActiveIssueId (processedEntities.issues);
@@ -507,6 +506,10 @@ define ("actions/appState",
           },
           onFailure: () => {
             // @TODO: Handler failure.
+            // @TODO: Remove it. Temporary dispatching action to start new conversation
+            // on failure until the code to save conversation in localstorage is done.
+            // This xhr can fail because the identifier is not yet registerd.
+            dispatch (startNewConversation ());
           }
         });
       };
@@ -535,7 +538,7 @@ define ("actions/appState",
     };
 
     return {
-      setUuid,
+      setIdentifier,
       setClientConfig,
       setWmConfig,
       setUser,

@@ -20,8 +20,8 @@ define ("extras/api",
      * @param {Object} clientConfig
      */
     const setConfig = (clientConfig) => {
-      store.dispatch (appStateActions.setUuid (clientConfig.userId));
       store.dispatch (appStateActions.setClientConfig (clientConfig));
+      store.dispatch (appStateActions.setIdentifier (clientConfig.userId));
       store.dispatch (appStateActions.setWmConfig ());
     };
 

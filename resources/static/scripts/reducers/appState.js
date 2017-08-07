@@ -22,11 +22,9 @@ define ("reducers/appState",
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
+      // identifier is the uuid (Universally unique identifier)
       identifier: "",
       userId: "",
-      uuid: "",
-      // @TODO: Check if currentUserId is really required.
-      currentUserId: "",
       platformId: "",
       domain: "",
       issueState: ISSUE_STATE.PRE_CHAT,
@@ -56,12 +54,7 @@ define ("reducers/appState",
             }
           });
 
-        case ACTION_TYPES.SET_UUID:
-          return update (state, {
-            uuid: {$set: action.id}
-          });
-
-        case ACTION_TYPES.SET_USER_ID:
+        case ACTION_TYPES.SET_IDENTIFIER:
           return update (state, {
             identifier: {$set: action.id}
           });

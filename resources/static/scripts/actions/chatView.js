@@ -482,6 +482,42 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Fire xhr to register user profile.
+     * @param {Object} user - user object. Contains identifier, name and email.
+     * @param {String} domain - domain name.
+     * @param {Object} [callbacks] - optional callbacks
+     */
+    const registerUserProfile = (user, domain, callbacks = {}) => {
+      const {identifier, name, email} = user;
+
+      const xhrData = {
+        identifier: identifier
+      };
+
+      if (name) {
+        xhrData.name = name;
+      }
+      if (email) {
+        xhrData.email = email;
+      }
+
+      xhr ({
+        route: routes.postProfile (domain, identifier),
+        method: "POST",
+        data: xhrData,
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess: (response) => {
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess (response);
+          }
+        },
+        onFailure: () => {
+          // @TODO: Handler failure.
+        }
+      });
+    };
+
     const createIssue = () => {
       return (dispatch, getState) => {
         const state = getState ();
@@ -933,9 +969,7 @@ define ("actions/chatView",
         // If the preChatfeatureIndex has reached the length of preChatfeaturesOrder list,
         // it means all the pre-chat features are executed and create new issue.
         if (preChatfeatureIndex >= preChatfeaturesOrder.length) {
-          // @TODO: Fire xhr to register user.
-          dispatch (createIssue ());
-          dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+          dispatch (registerUserAndCreateIssue ());
           return;
         }
 
@@ -949,6 +983,36 @@ define ("actions/chatView",
           // If the feature is disabled, start the next feature.
           dispatch (startNextPreChatFeature ());
         }
+      };
+    };
+
+    /**
+     * Action to register user profile and create new issue.
+     * @returns {Function} - action
+     */
+    const registerUserAndCreateIssue = () => {
+      return (dispatch, getState) => {
+        const state = getState (),
+              infoBotData = state.chatView.infoBot.data,
+              name = infoBotData.name.value.value,
+              email = infoBotData.email.value.value;
+
+        const user = {
+          identifier: state.appState.identifier
+        };
+
+        if (name) {
+          user.name = name;
+        }
+        if (email) {
+          user.email = email;
+        }
+
+        registerUserProfile (user, state.appState.domain, {
+          onSuccess: () => {
+            dispatch (createIssue ());
+          }
+        });
       };
     };
 

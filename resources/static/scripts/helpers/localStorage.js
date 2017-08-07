@@ -11,7 +11,7 @@ define ("helpers/localStorage",
 
     const KEYS = {
       USER_ID: "userId",
-      UUID: "uuid"
+      IDENTIFIER: "identifier"
     };
 
     /**
@@ -35,25 +35,25 @@ define ("helpers/localStorage",
     const removeUserId = () => lsUtils.removeItem (KEYS.USER_ID);
 
     /**
-     * Get uuid
-     * @returns {String} - uuid
+     * Get identifier
+     * @returns {String} - identifier
      */
-    const getUuid = () => lsUtils.getItem (KEYS.UUID);
+    const getIdentifier = () => lsUtils.getItem (KEYS.IDENTIFIER);
 
     /**
-     * Set uuid passed to the lsUtils
+     * Set identifier passed to the lsUtils
      * @param {String} - userId
      */
-    const setUuid = (uuid) => {
+    const setIdentifier = (identifier) => {
       // @TODO Change the key to something cryptic.
-      lsUtils.setItem (KEYS.UUID, uuid);
+      lsUtils.setItem (KEYS.IDENTIFIER, identifier);
     };
 
     return {
       getUserId,
       setUserId,
       removeUserId,
-      getUuid,
-      setUuid
+      getIdentifier,
+      setIdentifier
     };
   });
