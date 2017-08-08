@@ -5,12 +5,15 @@
  */
 
 define ("helpers/chatView",
-  ["constants/message"],
-  function (MESSAGE_CONSTANTS) {
+  [
+    "constants/message",
+    "gunpowder/utils/uuid"
+  ],
+  function (MESSAGE_CONSTANTS, uuidGenerator) {
     "use strict";
 
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
-    let msgIdCounter = 0;
+    const MSG_ID_PREFIX = "message_";
 
     /**
      * Create custom text message.
@@ -23,7 +26,7 @@ define ("helpers/chatView",
       const {body, isCustomerMsg = true} = options;
 
       return {
-        id: `dummy_msg_${msgIdCounter++}`,
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
         type: MESSAGE_TYPE.TEXT,
         body,
         createdTs: new Date (),
@@ -41,7 +44,7 @@ define ("helpers/chatView",
       const {faqs = []} = options;
 
       return {
-        id: `dummy_msg_${msgIdCounter++}`,
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
         type: MESSAGE_TYPE.FAQ,
         createdTs: new Date (),
         isCustomerMsg: false,
