@@ -11,22 +11,23 @@ define ("components/chatView",
     "constants/chatView",
     "constants/keyCodes",
     "gunpowder/utils/classes",
-    "gunpowder/utils/schema",
     "components/containers/replyBox",
     "components/commons/viewHeader",
     "components/starRating"
   ],
   function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, KEY_CODES,
-    classes, schema, ReplyBoxContainer, ViewHeader, StarRating) {
+    classes, ReplyBoxContainer, ViewHeader, StarRating) {
     "use strict";
 
     const PropTypes = React.PropTypes,
-          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS,
-          {Input} = schema;
+          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const INFO_BOT_FIELD_PROPS = PropTypes.shape ({
       title: PropTypes.string.isRequired,
-      value: PropTypes.instanceOf (Input).isRequired
+      value: PropTypes.shape ({
+        value: PropTypes.string.isRequired,
+        errorMsg: PropTypes.string
+      }).isRequired
     });
 
     const ChatViewFooter = React.createClass ({

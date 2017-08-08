@@ -7,15 +7,13 @@
 define ("reducers/chatView",
   [
     "constants/chatView",
-    "constants/actionTypes",
-    "gunpowder/utils/schema"
+    "constants/actionTypes"
   ],
-  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES, schema) {
+  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES) {
     "use strict";
 
     const update = React.addons.update,
-          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS,
-          {Input} = schema;
+          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_STATE = {
       replyBox: {
@@ -37,19 +35,20 @@ define ("reducers/chatView",
           name: {
             title: "Your Name",
             msg: "What's your name?",
-            value: new Input ({
+            value: {
               value: "",
-              // @TODO: Confirm if custom errorMsg is required.
+              errorMsg: "",
               validations: ["required"]
-            })
+            }
           },
           email: {
             title: "Your Email Address",
             msg: "What's your email?",
-            value: new Input ({
+            value: {
               value: "",
+              errorMsg: "",
               validations: ["required", "email"]
-            })
+            }
           }
         }
       }
@@ -116,19 +115,15 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE:
-          let valueUpdateObj;
+          const {value, errorMsg} = action.value,
+                valueUpdateObj = {};
 
-          // action.value can either be string or the input object.
-          if (typeof action.value === "string") {
-            valueUpdateObj = {
-              value: {
-                $set: action.value
-              }
-            };
-          } else {
-            valueUpdateObj = {
-              $set: action.value
-            };
+          if (typeof value === "string") {
+            valueUpdateObj.value = {$set: value};
+          }
+
+          if (typeof errorMsg === "string") {
+            valueUpdateObj.errorMsg = {$set: errorMsg};
           }
 
           return update (state, {

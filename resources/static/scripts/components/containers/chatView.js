@@ -63,7 +63,7 @@ define ("components/containers/chatView",
           dispatch (appStateActions.startNewConversation ());
         },
         onValueChangeInfoBotField: (value) => {
-          dispatch (chatViewActions.updateInfoBotFieldValue (value));
+          dispatch (chatViewActions.updateInfoBotFieldValue ({value}));
         },
         onSubmitInfoBotField: () => {
           dispatch (chatViewActions.submitInfoBotField ());

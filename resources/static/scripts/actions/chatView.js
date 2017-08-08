@@ -822,10 +822,13 @@ define ("actions/chatView",
      * @param {String|Object} value
      * @returns {Object} - Action
      */
-    const updateInfoBotFieldValue = (value) => {
+    const updateInfoBotFieldValue = ({value, errorMsg}) => {
       return {
         type: ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE,
-        value
+        value: {
+          value,
+          errorMsg
+        }
       };
     };
 
@@ -903,18 +906,20 @@ define ("actions/chatView",
         const state = getState (),
               {infoBot} = state.chatView;
 
-        const currentField = infoBot.data [infoBot.currentField];
-        const errorMsg = currentField.value.isValid ();
-        currentField.value.errorMsg = errorMsg;
-        dispatch (updateInfoBotFieldValue (currentField.value));
+        const currentFieldVal = infoBot.data [infoBot.currentField].value;
 
-        if (errorMsg) {
-          return;
-        }
+        // @TODO: Add validations
+        // const errorMsg = currentField.value.isValid ();
+        // dispatch (updateInfoBotFieldValue ({
+        //   errorMsg
+        // }));
+        // if (errorMsg) {
+        //   return;
+        // }
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
-            body: currentField.value.value,
+            body: currentFieldVal.value,
             isCustomerMsg: true
           }, {
             typingTimer: null,
