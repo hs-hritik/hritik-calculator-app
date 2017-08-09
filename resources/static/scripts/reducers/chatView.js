@@ -18,7 +18,6 @@ define ("reducers/chatView",
     const INITIAL_STATE = {
       replyBox: {
         value: "",
-        attachments: [],
         disabled: false
       },
       activeFooter: ACTIVE_FOOTER.REPLY,

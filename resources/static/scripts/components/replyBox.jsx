@@ -21,7 +21,6 @@ define ("components/replyBox",
          * Reply textarea value.
          */
         value: PropTypes.string.isRequired,
-        attachments: PropTypes.array,
         disabled: PropTypes.bool,
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
