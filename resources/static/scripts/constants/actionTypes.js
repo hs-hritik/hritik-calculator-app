@@ -10,6 +10,7 @@ define ("constants/actionTypes",
 
     return {
       BATCH_ACTIONS: "BATCH_ACTIONS",
+      REHYDRATE: "REHYDRATE",
       SET_USER: "SET_USER",
       SET_IDENTIFIER: "SET_IDENTIFIER",
       SET_WM_CONFIG: "SET_WM_CONFIG",

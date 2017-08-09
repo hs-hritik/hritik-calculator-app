@@ -23,12 +23,13 @@ define ("actions/chatView",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr",
+    "helpers/localStorage",
     "utils/postMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, xhr, arrayUtils,
     entitiesActions, batchActions, entitySchema, entityHelpers,
-    chatViewHelpers, xhrHelpers, postMessage) {
+    chatViewHelpers, xhrHelpers, lsHelper, postMessage) {
     "use strict";
 
     const {normalize, denormalize} = normalizr,
@@ -533,6 +534,8 @@ define ("actions/chatView",
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: (response) => {
+            // Save the active issue id in the local storage.
+            lsHelper.setActiveIssueId (response.id);
             const normalizedData = normalize (response, entitySchema.issue);
             const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
             dispatch (entitiesActions.setEntities (processedEntities));
@@ -1006,6 +1009,9 @@ define ("actions/chatView",
 
         registerUserProfile (user, state.appState.domain, {
           onSuccess: () => {
+            // Save the information in the local storage that the current user is registerd.
+            // This will help in skipping the info bot if the same user starts a new conversation.
+            lsHelper.setIdentifierRegisteredInfo (true);
             dispatch (createIssue ());
           }
         });

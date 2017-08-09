@@ -20,6 +20,12 @@ define ("reducers/entities",
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.REHYDRATE:
+          if (action.data.entities) {
+            return action.data.entities;
+          }
+          return state;
+
         case ACTION_TYPES.SET_ENTITIES:
           return update (state, {
             issues: {$merge: action.entities.issues || {}},

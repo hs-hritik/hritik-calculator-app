@@ -18,6 +18,7 @@ define ("actions/appState",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
+    "gunpowder/utils/throttle",
     "store",
     "actions/entities",
     "actions/chatView",
@@ -25,7 +26,7 @@ define ("actions/appState",
   ],
   function (ACTION_TYPES, routes, EVENT_TYPES, normalizr, entitySchema,
     entityHelpers, chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils,
-    uuidGenerator, store, entitiesActions, chatViewActions, postMessage) {
+    uuidGenerator, throttle, store, entitiesActions, chatViewActions, postMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -84,6 +85,8 @@ define ("actions/appState",
     /**
      * Auxiliary function to dispatch and set the identifier to app state and
      * localstorage respectively if identifier isn't present in localstorage.
+     * Also rehydrate the chat from localstorage and start saving the entities
+     * in localstorage.
      * @param {String} identifier - identifier
      * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
      * to be checked if identifier exists.
@@ -93,6 +96,9 @@ define ("actions/appState",
         store.dispatch (setIdentifierValue (identifier));
         lsHelper.setIdentifier (identifier);
         // If we are creating a new identifier, that means the conversation is new.
+        // Clear the previous state stored in localstorage (if any),
+        // and start a new conversation.
+        lsHelper.reset ();
         store.dispatch (startNewConversation ());
       } else {
         // If a new identifier is not set in the state and ls, set the identifier
@@ -108,8 +114,61 @@ define ("actions/appState",
         // For case (i), call the getIssues API to get existing issue.
         // For case (ii), start new conversation.
         // @TODO: For both cases, conversation should continue from local storage.
-        store.dispatch (getIssues (currentIdentifier));
+
+        // If we are using the already saved identifier, that means there could be an
+        // ongoing conversation.
+        // Save the entities in the state which are saved in the localstorage.
+        rehydrate ();
+
+        const activeIssueId = lsHelper.getActiveIssueId ();
+        // @Note: Might have to check issue state once we implement pre chat rehydration.
+        // If there is an active issue id in localstorage, set the activeIssueId in state,
+        // and start polling for new messages.
+        if (activeIssueId) {
+          store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
+          chatViewActions.startPollingForMessages ();
+        } else {
+          // @TODO: Handle pre chat state and post chat state.
+          // For pre chat state, save the required data to continue the pre chat
+          // from where the user left.
+          // For post chat state, we might have to clear the previous state and
+          // start new conversation.
+          // To avoid errors until we handle pre chat and post chat,
+          // clear the previous state, and start new conversation.
+          lsHelper.reset ();
+          store.dispatch (startNewConversation ());
+        }
       }
+      // Start saving the required data in localstorage.
+      startSavingRequiredState ();
+    };
+
+    /**
+     * Get saved entities from localstorage,
+     * and call action to update the current state.
+     */
+    const rehydrate = () => {
+      const state = lsHelper.getEntities ();
+
+      if (state) {
+        store.dispatch ({
+          type: ACTION_TYPES.REHYDRATE,
+          data: state
+        });
+      }
+    };
+
+    /**
+     * Subscribe to store to save the state in localstorage.
+     * @TODO: It is temporary. It should be moved to middleware.
+     */
+    const startSavingRequiredState = () => {
+      store.subscribe (throttle (() => {
+        const state = store.getState ();
+        lsHelper.setEntities ({
+          entities: state.entities
+        });
+      }, 1000));
     };
 
     /**
@@ -491,6 +550,10 @@ define ("actions/appState",
       setWmConfig,
       updateActiveView,
       startNewConversation,
-      toggleMinimized
+      toggleMinimized,
+      // @TODO: Remove the getIssues function if not required.
+      // Temporarily exporting it to avoid eslint error, because cuurently
+      // getIssues is not used anywhere.
+      getIssues
     };
   });
