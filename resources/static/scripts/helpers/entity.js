@@ -26,7 +26,7 @@ define ("helpers/entity",
           type: msg.type,
           body: msg.body,
           state: msg.state,
-          createdTs: new Date (msg.created_at),
+          createdTs: msg.created_at,
           author: msg.author,
           isCustomerMsg: (msg.origin !== "admin")
         };
@@ -46,11 +46,6 @@ define ("helpers/entity",
       objUtils.forEachKey (faqs, (id, faq) => {
         processedFaqs [id] = {
           id: faq.id,
-          sectionId: faq.section_id,
-          isPublished: faq ["published?"],
-          issueTags: faq.issue_tags,
-          updatedAt: new Date (faq.updated_at),
-          createdAt: new Date (faq.created_at),
           translations: faq.translations
         };
       });

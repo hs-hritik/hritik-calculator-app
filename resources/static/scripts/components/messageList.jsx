@@ -8,14 +8,12 @@ define ("components/messageList",
   [
     "components/message",
     "constants/propTypes",
-    "constants/message",
-    "gunpowder/utils/date"
+    "constants/message"
   ],
-  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, dateUtils) {
+  function (Message, PROP_TYPES, MESSAGE_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const CONVERSATION_DATE_FORMAT = "{mmm} {dd}, {yyyy}";
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
 
     const MESSAGE_TYPES_TO_RENDER = [
@@ -66,27 +64,6 @@ define ("components/messageList",
             </div>
           );
         });
-      },
-
-      /**
-       * Render date if the next message is on different
-       * day than the previous message.
-       */
-      _renderDateSeparator (msgIndex) {
-        const messages = this.props.messages,
-              prevMsg = messages [msgIndex - 1],
-              nextMsg = messages [msgIndex];
-
-        if (prevMsg &&
-            (prevMsg.createdTs.toDateString () === nextMsg.createdTs.toDateString ())) {
-          return null;
-        }
-
-        const dateStr = dateUtils.format (nextMsg.createdTs, CONVERSATION_DATE_FORMAT);
-
-        return (
-          <div className="hs-message-list__date-separator">{dateStr}</div>
-        );
       },
 
       /**

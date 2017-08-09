@@ -29,7 +29,7 @@ define ("helpers/chatView",
         id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
         type: MESSAGE_TYPE.TEXT,
         body,
-        createdTs: new Date (),
+        createdTs: Date.now (),
         isCustomerMsg
       };
     };
@@ -46,7 +46,7 @@ define ("helpers/chatView",
       return {
         id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
         type: MESSAGE_TYPE.FAQ,
-        createdTs: new Date (),
+        createdTs: Date.now (),
         isCustomerMsg: false,
         suggestedFaqs: faqs.slice (0, 3)
       };

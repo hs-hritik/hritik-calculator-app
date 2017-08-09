@@ -15,7 +15,7 @@ define ("constants/propTypes",
       type: PropTypes.string.isRequired,
       body: PropTypes.string,
       isCustomerMsg: PropTypes.bool.isRequired,
-      createdTs: PropTypes.instanceOf (Date).isRequired,
+      createdTs: PropTypes.number.isRequired,
       author: PropTypes.shape ({
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired
