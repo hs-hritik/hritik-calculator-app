@@ -54,6 +54,24 @@ define ("helpers/entity",
     };
 
     /**
+     * Return processed authors entities.
+     * @param {Object} authors - unprocessed authors entities.
+     * @returns {Object} - processed authors entities.
+     */
+    const getProcessedAuthorEntities = (authors) => {
+      const processedAuthors = {};
+
+      objUtils.forEachKey (authors, (id, author) => {
+        processedAuthors [id] = {
+          id: author.id,
+          name: author.name
+        };
+      });
+
+      return processedAuthors;
+    };
+
+    /**
      * Return processed entities.
      * @param {Object} entities - unprocessed entities.
      * @returns {Object} - processed entities.
@@ -64,6 +82,9 @@ define ("helpers/entity",
       }
       if (entities.faqs) {
         entities.faqs = getProcessedFaqEntities (entities.faqs);
+      }
+      if (entities.authors) {
+        entities.authors = getProcessedAuthorEntities (entities.authors);
       }
 
       return entities;
