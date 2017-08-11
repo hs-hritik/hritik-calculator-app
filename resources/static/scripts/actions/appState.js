@@ -85,8 +85,7 @@ define ("actions/appState",
     /**
      * Auxiliary function to dispatch and set the identifier to app state and
      * localstorage respectively if identifier isn't present in localstorage.
-     * Also rehydrate the chat from localstorage and start saving the entities
-     * in localstorage.
+     * Also rehydrate the chat from localstorage.
      * @param {String} identifier - identifier
      * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
      * to be checked if identifier exists.
@@ -139,8 +138,6 @@ define ("actions/appState",
           store.dispatch (startNewConversation ());
         }
       }
-      // Start saving the required data in localstorage.
-      startSavingRequiredState ();
     };
 
     /**
@@ -148,27 +145,20 @@ define ("actions/appState",
      * and call action to update the current state.
      */
     const rehydrate = () => {
-      const state = lsHelper.getEntities ();
+      const issues = lsHelper.getEntities ("ISSUES"),
+            messages = lsHelper.getEntities ("MESSAGES");
 
-      if (state) {
+      if (issues || messages) {
         store.dispatch ({
           type: ACTION_TYPES.REHYDRATE,
-          data: state
+          data: {
+            entities: {
+              issues,
+              messages
+            }
+          }
         });
       }
-    };
-
-    /**
-     * Subscribe to store to save the state in localstorage.
-     * @TODO: It is temporary. It should be moved to middleware.
-     */
-    const startSavingRequiredState = () => {
-      store.subscribe (throttle (() => {
-        const state = store.getState ();
-        lsHelper.setEntities ({
-          entities: state.entities
-        });
-      }, 1000));
     };
 
     /**

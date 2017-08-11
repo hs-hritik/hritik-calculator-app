@@ -6,15 +6,20 @@
 
 define ("helpers/localStorage",
   [
-    "gunpowder/utils/localStorage"
+    "gunpowder/utils/localStorage",
+    "gunpowder/utils/object"
   ],
-  function (lsUtils) {
+  function (lsUtils, objUtils) {
     "use strict";
 
+    // @TODO: Change the keys to something cryptic.
     const KEYS = {
       USER_ID: "userId",
       IDENTIFIER: "identifier",
-      STATE: "state",
+      ENTITIES: {
+        ISSUES: "issues_entities",
+        MESSAGES: "messages_entities"
+      },
       ACTIVE_ISSUE_ID: "active_issue_id",
       IS_IDENTIFIER_REGISTERED: "is_identifier_registered"
     };
@@ -30,7 +35,6 @@ define ("helpers/localStorage",
      * @param {String} - userId
      */
     const setUserId = (userId) => {
-      // @TODO Change the key to something cryptic.
       lsUtils.setItem (KEYS.USER_ID, userId);
     };
 
@@ -56,29 +60,22 @@ define ("helpers/localStorage",
 
     /**
      * Returns the entities saved in localstorage.
-     * @returns {Object|undefined} - state
+     * @param {String} entityType
+     * @returns {Object} - entities
      */
-    const getEntities = () => {
-      try {
-        const serializedState = lsUtils.getItem (KEYS.STATE);
-        if (serializedState === null) {
-          return undefined;
-        }
-        return JSON.parse (serializedState);
-      } catch (error) {
-        // If there is any error, return undefined, so that the store
-        // can be initalized with default values
-        return undefined;
-      }
+    const getEntities = (entityType) => {
+      return lsUtils.getItem (KEYS.ENTITIES [entityType], true);
     };
 
     /**
-     * Save the given entities in localstorage
-     * @param {Object} state - the state which has to be saved to localstorage.
+     * Set the given entities in localstorage.
+     * @param {String} entityType
+     * @param {Object} entities - the entities which have to be saved to localstorage.
      */
-    const setEntities = (state) => {
-      const serializedState = JSON.stringify (state);
-      lsUtils.setItem (KEYS.STATE, serializedState);
+    const setEntities = (entityType, entities = {}) => {
+      const currentEntities = getEntities (entityType) || {};
+      const newEntities = objUtils.shallowMerge (currentEntities, entities);
+      lsUtils.setItem (KEYS.ENTITIES [entityType], newEntities);
     };
 
     /**
@@ -113,7 +110,8 @@ define ("helpers/localStorage",
      * Clear previously saved state from the localstorage.
      */
     const reset = () => {
-      lsUtils.removeItem (KEYS.STATE);
+      lsUtils.removeItem (KEYS.ENTITIES.ISSUES);
+      lsUtils.removeItem (KEYS.ENTITIES.MESSAGES);
       lsUtils.removeItem (KEYS.ACTIVE_ISSUE_ID);
       lsUtils.removeItem (KEYS.IS_IDENTIFIER_REGISTERED);
     };

@@ -7,12 +7,12 @@
 define ("store",
   [
     "reducers/root",
-    "reduxThunk"
+    "reduxThunk",
+    "extras/lsMiddleware"
   ],
-  function (rootReducer, ReduxThunk) {
+  function (rootReducer, ReduxThunk, lsMiddleware) {
     "use strict";
-    const createStore = Redux.createStore,
-          applyMiddleware = Redux.applyMiddleware;
+    const {createStore, applyMiddleware} = Redux;
 
-    return createStore (rootReducer, applyMiddleware (ReduxThunk.default));
+    return createStore (rootReducer, applyMiddleware (ReduxThunk.default, lsMiddleware));
   });

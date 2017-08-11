@@ -19,8 +19,7 @@ define ("helpers/entity",
     const getProcessedMessageEntities = (messages) => {
       const processedMessages = {};
 
-      objUtils.forEachKey (messages, (id) => {
-        const msg = messages [id];
+      objUtils.forEachKey (messages, (id, msg) => {
         processedMessages [id] = {
           id: msg.id,
           type: msg.type,

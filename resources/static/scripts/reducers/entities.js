@@ -18,21 +18,26 @@ define ("reducers/entities",
       faqs: {}
     };
 
+    const mergeEntities = (state, entities) => {
+      return update (state, {
+        issues: {$merge: entities.issues || {}},
+        messages: {$merge: entities.messages || {}},
+        authors: {$merge: entities.authors || {}},
+        faqs: {$merge: entities.faqs || {}}
+      });
+    };
+
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           if (action.data.entities) {
-            return action.data.entities;
+            return mergeEntities (state, action.data.entities);
           }
           return state;
 
         case ACTION_TYPES.SET_ENTITIES:
-          return update (state, {
-            issues: {$merge: action.entities.issues || {}},
-            messages: {$merge: action.entities.messages || {}},
-            authors: {$merge: action.entities.authors || {}},
-            faqs: {$merge: action.entities.faqs || {}}
-          });
+          return mergeEntities (state, action.entities);
+
 
         case ACTION_TYPES.ADD_MESSAGES:
           // To avoid duplication of message ids, filter the incoming message ids
