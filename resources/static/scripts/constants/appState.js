@@ -11,9 +11,9 @@ define ("constants/appState",
     const ISSUE_STATE = {
       PRE_CHAT: "preChat",
       ACTIVE: "active",
-      RESOVLED: "resovled",
+      RESOLVED: "resolved",
       REJECTED: "rejected",
-      RESOLVED_BY_FAQ_SUGGESTIONS: "RESOLVED_BY_FAQ_SUGGESTIONS"
+      RESOLVED_BY_FAQ_SUGGESTIONS: "resolved_by_faq_suggestions"
     };
 
     return {

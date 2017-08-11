@@ -9,6 +9,8 @@ define ("actions/appState",
     "constants/actionTypes",
     "constants/routes",
     "constants/eventTypes",
+    "constants/appState",
+    "constants/chatView",
     "normalizr",
     "helpers/entitySchema",
     "helpers/entity",
@@ -22,14 +24,19 @@ define ("actions/appState",
     "store",
     "actions/entities",
     "actions/chatView",
+    "actions/batch",
     "utils/postMessage"
   ],
-  function (ACTION_TYPES, routes, EVENT_TYPES, normalizr, entitySchema,
-    entityHelpers, chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils,
-    uuidGenerator, throttle, store, entitiesActions, chatViewActions, postMessage) {
+  function (ACTION_TYPES, routes, EVENT_TYPES, APP_STATE_CONSTANTS,
+    CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
+    chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils, uuidGenerator,
+    throttle, store, entitiesActions, chatViewActions, batchActions,
+    postMessage) {
     "use strict";
 
-    const {normalize} = normalizr;
+    const {normalize} = normalizr,
+          {ISSUE_STATE} = APP_STATE_CONSTANTS,
+          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     // Constant indicating whether to skip checking a value in localstorage or not
     const SKIP_LS_CHECK = true;
@@ -116,27 +123,54 @@ define ("actions/appState",
 
         // If we are using the already saved identifier, that means there could be an
         // ongoing conversation.
-        // Save the entities in the state which are saved in the localstorage.
-        rehydrate ();
+        handlePreviousChat ();
+      }
+    };
 
-        const activeIssueId = lsHelper.getActiveIssueId ();
-        // @Note: Might have to check issue state once we implement pre chat rehydration.
-        // If there is an active issue id in localstorage, set the activeIssueId in state,
-        // and start polling for new messages.
-        if (activeIssueId) {
-          store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
-          chatViewActions.startPollingForMessages ();
-        } else {
-          // @TODO: Handle pre chat state and post chat state.
+    /**
+     * Handle previous chat.
+     */
+    const handlePreviousChat = () => {
+      const issueState = lsHelper.getIssueState ();
+      switch (issueState) {
+        case ISSUE_STATE.PRE_CHAT:
+          // @TODO: Handle pre chat state state.
           // For pre chat state, save the required data to continue the pre chat
           // from where the user left.
-          // For post chat state, we might have to clear the previous state and
-          // start new conversation.
-          // To avoid errors until we handle pre chat and post chat,
-          // clear the previous state, and start new conversation.
+          // To avoid errors until we handle pre chat,
+          // clear the previous state and start new conversation.
           lsHelper.reset ();
           store.dispatch (startNewConversation ());
-        }
+          break;
+        case ISSUE_STATE.ACTIVE:
+          const activeIssueId = lsHelper.getActiveIssueId ();
+          // If there is an active issue id in localstorage, set the activeIssueId in state,
+          // and start polling for new messages.
+          if (activeIssueId) {
+            // Save the entities in the state which are saved in the localstorage.
+            rehydrate ();
+            store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
+            chatViewActions.startPollingForMessages ();
+          } else {
+            // @TODO: Ideally, this shouldn't be the case.
+            // Explore if there can be some edge case which would lead to this condition,
+            // and handle accordingly.
+          }
+          break;
+        case ISSUE_STATE.RESOLVED:
+        case ISSUE_STATE.REJECTED:
+        case ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS:
+          // For post chat state, clear the previous state and
+          // start new conversation.
+          // @TODO: Explore if anything else needs to be done.
+          lsHelper.reset ();
+          store.dispatch (startNewConversation ());
+          break;
+        default:
+          // If there is no issueState data in ls, reset and start new conversation.
+          lsHelper.reset ();
+          store.dispatch (startNewConversation ());
+          break;
       }
     };
 
@@ -453,15 +487,20 @@ define ("actions/appState",
       return (dispatch, getState) => {
         const state = getState ();
         // Create dummy issue entity.
-        dispatch (entitiesActions.setEntities ({
-          issues: {
-            [state.appState.dummyIssueId]: {
-              messages: []
-            }
-          }
-        }));
-        dispatch (chatViewActions.setActiveIssue (null));
-        // @TODO: Dispatch action to set active footer to blocked.
+        dispatch (
+          batchActions ([
+            entitiesActions.setEntities ({
+              issues: {
+                [state.appState.dummyIssueId]: {
+                  messages: []
+                }
+              }
+            }),
+            chatViewActions.setActiveIssue (null),
+            chatViewActions.updateIssueState (ISSUE_STATE.PRE_CHAT),
+            chatViewActions.setChatViewFooter (ACTIVE_FOOTER.BLOCKED)
+          ])
+        );
         dispatch (chatViewActions.startNextPreChatFeature ());
       };
     };

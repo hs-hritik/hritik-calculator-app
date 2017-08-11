@@ -209,7 +209,8 @@ define ("actions/chatView",
 
           // If issue is resolved or rejected, stop polling and ask user for feedback.
           const issueState = response.issue_state_data.state;
-          if (issueState === "resolved" || issueState === "rejected") {
+          if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
+            dispatch (updateIssueState (issueState));
             pollingEnabled = false;
             const {problemSolvedAgentMessage} = state.ui.text;
 
@@ -534,8 +535,6 @@ define ("actions/chatView",
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: (response) => {
-            // Save the active issue id in the local storage.
-            lsHelper.setActiveIssueId (response.id);
             const normalizedData = normalize (response, entitySchema.issue);
             const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
             dispatch (entitiesActions.setEntities (processedEntities));
@@ -550,12 +549,17 @@ define ("actions/chatView",
             );
 
             const newIssueId = response.id;
-            dispatch (setMessages (newIssueId, dummyIssueMsgIds));
-            dispatch (setActiveIssue (newIssueId));
+            dispatch (
+              batchActions ([
+                setMessages (newIssueId, dummyIssueMsgIds),
+                // Remove messages from dummy issue
+                setMessages (dummyIssueId, []),
+                setActiveIssue (newIssueId),
+                updateIssueState (ISSUE_STATE.ACTIVE),
+                setChatViewFooter (ACTIVE_FOOTER.REPLY)
+              ])
+            );
             startPollingForMessages ();
-            // Remove messages from dummy issue.
-            dispatch (setMessages (dummyIssueId, []));
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           },
           onFailure: () => {
             // @TODO: Handler failure.
@@ -1055,6 +1059,7 @@ define ("actions/chatView",
       acceptFaqSuggestions,
       startNextPreChatFeature,
       updateInfoBotFieldValue,
-      submitInfoBotField
+      submitInfoBotField,
+      updateIssueState
     };
   });

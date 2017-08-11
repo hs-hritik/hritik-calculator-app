@@ -21,7 +21,8 @@ define ("helpers/localStorage",
         MESSAGES: "messages_entities"
       },
       ACTIVE_ISSUE_ID: "active_issue_id",
-      IS_IDENTIFIER_REGISTERED: "is_identifier_registered"
+      IS_IDENTIFIER_REGISTERED: "is_identifier_registered",
+      ISSUE_STATE: "issue_state"
     };
 
     /**
@@ -107,6 +108,20 @@ define ("helpers/localStorage",
     };
 
     /**
+     * Set the issue state.
+     * @param {String} state - issue state
+     */
+    const setIssueState = (state) => {
+      lsUtils.setItem (KEYS.ISSUE_STATE, state);
+    };
+
+    /**
+     * Get the issue state.
+     * @returns {String} - issue state
+     */
+    const getIssueState = () => lsUtils.getItem (KEYS.ISSUE_STATE);
+
+    /**
      * Clear previously saved state from the localstorage.
      */
     const reset = () => {
@@ -114,6 +129,7 @@ define ("helpers/localStorage",
       lsUtils.removeItem (KEYS.ENTITIES.MESSAGES);
       lsUtils.removeItem (KEYS.ACTIVE_ISSUE_ID);
       lsUtils.removeItem (KEYS.IS_IDENTIFIER_REGISTERED);
+      lsUtils.removeItem (KEYS.ISSUE_STATE);
     };
 
     return {
@@ -128,6 +144,8 @@ define ("helpers/localStorage",
       getActiveIssueId,
       setActiveIssueId,
       getIdentifierRegisteredInfo,
-      setIdentifierRegisteredInfo
+      setIdentifierRegisteredInfo,
+      setIssueState,
+      getIssueState
     };
   });
