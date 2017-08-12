@@ -212,18 +212,21 @@ define ("actions/chatView",
           if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
             dispatch (updateIssueState (issueState));
             pollingEnabled = false;
-            const {problemSolvedAgentMessage} = state.ui.text;
+            if (issueState === ISSUE_STATE.RESOLVED) {
+              // @TODO: Remove this and add csat message.
+              const {problemSolvedAgentMessage} = state.ui.text;
 
-            dispatch (
-              createMessage (MESSAGE_TYPE.TEXT, {
-                body: problemSolvedAgentMessage,
-                isCustomerMsg: false
-              }, {
-                typingTimer: null,
-                issueId: appState.activeIssueId
-              })
-            );
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
+              dispatch (
+                createMessage (MESSAGE_TYPE.TEXT, {
+                  body: problemSolvedAgentMessage,
+                  isCustomerMsg: false
+                }, {
+                  typingTimer: null,
+                  issueId: appState.activeIssueId
+                })
+              );
+              dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
+            }
           }
         },
         onFailure: () => {
@@ -329,6 +332,23 @@ define ("actions/chatView",
               {replyBox} = state.chatView;
 
         if (replyBox.disabled || !replyBox.value) {
+          return;
+        }
+
+        // If current issue state is rejected, don't fire xhr to send messages to backend.
+        if (appState.issueState === ISSUE_STATE.REJECTED) {
+          dispatch (
+            createMessage (MESSAGE_TYPE.TEXT, {
+              body: replyBox.value,
+              isCustomerMsg: true
+            }, {
+              typingTimer: null,
+              issueId: appState.activeIssueId,
+              onAddMessage: () => {
+                dispatch (udpateReplyText (""));
+              }
+            })
+          );
           return;
         }
 
