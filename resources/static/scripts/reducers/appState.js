@@ -14,7 +14,7 @@ define ("reducers/appState",
     "use strict";
 
     const update = React.addons.update;
-    const {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE, PRE_CHAT_STATE, DEFAULT_RESET_TIMEOUT} = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
       wmEnabled: false,
@@ -41,7 +41,8 @@ define ("reducers/appState",
         greeting: PRE_CHAT_STATE.GREETING.INITIAL,
         answerBot: PRE_CHAT_STATE.ANSWER_BOT.INITIAL,
         infoBot: PRE_CHAT_STATE.INFO_BOT.INITIAL
-      }
+      },
+      resetTimeout: DEFAULT_RESET_TIMEOUT
     };
 
     return (state = INITIAL_STATE, action) => {

@@ -9,10 +9,20 @@ define ("extras/lsMiddleware",
   [
     "constants/actionTypes",
     "gunpowder/utils/object",
+    "gunpowder/utils/throttle",
     "helpers/localStorage"
   ],
-  function (ACTION_TYPES, objUtils, lsHelper) {
+  function (ACTION_TYPES, objUtils, throttle, lsHelper) {
     "use strict";
+
+    // @TODO: Confirm what is the correct timeout for saving the
+    // last activity time in localstorage.
+    const LAST_ACTIVITY_THROTTLE_TIME = 20000;        // 20 seconds
+
+    const throttledSetLastActivityTime = throttle (
+      lsHelper.setLastActivityTime,
+      LAST_ACTIVITY_THROTTLE_TIME
+    );
 
     /**
      * Save the required state in localStorage.
@@ -30,6 +40,7 @@ define ("extras/lsMiddleware",
           lsHelper.setEntities ("ISSUES", {
             [action.issueId]: state.entities.issues [action.issueId]
           });
+          throttledSetLastActivityTime ();
           break;
 
         case ACTION_TYPES.SET_ENTITIES:
@@ -79,6 +90,11 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
           lsHelper.setInfoBotCurrentField (state.chatView.infoBot.currentField);
           break;
+
+        case ACTION_TYPES.UPDATE_ACTIVE_VIEW:
+          throttledSetLastActivityTime ();
+          break;
+
       }
     };
 

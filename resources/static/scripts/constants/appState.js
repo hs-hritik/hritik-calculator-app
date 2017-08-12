@@ -36,8 +36,11 @@ define ("constants/appState",
       }
     };
 
+    const DEFAULT_RESET_TIMEOUT = 43200000;      // 12 hours
+
     return {
       ISSUE_STATE,
-      PRE_CHAT_STATE
+      PRE_CHAT_STATE,
+      DEFAULT_RESET_TIMEOUT
     };
   });

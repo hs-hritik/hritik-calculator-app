@@ -120,15 +120,21 @@ define ("actions/appState",
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
-      if (returningUser) {
-        // If it's a returning user, that means there could be an
-        // ongoing conversation.
-        handlePreviousConversation ();
-      } else {
-        // If it's a new user, clear the previous state stored in
+      const lastActivityTime = lsHelper.getLastActivityTime (),
+            {resetTimeout} = store.getState ().appState;
+
+      if ((lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) ||
+           !returningUser) {
+        // If the last activity was done before reset timeout,
+        // or if it's a new user,
+        // clear the previous state stored in
         // localstorage (if any) and start a new conversation.
         lsHelper.reset ();
         store.dispatch (startNewConversation ());
+      } else {
+        // If it's a returning user, that means there could be an
+        // ongoing conversation.
+        handlePreviousConversation ();
       }
     };
 

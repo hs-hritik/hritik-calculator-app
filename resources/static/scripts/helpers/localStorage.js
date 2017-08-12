@@ -25,7 +25,8 @@ define ("helpers/localStorage",
       ISSUE_STATE: "issue_state",
       PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
       PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
-      INFO_BOT_CURRENT_FIELD: "info_bot_current_field"
+      INFO_BOT_CURRENT_FIELD: "info_bot_current_field",
+      LAST_ACTIVITY_TIME: "last_activity_time"
     };
 
     /**
@@ -168,6 +169,19 @@ define ("helpers/localStorage",
     const getInfoBotCurrentField = () => lsUtils.getItem (KEYS.INFO_BOT_CURRENT_FIELD);
 
     /**
+     * Set last activity time to current time.
+     */
+    const setLastActivityTime = () => {
+      lsUtils.setItem (KEYS.LAST_ACTIVITY_TIME, Date.now ());
+    };
+
+    /**
+     * Get last activity time.
+     * @returns {Number} - last activity time in ms.
+     */
+    const getLastActivityTime = () => lsUtils.getItem (KEYS.LAST_ACTIVITY_TIME, true);
+
+    /**
      * Clear previously saved state from the localstorage.
      */
     const reset = () => {
@@ -201,6 +215,8 @@ define ("helpers/localStorage",
       setPreChatFeatureState,
       getPreChatFeatureState,
       setInfoBotCurrentField,
-      getInfoBotCurrentField
+      getInfoBotCurrentField,
+      setLastActivityTime,
+      getLastActivityTime
     };
   });
