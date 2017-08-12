@@ -14,7 +14,7 @@ define ("reducers/appState",
     "use strict";
 
     const update = React.addons.update;
-    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
       wmEnabled: false,
@@ -35,12 +35,32 @@ define ("reducers/appState",
         csatBot: false,
         agentNickname: false
       },
-      preChatfeaturesOrder: ["greeting", "answerBot", "infoBot"],
-      preChatfeatureIndex: 0
+      preChatFeatureOrder: ["greeting", "answerBot", "infoBot"],
+      preChatFeatureIndex: 0,
+      preChatFeatureState: {
+        greeting: PRE_CHAT_STATE.GREETING.INITIAL,
+        answerBot: PRE_CHAT_STATE.ANSWER_BOT.INITIAL,
+        infoBot: PRE_CHAT_STATE.INFO_BOT.INITIAL
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.REHYDRATE:
+          const updateObj = {};
+
+          if (action.data.preChatFeatureIndex) {
+            updateObj.preChatFeatureIndex = {$set: action.data.preChatFeatureIndex};
+          }
+          if (action.data.preChatFeatureState) {
+            updateObj.preChatFeatureState = {$set: action.data.preChatFeatureState};
+          }
+          if (action.data.issueState) {
+            updateObj.issueState = {$set: action.data.issueState};
+          }
+
+          return update (state, updateObj);
+
         case ACTION_TYPES.SET_WM_CONFIG:
           const {config} = action;
 
@@ -86,12 +106,21 @@ define ("reducers/appState",
 
         case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
           return update (state, {
-            preChatfeatureIndex: {$set: state.preChatfeatureIndex + 1}
+            preChatFeatureIndex: {$set: state.preChatFeatureIndex + 1}
           });
 
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           return update (state, {
             issueState: {$set: action.state}
+          });
+
+        case ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE:
+          return update (state, {
+            preChatFeatureState: {
+              [action.feature]: {
+                $set: action.featureState
+              }
+            }
           });
 
         default:

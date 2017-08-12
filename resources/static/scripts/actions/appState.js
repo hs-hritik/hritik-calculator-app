@@ -41,6 +41,8 @@ define ("actions/appState",
     // Constant indicating whether to skip checking a value in localstorage or not
     const SKIP_LS_CHECK = true;
 
+    let returningUser = false;
+
     /**
      * Set the identifier in the state to identify the user (or the chat session).
      * The creation of a new identifier depends on the userId passed here.
@@ -92,7 +94,6 @@ define ("actions/appState",
     /**
      * Auxiliary function to dispatch and set the identifier to app state and
      * localstorage respectively if identifier isn't present in localstorage.
-     * Also rehydrate the chat from localstorage.
      * @param {String} identifier - identifier
      * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
      * to be checked if identifier exists.
@@ -101,53 +102,52 @@ define ("actions/appState",
       if (skipLsCheck || !lsHelper.getIdentifier ()) {
         store.dispatch (setIdentifierValue (identifier));
         lsHelper.setIdentifier (identifier);
-        // If we are creating a new identifier, that means the conversation is new.
-        // Clear the previous state stored in localstorage (if any),
-        // and start a new conversation.
-        lsHelper.reset ();
-        store.dispatch (startNewConversation ());
+        // If we are saving a new identifier, that means it's a new user.
+        returningUser = false;
       } else {
         // If a new identifier is not set in the state and ls, set the identifier
         // stored in the localstorage to the sate because the initial state
         // does not have an identifier.
         const currentIdentifier = lsHelper.getIdentifier ();
         store.dispatch (setIdentifierValue (currentIdentifier));
-        // If identifier already exists, there can be 2 cases:
-        // (i) - User is registerd.
-        //       (If the user refreshes the page after the issue creation is done)
-        // (ii) - User is not registerd.
-        //       (If the user refreshes the page before the issue creation is done)
-        // For case (i), call the getIssues API to get existing issue.
-        // For case (ii), start new conversation.
-        // @TODO: For both cases, conversation should continue from local storage.
-
-        // If we are using the already saved identifier, that means there could be an
-        // ongoing conversation.
-        handlePreviousChat ();
+        // If we are using the already saved identifier,
+        // that means it's a returning user.
+        returningUser = true;
       }
     };
 
     /**
-     * Handle previous chat.
+     * Either starts a new conversation or handle previous one.
      */
-    const handlePreviousChat = () => {
+    const startConversation = () => {
+      if (returningUser) {
+        // If it's a returning user, that means there could be an
+        // ongoing conversation.
+        handlePreviousConversation ();
+      } else {
+        // If it's a new user, clear the previous state stored in
+        // localstorage (if any) and start a new conversation.
+        lsHelper.reset ();
+        store.dispatch (startNewConversation ());
+      }
+    };
+
+    /**
+     * Handle previous conversation.
+     */
+    const handlePreviousConversation = () => {
       const issueState = lsHelper.getIssueState ();
       switch (issueState) {
         case ISSUE_STATE.PRE_CHAT:
-          // @TODO: Handle pre chat state state.
-          // For pre chat state, save the required data to continue the pre chat
-          // from where the user left.
-          // To avoid errors until we handle pre chat,
-          // clear the previous state and start new conversation.
-          lsHelper.reset ();
-          store.dispatch (startNewConversation ());
+          rehydrate ();
+          store.dispatch (chatViewActions.startPreChatFeature ());
           break;
+
         case ISSUE_STATE.ACTIVE:
           const activeIssueId = lsHelper.getActiveIssueId ();
           // If there is an active issue id in localstorage, set the activeIssueId in state,
           // and start polling for new messages.
           if (activeIssueId) {
-            // Save the entities in the state which are saved in the localstorage.
             rehydrate ();
             store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
             chatViewActions.startPollingForMessages ();
@@ -157,6 +157,7 @@ define ("actions/appState",
             // and handle accordingly.
           }
           break;
+
         case ISSUE_STATE.RESOLVED:
         case ISSUE_STATE.REJECTED:
         case ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS:
@@ -166,6 +167,7 @@ define ("actions/appState",
           lsHelper.reset ();
           store.dispatch (startNewConversation ());
           break;
+
         default:
           // If there is no issueState data in ls, reset and start new conversation.
           lsHelper.reset ();
@@ -175,12 +177,18 @@ define ("actions/appState",
     };
 
     /**
-     * Get saved entities from localstorage,
+     * Get saved data from localstorage,
      * and call action to update the current state.
      */
     const rehydrate = () => {
       const issues = lsHelper.getEntities ("ISSUES"),
-            messages = lsHelper.getEntities ("MESSAGES");
+            messages = lsHelper.getEntities ("MESSAGES"),
+            // @TODO: Do optimization
+            // - Get pre-chat related data only if issue state is pre-chat
+            preChatFeatureIndex = lsHelper.getPreChatFeatureIndex (),
+            preChatFeatureState = lsHelper.getPreChatFeatureState (),
+            infoBotCurrentField = lsHelper.getInfoBotCurrentField (),
+            issueState = lsHelper.getIssueState ();
 
       if (issues || messages) {
         store.dispatch ({
@@ -189,7 +197,11 @@ define ("actions/appState",
             entities: {
               issues,
               messages
-            }
+            },
+            preChatFeatureIndex,
+            preChatFeatureState,
+            infoBotCurrentField,
+            issueState
           }
         });
       }
@@ -243,10 +255,13 @@ define ("actions/appState",
               wmConfig: getClientWmConfig (response)
             });
 
-            // A side-effect of getting the web messenger config would be to
-            // add the stylesheet with the primary color (and any other
-            // configurable CSS value) to the document head.
-            setStyles ();
+            if (response.widget_enabled) {
+              // A side-effect of getting the web messenger config would be to
+              // add the stylesheet with the primary color (and any other
+              // configurable CSS value) to the document head.
+              setStyles ();
+              startConversation ();
+            }
           }
         });
       };
@@ -501,7 +516,7 @@ define ("actions/appState",
             chatViewActions.setChatViewFooter (ACTIVE_FOOTER.BLOCKED)
           ])
         );
-        dispatch (chatViewActions.startNextPreChatFeature ());
+        dispatch (chatViewActions.startPreChatFeature ());
       };
     };
 

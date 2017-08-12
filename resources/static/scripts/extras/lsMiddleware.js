@@ -20,13 +20,13 @@ define ("extras/lsMiddleware",
      * @param {Object} action
      */
     const saveStateInLs = (store, action) => {
+      const state = store.getState ();
 
       switch (action.type) {
         case ACTION_TYPES.ADD_MESSAGES:
         case ACTION_TYPES.SET_MESSAGES:
           // If the action type is ADD_MESSAGES or SET_MESSAGES,
           // save the issues entities in ls.
-          const state = store.getState ();
           lsHelper.setEntities ("ISSUES", {
             [action.issueId]: state.entities.issues [action.issueId]
           });
@@ -66,6 +66,18 @@ define ("extras/lsMiddleware",
 
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           lsHelper.setIssueState (action.state);
+          break;
+
+        case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
+          lsHelper.setPreChatFeatureIndex (state.appState.preChatFeatureIndex);
+          break;
+
+        case ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE:
+          lsHelper.setPreChatFeatureState (state.appState.preChatFeatureState);
+          break;
+
+        case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
+          lsHelper.setInfoBotCurrentField (state.chatView.infoBot.currentField);
           break;
       }
     };

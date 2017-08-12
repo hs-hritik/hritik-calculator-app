@@ -36,7 +36,7 @@ define ("actions/chatView",
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
-          {ISSUE_STATE} = APP_STATE_CONSTANTS;
+          {ISSUE_STATE, PRE_CHAT_STATE: {GREETING, ANSWER_BOT, INFO_BOT}} = APP_STATE_CONSTANTS;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -751,57 +751,113 @@ define ("actions/chatView",
      */
     const addGreetingMessage = () => {
       return (dispatch, getState) => {
-        const state = getState ();
-        const defaultAgentMsgText = state.ui.text.greetingMsg;
+        const state = getState (),
+              featureState = state.appState.preChatFeatureState.greeting;
 
-        dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: defaultAgentMsgText,
-            isCustomerMsg: false
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId
-          })
-        );
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+        switch (featureState) {
+          case GREETING.INITIAL:
+            const defaultAgentMsgText = state.ui.text.greetingMsg;
+
+            dispatch (
+              createMessage (MESSAGE_TYPE.TEXT, {
+                body: defaultAgentMsgText,
+                isCustomerMsg: false
+              }, {
+                typingTimer: null,
+                issueId: state.appState.dummyIssueId
+              })
+            );
+
+            dispatch (
+              batchActions ([
+                setChatViewFooter (ACTIVE_FOOTER.REPLY),
+                updatePreChatFeatureState ("greeting", GREETING.WAITING_FOR_USER_REPLY)
+              ])
+            );
+            break;
+
+          case GREETING.WAITING_FOR_USER_REPLY:
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+            break;
+
+          case GREETING.COMPLETED:
+            startNextPreChatFeature ();
+            break;
+        }
+      };
+    };
+
+    /**
+     * Action to update the pre-chat feature state.
+     * @param {String} feature
+     * @param {Object} featureState
+     * @returns {Object} - Action
+     */
+    const updatePreChatFeatureState = (feature, featureState) => {
+      return {
+        type: ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE,
+        feature,
+        featureState
       };
     };
 
     /**
      * Action to start answer bot workflow (FAQ suggestions).
-     * @param {String} searchText - Text for which faq suggestions have to be fetched.
      * @returns {Object} - Action
      */
-    const startAnswerBot = (searchText) => {
+    const startAnswerBot = () => {
       return (dispatch, getState) => {
-        const {appState} = getState ();
+        const {appState, chatView} = getState (),
+              featureState = appState.preChatFeatureState.answerBot;
 
-        dispatch (toggleSystemTyping (true));
-        // Get faq suggestions for the given user message.
-        dispatch (getFaqSuggestions (searchText, {
-          onSuccess: (faqs) => {
-            // If there are no faq suggestions, move to next pre-chat feature,
-            // otherwise create faq message.
-            dispatch (toggleSystemTyping (false));
-            if (!faqs.length) {
-              dispatch (startNextPreChatFeature ());
-            } else {
-              dispatch (
-                createMessage (MESSAGE_TYPE.FAQ, {
-                  faqs
-                }, {
-                  typingTimer: null,
-                  issueId: appState.dummyIssueId,
-                  onAddMessage: onFaqSuggestionMessageAdd
-                })
-              );
-            }
-          },
-          onFailure: () => {
-            // @TODO: Handle faq suggestions xhr failure.
-            dispatch (toggleSystemTyping (false));
-          }
-        }));
+        switch (featureState) {
+          case ANSWER_BOT.INITIAL:
+            dispatch (toggleSystemTyping (true));
+            // Get faq suggestions for the given user message.
+            // @TODO: Instead of saving the whole endUserFirstMsg,
+            // save only id, and save that in localstorage
+            // (to handle the refresh case when faqs are being fetched)
+            dispatch (getFaqSuggestions (chatView.endUserFirstMsg.body, {
+              onSuccess: (faqs) => {
+                // If there are no faq suggestions, move to next pre-chat feature,
+                // otherwise create faq message.
+                dispatch (toggleSystemTyping (false));
+                if (!faqs.length) {
+                  dispatch (startNextPreChatFeature ());
+                } else {
+                  dispatch (
+                    createMessage (MESSAGE_TYPE.FAQ, {
+                      faqs
+                    }, {
+                      typingTimer: null,
+                      issueId: appState.dummyIssueId,
+                      onAddMessage: () => {
+                        onFaqSuggestionMessageAdd ();
+                        dispatch (updatePreChatFeatureState ("answerBot", ANSWER_BOT.FAQS_FETCHED));
+                      }
+                    })
+                  );
+                }
+              },
+              onFailure: () => {
+                // @TODO: Handle faq suggestions xhr failure.
+                dispatch (toggleSystemTyping (false));
+              }
+            }));
+            break;
+
+          case ANSWER_BOT.FAQS_FETCHED:
+            onFaqSuggestionMessageAdd ();
+            break;
+
+          case ANSWER_BOT.WAITING_FOR_USER_FEEDBACK:
+            store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+            break;
+
+          case ANSWER_BOT.COMPLETED:
+            startNextPreChatFeature ();
+            break;
+        }
       };
     };
 
@@ -810,6 +866,7 @@ define ("actions/chatView",
      */
     const onFaqSuggestionMessageAdd = () => {
       const state = store.getState ();
+      store.dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
       store.dispatch (
         createMessage (MESSAGE_TYPE.TEXT, {
           body: state.ui.text.faqSuggestionsAdditionalHelpMessage,
@@ -818,7 +875,12 @@ define ("actions/chatView",
           typingTimer: MESSAGE_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
           issueId: state.appState.dummyIssueId,
           onAddMessage: () => {
-            store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
+            store.dispatch (
+              batchActions ([
+                updatePreChatFeatureState ("answerBot", ANSWER_BOT.WAITING_FOR_USER_FEEDBACK),
+                setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK)
+              ])
+            );
           }
         })
       );
@@ -855,21 +917,42 @@ define ("actions/chatView",
      */
     const startInfoBot = () => {
       return (dispatch, getState) => {
-        const state = getState ();
+        const state = getState (),
+              featureState = state.appState.preChatFeatureState.infoBot;
 
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-        dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.infoBotRequestMsg,
-            isCustomerMsg: false
-          }, {
-            typingTimer: MESSAGE_TIMEOUT.INFO_BOT_REQUEST,
-            issueId: state.appState.dummyIssueId,
-            onAddMessage: () => {
-              dispatch (askInfoBotField ());
-            }
-          })
-        );
+
+        switch (featureState) {
+          case INFO_BOT.INITIAL:
+            dispatch (
+              createMessage (MESSAGE_TYPE.TEXT, {
+                body: state.ui.text.infoBotRequestMsg,
+                isCustomerMsg: false
+              }, {
+                typingTimer: MESSAGE_TIMEOUT.INFO_BOT_REQUEST,
+                issueId: state.appState.dummyIssueId,
+                onAddMessage: () => {
+                  dispatch (
+                    updatePreChatFeatureState ("infoBot", INFO_BOT.CURRENT_FIELD_TO_BE_ASKED)
+                  );
+                  dispatch (askInfoBotField ());
+                }
+              })
+            );
+            break;
+
+          case INFO_BOT.CURRENT_FIELD_TO_BE_ASKED:
+            dispatch (askInfoBotField ());
+            break;
+
+          case INFO_BOT.CURRENT_FIELD_ASKED:
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.INFO_BOT));
+            break;
+
+          case INFO_BOT.COMPLETED:
+            startNextPreChatFeature ();
+            break;
+        }
       };
     };
 
@@ -894,7 +977,12 @@ define ("actions/chatView",
               typingTimer: MESSAGE_TIMEOUT.INFO_BOT_FIELD,
               issueId: state.appState.dummyIssueId,
               onAddMessage: () => {
-                dispatch (setChatViewFooter (ACTIVE_FOOTER.INFO_BOT));
+                dispatch (
+                  batchActions ([
+                    updatePreChatFeatureState ("infoBot", INFO_BOT.CURRENT_FIELD_ASKED),
+                    setChatViewFooter (ACTIVE_FOOTER.INFO_BOT)
+                  ])
+                );
               }
             })
          );
@@ -932,7 +1020,7 @@ define ("actions/chatView",
             typingTimer: null,
             issueId: state.appState.dummyIssueId
           })
-       );
+        );
 
         dispatch (changeInfoBotCurrentField ());
 
@@ -944,6 +1032,7 @@ define ("actions/chatView",
           dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
           dispatch (startNextPreChatFeature ());
         } else {
+          dispatch (updatePreChatFeatureState ("infoBot", INFO_BOT.CURRENT_FIELD_TO_BE_ASKED));
           dispatch (askInfoBotField ());
         }
       };
@@ -961,23 +1050,42 @@ define ("actions/chatView",
 
     /**
      * Action to start next pre-chat feature.
-     * If all pre-chat features are completed, create new issue.
+     * Mark current pre chat feature as complete, and start next feature.
      * @returns {Object} - Action
      */
     const startNextPreChatFeature = () => {
       return (dispatch, getState) => {
-        const {appState} = getState ();
-        const {preChatfeaturesOrder, featuresEnabled, preChatfeatureIndex} = appState;
+        const {preChatFeatureOrder, preChatFeatureIndex} = getState ().appState;
+        const feature = preChatFeatureOrder [preChatFeatureIndex];
+        // @TODO: Read "COMPLETED" from constant file instead of passing here directly.
+        dispatch (
+          batchActions ([
+            updatePreChatFeatureState (feature, "COMPLETED"),
+            incrementPreChatFeatureIndex ()
+          ])
+        );
+        dispatch (startPreChatFeature ());
+      };
+    };
 
-        // If the preChatfeatureIndex has reached the length of preChatfeaturesOrder list,
+    /**
+     * Action to start current pre chat feature.
+     * If all pre-chat features are completed, create new issue.
+     * @returns {Function} - Action
+     */
+    const startPreChatFeature = () => {
+      return (dispatch, getState) => {
+        const {appState} = getState ();
+        const {preChatFeatureOrder, featuresEnabled, preChatFeatureIndex} = appState;
+
+        // If the preChatFeatureIndex has reached the length of preChatFeatureOrder list,
         // it means all the pre-chat features are executed and create new issue.
-        if (preChatfeatureIndex >= preChatfeaturesOrder.length) {
+        if (preChatFeatureIndex >= preChatFeatureOrder.length) {
           dispatch (registerUserAndCreateIssue ());
           return;
         }
 
-        const feature = preChatfeaturesOrder [preChatfeatureIndex];
-        dispatch (incrementPreChatFeatureIndex ());
+        const feature = preChatFeatureOrder [preChatFeatureIndex];
 
         if (featuresEnabled [feature]) {
           // If the feature is enabled, start the feature.
@@ -1027,14 +1135,13 @@ define ("actions/chatView",
      * @returns {Object} - Action
      */
     const startFeature = (feature) => {
-      return (dispatch, getState) => {
+      return (dispatch) => {
         switch (feature) {
           case "greeting":
             dispatch (addGreetingMessage ());
             break;
           case "answerBot":
-            const state = getState ();
-            dispatch (startAnswerBot (state.chatView.endUserFirstMsg.body));
+            dispatch (startAnswerBot ());
             break;
           case "infoBot":
             dispatch (startInfoBot ());
@@ -1057,7 +1164,7 @@ define ("actions/chatView",
       setChatViewFooter,
       rejectFaqSuggestions,
       acceptFaqSuggestions,
-      startNextPreChatFeature,
+      startPreChatFeature,
       updateInfoBotFieldValue,
       submitInfoBotField,
       updateIssueState

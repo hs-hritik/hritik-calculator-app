@@ -55,6 +55,15 @@ define ("reducers/chatView",
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.REHYDRATE:
+          const updateObj = {};
+          if (action.data.infoBotCurrentField) {
+            updateObj.infoBot = {
+              currentField: {$set: action.data.infoBotCurrentField}
+            };
+          }
+          return update (state, updateObj);
+
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           return update (state, {
             replyBox: {

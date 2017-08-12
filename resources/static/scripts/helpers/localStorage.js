@@ -22,7 +22,10 @@ define ("helpers/localStorage",
       },
       ACTIVE_ISSUE_ID: "active_issue_id",
       IS_IDENTIFIER_REGISTERED: "is_identifier_registered",
-      ISSUE_STATE: "issue_state"
+      ISSUE_STATE: "issue_state",
+      PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
+      PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
+      INFO_BOT_CURRENT_FIELD: "info_bot_current_field"
     };
 
     /**
@@ -81,13 +84,13 @@ define ("helpers/localStorage",
 
     /**
      * Get the active issue id.
-     * @returns {Number} - active issue id
+     * @returns {String} - active issue id
      */
     const getActiveIssueId = () => lsUtils.getItem (KEYS.ACTIVE_ISSUE_ID);
 
     /**
      * Set the active issue id.
-     * @param {Number} id - active issue id
+     * @param {String} id - active issue id
      */
     const setActiveIssueId = (id) => {
       lsUtils.setItem (KEYS.ACTIVE_ISSUE_ID, id);
@@ -97,6 +100,7 @@ define ("helpers/localStorage",
      * Get the identifier registered information.
      * @returns {Boolean} - true if the identifier is registered.
      */
+    // @TODO: Check if parse would be required.
     const getIdentifierRegisteredInfo = () => lsUtils.getItem (KEYS.IS_IDENTIFIER_REGISTERED);
 
     /**
@@ -122,14 +126,59 @@ define ("helpers/localStorage",
     const getIssueState = () => lsUtils.getItem (KEYS.ISSUE_STATE);
 
     /**
+     * Set pre chat feature index.
+     * @param {Number} index
+     */
+    const setPreChatFeatureIndex = (index) => {
+      lsUtils.setItem (KEYS.PRE_CHAT_FEATURE_INDEX, index);
+    };
+
+    /**
+     * Get pre chat feature index.
+     * @returns {Number} - index
+     */
+    const getPreChatFeatureIndex = () => lsUtils.getItem (KEYS.PRE_CHAT_FEATURE_INDEX, true);
+
+    /**
+     * Set pre chat feature state.
+     * @param {Object} state - pre chat feature state
+     */
+    const setPreChatFeatureState = (state) => {
+      lsUtils.setItem (KEYS.PRE_CHAT_FEATURE_STATE, state);
+    };
+
+    /**
+     * Get pre chat feature state.
+     * @returns {Object} - pre chat feature state
+     */
+    const getPreChatFeatureState = () => lsUtils.getItem (KEYS.PRE_CHAT_FEATURE_STATE, true);
+
+    /**
+     * Set info bot current field.
+     * @param {String} field
+     */
+    const setInfoBotCurrentField = (field) => {
+      lsUtils.setItem (KEYS.INFO_BOT_CURRENT_FIELD, field);
+    };
+
+    /**
+     * Get info bot current field.
+     * @returns {String} - info bot current field
+     */
+    const getInfoBotCurrentField = () => lsUtils.getItem (KEYS.INFO_BOT_CURRENT_FIELD);
+
+    /**
      * Clear previously saved state from the localstorage.
      */
     const reset = () => {
       lsUtils.removeItem (KEYS.ENTITIES.ISSUES);
       lsUtils.removeItem (KEYS.ENTITIES.MESSAGES);
       lsUtils.removeItem (KEYS.ACTIVE_ISSUE_ID);
-      lsUtils.removeItem (KEYS.IS_IDENTIFIER_REGISTERED);
+      // @TODO: Remove IS_IDENTIFIER_REGISTERED key when saving new identifier.
       lsUtils.removeItem (KEYS.ISSUE_STATE);
+      lsUtils.removeItem (KEYS.PRE_CHAT_FEATURE_INDEX);
+      lsUtils.removeItem (KEYS.PRE_CHAT_FEATURE_STATE);
+      lsUtils.removeItem (KEYS.INFO_BOT_CURRENT_FIELD);
     };
 
     return {
@@ -146,6 +195,12 @@ define ("helpers/localStorage",
       getIdentifierRegisteredInfo,
       setIdentifierRegisteredInfo,
       setIssueState,
-      getIssueState
+      getIssueState,
+      setPreChatFeatureIndex,
+      getPreChatFeatureIndex,
+      setPreChatFeatureState,
+      getPreChatFeatureState,
+      setInfoBotCurrentField,
+      getInfoBotCurrentField
     };
   });
