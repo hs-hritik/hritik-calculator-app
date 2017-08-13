@@ -60,10 +60,6 @@ $small-font-size: font-size(body, small);
 /// @type Number
 $small-header-font-size: 80%;
 
-/// Font size of `<small class="tiny">` elements.
-/// @type Number
-$tiny-font-size: font-size(body, tiny);
-
 /// Color of `<small>` elements when placed inside headers.
 /// @type Color
 $header-small-font-color: color(text, light);
@@ -243,10 +239,6 @@ $defnlist-term-margin-bottom: gutter(4);
   small {
     font-size: $small-font-size;
     line-height: inherit;
-
-    &.font--tiny {
-      font-size: $tiny-font-size;
-    }
   }
 
   // Headings
