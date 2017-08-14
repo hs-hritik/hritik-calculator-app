@@ -39,7 +39,11 @@ define ("reducers/ui",
         csatBotRequestMsg: "Do you have a moment to rate your experience?",
         csatBotResponseMsg: "Thanks for your feedback!",
         csatBotFormRequestMsg: "How would you rate your chat experience?",
+        csatBotFormSubmitBtn: "Submit",
+        csatBotReviewPlaceholder: "Leave us additional feedback",
+        csatBotReviewTitle: "Additional Feedback",
         csatLinkCaption: "Take Survey",
+        csatViewHeader: "Chat with us",
         infoBotRequestMsg: "Before we begin, we need some more information."
       },
       color: {
@@ -56,6 +60,7 @@ define ("reducers/ui",
             text: {
               greetingMsg: {$set: config.greeting_msg},
               chatViewHeader: {$set: config.appearance.widget_title},
+              csatViewHeader: {$set: config.appearance.widget_title},
               csatBotRequestMsg: {$set: config.csat_bot.req_msg},
               csatBotFormRequestMsg: {$set: config.csat_bot.form_msg}
             },

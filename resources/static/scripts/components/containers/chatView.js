@@ -12,10 +12,10 @@ define ("components/containers/chatView",
     "actions/chatView",
     "actions/faqView",
     "actions/appState",
-    "constants/chatView"
+    "constants/activeView"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    appStateActions) {
+    appStateActions, ACTIVE_VIEW) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -73,7 +73,7 @@ define ("components/containers/chatView",
           // and call event to minimize the wm.
         },
         onStartCsatSurveyClick: () => {
-          // @TODO: Dispatch action to switch to csat view.
+          dispatch (chatViewActions.updateActiveView (ACTIVE_VIEW.CSAT));
         }
       };
     };
