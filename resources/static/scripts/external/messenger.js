@@ -11,7 +11,7 @@
 
   // @TODO: Change it to use different url based on env
   // const WEB_SDK_URL = "https://hsmirkwood.helpshift.com/static/html/";
-  const WEB_SDK_URL = "http://localhost:3000/static/html/";
+  const WEB_SDK_URL = "http://localhost:3000/dist/html/";
 
   const state = {
     unreadCount: 0

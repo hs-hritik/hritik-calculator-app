@@ -2,6 +2,8 @@
 # Makefile for mirkwood project
 #
 
+SHELL=/bin/bash
+
 # Add ./tools directory to path
 export PATH := $(abspath ./tools):$(PATH)
 
@@ -11,6 +13,8 @@ export PATH := $(abspath ./tools):$(PATH)
 #
 GULP ?= gulp
 NPM ?= npm
+STATIC_PATH ?= $(abspath ./resources)/static
+DIST_PATH ?= $(abspath ./resources)/dist
 
 JS_TEST_TARGETS = reactjs
 
@@ -42,7 +46,7 @@ else
 	TEST_TARGETS := eslint gunpowder reactjs sass-lint
 endif
 
-static: npminstall styles gunpowder reactjs compress-js js-libs
+static: dist
 
 bundlerinstall:
 	@echo "\nEnsuring Bundler Installation for SCSS compilation..."
@@ -84,6 +88,32 @@ gunpowder: npminstall
 	@echo "\nInstalling the gunpowder npm package"
 	@mkdir -p resources/static/scripts/gunpowder/node_modules;
 	$(NPM) install --prefix resources/static/scripts/gunpowder;
+
+# The dist task is to compile and compress resources and
+# copy them to the `dist` directory.
+# All resources to be deployed must be copied to the `dist` directory.
+# The styles gunpowder, and reactjs tasks already copy files to the dist
+# directory, so copying html, libs, and fonts to dist here.
+# Create a symlink for messenger.js (the web messenger entry script file) to
+# the dist directory.
+dist: npminstall styles gunpowder reactjs compress-js js-libs
+	@echo "\nBuilding the dist directory"
+	@mkdir -p resources/dist
+	@cp -R resources/static/{html,libs,fonts} resources/dist
+	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webmessenger.js
+	@echo "\nDone..."
+
+# The distdev task to compile resources and link the dev files to dist directory
+distdev: npminstall styles gunpowder reactjs
+	@echo "\nCreating/updating symlinks for dev directories in the dist directory"
+	@ln -sFv $(STATIC_PATH)/{html,libs,fonts} resources/dist
+	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webmessenger.js
+	@echo "\nDone..."
+
+clean:
+	@echo "\n Running make clean to clean the dist directory"
+	@rm -rf resources/dist
+	@echo "\nDone..."
 
 jstests: $(JS_TEST_TARGETS)
 
