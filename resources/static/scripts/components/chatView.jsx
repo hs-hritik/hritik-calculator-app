@@ -74,9 +74,6 @@ define ("components/chatView",
           case ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK:
             return this._renderFaqSuggestionsFeedback ();
 
-          case ACTIVE_FOOTER.ISSUE_FEEDBACK:
-            return this._renderIssueFeedback ();
-
           case ACTIVE_FOOTER.CSAT:
             return this._renderCSATFooter ();
 
@@ -350,6 +347,7 @@ define ("components/chatView",
           PROP_TYPES.MESSAGE
         )).isRequired,
         onSuggestedFaqClick: PropTypes.func,
+        onStartCsatSurveyClick: PropTypes.func,
         showAgentNickname: PropTypes.bool,
         isTyping: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
@@ -376,6 +374,7 @@ define ("components/chatView",
                            isTyping={this.props.isTyping}
                            showAgentNickname={this.props.showAgentNickname}
                            text={this.props.text}
+                           onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                            onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
             <ChatViewFooter activeFooter={this.props.activeFooter}

@@ -16,7 +16,6 @@ define ("reducers/ui",
         chatViewHeader: "Chat with us",
         greetingMsg: "Hi! How can I help you today?",
         createIssueUserMessage: "No, I want to talk to an agent.",
-        problemSolvedAgentMessage: "Did we answer all of your questions?",
         faqMessageHeader: "Do these FAQs solve your problem?",
         faqSuggestionsAdditionalHelpMessage: "Do you still need additional help from an agent?",
         faqSuggestionsAdditionalHelpRequiredBtn: "Yes",
@@ -37,8 +36,10 @@ define ("reducers/ui",
         closeConversationBtn: "Close",
         replyBtn: "Send",
         replyBtnPlaceholder: "Send a message...",
-        csatBotRequestMsg: "Thanks! Would you like to fill this?",
-        csatBotFormMsg: "Your feedback helps us improve",
+        csatBotRequestMsg: "Do you have a moment to rate your experience?",
+        csatBotResponseMsg: "Thanks for your feedback!",
+        csatBotFormRequestMsg: "How would you rate your chat experience?",
+        csatLinkCaption: "Take Survey",
         infoBotRequestMsg: "Before we begin, we need some more information."
       },
       color: {
@@ -56,7 +57,7 @@ define ("reducers/ui",
               greetingMsg: {$set: config.greeting_msg},
               chatViewHeader: {$set: config.appearance.widget_title},
               csatBotRequestMsg: {$set: config.csat_bot.req_msg},
-              csatBotFormMsg: {$set: config.csat_bot.form_msg}
+              csatBotFormRequestMsg: {$set: config.csat_bot.form_msg}
             },
             color: {
               primary: {$set: config.appearance.primary_color}

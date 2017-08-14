@@ -26,8 +26,11 @@ define ("components/message",
         showAgentNickname: PropTypes.bool,
         isLastMessage: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
+        onStartCsatSurveyClick: PropTypes.func,
         text: PropTypes.shape ({
-          faqSuggestionsMsgTitle: PropTypes.string.isRequired
+          faqSuggestionsMsgTitle: PropTypes.string.isRequired,
+          csatBotRequestMsg: PropTypes.string.isRequired,
+          csatLinkCaption: PropTypes.string.isRequired
         }).isRequired
       },
 
@@ -58,15 +61,21 @@ define ("components/message",
        * Render the message according to its type.
        */
       _renderMessage () {
-        const {type, suggestedFaqs = []} = this.props.message;
+        const {type} = this.props.message;
 
-        if (type === MESSAGE_TYPE.TEXT) {
-          return this._renderTextMessage ();
-        } else if (type === MESSAGE_TYPE.FAQ && suggestedFaqs.length) {
-          return this._renderFaqMessage ();
+        switch (type) {
+          case MESSAGE_TYPE.TEXT:
+            return this._renderTextMessage ();
+
+          case MESSAGE_TYPE.FAQ:
+            return this._renderFaqMessage ();
+
+          case MESSAGE_TYPE.CSAT:
+            return this._renderCsatMessage ();
+
+          default:
+            return null;
         }
-
-        return null;
       },
 
       /**
@@ -86,6 +95,10 @@ define ("components/message",
        * Render FAQ suggestions message.
        */
       _renderFaqMessage () {
+        if (!this.props.message.suggestedFaqs.length) {
+          return null;
+        }
+
         const {text} = this.props;
 
         return (
@@ -115,6 +128,28 @@ define ("components/message",
             </div>
           );
         });
+      },
+
+      /**
+       * Render csat request message.
+       */
+      _renderCsatMessage () {
+        const {text} = this.props;
+
+        // @TODO: Rename classes. Also correct BEM notation.
+        return (
+          <div>
+            <div className="hs-message--suggested-faqs__title">
+              {text.csatBotRequestMsg}
+            </div>
+            <div className="hs-message--suggested-faqs">
+              <div className="hs-suggested-faq"
+                   onClick={this.props.onStartCsatSurveyClick}>
+                {text.csatLinkCaption}
+              </div>
+            </div>
+          </div>
+        );
       },
 
       /**

@@ -71,6 +71,9 @@ define ("components/containers/chatView",
         onCloseConversation: () => {
           // @TODO: Call action to reset conversation (when done),
           // and call event to minimize the wm.
+        },
+        onStartCsatSurveyClick: () => {
+          // @TODO: Dispatch action to switch to csat view.
         }
       };
     };

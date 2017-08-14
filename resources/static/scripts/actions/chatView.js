@@ -219,20 +219,17 @@ define ("actions/chatView",
           if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
             dispatch (updateIssueState (issueState));
             stopPollingForMessages ();
-            if (issueState === ISSUE_STATE.RESOLVED) {
-              // @TODO: Remove this and add csat message.
-              const {problemSolvedAgentMessage} = state.ui.text;
 
-              dispatch (
-                createMessage (MESSAGE_TYPE.TEXT, {
-                  body: problemSolvedAgentMessage,
-                  isCustomerMsg: false
-                }, {
-                  typingTimer: null,
-                  issueId: appState.activeIssueId
-                })
-              );
-              dispatch (setChatViewFooter (ACTIVE_FOOTER.ISSUE_FEEDBACK));
+            if (issueState === ISSUE_STATE.RESOLVED) {
+              dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
+              if (appState.featuresEnabled.csatBot) {
+                dispatch (
+                  createMessage (MESSAGE_TYPE.CSAT, null, {
+                    typingTimer: MESSAGE_TIMEOUT.CSAT_REQUEST,
+                    issueId: appState.activeIssueId
+                  })
+                );
+              }
             }
           }
         },

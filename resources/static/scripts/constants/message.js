@@ -11,6 +11,7 @@ define ("constants/message",
     const TYPE = {
       TEXT: "Text",
       FAQ: "Faq",
+      CSAT: "Csat",
       CONFIRMATION_ACCEPTED: "Confirmation Accepted",
       CONFIRMATION_REJECTED: "Confirmation Rejected"
     };
@@ -19,9 +20,10 @@ define ("constants/message",
     // @TODO: Change the timeout according to design spec.
     // Temporary changing the timeout to speed up the testing process.
     const TIMEOUT = {
-      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1000,
+      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 500,
       INFO_BOT_REQUEST: 500,
-      INFO_BOT_FIELD: 500
+      INFO_BOT_FIELD: 500,
+      CSAT_REQUEST: 500
     };
 
     return {

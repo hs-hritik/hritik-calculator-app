@@ -18,7 +18,8 @@ define ("components/messageList",
 
     const MESSAGE_TYPES_TO_RENDER = [
       MESSAGE_TYPE.TEXT,
-      MESSAGE_TYPE.FAQ
+      MESSAGE_TYPE.FAQ,
+      MESSAGE_TYPE.CSAT
     ];
 
     return React.createClass ({
@@ -29,6 +30,7 @@ define ("components/messageList",
         )).isRequired,
         showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
+        onStartCsatSurveyClick: PropTypes.func,
         isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
       },
@@ -60,6 +62,7 @@ define ("components/messageList",
                        isLastMessage={messages.length === (index + 1)}
                        showAgentNickname={this.props.showAgentNickname}
                        text={this.props.text}
+                       onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
           );

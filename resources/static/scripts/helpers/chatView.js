@@ -48,9 +48,23 @@ define ("helpers/chatView",
         id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
         type: MESSAGE_TYPE.FAQ,
         isSystemMsg: true,
-        createdTs: Date.now (),
         isCustomerMsg: false,
+        createdTs: Date.now (),
         suggestedFaqs: faqs.slice (0, 3)
+      };
+    };
+
+    /**
+     * Create csat message object.
+     * @returns {Object} - csat message object.
+     */
+    const createCsatMessage = () => {
+      return {
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
+        type: MESSAGE_TYPE.CSAT,
+        isSystemMsg: true,
+        isCustomerMsg: false,
+        createdTs: Date.now ()
       };
     };
 
@@ -66,6 +80,9 @@ define ("helpers/chatView",
 
         case MESSAGE_TYPE.FAQ:
           return createFaqMessage (options);
+
+        case MESSAGE_TYPE.CSAT:
+          return createCsatMessage ();
 
         default:
           return null;
