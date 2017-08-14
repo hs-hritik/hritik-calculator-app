@@ -28,6 +28,7 @@
     SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_ISSUES_LOADED: "sdk-issues-loaded",
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
+    SDK_RESET: "sdk-reset",
     UPDATE_UNREAD_COUNT: "update-unread-count",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
@@ -274,11 +275,17 @@
   };
 
   /**
+   * Post message to set config.
+   */
+  const setConfig = (config) => {
+    _postMessage (EVENT_TYPES.CMD_SET_CONFIG, config);
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
   const init = () => {
-    const clientConfig = window.helpshiftConfig;
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
 
@@ -303,27 +310,37 @@
           // SDK_INITIALISED: Represents the loading of the wm React app.
 
           // Set the client and wm configs to the app.
-          _postMessage (EVENT_TYPES.CMD_SET_CONFIG, clientConfig);
+          setConfig (window.helpshiftConfig);
           break;
+
         case EVENT_TYPES.SDK_CONFIG_LOADED:
           // Process wm config to set appearance, etc.
           processWmConfig (data.wmConfig);
           break;
+
         case EVENT_TYPES.SDK_INITIALISED:
           fireWebSdkReadyEvent ();
           break;
+
         case EVENT_TYPES.SDK_ISSUES_LOADED:
           if (data.hasActiveIssue) {
             // @TODO: Show some indication to the user.
           }
           break;
+
         case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
           toggleWebSdkIframe ({
             minimized: data.minimized
           });
           break;
+
         case EVENT_TYPES.UPDATE_UNREAD_COUNT:
           updateUnreadCount (data.count);
+          break;
+
+        case EVENT_TYPES.SDK_RESET:
+          close ();
+          setConfig (window.helpshiftConfig);
           break;
       }
     }, false);

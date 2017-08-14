@@ -89,9 +89,17 @@ define ("actions/chatView",
 
     /**
      * Start polling for messages.
-     * Also clear previous polling, if any.
      */
     const startPollingForMessages = () => {
+      pollingEnabled = true;
+      fetchMessages ();
+    };
+
+    /**
+     * Stop polling for messages.
+     * Also clear previous timeout and xhr, if any.
+     */
+    const stopPollingForMessages = () => {
       window.clearTimeout (fetchMessagesTimer);
 
       if (fetchMessagesXhr) {
@@ -99,8 +107,7 @@ define ("actions/chatView",
         fetchMessagesXhr = null;
       }
 
-      pollingEnabled = true;
-      fetchMessages ();
+      pollingEnabled = false;
     };
 
     /**
@@ -211,7 +218,7 @@ define ("actions/chatView",
           const issueState = response.issue_state_data.state;
           if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
             dispatch (updateIssueState (issueState));
-            pollingEnabled = false;
+            stopPollingForMessages ();
             if (issueState === ISSUE_STATE.RESOLVED) {
               // @TODO: Remove this and add csat message.
               const {problemSolvedAgentMessage} = state.ui.text;
@@ -1174,6 +1181,7 @@ define ("actions/chatView",
       udpateReplyText,
       submitReply,
       startPollingForMessages,
+      stopPollingForMessages,
       getFaqSuggestions,
       addMessages,
       setMessages,

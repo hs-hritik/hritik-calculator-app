@@ -57,7 +57,7 @@ define ("extras/api",
           handleMessengerToggle (data.minimized);
           break;
         case EVENT_TYPES.CMD_RESET:
-          // @TODO: Call the action to reset the conversation (when ready)
+          store.dispatch (appStateActions.reset ());
           break;
       }
     };

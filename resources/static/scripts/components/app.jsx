@@ -37,6 +37,9 @@ define ("components/app",
       }
     });
 
+    /**
+     * Render app.
+     */
     const init = () => {
       ReactDOM.render (
         <Provider store={store}>
@@ -46,9 +49,17 @@ define ("components/app",
       );
     };
 
+    /**
+     * Unmount app.
+     */
+    const unmount = () => {
+      ReactDOM.unmountComponentAtNode (document.getElementById ("app"));
+    };
+
     return {
       isMounted: () => _isAppMounted,
-      init
+      init,
+      unmount
     };
   }
 );

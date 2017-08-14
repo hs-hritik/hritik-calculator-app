@@ -9,6 +9,7 @@ define ("constants/actionTypes",
     "use strict";
 
     return {
+      RESET: "RESET",
       BATCH_ACTIONS: "BATCH_ACTIONS",
       REHYDRATE: "REHYDRATE",
       SET_USER: "SET_USER",

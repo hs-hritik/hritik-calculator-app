@@ -25,13 +25,15 @@ define ("actions/appState",
     "actions/entities",
     "actions/chatView",
     "actions/batch",
-    "utils/postMessage"
+    "utils/postMessage",
+    "extras/postSdkMessage",
+    "components/app"
   ],
   function (ACTION_TYPES, routes, EVENT_TYPES, APP_STATE_CONSTANTS,
     CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
     chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils, uuidGenerator,
     throttle, store, entitiesActions, chatViewActions, batchActions,
-    postMessage) {
+    postMessage, postSdkMessage, app) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -126,22 +128,41 @@ define ("actions/appState",
       if ((lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) ||
            !returningUser) {
         // If the last activity was done before reset timeout,
-        // or if it's a new user,
-        // clear the previous state stored in
-        // localstorage (if any) and start a new conversation.
-        lsHelper.reset ();
+        // or if it's a new user, start a new conversation.
         store.dispatch (startNewConversation ());
       } else {
         // If it's a returning user, that means there could be an
         // ongoing conversation.
-        handlePreviousConversation ();
+        handleOngoingConversation ();
       }
     };
 
     /**
-     * Handle previous conversation.
+     * Action to reset the conversation.
+     * It does the following tasks:
+     * - Stop polling for agent messages.
+     * - Dispatch action to reset the store.
+     * - Post reset message to parent.
+     * - Clear localstorage.
+     * - Unmount the application.
      */
-    const handlePreviousConversation = () => {
+    const reset = () => {
+      return (dispatch) => {
+        chatViewActions.stopPollingForMessages ();
+        dispatch ({
+          type: ACTION_TYPES.RESET
+        });
+        postSdkMessage.reset ();
+        // @TODO: Update lsHelper to reset user related data also.
+        lsHelper.reset ();
+        app.unmount ();
+      };
+    };
+
+    /**
+     * Handle ongoing conversation.
+     */
+    const handleOngoingConversation = () => {
       const issueState = lsHelper.getIssueState ();
       switch (issueState) {
         case ISSUE_STATE.PRE_CHAT:
@@ -167,16 +188,12 @@ define ("actions/appState",
         case ISSUE_STATE.RESOLVED:
         case ISSUE_STATE.REJECTED:
         case ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS:
-          // For post chat state, clear the previous state and
-          // start new conversation.
-          // @TODO: Explore if anything else needs to be done.
-          lsHelper.reset ();
+          // For post chat state, start new conversation.
           store.dispatch (startNewConversation ());
           break;
 
         default:
-          // If there is no issueState data in ls, reset and start new conversation.
-          lsHelper.reset ();
+          // If there is no issueState data in ls, start new conversation.
           store.dispatch (startNewConversation ());
           break;
       }
@@ -498,6 +515,7 @@ define ("actions/appState",
 
     /**
      * Action to start new conversation.
+     * Reset the previous localstorage data (if any).
      * Creates dummy issue entity.
      * The initial conversation on the web sdk would not be part of an
      * issue created on the server. So, we need to create a dummy issue
@@ -506,6 +524,7 @@ define ("actions/appState",
      */
     const startNewConversation = () => {
       return (dispatch, getState) => {
+        lsHelper.reset ();
         const state = getState ();
         // Create dummy issue entity.
         dispatch (
@@ -531,7 +550,11 @@ define ("actions/appState",
      * @param {Object} user - user object. Contains id, name and email.
      * @returns {Object} - action
      */
+    // @TODO: Remove the getIssues function if not required.
+    // Temporarily disabling no-unused-vars to avoid eslint error.
+    /* eslint-disable no-unused-vars */
     const getIssues = (identifier) => {
+    /* eslint-enable no-unused-vars */
       return (dispatch, getState) => {
         const state = getState ();
         const appState = state.appState;
@@ -601,9 +624,6 @@ define ("actions/appState",
       updateActiveView,
       startNewConversation,
       toggleMinimized,
-      // @TODO: Remove the getIssues function if not required.
-      // Temporarily exporting it to avoid eslint error, because cuurently
-      // getIssues is not used anywhere.
-      getIssues
+      reset
     };
   });
