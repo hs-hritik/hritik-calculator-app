@@ -222,10 +222,18 @@ define ("actions/chatView",
 
             if (issueState === ISSUE_STATE.RESOLVED) {
               dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
+
+              dispatch (
+                createMessage (MESSAGE_TYPE.END_CHAT, null, {
+                  typingTimer: null,
+                  issueId: appState.activeIssueId
+                })
+              );
+
               if (appState.featuresEnabled.csatBot) {
                 dispatch (
                   createMessage (MESSAGE_TYPE.CSAT, null, {
-                    typingTimer: MESSAGE_TIMEOUT.CSAT_REQUEST,
+                    typingTimer: null,
                     issueId: appState.activeIssueId
                   })
                 );

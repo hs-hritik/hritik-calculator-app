@@ -11,7 +11,8 @@ define ("constants/message",
     const TYPE = {
       TEXT: "Text",
       FAQ: "Faq",
-      CSAT: "Csat"
+      CSAT: "Csat",
+      END_CHAT: "EndChat"
     };
 
     // Timeout (in milliseconds) for different system generated message.
@@ -20,8 +21,7 @@ define ("constants/message",
     const TIMEOUT = {
       FAQ_SUGGESTIONS_ADDITIONAL_HELP: 500,
       INFO_BOT_REQUEST: 500,
-      INFO_BOT_FIELD: 500,
-      CSAT_REQUEST: 500
+      INFO_BOT_FIELD: 500
     };
 
     return {

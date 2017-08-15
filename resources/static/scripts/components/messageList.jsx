@@ -19,7 +19,8 @@ define ("components/messageList",
     const MESSAGE_TYPES_TO_RENDER = [
       MESSAGE_TYPE.TEXT,
       MESSAGE_TYPE.FAQ,
-      MESSAGE_TYPE.CSAT
+      MESSAGE_TYPE.CSAT,
+      MESSAGE_TYPE.END_CHAT
     ];
 
     return React.createClass ({

@@ -69,6 +69,20 @@ define ("helpers/chatView",
     };
 
     /**
+     * Create end chat message object.
+     * @returns {Object} - end chat message object.
+     */
+    const createEndChatMessage = () => {
+      return {
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
+        type: MESSAGE_TYPE.END_CHAT,
+        isSystemMsg: true,
+        isCustomerMsg: false,
+        createdTs: Date.now ()
+      };
+    };
+
+    /**
      * Create message of given type.
      * @param {String} type - Message type.
      * @param {Object} options - Message options.
@@ -83,6 +97,9 @@ define ("helpers/chatView",
 
         case MESSAGE_TYPE.CSAT:
           return createCsatMessage ();
+
+        case MESSAGE_TYPE.END_CHAT:
+          return createEndChatMessage ();
 
         default:
           return null;

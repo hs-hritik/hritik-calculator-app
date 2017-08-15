@@ -73,6 +73,9 @@ define ("components/message",
           case MESSAGE_TYPE.CSAT:
             return this._renderCsatMessage ();
 
+          case MESSAGE_TYPE.END_CHAT:
+            return this._renderEndChatMessage ();
+
           default:
             return null;
         }
@@ -148,6 +151,18 @@ define ("components/message",
                 {text.csatLinkCaption}
               </div>
             </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render end chat message.
+       */
+      _renderEndChatMessage () {
+        // @TODO: Add css and show agent nickname if enabled
+        return (
+          <div>
+            Agent ended chat
           </div>
         );
       },
