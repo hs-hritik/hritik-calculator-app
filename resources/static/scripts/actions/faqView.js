@@ -48,9 +48,6 @@ define ("actions/faqView",
 
         xhr ({
           route: routes.getFaq (appState.domain, faqId),
-          data: {
-            "faq-id": faqId
-          },
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.faq);
@@ -86,8 +83,7 @@ define ("actions/faqView",
         xhr ({
           route: routes.putFaqFeedback (appState.domain, faqId, isFeedbackHelpful),
           data: {
-            "identifier": appState.identifier,
-            "faq-id": faqId
+            identifier: appState.identifier
           },
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),

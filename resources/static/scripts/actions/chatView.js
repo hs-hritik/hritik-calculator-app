@@ -152,8 +152,7 @@ define ("actions/chatView",
         xhr ({
           route: routes.putMessagesSeen (appState.domain, appState.activeIssueId),
           data: {
-            "identifier": appState.identifier,
-            "issue-id": appState.activeIssueId
+            identifier: appState.identifier
           },
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
@@ -173,8 +172,7 @@ define ("actions/chatView",
             {appState} = state;
 
       const xhrData = {
-        "identifier": appState.identifier,
-        "issue-id": appState.activeIssueId
+        identifier: appState.identifier
       };
 
       if (state.chatView.activeIssueMsgCursor) {
@@ -276,7 +274,6 @@ define ("actions/chatView",
         route: routes.postUserReply (config.domain, config.activeIssueId),
         data: {
           "identifier": config.identifier,
-          "issue-id": config.activeIssueId,
           "message-body": config.msgBody,
           "message-type": config.msgType
         },
@@ -433,7 +430,7 @@ define ("actions/chatView",
       }
 
       xhr ({
-        route: routes.postProfile (domain, identifier),
+        route: routes.postProfile (domain),
         method: "POST",
         data: xhrData,
         headers: xhrHelpers.getCommonHeaders (),
