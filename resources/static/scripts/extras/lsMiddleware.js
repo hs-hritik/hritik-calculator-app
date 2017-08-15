@@ -24,6 +24,9 @@ define ("extras/lsMiddleware",
       LAST_ACTIVITY_THROTTLE_TIME
     );
 
+    const REPLY_TEXT_THROTTLE_TIME = 3000;           // 3 seconds
+    const throttledSetReplyText = throttle (lsHelper.setReplyText, REPLY_TEXT_THROTTLE_TIME);
+
     /**
      * Save the required state in localStorage.
      * @param {Object} store
@@ -95,6 +98,9 @@ define ("extras/lsMiddleware",
           throttledSetLastActivityTime ();
           break;
 
+        case ACTION_TYPES.UPDATE_REPLY_TEXT:
+          throttledSetReplyText (action.value);
+          break;
       }
     };
 

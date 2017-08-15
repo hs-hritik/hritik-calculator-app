@@ -26,7 +26,8 @@ define ("helpers/localStorage",
       PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
       PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
       INFO_BOT_CURRENT_FIELD: "info_bot_current_field",
-      LAST_ACTIVITY_TIME: "last_activity_time"
+      LAST_ACTIVITY_TIME: "last_activity_time",
+      REPLY_TEXT: "reply_text"
     };
 
     /**
@@ -182,6 +183,20 @@ define ("helpers/localStorage",
     const getLastActivityTime = () => lsUtils.getItem (KEYS.LAST_ACTIVITY_TIME, true);
 
     /**
+     * Set reply text.
+     * @param {String} value
+     */
+    const setReplyText = (value) => {
+      lsUtils.setItem (KEYS.REPLY_TEXT, value);
+    };
+
+    /**
+     * Get reply text.
+     * @returns {String} - reply text
+     */
+    const getReplyText = () => lsUtils.getItem (KEYS.REPLY_TEXT);
+
+    /**
      * Clear previously saved state from the localstorage.
      */
     const reset = () => {
@@ -217,6 +232,8 @@ define ("helpers/localStorage",
       setInfoBotCurrentField,
       getInfoBotCurrentField,
       setLastActivityTime,
-      getLastActivityTime
+      getLastActivityTime,
+      setReplyText,
+      getReplyText
     };
   });

@@ -211,7 +211,8 @@ define ("actions/appState",
             preChatFeatureIndex = lsHelper.getPreChatFeatureIndex (),
             preChatFeatureState = lsHelper.getPreChatFeatureState (),
             infoBotCurrentField = lsHelper.getInfoBotCurrentField (),
-            issueState = lsHelper.getIssueState ();
+            issueState = lsHelper.getIssueState (),
+            replyText = lsHelper.getReplyText ();
 
       if (issues || messages) {
         store.dispatch ({
@@ -224,7 +225,8 @@ define ("actions/appState",
             preChatFeatureIndex,
             preChatFeatureState,
             infoBotCurrentField,
-            issueState
+            issueState,
+            replyText
           }
         });
       }

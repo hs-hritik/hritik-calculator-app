@@ -61,6 +61,11 @@ define ("reducers/chatView",
               currentField: {$set: action.data.infoBotCurrentField}
             };
           }
+          if (action.data.replyText) {
+            updateObj.replyBox = {
+              value: {$set: action.data.replyText}
+            };
+          }
           return update (state, updateObj);
 
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
