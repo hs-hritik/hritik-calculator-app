@@ -622,7 +622,6 @@ define ("actions/appState",
       setClientConfig,
       setWmConfig,
       updateActiveView,
-      startNewConversation,
       toggleMinimized,
       reset
     };

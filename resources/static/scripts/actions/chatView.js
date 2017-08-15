@@ -405,98 +405,6 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to reject the solution.
-     * @returns {Object} - action
-     */
-    const rejectSolution = () => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-
-        postUserMessage ({
-          domain: appState.domain,
-          activeIssueId: appState.activeIssueId,
-          identifier: appState.identifier,
-          msgBody: state.ui.text.rejectSolutionMessage,
-          msgType: MESSAGE_TYPE.CONFIRMATION_REJECTED
-        }, {
-          onSuccess: (response, processedEntities) => {
-            dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (addMessages (appState.activeIssueId, [response.id]));
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
-            startPollingForMessages ();
-          }
-        });
-
-      };
-    };
-
-    /**
-     * Action to accept the solution.
-     * @returns {Object} - action
-     */
-    const acceptSolution = () => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-
-        postUserMessage ({
-          domain: appState.domain,
-          activeIssueId: appState.activeIssueId,
-          identifier: appState.identifier,
-          msgBody: state.ui.text.acceptSolutionMessage,
-          msgType: MESSAGE_TYPE.CONFIRMATION_ACCEPTED
-        }, {
-          onSuccess: (response, processedEntities) => {
-            dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (addMessages (appState.activeIssueId, [response.id]));
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.CSAT));
-          }
-        });
-      };
-    };
-
-    /**
-     * Action to update csat rating in store.
-     * @param {Number} rating - csat rating
-     * @returns {Object} - action
-     */
-    const updateCSATRating = (rating) => {
-      return {
-        type: ACTION_TYPES.UPDATE_CSAT_RATING,
-        rating
-      };
-    };
-
-    /**
-     * Action to post csat rating and save it in store.
-     * @param {Number} rating - csat rating
-     * @returns {Object} - action
-     */
-    const submitCsat = (rating) => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-
-        // @TODO: Need UX decision to update the rating on the UI instantly,
-        // or wait for xhr response.
-        dispatch (updateCSATRating (rating));
-
-        xhr ({
-          route: routes.postCSAT (appState.domain, appState.activeIssueId),
-          data: {
-            "identifier": appState.identifier,
-            "issue-id": appState.activeIssueId,
-            "platform-id": appState.platformId,
-            "rating": rating
-          },
-          headers: xhrHelpers.getCommonHeaders (),
-          method: "POST"
-        });
-      };
-    };
-
-    /**
      * Fire xhr to register user profile.
      * @param {Object} user - user object. Contains identifier, name and email.
      * @param {String} domain - domain name.
@@ -1194,9 +1102,6 @@ define ("actions/chatView",
       getFaqSuggestions,
       addMessages,
       setMessages,
-      rejectSolution,
-      acceptSolution,
-      submitCsat,
       setActiveIssue,
       setChatViewFooter,
       rejectFaqSuggestions,

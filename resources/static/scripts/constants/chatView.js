@@ -11,8 +11,6 @@ define ("constants/chatView",
     const ACTIVE_FOOTER = {
       REPLY: "REPLY",
       FAQ_SUGGESTIONS_FEEDBACK: "FAQ_SUGGESTIONS_FEEDBACK",
-      CSAT: "CSAT",
-      NEW_CONVERSATION: "NEW_CONVERSATION",
       INFO_BOT: "INFO_BOT",
       BLOCKED: "BLOCKED",
       CLOSED: "CLOSED"

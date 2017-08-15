@@ -22,7 +22,6 @@ define ("reducers/chatView",
       },
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
-      csatRating: 0,
       systemTyping: false,
       agentTyping: false,
       endUserFirstMsg: null,
@@ -79,11 +78,6 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
           return update (state, {
             activeFooter: {$set: action.footer}
-          });
-
-        case ACTION_TYPES.UPDATE_CSAT_RATING:
-          return update (state, {
-            csatRating: {$set: action.rating}
           });
 
         case ACTION_TYPES.DISABLE_REPLY_BOX:

@@ -29,7 +29,6 @@ define ("components/containers/chatView",
       return {
         messages,
         activeFooter: state.chatView.activeFooter,
-        csatRating: state.chatView.csatRating,
         isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
         infoBotField: infoBot.data [infoBot.currentField],
         showAgentNickname: state.appState.featuresEnabled.agentNickname,
@@ -48,19 +47,6 @@ define ("components/containers/chatView",
           } else {
             dispatch (chatViewActions.rejectFaqSuggestions ());
           }
-        },
-        onIssueFeedback: (feedback) => {
-          if (feedback === "no") {
-            dispatch (chatViewActions.rejectSolution ());
-          } else {
-            dispatch (chatViewActions.acceptSolution ());
-          }
-        },
-        onSubmitCsatRating: (rating) => {
-          dispatch (chatViewActions.submitCsat (rating));
-        },
-        onStartNewConversation: () => {
-          dispatch (appStateActions.startNewConversation ());
         },
         onValueChangeInfoBotField: (value) => {
           dispatch (chatViewActions.updateInfoBotFieldValue ({value}));

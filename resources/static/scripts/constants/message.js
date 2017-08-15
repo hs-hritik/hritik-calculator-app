@@ -11,9 +11,7 @@ define ("constants/message",
     const TYPE = {
       TEXT: "Text",
       FAQ: "Faq",
-      CSAT: "Csat",
-      CONFIRMATION_ACCEPTED: "Confirmation Accepted",
-      CONFIRMATION_REJECTED: "Confirmation Rejected"
+      CSAT: "Csat"
     };
 
     // Timeout (in milliseconds) for different system generated message.
