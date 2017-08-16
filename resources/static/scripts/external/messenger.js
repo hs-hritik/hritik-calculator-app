@@ -203,6 +203,16 @@
   };
 
   /**
+   * Destroy web sdk iframe.
+   */
+  const destroyWebSdkIframe = () => {
+    if (webSdkIframe) {
+      webSdkIframe.parentNode.removeChild (webSdkIframe);
+      webSdkIframe = null;
+    }
+  };
+
+  /**
    * Show/hide web sdk iframe.
    * @param {Object} [config]
    * @param {Boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
@@ -261,8 +271,9 @@
         toggleWebSdkIframe ();
       });
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
+    } else {
+      destroyWebSdkIframe ();
     }
-    // @TODO: Handle the case for when the widget is not enabled.
   };
 
   /**
