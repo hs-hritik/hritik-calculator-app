@@ -212,6 +212,7 @@ define ("actions/appState",
             preChatFeatureState = lsHelper.getPreChatFeatureState (),
             infoBotCurrentField = lsHelper.getInfoBotCurrentField (),
             issueState = lsHelper.getIssueState (),
+            userProfileId = lsHelper.getUserProfileId (),
             replyText = lsHelper.getReplyText ();
 
       if (issues || messages) {
@@ -226,7 +227,8 @@ define ("actions/appState",
             preChatFeatureState,
             infoBotCurrentField,
             issueState,
-            replyText
+            replyText,
+            userProfileId
           }
         });
       }

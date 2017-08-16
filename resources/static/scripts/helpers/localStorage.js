@@ -21,7 +21,7 @@ define ("helpers/localStorage",
         MESSAGES: "messages_entities"
       },
       ACTIVE_ISSUE_ID: "active_issue_id",
-      IS_IDENTIFIER_REGISTERED: "is_identifier_registered",
+      USER_PROFILE_ID: "user_profile_id",
       ISSUE_STATE: "issue_state",
       PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
       PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
@@ -99,18 +99,17 @@ define ("helpers/localStorage",
     };
 
     /**
-     * Get the identifier registered information.
-     * @returns {Boolean} - true if the identifier is registered.
+     * Get the user profile id.
+     * @returns {String} - profile id
      */
-    // @TODO: Check if parse would be required.
-    const getIdentifierRegisteredInfo = () => lsUtils.getItem (KEYS.IS_IDENTIFIER_REGISTERED);
+    const getUserProfileId = () => lsUtils.getItem (KEYS.USER_PROFILE_ID);
 
     /**
-     * Set the identifier registered information.
-     * @param {Boolean} registered
+     * Set the user profile id.
+     * @param {String} profileId
      */
-    const setIdentifierRegisteredInfo = (registered) => {
-      lsUtils.setItem (KEYS.IS_IDENTIFIER_REGISTERED, registered);
+    const setUserProfileId = (profileId) => {
+      lsUtils.setItem (KEYS.USER_PROFILE_ID, profileId);
     };
 
     /**
@@ -203,7 +202,7 @@ define ("helpers/localStorage",
       lsUtils.removeItem (KEYS.ENTITIES.ISSUES);
       lsUtils.removeItem (KEYS.ENTITIES.MESSAGES);
       lsUtils.removeItem (KEYS.ACTIVE_ISSUE_ID);
-      // @TODO: Remove IS_IDENTIFIER_REGISTERED key when saving new identifier.
+      // @TODO: Remove USER_PROFILE_ID key when saving new identifier.
       lsUtils.removeItem (KEYS.ISSUE_STATE);
       lsUtils.removeItem (KEYS.PRE_CHAT_FEATURE_INDEX);
       lsUtils.removeItem (KEYS.PRE_CHAT_FEATURE_STATE);
@@ -221,8 +220,8 @@ define ("helpers/localStorage",
       reset,
       getActiveIssueId,
       setActiveIssueId,
-      getIdentifierRegisteredInfo,
-      setIdentifierRegisteredInfo,
+      getUserProfileId,
+      setUserProfileId,
       setIssueState,
       getIssueState,
       setPreChatFeatureIndex,

@@ -101,6 +101,10 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           throttledSetReplyText (action.value);
           break;
+
+        case ACTION_TYPES.SET_USER_PROFILE_ID:
+          lsHelper.setUserProfileId (action.profileId);
+          break;
       }
     };
 

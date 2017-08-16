@@ -20,18 +20,20 @@ define ("actions/chatView",
     "gunpowder/utils/schema",
     "actions/entities",
     "actions/batch",
+    "actions/actionCreators",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/localStorage",
+    "helpers/liveUpdates",
     "utils/postMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, entitiesActions, batchActions,
-    entitySchema, entityHelpers, chatViewHelpers, xhrHelpers, lsHelper,
-    postMessage) {
+    actionCreators, entitySchema, entityHelpers, chatViewHelpers,
+    xhrHelpers, lsHelper, liveUpdatesHelpers, postMessage) {
     "use strict";
 
     const {normalize, denormalize} = normalizr,
@@ -96,6 +98,13 @@ define ("actions/chatView",
     const startPollingForMessages = () => {
       pollingEnabled = true;
       fetchMessages ();
+
+      liveUpdatesHelpers.openWsConnection ();
+      // Since the ws connection is asynchronous, this call to subscribe
+      // to agent activity will go to the buffer and actual subscription
+      // will take place when the web socket connection is completed.
+      liveUpdatesHelpers.subscribeAgentActivityTopic ();
+      liveUpdatesHelpers.attachAgentActivityListener ();
     };
 
     /**
@@ -111,6 +120,9 @@ define ("actions/chatView",
       }
 
       pollingEnabled = false;
+
+      liveUpdatesHelpers.unsubscribeAgentActivityTopic ();
+      liveUpdatesHelpers.detachAgentActivityListener ();
     };
 
     /**
@@ -1064,10 +1076,8 @@ define ("actions/chatView",
         }
 
         registerUserProfile (user, state.appState.domain, {
-          onSuccess: () => {
-            // Save the information in the local storage that the current user is registerd.
-            // This will help in skipping the info bot if the same user starts a new conversation.
-            lsHelper.setIdentifierRegisteredInfo (true);
+          onSuccess: (response) => {
+            dispatch (actionCreators.setUserProfileId (response ["profile-id"]));
             dispatch (createIssue ());
           }
         });

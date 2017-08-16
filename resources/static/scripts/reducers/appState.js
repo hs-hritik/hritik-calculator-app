@@ -24,6 +24,7 @@ define ("reducers/appState",
       dummyIssueId: "DUMMY_ISSUE",
       // identifier is the uuid (Universally unique identifier)
       identifier: "",
+      userProfileId: "",
       userId: "",
       platformId: "",
       domain: "",
@@ -58,6 +59,9 @@ define ("reducers/appState",
           }
           if (action.data.issueState) {
             updateObj.issueState = {$set: action.data.issueState};
+          }
+          if (action.data.userProfileId) {
+            updateObj.userProfileId = {$set: action.data.userProfileId};
           }
 
           return update (state, updateObj);
@@ -122,6 +126,11 @@ define ("reducers/appState",
                 $set: action.featureState
               }
             }
+          });
+
+        case ACTION_TYPES.SET_USER_PROFILE_ID:
+          return update (state, {
+            userProfileId: {$set: action.profileId}
           });
 
         default:

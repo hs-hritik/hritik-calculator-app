@@ -43,6 +43,13 @@ define ("constants/routes",
     const putMessagesSeen = (domain, issueId) =>
                              `${BASE}${domain}/websdk/issues/${issueId}/messages-seen`;
 
+    // Route to fetch web socket related config
+    const getWsConfig = (domain) => `${BASE}${domain}/websdk/ws-config`;
+
+    // Route to open web socket connection
+    const webSocket = (domain, platformId, endpoint, token) =>
+                       `${endpoint}/subscribe/websocket/?origin_v3=${token}&` +
+                       `platform_id=${platformId}&domain=${domain}`;
     return {
       getWmConfig,
       getCss,
@@ -55,6 +62,8 @@ define ("constants/routes",
       postIssue,
       postCSAT,
       postProfile,
-      putMessagesSeen
+      putMessagesSeen,
+      getWsConfig,
+      webSocket
     };
   });

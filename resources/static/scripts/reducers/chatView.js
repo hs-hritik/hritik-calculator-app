@@ -104,6 +104,11 @@ define ("reducers/chatView",
             systemTyping: {$set: action.typing}
           });
 
+        case ACTION_TYPES.TOGGLE_AGENT_TYPING:
+          return update (state, {
+            agentTyping: {$set: action.typing}
+          });
+
         case ACTION_TYPES.SET_UNREAD_COUNT:
           return update (state, {
             unreadCount: {$set: action.count}
