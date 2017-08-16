@@ -24,7 +24,8 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
         };
 
   let subscribedToLiveUpdates = false,
-      agentActivityListener = null;
+      agentActivityListener = null,
+      agentActivityTimer = null;
 
   /**
    * Opens a new web socket connection.
@@ -84,14 +85,24 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
    */
   const attachAgentActivityListener = () => {
     agentActivityListener = pubsub.on (AGENT_ACTIVITY_EVENT_NAME, (ev) => {
-      const {action} = ev.message;
+      const {action, ttl} = ev.message;
+
+      if (agentActivityTimer) {
+        window.clearTimeout (agentActivityTimer);
+      }
 
       if (action === AGENT_ACTIVITY_ACTIONS.START) {
         store.dispatch (actionCreators.toggleAgentTyping (true));
+
+        // Start timer to stop agent activity after ttl.
+        agentActivityTimer = window.setTimeout (() => {
+          store.dispatch (actionCreators.toggleAgentTyping (false));
+          agentActivityTimer = null;
+        }, ttl * 1000);
+
       } else if (action === AGENT_ACTIVITY_ACTIONS.STOP) {
         store.dispatch (actionCreators.toggleAgentTyping (false));
       }
-      // @TODO: Handle ttl
     });
   };
 
