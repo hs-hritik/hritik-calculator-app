@@ -17,6 +17,7 @@ define ("actions/chatView",
     "constants/appState",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
+    "gunpowder/utils/schema",
     "actions/entities",
     "actions/batch",
     "helpers/entitySchema",
@@ -27,16 +28,18 @@ define ("actions/chatView",
     "utils/postMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, xhr, arrayUtils,
-    entitiesActions, batchActions, entitySchema, entityHelpers,
-    chatViewHelpers, xhrHelpers, lsHelper, postMessage) {
+    EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
+    xhr, arrayUtils, schema, entitiesActions, batchActions,
+    entitySchema, entityHelpers, chatViewHelpers, xhrHelpers, lsHelper,
+    postMessage) {
     "use strict";
 
     const {normalize, denormalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
-          {ISSUE_STATE, PRE_CHAT_STATE: {GREETING, ANSWER_BOT, INFO_BOT}} = APP_STATE_CONSTANTS;
+          {ISSUE_STATE, PRE_CHAT_STATE: {GREETING, ANSWER_BOT, INFO_BOT}} = APP_STATE_CONSTANTS,
+          {Input} = schema;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -940,14 +943,18 @@ define ("actions/chatView",
 
         const currentFieldVal = infoBot.data [infoBot.currentField].value;
 
-        // @TODO: Add validations
-        // const errorMsg = currentField.value.isValid ();
-        // dispatch (updateInfoBotFieldValue ({
-        //   errorMsg
-        // }));
-        // if (errorMsg) {
-        //   return;
-        // }
+        // As we are only saving serializable data in the store,
+        // we are not saving the input object inside the store.
+        // On submit of info bot field, create an input object instance to
+        // validate the info field.
+        const errorMsg = new Input (currentFieldVal).isValid ();
+
+        if (errorMsg) {
+          dispatch (updateInfoBotFieldValue ({
+            errorMsg
+          }));
+          return;
+        }
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {

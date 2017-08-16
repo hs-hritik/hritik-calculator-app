@@ -49,7 +49,10 @@ define ("components/containers/chatView",
           }
         },
         onValueChangeInfoBotField: (value) => {
-          dispatch (chatViewActions.updateInfoBotFieldValue ({value}));
+          dispatch (chatViewActions.updateInfoBotFieldValue ({
+            value,
+            errorMsg: ""
+          }));
         },
         onSubmitInfoBotField: () => {
           dispatch (chatViewActions.submitInfoBotField ());
