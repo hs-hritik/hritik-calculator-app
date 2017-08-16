@@ -63,7 +63,8 @@ define ("helpers/entity",
       objUtils.forEachKey (authors, (id, author) => {
         processedAuthors [id] = {
           id: author.id,
-          name: author.name
+          name: author.name,
+          nickname: author.nickname
         };
       });
 

@@ -176,14 +176,16 @@ define ("components/message",
         }
 
         const {message, showAgentNickname} = this.props;
-        let agentName = null;
+        let agentNickname = null;
 
-        if (showAgentNickname && !message.isCustomerMsg) {
-          // There won't be any author for system generated messages.
-          // @TODO: Backend change to pass agent nickname pending.
-          // @TODO: Confirm from PM/design if we have to show agent's actual
-          // name if showAgentNickname is disabled.
-          agentName = objUtils.getIn (message, ["author", "name"]);
+        if (!(message.isCustomerMsg || message.isSystemMsg)) {
+          // If agent nickname is disabled, or the agent hasn't set the nickname, show "Agent"
+          agentNickname = "Agent";
+
+          if (showAgentNickname) {
+            // There won't be any author for system generated messages.
+            agentNickname = objUtils.getIn (message, ["author", "nickname"]) || agentNickname;
+          }
         }
 
         const timeAgoMs = Date.now () - message.createdTs;
@@ -201,7 +203,7 @@ define ("components/message",
 
         return (
           <div>
-            <span>{agentName}</span>
+            <span>{agentNickname}</span>
             <span>{timeAgoStr}</span>
           </div>
         );
