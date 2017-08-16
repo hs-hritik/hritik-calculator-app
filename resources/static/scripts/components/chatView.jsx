@@ -230,6 +230,8 @@ define ("components/chatView",
         showAgentNickname: PropTypes.bool,
         isTyping: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
+        browserIsMobile: PropTypes.bool,
+        onMinimizeConversation: PropTypes.func,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
         infoBotField: INFO_BOT_FIELD_PROPS,
@@ -241,9 +243,13 @@ define ("components/chatView",
       },
 
       render () {
+        const {browserIsMobile, onMinimizeConversation, text} = this.props;
+
         return (
           <div className="hs-view">
-            <ViewHeader title={this.props.text.chatViewHeader} />
+            <ViewHeader title={text.chatViewHeader}
+                        showCloseBtn={browserIsMobile}
+                        onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
               <MessageList messages={this.props.messages}
                            isTyping={this.props.isTyping}

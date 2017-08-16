@@ -21,6 +21,8 @@ define ("components/csatView",
         rating: PropTypes.number.isRequired,
         review: PropTypes.string,
         completed: PropTypes.bool,
+        browserIsMobile: PropTypes.bool,
+        onMinimizeConversation: PropTypes.func,
         onSubmitCsat: PropTypes.func.isRequired,
         onUpdateCsatRating: PropTypes.func.isRequired,
         onUpdateCsatReview: PropTypes.func.isRequired,
@@ -37,11 +39,13 @@ define ("components/csatView",
       },
 
       render () {
-        const {text} = this.props;
+        const {text, browserIsMobile, onMinimizeConversation} = this.props;
         // @TODO: Add/change css classes.
         return (
           <div className="hs-view">
-            <ViewHeader title={text.csatViewHeader} />
+            <ViewHeader title={text.csatViewHeader}
+                        showCloseBtn={browserIsMobile}
+                        onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
               {this._renderCsatBody ()}
               {this._renderCsatFooter ()}

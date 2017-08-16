@@ -16,13 +16,16 @@ define ("components/commons/viewHeader",
       propTypes: {
         title: PropTypes.string.isRequired,
         showBackBtn: PropTypes.bool,
-        onBackBtnClick: PropTypes.func
+        showCloseBtn: PropTypes.bool,
+        onBackBtnClick: PropTypes.func,
+        onCloseBtnClick: PropTypes.func
       },
 
       render () {
         return (
           <div className="hs-header">
             {this._renderTitle ()}
+            {this._renderCloseButton ()}
           </div>
         );
       },
@@ -40,11 +43,45 @@ define ("components/commons/viewHeader",
         }
 
         return (
-          <a className="hs-header__link" onClick={this.props.onBackBtnClick}>
+          <a className="hs-header__link" onClick={this._onBackBtnClick}>
             <i className="ion-chevron-left hs-header__back-icon" />
             {titleText}
           </a>
         );
+      },
+
+      /**
+       * Render close button
+       */
+      _renderCloseButton () {
+        if (!this.props.showCloseBtn) {
+          return null;
+        }
+
+        // @TODO: Update css to correct the alignment of buttons.
+        return (
+          <a className="hs-header__link" onClick={this._onCloseBtnClick}>
+            <i className="ion-cross hs-header__close-icon" />
+          </a>
+        );
+      },
+
+      /**
+       * Click handler for back button.
+       */
+      _onBackBtnClick () {
+        if (this.props.onBackBtnClick) {
+          this.props.onBackBtnClick ();
+        }
+      },
+
+      /**
+       * Click handler for close button.
+       */
+      _onCloseBtnClick () {
+        if (this.props.onCloseBtnClick) {
+          this.props.onCloseBtnClick ();
+        }
       }
     });
   }
