@@ -43,7 +43,8 @@ define ("reducers/appState",
         answerBot: PRE_CHAT_STATE.ANSWER_BOT.INITIAL,
         infoBot: PRE_CHAT_STATE.INFO_BOT.INITIAL
       },
-      resetTimeout: DEFAULT_RESET_TIMEOUT
+      resetTimeout: DEFAULT_RESET_TIMEOUT,
+      browserIsMobile: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -131,6 +132,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_USER_PROFILE_ID:
           return update (state, {
             userProfileId: {$set: action.profileId}
+          });
+
+        case ACTION_TYPES.SET_MOBILE_INFO:
+          return update (state, {
+            browserIsMobile: {$set: action.browserIsMobile}
           });
 
         default:

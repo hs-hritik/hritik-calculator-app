@@ -25,15 +25,17 @@ define ("actions/appState",
     "actions/entities",
     "actions/chatView",
     "actions/batch",
+    "actions/actionCreators",
     "utils/postMessage",
+    "utils/browser",
     "extras/postSdkMessage",
     "components/app"
   ],
   function (ACTION_TYPES, routes, EVENT_TYPES, APP_STATE_CONSTANTS,
     CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
     chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils, uuidGenerator,
-    throttle, store, entitiesActions, chatViewActions, batchActions,
-    postMessage, postSdkMessage, app) {
+    throttle, store, entitiesActions, chatViewActions, batchActions, actionCreators,
+    postMessage, browserUtils, postSdkMessage, app) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -274,8 +276,13 @@ define ("actions/appState",
 
         getWmConfig (domain, platformId, {
           onSuccess: (response) => {
-            // Set the config values to the store
-            dispatch (setWmConfigValues (response));
+            dispatch (
+              batchActions ([
+                // Set the config values to the store
+                setWmConfigValues (response),
+                actionCreators.setMobileInfo (browserUtils.isMobile ())
+              ])
+            );
 
             // Send the config event loaded back to the client
             postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
@@ -349,9 +356,12 @@ define ("actions/appState",
      * @returns {Object} - the config object for client
      */
     const getClientWmConfig = (response) => {
+      const {browserIsMobile} = store.getState ().appState;
+
       return {
         widgetEnabled: response.widget_enabled,
-        primaryColor: response.appearance.primary_color
+        primaryColor: response.appearance.primary_color,
+        browserIsMobile
       };
     };
 

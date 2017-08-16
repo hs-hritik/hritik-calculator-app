@@ -78,7 +78,24 @@
     "border": "none",
     "border-radius": "8px",
     "z-index": "9999999",
+    "overflow":"hidden",
     "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)",
+    "display": "none"
+  };
+
+  const MESSENGER_IFRAME_MOBILE_STYLES = {
+    "position": "fixed",
+    "top": "0px",
+    "left": "0px",
+    "bottom": "0px",
+    "right": "0px",
+    "width": "100%",
+    "height": "100%",
+    "border": "none",
+    "margin": 0,
+    "padding": 0,
+    "overflow": "hidden",
+    "z-index": 999999,
     "display": "none"
   };
 
@@ -196,7 +213,6 @@
    */
   const createWebSdkIframe = () => {
     const iframe = doc.createElement ("iframe");
-    setStyle (iframe, MESSENGER_IFRAME_STYLES);
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
     return iframe;
@@ -273,6 +289,13 @@
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
     } else {
       destroyWebSdkIframe ();
+      return;
+    }
+
+    if (config.browserIsMobile) {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
+    } else {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
     }
   };
 

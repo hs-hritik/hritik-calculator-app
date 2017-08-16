@@ -41,9 +41,20 @@ define ("actions/actionCreators",
       typing
     });
 
+    /**
+     * Return action to set mobile info
+     * @param {Boolean} browserIsMobile
+     * @returns {Object} - the action object
+     */
+    const setMobileInfo = (browserIsMobile) => ({
+      type: ACTION_TYPES.SET_MOBILE_INFO,
+      browserIsMobile
+    });
+
     return {
       updateActiveView,
       setUserProfileId,
-      toggleAgentTyping
+      toggleAgentTyping,
+      setMobileInfo
     };
   });
