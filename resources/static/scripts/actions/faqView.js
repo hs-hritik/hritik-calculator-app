@@ -15,11 +15,11 @@ define ("actions/faqView",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/xhr",
-    "actions/appState",
+    "actions/actionCreators",
     "actions/entities"
   ],
   function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, xhr, entitySchema,
-    entityHelpers, xhrHelpers, appStateActions, entitiesActions) {
+    entityHelpers, xhrHelpers, actionCreators, entitiesActions) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -57,7 +57,7 @@ define ("actions/faqView",
 
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (setActiveFaqId (faqId));
-            dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.FAQ));
+            dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
           },
           onFailure: () => {
             // @TODO: Handle failure.
@@ -78,7 +78,7 @@ define ("actions/faqView",
         const faqId = state.faqView.activeFaqId;
         const isFeedbackHelpful = feedback === "yes";
 
-        dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.CHAT));
+        dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
 
         xhr ({
           route: routes.putFaqFeedback (appState.domain, faqId, isFeedbackHelpful),

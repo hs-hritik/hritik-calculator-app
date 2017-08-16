@@ -10,11 +10,11 @@ define ("components/containers/faqView",
     "normalizr",
     "components/faqView",
     "actions/faqView",
-    "actions/appState",
+    "actions/actionCreators",
     "helpers/entitySchema",
     "constants/activeView"
   ],
-  function (normalizr, FaqView, faqViewActions, appStateActions, entitySchema,
+  function (normalizr, FaqView, faqViewActions, actionCreators, entitySchema,
     ACTIVE_VIEW) {
     "use strict";
 
@@ -40,7 +40,7 @@ define ("components/containers/faqView",
           dispatch (faqViewActions.submitFaqFeedback (feedback));
         },
         onBackBtnClick: () => {
-          dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.CHAT));
+          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
         }
       };
     };

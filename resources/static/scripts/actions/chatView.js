@@ -1087,18 +1087,6 @@ define ("actions/chatView",
       };
     };
 
-    /**
-     * Return action to update the active view
-     * @param {String} view - update the active view to
-     * @returns {Object} - the action object
-     */
-    // @TODO: Remove this action creator from here to some common place.
-    // Adding it temporarily because of dependency issues.
-    const updateActiveView = (view) => ({
-      type: ACTION_TYPES.UPDATE_ACTIVE_VIEW,
-      view
-    });
-
     return {
       udpateReplyText,
       submitReply,
@@ -1114,7 +1102,6 @@ define ("actions/chatView",
       startPreChatFeature,
       updateInfoBotFieldValue,
       submitInfoBotField,
-      updateIssueState,
-      updateActiveView
+      updateIssueState
     };
   });

@@ -598,16 +598,6 @@ define ("actions/appState",
     };
 
     /**
-     * Return action to update the active view
-     * @param {String} view - update the active view to
-     * @returns {Object} - the action object
-     */
-    const updateActiveView = (view) => ({
-      type: ACTION_TYPES.UPDATE_ACTIVE_VIEW,
-      view
-    });
-
-    /**
      * Action to update the minimized flag.
      * @param {Boolean} minimized - Whether to set flag to true or false.
      * @returns {Object} - Action
@@ -623,7 +613,6 @@ define ("actions/appState",
       setIdentifier,
       setClientConfig,
       setWmConfig,
-      updateActiveView,
       toggleMinimized,
       reset
     };
