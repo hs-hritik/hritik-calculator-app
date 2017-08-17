@@ -25,7 +25,6 @@ define ("components/viewWrapper",
       },
 
       render () {
-        // @TODO: Add header component.
         return this._renderActiveViewComponent ();
       },
 
@@ -57,7 +56,6 @@ define ("components/viewWrapper",
        * Handler for minimize conversation.
        */
       _onMinimizeConversation () {
-        // @TODO: If state is closed, reset the conversation.
         postSdkMessage.toggleMessenger (true);
       }
     });

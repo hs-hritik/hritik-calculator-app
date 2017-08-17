@@ -796,8 +796,10 @@ define ("actions/chatView",
                 }
               },
               onFailure: () => {
-                // @TODO: Handle faq suggestions xhr failure.
                 dispatch (toggleSystemTyping (false));
+                // If there is any error while fetching faq suggestions,
+                // move to next pre chat feature.
+                dispatch (startNextPreChatFeature ());
               }
             }));
             break;

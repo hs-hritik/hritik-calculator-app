@@ -32,7 +32,6 @@ define ("components/replyBox",
 
       render () {
         const {text, disabled} = this.props;
-        // @TODO: Use store saved values for Reply button and reply placeholder.
         const btnClasses = classes ("hs-button",
                                     "hs-button--hollow",
                                     "hs-button--no-border",

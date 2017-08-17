@@ -80,7 +80,6 @@ define ("actions/appState",
             // Set the identifier in state and localstorage.
             lsHelpers.setUserId (userId);
             dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
-            // @TODO Clear the conversation.
           } else {
             // User A -> User A
             // User id - No action.
@@ -607,10 +606,6 @@ define ("actions/appState",
           },
           onFailure: () => {
             // @TODO: Handler failure.
-            // @TODO: Remove it. Temporary dispatching action to start new conversation
-            // on failure until the code to save conversation in localstorage is done.
-            // This xhr can fail because the identifier is not yet registerd.
-            dispatch (startNewConversation ());
           }
         });
       };
