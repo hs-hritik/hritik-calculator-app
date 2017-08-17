@@ -8,12 +8,22 @@ define ("extras/api",
   [
     "store",
     "constants/eventTypes",
+    "constants/appState",
     "utils/postMessage",
     "actions/appState",
+    "actions/chatView",
     "components/app"
   ],
-  function (store, EVENT_TYPES, postMessage, appStateActions, app) {
+  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, postMessage,
+    appStateActions, chatViewActions, app) {
     "use strict";
+
+    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
+    const ISSUE_CLOSED_STATES = [
+      ISSUE_STATE.RESOLVED,
+      ISSUE_STATE.REJECTED,
+      ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
+    ];
 
     /**
      * Set client and wm configs to the store
@@ -26,12 +36,22 @@ define ("extras/api",
     };
 
     /**
+     * Check if given issue state is closed state or not.
+     * @param {String} issueState
+     * @returns {Boolean} - true is issue state is closed.
+     */
+    const isIssueClosed = (issueState) => {
+      return ISSUE_CLOSED_STATES.indexOf (issueState) !== -1;
+    };
+
+    /**
      * Handle messenger toggle. Mount the top level React component if it's
      * not mounted already. Dispatch the action to update the messenger-
      * minimized flag.
      * @param {Boolean} minimized - If the messenger is in minimized state
      */
     const handleMessengerToggle = (minimized) => {
+      store.dispatch (appStateActions.toggleMinimized (minimized));
       // If the messenger is to be maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
@@ -42,7 +62,13 @@ define ("extras/api",
         postMessage (EVENT_TYPES.SDK_INITIALISED);
       }
 
-      store.dispatch (appStateActions.toggleMinimized (minimized));
+      // If minimized is true, and issue state is closed, reset the conversation.
+      const {issueState} = store.getState ().appState;
+      if (minimized && isIssueClosed (issueState)) {
+        store.dispatch (appStateActions.reset ({
+          skipUser: true
+        }));
+      }
     };
 
     const handleApis = (type, data) => {

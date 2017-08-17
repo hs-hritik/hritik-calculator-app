@@ -7,11 +7,12 @@
 define ("components/containers/csatView",
   [
     "components/csatView",
-    "actions/csatView"
-  ],
-  function (CsatView, csatViewActions) {
-    "use strict";
+    "actions/csatView",
+    "actions/appState"
 
+  ],
+  function (CsatView, csatViewActions, appStateActions) {
+    "use strict";
 
     const mapStateToProps = (state) => {
       const {rating, review, completed} = state.csatView;
@@ -36,8 +37,10 @@ define ("components/containers/csatView",
           dispatch (csatViewActions.updateCsatReview (review));
         },
         onCloseConversation: () => {
-          // @TODO: Call action to reset conversation (when done),
-          // and call event to minimize the wm.
+          dispatch (appStateActions.reset ({
+            skipUser: true,
+            minimizeMessenger: true
+          }));
         }
 
       };

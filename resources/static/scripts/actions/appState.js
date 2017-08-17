@@ -14,13 +14,11 @@ define ("actions/appState",
     "normalizr",
     "helpers/entitySchema",
     "helpers/entity",
-    "helpers/chatView",
     "helpers/xhr",
     "helpers/localStorage",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
-    "gunpowder/utils/throttle",
     "store",
     "actions/entities",
     "actions/chatView",
@@ -28,14 +26,13 @@ define ("actions/appState",
     "actions/actionCreators",
     "utils/postMessage",
     "utils/browser",
-    "extras/postSdkMessage",
-    "components/app"
+    "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, EVENT_TYPES, APP_STATE_CONSTANTS,
     CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
-    chatViewHelpers, xhrHelpers, lsHelper, xhr, objUtils, uuidGenerator,
-    throttle, store, entitiesActions, chatViewActions, batchActions, actionCreators,
-    postMessage, browserUtils, postSdkMessage, app) {
+    xhrHelpers, lsHelpers, xhr, objUtils, uuidGenerator,
+    store, entitiesActions, chatViewActions, batchActions, actionCreators,
+    postMessage, browserUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -58,9 +55,20 @@ define ("actions/appState",
      */
     const setIdentifier = (userId) => {
       return () => {
-        const prevUserId = lsHelper.getUserId ();
+        const prevUserId = lsHelpers.getUserId ();
         // identifier is the uuid (Universally unique identifier)
         const identifier = uuidGenerator ();
+
+        const lastActivityTime = lsHelpers.getLastActivityTime (),
+              {resetTimeout} = store.getState ().appState;
+
+        // If the last activity was done before reset timeout,
+        // use the new identifier.
+        if (lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) {
+          lsHelpers.setUserId (userId);
+          dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
+          return;
+        }
 
         if (isUserIdValid (prevUserId)) {
           if (!isUserIdValid (userId)) {
@@ -71,7 +79,7 @@ define ("actions/appState",
             // User A -> User B
             // Set the userId in localstorage.
             // Set the identifier in state and localstorage.
-            lsHelper.setUserId (userId);
+            lsHelpers.setUserId (userId);
             dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
             // @TODO Clear the conversation.
           } else {
@@ -84,7 +92,7 @@ define ("actions/appState",
           // null -> User A
           // Set the userId in localstorage.
           // If an identifier does not exist, set one in state and localstorage.
-          lsHelper.setUserId (userId);
+          lsHelpers.setUserId (userId);
           dispatchAndSetIdentifier (identifier);
         } else {
           // null -> null
@@ -103,16 +111,16 @@ define ("actions/appState",
      * to be checked if identifier exists.
      */
     const dispatchAndSetIdentifier = (identifier, skipLsCheck) => {
-      if (skipLsCheck || !lsHelper.getIdentifier ()) {
+      if (skipLsCheck || !lsHelpers.getIdentifier ()) {
         store.dispatch (setIdentifierValue (identifier));
-        lsHelper.setIdentifier (identifier);
+        lsHelpers.setIdentifier (identifier);
         // If we are saving a new identifier, that means it's a new user.
         returningUser = false;
       } else {
         // If a new identifier is not set in the state and ls, set the identifier
         // stored in the localstorage to the sate because the initial state
         // does not have an identifier.
-        const currentIdentifier = lsHelper.getIdentifier ();
+        const currentIdentifier = lsHelpers.getIdentifier ();
         store.dispatch (setIdentifierValue (currentIdentifier));
         // If we are using the already saved identifier,
         // that means it's a returning user.
@@ -124,18 +132,13 @@ define ("actions/appState",
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
-      const lastActivityTime = lsHelper.getLastActivityTime (),
-            {resetTimeout} = store.getState ().appState;
-
-      if ((lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) ||
-           !returningUser) {
-        // If the last activity was done before reset timeout,
-        // or if it's a new user, start a new conversation.
-        store.dispatch (startNewConversation ());
-      } else {
+      if (returningUser) {
         // If it's a returning user, that means there could be an
         // ongoing conversation.
         handleOngoingConversation ();
+      } else {
+        // If it's a new user, start a new conversation.
+        store.dispatch (startNewConversation ());
       }
     };
 
@@ -146,18 +149,26 @@ define ("actions/appState",
      * - Dispatch action to reset the store.
      * - Post reset message to parent.
      * - Clear localstorage.
-     * - Unmount the application.
+     * - Minimize messenger if options.minimizeMessenger is true.
+     * @param {Object} [options]
+     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
+     *                                       By default, user related data will be reset.
+     * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the messenger or not.
+     *                                                Defaults to false.
      */
-    const reset = () => {
-      return (dispatch) => {
+    const reset = (options = {}) => {
+      return (dispatch, getState) => {
         chatViewActions.stopPollingForMessages ();
-        dispatch ({
-          type: ACTION_TYPES.RESET
-        });
+        dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
-        // @TODO: Update lsHelper to reset user related data also.
-        lsHelper.reset ();
-        app.unmount ();
+        lsHelpers.reset ({
+          skipUser: options.skipUser
+        });
+
+        const {minimized} = getState ().appState;
+        if (options.minimizeMessenger && !minimized) {
+          postSdkMessage.toggleMessenger (true);
+        }
       };
     };
 
@@ -165,7 +176,7 @@ define ("actions/appState",
      * Handle ongoing conversation.
      */
     const handleOngoingConversation = () => {
-      const issueState = lsHelper.getIssueState ();
+      const issueState = lsHelpers.getIssueState ();
       switch (issueState) {
         case ISSUE_STATE.PRE_CHAT:
           rehydrate ();
@@ -173,7 +184,7 @@ define ("actions/appState",
           break;
 
         case ISSUE_STATE.ACTIVE:
-          const activeIssueId = lsHelper.getActiveIssueId ();
+          const activeIssueId = lsHelpers.getActiveIssueId ();
           // If there is an active issue id in localstorage, set the activeIssueId in state,
           // and start polling for new messages.
           if (activeIssueId) {
@@ -206,16 +217,16 @@ define ("actions/appState",
      * and call action to update the current state.
      */
     const rehydrate = () => {
-      const issues = lsHelper.getEntities ("ISSUES"),
-            messages = lsHelper.getEntities ("MESSAGES"),
+      const issues = lsHelpers.getEntities ("ISSUES"),
+            messages = lsHelpers.getEntities ("MESSAGES"),
             // @TODO: Do optimization
             // - Get pre-chat related data only if issue state is pre-chat
-            preChatFeatureIndex = lsHelper.getPreChatFeatureIndex (),
-            preChatFeatureState = lsHelper.getPreChatFeatureState (),
-            infoBotCurrentField = lsHelper.getInfoBotCurrentField (),
-            issueState = lsHelper.getIssueState (),
-            userProfileId = lsHelper.getUserProfileId (),
-            replyText = lsHelper.getReplyText ();
+            preChatFeatureIndex = lsHelpers.getPreChatFeatureIndex (),
+            preChatFeatureState = lsHelpers.getPreChatFeatureState (),
+            infoBotCurrentField = lsHelpers.getInfoBotCurrentField (),
+            issueState = lsHelpers.getIssueState (),
+            userProfileId = lsHelpers.getUserProfileId (),
+            replyText = lsHelpers.getReplyText ();
 
       if (issues || messages) {
         store.dispatch ({
@@ -538,7 +549,9 @@ define ("actions/appState",
      */
     const startNewConversation = () => {
       return (dispatch, getState) => {
-        lsHelper.reset ();
+        lsHelpers.reset ({
+          skipUser: true
+        });
         const state = getState ();
         // Create dummy issue entity.
         dispatch (
