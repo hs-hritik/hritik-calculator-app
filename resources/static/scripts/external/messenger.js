@@ -26,7 +26,6 @@
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_INITIALISED: "sdk-initialised",
     SDK_CONFIG_LOADED: "sdk-config-loaded",
-    SDK_ISSUES_LOADED: "sdk-issues-loaded",
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
     SDK_RESET: "sdk-reset",
     UPDATE_UNREAD_COUNT: "update-unread-count",
@@ -354,12 +353,6 @@
 
         case EVENT_TYPES.SDK_INITIALISED:
           fireWebSdkReadyEvent ();
-          break;
-
-        case EVENT_TYPES.SDK_ISSUES_LOADED:
-          if (data.hasActiveIssue) {
-            // @TODO: Show some indication to the user.
-          }
           break;
 
         case EVENT_TYPES.SDK_TOGGLE_MESSENGER:

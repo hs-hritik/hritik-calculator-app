@@ -607,9 +607,6 @@ define ("actions/appState",
             } else {
               dispatch (startNewConversation ());
             }
-            postMessage (EVENT_TYPES.SDK_ISSUES_LOADED, {
-              hasActiveIssue: !!activeIssueId
-            });
           },
           onFailure: () => {
             // @TODO: Handler failure.
