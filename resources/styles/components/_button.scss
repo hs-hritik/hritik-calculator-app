@@ -39,7 +39,7 @@
       ),
       active: (
         primary: color(primary, x-dark),
-        secondary: color(secondary, x-dark),
+        secondary: color(secondary, dark),
       )
     ),
     hollow: (
@@ -49,11 +49,11 @@
       ),
       hover:(
         primary: color(primary, xx-light),
-        secondary: color(secondary, xx-light),
+        secondary: color(secondary, light),
       ),
       active: (
         primary: color(primary, x-light),
-        secondary: color(secondary, x-light),
+        secondary: color(secondary, light),
       )
     )
   );

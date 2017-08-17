@@ -13,7 +13,7 @@
 @include component(reply-box) {
 
   $border-color: color(border, base);
-  $textarea-bg-color: color(bg, xx-light);
+  $textarea-bg-color: color(bg, white);
   $submit-btn-color: color(text, light);
 
   .hs-reply-box {
