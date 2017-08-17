@@ -467,7 +467,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
-        const {dummyIssueId} = appState;
+        const {dummyIssueId, userId} = appState;
         const dummyIssue = denormalize (
           appState.dummyIssueId,
           entitySchema.issue,
@@ -480,13 +480,19 @@ define ("actions/chatView",
 
         dispatch (disableReplyBox ());
 
+        const xhrData = {
+          "identifier": appState.identifier,
+          "platform-id": appState.platformId,
+          "message-body": firstUserMsg.body
+        };
+
+        if (userId) {
+          xhrData ["user-id"] = userId;
+        }
+
         xhr ({
           route: routes.postIssue (appState.domain),
-          data: {
-            "identifier": appState.identifier,
-            "platform-id": appState.platformId,
-            "message-body": firstUserMsg.body
-          },
+          data: xhrData,
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: (response) => {
