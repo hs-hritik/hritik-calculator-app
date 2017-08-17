@@ -190,9 +190,10 @@ define ("actions/appState",
             store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
             chatViewActions.startPollingForMessages ();
           } else {
-            // @TODO: Ideally, this shouldn't be the case.
-            // Explore if there can be some edge case which would lead to this condition,
-            // and handle accordingly.
+            // Ideally, this shouldn't be the case because we are first setting the
+            // active issue id, and then we are changing the issue state to active.
+            // But to be on safer side, start new conversation if there is no active issue id.
+            store.dispatch (startNewConversation ());
           }
           break;
 
