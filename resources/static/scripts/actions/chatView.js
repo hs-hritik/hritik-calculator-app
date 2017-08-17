@@ -11,7 +11,6 @@ define ("actions/chatView",
     "constants/actionTypes",
     "constants/routes",
     "constants/chatView",
-    "constants/eventTypes",
     "constants/activeView",
     "constants/message",
     "constants/appState",
@@ -26,13 +25,13 @@ define ("actions/chatView",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
-    "utils/postMessage"
+    "extras/postSdkMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
+    ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postMessage) {
+    xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
     "use strict";
 
     const {normalize, denormalize} = normalizr,
@@ -159,13 +158,12 @@ define ("actions/chatView",
      */
     const markMessagesSeen = () => {
       return (dispatch, getState) => {
-        const {appState} = getState ();
+        const {appState, chatView} = getState ();
 
-        // @TODO: Confirm if we should skip this postMessage call if unread count is already zero.
-        postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
-          count: 0
-        });
-        dispatch (setUnreadCount (0));
+        if (chatView.unreadCount !== 0) {
+          dispatch (setUnreadCount (0));
+          postSdkMessage.updateUnreadCount (0);
+        }
 
         xhr ({
           route: routes.putMessagesSeen (appState.domain, appState.activeIssueId),
@@ -223,10 +221,7 @@ define ("actions/chatView",
             } else {
               const unreadCount = response.messages.length + latestState.chatView.unreadCount;
               dispatch (setUnreadCount (unreadCount));
-
-              postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
-                count: unreadCount
-              });
+              postSdkMessage.updateUnreadCount (unreadCount);
             }
           }
 

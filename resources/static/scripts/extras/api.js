@@ -59,6 +59,7 @@ define ("extras/api",
         app.init ();
         // @TODO: Temp. SDK_INITIALIZED wouldn't be required when client called
         // APIs are queued and executed subsequently.
+        // Note: If we have to keep this event, move it to postSdkMessage file.
         postMessage (EVENT_TYPES.SDK_INITIALISED);
       }
 

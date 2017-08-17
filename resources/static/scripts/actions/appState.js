@@ -8,7 +8,6 @@ define ("actions/appState",
   [
     "constants/actionTypes",
     "constants/routes",
-    "constants/eventTypes",
     "constants/appState",
     "constants/chatView",
     "normalizr",
@@ -28,7 +27,7 @@ define ("actions/appState",
     "utils/browser",
     "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, EVENT_TYPES, APP_STATE_CONSTANTS,
+  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS,
     CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
     xhrHelpers, lsHelpers, xhr, objUtils, uuidGenerator,
     store, entitiesActions, chatViewActions, batchActions, actionCreators,
@@ -296,9 +295,7 @@ define ("actions/appState",
             );
 
             // Send the config event loaded back to the client
-            postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
-              wmConfig: getClientWmConfig (response)
-            });
+            postSdkMessage.wmConfig (getClientWmConfig (response));
 
             if (response.widget_enabled) {
               // A side-effect of getting the web messenger config would be to

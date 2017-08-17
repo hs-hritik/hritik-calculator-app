@@ -29,10 +29,38 @@ function (EVENT_TYPES, postMessage) {
     postMessage (EVENT_TYPES.SDK_RESET);
   };
 
-  // @TODO: Move other postMessage calls to this module.
+  /**
+   * Post message to update unread count
+   * @param {Number} unreadCount
+   */
+  const updateUnreadCount = (unreadCount) => {
+    postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
+      count: unreadCount
+    });
+  };
+
+  /**
+   * Post message to pass wm config.
+   * @param {Object} config
+   */
+  const wmConfig = (config) => {
+    postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
+      wmConfig: config
+    });
+  };
+
+  /**
+   * Post sdk js loaded event.
+   */
+  const jsLoaded = () => {
+    postMessage (EVENT_TYPES.SDK_JS_LOADED);
+  };
 
   return {
     toggleMessenger,
-    reset
+    reset,
+    updateUnreadCount,
+    wmConfig,
+    jsLoaded
   };
 });
