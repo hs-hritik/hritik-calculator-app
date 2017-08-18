@@ -24,7 +24,7 @@ define ("reducers/chatView",
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
-      endUserFirstMsg: null,
+      endUserFirstMsgId: null,
       unreadCount: 0,
       infoBot: {
         fieldsRequired: ["name", "email"],
@@ -65,6 +65,9 @@ define ("reducers/chatView",
             updateObj.replyBox = {
               value: {$set: action.data.replyText}
             };
+          }
+          if (action.data.endUserFirstMsgId) {
+            updateObj.endUserFirstMsgId = {$set: action.data.endUserFirstMsgId};
           }
           return update (state, updateObj);
 
@@ -159,9 +162,9 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE:
+        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID:
           return update (state, {
-            endUserFirstMsg: {$set: action.msg}
+            endUserFirstMsgId: {$set: action.id}
           });
 
         default:

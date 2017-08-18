@@ -24,6 +24,7 @@ define ("helpers/localStorage",
       PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
       PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
       INFO_BOT_CURRENT_FIELD: "info_bot_current_field",
+      END_USER_FIRST_MSG_ID: "end_user_first_msg_id",
       LAST_ACTIVITY_TIME: "last_activity_time",
       REPLY_TEXT: "reply_text"
     };
@@ -198,6 +199,20 @@ define ("helpers/localStorage",
     const getReplyText = () => lsUtils.getItem (KEYS.REPLY_TEXT);
 
     /**
+     * Set end user first message id.
+     * @param {String} id
+     */
+    const setEndUserFirstMsgId = (id) => {
+      lsUtils.setItem (KEYS.END_USER_FIRST_MSG_ID, id);
+    };
+
+    /**
+     * Get end user first message id.
+     * @returns {String} id
+     */
+    const getEndUserFirstMsgId = () => lsUtils.getItem (KEYS.END_USER_FIRST_MSG_ID);
+
+    /**
      * Clear previously saved state from the localstorage.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
@@ -235,6 +250,8 @@ define ("helpers/localStorage",
       setLastActivityTime,
       getLastActivityTime,
       setReplyText,
-      getReplyText
+      getReplyText,
+      setEndUserFirstMsgId,
+      getEndUserFirstMsgId
     };
   });

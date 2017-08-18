@@ -17,6 +17,7 @@ define ("actions/chatView",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "gunpowder/utils/schema",
+    "gunpowder/utils/object",
     "actions/entities",
     "actions/batch",
     "actions/actionCreators",
@@ -29,7 +30,7 @@ define ("actions/chatView",
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
-    xhr, arrayUtils, schema, entitiesActions, batchActions,
+    xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
     xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
     "use strict";
@@ -351,13 +352,14 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to set end user first message.
+     * Action to set end user first message id.
+     * @param {String} id
      * @returns {Object} - action
      */
-    const setEndUserFirstMessage = (msg) => {
+    const setEndUserFirstMessageId = (id) => {
       return {
-        type: ACTION_TYPES.SET_END_USER_FIRST_MESSAGE,
-        msg
+        type: ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID,
+        id
       };
     };
 
@@ -406,7 +408,7 @@ define ("actions/chatView",
                 dispatch (
                   batchActions ([
                     setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
-                    setEndUserFirstMessage (msg),
+                    setEndUserFirstMessageId (msg.id),
                     udpateReplyText ("")
                   ])
                 );
@@ -781,17 +783,24 @@ define ("actions/chatView",
      */
     const startAnswerBot = () => {
       return (dispatch, getState) => {
-        const {appState, chatView} = getState (),
+        const {appState, chatView, entities} = getState (),
               featureState = appState.preChatFeatureState.answerBot;
 
         switch (featureState) {
           case ANSWER_BOT.INITIAL:
+            let searchText;
+            const {endUserFirstMsgId} = chatView;
+
+            // Get faq suggestions for the end user first message.
+            objUtils.forEachKey (entities.messages, (id, msg) => {
+              if (id === endUserFirstMsgId) {
+                searchText = msg.body;
+              }
+            });
+
             dispatch (toggleSystemTyping (true));
-            // Get faq suggestions for the given user message.
-            // @TODO: Instead of saving the whole endUserFirstMsg,
-            // save only id, and save that in localstorage
-            // (to handle the refresh case when faqs are being fetched)
-            dispatch (getFaqSuggestions (chatView.endUserFirstMsg.body, {
+
+            dispatch (getFaqSuggestions (searchText, {
               onSuccess: (faqs) => {
                 // If there are no faq suggestions, move to next pre-chat feature,
                 // otherwise create faq message.

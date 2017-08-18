@@ -105,6 +105,10 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.SET_USER_PROFILE_ID:
           lsHelpers.setUserProfileId (action.profileId);
           break;
+
+        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID:
+          lsHelpers.setEndUserFirstMsgId (action.id);
+          break;
       }
     };
 

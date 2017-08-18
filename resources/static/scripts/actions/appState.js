@@ -225,7 +225,8 @@ define ("actions/appState",
             infoBotCurrentField = lsHelpers.getInfoBotCurrentField (),
             issueState = lsHelpers.getIssueState (),
             userProfileId = lsHelpers.getUserProfileId (),
-            replyText = lsHelpers.getReplyText ();
+            replyText = lsHelpers.getReplyText (),
+            endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId ();
 
       if (issues || messages) {
         store.dispatch ({
@@ -240,7 +241,8 @@ define ("actions/appState",
             infoBotCurrentField,
             issueState,
             replyText,
-            userProfileId
+            userProfileId,
+            endUserFirstMsgId
           }
         });
       }
