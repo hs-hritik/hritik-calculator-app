@@ -9,13 +9,11 @@ define ("components/containers/faqView",
   [
     "normalizr",
     "components/faqView",
-    "actions/faqView",
-    "actions/actionCreators",
+    "actions/chatView",
     "helpers/entitySchema",
     "constants/activeView"
   ],
-  function (normalizr, FaqView, faqViewActions, actionCreators, entitySchema,
-    ACTIVE_VIEW) {
+  function (normalizr, FaqView, chatViewActions, entitySchema) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -37,7 +35,7 @@ define ("components/containers/faqView",
     const mapDispatchToProps = (dispatch) => {
       return {
         onBackBtnClick: () => {
-          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
+          dispatch (chatViewActions.switchToChatView ());
         }
       };
     };

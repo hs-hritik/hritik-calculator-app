@@ -177,6 +177,23 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to switch to chat view.
+     * Also mark messages seen if there are any unread messages.
+     * @returns {Function} - action
+     */
+    const switchToChatView = () => {
+      return (dispatch, getState) => {
+        const {unreadCount} = getState ().chatView;
+
+        if (unreadCount !== 0) {
+          store.dispatch (markMessagesSeen ());
+        }
+
+        dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
+      };
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -214,9 +231,10 @@ define ("actions/chatView",
               setActiveIssueMsgCursor (response.messages_cursor)
             ]));
 
-            // If the chat view is active, that means the user has seen the messages.
-            // @TODO: Set unread count to zero when active view changes to chat.
-            if (ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
+            // If the chat view is active, and the messenger is not in minimized state,
+            // that means the user has seen the messages.
+            if (!latestState.appState.minimized &&
+                ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
               dispatch (markMessagesSeen ());
             } else {
               const unreadCount = response.messages.length + latestState.chatView.unreadCount;
@@ -1125,6 +1143,8 @@ define ("actions/chatView",
       startPreChatFeature,
       updateInfoBotFieldValue,
       submitInfoBotField,
-      updateIssueState
+      updateIssueState,
+      markMessagesSeen,
+      switchToChatView
     };
   });

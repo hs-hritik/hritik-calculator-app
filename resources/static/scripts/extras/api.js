@@ -9,12 +9,13 @@ define ("extras/api",
     "store",
     "constants/eventTypes",
     "constants/appState",
-    "utils/postMessage",
+    "constants/activeView",
+    "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
     "components/app"
   ],
-  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, postMessage,
+  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, postSdkMessage,
     appStateActions, chatViewActions, app) {
     "use strict";
 
@@ -38,7 +39,7 @@ define ("extras/api",
     /**
      * Check if given issue state is closed state or not.
      * @param {String} issueState
-     * @returns {Boolean} - true is issue state is closed.
+     * @returns {Boolean} - true if issue state is closed.
      */
     const isIssueClosed = (issueState) => {
       return ISSUE_CLOSED_STATES.indexOf (issueState) !== -1;
@@ -46,26 +47,31 @@ define ("extras/api",
 
     /**
      * Handle messenger toggle. Mount the top level React component if it's
-     * not mounted already. Dispatch the action to update the messenger-
-     * minimized flag.
+     * not mounted already and post sdk initialized event.
+     * Dispatch the action to update the messenger-minimized flag and mark messages seen.
      * @param {Boolean} minimized - If the messenger is in minimized state
      */
     const handleMessengerToggle = (minimized) => {
       store.dispatch (appStateActions.toggleMinimized (minimized));
-      // If the messenger is to be maximized and
+      // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
-      if (!minimized && !app.isMounted ()) {
-        app.init ();
-        // @TODO: Temp. SDK_INITIALIZED wouldn't be required when client called
-        // APIs are queued and executed subsequently.
-        // Note: If we have to keep this event, move it to postSdkMessage file.
-        postMessage (EVENT_TYPES.SDK_INITIALISED);
-      }
+      const {appState, chatView} = store.getState ();
 
-      // If minimized is true, and issue state is closed, reset the conversation.
-      const {issueState} = store.getState ().appState;
-      if (minimized && isIssueClosed (issueState)) {
+      if (!minimized) {
+        if (!app.isMounted ()) {
+          app.init ();
+          postSdkMessage.initialized ();
+        }
+
+        // If unreadCount isn't zero and active view is chat view,
+        // dispatch action to mark messages seen.
+        if (chatView.unreadCount !== 0 && ACTIVE_VIEW.CHAT === appState.activeView) {
+          store.dispatch (chatViewActions.markMessagesSeen ());
+        }
+
+      } else if (isIssueClosed (appState.issueState)) {
+        // If minimized is true, and issue state is closed, reset the conversation.
         store.dispatch (appStateActions.reset ({
           skipUser: true
         }));
