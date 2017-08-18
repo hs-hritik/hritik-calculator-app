@@ -13,54 +13,13 @@ define ("components/faqView",
   function (classes, ViewHeader) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    /*
-    const FaqViewFooter = React.createClass ({
-      displayName: "FaqViewFooter",
-      propTypes: {
-        text: PropTypes.shape ({
-          faqFooter: PropTypes.string.isRequired,
-          faqFooterHelpfulBtn: PropTypes.string.isRequired,
-          faqFooterNotHelpfulBtn: PropTypes.string.isRequired
-        }).isRequired,
-        onFeedbackClick: PropTypes.func.isRequired
-      },
-
-      render () {
-        const {text, onFeedbackClick} = this.props;
-        const btnClasses = classes ("hs-button",
-                                    "hs-button--hollow",
-                                    "hs-button--no-border",
-                                    "hs-button--xx-small");
-
-        return (
-          <div className="hs-footer">
-            <div className="hs-faq-footer">
-              <div>{text.faqFooter}</div>
-              <div>
-                <button className={btnClasses}
-                        onClick={onFeedbackClick.bind (this, "yes")}>
-                  {text.faqFooterHelpfulBtn}
-                </button>
-                <button className={btnClasses}
-                        onClick={onFeedbackClick.bind (this, "no")}>
-                  {text.faqFooterNotHelpfulBtn}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-    });
-    */
+    const {PropTypes} = React;
 
     return React.createClass ({
       displayName: "FaqView",
       propTypes: {
         title: PropTypes.string.isRequired,
         body: PropTypes.string.isRequired,
-        onFaqFeedbackClick: PropTypes.func.isRequired,
         onBackBtnClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqViewHeader: PropTypes.string.isRequired

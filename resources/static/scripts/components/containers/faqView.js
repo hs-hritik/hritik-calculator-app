@@ -36,9 +36,6 @@ define ("components/containers/faqView",
 
     const mapDispatchToProps = (dispatch) => {
       return {
-        onFaqFeedbackClick: (feedback) => {
-          dispatch (faqViewActions.submitFaqFeedback (feedback));
-        },
         onBackBtnClick: () => {
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
         }

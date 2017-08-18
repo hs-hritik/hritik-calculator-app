@@ -66,39 +66,7 @@ define ("actions/faqView",
       };
     };
 
-    /**
-     * Action to submit the FAQ feedback - whether it was helpful or not.
-     * @param {String} feedback - The feedback value ("yes"/"no")
-     * @returns {Object} - action
-     */
-    const submitFaqFeedback = (feedback) => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-        const faqId = state.faqView.activeFaqId;
-        const isFeedbackHelpful = feedback === "yes";
-
-        dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
-
-        xhr ({
-          route: routes.putFaqFeedback (appState.domain, faqId, isFeedbackHelpful),
-          data: {
-            identifier: appState.identifier
-          },
-          method: "PUT",
-          headers: xhrHelpers.getCommonHeaders (),
-          onSuccess: () => {
-            // @TODO: Handle success.
-          },
-          onFailure: () => {
-            // @TODO: Handle failure.
-          }
-        });
-      };
-    };
-
     return {
-      getFaq,
-      submitFaqFeedback
+      getFaq
     };
   });
