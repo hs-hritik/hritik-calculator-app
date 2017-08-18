@@ -12,21 +12,20 @@ define ("helpers/localStorage",
   function (lsUtils, objUtils) {
     "use strict";
 
-    // @TODO: Change the keys to something cryptic.
     const KEYS = {
-      USER_ID: "userId",
-      IDENTIFIER: "identifier",
-      ACTIVE_ISSUE_ID: "active_issue_id",
-      USER_PROFILE_ID: "user_profile_id",
-      ENTITIES_ISSUES: "issues_entities",
-      ENTITIES_MESSAGES: "messages_entities",
-      ISSUE_STATE: "issue_state",
-      PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
-      PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
-      INFO_BOT_CURRENT_FIELD: "info_bot_current_field",
-      END_USER_FIRST_MSG_ID: "end_user_first_msg_id",
-      LAST_ACTIVITY_TIME: "last_activity_time",
-      REPLY_TEXT: "reply_text"
+      USER_ID: "ui",
+      IDENTIFIER: "i",
+      ACTIVE_ISSUE_ID: "aii",
+      USER_PROFILE_ID: "upi",
+      ENTITIES_ISSUES: "ei",
+      ENTITIES_MESSAGES: "em",
+      ISSUE_STATE: "is",
+      PRE_CHAT_FEATURE_INDEX: "pcfi",
+      PRE_CHAT_FEATURE_STATE: "pcfs",
+      INFO_BOT_CURRENT_FIELD: "ibcf",
+      END_USER_FIRST_MSG_ID: "eufmi",
+      LAST_ACTIVITY_TIME: "lat",
+      REPLY_TEXT: "rt"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
