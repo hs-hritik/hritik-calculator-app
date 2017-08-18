@@ -71,7 +71,7 @@ define ("helpers/localStorage",
      */
     const getEntities = (entityType) => {
       const entityKey = `ENTITIES_${entityType}`;
-      return lsUtils.getItem (entityKey, true);
+      return lsUtils.getItem (KEYS [entityKey], true);
     };
 
     /**
@@ -83,7 +83,7 @@ define ("helpers/localStorage",
       const entityKey = `ENTITIES_${entityType}`;
       const currentEntities = getEntities (entityType) || {};
       const newEntities = objUtils.shallowMerge (currentEntities, entities);
-      lsUtils.setItem (entityKey, newEntities);
+      lsUtils.setItem (KEYS [entityKey], newEntities);
     };
 
     /**
