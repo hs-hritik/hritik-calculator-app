@@ -21,7 +21,7 @@ define ("components/containers/faqView",
     const mapStateToProps = (state) => {
       const activeFaqId = state.faqView.activeFaqId;
       const faq = denormalize (activeFaqId, entitySchema.faq, state.entities);
-      // @TODO Handle language
+      // Right now, we only support English FAQs
       const faqEn = faq.translations.en;
       const {title, body} = faqEn;
 

@@ -21,11 +21,15 @@ define ("extras/lsMiddleware",
 
     const throttledSetLastActivityTime = throttle (
       lsHelpers.setLastActivityTime,
-      LAST_ACTIVITY_THROTTLE_TIME
+      LAST_ACTIVITY_THROTTLE_TIME, {
+        leading: false
+      }
     );
 
     const REPLY_TEXT_THROTTLE_TIME = 3000;           // 3 seconds
-    const throttledSetReplyText = throttle (lsHelpers.setReplyText, REPLY_TEXT_THROTTLE_TIME);
+    const throttledSetReplyText = throttle (lsHelpers.setReplyText, REPLY_TEXT_THROTTLE_TIME, {
+      leading: false
+    });
 
     /**
      * Save the required state in localStorage.
