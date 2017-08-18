@@ -25,7 +25,6 @@ define ("actions/chatView",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr",
-    "helpers/localStorage",
     "helpers/liveUpdates",
     "utils/postMessage"
   ],
@@ -33,7 +32,7 @@ define ("actions/chatView",
     EVENT_TYPES, ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, lsHelper, liveUpdatesHelpers, postMessage) {
+    xhrHelpers, liveUpdatesHelpers, postMessage) {
     "use strict";
 
     const {normalize, denormalize} = normalizr,
@@ -112,6 +111,10 @@ define ("actions/chatView",
      * Also clear previous timeout and xhr, if any.
      */
     const stopPollingForMessages = () => {
+      if (!pollingEnabled) {
+        return;
+      }
+
       window.clearTimeout (fetchMessagesTimer);
 
       if (fetchMessagesXhr) {

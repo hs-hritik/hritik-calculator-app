@@ -16,12 +16,10 @@ define ("helpers/localStorage",
     const KEYS = {
       USER_ID: "userId",
       IDENTIFIER: "identifier",
-      ENTITIES: {
-        ISSUES: "issues_entities",
-        MESSAGES: "messages_entities"
-      },
       ACTIVE_ISSUE_ID: "active_issue_id",
       USER_PROFILE_ID: "user_profile_id",
+      ENTITIES_ISSUES: "issues_entities",
+      ENTITIES_MESSAGES: "messages_entities",
       ISSUE_STATE: "issue_state",
       PRE_CHAT_FEATURE_INDEX: "pre_chat_feature_index",
       PRE_CHAT_FEATURE_STATE: "pre_chat_feature_state",
@@ -29,6 +27,8 @@ define ("helpers/localStorage",
       LAST_ACTIVITY_TIME: "last_activity_time",
       REPLY_TEXT: "reply_text"
     };
+
+    const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
 
     /**
      * Get userId
@@ -60,7 +60,7 @@ define ("helpers/localStorage",
      * @param {String} - userId
      */
     const setIdentifier = (identifier) => {
-      // @TODO Change the key to something cryptic.
+      lsUtils.removeItem (KEYS.USER_PROFILE_ID);
       lsUtils.setItem (KEYS.IDENTIFIER, identifier);
     };
 
@@ -70,7 +70,8 @@ define ("helpers/localStorage",
      * @returns {Object} - entities
      */
     const getEntities = (entityType) => {
-      return lsUtils.getItem (KEYS.ENTITIES [entityType], true);
+      const entityKey = `ENTITIES_${entityType}`;
+      return lsUtils.getItem (entityKey, true);
     };
 
     /**
@@ -79,9 +80,10 @@ define ("helpers/localStorage",
      * @param {Object} entities - the entities which have to be saved to localstorage.
      */
     const setEntities = (entityType, entities = {}) => {
+      const entityKey = `ENTITIES_${entityType}`;
       const currentEntities = getEntities (entityType) || {};
       const newEntities = objUtils.shallowMerge (currentEntities, entities);
-      lsUtils.setItem (KEYS.ENTITIES [entityType], newEntities);
+      lsUtils.setItem (entityKey, newEntities);
     };
 
     /**
@@ -197,16 +199,16 @@ define ("helpers/localStorage",
 
     /**
      * Clear previously saved state from the localstorage.
+     * @param {Object} [options]
+     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
+     *                                       By default, user related data will be reset.
      */
-    const reset = () => {
-      lsUtils.removeItem (KEYS.ENTITIES.ISSUES);
-      lsUtils.removeItem (KEYS.ENTITIES.MESSAGES);
-      lsUtils.removeItem (KEYS.ACTIVE_ISSUE_ID);
-      // @TODO: Remove USER_PROFILE_ID key when saving new identifier.
-      lsUtils.removeItem (KEYS.ISSUE_STATE);
-      lsUtils.removeItem (KEYS.PRE_CHAT_FEATURE_INDEX);
-      lsUtils.removeItem (KEYS.PRE_CHAT_FEATURE_STATE);
-      lsUtils.removeItem (KEYS.INFO_BOT_CURRENT_FIELD);
+    const reset = (options = {}) => {
+      objUtils.forEachKey (KEYS, (key) => {
+        if (!(options.skipUser && (USER_KEYS.indexOf (key) !== -1))) {
+          lsUtils.removeItem (key);
+        }
+      });
     };
 
     return {

@@ -51,10 +51,19 @@ define ("actions/actionCreators",
       browserIsMobile
     });
 
+    /**
+     * Return action to reset state
+     * @returns {Object} - the action object
+     */
+    const reset = () => ({
+      type: ACTION_TYPES.RESET
+    });
+
     return {
       updateActiveView,
       setUserProfileId,
       toggleAgentTyping,
-      setMobileInfo
+      setMobileInfo,
+      reset
     };
   });

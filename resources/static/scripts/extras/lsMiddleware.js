@@ -12,7 +12,7 @@ define ("extras/lsMiddleware",
     "gunpowder/utils/throttle",
     "helpers/localStorage"
   ],
-  function (ACTION_TYPES, objUtils, throttle, lsHelper) {
+  function (ACTION_TYPES, objUtils, throttle, lsHelpers) {
     "use strict";
 
     // @TODO: Confirm what is the correct timeout for saving the
@@ -20,12 +20,12 @@ define ("extras/lsMiddleware",
     const LAST_ACTIVITY_THROTTLE_TIME = 20000;        // 20 seconds
 
     const throttledSetLastActivityTime = throttle (
-      lsHelper.setLastActivityTime,
+      lsHelpers.setLastActivityTime,
       LAST_ACTIVITY_THROTTLE_TIME
     );
 
     const REPLY_TEXT_THROTTLE_TIME = 3000;           // 3 seconds
-    const throttledSetReplyText = throttle (lsHelper.setReplyText, REPLY_TEXT_THROTTLE_TIME);
+    const throttledSetReplyText = throttle (lsHelpers.setReplyText, REPLY_TEXT_THROTTLE_TIME);
 
     /**
      * Save the required state in localStorage.
@@ -40,7 +40,7 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.SET_MESSAGES:
           // If the action type is ADD_MESSAGES or SET_MESSAGES,
           // save the issues entities in ls.
-          lsHelper.setEntities ("ISSUES", {
+          lsHelpers.setEntities ("ISSUES", {
             [action.issueId]: state.entities.issues [action.issueId]
           });
           throttledSetLastActivityTime ();
@@ -54,7 +54,7 @@ define ("extras/lsMiddleware",
 
           // If there are any issues entities, save it in ls.
           if (action.entities.issues) {
-            lsHelper.setEntities ("ISSUES", action.entities.issues);
+            lsHelpers.setEntities ("ISSUES", action.entities.issues);
           }
 
           // If there are messages entities, save only system
@@ -69,29 +69,29 @@ define ("extras/lsMiddleware",
               }
             });
             if (Object.keys (systemMessages).length) {
-              lsHelper.setEntities ("MESSAGES", systemMessages);
+              lsHelpers.setEntities ("MESSAGES", systemMessages);
             }
           }
           break;
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
-          lsHelper.setActiveIssueId (action.id);
+          lsHelpers.setActiveIssueId (action.id);
           break;
 
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
-          lsHelper.setIssueState (action.state);
+          lsHelpers.setIssueState (action.state);
           break;
 
         case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
-          lsHelper.setPreChatFeatureIndex (state.appState.preChatFeatureIndex);
+          lsHelpers.setPreChatFeatureIndex (state.appState.preChatFeatureIndex);
           break;
 
         case ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE:
-          lsHelper.setPreChatFeatureState (state.appState.preChatFeatureState);
+          lsHelpers.setPreChatFeatureState (state.appState.preChatFeatureState);
           break;
 
         case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
-          lsHelper.setInfoBotCurrentField (state.chatView.infoBot.currentField);
+          lsHelpers.setInfoBotCurrentField (state.chatView.infoBot.currentField);
           break;
 
         case ACTION_TYPES.UPDATE_ACTIVE_VIEW:
@@ -103,7 +103,7 @@ define ("extras/lsMiddleware",
           break;
 
         case ACTION_TYPES.SET_USER_PROFILE_ID:
-          lsHelper.setUserProfileId (action.profileId);
+          lsHelpers.setUserProfileId (action.profileId);
           break;
       }
     };

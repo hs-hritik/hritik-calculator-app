@@ -12,10 +12,11 @@ define ("components/containers/chatView",
     "actions/chatView",
     "actions/faqView",
     "actions/actionCreators",
-    "constants/activeView"
+    "constants/activeView",
+    "actions/appState"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    actionCreators, ACTIVE_VIEW) {
+    actionCreators, ACTIVE_VIEW, appStateActions) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -58,8 +59,10 @@ define ("components/containers/chatView",
           dispatch (chatViewActions.submitInfoBotField ());
         },
         onCloseConversation: () => {
-          // @TODO: Call action to reset conversation (when done),
-          // and call event to minimize the wm.
+          dispatch (appStateActions.reset ({
+            skipUser: true,
+            minimizeMessenger: true
+          }));
         },
         onStartCsatSurveyClick: () => {
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
