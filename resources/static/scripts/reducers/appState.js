@@ -39,9 +39,9 @@ define ("reducers/appState",
       preChatFeatureOrder: ["greeting", "answerBot", "infoBot"],
       preChatFeatureIndex: 0,
       preChatFeatureState: {
-        greeting: PRE_CHAT_STATE.GREETING.INITIAL,
-        answerBot: PRE_CHAT_STATE.ANSWER_BOT.INITIAL,
-        infoBot: PRE_CHAT_STATE.INFO_BOT.INITIAL
+        greeting: PRE_CHAT_STATE.greeting.INITIAL,
+        answerBot: PRE_CHAT_STATE.answerBot.INITIAL,
+        infoBot: PRE_CHAT_STATE.infoBot.INITIAL
       },
       resetTimeout: DEFAULT_RESET_TIMEOUT,
       browserIsMobile: false

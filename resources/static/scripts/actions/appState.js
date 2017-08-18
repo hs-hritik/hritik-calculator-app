@@ -218,8 +218,6 @@ define ("actions/appState",
     const rehydrate = () => {
       const issues = lsHelpers.getEntities ("ISSUES"),
             messages = lsHelpers.getEntities ("MESSAGES"),
-            // @TODO: Do optimization
-            // - Get pre-chat related data only if issue state is pre-chat
             preChatFeatureIndex = lsHelpers.getPreChatFeatureIndex (),
             preChatFeatureState = lsHelpers.getPreChatFeatureState (),
             infoBotCurrentField = lsHelpers.getInfoBotCurrentField (),

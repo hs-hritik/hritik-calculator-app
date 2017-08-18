@@ -39,8 +39,12 @@ define ("actions/chatView",
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
-          {ISSUE_STATE, PRE_CHAT_STATE: {GREETING, ANSWER_BOT, INFO_BOT}} = APP_STATE_CONSTANTS,
+          {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS,
           {Input} = schema;
+
+    const GREETING_STATE = PRE_CHAT_STATE.greeting,
+          ANSWER_BOT_STATE = PRE_CHAT_STATE.answerBot,
+          INFO_BOT_STATE = PRE_CHAT_STATE.infoBot;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -731,7 +735,7 @@ define ("actions/chatView",
               featureState = state.appState.preChatFeatureState.greeting;
 
         switch (featureState) {
-          case GREETING.INITIAL:
+          case GREETING_STATE.INITIAL:
             const defaultAgentMsgText = state.ui.text.greetingMsg;
 
             dispatch (
@@ -747,16 +751,16 @@ define ("actions/chatView",
             dispatch (
               batchActions ([
                 setChatViewFooter (ACTIVE_FOOTER.REPLY),
-                updatePreChatFeatureState ("greeting", GREETING.WAITING_FOR_USER_REPLY)
+                updatePreChatFeatureState ("greeting", GREETING_STATE.WAITING_FOR_USER_REPLY)
               ])
             );
             break;
 
-          case GREETING.WAITING_FOR_USER_REPLY:
+          case GREETING_STATE.WAITING_FOR_USER_REPLY:
             dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
             break;
 
-          case GREETING.COMPLETED:
+          case GREETING_STATE.COMPLETED:
             startNextPreChatFeature ();
             break;
         }
@@ -787,7 +791,7 @@ define ("actions/chatView",
               featureState = appState.preChatFeatureState.answerBot;
 
         switch (featureState) {
-          case ANSWER_BOT.INITIAL:
+          case ANSWER_BOT_STATE.INITIAL:
             let searchText;
             const {endUserFirstMsgId} = chatView;
 
@@ -816,7 +820,9 @@ define ("actions/chatView",
                       issueId: appState.dummyIssueId,
                       onAddMessage: () => {
                         onFaqSuggestionMessageAdd ();
-                        dispatch (updatePreChatFeatureState ("answerBot", ANSWER_BOT.FAQS_FETCHED));
+                        dispatch (
+                          updatePreChatFeatureState ("answerBot", ANSWER_BOT_STATE.FAQS_FETCHED)
+                        );
                       }
                     })
                   );
@@ -831,15 +837,15 @@ define ("actions/chatView",
             }));
             break;
 
-          case ANSWER_BOT.FAQS_FETCHED:
+          case ANSWER_BOT_STATE.FAQS_FETCHED:
             onFaqSuggestionMessageAdd ();
             break;
 
-          case ANSWER_BOT.WAITING_FOR_USER_FEEDBACK:
+          case ANSWER_BOT_STATE.WAITING_FOR_USER_FEEDBACK:
             store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
             break;
 
-          case ANSWER_BOT.COMPLETED:
+          case ANSWER_BOT_STATE.COMPLETED:
             startNextPreChatFeature ();
             break;
         }
@@ -862,7 +868,7 @@ define ("actions/chatView",
           onAddMessage: () => {
             store.dispatch (
               batchActions ([
-                updatePreChatFeatureState ("answerBot", ANSWER_BOT.WAITING_FOR_USER_FEEDBACK),
+                updatePreChatFeatureState ("answerBot", ANSWER_BOT_STATE.WAITING_FOR_USER_FEEDBACK),
                 setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK)
               ])
             );
@@ -908,7 +914,7 @@ define ("actions/chatView",
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
 
         switch (featureState) {
-          case INFO_BOT.INITIAL:
+          case INFO_BOT_STATE.INITIAL:
             dispatch (
               createMessage (MESSAGE_TYPE.TEXT, {
                 body: state.ui.text.infoBotRequestMsg,
@@ -918,7 +924,7 @@ define ("actions/chatView",
                 issueId: state.appState.dummyIssueId,
                 onAddMessage: () => {
                   dispatch (
-                    updatePreChatFeatureState ("infoBot", INFO_BOT.CURRENT_FIELD_TO_BE_ASKED)
+                    updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
                   );
                   dispatch (askInfoBotField ());
                 }
@@ -926,15 +932,15 @@ define ("actions/chatView",
             );
             break;
 
-          case INFO_BOT.CURRENT_FIELD_TO_BE_ASKED:
+          case INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED:
             dispatch (askInfoBotField ());
             break;
 
-          case INFO_BOT.CURRENT_FIELD_ASKED:
+          case INFO_BOT_STATE.CURRENT_FIELD_ASKED:
             dispatch (setChatViewFooter (ACTIVE_FOOTER.INFO_BOT));
             break;
 
-          case INFO_BOT.COMPLETED:
+          case INFO_BOT_STATE.COMPLETED:
             startNextPreChatFeature ();
             break;
         }
@@ -964,7 +970,7 @@ define ("actions/chatView",
               onAddMessage: () => {
                 dispatch (
                   batchActions ([
-                    updatePreChatFeatureState ("infoBot", INFO_BOT.CURRENT_FIELD_ASKED),
+                    updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_ASKED),
                     setChatViewFooter (ACTIVE_FOOTER.INFO_BOT)
                   ])
                 );
@@ -1021,7 +1027,9 @@ define ("actions/chatView",
           dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
           dispatch (startNextPreChatFeature ());
         } else {
-          dispatch (updatePreChatFeatureState ("infoBot", INFO_BOT.CURRENT_FIELD_TO_BE_ASKED));
+          dispatch (
+            updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
+          );
           dispatch (askInfoBotField ());
         }
       };
@@ -1046,10 +1054,10 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const {preChatFeatureOrder, preChatFeatureIndex} = getState ().appState;
         const feature = preChatFeatureOrder [preChatFeatureIndex];
-        // @TODO: Read "COMPLETED" from constant file instead of passing here directly.
+
         dispatch (
           batchActions ([
-            updatePreChatFeatureState (feature, "COMPLETED"),
+            updatePreChatFeatureState (feature, PRE_CHAT_STATE [feature].COMPLETED),
             incrementPreChatFeatureIndex ()
           ])
         );

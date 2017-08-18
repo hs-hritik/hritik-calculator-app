@@ -17,18 +17,18 @@ define ("constants/appState",
     };
 
     const PRE_CHAT_STATE = {
-      GREETING: {
+      greeting: {
         INITIAL: "initial",
         WAITING_FOR_USER_REPLY: "waiting_for_user_reply",
         COMPLETED: "completed"
       },
-      ANSWER_BOT: {
+      answerBot: {
         INITIAL: "initial",
         FAQS_FETCHED: "faqs_fetched",
         WAITING_FOR_USER_FEEDBACK: "waiting_for_user_feedback",
         COMPLETED: "completed"
       },
-      INFO_BOT: {
+      infoBot: {
         INITIAL: "initial",
         CURRENT_FIELD_TO_BE_ASKED: "current_field_to_be_asked",
         CURRENT_FIELD_ASKED: "current_field_asked",
