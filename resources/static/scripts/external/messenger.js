@@ -98,6 +98,18 @@
     "display": "none"
   };
 
+  const UNREAD_COUNT_STYLES = {
+    "background-color": "#fa3e3e",
+    "border-radius": "50%",
+    "color": "white",
+    "padding": "2px 6px",
+    "font-size": "12px",
+    "position": "absolute",
+    "top": "0px",
+    "right": "4px"
+  };
+  // @TODO: Move the count to front
+
   const LAUNCHER_ICON = {
     CLOSE: "CLOSE",
     MESSENGER: "MESSENGER"
@@ -136,7 +148,7 @@
                         </svg>`;
 
   // Reference for web sdk iframe.
-  let webSdkIframe, launcherBtn;
+  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl;
 
   /**
    * Util to set style for a given element.
@@ -171,14 +183,14 @@
    */
   const updateLauncherBtnIcon = (icon) => {
     if (icon === LAUNCHER_ICON.CLOSE) {
-      launcherBtn.innerHTML = CLOSE_ICON;
+      launcherIconEl.innerHTML = CLOSE_ICON;
       // Due the the size and geometry of the close icon, update the
       // padding of the container element.
       setStyle (launcherBtn, {
         padding: "16px"
       });
     } else {
-      launcherBtn.innerHTML = MESSENGER_ICON;
+      launcherIconEl.innerHTML = MESSENGER_ICON;
       setStyle (launcherBtn, {
         padding: "12px 10px 8px"
       });
@@ -201,9 +213,29 @@
    */
   const createLauncherButton = () => {
     const launcherButton = doc.createElement ("a");
-    launcherButton.innerHTML = MESSENGER_ICON;
+    launcherIconEl = doc.createElement ("span");
+    launcherIconEl.innerHTML = MESSENGER_ICON;
+
+    unreadCountEl = doc.createElement ("span");
+    setStyle (unreadCountEl, UNREAD_COUNT_STYLES);
+    renderUnreadCount ();
+
+    launcherButton.appendChild (unreadCountEl);
+    launcherButton.appendChild (launcherIconEl);
+
     setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherButton;
+  };
+
+  /**
+   * Render the unread count badge.
+   */
+  const renderUnreadCount = () => {
+    if (state.unreadCount !== 0 && webSdkIframe.style.display === "none") {
+      unreadCountEl.innerHTML = state.unreadCount;
+    } else {
+      unreadCountEl.innerHTML = "";
+    }
   };
 
   /**
@@ -250,7 +282,7 @@
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
       minimized: !currentlyMinimized
     });
-    // @TODO: Show count badge if messenger is minimized
+    renderUnreadCount ();
   };
 
   /**
@@ -296,15 +328,6 @@
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
     }
-  };
-
-  /**
-   * Update the unread messages count.
-   * @param {Number} count - unread messages count.
-   */
-  const updateUnreadCount = (count) => {
-    state.unreadCount = count;
-    // @TODO: Update the count badge if messenger is currently minimized.
   };
 
   /**
@@ -362,7 +385,8 @@
           break;
 
         case EVENT_TYPES.UPDATE_UNREAD_COUNT:
-          updateUnreadCount (data.count);
+          state.unreadCount = data.count;
+          renderUnreadCount ();
           break;
 
         case EVENT_TYPES.SDK_RESET:

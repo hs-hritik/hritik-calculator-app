@@ -239,10 +239,21 @@ define ("actions/chatView",
             // If the chat view is active, and the messenger is not in minimized state,
             // that means the user has seen the messages.
             if (!latestState.appState.minimized &&
-                ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
+              ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
               dispatch (markMessagesSeen ());
             } else {
-              const unreadCount = response.messages.length + latestState.chatView.unreadCount;
+              let unreadCount = 0;
+              // If there is no message cursor, that means it's the first load.
+              // Calculate the unread count by looking at each message.
+              if (!state.chatView.activeIssueMsgCursor) {
+                response.messages.forEach ((msg) => {
+                  if (msg.origin === "admin" && msg.state !== "read") {
+                    unreadCount++;
+                  }
+                });
+              } else {
+                unreadCount = response.messages.length + latestState.chatView.unreadCount;
+              }
               dispatch (setUnreadCount (unreadCount));
               postSdkMessage.updateUnreadCount (unreadCount);
             }
