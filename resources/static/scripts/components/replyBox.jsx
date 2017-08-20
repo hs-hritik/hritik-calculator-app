@@ -7,12 +7,16 @@
 define ("components/replyBox",
   [
     "constants/keyCodes",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/widgets/textareaAutosize"
   ],
-  function (KEY_CODES, classes) {
+  function (KEY_CODES, classes, TextareaAutosize) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+
+    const TEXT_AREA_MIN_ROWS = 1,
+          TEXT_AREA_MAX_ROWS = 5;
 
     return React.createClass ({
       displayName: "ReplyBox",
@@ -32,27 +36,39 @@ define ("components/replyBox",
 
       render () {
         const {text, disabled} = this.props;
-        const btnClasses = classes ("hs-button",
-                                    "hs-button--hollow",
-                                    "hs-button--no-border",
-                                    "hs-button--xx-small",
-                                    "hs-reply-box__submit-btn");
+
+        const replyBoxClasses = classes (
+          "hs-reply-box", {
+            "hs-reply-box--disabled": disabled || !this.props.value.trim ()
+          }
+        );
 
         return (
-          <div className="hs-reply-box">
-            <textarea value={this.props.value}
-                      className="hs-reply-box__textarea"
-                      onKeyDown={this._onReplyTextKeyDown}
-                      onChange={this._onReplyTextChange}
-                      placeholder={text.replyBtnPlaceholder}
-                      disabled={disabled}
-                      autoFocus />
-            <button onClick={this._onReplyClick}
-                    className={btnClasses}>
-              {text.replyBtn}
-            </button>
+          <div className={replyBoxClasses}>
+            <TextareaAutosize value={this.props.value}
+                              className="hs-reply-box__textarea"
+                              onKeyDown={this._onReplyTextKeyDown}
+                              onChange={this._onReplyTextChange}
+                              minRows={TEXT_AREA_MIN_ROWS}
+                              maxRows={TEXT_AREA_MAX_ROWS}
+                              onHeightChange={this._onReplyBoxHeightChange}
+                              placeholder={text.replyBtnPlaceholder}
+                              disabled={disabled}
+                              autoFocus
+                              dir="auto" />
+            <a className="hs-reply-box__submit-btn"
+               onClick={this._onReplyClick}>
+              <i className="ion-send hs-reply-box__send-icon" />
+            </a>
           </div>
         );
+      },
+
+      /**
+       * Handler for reply box textarea height change.
+       */
+      _onReplyBoxHeightChange () {
+        // @TODO: Handle scroll
       },
 
       /**

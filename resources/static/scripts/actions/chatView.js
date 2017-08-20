@@ -388,7 +388,7 @@ define ("actions/chatView",
               {appState} = state,
               {replyBox} = state.chatView;
 
-        if (replyBox.disabled || !replyBox.value) {
+        if (replyBox.disabled || !replyBox.value.trim ()) {
           return;
         }
 
@@ -396,7 +396,7 @@ define ("actions/chatView",
         if (appState.issueState === ISSUE_STATE.REJECTED) {
           dispatch (
             createMessage (MESSAGE_TYPE.TEXT, {
-              body: replyBox.value,
+              body: replyBox.value.trim (),
               isCustomerMsg: true
             }, {
               typingTimer: null,
