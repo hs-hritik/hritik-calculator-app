@@ -103,10 +103,12 @@ define ("components/messageList",
       },
 
       /**
-       * Scroll to bottom if messages length is increased.
+       * Scroll to bottom if messages length is increased,
+       * or if there is typing indicator.
        */
       componentDidUpdate (prevProps) {
-        if (this.props.messages.length > prevProps.messages.length) {
+        if ((this.props.messages.length > prevProps.messages.length) ||
+            this.props.isTyping && !prevProps) {
           const node = ReactDOM.findDOMNode (this._messageListRef);
           this._scrollTo (node.scrollHeight);
         }
