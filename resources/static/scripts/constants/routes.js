@@ -13,7 +13,7 @@ define ("constants/routes",
     // @TODO: Update this route when HS API is ready.
     const getWmConfig = (domain) => `${BASE}${domain}/websdk/config`;
 
-    const getCss = () => "/dist/css/style.css";
+    const getCss = () => "/css/style.css";
 
     const getMyIssues = (domain) => `${BASE}${domain}/websdk/my-issues`;
 

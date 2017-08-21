@@ -100,14 +100,14 @@ dist: npminstall styles gunpowder reactjs compress-js js-libs
 	@echo "\nBuilding the dist directory"
 	@mkdir -p resources/dist
 	@cp -R resources/static/{html,libs,fonts} resources/dist
-	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webmessenger.js
+	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webMessenger.js
 	@echo "\nDone..."
 
 # The distdev task to compile resources and link the dev files to dist directory
 distdev: npminstall styles gunpowder reactjs
 	@echo "\nCreating/updating symlinks for dev directories in the dist directory"
 	@ln -sFv $(STATIC_PATH)/{html,libs,fonts} resources/dist
-	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webmessenger.js
+	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webMessenger.js
 	@echo "\nDone..."
 
 clean:
