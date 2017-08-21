@@ -1020,7 +1020,7 @@ define ("actions/chatView",
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
-            body: currentFieldVal.value,
+            body: currentFieldVal.value.trim (),
             isCustomerMsg: true
           }, {
             typingTimer: null,

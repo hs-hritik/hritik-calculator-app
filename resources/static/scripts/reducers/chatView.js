@@ -33,6 +33,7 @@ define ("reducers/chatView",
           name: {
             title: "Your Name",
             msg: "What's your name?",
+            placeholder: "John Smith",
             value: {
               value: "",
               errorMsg: "",
@@ -42,6 +43,7 @@ define ("reducers/chatView",
           email: {
             title: "Your Email Address",
             msg: "What's your email?",
+            placeholder: "john@example.com",
             value: {
               value: "",
               errorMsg: "",

@@ -1,0 +1,119 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group footer
+///
+
+@include component(chat-footer) {
+  $border-color: color(border, base);
+  $disabled-btn-color: color(bg, gray);
+  $info-field-title-error-color: color(error, text);
+  $info-field-submit-error-color: color(error, text);
+
+  .hs-chat-footer {
+
+    // @TODO: Change class names, if required.
+    // &__buttons-wrapper {
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
+    //   // padding: gutter(16 12);
+    // }
+
+    // &__field {
+    //   display: flex;
+    //   border-top: 1px solid $border-color;
+    //   height: gutter(80);
+    //   padding: gutter(16);
+    // }
+
+    // &__field-title {
+    //   align-self: flex-start;
+    //   font-size: font-size(body, small);
+    // }
+
+    // &__field-input {
+    //   border: none;
+    // }
+
+    // &__field-submit {
+    //   align-self: flex-end;
+    //   padding-right: 8px;
+    // }
+
+    &__faq-suggestions-feedback {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      justify-content: center;
+      padding: gutter(16 12);
+
+      &__btn {
+        margin: gutter(0 16);
+        border-radius: 18px;
+      }
+    }
+
+    &__info-bot-field {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: gutter(80);
+      padding: gutter(16);
+      border-top: 1px solid $border-color;
+
+      &-title {
+        font-size: font-size(body, small);
+      }
+
+      &-submit-btn {
+        position: absolute;
+        top: gutter(6);
+        right: gutter(4);
+        padding: gutter(8);
+      }
+
+      &-input {
+        border: 0;
+      }
+
+      &--disabled {
+        .hs-chat-footer__info-bot-field-submit-btn {
+          color: $disabled-btn-color;
+        }
+      }
+
+      &--error {
+        .hs-chat-footer__info-bot-field-title {
+          color: $info-field-title-error-color;
+        }
+
+        .hs-chat-footer__info-bot-field-submit-btn {
+          color: $info-field-submit-error-color;
+        }
+      }
+    }
+
+    &--blocked {
+      height: gutter(52);
+    }
+
+    &__closed {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: gutter(52);
+
+      &-btn {
+        border-radius: 18px;
+      }
+    }
+  }
+}
