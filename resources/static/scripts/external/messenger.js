@@ -21,6 +21,7 @@
    * The event that the parent has to listen before calling Helpshift APIs.
    */
   const HS_SDK_LOAD_EVENT = "hs-sdk-load";
+  const INIT = "init";
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
@@ -149,6 +150,10 @@
 
   // Reference for web sdk iframe.
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl;
+
+  // Api queue to save the apis and call them after sdk config is loaded
+  let sdkLoaded = false,
+      apiQueue = [];
 
   /**
    * Util to set style for a given element.
@@ -306,28 +311,33 @@
     // @TODO: Use the web messenger config to set appearance, etc.
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = config.primaryColor;
 
-    if (config.widgetEnabled) {
-      // If the widget is enabled, create the launcher iframe+button and append
-      // it to the document.
-      const launcherIframe = createLauncherIframe ();
-      launcherBtn = createLauncherButton ();
-
-      doc.body.appendChild (launcherIframe);
-
-      launcherBtn.addEventListener ("click", () => {
-        toggleWebSdkIframe ();
-      });
-      launcherIframe.contentDocument.body.appendChild (launcherBtn);
-    } else {
+    if (!config.widgetEnabled) {
       destroyWebSdkIframe ();
       return;
     }
+    // If the widget is enabled, create the launcher iframe+button and append
+    // it to the document.
+    const launcherIframe = createLauncherIframe ();
+    launcherBtn = createLauncherButton ();
 
+    doc.body.appendChild (launcherIframe);
+
+    launcherBtn.addEventListener ("click", () => {
+      toggleWebSdkIframe ();
+    });
+    launcherIframe.contentDocument.body.appendChild (launcherBtn);
+
+    // Apply styles for webSdkIframe
     if (config.browserIsMobile) {
       setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
     }
+
+    // Set sdk loaded as true
+    sdkLoaded = true;
+    // Clear the api queue
+    clearApiQueue ();
   };
 
   /**
@@ -335,6 +345,14 @@
    */
   const setConfig = (config) => {
     _postMessage (EVENT_TYPES.CMD_SET_CONFIG, config);
+  };
+
+  /**
+   * Execute every queued api and clear the api queue
+   */
+  const clearApiQueue = () => {
+    apiQueue.forEach ((fn) => fn ());
+    apiQueue = [];
   };
 
   /**
@@ -475,7 +493,15 @@
       throw new Error (ERROR_MSG.API_NOT_SUPPORTED);
     }
 
-    // Call the Helpshift api with the arguments
-    helpshiftApis [api].apply (null, apiArguments);
+    // If a] sdk is loaded OR b] the api is init, then directly call the apis
+    // else queue the apis in sequence and call them after sdk config is loaded
+    // Note :- allowing init api because it's the first api that will be called
+    if (sdkLoaded || api === INIT) {
+      // Call the Helpshift api with the arguments
+      helpshiftApis [api].apply (null, apiArguments);
+    } else {
+      // Queue the apis
+      apiQueue.push (helpshiftApis [api].bind (null, apiArguments));
+    }
   };
 }) (window, document);
