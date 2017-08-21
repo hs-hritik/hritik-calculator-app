@@ -41,17 +41,19 @@ define ("components/csatView",
 
       render () {
         const {text, browserIsMobile, onMinimizeConversation} = this.props;
-        // @TODO: Add/change css classes.
+
         return (
           <div className="hs-view">
             <ViewHeader title={text.csatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
-              {this._renderCsatBody ()}
-              {this._renderCsatFooter ()}
+              <div className="hs-csat">
+                {this._renderCsatBody ()}
+                {this._renderCsatFooter ()}
+                <Branding text={text} />
+              </div>
             </div>
-            <Branding text={text} />
           </div>
         );
       },
@@ -73,19 +75,26 @@ define ("components/csatView",
         const {text, rating, review} = this.props;
 
         return (
-          <div>
-            <div>{text.csatBotFormRequestMsg}</div>
+          <div className="hs-csat__form">
+            <h3 className="hs-csat__form-title">
+              {text.csatBotFormRequestMsg}
+            </h3>
+            <div className="hs-csat__stars">
               <StarRating name="csat"
                           value={rating}
                           onStarClick={this._onStarClick} />
-              <div>
-                <span>{text.csatBotReviewTitle}</span>
-                <textarea value={review}
-                          onChange={this._onCsatReviewChange}
-                          placeholder={text.csatBotReviewPlaceholder}
-                          autoFocus />
-              </div>
             </div>
+            <div>
+              <small className="hs-csat__input-title">
+                {text.csatBotReviewTitle}
+              </small>
+              <textarea value={review}
+                        className="hs-csat__input"
+                        onChange={this._onCsatReviewChange}
+                        placeholder={text.csatBotReviewPlaceholder}
+                        autoFocus />
+            </div>
+          </div>
         );
       },
 
@@ -95,8 +104,10 @@ define ("components/csatView",
       _renderCsatResponseMsg () {
         const {text} = this.props;
         return (
-          <div>
-            {text.csatBotResponseMsg}
+          <div className="hs-csat__form">
+            <div className="hs-csat__form-title">
+              {text.csatBotResponseMsg}
+            </div>
           </div>
         );
       },
@@ -108,6 +119,11 @@ define ("components/csatView",
         const {text, rating} = this.props,
               btnProps = {};
         let btnText;
+        btnProps.className = classes (
+          "hs-button",
+          "hs-button--small",
+          "hs-csat__footer-btn"
+        );
 
         if (this.props.completed) {
           btnText = text.closeConversationBtn;

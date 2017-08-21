@@ -12,17 +12,49 @@
 
 @include component(csat) {
 
-  $border-color: color(border, light);
+  $input-border-color: color(border, light);
   $star-font-size: icon-size(xxx-large);
 
   .hs-csat {
-    padding: gutter(16);
-    text-align: center;
-    border-bottom: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+
+    &__form {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      height: 100%;
+      padding: gutter(20 32);
+    }
+
+    &__form-title {
+      padding: gutter(20);
+      text-align: center;
+    }
+
+    &__stars {
+      padding-bottom: gutter(20);
+    }
+
+    &__input-title {
+      font-weight: font-weight(bold);
+    }
+
+    &__input {
+      border: 1px solid $input-border-color;
+      border-radius: radius();
+      resize: none;
+    }
 
     &__star {
       padding: gutter(0 8);
       font-size: $star-font-size;
+    }
+
+    &__footer-btn {
+      border-radius: 18px;
     }
   }
 }

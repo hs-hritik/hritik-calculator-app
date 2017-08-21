@@ -11,7 +11,7 @@
   $label-color: color(text, light);
 
   .hs-branding {
-    padding-bottom: gutter(4);
+    padding: gutter(8 0);
     color: $label-color;
     text-align: center;
   }
