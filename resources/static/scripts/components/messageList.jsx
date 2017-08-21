@@ -8,9 +8,10 @@ define ("components/messageList",
   [
     "components/message",
     "constants/propTypes",
-    "constants/message"
+    "constants/message",
+    "components/commons/branding"
   ],
-  function (Message, PROP_TYPES, MESSAGE_CONSTANTS) {
+  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, Branding) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -42,6 +43,7 @@ define ("components/messageList",
                ref={this._refCallback}>
             {this._renderMessages ()}
             {this._renderTypingIndicator ()}
+            <Branding text={this.props.text} />
           </div>
         );
       },

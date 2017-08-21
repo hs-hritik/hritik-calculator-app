@@ -8,9 +8,10 @@ define ("components/csatView",
   [
     "gunpowder/utils/classes",
     "components/commons/viewHeader",
-    "components/starRating"
+    "components/starRating",
+    "components/commons/branding"
   ],
-  function (classes, ViewHeader, StarRating) {
+  function (classes, ViewHeader, StarRating, Branding) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -50,6 +51,7 @@ define ("components/csatView",
               {this._renderCsatBody ()}
               {this._renderCsatFooter ()}
             </div>
+            <Branding text={text} />
           </div>
         );
       },

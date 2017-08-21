@@ -8,9 +8,10 @@
 define ("components/faqView",
   [
     "gunpowder/utils/classes",
-    "components/commons/viewHeader"
+    "components/commons/viewHeader",
+    "components/commons/branding"
   ],
-  function (classes, ViewHeader) {
+  function (classes, ViewHeader, Branding) {
     "use strict";
 
     const {PropTypes} = React;
@@ -38,6 +39,7 @@ define ("components/faqView",
             <div className="hs-view__content">
               <h3>{title}</h3>
               <div dangerouslySetInnerHTML={{__html: body}} />
+              <Branding text={text} />
             </div>
           </div>
         );

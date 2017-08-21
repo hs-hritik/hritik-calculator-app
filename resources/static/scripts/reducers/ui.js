@@ -32,7 +32,8 @@ define ("reducers/ui",
         csatBotReviewTitle: "Additional Feedback",
         csatLinkCaption: "Take Survey",
         csatViewHeader: "Chat with us",
-        infoBotRequestMsg: "Before we begin, we need some more information."
+        infoBotRequestMsg: "Before we begin, we need some more information.",
+        branding: "Powered by Helpshift"
       },
       color: {
         primary: "#43BF6C"
