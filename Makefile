@@ -13,8 +13,6 @@ export PATH := $(abspath ./tools):$(PATH)
 #
 GULP ?= gulp
 NPM ?= npm
-STATIC_PATH ?= $(abspath ./resources)/static
-DIST_PATH ?= $(abspath ./resources)/dist
 
 JS_TEST_TARGETS = reactjs
 
@@ -47,6 +45,11 @@ else
 endif
 
 static: dist
+
+preparedist:
+	@echo "Creating the dist directory"
+	@mkdir -p resources/dist
+	@echo "Done"
 
 bundlerinstall:
 	@echo "\nEnsuring Bundler Installation for SCSS compilation..."
@@ -96,24 +99,26 @@ gunpowder: npminstall
 # directory, so copying html, libs, and fonts to dist here.
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
-dist: npminstall styles gunpowder reactjs compress-js js-libs
-	@echo "\nBuilding the dist directory"
-	@mkdir -p resources/dist
+dist: preparedist npminstall styles gunpowder reactjs compress-js js-libs
+	@echo "Building the dist directory"
 	@cp -R resources/static/{html,libs,fonts} resources/dist
-	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webMessenger.js
-	@echo "\nDone..."
+	@cd resources/dist
+	@ln -sv scripts/external/messenger.js resources/dist/webMessenger.js
+	@echo "Done..."
 
 # The distdev task to compile resources and link the dev files to dist directory
-distdev: npminstall styles gunpowder reactjs
-	@echo "\nCreating/updating symlinks for dev directories in the dist directory"
-	@ln -sFv $(STATIC_PATH)/{html,libs,fonts} resources/dist
-	@ln -sfv $(DIST_PATH)/scripts/external/messenger.js resources/dist/webMessenger.js
-	@echo "\nDone..."
+distdev: preparedist npminstall styles gunpowder reactjs
+	@echo "Creating/updating symlinks for dev directories in the dist directory"
+	@cd resources/static
+	@ln -sv {html,libs,fonts} resources/dist
+	@cd resources/dist
+	@ln -sv scripts/external/messenger.js resources/dist/webMessenger.js
+	@echo "Done..."
 
 clean:
-	@echo "\n Running make clean to clean the dist directory"
+	@echo "Running make clean to clean the dist directory"
 	@rm -rf resources/dist
-	@echo "\nDone..."
+	@echo "Done"
 
 jstests: $(JS_TEST_TARGETS)
 
