@@ -82,9 +82,8 @@ define ("components/chatView",
        * Render blocked footer
        */
       _renderBlockedFooter () {
-        // @TODO: Change the css class names, if required.
         return (
-          <div className="hs-chat-footer__blocked" />
+          <div className="hs-chat-footer" />
         );
       },
 
@@ -95,16 +94,17 @@ define ("components/chatView",
         const btnClasses = classes (
           "hs-button",
           "hs-button--small",
-          "hs-chat-footer__closed-btn"
+          "hs-chat-footer__button"
         );
 
-        // @TODO: Change the css class names, if required.
         return (
-          <div className="hs-chat-footer__closed">
-            <button onClick={this._onCloseConversationClick}
-                    className={btnClasses}>
-              {this.props.text.closeConversationBtn}
-            </button>
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__buttons-wrapper">
+              <button onClick={this._onCloseConversationClick}
+                      className={btnClasses}>
+                {this.props.text.closeConversationBtn}
+              </button>
+            </div>
           </div>
         );
       },
@@ -116,10 +116,10 @@ define ("components/chatView",
         const field = this.props.infoBotField;
         const hasError = !!this.props.infoBotField.value.errorMsg;
 
-        const fieldClasses = classes (
-          "hs-chat-footer__info-bot-field", {
-            "hs-chat-footer__info-bot-field--error": field.value.errorMsg,
-            "hs-chat-footer__info-bot-field--disabled": !field.value.value.trim ()
+        const footerClasses = classes (
+          "hs-chat-footer", {
+            "hs-chat-footer--form-error": field.value.errorMsg,
+            "hs-chat-footer--form-invalid": !field.value.value.trim ()
           }
         );
 
@@ -128,44 +128,25 @@ define ("components/chatView",
           "ion-send": !hasError
         });
 
-        // @TODO: Change the css class names, if required.
         return (
-          <div className={fieldClasses}>
-            <div className="hs-chat-footer__info-bot-field-title">
-              {field.title}
+          <div className={footerClasses}>
+            <div className="hs-chat-footer__field">
+              <div className="hs-chat-footer__title">
+               {field.title}
+              </div>
+              <a className="hs-chat-footer__submit">
+                <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
+              </a>
             </div>
-            <input value={field.value.value}
-                   className="hs-chat-footer__info-bot-field-input"
-                   placeholder={field.placeholder}
-                   onChange={this._onInfoBotFieldValueChange}
-                   onKeyUp={this._onInfoBotFieldKeyUp} />
-            <a className="hs-chat-footer__info-bot-field-submit-btn"
-               onClick={this._onClickSubmitInfoBotField}>
-              <i className={ionClasses} />
-            </a>
+            <div className="hs-chat-footer__field">
+              <input className="hs-chat-footer__text-field"
+                     value={field.value.value}
+                     placeholder={field.placeholder}
+                     onChange={this._onInfoBotFieldValueChange}
+                     onKeyUp={this._onInfoBotFieldKeyUp} />
+            </div>
           </div>
         );
-        // return (
-        //   <div className="hs-chat-footer">
-        //     <div className="hs-chat-footer__field">
-        //       <div className="hs-chat-footer__field-title">
-        //        {field.title}
-        //       </div>
-        //       <div className="hs-chat-footer__field-submit">
-        //         <a onClick={this._onClickSubmitInfoBotField}>
-        //           <i className={ionClasses} />
-        //         </a>
-        //       </div>
-        //     </div>
-        //     <div className="hs-chat-footer__field">
-        //       <input className="hs-chat-footer__field-input"
-        //             value={field.value.value}
-        //               placeholder="Add placeholder"
-        //               onChange={this._onInfoBotFieldValueChange}
-        //               onKeyUp={this._onInfoBotFieldKeyUp}/>
-        //     </div>
-        //   </div>
-        // );
       },
 
       /**
@@ -179,24 +160,25 @@ define ("components/chatView",
           "hs-button",
           "hs-button--hollow",
           "hs-button--small",
-          "hs-chat-footer__faq-suggestions-feedback__btn"
+          "hs-chat-footer__button"
         );
 
         // If user does not need additional help (clicking on no), pass true indicating that
         // faq suggestions were helpful.
         // If user needs additional help (clicking on yes), pass false indicating that
         // faq suggestions were not helpful.
-        // @TODO: Change the css class names, if required.
         return (
-          <div className="hs-chat-footer__faq-suggestions-feedback">
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, true)}
-                    className={btnClasses}>
-              {faqSuggestionsAdditionalHelpNotRequiredBtn}
-            </button>
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, false)}
-                    className={btnClasses}>
-              {faqSuggestionsAdditionalHelpRequiredBtn}
-            </button>
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__buttons-wrapper">
+              <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, true)}
+                      className={btnClasses}>
+                {faqSuggestionsAdditionalHelpNotRequiredBtn}
+              </button>
+              <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, false)}
+                      className={btnClasses}>
+                {faqSuggestionsAdditionalHelpRequiredBtn}
+              </button>
+            </div>
           </div>
         );
       },

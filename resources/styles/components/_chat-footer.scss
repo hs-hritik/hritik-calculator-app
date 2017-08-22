@@ -11,108 +11,93 @@
 ///
 
 @include component(chat-footer) {
-  $border-color: color(border, base);
   $disabled-btn-color: color(bg, gray);
-  $info-field-title-error-color: color(error, text);
-  $info-field-submit-error-color: color(error, text);
+  $title-error-color: color(error, text);
+  $submit-error-color: color(error, text);
+  $textarea-bg-color: color(bg, white);
 
   .hs-chat-footer {
+    min-height: 52px;
+    padding: gutter(12);
 
-    // @TODO: Change class names, if required.
-    // &__buttons-wrapper {
-    //   display: flex;
-    //   align-items: center;
-    //   justify-content: center;
-    //   // padding: gutter(16 12);
-    // }
-
-    // &__field {
-    //   display: flex;
-    //   border-top: 1px solid $border-color;
-    //   height: gutter(80);
-    //   padding: gutter(16);
-    // }
-
-    // &__field-title {
-    //   align-self: flex-start;
-    //   font-size: font-size(body, small);
-    // }
-
-    // &__field-input {
-    //   border: none;
-    // }
-
-    // &__field-submit {
-    //   align-self: flex-end;
-    //   padding-right: 8px;
-    // }
-
-    &__faq-suggestions-feedback {
+    &__buttons-wrapper {
       display: flex;
       align-items: center;
-      flex-direction: row;
       justify-content: center;
-      padding: gutter(16 12);
+    }
 
-      &__btn {
-        margin: gutter(0 16);
-        border-radius: 18px;
+    &__button {
+      margin: gutter(0 16);
+      border-radius: 16px;
+    }
+
+    &__field {
+      display: flex;
+      align-items: center;
+    }
+
+    &__title {
+      flex: 1 1 auto;
+      font-size: font-size(body, small);
+    }
+
+    &__text-field {
+      flex: 1 1 auto;
+
+      &:focus {
+        outline: none;
       }
     }
 
-    &__info-bot-field {
-      position: relative;
+    /// @TODO :- Fix text area scroll bar issue
+    &__text-area {
+      height: 20px;
+      min-height: 20px;
+      padding: gutter(0 36 0 0);
+      background-color: $textarea-bg-color;
+      border-radius: 0;
+      box-shadow: none;
+      resize: none;
+    }
+
+    &__text-field,
+    &__text-area {
+      border: 0;
+    }
+
+    &__submit {
       display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      height: gutter(80);
-      padding: gutter(16);
-      border-top: 1px solid $border-color;
+      padding: gutter(0 8);
+      cursor: pointer;
+    }
 
-      &-title {
-        font-size: font-size(body, small);
+    /// form invalid modifier is used to disable elements
+    &--form-invalid {
+      .hs-chat-footer__submit {
+        color: $disabled-btn-color;
+        cursor: not-allowed;
       }
+    }
 
-      &-submit-btn {
+    /// form error modifier is used to show form error on elements
+    &--form-error {
+      .hs-chat-footer {
+        &__title {
+          color: $title-error-color;
+        }
+
+        &__submit {
+          color: $submit-error-color;
+        }
+      }
+    }
+
+    /// fixed submit modifier is used to place submit icon at the bottom right corner
+    &--fixed-submit {
+      .hs-chat-footer__submit {
         position: absolute;
-        top: gutter(6);
-        right: gutter(4);
-        padding: gutter(8);
-      }
-
-      &-input {
-        border: 0;
-      }
-
-      &--disabled {
-        .hs-chat-footer__info-bot-field-submit-btn {
-          color: $disabled-btn-color;
-        }
-      }
-
-      &--error {
-        .hs-chat-footer__info-bot-field-title {
-          color: $info-field-title-error-color;
-        }
-
-        .hs-chat-footer__info-bot-field-submit-btn {
-          color: $info-field-submit-error-color;
-        }
-      }
-    }
-
-    &--blocked {
-      height: gutter(52);
-    }
-
-    &__closed {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: gutter(52);
-
-      &-btn {
-        border-radius: 18px;
+        right: gutter(20);
+        bottom: gutter(16);
       }
     }
   }

@@ -38,28 +38,31 @@ define ("components/replyBox",
         const {text, disabled} = this.props;
 
         const replyBoxClasses = classes (
-          "hs-reply-box", {
-            "hs-reply-box--disabled": disabled || !this.props.value.trim ()
+          "hs-chat-footer",
+          "hs-chat-footer--fixed-submit", {
+            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
           }
         );
 
         return (
           <div className={replyBoxClasses}>
-            <TextareaAutosize value={this.props.value}
-                              className="hs-reply-box__textarea"
-                              onKeyDown={this._onReplyTextKeyDown}
-                              onChange={this._onReplyTextChange}
-                              minRows={TEXT_AREA_MIN_ROWS}
-                              maxRows={TEXT_AREA_MAX_ROWS}
-                              onHeightChange={this._onReplyBoxHeightChange}
-                              placeholder={text.replyBtnPlaceholder}
-                              disabled={disabled}
-                              autoFocus
-                              dir="auto" />
-            <a className="hs-reply-box__submit-btn"
-               onClick={this._onReplyClick}>
-              <i className="ion-send hs-reply-box__send-icon" />
-            </a>
+            <div className="hs-chat-footer__field">
+              <TextareaAutosize value={this.props.value}
+                                className="hs-chat-footer__text-area"
+                                onKeyDown={this._onReplyTextKeyDown}
+                                onChange={this._onReplyTextChange}
+                                minRows={TEXT_AREA_MIN_ROWS}
+                                maxRows={TEXT_AREA_MAX_ROWS}
+                                onHeightChange={this._onReplyBoxHeightChange}
+                                placeholder={text.replyBtnPlaceholder}
+                                disabled={disabled}
+                                autoFocus
+                                dir="auto" />
+                <a className="hs-chat-footer__submit"
+                   onClick={this._onReplyClick}>
+                  <i className="ion-send" />
+                </a>
+            </div>
           </div>
         );
       },
