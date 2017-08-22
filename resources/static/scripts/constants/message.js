@@ -16,12 +16,10 @@ define ("constants/message",
     };
 
     // Timeout (in milliseconds) for different system generated message.
-    // @TODO: Change the timeout according to design spec.
-    // Temporary changing the timeout to speed up the testing process.
     const TIMEOUT = {
-      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 500,
-      INFO_BOT_REQUEST: 500,
-      INFO_BOT_FIELD: 500
+      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
+      INFO_BOT_REQUEST: 1200,
+      INFO_BOT_FIELD: 1200
     };
 
     return {
