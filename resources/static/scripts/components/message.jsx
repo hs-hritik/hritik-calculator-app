@@ -202,9 +202,13 @@ define ("components/message",
         }
 
         return (
-          <div>
-            <span>{agentNickname}</span>
-            <span>{timeAgoStr}</span>
+          <div className="hs-message__details">
+            <div className="hs-message__agent-nickname">
+              {agentNickname}
+            </div>
+            <div className="hs-message__time-ago">
+              {timeAgoStr}
+            </div>
           </div>
         );
       },
