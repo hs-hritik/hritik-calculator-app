@@ -265,6 +265,20 @@ $animations: (
       transform: "rotateZ(0deg)",
     ),
   ),
+  typing-indicator: (
+    0%: (
+      opacity: "0.3",
+    ),
+    40%: (
+      opacity: "0.7",
+    ),
+    80%: (
+      opacity: "0.3",
+    ),
+    100%: (
+      opacity: "0.3",
+    ),
+  )
 );
 //
 // Note: For new animations add an entry in the above map,

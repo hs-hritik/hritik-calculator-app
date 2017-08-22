@@ -80,9 +80,12 @@ define ("components/messageList",
           return null;
         }
 
-        // @TODO: Add css and typing icon.
         return (
-          <span>Typing</span>
+          <div className="hs-message-list__typing-indicator">
+            <div className="hs-message-list__typing-dot hs-message-list__typing-anim-1" />
+            <div className="hs-message-list__typing-dot hs-message-list__typing-anim-2" />
+            <div className="hs-message-list__typing-dot hs-message-list__typing-anim-3" />
+          </div>
         );
       },
 

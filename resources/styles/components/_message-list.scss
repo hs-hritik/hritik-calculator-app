@@ -19,11 +19,57 @@
     flex: 1;
     flex-direction: column;
     overflow-y: auto;
+    $typing-bg-color: color(bg, light);
+    $typing-dot-color: color(text, light);
 
     &__date-separator {
       margin: gutter(4 0);
       color: $timestamp-color;
       text-align: center;
+    }
+
+    &__typing-indicator {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      padding: gutter(16 0);
+      margin-left: gutter(16);
+      background-color: $typing-bg-color;
+
+      &::after {
+        position: absolute;
+        top: 0;
+        left: gutter(-8);
+        width: 0;
+        height: 0;
+        border: 4px solid $typing-bg-color;
+        border-bottom-color: transparent;
+        border-left-color: transparent;
+        content: "";
+      }
+    }
+
+    &__typing-dot {
+      @include animation(typing-indicator, $duration: 750ms, $count: infinite);
+      width: 8px;
+      height: 8px;
+      margin: gutter(0 1);
+      background: $typing-dot-color;
+      border-radius: 50%;
+    }
+
+    &__typing-anim-1 {
+      animation-delay: 0s;
+    }
+
+    &__typing-anim-2 {
+      animation-delay: .075s;
+    }
+
+    &__typing-anim-3 {
+      animation-delay: .150s;
     }
   }
 }
