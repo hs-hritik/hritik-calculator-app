@@ -9,9 +9,9 @@
 (function (win, doc) {
   "use strict";
 
-  // @TODO: Change it to use different url based on env
-  // const WEB_SDK_URL = "https://hsmirkwood.helpshift.com/static/html/";
-  const WEB_SDK_URL = "http://localhost:3000/html/";
+  // On dev env, this gets replaced by a localhost URL.
+  // See babel tasks in resources/gulp/javascript.js
+  const WEB_SDK_URL = "https://wm.helpshift.com/html/";
 
   const state = {
     unreadCount: 0

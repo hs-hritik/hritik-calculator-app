@@ -82,6 +82,10 @@ reactjs: npminstall
 	@echo "\nCompile JSX..."
 	@cd resources && $(GULP) babel --production
 
+reactjsdev: npminstall
+	@echo "\nCompile JSX..."
+	@cd resources && $(GULP) babel --compile
+
 js-libs: npminstall
 	@echo "\nOverwrite minified libs..."
 	@cd resources && $(GULP) overwrite-min
@@ -107,7 +111,7 @@ dist: preparedist npminstall styles gunpowder reactjs compress-js js-libs
 	@echo "Done..."
 
 # The distdev task to compile resources and link the dev files to dist directory
-distdev: preparedist npminstall styles gunpowder reactjs
+distdev: preparedist npminstall styles gunpowder reactjsdev
 	@echo "Creating/updating symlinks for dev directories in the dist directory"
 	@cd resources/static
 	@ln -sv {html,libs,fonts} resources/dist

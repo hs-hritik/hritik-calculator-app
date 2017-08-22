@@ -10,6 +10,7 @@ const notifier = require ("node-notifier");
 const {argv} = require ("yargs");
 const {getTimeStamp} = require ("./utils");
 const gutil = require ("gulp-util");
+const replace = require ("gulp-replace");
 
 
 const PATHS = {
@@ -18,12 +19,15 @@ const PATHS = {
   libsMin    : ["static/libs/*-min.js"],
   libs       : "static/libs",
   uglify     : ["dist/scripts/**/*.js"],
-  gunpowderSrc: "static/scripts/gunpowder/node_modules/@helpshiftdev/gunpowder/resources/static/scripts/**/*.+(js|jsx)",
+  gunpowderSrc: "static/scripts/gunpowder/node_modules/@helpshiftdev/" +
+                "gunpowder/resources/static/scripts/**/*.+(js|jsx)",
   gunpowderBuild: "dist/scripts/gunpowder"
 };
 
 
 const REACT_URL = "http://fb.me/react-with-addons-{version}{min}.js";
+const WM_STATIC_PROD_URL = "https://wm.helpshift.com/html/";
+const WM_STATIC_DEV_URL = "http://localhost:3000/html/";
 
 
 /*
@@ -44,10 +48,29 @@ const babelCompile = function (srcFolder, destFolder, errorGrowl) {
 };
 
 /**
+ * Compile JavaScript files in dev environment.
+ * Replaces WM_STATIC_PROD_URL with WM_STATIC_DEV_URL.
+ */
+const babelCompileDev = function (srcFolder, destFolder, errorGrowl) {
+  gulp.src (srcFolder)
+    .pipe (babel ().on ("error", function (err) {
+      if (errorGrowl) {
+        notifier.notify ("Oops! Babel compile error!");
+      }
+      gutil.log (err);
+    }))
+    .pipe (replace (WM_STATIC_PROD_URL, WM_STATIC_DEV_URL))
+    .pipe (gulp.dest (destFolder))
+    .pipe (print (function (filepath) {
+      return `Compiled: ${filepath} ${getTimeStamp ()}`;
+    }));
+};
+
+/**
  * Compile jsx file once and then start watching jsx folder for changes
  */
 const babelWatch = function (srcFolder, destFolder, separator = "/scripts/") {
-  babelCompile (srcFolder, destFolder);
+  babelCompileDev (srcFolder, destFolder);
   gulp.watch (srcFolder, function (event) {
     const filePath = event.path.split ("/resources/") [1];
     let destPath = filePath.split (separator) [1];
@@ -64,16 +87,13 @@ const babelWatch = function (srcFolder, destFolder, separator = "/scripts/") {
  */
 gulp.task ("babel", function () {
   if (argv.production || argv.prod) {
-    // Doesn't compile test files.
     babelCompile (PATHS.scripts, PATHS.build);
     babelCompile (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
   } else if (argv.compile) {
-    // Compile files from jsx, scripts & tests
     console.log ("Compiling...");
-    babelCompile (PATHS.scripts, PATHS.build);
-    babelCompile (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
+    babelCompileDev (PATHS.scripts, PATHS.build);
+    babelCompileDev (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
   } else {
-    // Watch files from jsx, scripts & tests
     console.log ("Compiling & watching...");
     babelWatch (PATHS.scripts, PATHS.build);
     babelWatch (PATHS.gunpowderSrc, PATHS.gunpowderBuild);
