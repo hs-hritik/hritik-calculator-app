@@ -17,7 +17,10 @@
   $link-color: color(text, white);
 
   .hs-header {
+    display: flex;
+    align-items: center;
     flex: 0 0 auto;
+    justify-content: space-between;
     padding: $padding;
     font-weight: font-weight(bold);
     color: $color;

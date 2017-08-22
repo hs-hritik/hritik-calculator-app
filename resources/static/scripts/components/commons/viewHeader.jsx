@@ -58,7 +58,6 @@ define ("components/commons/viewHeader",
           return null;
         }
 
-        // @TODO: Update css to correct the alignment of buttons.
         return (
           <a className="hs-header__link" onClick={this._onCloseBtnClick}>
             <i className="ion-cross hs-header__close-icon" />
