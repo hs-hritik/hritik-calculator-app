@@ -64,14 +64,13 @@ define ("components/messageList",
             return null;
           }
           return (
-            <div key={message.id}>
               <Message message={message}
+                       key={message.id}
                        isLastMessage={messages.length === (index + 1)}
                        showAgentNickname={this.props.showAgentNickname}
                        text={this.props.text}
                        onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
-            </div>
           );
         });
       },

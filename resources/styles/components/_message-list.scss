@@ -13,14 +13,14 @@
 @include component(message-list) {
 
   $timestamp-color: color(text, light);
+  $typing-bg-color: color(bg, light);
+  $typing-dot-color: color(text, light);
 
   .hs-message-list {
     display: flex;
     flex: 1;
     flex-direction: column;
     overflow-y: auto;
-    $typing-bg-color: color(bg, light);
-    $typing-dot-color: color(text, light);
 
     &__date-separator {
       margin: gutter(4 0);

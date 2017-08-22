@@ -15,9 +15,10 @@ define ("components/message",
   function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils, classes, objUtils) {
     "use strict";
 
-    const MESSAGE_TIMESTAP_FORMAT = "{hh}:{MM} {a}";
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
     const PropTypes = React.PropTypes;
+
+    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
+          MESSAGES_SKIP_DETAILS = [MESSAGE_TYPE.END_CHAT];
 
     return React.createClass ({
       displayName: "Message",
@@ -52,7 +53,8 @@ define ("components/message",
         return (
           <div className={msgClasses}>
             {this._renderMessage ()}
-            {this._renderAgentNameAndTimestamp ()}
+            {this._renderMessageDetails ()}
+            {this._renderEndChatMessage ()}
           </div>
         );
       },
@@ -73,9 +75,6 @@ define ("components/message",
           case MESSAGE_TYPE.CSAT:
             return this._renderCsatMessage ();
 
-          case MESSAGE_TYPE.END_CHAT:
-            return this._renderEndChatMessage ();
-
           default:
             return null;
         }
@@ -87,7 +86,7 @@ define ("components/message",
       _renderTextMessage () {
         /* eslint-disable react/no-danger */
         return (
-          <div>
+          <div className="hs-message__item">
             <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
           </div>
         );
@@ -105,7 +104,7 @@ define ("components/message",
         const {text} = this.props;
 
         return (
-          <div>
+          <div className="hs-message__item">
             <div className="hs-message--suggested-faqs__title">
               {text.faqSuggestionsMsgTitle}
             </div>
@@ -141,7 +140,7 @@ define ("components/message",
 
         // @TODO: Rename classes. Also correct BEM notation.
         return (
-          <div>
+          <div className="hs-message__item">
             <div className="hs-message--suggested-faqs__title">
               {text.csatBotRequestMsg}
             </div>
@@ -159,10 +158,14 @@ define ("components/message",
        * Render end chat message.
        */
       _renderEndChatMessage () {
-        // @TODO: Add css and show agent nickname if enabled
+        // @TODO: Fix end chat msg css and show agent nickname if enabled
+        if (this.props.message.type !== MESSAGE_TYPE.END_CHAT) {
+          return null;
+        }
+
         return (
-          <div>
-            Agent ended chat
+          <div className="hs-message__end-chat">
+            <div>Agent ended chat</div>
           </div>
         );
       },
@@ -170,8 +173,11 @@ define ("components/message",
       /**
        * Render agent name and message timestamp.
        */
-      _renderAgentNameAndTimestamp () {
-        if (!this.props.isLastMessage) {
+      _renderMessageDetails () {
+        // Only render message details, if it's the last message,
+        // and message type is not the one mentioned in MESSAGES_SKIP_DETAILS (end chat msg)
+        if (!this.props.isLastMessage ||
+            MESSAGES_SKIP_DETAILS.indexOf (this.props.message.type) !== -1) {
           return null;
         }
 
@@ -210,17 +216,6 @@ define ("components/message",
               {timeAgoStr}
             </div>
           </div>
-        );
-      },
-
-      /**
-       * Render message's created at timestamp.
-       */
-      _renderCreatedTimestamp () {
-        const timeStr = dateUtils.format (this.props.message.createdTs, MESSAGE_TIMESTAP_FORMAT);
-
-        return (
-          <small className="hs-message__timestamp">{timeStr}</small>
         );
       }
     });
