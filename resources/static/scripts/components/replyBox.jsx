@@ -75,12 +75,12 @@ define ("components/replyBox",
        * Handler for reply text area key down.
        */
       _onReplyTextKeyDown (ev) {
-        if (ev.keyCode === KEY_CODES.ESCAPE) {
-          ev.target.blur ();
-        } if (ev.ctrlKey || ev.metaKey) {
-          if (ev.keyCode === KEY_CODES.ENTER) {
+        if (ev.keyCode === KEY_CODES.ENTER) {
+          if (!ev.shiftKey) {
             this._submitReply ();
           }
+        } else if (ev.keyCode === KEY_CODES.ESCAPE) {
+          ev.target.blur ();
         }
       },
       /**
