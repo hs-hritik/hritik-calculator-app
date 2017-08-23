@@ -55,6 +55,10 @@ define ("components/messageList",
         const {messages} = this.props;
 
         return messages.map ((message, index) => {
+          // @TODO: Added temp fix until we add loading spinner.
+          if (!message) {
+            return null;
+          }
           // Avoid rendering of unnecessary message types.
           if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
             return null;
