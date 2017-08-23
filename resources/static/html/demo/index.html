@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Helpshift Web Messenger Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h2>Helpshift Web Messenger Demo</h2>
+
+  <script>
+    var qs = function (a) {
+      if (a == "") return {};
+      var b = {};
+      for (var i = 0; i < a.length; ++i) {
+        var p = a[i].split('=', 2);
+        if (p.length == 1) b[p[0]] = "";else b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+      }
+      return b;
+    } (window.location.search.substr (1).split ('&'));
+
+    (function () {
+      var PLATFORM_ID = qs ["pid"] || "pika_platform_20170809062446403-276cbdcfd57aabe",
+        DOMAIN = qs ["domain"] || "pika",
+        USER_ID = qs ["userId"],
+        USER_NAME = qs ["userName"],
+        USER_EMAIL = qs ["userEmail"];
+
+      window.helpshiftConfig = {
+        platformId: PLATFORM_ID,
+        domain: DOMAIN,
+        userId: USER_ID ? USER_ID : "",
+        userName: USER_NAME ? USER_NAME : "",
+        userEmail: USER_EMAIL ? USER_EMAIL : ""
+      };
+    }) ();
+
+    (function (doc, sdkId) {
+      var js,
+          scriptNode = doc.getElementsByTagName ("script") [0];
+
+      if (doc.getElementById (sdkId)) {
+        return;
+      }
+
+      js = doc.createElement ("script");
+      js.async = true;
+      js.id = sdkId;
+      js.src = "https://wm.helpshift.com/webMessenger.js";
+      // js.src = "http://localhost:3000/webMessenger.js";
+
+      var initializeHelpshift = function () {
+        window.Helpshift ("init");
+      };
+
+      if (window.attachEvent) {
+        js.attachEvent("onload", initializeHelpshift);
+      } else {
+        js.addEventListener("load", initializeHelpshift, false);
+      }
+
+      scriptNode.parentNode.insertBefore(js, scriptNode);
+    }) (document, "hs-wm");
+  </script>
+</body>
+
+</html>

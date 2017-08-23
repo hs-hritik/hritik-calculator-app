@@ -49,6 +49,7 @@ static: dist
 preparedist:
 	@echo "Creating the dist directory"
 	@mkdir -p resources/dist
+	@mkdir -p resources/dist/demo
 	@echo "Done"
 
 bundlerinstall:
@@ -106,17 +107,16 @@ gunpowder: npminstall
 dist: preparedist npminstall styles gunpowder reactjs compress-js js-libs
 	@echo "Building the dist directory"
 	@cp -R resources/static/{html,libs,fonts} resources/dist
-	@cd resources/dist
-	@ln -sv scripts/external/messenger.js resources/dist/webMessenger.js
+	@cd resources/dist; ln -sv scripts/external/messenger.js webMessenger.js;
+	@cd resources/dist/demo; ln -sv ../html/demo/index.html .;
 	@echo "Done..."
 
 # The distdev task to compile resources and link the dev files to dist directory
 distdev: preparedist npminstall styles gunpowder reactjsdev
 	@echo "Creating/updating symlinks for dev directories in the dist directory"
-	@cd resources/static
-	@ln -sv {html,libs,fonts} resources/dist
-	@cd resources/dist
-	@ln -sv scripts/external/messenger.js resources/dist/webMessenger.js
+	@cd resources/dist; ln -sv ../static/{html,libs,fonts} .;
+	@cd resources/dist; ln -sv scripts/external/messenger.js webMessenger.js;
+	@cd resources/dist/demo; ln -sv ../html/demo/index.html .;
 	@echo "Done..."
 
 clean:
