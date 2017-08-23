@@ -44,6 +44,10 @@ define ("components/message",
       },
 
       render () {
+        if (this.props.message.type === MESSAGE_TYPE.END_CHAT) {
+          return this._renderEndChatMessage ();
+        }
+
         const {isCustomerMsg} = this.props.message;
         const msgClasses = classes (
           "hs-message", {
@@ -55,7 +59,6 @@ define ("components/message",
           <div className={msgClasses}>
             {this._renderMessage ()}
             {this._renderMessageDetails ()}
-            {this._renderEndChatMessage ()}
           </div>
         );
       },
@@ -163,13 +166,9 @@ define ("components/message",
        */
       _renderEndChatMessage () {
         // @TODO: Fix end chat msg css and show agent nickname if enabled
-        if (this.props.message.type !== MESSAGE_TYPE.END_CHAT) {
-          return null;
-        }
-
         return (
-          <div className="hs-message__end-chat">
-            <div>Agent ended chat</div>
+          <div className="hs-message hs-message--end-chat">
+            <span>Agent ended chat</span>
           </div>
         );
       },

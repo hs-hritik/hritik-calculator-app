@@ -20,6 +20,7 @@
   $faq-border-color: color(border, light);
   $right-bg-color: color(bg, white);
   $right-border-color: color(border, light);
+  $end-chat-msg-text-color: color(text, light);
   $end-chat-msg-border-color: color(border, light);
 
   .hs-message {
@@ -95,21 +96,20 @@
       margin-left: gutter(8);
     }
 
-    // @TODO: Fix end chat msg css
-    &__end-chat {
+    &--end-chat {
       position: relative;
-      z-index: 1;
-      margin-bottom: gutter(16);
+      align-self: stretch;
+      max-width: 100%;
+      color: $end-chat-msg-text-color;
       text-align: center;
 
-      &::before {
+      ::before {
         position: absolute;
         top: 50%;
-        right: 0;
-        left: 0;
-        z-index: -1;
-        margin: 0 auto;
-        border-top: 2px solid $end-chat-msg-border-color;
+        display: block;
+        width: 100%;
+        height: 1px;
+        background: $end-chat-msg-border-color;
         content: "";
       }
     }
