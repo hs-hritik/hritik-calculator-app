@@ -169,6 +169,31 @@ define ("reducers/chatView",
             endUserFirstMsgId: {$set: action.id}
           });
 
+        case ACTION_TYPES.SET_CLIENT_CONFIG:
+          const {userName, userEmail} = action.config,
+                infoBotChangeObj = {};
+          if (typeof userName === "string") {
+            infoBotChangeObj.name = {
+              value: {
+                value: {$set: userName}
+              }
+            };
+          }
+
+          if (typeof userEmail === "string") {
+            infoBotChangeObj.email = {
+              value: {
+                value: {$set: userEmail}
+              }
+            };
+          }
+
+          return update (state, {
+            infoBot: {
+              data: infoBotChangeObj
+            }
+          });
+
         default:
           return state;
       }
