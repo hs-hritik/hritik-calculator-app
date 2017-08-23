@@ -113,5 +113,9 @@
         content: "";
       }
     }
+
+    &:first-child {
+      margin-top: gutter(12);
+    }
   }
 }
