@@ -46,8 +46,8 @@
   // or keep in javascript. Also update styles later.
   const LAUNCHER_IFRAME_STYLES = {
     "position": "fixed",
-    "bottom": "20px",
-    "right": "20px",
+    "bottom": "28px",
+    "right": "28px",
     "width": "60px",
     "height": "60px",
     "border-radius": "50%",
@@ -71,10 +71,13 @@
   const MESSENGER_IFRAME_STYLES = {
     "position": "fixed",
     "bottom": "100px",
-    "right": "20px",
-    "min-height": "520px",
-    "max-height": "640px",
-    "width": "340px",
+    "right": "28px",
+    "min-height": "320px",
+    "max-height": "540px",
+    "min-width": "320px",
+    "max-width": "340px",
+    "height": "100%",
+    "width": "100%",
     "border": "none",
     "border-radius": "8px",
     "z-index": "9999999",
