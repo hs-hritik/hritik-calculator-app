@@ -15,10 +15,13 @@ define ("components/message",
   function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils, classes, objUtils) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
+    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+    // Total character limit is 22
+    // 22 = 15 (MAX_CHAR_LIMIT) + 3 (dots) + 4 (extension)
+    const MAX_CHAR_LIMIT = 15;
+    const EXTENSION_CHAR_LIMIT = 4;
 
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
-          MESSAGES_SKIP_DETAILS = [MESSAGE_TYPE.END_CHAT];
+    const PropTypes = React.PropTypes;
 
     return React.createClass ({
       displayName: "Message",
@@ -92,9 +95,56 @@ define ("components/message",
         return (
           <div className="hs-message__item">
             <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
+            {this._renderAttachments ()}
           </div>
         );
         /* eslint-enable react/no-danger */
+      },
+
+      /**
+       * Render message attachments
+       */
+      _renderAttachments () {
+        const {attachments} = this.props.message;
+
+        if (!(attachments && attachments.length)) {
+          return null;
+        }
+
+        const attachmentsEl = attachments.map (this._renderAttachment);
+
+        return (
+          <div>
+            {attachmentsEl}
+          </div>
+        );
+      },
+
+      /**
+       * Render message attachment
+       */
+      _renderAttachment (attachment) {
+        // @TODO :- Replace file icon and download icon with SVG
+        // @TODO :- Make complete attachment clickable
+        // @TODO :- Display extension on file icon
+        const formattedFileName = this._formatFileName (attachment.fileName);
+
+        return (
+          <div className="hs-attachment">
+            <div className="hs-attachment__file-icon" />
+            <div className="hs-attachment__name-wrapper">
+              <div className="hs-attachment__name" title={attachment.fileName}>
+                {formattedFileName}
+              </div>
+              <a target="_blank"
+                 className="hs-attachment__download-icon-wrapper"
+                 href={attachment.url} >
+                <i className="ion-arrow-down hs-attachment__download-icon" />
+                <span>View</span>
+              </a>
+            </div>
+          </div>
+        );
       },
 
       /**
@@ -178,9 +228,9 @@ define ("components/message",
        */
       _renderMessageDetails () {
         // Only render message details, if it's the last message,
-        // and message type is not the one mentioned in MESSAGES_SKIP_DETAILS (end chat msg)
+        // and message type end chat msg
         if (!this.props.isLastMessage ||
-            MESSAGES_SKIP_DETAILS.indexOf (this.props.message.type) !== -1) {
+            (this.props.message.type === MESSAGE_TYPE.END_CHAT)) {
           return null;
         }
 
@@ -220,6 +270,23 @@ define ("components/message",
             </div>
           </div>
         );
+      },
+
+      /**
+       * Return formatted file name
+       * @NOTE :- Move to gunpowder if required at multiple places
+       */
+      _formatFileName (fileName) {
+        const length = fileName.length;
+
+        if (length <= MAX_CHAR_LIMIT) {
+          return fileName;
+        }
+
+        const name = fileName.slice (0, MAX_CHAR_LIMIT);
+        const extension = fileName.slice (length - EXTENSION_CHAR_LIMIT, length);
+
+        return `${name}...${extension}`;
       }
     });
   }
