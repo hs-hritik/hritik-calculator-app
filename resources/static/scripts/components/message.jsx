@@ -29,7 +29,8 @@ define ("components/message",
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
         text: PropTypes.shape ({
-          faqSuggestionsMsgTitle: PropTypes.string.isRequired,
+          faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
+          faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           csatLinkCaption: PropTypes.string.isRequired
         }).isRequired
@@ -102,11 +103,14 @@ define ("components/message",
         }
 
         const {text} = this.props;
+        const msgTitle = (this.props.message.suggestedFaqs.length === 1) ?
+                         text.faqSuggestionsMsgTitleSingle :
+                         text.faqSuggestionsMsgTitleMultpile;
 
         return (
           <div className="hs-message__item">
             <div className="hs-message--suggested-faqs__title">
-              {text.faqSuggestionsMsgTitle}
+              {msgTitle}
             </div>
             <div className="hs-message--suggested-faqs">
               {this._renderFaqs ()}
