@@ -13,6 +13,7 @@
 @include component(faq) {
 
   .hs-faq {
-    padding: gutter(16);
+    flex: 1;
+    padding: gutter(16 16 0 16);
   }
 }
