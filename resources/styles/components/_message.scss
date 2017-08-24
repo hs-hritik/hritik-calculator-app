@@ -69,20 +69,28 @@
     }
 
     &--end-chat {
-      position: relative;
+      display: flex;
+      align-items: center;
       align-self: stretch;
       max-width: 100%;
+      margin: gutter(28 0);
       color: $end-chat-msg-text-color;
       text-align: center;
 
-      ::before {
-        position: absolute;
-        top: 50%;
-        display: block;
-        width: 100%;
+      &::before,
+      &::after {
+        flex: 1 1 auto;
         height: 1px;
         background: $end-chat-msg-border-color;
         content: "";
+      }
+
+      &::before {
+        margin-right: gutter(8);
+      }
+
+      &::after {
+        margin-left: gutter(8);
       }
     }
 

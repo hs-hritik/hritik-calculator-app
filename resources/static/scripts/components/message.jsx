@@ -168,7 +168,7 @@ define ("components/message",
         // @TODO: Fix end chat msg css and show agent nickname if enabled
         return (
           <div className="hs-message hs-message--end-chat">
-            <span>Agent ended chat</span>
+            Agent ended chat
           </div>
         );
       },
