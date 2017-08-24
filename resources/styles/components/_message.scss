@@ -28,6 +28,7 @@
     margin-bottom: gutter(8);
 
     &__item {
+      @include word-break;
       position: relative;
       flex: 0 0 auto;
       padding: gutter(8 12);
