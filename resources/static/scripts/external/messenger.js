@@ -112,9 +112,9 @@
     "font-size": "12px",
     "position": "absolute",
     "top": "0px",
-    "right": "4px"
+    "right": "4px",
+    "font-family": "sans-serif"
   };
-  // @TODO: Move the count to front
 
   const LAUNCHER_ICON = {
     CLOSE: "CLOSE",
@@ -243,8 +243,14 @@
   const renderUnreadCount = () => {
     if (state.unreadCount !== 0 && webSdkIframe.style.display === "none") {
       unreadCountEl.innerHTML = state.unreadCount;
+      setStyle (unreadCountEl, {
+        display: "inline"
+      });
     } else {
       unreadCountEl.innerHTML = "";
+      setStyle (unreadCountEl, {
+        display: "none"
+      });
     }
   };
 
