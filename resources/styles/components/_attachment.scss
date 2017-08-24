@@ -1,0 +1,60 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group conversation
+///
+
+@include component(attachment) {
+
+  /// @TODO :- Remove file logo color after replacing it with SVG
+  $file-logo-color: #67a2e6;
+  $attachment-background-color: color(bg, white);
+
+  .hs-attachment {
+    display: flex;
+    padding: gutter(8);
+    margin-top: gutter(8);
+    background-color: $attachment-background-color;
+    border-radius: radius();
+
+    // @TODO :- Replace file icon with SVG
+    &__file-icon {
+      width: 30px;
+      height: 36px;
+      padding-top: gutter(4);
+      margin-top: gutter(8);
+      color: $attachment-background-color;
+      text-align: center;
+      background-color: $file-logo-color;
+      border-radius: radius(small);
+      border-top-right-radius: 8px;
+    }
+
+    &__name-wrapper {
+      display: flex;
+      flex-direction: column;
+      margin-left: gutter(12);
+    }
+
+    &__name {
+      font-weight: font-weight(medium);
+    }
+
+    &__download-icon-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    // @TODO :- Replace download icon with SVG
+    &__download-icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

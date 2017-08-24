@@ -27,11 +27,36 @@ define ("helpers/entity",
           state: msg.state,
           createdTs: msg.created_at,
           author: msg.author,
-          isCustomerMsg: (msg.origin !== "admin")
+          isCustomerMsg: (msg.origin !== "admin"),
+          attachments: getProcessedAttachments (msg)
         };
       });
 
       return processedMessages;
+    };
+
+    /**
+     * Returns processed attachment.
+     * @param {Array} attachments - unprocessed message attachment.
+     * @returns {Array} - processed attachments.
+     */
+    // @TODO :- Remove 'msg' param after BE fix, 'attachments' will be the
+    // original parameter
+    const getProcessedAttachments = (msg) => {
+      // @TODO :- Remove array of attachment after BE fix
+      const attachments = msg.attachments || (msg.attachment && [msg.attachment]);
+
+      if (!attachments) {
+        return null;
+      }
+
+      return attachments.map ((attachment) => {
+        return {
+          url: attachment.url,
+          contentType: attachment.content_type,
+          fileName: attachment.file_name
+        };
+      });
     };
 
     /**
