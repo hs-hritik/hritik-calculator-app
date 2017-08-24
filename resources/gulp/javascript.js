@@ -26,9 +26,13 @@ const PATHS = {
 
 
 const REACT_URL = "http://fb.me/react-with-addons-{version}{min}.js";
-const WM_STATIC_PROD_URL = "https://wm.helpshift.com/html/";
-const WM_STATIC_DEV_URL = "http://localhost:3000/html/";
 
+const ENV_CONFIG = {
+  WM_STATIC_URL_PROD: "https://wm.helpshift.com/html/",
+  WM_STATIC_URL_DEV: "http://localhost:3000/html/",
+  API_BASE_PROD: "https://api.helpshift.com/",
+  API_BASE_DEV: "https://api.helpshift.mobi/"
+};
 
 /*
  * Compile jsx files
@@ -59,7 +63,8 @@ const babelCompileDev = function (srcFolder, destFolder, errorGrowl) {
       }
       gutil.log (err);
     }))
-    .pipe (replace (WM_STATIC_PROD_URL, WM_STATIC_DEV_URL))
+    .pipe (replace (ENV_CONFIG.WM_STATIC_URL_PROD, ENV_CONFIG.WM_STATIC_URL_DEV))
+    .pipe (replace (ENV_CONFIG.API_BASE_PROD, ENV_CONFIG.API_BASE_DEV))
     .pipe (gulp.dest (destFolder))
     .pipe (print (function (filepath) {
       return `Compiled: ${filepath} ${getTimeStamp ()}`;
@@ -76,7 +81,7 @@ const babelWatch = function (srcFolder, destFolder, separator = "/scripts/") {
     let destPath = filePath.split (separator) [1];
     destPath = `${destFolder}/${destPath}`;
     destPath = destPath.replace (/\/.[^\/]*$/, "/");
-    babelCompile (filePath, destPath, true);
+    babelCompileDev (filePath, destPath, true);
   });
 };
 

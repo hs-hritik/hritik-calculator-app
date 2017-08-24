@@ -5,46 +5,47 @@
  */
 
 define ("constants/routes",
-  function () {
+  ["constants/envConfig"],
+  function (envConfig) {
     "use strict";
 
-    const BASE = "https://api.helpshift.mobi/v1/";
+    const webSdkApiRoot = envConfig.apiRoot;
+    const BASE = `${webSdkApiRoot}websdk/v1/`;
 
-    // @TODO: Update this route when HS API is ready.
-    const getWmConfig = (domain) => `${BASE}${domain}/websdk/config`;
+    const getWmConfig = (domain, platformId) => `${BASE}${domain}/platforms/${platformId}/config`;
 
     const getCss = () => "/css/style.css";
 
-    const getMyIssues = (domain) => `${BASE}${domain}/websdk/my-issues`;
+    const getMyIssues = (domain) => `${BASE}${domain}/my-issues`;
 
     const postUserReply = (domain, issueId) =>
-                           `${BASE}${domain}/websdk/issues/${issueId}/messages/user`;
+                           `${BASE}${domain}/issues/${issueId}/messages/user`;
 
-    const getMessages = (domain, issueId) => `${BASE}${domain}/websdk/issues/${issueId}/messages`;
+    const getMessages = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/messages`;
 
-    const getFaq = (domain, faqId) => `${BASE}${domain}/websdk/faqs/${faqId}`;
+    const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
 
     const putFaqFeedback = (domain, faqId, isHelpful) => {
       if (isHelpful) {
-        return `${BASE}${domain}/websdk/faqs/${faqId}/helpful`;
+        return `${BASE}${domain}/faqs/${faqId}/helpful`;
       } else {
-        return `${BASE}${domain}/websdk/faqs/${faqId}/unhelpful`;
+        return `${BASE}${domain}/faqs/${faqId}/unhelpful`;
       }
     };
 
-    const getFaqSuggestions = (domain) => `${BASE}${domain}/websdk/faqs/suggest`;
+    const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
 
-    const postIssue = (domain) => `${BASE}${domain}/websdk/issues`;
+    const postIssue = (domain) => `${BASE}${domain}/issues`;
 
-    const postCSAT = (domain, issueId) => `${BASE}${domain}/websdk/issues/${issueId}/csat`;
+    const postCSAT = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/csat`;
 
-    const postProfile = (domain) => `${BASE}${domain}/websdk/profiles`;
+    const postProfile = (domain) => `${BASE}${domain}/profiles`;
 
     const putMessagesSeen = (domain, issueId) =>
-                             `${BASE}${domain}/websdk/issues/${issueId}/messages-seen`;
+                             `${BASE}${domain}/issues/${issueId}/messages-seen`;
 
     // Route to fetch web socket related config
-    const getWsConfig = (domain) => `${BASE}${domain}/websdk/ws-config`;
+    const getWsConfig = (domain) => `${BASE}${domain}/ws-config`;
 
     // Route to open web socket connection
     const webSocket = (domain, platformId, endpoint, token) =>

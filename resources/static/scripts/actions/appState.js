@@ -317,10 +317,7 @@ define ("actions/appState",
      */
     const getWmConfig = (domain, platformId, callbacks) => {
       xhr ({
-        route: routes.getWmConfig (domain),
-        data: {
-          "platform-id": platformId
-        },
+        route: routes.getWmConfig (domain, platformId),
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           if (callbacks.onSuccess) {
