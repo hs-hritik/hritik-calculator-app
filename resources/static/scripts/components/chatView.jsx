@@ -134,9 +134,6 @@ define ("components/chatView",
               <div className="hs-chat-footer__title">
                {field.title}
               </div>
-              <a className="hs-chat-footer__submit">
-                <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
-              </a>
             </div>
             <div className="hs-chat-footer__field">
               <input className="hs-chat-footer__text-field"
@@ -144,6 +141,9 @@ define ("components/chatView",
                      placeholder={field.placeholder}
                      onChange={this._onInfoBotFieldValueChange}
                      onKeyUp={this._onInfoBotFieldKeyUp} />
+              <a className="hs-chat-footer__submit">
+                <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
+              </a>
             </div>
           </div>
         );

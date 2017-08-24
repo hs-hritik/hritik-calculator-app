@@ -67,7 +67,7 @@
 
     &__submit {
       display: flex;
-      padding: gutter(0 8);
+      align-self: flex-end;
       cursor: pointer;
     }
 
@@ -89,15 +89,6 @@
         &__submit {
           color: $submit-error-color;
         }
-      }
-    }
-
-    /// fixed submit modifier is used to place submit icon at the bottom right corner
-    &--fixed-submit {
-      .hs-chat-footer__submit {
-        position: absolute;
-        right: gutter(20);
-        bottom: gutter(16);
       }
     }
   }

@@ -37,8 +37,7 @@ define ("components/replyBox",
         const {text, disabled} = this.props;
 
         const replyBoxClasses = classes (
-          "hs-chat-footer",
-          "hs-chat-footer--fixed-submit", {
+          "hs-chat-footer", {
             "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
           }
         );
