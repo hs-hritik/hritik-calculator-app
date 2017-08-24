@@ -619,7 +619,18 @@ define ("actions/chatView",
      * @returns {Object} - action
      */
     const rejectFaqSuggestions = () => {
-      return (dispatch) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: state.ui.text.faqSuggestionsAdditionalHelpRequiredBtn,
+            isCustomerMsg: true
+          }, {
+            typingTimer: null,
+            issueId: state.appState.dummyIssueId
+          })
+        );
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
         dispatch (startNextPreChatFeature ());
       };
@@ -635,7 +646,17 @@ define ("actions/chatView",
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.problemSolvedByFaqSuggestionsMessage,
+            body: state.ui.text.faqSuggestionsAdditionalHelpNotRequiredBtn,
+            isCustomerMsg: true
+          }, {
+            typingTimer: null,
+            issueId: state.appState.dummyIssueId
+          })
+        );
+
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
             isCustomerMsg: false
           }, {
             typingTimer: null,
@@ -871,7 +892,7 @@ define ("actions/chatView",
       store.dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
       store.dispatch (
         createMessage (MESSAGE_TYPE.TEXT, {
-          body: state.ui.text.faqSuggestionsAdditionalHelpMessage,
+          body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
           isCustomerMsg: false
         }, {
           typingTimer: MESSAGE_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,

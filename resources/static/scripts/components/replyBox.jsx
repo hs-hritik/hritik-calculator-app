@@ -29,7 +29,6 @@ define ("components/replyBox",
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          replyBtn: PropTypes.string.isRequired,
           replyBtnPlaceholder: PropTypes.string.isRequired
         }).isRequired
       },
