@@ -24,7 +24,7 @@ define ("reducers/chatView",
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
-      endUserFirstMsgId: null,
+      endUserFirstMsgId: "",
       unreadCount: 0,
       infoBot: {
         fieldsRequired: ["name", "email"],
@@ -126,7 +126,7 @@ define ("reducers/chatView",
                 $set: action.config.user_info_bot.fields
               },
               currentField: {
-                $set: action.config.user_info_bot.fields [0]
+                $set: action.config.user_info_bot.fields [0] || ""
               }
             }
           });
@@ -156,7 +156,7 @@ define ("reducers/chatView",
         case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
           const {fieldsRequired, currentField} = state.infoBot;
           const currentFieldIndex = fieldsRequired.indexOf (currentField);
-          const newCurrentField = fieldsRequired [currentFieldIndex + 1] || null;
+          const newCurrentField = fieldsRequired [currentFieldIndex + 1] || "";
 
           return update (state, {
             infoBot: {
