@@ -15,15 +15,21 @@ define ("constants/message",
       END_CHAT: "EndChat"
     };
 
-    // Timeout (in milliseconds) for different system generated message.
-    const TIMEOUT = {
+    // Typing timeout (in milliseconds) for different system generated message.
+    const TYPING_TIMEOUT = {
       FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
       INFO_BOT_REQUEST: 1200,
       INFO_BOT_FIELD: 1200
     };
 
+    // Timeout (in milliseconds) for different system generated message.
+    const TIMEOUT = {
+      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 600
+    };
+
     return {
       TYPE,
-      TIMEOUT
+      TIMEOUT,
+      TYPING_TIMEOUT
     };
   });

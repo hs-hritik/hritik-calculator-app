@@ -37,7 +37,8 @@ define ("actions/chatView",
 
     const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
-          MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
+          {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
+          MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
           {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS,
           {Input} = schema;
@@ -894,23 +895,29 @@ define ("actions/chatView",
     const onFaqSuggestionMessageAdd = () => {
       const state = store.getState ();
       store.dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-      store.dispatch (
-        createMessage (MESSAGE_TYPE.TEXT, {
-          body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
-          isCustomerMsg: false
-        }, {
-          typingTimer: MESSAGE_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
-          issueId: state.appState.dummyIssueId,
-          onAddMessage: () => {
-            store.dispatch (
-              batchActions ([
-                updatePreChatFeatureState ("answerBot", ANSWER_BOT_STATE.WAITING_FOR_USER_FEEDBACK),
-                setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK)
-              ])
-            );
-          }
-        })
-      );
+
+      window.setTimeout (() => {
+        store.dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
+            isCustomerMsg: false
+          }, {
+            typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
+            issueId: state.appState.dummyIssueId,
+            onAddMessage: () => {
+              store.dispatch (
+                batchActions ([
+                  updatePreChatFeatureState (
+                    "answerBot",
+                    ANSWER_BOT_STATE.WAITING_FOR_USER_FEEDBACK
+                  ),
+                  setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK)
+                ])
+              );
+            }
+          })
+        );
+      }, MESSAGES_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP);
     };
 
     /**
@@ -956,7 +963,7 @@ define ("actions/chatView",
                 body: state.ui.text.infoBotRequestMsg,
                 isCustomerMsg: false
               }, {
-                typingTimer: MESSAGE_TIMEOUT.INFO_BOT_REQUEST,
+                typingTimer: TYPING_TIMEOUT.INFO_BOT_REQUEST,
                 issueId: state.appState.dummyIssueId,
                 onAddMessage: () => {
                   dispatch (
@@ -1001,7 +1008,7 @@ define ("actions/chatView",
               body: currentField.msg,
               isCustomerMsg: false
             }, {
-              typingTimer: MESSAGE_TIMEOUT.INFO_BOT_FIELD,
+              typingTimer: TYPING_TIMEOUT.INFO_BOT_FIELD,
               issueId: state.appState.dummyIssueId,
               onAddMessage: () => {
                 dispatch (
