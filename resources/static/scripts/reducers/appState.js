@@ -71,10 +71,10 @@ define ("reducers/appState",
           const {config} = action;
 
           return update (state, {
-            wmEnabled: {$set: config.widget_enabled},
+            wmEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
               answerBot: {$set: config.answer_bot_enabled},
-              infoBot: {$set: config.info_bot_enabled},
+              infoBot: {$set: config.user_info_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled}
             }

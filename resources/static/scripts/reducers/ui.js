@@ -48,11 +48,10 @@ define ("reducers/ui",
 
           return update (state, {
             text: {
-              greetingMsg: {$set: config.greeting_msg},
+              greetingMsg: {$set: config.greeting},
               chatViewHeader: {$set: config.appearance.widget_title},
               csatViewHeader: {$set: config.appearance.widget_title},
-              csatBotRequestMsg: {$set: config.csat_bot.req_msg},
-              csatBotFormRequestMsg: {$set: config.csat_bot.form_msg}
+              csatBotRequestMsg: {$set: config.csat_bot.req_msg}
             },
             color: {
               primary: {$set: config.appearance.primary_color}

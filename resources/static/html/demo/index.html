@@ -15,6 +15,7 @@
   <h2>Helpshift Web Messenger Demo</h2>
 
   <script>
+    /* eslint-disable */
     var qs = function (a) {
       if (a == "") return {};
       var b = {};
@@ -26,7 +27,7 @@
     } (window.location.search.substr (1).split ('&'));
 
     (function () {
-      var PLATFORM_ID = qs ["pid"] || "pika_platform_20170809062446403-276cbdcfd57aabe",
+      var PLATFORM_ID = qs ["pid"] || "pika_platform_20170824101735674-01378b24982365e",
         DOMAIN = qs ["domain"] || "pika",
         USER_ID = qs ["userId"],
         USER_NAME = qs ["userName"],
@@ -41,32 +42,8 @@
       };
     }) ();
 
-    (function (doc, sdkId) {
-      var js,
-          scriptNode = doc.getElementsByTagName ("script") [0];
-
-      if (doc.getElementById (sdkId)) {
-        return;
-      }
-
-      js = doc.createElement ("script");
-      js.async = true;
-      js.id = sdkId;
-      js.src = "https://wm.helpshift.com/webMessenger.js";
-      // js.src = "http://localhost:3000/webMessenger.js";
-
-      var initializeHelpshift = function () {
-        window.Helpshift ("init");
-      };
-
-      if (window.attachEvent) {
-        js.attachEvent("onload", initializeHelpshift);
-      } else {
-        js.addEventListener("load", initializeHelpshift, false);
-      }
-
-      scriptNode.parentNode.insertBefore(js, scriptNode);
-    }) (document, "hs-wm");
+    !function(e,t){var n,a=e.getElementsByTagName("script")[0];if  (!e.getElementById(t)){n=e.createElement("script"),n.async=!0,  n.id=t,n.src="https://wm.helpshift.com/webMessenger.js";var i=function()  {window.Helpshift("init")};window.attachEvent?n.attachEvent("onload",i)  :n.addEventListener("load",i,!1),a.parentNode.insertBefore(n,a)}}  (document,"hs-wm");
+    /* eslint-enable */
   </script>
 </body>
 

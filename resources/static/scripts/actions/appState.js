@@ -297,7 +297,7 @@ define ("actions/appState",
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig (response));
 
-            if (response.widget_enabled) {
+            if (response.wm_widget_enabled) {
               // A side-effect of getting the web messenger config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
@@ -364,7 +364,7 @@ define ("actions/appState",
       const {browserIsMobile} = store.getState ().appState;
 
       return {
-        widgetEnabled: response.widget_enabled,
+        widgetEnabled: response.wm_widget_enabled,
         primaryColor: response.appearance.primary_color,
         browserIsMobile
       };
