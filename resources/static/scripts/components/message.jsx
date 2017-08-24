@@ -162,10 +162,8 @@ define ("components/message",
 
         return (
           <div className="hs-message__item">
-            <div className="hs-message--suggested-faqs__title">
-              {msgTitle}
-            </div>
-            <div className="hs-message--suggested-faqs">
+            {msgTitle}
+            <div className="hs-message__suggested-faqs">
               {this._renderFaqs ()}
             </div>
           </div>
@@ -180,11 +178,12 @@ define ("components/message",
 
         return suggestedFaqs.map ((faq) => {
           return (
-            <div key={faq.id}
-                 className="hs-suggested-faq"
-                 onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
+            <a key={faq.id}
+               className="hs-message__suggested-faq"
+               onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
               {faq.title}
-            </div>
+              <i className="ion-chevron-right hs-message__suggested-faq-icon" />
+            </a>
           );
         });
       },
@@ -195,17 +194,16 @@ define ("components/message",
       _renderCsatMessage () {
         const {text} = this.props;
 
-        // @TODO: Rename classes. Also correct BEM notation.
+        // @TODO: Rename classes.
         return (
           <div className="hs-message__item">
-            <div className="hs-message--suggested-faqs__title">
-              {text.csatBotRequestMsg}
-            </div>
-            <div className="hs-message--suggested-faqs">
-              <div className="hs-suggested-faq"
-                   onClick={this.props.onStartCsatSurveyClick}>
+            {text.csatBotRequestMsg}
+            <div className="hs-message__suggested-faqs">
+              <a className="hs-message__suggested-faq"
+                 onClick={this.props.onStartCsatSurveyClick}>
                 {text.csatLinkCaption}
-              </div>
+                <i className="ion-chevron-right hs-message__suggested-faq-icon" />
+              </a>
             </div>
           </div>
         );
