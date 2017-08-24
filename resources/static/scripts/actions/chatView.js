@@ -35,7 +35,7 @@ define ("actions/chatView",
     xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
     "use strict";
 
-    const {normalize, denormalize} = normalizr,
+    const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           MESSAGE_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
@@ -498,22 +498,13 @@ define ("actions/chatView",
         const state = getState ();
         const {appState} = state;
         const {dummyIssueId, userId} = appState;
-        const dummyIssue = denormalize (
-          appState.dummyIssueId,
-          entitySchema.issue,
-          state.entities
-        );
-
-        const firstUserMsg = arrayUtils.find (dummyIssue.messages, (message) => {
-          return message.isCustomerMsg;
-        });
-
+        const endUserFirstMsg = getEndUserFirstMessage ();
         dispatch (disableReplyBox ());
 
         const xhrData = {
           "identifier": appState.identifier,
           "platform-id": appState.platformId,
-          "message-body": firstUserMsg.body
+          "message-body": endUserFirstMsg.body
         };
 
         if (userId) {
@@ -530,13 +521,14 @@ define ("actions/chatView",
             const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
             dispatch (entitiesActions.setEntities (processedEntities));
 
+            const endUserFirstMsgNewId = response.messages [0].id;
             // Replace frontend created user message with backend message,
             // and add all dummy issue messages to the active issue.
             const dummyIssueMsgIds = state.entities.issues [dummyIssueId].messages.slice ();
             dummyIssueMsgIds.splice (
-              dummyIssueMsgIds.indexOf (firstUserMsg.id),
+              dummyIssueMsgIds.indexOf (endUserFirstMsg.id),
               1,
-              response.messages [0].id
+              endUserFirstMsgNewId
             );
 
             const newIssueId = response.id;
@@ -546,6 +538,7 @@ define ("actions/chatView",
                 // Remove messages from dummy issue
                 setMessages (dummyIssueId, []),
                 setActiveIssue (newIssueId),
+                setEndUserFirstMessageId (endUserFirstMsgNewId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
                 setChatViewFooter (ACTIVE_FOOTER.REPLY)
               ])
@@ -814,29 +807,40 @@ define ("actions/chatView",
     };
 
     /**
+     * Return end user first message.
+     * @returns {Object} - end user first message
+     */
+    const getEndUserFirstMessage = () => {
+      const {chatView, entities} = store.getState ();
+      const {endUserFirstMsgId} = chatView;
+      let message = null;
+
+      for (const id in entities.messages) {
+        if (entities.messages.hasOwnProperty (id) && (id === endUserFirstMsgId)) {
+          message = entities.messages [id];
+          break;
+        }
+      }
+
+      return message;
+    };
+
+    /**
      * Action to start answer bot workflow (FAQ suggestions).
      * @returns {Object} - Action
      */
     const startAnswerBot = () => {
       return (dispatch, getState) => {
-        const {appState, chatView, entities} = getState (),
+        const {appState} = getState (),
               featureState = appState.preChatFeatureState.answerBot;
 
         switch (featureState) {
           case ANSWER_BOT_STATE.INITIAL:
-            let searchText;
-            const {endUserFirstMsgId} = chatView;
-
-            // Get faq suggestions for the end user first message.
-            objUtils.forEachKey (entities.messages, (id, msg) => {
-              if (id === endUserFirstMsgId) {
-                searchText = msg.body;
-              }
-            });
+            const endUserFirstMsg = getEndUserFirstMessage ();
 
             dispatch (toggleSystemTyping (true));
 
-            dispatch (getFaqSuggestions (searchText, {
+            dispatch (getFaqSuggestions (endUserFirstMsg.body, {
               onSuccess: (faqs) => {
                 // If there are no faq suggestions, move to next pre-chat feature,
                 // otherwise create faq message.
