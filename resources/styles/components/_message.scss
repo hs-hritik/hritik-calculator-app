@@ -26,49 +26,22 @@
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
-    margin-bottom: gutter(16);
+    margin-bottom: gutter(8);
 
     &__item {
       position: relative;
       flex: 0 0 auto;
-      padding: gutter(8 12 16);
-      margin-left: gutter(16);
+      padding: gutter(8 12);
       background-color: $left-bg-color;
-
-      &::after {
-        position: absolute;
-        top: 0;
-        left: gutter(-8);
-        width: 0;
-        height: 0;
-        border: 4px solid $left-bg-color;
-        border-bottom-color: transparent;
-        border-left-color: transparent;
-        content: "";
-      }
+      border-radius: 6px;
     }
 
     &--right {
       align-self: flex-end;
 
       .hs-message__item {
-        margin-right: gutter(16);
         background-color: $right-bg-color;
         border: 1px solid $right-border-color;
-        border-radius: radius(4 0 4 4);
-
-        &::after {
-          right: gutter(-8);
-          left: auto;
-          border: 4px solid $right-bg-color;
-          border-right-color: transparent;
-          border-bottom-color: transparent;
-        }
-      }
-
-      .hs-message__details {
-        margin-right: 16px;
-        margin-left: auto;
       }
     }
 
@@ -85,7 +58,6 @@
     &__details {
       display: flex;
       justify-content: space-between;
-      margin-left: gutter(16);
     }
 
     &__agent-nickname {

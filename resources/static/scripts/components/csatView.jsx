@@ -105,9 +105,9 @@ define ("components/csatView",
         const {text} = this.props;
         return (
           <div className="hs-csat__form">
-            <div className="hs-csat__form-title">
+            <h3 className="hs-csat__form-title">
               {text.csatBotResponseMsg}
-            </div>
+            </h3>
           </div>
         );
       },

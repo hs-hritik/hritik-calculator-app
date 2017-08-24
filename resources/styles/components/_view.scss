@@ -13,7 +13,6 @@
 @include component(view) {
 
   $bg-color: color(bg, x-light);
-  $padding-content: gutter(0 12);
 
   .hs-view {
     display: flex;
@@ -27,7 +26,6 @@
       flex: 1 1 auto;
       flex-direction: column;
       height: 100%;
-      padding: $padding-content;
       overflow-y: auto;
     }
   }

@@ -7,18 +7,12 @@
 // - - - - - - - - - - - - - - -
 
 ///
-/// @group footer
+/// @group faq
 ///
 
-@include component(faq-footer) {
+@include component(faq) {
 
-  .hs-faq-footer {
-    display: flex;
-    justify-content: space-between;
-    padding: gutter(16 12);
-
-    &__btn {
-      margin: gutter(0 4);
-    }
+  .hs-faq {
+    padding: gutter(16);
   }
 }
