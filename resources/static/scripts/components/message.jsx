@@ -54,6 +54,7 @@ define ("components/message",
         const {isCustomerMsg} = this.props.message;
         const msgClasses = classes (
           "hs-message", {
+            "hs-message--left": !isCustomerMsg,
             "hs-message--right": isCustomerMsg
           }
         );

@@ -25,7 +25,7 @@
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
-    margin-bottom: gutter(8);
+    margin-top: gutter(6);
 
     &__item {
       @include word-break;
@@ -108,5 +108,13 @@
     &:first-child {
       margin-top: gutter(12);
     }
+  }
+
+  .hs-message--left + .hs-message--right {
+    margin-top: gutter(16);
+  }
+
+  .hs-message--right + .hs-message--left {
+    margin-top: gutter(16);
   }
 }
