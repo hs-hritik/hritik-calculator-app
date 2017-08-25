@@ -220,7 +220,7 @@ define ("helpers/localStorage",
     const reset = (options = {}) => {
       objUtils.forEachKey (KEYS, (key) => {
         if (!(options.skipUser && (USER_KEYS.indexOf (key) !== -1))) {
-          lsUtils.removeItem (key);
+          lsUtils.removeItem (KEYS [key]);
         }
       });
     };
