@@ -140,7 +140,8 @@ define ("components/chatView",
                      value={field.value.value}
                      placeholder={field.placeholder}
                      onChange={this._onInfoBotFieldValueChange}
-                     onKeyUp={this._onInfoBotFieldKeyUp} />
+                     onKeyUp={this._onInfoBotFieldKeyUp}
+                     autoFocus />
               <a className="hs-chat-footer__submit">
                 <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
               </a>
