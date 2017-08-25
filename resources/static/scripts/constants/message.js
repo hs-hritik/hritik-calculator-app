@@ -19,7 +19,8 @@ define ("constants/message",
     const TYPING_TIMEOUT = {
       FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
       INFO_BOT_REQUEST: 1200,
-      INFO_BOT_FIELD: 1200
+      INFO_BOT_FIELD: 1200,
+      FAQ_SUGGESTIONS_PROBLEM_SOLVED: 1200
     };
 
     // Timeout (in milliseconds) for different system generated message.

@@ -653,7 +653,7 @@ define ("actions/chatView",
             body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
             isCustomerMsg: false
           }, {
-            typingTimer: null,
+            typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_PROBLEM_SOLVED,
             issueId: state.appState.dummyIssueId
           })
         );
