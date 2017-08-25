@@ -262,6 +262,9 @@
     const iframe = doc.createElement ("iframe");
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
+    setStyle (iframe, {
+      display: "none"
+    });
     return iframe;
   };
 
