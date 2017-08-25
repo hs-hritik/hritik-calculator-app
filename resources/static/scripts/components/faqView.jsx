@@ -36,12 +36,12 @@ define ("components/faqView",
             <ViewHeader title={text.faqViewHeader}
                         showBackBtn={true}
                         onBackBtnClick={onBackBtnClick} />
-            <div className="hs-faq">
-              <div className="hs-view__content">
+            <div className="hs-view__content">
+              <div className="hs-faq">
                 <h3>{title}</h3>
                 <div dangerouslySetInnerHTML={{__html: body}} />
-                <Branding text={text} />
               </div>
+              <Branding text={text} />
             </div>
           </div>
         );
