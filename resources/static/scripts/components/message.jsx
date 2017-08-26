@@ -8,11 +8,13 @@ define ("components/message",
   [
     "constants/propTypes",
     "constants/message",
+    "constants/icons",
     "gunpowder/utils/date",
     "gunpowder/utils/classes",
     "gunpowder/utils/object"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, dateUtils, classes, objUtils) {
+  function (PROP_TYPES, MESSAGE_CONSTANTS, ICONS_CONSTANTS, dateUtils, classes,
+            objUtils) {
     "use strict";
 
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
@@ -20,6 +22,8 @@ define ("components/message",
     // 22 = 15 (MAX_CHAR_LIMIT) + 3 (dots) + 4 (extension)
     const MAX_CHAR_LIMIT = 15;
     const EXTENSION_CHAR_LIMIT = 4;
+
+    const {FILE_ICON, DOWNLOAD_ICON} = ICONS_CONSTANTS;
 
     const PropTypes = React.PropTypes;
 
@@ -125,27 +129,30 @@ define ("components/message",
        * Render message attachment
        */
       _renderAttachment (attachment) {
-        // @TODO :- Replace file icon and download icon with SVG
         // @TODO :- Make complete attachment clickable
         // @TODO :- Display extension on file icon
         const formattedFileName = this._formatFileName (attachment.fileName);
 
+        /* eslint-disable react/no-danger */
         return (
           <div className="hs-attachment">
-            <div className="hs-attachment__file-icon" />
-            <div className="hs-attachment__name-wrapper">
-              <div className="hs-attachment__name" title={attachment.fileName}>
+            <i className="hs-attachment__file-icon"
+               dangerouslySetInnerHTML={{__html: FILE_ICON}} />
+            <div className="hs-attachment__text-wrapper">
+              <small className="hs-attachment__text" title={attachment.fileName}>
                 {formattedFileName}
-              </div>
+              </small>
               <a target="_blank"
                  className="hs-attachment__download-icon-wrapper"
                  href={attachment.url} >
-                <i className="ion-arrow-down hs-attachment__download-icon" />
-                <span>View</span>
+                <i className="hs-attachment__download-icon"
+                   dangerouslySetInnerHTML={{__html: DOWNLOAD_ICON}} />
+                <small className="hs-attachment__text">View</small>
               </a>
             </div>
           </div>
         );
+        /* eslint-enable react/no-danger */
       },
 
       /**

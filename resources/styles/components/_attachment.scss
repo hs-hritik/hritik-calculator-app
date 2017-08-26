@@ -12,49 +12,38 @@
 
 @include component(attachment) {
 
-  /// @TODO :- Remove file logo color after replacing it with SVG
-  $file-logo-color: #67a2e6;
   $attachment-background-color: color(bg, white);
 
   .hs-attachment {
     display: flex;
     padding: gutter(8);
     margin-top: gutter(8);
+    white-space: nowrap;
     background-color: $attachment-background-color;
     border-radius: radius();
 
-    // @TODO :- Replace file icon with SVG
     &__file-icon {
-      width: 30px;
-      height: 36px;
       padding-top: gutter(4);
-      margin-top: gutter(8);
       color: $attachment-background-color;
-      text-align: center;
-      background-color: $file-logo-color;
-      border-radius: radius(small);
-      border-top-right-radius: 8px;
     }
 
-    &__name-wrapper {
+    &__text-wrapper {
       display: flex;
       flex-direction: column;
-      margin-left: gutter(12);
+      margin-left: gutter(8);
     }
 
-    &__name {
-      font-weight: font-weight(medium);
+    &__text {
+      // @TODO :- Confirm with designers whether to add this in global scss
+      font-weight: 500;
     }
 
     &__download-icon-wrapper {
       display: flex;
-      align-items: center;
     }
 
-    // @TODO :- Replace download icon with SVG
     &__download-icon {
-      width: 20px;
-      height: 20px;
+      margin-right: gutter(4);
     }
   }
 }
