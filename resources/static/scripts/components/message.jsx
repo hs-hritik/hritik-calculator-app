@@ -129,13 +129,13 @@ define ("components/message",
        * Render message attachment
        */
       _renderAttachment (attachment) {
-        // @TODO :- Make complete attachment clickable
         // @TODO :- Display extension on file icon
         const formattedFileName = this._formatFileName (attachment.fileName);
+        const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
 
         /* eslint-disable react/no-danger */
         return (
-          <div className="hs-attachment">
+          <div className="hs-attachment" onClick={clickHandler}>
             <i className="hs-attachment__file-icon"
                dangerouslySetInnerHTML={{__html: FILE_ICON}} />
             <div className="hs-attachment__text-wrapper">
@@ -276,6 +276,13 @@ define ("components/message",
             </div>
           </div>
         );
+      },
+
+      /**
+       * Click handler for attachment
+       */
+      _onAttachmentClick (url) {
+        window.open (url);
       },
 
       /**
