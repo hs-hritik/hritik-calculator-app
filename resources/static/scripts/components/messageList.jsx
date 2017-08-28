@@ -63,14 +63,23 @@ define ("components/messageList",
           if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
             return null;
           }
+
+          const nextMsg = messages [index + 1];
+          let isLastMessageInGroup = true;
+
+          if (nextMsg) {
+            isLastMessageInGroup = nextMsg.isCustomerMsg !== message.isCustomerMsg;
+          }
+
           return (
               <Message message={message}
-                       key={message.id}
-                       isLastMessage={messages.length === (index + 1)}
-                       showAgentNickname={this.props.showAgentNickname}
-                       text={this.props.text}
-                       onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
-                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+                      key={message.id}
+                      isLastMessage={messages.length === (index + 1)}
+                      isLastMessageInGroup={isLastMessageInGroup}
+                      showAgentNickname={this.props.showAgentNickname}
+                      text={this.props.text}
+                      onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
+                      onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
         });
       },

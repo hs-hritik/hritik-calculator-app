@@ -34,6 +34,7 @@ define ("components/message",
         message: PropTypes.shape (PROP_TYPES.MESSAGE).isRequired,
         showAgentNickname: PropTypes.bool,
         isLastMessage: PropTypes.bool,
+        isLastMessageInGroup: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
         text: PropTypes.shape ({
@@ -233,26 +234,50 @@ define ("components/message",
        * Render agent name and message timestamp.
        */
       _renderMessageDetails () {
-        // Only render message details, if it's the last message,
-        // and message type end chat msg
-        if (!this.props.isLastMessage ||
-            (this.props.message.type === MESSAGE_TYPE.END_CHAT)) {
+        // Don't render message details for end chat message.
+        if (this.props.message.type === MESSAGE_TYPE.END_CHAT) {
           return null;
         }
 
+        return (
+          <div className="hs-message__details">
+            <div className="hs-message__agent-nickname">
+              {this._getAgentNickname ()}
+            </div>
+            <div className="hs-message__time-ago">
+              {this._getTimeAgo ()}
+            </div>
+          </div>
+        );
+      },
+
+      /**
+       * Get agent nickname.
+       */
+      _getAgentNickname () {
         const {message, showAgentNickname} = this.props;
-        let agentNickname = null;
 
-        if (!(message.isCustomerMsg || message.isSystemMsg)) {
-          // If agent nickname is disabled, or the agent hasn't set the nickname, show "Agent"
-          agentNickname = "Agent";
-
-          if (showAgentNickname) {
-            // There won't be any author for system generated messages.
-            agentNickname = objUtils.getIn (message, ["author", "nickname"]) || agentNickname;
-          }
+        if (message.isCustomerMsg || message.isSystemMsg || !this.props.isLastMessageInGroup) {
+          return null;
         }
 
+        // If agent nickname is disabled, show "Agent"
+        let agentNickname = "Agent";
+        if (showAgentNickname) {
+          agentNickname = objUtils.getIn (message, ["author", "nickname"]);
+        }
+        return agentNickname;
+      },
+
+      /**
+       * Get time ago.
+       */
+      _getTimeAgo () {
+        if (!this.props.isLastMessage) {
+          return null;
+        }
+
+        const {message} = this.props;
         const timeAgoMs = Date.now () - message.createdTs;
         let timeAgoStr;
 
@@ -266,16 +291,7 @@ define ("components/message",
           });
         }
 
-        return (
-          <div className="hs-message__details">
-            <div className="hs-message__agent-nickname">
-              {agentNickname}
-            </div>
-            <div className="hs-message__time-ago">
-              {timeAgoStr}
-            </div>
-          </div>
-        );
+        return timeAgoStr;
       },
 
       /**
