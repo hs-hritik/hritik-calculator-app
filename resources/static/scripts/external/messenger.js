@@ -14,7 +14,8 @@
   const WEB_SDK_URL = "https://wm.helpshift.com/html/";
 
   const state = {
-    unreadCount: 0
+    unreadCount: 0,
+    cssConfig: {}
   };
 
   /**
@@ -233,6 +234,18 @@
     launcherButton.appendChild (unreadCountEl);
     launcherButton.appendChild (launcherIconEl);
 
+    launcherButton.addEventListener ("mouseenter", () => {
+      setStyle (launcherButton, {
+        background: state.cssConfig.primaryColorLight
+      });
+    });
+
+    launcherButton.addEventListener ("mouseleave", () => {
+      setStyle (launcherButton, {
+        background: state.cssConfig.primaryColor
+      });
+    });
+
     setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherButton;
   };
@@ -323,7 +336,8 @@
    */
   const processWmConfig = (config) => {
     // @TODO: Use the web messenger config to set appearance, etc.
-    LAUNCHER_BUTTON_WRAPPER_STYLES.background = config.primaryColor;
+    state.cssConfig = config.cssConfig;
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
 
     if (!config.widgetEnabled) {
       destroyWebSdkIframe ();

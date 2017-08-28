@@ -294,14 +294,21 @@ define ("actions/appState",
               ])
             );
 
+            const primaryColor = store.getState ().ui.color.primary;
+            const cssConfig = {
+              primaryColor,
+              primaryColorLight: shadeColor (primaryColor, 0.20),
+              primaryColorDark: shadeColor (primaryColor, -0.20)
+            };
+
             // Send the config event loaded back to the client
-            postSdkMessage.wmConfig (getClientWmConfig (response));
+            postSdkMessage.wmConfig (getClientWmConfig (cssConfig));
 
             if (response.wm_widget_enabled) {
               // A side-effect of getting the web messenger config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
-              setStyles ();
+              setStyles (cssConfig);
               startConversation ();
             }
           }
@@ -335,13 +342,13 @@ define ("actions/appState",
      * @param {Object} response - the GET wm config response object
      * @returns {Object} - the config object for client
      */
-    const getClientWmConfig = (response) => {
-      const {browserIsMobile} = store.getState ().appState;
+    const getClientWmConfig = (cssConfig) => {
+      const {appState} = store.getState ();
 
       return {
-        widgetEnabled: response.wm_widget_enabled,
-        primaryColor: response.appearance.primary_color,
-        browserIsMobile
+        widgetEnabled: appState.wmEnabled,
+        browserIsMobile: appState.browserIsMobile,
+        cssConfig
       };
     };
 
@@ -359,7 +366,7 @@ define ("actions/appState",
      * Get CSS over the wire, add it to the document and
      * update the custom CSS variables.
      */
-    const setStyles = () => {
+    const setStyles = (cssConfig) => {
       getCss ({
         onSuccess: (css) => {
           // Check if CSS variable is supported by the client. If yes,
@@ -375,13 +382,6 @@ define ("actions/appState",
           // For unsupported browsers - the reverse.
           // @TODO: Use a utility function to determine the support.
           const isCssVarSupported = true;
-
-          const primaryColor = store.getState ().ui.color.primary;
-          const cssConfig = {
-            primaryColor,
-            primaryColorLight: shadeColor (primaryColor, 0.20),
-            primaryColorDark: shadeColor (primaryColor, -0.20)
-          };
 
           if (isCssVarSupported) {
             _addStyleToDocument (css);
