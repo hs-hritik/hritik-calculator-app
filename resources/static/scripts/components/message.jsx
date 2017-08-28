@@ -19,9 +19,10 @@ define ("components/message",
 
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
     // Total character limit is 22
-    // 22 = 15 (MAX_CHAR_LIMIT) + 3 (dots) + 4 (extension)
-    const MAX_CHAR_LIMIT = 15;
-    const EXTENSION_CHAR_LIMIT = 4;
+    // 22 = X (name limit) + 3 (ELLIPSIS_LENGTH) + Y (extension)
+    const MAX_CHAR_LIMIT = 22;
+    const MAX_EXTENSION_LIMIT = 5;
+    const ELLIPSIS_LENGTH = 3;
 
     const {FILE_ICON, DOWNLOAD_ICON} = ICONS_CONSTANTS;
 
@@ -290,16 +291,32 @@ define ("components/message",
        * @NOTE :- Move to gunpowder if required at multiple places
        */
       _formatFileName (fileName) {
-        const length = fileName.length;
-
-        if (length <= MAX_CHAR_LIMIT) {
+        if (fileName.length <= MAX_CHAR_LIMIT) {
           return fileName;
         }
 
-        const name = fileName.slice (0, MAX_CHAR_LIMIT);
-        const extension = fileName.slice (length - EXTENSION_CHAR_LIMIT, length);
+        const fileNameArr = fileName.split (".");
+        // If there are multiple dots in file name, then get the last extension
+        // Example :- File name can be "hello.world.text";
+        let extension = fileNameArr.length > 1 ?
+                        fileNameArr [fileNameArr.length - 1] : "";
 
-        return `${name}...${extension}`;
+        // If extension length is greater that MAX_EXTENSION_LIMIT then
+        // get last allowed characters of extension
+        // Example :- a-large-patch-file-name.having.other.multiple.extensions
+        const extensionLength = extension.length;
+        if (extensionLength > MAX_EXTENSION_LIMIT) {
+          extension = extension.slice (
+            extensionLength - MAX_EXTENSION_LIMIT,
+            extensionLength
+          );
+        }
+
+        // Note :- We are using extension.length again as the extension can change
+        const nameLimit = MAX_CHAR_LIMIT - ELLIPSIS_LENGTH - extension.length;
+        const nameStr = fileName.slice (0, nameLimit);
+
+        return `${nameStr}...${extension}`;
       }
     });
   }
