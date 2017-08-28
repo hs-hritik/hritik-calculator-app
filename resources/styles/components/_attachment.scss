@@ -35,8 +35,7 @@
     }
 
     &__text {
-      // @TODO :- Confirm with designers whether to add this in global scss
-      font-weight: 500;
+      font-weight: font-weight(bold);
     }
 
     &__download-icon-wrapper {
