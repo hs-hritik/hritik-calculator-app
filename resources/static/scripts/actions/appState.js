@@ -325,32 +325,7 @@ define ("actions/appState",
           }
         },
         onFailure: () => {
-          // @TODO: Because this XHR is not ready yet, the failure
-          // callback would be executed. Calling the onSuccess callback with a
-          // dummy response here in order to test the flow.
-          // This is temporary and will be removed.
-          const response = {
-            widget_enabled: true,
-            agent_nickname_enabled: true,
-            answer_bot_enabled: true,
-            info_bot_enabled: true,
-            csat_bot_enabled: true,
-            greeting_msg: "Hello! How can I help you today?",
-            appearance: {
-              widget_title: "Chat with us!",
-              primary_color: "#00b6fc"
-            },
-            info_bot: {
-              selection: ["name", "email"]
-            },
-            csat_bot: {
-              req_msg: "Thank you! Would you like to fill this?",
-              form_msg: "Your feedback helps us improve"
-            }
-          };
-          if (callbacks.onSuccess) {
-            callbacks.onSuccess (response);
-          }
+          // @TODO: Handle failure.
         }
       });
     };
