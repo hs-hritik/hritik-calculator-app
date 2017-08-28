@@ -100,7 +100,7 @@ define ("components/message",
       _renderTextMessage () {
         /* eslint-disable react/no-danger */
         return (
-          <div className="hs-message__item">
+          <div className="hs-message__item" dir="auto">
             <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
             {this._renderAttachments ()}
           </div>
@@ -189,6 +189,7 @@ define ("components/message",
           return (
             <a key={faq.id}
                className="hs-message__suggested-faq"
+               dir="auto"
                onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />

@@ -37,7 +37,7 @@ define ("components/faqView",
                         showBackBtn={true}
                         onBackBtnClick={onBackBtnClick} />
             <div className="hs-view__content">
-              <div className="hs-faq">
+              <div className="hs-faq" dir="auto">
                 <h3>{title}</h3>
                 <div dangerouslySetInnerHTML={{__html: body}} />
               </div>

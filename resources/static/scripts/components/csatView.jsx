@@ -89,6 +89,7 @@ define ("components/csatView",
                 {text.csatBotReviewTitle}
               </small>
               <textarea value={review}
+                        dir="auto"
                         className="hs-csat__input"
                         onChange={this._onCsatReviewChange}
                         placeholder={text.csatBotReviewPlaceholder}
