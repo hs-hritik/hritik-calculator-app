@@ -223,10 +223,10 @@ define ("components/message",
        * Render end chat message.
        */
       _renderEndChatMessage () {
-        // @TODO: Fix end chat msg css and show agent nickname if enabled
+        // @TODO: Show agent nickname when we get the assignee from the backend.
         return (
           <div className="hs-message hs-message--end-chat">
-            Agent ended chat
+            Chat Ended
           </div>
         );
       },
