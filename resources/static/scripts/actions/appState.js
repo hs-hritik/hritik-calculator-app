@@ -401,9 +401,11 @@ define ("actions/appState",
           // @TODO: Use a utility function to determine the support.
           const isCssVarSupported = true;
 
-          const {ui} = store.getState ();
+          const primaryColor = store.getState ().ui.color.primary;
           const cssConfig = {
-            primaryColor: ui.color.primary
+            primaryColor,
+            primaryColorLight: shadeColor (primaryColor, 0.20),
+            primaryColorDark: shadeColor (primaryColor, -0.20)
           };
 
           if (isCssVarSupported) {
@@ -450,6 +452,34 @@ define ("actions/appState",
     };
 
     /**
+     * Lighten or darken the given color.
+     * Usage example:
+     *  - To lighten a color by 10%
+     *    shadeColor ("#123456", 0.1)
+     *  - To darken a color by 10%
+     *    shadeColor ("#123456", -0.1)
+     * Taken from: https://stackoverflow.com/a/13542669/3785351
+     * @param {String} color - The string of the color which has to be lighten or darken.
+     *                         Only hex is supported. (# must be passed in the beginning.)
+     * @param {Number} shadeFactor - Between -1 to 1. To darken the color, give negative value.
+     *                               To lighten the color, give positive value.
+     */
+    const shadeColor = (color, shadeFactor) => {
+      const f = parseInt (color.slice (1), 16),
+            t = shadeFactor < 0 ? 0 : 255,
+            p = shadeFactor < 0 ? shadeFactor * -1 : shadeFactor,
+            R = f >> 16,
+            G = f >> 8 & 0x00FF,
+            B = f & 0x0000FF;
+
+      return "#" +
+        (0x1000000 + (Math.round ((t - R) * p) + R) *
+         0x10000 + (Math.round ((t - G) * p) + G) *
+         0x100 + (Math.round ((t - B) * p) + B)
+        ).toString (16).slice (1);
+    };
+
+    /**
      * Update CSS variables with the configured values and set the values in
      * the document's css.
      * @param {Object} - cssConfig, the object with css configured values
@@ -457,6 +487,12 @@ define ("actions/appState",
     const _updateCssVars = (cssConfig) => {
       document.body.style.setProperty (
         "--hs-custom-primary-color", cssConfig.primaryColor
+      );
+      document.body.style.setProperty (
+        "--hs-custom-primary-color-dark", cssConfig.primaryColorDark
+      );
+      document.body.style.setProperty (
+        "--hs-custom-primary-color-light", cssConfig.primaryColorLight
       );
     };
 
@@ -470,13 +506,19 @@ define ("actions/appState",
       // Because we need to replace variable strings containing special chars
       // like "(" and ")", we need to escape these chars when creating the
       // regular expression. A list with all regexp strings params for the vars.
-      const cssVarsRegexpList = ["var\\(--hs-custom-primary-color\\)"];
+      const cssVarsRegexpList = [
+        "var\\(--hs-custom-primary-color\\)",
+        "var\\(--hs-custom-primary-color-light\\)",
+        "var\\(--hs-custom-primary-color-dark\\)"
+      ];
 
       // When regular expression matches, we need to replace the matches
       // with the configured values. Mapping all such matches with the values to
       // be replaced.
       const cssVarsValuesMap = {
-        "var(--hs-custom-primary-color)": cssConfig.primaryColor
+        "var(--hs-custom-primary-color)": cssConfig.primaryColor,
+        "var(--hs-custom-primary-color-light)": cssConfig.primaryColorLight,
+        "var(--hs-custom-primary-color-dark)": cssConfig.primaryColorDark
       };
 
       return replaceAll (css, cssVarsRegexpList, cssVarsValuesMap);
