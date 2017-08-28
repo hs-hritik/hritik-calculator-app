@@ -111,12 +111,11 @@ define ("components/messageList",
       },
 
       /**
-       * Scroll message list to the given position.
-       * @param {Number} position - scrollTop position.
+       * Scroll message list to the bottom.
        */
-      _scrollTo (position) {
+      _scrollToBottom () {
         const node = ReactDOM.findDOMNode (this._messageListRef);
-        node.scrollTop = position;
+        node.scrollTop = node.scrollHeight;
       },
 
       /**
@@ -124,10 +123,8 @@ define ("components/messageList",
        * or if there is typing indicator.
        */
       componentDidUpdate (prevProps) {
-        if ((this.props.messages.length > prevProps.messages.length) ||
-            this.props.isTyping && !prevProps) {
-          const node = ReactDOM.findDOMNode (this._messageListRef);
-          this._scrollTo (node.scrollHeight);
+        if ((this.props.messages.length > prevProps.messages.length)) {
+          this._scrollToBottom ();
         }
       },
 
@@ -135,8 +132,7 @@ define ("components/messageList",
        * Scroll the bottom when the component is mounted.
        */
       componentDidMount () {
-        const node = ReactDOM.findDOMNode (this._messageListRef);
-        this._scrollTo (node.scrollHeight);
+        this._scrollToBottom ();
       }
     });
   }
