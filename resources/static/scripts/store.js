@@ -14,5 +14,5 @@ define ("store",
     "use strict";
     const {createStore, applyMiddleware} = Redux;
 
-    return createStore (rootReducer, applyMiddleware (ReduxThunk.default, lsMiddleware));
+    return createStore (rootReducer, applyMiddleware (ReduxThunk ["default"], lsMiddleware));
   });
