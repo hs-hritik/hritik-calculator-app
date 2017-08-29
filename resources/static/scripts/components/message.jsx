@@ -282,9 +282,9 @@ define ("components/message",
         const timeAgoMs = Date.now () - message.createdTs;
         let timeAgoStr;
 
-        // If the message came in the last one minute, show "Just now".
+        // If the message came in the last one minute, show "just now".
         if (timeAgoMs < 60000) {
-          timeAgoStr = "Just now";
+          timeAgoStr = "just now";
         } else {
           timeAgoStr = dateUtils.humanizeDuration (timeAgoMs, {
             shortForm: true,
