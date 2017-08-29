@@ -133,7 +133,7 @@ gulp.task ("overwrite-min", function () {
 gulp.task ("build-ec2", function () {
   gulp.src (PATHS.ec2Source)
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com"))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com"))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi"))
       .pipe (gulp.dest (PATHS.ec2Dest));
 });
 
