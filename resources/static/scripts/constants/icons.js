@@ -10,7 +10,7 @@ define ("constants/icons",
 
     /*eslint-disable */
     const FILE_ICON = `
-      <svg width="19px" height="23px" viewBox="0 0 19 23" version="1.1"
+      <svg width="26px" height="33px" viewBox="0 0 19 23" version="1.1"
             xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <title>Combined Shape</title>
         <defs></defs>

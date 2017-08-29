@@ -144,10 +144,7 @@ define ("components/message",
               <small className="hs-attachment__text" title={attachment.fileName}>
                 {formattedFileName}
               </small>
-              <a target="_blank"
-                 className="hs-attachment__download-icon-wrapper"
-                 href={attachment.url} >
-                <i className="hs-attachment__download-icon ion-eye" />
+              <a target="_blank" href={attachment.url} >
                 <small className="hs-attachment__text">View</small>
               </a>
             </div>
