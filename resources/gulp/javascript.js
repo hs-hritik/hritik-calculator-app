@@ -139,7 +139,7 @@ gulp.task ("build-ec2", function () {
 
 gulp.task ("build-azure", function () {
   gulp.src (PATHS.azureSource)
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com"))
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com"))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com"))
       .pipe (gulp.dest (PATHS.azureDest));
 });

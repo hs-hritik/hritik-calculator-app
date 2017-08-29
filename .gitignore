@@ -9,3 +9,4 @@ resources/static/css/
 *.css
 .gem/
 resources/dist/
+resources/build/
