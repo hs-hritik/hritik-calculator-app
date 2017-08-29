@@ -357,6 +357,12 @@
     // the launcher button doesn't get appended on firefox.
     // (Works fine on chrome without onload event)
     launcherIframe.onload = () => {
+      // Append meta tag to iframe's head.
+      const metaTag = doc.createElement ("meta");
+      metaTag.setAttribute ("charset", "utf-8");
+      launcherIframe.contentDocument.head.appendChild (metaTag);
+
+      // Append launcher button to iframe's body.
       launcherBtn = createLauncherButton ();
       launcherBtn.addEventListener ("click", () => {
         toggleWebSdkIframe ();
