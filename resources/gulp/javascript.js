@@ -12,7 +12,6 @@ const {getTimeStamp} = require ("./utils");
 const gutil = require ("gulp-util");
 const replace = require ("gulp-replace");
 
-
 const PATHS = {
   scripts    : ["static/scripts/**/*.+(js|jsx)", "!static/scripts/gunpowder/**/*.*"],
   build      : "dist/scripts",
@@ -21,18 +20,18 @@ const PATHS = {
   uglify     : ["dist/scripts/**/*.js"],
   gunpowderSrc: "static/scripts/gunpowder/node_modules/@helpshiftdev/" +
                 "gunpowder/resources/static/scripts/**/*.+(js|jsx)",
-  gunpowderBuild: "dist/scripts/gunpowder"
+  gunpowderBuild: "dist/scripts/gunpowder",
+  ec2Source: "dist/ec2/**/*.*",
+  ec2Dest: "dist/ec2/",
+  azureSource: "dist/azure/**/*.*",
+  azureDest: "dist/azure/",
+  localshivaSource: "dist/localshiva/**/*.*",
+  localshivaDest: "dist/localshiva/",
+  localhostSource: "dist/localhost/**/*.*",
+  localhostDest: "dist/localhost/"
 };
-
 
 const REACT_URL = "http://fb.me/react-with-addons-{version}{min}.js";
-
-const ENV_CONFIG = {
-  WM_STATIC_URL_PROD: "https://wm.helpshift.com/html/",
-  WM_STATIC_URL_DEV: "http://localhost:3000/html/",
-  API_BASE_PROD: "https://api.helpshift.com/",
-  API_BASE_DEV: "https://api.helpshift.mobi/"
-};
 
 /*
  * Compile jsx files
@@ -63,8 +62,6 @@ const babelCompileDev = function (srcFolder, destFolder, errorGrowl) {
       }
       gutil.log (err);
     }))
-    .pipe (replace (ENV_CONFIG.WM_STATIC_URL_PROD, ENV_CONFIG.WM_STATIC_URL_DEV))
-    .pipe (replace (ENV_CONFIG.API_BASE_PROD, ENV_CONFIG.API_BASE_DEV))
     .pipe (gulp.dest (destFolder))
     .pipe (print (function (filepath) {
       return `Compiled: ${filepath} ${getTimeStamp ()}`;
@@ -118,7 +115,6 @@ gulp.task ("uglify", function () {
     }));
 });
 
-
 /**
  * Overwrites minified libs.
  * If there's a file in /libs/ folder with name say foo-min.js,
@@ -134,6 +130,33 @@ gulp.task ("overwrite-min", function () {
     .pipe (gulp.dest (PATHS.libs));
 });
 
+gulp.task ("build-ec2", function () {
+  gulp.src (PATHS.ec2Source)
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com"))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com"))
+      .pipe (gulp.dest (PATHS.ec2Dest));
+});
+
+gulp.task ("build-azure", function () {
+  gulp.src (PATHS.azureSource)
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com"))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com"))
+      .pipe (gulp.dest (PATHS.azureDest));
+});
+
+gulp.task ("build-localshiva", function () {
+  gulp.src (PATHS.localshivaSource)
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi"))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi"))
+      .pipe (gulp.dest (PATHS.localshivaDest));
+});
+
+gulp.task ("build-localhost", function () {
+  gulp.src (PATHS.localhostSource)
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "http://localhost:3000"))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi"))
+      .pipe (gulp.dest (PATHS.localhostDest));
+});
 
 /**
  * Task to update react library with the latest version.

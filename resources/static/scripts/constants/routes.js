@@ -5,12 +5,11 @@
  */
 
 define ("constants/routes",
-  ["constants/envConfig"],
-  function (envConfig) {
+  function () {
     "use strict";
 
-    const webSdkApiRoot = envConfig.apiRoot;
-    const BASE = `${webSdkApiRoot}websdk/v1/`;
+    const WEB_SDK_API_ROOT = "{{ENV_API_ROOT}}";
+    const BASE = `${WEB_SDK_API_ROOT}/websdk/v1/`;
 
     const getWmConfig = (domain, platformId) => `${BASE}${domain}/platforms/${platformId}/config`;
 

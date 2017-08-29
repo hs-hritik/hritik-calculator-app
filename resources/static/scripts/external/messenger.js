@@ -11,7 +11,8 @@
 
   // On dev env, this gets replaced by a localhost URL.
   // See babel tasks in resources/gulp/javascript.js
-  const WEB_SDK_URL = "https://wm.helpshift.com/html/";
+  const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
+  const WEB_SDK_URL = `${WEB_CHAT_ROOT}/html`;
 
   const state = {
     unreadCount: 0,
