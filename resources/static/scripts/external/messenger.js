@@ -255,6 +255,9 @@
    * Render the unread count badge.
    */
   const renderUnreadCount = () => {
+    if (!unreadCountEl) {
+      return;
+    }
     if (state.unreadCount !== 0 && webSdkIframe.style.display === "none") {
       unreadCountEl.innerHTML = state.unreadCount;
       setStyle (unreadCountEl, {
@@ -347,26 +350,33 @@
     // If the widget is enabled, create the launcher iframe+button and append
     // it to the document.
     const launcherIframe = createLauncherIframe ();
-    launcherBtn = createLauncherButton ();
+
+    // Append the buttons to iframe once it is loaded.
+    // Note: Even though the iframe doesn't have any src, if we try to append
+    // the launcher button before the onload event is triggered,
+    // the launcher button doesn't get appended on firefox.
+    // (Works fine on chrome without onload event)
+    launcherIframe.onload = () => {
+      launcherBtn = createLauncherButton ();
+      launcherBtn.addEventListener ("click", () => {
+        toggleWebSdkIframe ();
+      });
+      launcherIframe.contentDocument.body.appendChild (launcherBtn);
+
+      // Apply styles for webSdkIframe
+      if (config.browserIsMobile) {
+        setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
+      } else {
+        setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
+      }
+
+      // Set sdk loaded as true
+      sdkLoaded = true;
+      // Clear the api queue
+      clearApiQueue ();
+    };
 
     doc.body.appendChild (launcherIframe);
-
-    launcherBtn.addEventListener ("click", () => {
-      toggleWebSdkIframe ();
-    });
-    launcherIframe.contentDocument.body.appendChild (launcherBtn);
-
-    // Apply styles for webSdkIframe
-    if (config.browserIsMobile) {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
-    } else {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
-    }
-
-    // Set sdk loaded as true
-    sdkLoaded = true;
-    // Clear the api queue
-    clearApiQueue ();
   };
 
   /**
