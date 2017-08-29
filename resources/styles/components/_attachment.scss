@@ -24,7 +24,7 @@
     border-radius: radius();
 
     &__file-icon {
-      padding-top: gutter(4);
+      padding-top: gutter(2);
       color: $attachment-background-color;
     }
 
@@ -36,11 +36,6 @@
 
     &__text {
       font-weight: font-weight(bold);
-    }
-
-    &__download-icon-wrapper {
-      display: flex;
-      align-items: center;
     }
 
     &__download-icon {
