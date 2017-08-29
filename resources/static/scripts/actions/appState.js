@@ -380,8 +380,11 @@ define ("actions/appState",
           // 1. Append the CSS to the document
           // 2. Replace the variables.
           // For unsupported browsers - the reverse.
-          // @TODO: Use a utility function to determine the support.
-          const isCssVarSupported = true;
+
+          let isCssVarSupported = false;
+          if (window.CSS && window.CSS.supports && window.CSS.supports ("--fake-var", 0)) {
+            isCssVarSupported = true;
+          }
 
           if (isCssVarSupported) {
             _addStyleToDocument (css);
