@@ -225,10 +225,6 @@ $_dropdown-item-spacing: gutter(12 24 12 12);
     background: $bg;
     border: $border;
     box-shadow: $_input-box-shadow;
-  } @else {
-    background: $bg !important;
-    border: $border !important;
-    box-shadow: none;
   }
 
   @if ($type == disabled) {
