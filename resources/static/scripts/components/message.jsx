@@ -24,7 +24,7 @@ define ("components/message",
     const MAX_EXTENSION_LIMIT = 5;
     const ELLIPSIS_LENGTH = 3;
 
-    const {FILE_ICON, DOWNLOAD_ICON} = ICONS_CONSTANTS;
+    const {FILE_ICON} = ICONS_CONSTANTS;
 
     const PropTypes = React.PropTypes;
 
@@ -146,8 +146,7 @@ define ("components/message",
               <a target="_blank"
                  className="hs-attachment__download-icon-wrapper"
                  href={attachment.url} >
-                <i className="hs-attachment__download-icon"
-                   dangerouslySetInnerHTML={{__html: DOWNLOAD_ICON}} />
+                <i className="hs-attachment__download-icon ion-eye" />
                 <small className="hs-attachment__text">View</small>
               </a>
             </div>
