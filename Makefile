@@ -94,10 +94,10 @@ gunpowder: npminstall
 # directory, so copying html, libs, and fonts to dist here.
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
-dist: prepare-dist npminstall styles gunpowder reactjs compress-js js-libs all-envs prepare-subdir ec2 azure localshiva clean-subdir
+dist: prepare-dist npminstall styles gunpowder reactjs compress-js js-libs copy-html-libs prepare-subdir ec2 azure localshiva clean-subdir
 
 # The distdev task to compile resources and link the dev files to dist directory
-distdev: prepare-dist npminstall styles gunpowder reactjs all-envs prepare-subdir-dev localhost clean-subdir
+distdev: prepare-dist npminstall styles gunpowder reactjs copy-html-libs prepare-subdir-dev localhost clean-subdir
 
 prepare-dist:
 	@echo "Creating the dist directory"
@@ -105,13 +105,12 @@ prepare-dist:
 	@mkdir -p resources/dist/demo
 	@echo "Done"
 
-all-envs:
+copy-html-libs:
 	@cp -R resources/static/{html,libs,fonts} resources/dist
-	@cd resources/dist; ln -sv scripts/external/messenger.js webChat.js;
-	@cd resources/dist/demo; ln -sv ../html/demo/index.html .;
 
 copy-temp:
-	@cp -R resources/dist/ resources/build
+	@mkdir -v resources/build
+	@mv -v resources/dist/* resources/build/
 
 prepare-ec2:
 	@echo "Creating ec2 subdirectory in the dist directory"
@@ -138,39 +137,37 @@ prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
 prepare-subdir-dev: copy-temp prepare-localhost
 
 ec2:
-	@cp -R resources/build/ resources/dist/ec2
-	@cd resources/dist/ec2; ln -sfv scripts/external/messenger.js webChat.js;
-	@cd resources/dist/ec2/demo; ln -sfv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/ec2/
+	@cd resources/dist/ec2; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-ec2
 
 azure:
-	@cp -R resources/build/ resources/dist/azure
-	@cd resources/dist/azure; ln -sfv scripts/external/messenger.js webChat.js;
-	@cd resources/dist/azure/demo; ln -sfv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/azure/
+	@cd resources/dist/azure; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/azure/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-azure
 
 localshiva:
-	@cp -R resources/build/ resources/dist/localshiva
-	@cd resources/dist/localshiva; ln -sfv scripts/external/messenger.js webChat.js;
-	@cd resources/dist/localshiva/demo; ln -sfv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/localshiva/
+	@cd resources/dist/localshiva; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-localshiva
 
 localhost:
-	@cp -R resources/build/ resources/dist/localhost
-	@cd resources/dist/localhost; ln -sfv scripts/external/messenger.js webChat.js;
-	@cd resources/dist/localhost/demo; ln -sfv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/localhost/
+	@cd resources/dist/localhost; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/localhost/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-localhost
 
-clean:
+clean: clean-subdir
 	@echo "Running make clean to clean the dist directory"
-	@rm -rf resources/dist
+	@rm -r resources/dist
 	@echo "Done"
 
 clean-subdir:
 	@echo "Cleaning dist directory"
-	@rm -rf resources/build
-	@rm -rf resources/dist/{css,demo,fonts,html,libs,scripts}
-	@rm -rf resources/dist/webChat.js
+	@rm -r resources/build
 	@echo "Done"
 
 jstests: $(JS_TEST_TARGETS)
