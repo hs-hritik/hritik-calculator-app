@@ -410,11 +410,20 @@
 
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
-      // @TODO Event origin domain check should also be added. As something else
-      // besides the Helpshift sdk, maybe the client's own code, can trigger
-      // window.onmessage which will throw error if data is of not the required
-      // format.
-      const {type, data} = JSON.parse (event.data);
+      // Only handle events from our web chat iframe
+      if (event.origin !== WEB_CHAT_ROOT) {
+        return;
+      }
+
+      let type, data;
+
+      try {
+        const eventData = JSON.parse (event.data);
+        type = eventData.type;
+        data = eventData.data;
+      } catch (exception) {
+        return;
+      }
 
       switch (type) {
         case EVENT_TYPES.SDK_JS_LOADED:
