@@ -13,17 +13,53 @@
 @include component(message-list) {
 
   $timestamp-color: color(text, light);
+  $typing-bg-color: color(bg, light);
+  $typing-dot-color: color(text, light);
 
   .hs-message-list {
     display: flex;
     flex: 1;
     flex-direction: column;
+    padding: gutter(0 20);
     overflow-y: auto;
 
     &__date-separator {
       margin: gutter(4 0);
       color: $timestamp-color;
       text-align: center;
+    }
+
+    &__typing-indicator {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      padding: gutter(16 0);
+      margin-top: gutter(12);
+      background-color: $typing-bg-color;
+      border-radius: 6px;
+    }
+
+    &__typing-dot {
+      @include animation(typing-indicator, $duration: 750ms, $count: infinite);
+      width: 8px;
+      height: 8px;
+      margin: gutter(0 2);
+      background: $typing-dot-color;
+      border-radius: 50%;
+    }
+
+    &__typing-anim-1 {
+      animation-delay: 0s;
+    }
+
+    &__typing-anim-2 {
+      animation-delay: .075s;
+    }
+
+    &__typing-anim-3 {
+      animation-delay: .150s;
     }
   }
 }

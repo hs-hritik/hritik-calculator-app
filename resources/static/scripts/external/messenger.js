@@ -9,36 +9,54 @@
 (function (win, doc) {
   "use strict";
 
-  win.Helpshift = {};
+  // On dev env, this gets replaced by a localhost URL.
+  // See babel tasks in resources/gulp/javascript.js
+  const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
+  const WEB_SDK_URL = `${WEB_CHAT_ROOT}/html`;
 
-  // @TODO: Change it to use different url based on env
-  // const WEB_SDK_URL = "https://hsmirkwood.helpshift.com/static/html/";
-  const WEB_SDK_URL = "http://localhost:3000/static/html/";
+  const state = {
+    unreadCount: 0,
+    cssConfig: {}
+  };
 
   /**
    * The event that the parent has to listen before calling Helpshift APIs.
    */
   const HS_SDK_LOAD_EVENT = "hs-sdk-load";
+  const INIT = "init";
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_INITIALISED: "sdk-initialised",
-    SDK_ISSUES_LOADED: "sdk-issues-loaded",
+    SDK_CONFIG_LOADED: "sdk-config-loaded",
+    SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
+    SDK_RESET: "sdk-reset",
+    UPDATE_UNREAD_COUNT: "update-unread-count",
+    CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
-    CMD_SET_USER: "cmd-set-user"
+    CMD_SET_CONFIG: "cmd-set-config",
+    CMD_RESET: "cmd-reset"
+  };
+
+  // Errors message strings
+  const ERROR_MSG = {
+    NO_API_NAME: "API name is not passed with the Helpshift call",
+    API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported"
   };
 
   // @TODO: Figure out if we have to move styles to css file for this file,
   // or keep in javascript. Also update styles later.
   const LAUNCHER_IFRAME_STYLES = {
-    "position": "fixed",
-    "bottom": "20px",
-    "right": "20px",
-    "width": "60px",
-    "height": "60px",
-    "border-radius": "50%",
-    "border": "none",
-    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
+    position: "fixed",
+    bottom: "28px",
+    right: "28px",
+    width: "60px",
+    height: "60px",
+    // @TODO: Add box shadow
+    // "border-radius": "50%",
+    // "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
+    border: "none",
+    overflow: "hidden"
   };
 
   const LAUNCHER_BUTTON_WRAPPER_STYLES = {
@@ -57,15 +75,47 @@
   const MESSENGER_IFRAME_STYLES = {
     "position": "fixed",
     "bottom": "100px",
-    "right": "20px",
-    "min-height": "520px",
-    "max-height": "640px",
-    "width": "340px",
+    "right": "28px",
+    "min-height": "320px",
+    "max-height": "540px",
+    "min-width": "320px",
+    "max-width": "340px",
+    "height": "100%",
+    "width": "100%",
     "border": "none",
     "border-radius": "8px",
     "z-index": "9999999",
+    "overflow":"hidden",
     "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)",
     "display": "none"
+  };
+
+  const MESSENGER_IFRAME_MOBILE_STYLES = {
+    "position": "fixed",
+    "top": "0px",
+    "left": "0px",
+    "bottom": "0px",
+    "right": "0px",
+    "width": "100%",
+    "height": "100%",
+    "border": "none",
+    "margin": 0,
+    "padding": 0,
+    "overflow": "hidden",
+    "z-index": 999999,
+    "display": "none"
+  };
+
+  const UNREAD_COUNT_STYLES = {
+    "background-color": "#fa3e3e",
+    "border-radius": "50%",
+    "color": "white",
+    "padding": "2px 6px",
+    "font-size": "12px",
+    "position": "absolute",
+    "top": "0px",
+    "right": "4px",
+    "font-family": "sans-serif"
   };
 
   const LAUNCHER_ICON = {
@@ -106,7 +156,11 @@
                         </svg>`;
 
   // Reference for web sdk iframe.
-  let webSdkIframe, launcherBtn;
+  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl;
+
+  // Api queue to save the apis and call them after sdk config is loaded
+  let sdkLoaded = false,
+      apiQueue = [];
 
   /**
    * Util to set style for a given element.
@@ -141,14 +195,14 @@
    */
   const updateLauncherBtnIcon = (icon) => {
     if (icon === LAUNCHER_ICON.CLOSE) {
-      launcherBtn.innerHTML = CLOSE_ICON;
+      launcherIconEl.innerHTML = CLOSE_ICON;
       // Due the the size and geometry of the close icon, update the
       // padding of the container element.
       setStyle (launcherBtn, {
         padding: "16px"
       });
     } else {
-      launcherBtn.innerHTML = MESSENGER_ICON;
+      launcherIconEl.innerHTML = MESSENGER_ICON;
       setStyle (launcherBtn, {
         padding: "12px 10px 8px"
       });
@@ -171,9 +225,50 @@
    */
   const createLauncherButton = () => {
     const launcherButton = doc.createElement ("a");
-    launcherButton.innerHTML = MESSENGER_ICON;
+    launcherIconEl = doc.createElement ("span");
+    launcherIconEl.innerHTML = MESSENGER_ICON;
+
+    unreadCountEl = doc.createElement ("span");
+    setStyle (unreadCountEl, UNREAD_COUNT_STYLES);
+    renderUnreadCount ();
+
+    launcherButton.appendChild (unreadCountEl);
+    launcherButton.appendChild (launcherIconEl);
+
+    launcherButton.addEventListener ("mouseenter", () => {
+      setStyle (launcherButton, {
+        background: state.cssConfig.primaryColorLight
+      });
+    });
+
+    launcherButton.addEventListener ("mouseleave", () => {
+      setStyle (launcherButton, {
+        background: state.cssConfig.primaryColor
+      });
+    });
+
     setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherButton;
+  };
+
+  /**
+   * Render the unread count badge.
+   */
+  const renderUnreadCount = () => {
+    if (!unreadCountEl) {
+      return;
+    }
+    if (state.unreadCount !== 0 && webSdkIframe.style.display === "none") {
+      unreadCountEl.innerHTML = state.unreadCount;
+      setStyle (unreadCountEl, {
+        display: "inline"
+      });
+    } else {
+      unreadCountEl.innerHTML = "";
+      setStyle (unreadCountEl, {
+        display: "none"
+      });
+    }
   };
 
   /**
@@ -182,23 +277,48 @@
    */
   const createWebSdkIframe = () => {
     const iframe = doc.createElement ("iframe");
-    setStyle (iframe, MESSENGER_IFRAME_STYLES);
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
+    setStyle (iframe, {
+      display: "none"
+    });
     return iframe;
   };
 
   /**
-   * Show/hide web sdk iframe.
+   * Destroy web sdk iframe.
    */
-  const toggleWebSdkIframe = () => {
-    if (webSdkIframe.style.display === "none") {
+  const destroyWebSdkIframe = () => {
+    if (webSdkIframe) {
+      webSdkIframe.parentNode.removeChild (webSdkIframe);
+      webSdkIframe = null;
+    }
+  };
+
+  /**
+   * Show/hide web sdk iframe.
+   * @param {Object} [config]
+   * @param {Boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
+   */
+  const toggleWebSdkIframe = (config = {}) => {
+    const currentlyMinimized = webSdkIframe.style.display === "none";
+
+    if (currentlyMinimized === config.minimized) {
+      return;
+    }
+
+    if (currentlyMinimized) {
       webSdkIframe.style.display = "block";
       updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
     } else {
       webSdkIframe.style.display = "none";
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
+
+    _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
+      minimized: !currentlyMinimized
+    });
+    renderUnreadCount ();
   };
 
   /**
@@ -206,7 +326,7 @@
    * This event has to be consumed by parent page.
    * After this event is fired, parent can start communicating with
    * web sdk using APIs. If the parent tries to call APIs before this
-   * event is fired, API won't work as expected (because sdk javascript has
+   * event is fired, API won't work as expected (because sdk JavaScript has
    * not loaded yet or the sdk has not initialised yet.)
    */
   const fireWebSdkReadyEvent = () => {
@@ -215,78 +335,204 @@
   };
 
   /**
-   * Entry point for rendering iframe on the client page.
+   * Process web messenger config to update the behavior of the widget.
+   * @param {Object} - the config object
    */
-  Helpshift.init = (config) => {
+  const processWmConfig = (config) => {
+    // @TODO: Use the web messenger config to set appearance, etc.
+    state.cssConfig = config.cssConfig;
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
+
+    if (!config.widgetEnabled) {
+      destroyWebSdkIframe ();
+      return;
+    }
+    // If the widget is enabled, create the launcher iframe+button and append
+    // it to the document.
     const launcherIframe = createLauncherIframe ();
 
-    launcherBtn = createLauncherButton ();
+    // Append the buttons to iframe once it is loaded.
+    // Note: Even though the iframe doesn't have any src, if we try to append
+    // the launcher button before the onload event is triggered,
+    // the launcher button doesn't get appended on firefox.
+    // (Works fine on chrome without onload event)
+    launcherIframe.onload = () => {
+      // Append meta tag to iframe's head.
+      const metaTag = doc.createElement ("meta");
+      metaTag.setAttribute ("charset", "utf-8");
+      launcherIframe.contentDocument.head.appendChild (metaTag);
 
-    doc.body.appendChild (launcherIframe);
+      // Append launcher button to iframe's body.
+      launcherBtn = createLauncherButton ();
+      launcherBtn.addEventListener ("click", () => {
+        toggleWebSdkIframe ();
+      });
+      launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
-    launcherBtn.addEventListener ("click", toggleWebSdkIframe);
-    launcherIframe.contentDocument.body.appendChild (launcherBtn);
-
-    webSdkIframe = createWebSdkIframe ();
-    doc.body.appendChild (webSdkIframe);
-
-    // Start listening for the iframe messages.
-    win.addEventListener ("message", (event) => {
-      const {type, data} = JSON.parse (event.data);
-
-      switch (type) {
-        case EVENT_TYPES.SDK_JS_LOADED:
-          // SDK loading is separated into two parts: load and initialise.
-          // SDK_JS_LOADED event represents that the web sdk's javascript is loaded.
-          // Once the sdk's js has loaded, the sdk needs to be initialised with a config.
-          // After the sdk has been initialised the parent page can use the api.
-          _postMessage (EVENT_TYPES.CMD_INITIALISE, config);
-          break;
-        case EVENT_TYPES.SDK_INITIALISED:
-          // SDK_INITIALISED event represents that the web sdk is initialised
-          // with required config. Now parent can start calling Helpshift APIs.
-          fireWebSdkReadyEvent ();
-          break;
-        case EVENT_TYPES.SDK_ISSUES_LOADED:
-          if (data.hasActiveIssue) {
-            // @TODO: Show some indication to the user.
-          }
-          break;
+      // Apply styles for webSdkIframe
+      if (config.browserIsMobile) {
+        setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
+      } else {
+        setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
       }
-    }, false);
 
-    // Start - Prevent parent page to scroll from within the iframe
-    // See https://stackoverflow.com/a/32283373/1093247
-    const scrollOptions = {
-      insideIframe: false
+      // Set sdk loaded as true
+      sdkLoaded = true;
+      // Clear the api queue
+      clearApiQueue ();
     };
 
-    webSdkIframe.addEventListener ("mouseenter", function () {
-      scrollOptions.insideIframe = true;
-      scrollOptions.scrollX = win.scrollX;
-      scrollOptions.scrollY = win.scrollY;
-    });
-
-    webSdkIframe.addEventListener ("mouseleave", function () {
-      scrollOptions.insideIframe = false;
-    });
-
-    win.document.addEventListener ("scroll", function () {
-      if (scrollOptions.insideIframe) {
-        win.scrollTo (scrollOptions.scrollX, scrollOptions.scrollY);
-      }
-    });
-    // End - Prevent parent page to scroll from within the iframe
+    doc.body.appendChild (launcherIframe);
   };
 
   /**
-   * API to set user.
-   * @param {Object} user - user object. Contains id, name and email.
+   * Post message to set config.
    */
-  Helpshift.setUser = (user) => {
-    _postMessage (EVENT_TYPES.CMD_SET_USER, {
-      user
+  const setConfig = (config) => {
+    _postMessage (EVENT_TYPES.CMD_SET_CONFIG, config);
+  };
+
+  /**
+   * Execute every queued api and clear the api queue
+   */
+  const clearApiQueue = () => {
+    apiQueue.forEach ((fn) => fn ());
+    apiQueue = [];
+  };
+
+  /**
+   * JS API to initialize messenger.
+   * Entry point for rendering iframe on the client page.
+   */
+  const init = () => {
+    webSdkIframe = createWebSdkIframe ();
+    doc.body.appendChild (webSdkIframe);
+
+    // Start listening to the iframe's messages.
+    win.addEventListener ("message", (event) => {
+      // Only handle events from our web chat iframe
+      if (event.origin !== WEB_CHAT_ROOT) {
+        return;
+      }
+
+      let type, data;
+
+      try {
+        const eventData = JSON.parse (event.data);
+        type = eventData.type;
+        data = eventData.data;
+      } catch (exception) {
+        return;
+      }
+
+      switch (type) {
+        case EVENT_TYPES.SDK_JS_LOADED:
+          // Before web messenger APIs can be called by the client, following
+          // events should occur (in the given order).
+          //
+          // SDK_JS_LOADED: Represents the execution completion of the web sdk
+          // entry point (webSdk.js).
+          // SDK_CONFIG_LOADED: Represents the loading of web messenger
+          // config, which along with other settings, determines whether
+          // the widget should load or not.
+          // SDK_INITIALISED: Represents the loading of the wm React app.
+
+          // Set the client and wm configs to the app.
+          setConfig (window.helpshiftConfig);
+          break;
+
+        case EVENT_TYPES.SDK_CONFIG_LOADED:
+          // Process wm config to set appearance, etc.
+          processWmConfig (data.wmConfig);
+          break;
+
+        case EVENT_TYPES.SDK_INITIALISED:
+          fireWebSdkReadyEvent ();
+          break;
+
+        case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
+          toggleWebSdkIframe ({
+            minimized: data.minimized
+          });
+          break;
+
+        case EVENT_TYPES.UPDATE_UNREAD_COUNT:
+          state.unreadCount = data.count;
+          renderUnreadCount ();
+          break;
+
+        case EVENT_TYPES.SDK_RESET:
+          close ();
+          setConfig (window.helpshiftConfig);
+          break;
+      }
+    }, false);
+  };
+
+  /**
+   * JS API to open/maximize/show the messenger widget
+   */
+  const open = () => {
+    toggleWebSdkIframe ({
+      minimized: false
     });
   };
 
+  /**
+   * JS API to close/minimize/hide the messenger widget
+   */
+  const close = () => {
+    toggleWebSdkIframe ({
+      minimized: true
+    });
+  };
+
+  /**
+   * JS API to reset the conversation
+   */
+  const reset = () => {
+    _postMessage (EVENT_TYPES.CMD_RESET);
+  };
+
+  // A map with all the supported APIs. The global Helpshift () call looks
+  // into this map to get the definition of the called API.
+  const helpshiftApis = {
+    init,
+    open,
+    close,
+    reset
+  };
+
+  /**
+   * The global Helpshift function to handle the APIs. It relies on the
+   * following invocation pattern.
+   *
+   * // Call the addMessage api
+   * Helpshift ("addMessage", apiArguments)
+   * where addMessage is the name of the API and apiArguments is the argument
+   * that is further passed to the api call.
+   *
+   * The number of arguments passed to this function may vary depending on which
+   * API is called. The API should throw exception(s) based on its requirements.
+   */
+  win.Helpshift = function (api, ...apiArguments) {
+    if (typeof api !== "string") {
+      // Throw an error back to the client if an API is not called
+      throw new Error (ERROR_MSG.NO_API_NAME);
+    } else if (typeof helpshiftApis [api] !== "function") {
+      // Throw an error if the API is not supported
+      throw new Error (ERROR_MSG.API_NOT_SUPPORTED);
+    }
+
+    // If a] sdk is loaded OR b] the api is init, then directly call the apis
+    // else queue the apis in sequence and call them after sdk config is loaded
+    // Note :- allowing init api because it's the first api that will be called
+    if (sdkLoaded || api === INIT) {
+      // Call the Helpshift api with the arguments
+      helpshiftApis [api].apply (null, apiArguments);
+    } else {
+      // Queue the apis
+      apiQueue.push (helpshiftApis [api].bind (null, apiArguments));
+    }
+  };
 }) (window, document);

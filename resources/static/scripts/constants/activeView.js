@@ -11,6 +11,6 @@ define ("constants/activeView",
     return {
       CHAT: "CHAT",
       FAQ: "FAQ",
-      CONVERSATION: "CONVERSATION"
+      CSAT: "CSAT"
     };
   });

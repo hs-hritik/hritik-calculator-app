@@ -11,7 +11,8 @@ define ("components/containers/viewWrapper",
 
     const mapStateToProps = (state) => {
       return {
-        activeView: state.appState.activeView
+        activeView: state.appState.activeView,
+        browserIsMobile: state.appState.browserIsMobile
       };
     };
 

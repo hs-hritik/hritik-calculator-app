@@ -9,18 +9,19 @@ define ("components/messageList",
     "components/message",
     "constants/propTypes",
     "constants/message",
-    "gunpowder/utils/date"
+    "components/commons/branding"
   ],
-  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, dateUtils) {
+  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, Branding) {
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const CONVERSATION_DATE_FORMAT = "{mmm} {dd}, {yyyy}";
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
 
     const MESSAGE_TYPES_TO_RENDER = [
       MESSAGE_TYPE.TEXT,
-      MESSAGE_TYPE.FAQ
+      MESSAGE_TYPE.FAQ,
+      MESSAGE_TYPE.CSAT,
+      MESSAGE_TYPE.END_CHAT
     ];
 
     return React.createClass ({
@@ -29,7 +30,10 @@ define ("components/messageList",
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
         )).isRequired,
+        showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
+        onStartCsatSurveyClick: PropTypes.func,
+        isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
       },
 
@@ -38,6 +42,8 @@ define ("components/messageList",
           <div className="hs-message-list"
                ref={this._refCallback}>
             {this._renderMessages ()}
+            {this._renderTypingIndicator ()}
+            <Branding text={this.props.text} />
           </div>
         );
       },
@@ -46,41 +52,52 @@ define ("components/messageList",
        * Render messages and timestamp.
        */
       _renderMessages () {
-        return this.props.messages.map ((message, index) => {
+        const {messages} = this.props;
+
+        return messages.map ((message, index) => {
+          // @TODO: Added temp fix until we add loading spinner.
+          if (!message) {
+            return null;
+          }
           // Avoid rendering of unnecessary message types.
           if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
             return null;
           }
 
+          const nextMsg = messages [index + 1];
+          let isLastMessageInGroup = true;
+
+          if (nextMsg) {
+            isLastMessageInGroup = nextMsg.isCustomerMsg !== message.isCustomerMsg;
+          }
+
           return (
-            <div key={message.id}>
-              {this._renderDateSeparator (index)}
               <Message message={message}
-                       text={this.props.text}
-                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
-            </div>
+                      key={message.id}
+                      isLastMessage={messages.length === (index + 1)}
+                      isLastMessageInGroup={isLastMessageInGroup}
+                      showAgentNickname={this.props.showAgentNickname}
+                      text={this.props.text}
+                      onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
+                      onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
         });
       },
 
       /**
-       * Render date if the next message is on different
-       * day than the previous message.
+       * Render the typing indicator.
        */
-      _renderDateSeparator (msgIndex) {
-        const messages = this.props.messages,
-              prevMsg = messages [msgIndex - 1],
-              nextMsg = messages [msgIndex];
-
-        if (prevMsg &&
-            (prevMsg.createdTs.toDateString () === nextMsg.createdTs.toDateString ())) {
+      _renderTypingIndicator () {
+        if (!this.props.isTyping) {
           return null;
         }
 
-        const dateStr = dateUtils.format (nextMsg.createdTs, CONVERSATION_DATE_FORMAT);
-
         return (
-          <div className="hs-message-list__date-separator">{dateStr}</div>
+          <div className="hs-message-list__typing-indicator">
+            <div className="hs-message-list__typing-dot hs-message-list__typing-anim-1" />
+            <div className="hs-message-list__typing-dot hs-message-list__typing-anim-2" />
+            <div className="hs-message-list__typing-dot hs-message-list__typing-anim-3" />
+          </div>
         );
       },
 
@@ -94,21 +111,20 @@ define ("components/messageList",
       },
 
       /**
-       * Scroll message list to the given position.
-       * @param {Number} position - scrollTop position.
+       * Scroll message list to the bottom.
        */
-      _scrollTo (position) {
+      _scrollToBottom () {
         const node = ReactDOM.findDOMNode (this._messageListRef);
-        node.scrollTop = position;
+        node.scrollTop = node.scrollHeight;
       },
 
       /**
-       * Scroll to bottom if messages length is increased.
+       * Scroll to bottom if messages length is increased,
+       * or if there is typing indicator.
        */
       componentDidUpdate (prevProps) {
-        if (this.props.messages.length > prevProps.messages.length) {
-          const node = ReactDOM.findDOMNode (this._messageListRef);
-          this._scrollTo (node.scrollHeight);
+        if ((this.props.messages.length > prevProps.messages.length)) {
+          this._scrollToBottom ();
         }
       },
 
@@ -116,8 +132,7 @@ define ("components/messageList",
        * Scroll the bottom when the component is mounted.
        */
       componentDidMount () {
-        const node = ReactDOM.findDOMNode (this._messageListRef);
-        this._scrollTo (node.scrollHeight);
+        this._scrollToBottom ();
       }
     });
   }

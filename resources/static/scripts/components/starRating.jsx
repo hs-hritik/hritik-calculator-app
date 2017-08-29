@@ -59,6 +59,7 @@ define ("components/starRating",
         if (hoverValue > 0) {
           activeStarValue = hoverValue;
         }
+        const title = (idx === 1) ? "1 star" : `${idx} stars`;
 
         // @TODO: Move styles to css.
         const starStyles = {
@@ -69,6 +70,7 @@ define ("components/starRating",
         return (
           <i className="ion-star hs-csat__star"
              style={starStyles}
+             title={title}
              onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
              onMouseLeave={this._onStarMouseLeave}
              key={idx}

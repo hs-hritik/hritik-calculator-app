@@ -16,7 +16,7 @@ const prettyJSON = require ("prettyjson");
 const PATHS = {
   styles: {
     src: "styles/**/*.scss",
-    dest: "static/css",
+    dest: "dist/css",
     lint: [
       "styles/**/*.scss",
       "!styles/vendor/**/*.scss",

@@ -1,0 +1,45 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group conversation
+///
+
+@include component(attachment) {
+
+  $attachment-background-color: color(bg, white);
+
+  .hs-attachment {
+    display: flex;
+    padding: gutter(8);
+    margin-top: gutter(8);
+    white-space: nowrap;
+    cursor: pointer;
+    background-color: $attachment-background-color;
+    border-radius: radius();
+
+    &__file-icon {
+      padding-top: gutter(2);
+      color: $attachment-background-color;
+    }
+
+    &__text-wrapper {
+      display: flex;
+      flex-direction: column;
+      margin-left: gutter(8);
+    }
+
+    &__text {
+      font-weight: font-weight(bold);
+    }
+
+    &__download-icon {
+      margin-right: gutter(4);
+    }
+  }
+}

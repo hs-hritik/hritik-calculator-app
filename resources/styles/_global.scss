@@ -16,28 +16,9 @@
 /// @type Map
 $_palettes: (
   black: (
-    x-dark:    #212528,
     dark:      #383f44,
     base:      #576066,
-    light:     #859199,
-    x-light:   #b6c3cc,
-    xx-light:  #d5dfe6
-  ),
-  blue: (
-    x-dark:    #0e498c,
-    dark:      #215fa6,
-    base:      #3d80cc,
-    light:     #67a2e6,
-    x-light:   #a6cfff,
-    xx-light:  #ebf4ff
-  ),
-  cyan: (
-    x-dark:    #7ba8b3,
-    dark:      #91c1cc,
-    base:      #a4ddea,
-    light:     #c4ecf5,
-    x-light:   #d9f4fa,
-    xx-light:  #edfafc
+    light:     #859199
   ),
   green: (
     x-dark:    #19803c,
@@ -49,27 +30,16 @@ $_palettes: (
   ),
   gray: (
     x-dark:    #a2a4a6,
-    dark:      #c8cacc, //c8cacc,
-    base:      #d4d7d9, //dddfe1, //d4d7d9,
+    dark:      #c8cacc,
+    base:      #d4d7d9,
     light:     #e8e9eb,
     x-light:   #f8f9f9,
     xx-light:  #fff
   ),
   red: (
-    x-dark:    #c33,
     dark:      #e65050,
     base:      #f66,
-    light:     #ff8c8c,
-    x-light:   #ffb3b3,
-    xx-light:  #ffe6e6
-  ),
-  yellow: (
-    x-dark:    #d99100,
-    dark:      #f2b230,
-    base:      #ffc859,
-    light:     #ffd580,
-    x-light:   #ffe1a6,
-    xx-light:  #fff5e0
+    light:     #ff8c8c
   )
 ) !global;
 
@@ -77,97 +47,52 @@ $_palettes: (
 /// Colors for global elements on the dashboard
 /// @type Map
 $_colors: (
-  alert: (
-    bg: palette(yellow, xx-light),
-    bg-dark: palette(yellow, x-light),
-    border: palette(yellow),
-    border-dark: palette(yellow, dark),
-    text: palette(yellow, dark),
-    text-dark: palette(yellow, x-dark),
-  ),
   bg: (
-    black: palette(black, x-dark),
     lightblack: palette(black, dark),
     darkgray: palette(black),
     gray: palette(gray, light),
     lightgray: palette(gray, x-light),
     base: palette(gray, xx-light),
-    white: palette(grey, xx-light),
-
-    xx-dark: palette(black, x-dark),
     x-dark: palette(black, dark),
-
     light: palette(gray, light),
     x-light: palette(gray, x-light),
-    xx-light: palette(grey, xx-light),
+    white: palette(gray, xx-light)
    ),
   border: (
-    x-dark: palette(gray, x-dark),
     dark: palette(gray, dark),
     base: palette(gray),
-    light: palette(gray, light),
-    x-light: palette(gray, x-light),
+    light: palette(gray, light)
   ),
   button: (
-    base: palette(blue),
-    black: palette(black),
-    green: palette(green),
-    red: palette(red),
-    yellow: palette(yellow),
+    base: palette(green)
   ),
   error: (
-    bg: palette(red, xx-light),
-    bg-dark: palette(red, x-light),
     border: palette(red),
-    border-dark: palette(red, dark),
-    text: palette(red, dark),
-    text-dark: palette(red, x-dark),
-  ),
-  impersonator: (
-    bg: palette(red, dark),
-    icon: palette(red, light),
-    nav-active: palette(red, dark),
+    text: palette(red, dark)
   ),
   primary: (
-    x-dark: palette(red, x-dark),
-    dark: palette(red, dark),
-    base: palette(red),
-    light: palette(red, light),
-    x-light: palette(red, x-light),
-    xx-light: palette(red, xx-light),
+    x-dark: palette(green, x-dark),
+    dark: var(--hs-custom-primary-color-dark),
+    base: var(--hs-custom-primary-color),
+    light: var(--hs-custom-primary-color-light),
+    x-light: palette(green, x-light),
+    xx-light: palette(green, xx-light)
   ),
   secondary: (
-    x-dark: palette(blue, x-dark),
-    dark: palette(blue, dark),
-    base: palette(blue),
-    light: palette(blue, light),
-    x-light: palette(blue, x-light),
-    xx-light: palette(blue, xx-light),
+    dark: palette(red, dark),
+    base: palette(red),
+    light: palette(red, light)
   ),
   success: (
-    bg: palette(green, xx-light),
-    bg-dark: palette(green, x-light),
     border: palette(green),
-    border-dark: palette(green, dark),
-    text: palette(green, dark),
-    text-dark: palette(green, x-dark),
+    text: palette(green, dark)
   ),
   text: (
     dark: palette(black, dark),
     base: palette(black),
     light: palette(black, light),
-    x-light: palette(black, x-light),
-    white: palette(gray, xx-light),
-    warning: palette(yellow, dark),
-  ),
-  warning: (
-    bg: palette(yellow, xx-light),
-    bg-dark: palette(yellow, x-light),
-    border: palette(yellow),
-    border-dark: palette(yellow, dark),
-    text: palette(yellow, dark),
-    text-dark: palette(yellow, x-dark),
-  ),
+    white: palette(gray, xx-light)
+  )
 ) !global;
 
 /// Font sizes for body and header elements
@@ -176,8 +101,7 @@ $_font-sizes: (
   body: (
     large: 16,
     base: 14,
-    small: 12,
-    tiny: 11
+    small: 12
   ),
   heading: (
     h1: 24,
@@ -194,7 +118,6 @@ $_font-sizes: (
 $_line-heights: (
   base: 1.5,
   body: 1.5,
-  tiny: 1.454545455,
   form: 1.6,
   h1: 32px,
   h2: 28px,
@@ -209,7 +132,6 @@ $_line-heights: (
 $_font-weights: (
   normal: 400,
   medium: 600,
-  semibold: 600,
   bold: 600,
 ) !global;
 
@@ -242,40 +164,9 @@ $_radius: (
 /// @type Map
 $_z-index: (
   page: (
-    base: 100,
-    progress-bar: 900,
-    preview-resize: 110
-  ),
-  select: (
-    title: 500,
-    content: 910,
-  ),
-  custom-checkbox: 10,
-  dropdown: 9999,
-
-  // Order should be - block-refresh > blocker > tooltip > growl > modal > nav
-  nav: 10000,
-  modal: 10071,
-  growl: 10076,
-  tooltip: 10081,
-  blocker: 10086,
-  block-refresh: 10091
+    base: 100
+  )
 ) !global;
-
-/// Map to manage widths of global components
-/// @type Map
-$_widths: (
-  main-nav: (
-    base: 72,
-    mobile: 64,
-  ),
-  sidebar: (
-    base: 300,
-    mobile: 260,
-    content: 340,
-    content-mobile: 300
-  ),
-);
 
 /// Font stack used for elements that should be rendered in system fonts
 /// @type String | List
@@ -307,6 +198,13 @@ $_body-antialiased: true;
 
 @mixin hs-global-styles() {
   @include _hs-normalize;
+
+  // The selector :root is usually used with CSS variables, which matches
+  // the root level element (in this case, html), but its specificity is higher.
+  // See https://developer.mozilla.org/en-US/docs/Web/CSS/:root
+  :root {
+    --hs-custom-primary-color: color(primary);
+  }
 
   html,
   body {

@@ -34,12 +34,12 @@
         secondary: color(secondary),
       ),
       hover: (
-        primary: color(primary, dark),
+        primary: color(primary, light),
         secondary: color(secondary, dark),
       ),
       active: (
-        primary: color(primary, x-dark),
-        secondary: color(secondary, x-dark),
+        primary: color(primary, dark),
+        secondary: color(secondary, dark),
       )
     ),
     hollow: (
@@ -48,12 +48,12 @@
         secondary: transparent,
       ),
       hover:(
-        primary: color(primary, xx-light),
-        secondary: color(secondary, xx-light),
+        primary: color(primary, light),
+        secondary: color(secondary, light),
       ),
       active: (
-        primary: color(primary, x-light),
-        secondary: color(secondary, x-light),
+        primary: color(primary, dark),
+        secondary: color(secondary, light),
       )
     )
   );
@@ -233,6 +233,21 @@
       background-color: map-fetch($bg-map, active, $type);
       box-shadow: none;
     }
+
+    @if ($fill == hollow) {
+      &:hover,
+      &:focus {
+        color: map-fetch($bg-map, hover, $type);
+        background-color: map-fetch($bg-map, base, $type);
+        border-color: map-fetch($bg-map, hover, $type);
+      }
+
+      &:active {
+        color: map-fetch($bg-map, active, $type);
+        background-color: map-fetch($bg-map, base, $type);
+        border-color: map-fetch($bg-map, active, $type);
+      }
+    }
   }
 
   /// Adds disabled styles to a button by fading the element, reseting the cursor, and disabling pointer events.
@@ -359,116 +374,9 @@
       }
     }
 
-    &--icon-left,
-    &--icon-right,
-    &--dropdown {
-      text-align: left;
-
-      [class*="ion-"],
-      .hs-button__icon {
-        position: absolute;
-        top: 50%;
-        left: $_icon-pad;
-        margin-top: $_icon-font-size * -.5;
-        font-size: $_icon-font-size;
-      }
-
-      // Added to support non-standard button type
-      // in Bulk Action Edit Modal.
-      //
-      // Need to be updated to make this a proper Button variation
-      .hs-button__count {
-        min-width: 24px;
-        padding: gutter(6);
-        font-size: font-size(body, small);
-        text-align: center;
-        background: rgba(color(primary, x-dark), .2);
-        border-radius: radius(round);
-      }
-    }
-
-    &--icon-left {
-      .hs-button__text {
-        padding-left: $_icon-font-size;
-      }
-
-      .hs-button__count {
-        margin-left: gutter(-4);
-      }
-    }
-
-    &--icon-right,
-    &--dropdown {
-      [class*="ion-"],
-      .hs-button__icon {
-        right: $_icon-pad;
-        left: auto;
-      }
-
-      .hs-button__text {
-        padding-right: $_icon-font-size;
-      }
-
-      .hs-button__count {
-        margin-right: gutter(-4);
-      }
-    }
-
-    &--icon-only {
-      padding: $_icon-only-pad;
-      font-size: $_icon-only-font-size;
-      line-height: 0;
-
-      [class*="ion-"],
-      .hs-button__icon {
-        font-size: $_icon-only-font-size;
-      }
-    }
-
     &--no-border {
       border: 0;
     }
-
-    // For Buttons that work as Dropdown Title.
-    //
-    // Adding this modifier will render an arrow inside the button.
-    // The arrow will always point downwards and is rendered to the right of the
-    // Button label.
-    &--dropdown {
-      $_icon-dropdown-color: map-fetch($colors, solid, primary);
-
-      .hs-button__icon {
-        margin-top: gutter($_icon-dropdown-size * -.5);
-        margin-right: gutter($_icon-dropdown-size * .5);
-
-        &::after {
-          @include css-triangle($_icon-dropdown-size, $_icon-dropdown-color, down);
-        }
-      }
-
-      &.hs-button--hollow {
-        &.hs-button--dropdown {
-          $_icon-dropdown-color: map-fetch($colors, hollow, primary);
-
-          .hs-button__icon {
-            &::after {
-              @include css-triangle($_icon-dropdown-size, $_icon-dropdown-color, down);
-            }
-          }
-        }
-
-        &.hs-button--secondary {
-          $_icon-dropdown-color: map-fetch($colors, hollow, secondary);
-
-          .hs-button__icon {
-            &::after {
-              @include css-triangle($_icon-dropdown-size, $_icon-dropdown-color, down);
-            }
-          }
-        }
-      }
-    }
-
 
     // Different Button Sizes - small, x-small, xx-small
     @each $size, $value in map-remove($font-sizes, base) {

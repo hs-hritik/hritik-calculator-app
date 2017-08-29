@@ -12,12 +12,16 @@
 
 @include component(header) {
   $padding: gutter(12);
-  $bg-color: palette(red, base);
+  $bg-color: color(primary);
   $color: color(text, white);
   $link-color: color(text, white);
 
   .hs-header {
+    display: flex;
+    align-items: center;
     flex: 0 0 auto;
+    justify-content: space-between;
+    height: 52px;
     padding: $padding;
     font-weight: font-weight(bold);
     color: $color;
@@ -30,7 +34,7 @@
     }
 
     &__back-icon {
-      margin-right: gutter(4);
+      margin-right: gutter(8);
     }
   }
 }

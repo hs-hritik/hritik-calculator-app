@@ -11,11 +11,26 @@ define ("constants/message",
     const TYPE = {
       TEXT: "Text",
       FAQ: "Faq",
-      CONFIRMATION_ACCEPTED: "Confirmation Accepted",
-      CONFIRMATION_REJECTED: "Confirmation Rejected"
+      CSAT: "Csat",
+      END_CHAT: "EndChat"
+    };
+
+    // Typing timeout (in milliseconds) for different system generated message.
+    const TYPING_TIMEOUT = {
+      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
+      INFO_BOT_REQUEST: 1200,
+      INFO_BOT_FIELD: 1200,
+      FAQ_SUGGESTIONS_PROBLEM_SOLVED: 1200
+    };
+
+    // Timeout (in milliseconds) for different system generated message.
+    const TIMEOUT = {
+      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 600
     };
 
     return {
-      TYPE
+      TYPE,
+      TIMEOUT,
+      TYPING_TIMEOUT
     };
   });

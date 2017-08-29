@@ -7,12 +7,16 @@
 define ("components/replyBox",
   [
     "constants/keyCodes",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/widgets/textareaAutosize"
   ],
-  function (KEY_CODES, classes) {
+  function (KEY_CODES, classes, TextareaAutosize) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+
+    const TEXT_AREA_MIN_ROWS = 1,
+          TEXT_AREA_MAX_ROWS = 5;
 
     return React.createClass ({
       displayName: "ReplyBox",
@@ -21,52 +25,63 @@ define ("components/replyBox",
          * Reply textarea value.
          */
         value: PropTypes.string.isRequired,
-        attachments: PropTypes.array,
         disabled: PropTypes.bool,
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          replyBtn: PropTypes.string.isRequired,
           replyBtnPlaceholder: PropTypes.string.isRequired
         }).isRequired
       },
 
       render () {
         const {text, disabled} = this.props;
-        // @TODO: Use store saved values for Reply button and reply placeholder.
-        const btnClasses = classes ("hs-button",
-                                    "hs-button--hollow",
-                                    "hs-button--no-border",
-                                    "hs-button--xx-small",
-                                    "hs-reply-box__submit-btn");
+
+        const replyBoxClasses = classes (
+          "hs-chat-footer", {
+            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
+          }
+        );
 
         return (
-          <div className="hs-reply-box">
-            <textarea value={this.props.value}
-                      className="hs-reply-box__textarea"
-                      onKeyDown={this._onReplyTextKeyDown}
-                      onChange={this._onReplyTextChange}
-                      placeholder={text.replyBtnPlaceholder}
-                      disabled={disabled}
-                      autoFocus />
-            <button onClick={this._onReplyClick}
-                    className={btnClasses}>
-              {text.replyBtn}
-            </button>
+          <div className={replyBoxClasses}>
+            <div className="hs-chat-footer__field">
+              <TextareaAutosize value={this.props.value}
+                                className="hs-chat-footer__text-area"
+                                onKeyDown={this._onReplyTextKeyDown}
+                                onChange={this._onReplyTextChange}
+                                minRows={TEXT_AREA_MIN_ROWS}
+                                maxRows={TEXT_AREA_MAX_ROWS}
+                                onHeightChange={this._onReplyBoxHeightChange}
+                                placeholder={text.replyBtnPlaceholder}
+                                disabled={disabled}
+                                autoFocus
+                                dir="auto" />
+                <a className="hs-chat-footer__submit"
+                   onClick={this._onReplyClick}>
+                  <i className="ion-send" />
+                </a>
+            </div>
           </div>
         );
+      },
+
+      /**
+       * Handler for reply box textarea height change.
+       */
+      _onReplyBoxHeightChange () {
+        // @TODO: Handle scroll
       },
 
       /**
        * Handler for reply text area key down.
        */
       _onReplyTextKeyDown (ev) {
-        if (ev.keyCode === KEY_CODES.ESCAPE) {
-          ev.target.blur ();
-        } if (ev.ctrlKey || ev.metaKey) {
-          if (ev.keyCode === KEY_CODES.ENTER) {
+        if (ev.keyCode === KEY_CODES.ENTER) {
+          if (!ev.shiftKey) {
             this._submitReply ();
           }
+        } else if (ev.keyCode === KEY_CODES.ESCAPE) {
+          ev.target.blur ();
         }
       },
       /**

@@ -5,37 +5,58 @@
  */
 
 define ("reducers/ui",
-  function () {
+  ["constants/actionTypes"],
+  function (ACTION_TYPES) {
     "use strict";
+
+    const update = React.addons.update;
 
     const INITIAL_STATE = {
       text: {
         chatViewHeader: "Chat with us",
-        defaultAgentMessage: "Hi. How may we help you today?",
-        createIssueUserMessage: "No, I want to talk to an agent.",
-        problemSolvedAgentMessage: "Did we answer all of your questions?",
-        faqMessageHeader: "Do these FAQs solve your problem?",
-        faqSuggestionsHelpful: "Yes, they were helpful",
-        faqSuggestionsNotHelpful: "No, I want to talk to an agent",
-        faqSuggestionsMsgTitle: "Do these FAQs solve your problem?",
-        problemSolved: "Yes, Thanks!",
-        problemNotSolved: "No",
-        faqViewHeader: "Back to messages",
-        faqFooter: "Was this helpful?",
-        faqFooterHelpfulBtn: "Yes",
-        faqFooterNotHelpfulBtn: "No",
-        acceptSolutionMessage: "Accepted the solution",
-        rejectSolutionMessage: "Rejected the solution",
-        csatReviewRequest: "What's your feedback about our customer support?",
-        csatReviewResponse: "Thanks for your feedback!",
-        startNewConversationBtn: "Start a new conversation",
-        replyBtn: "Send",
-        replyBtnPlaceholder: "Send a message..."
+        greetingMsg: "Hi! How can I help you today?",
+        faqSuggestionsAdditionalHelpMsg: "Do you still need additional help from an agent?",
+        faqSuggestionsAdditionalHelpRequiredBtn: "Yes",  // Also used for msg
+        faqSuggestionsAdditionalHelpNotRequiredBtn: "No",  // Also used for msg
+        problemSolvedByFaqSuggestionsMsg: "Glad I could help you today.",
+        faqSuggestionsMsgTitleSingle: "Does this FAQ solve your problem?",
+        faqSuggestionsMsgTitleMultpile: "Do these FAQs solve your problem?",
+        faqViewHeader: "Back",
+        closeConversationBtn: "Close",
+        replyBtnPlaceholder: "Send a message...",
+        csatBotRequestMsg: "Do you have a moment to rate your experience?",
+        csatBotResponseMsg: "Thanks for your feedback!",
+        csatBotFormRequestMsg: "How would you rate your chat experience?",
+        csatBotFormSubmitBtn: "Submit",
+        csatBotReviewPlaceholder: "Leave us additional feedback",
+        csatBotReviewTitle: "Additional Feedback",
+        csatLinkCaption: "Take Survey",
+        csatViewHeader: "Chat with us",
+        infoBotRequestMsg: "Before we begin, we need some more information.",
+        branding: "Powered by Helpshift"
+      },
+      color: {
+        primary: "#43BF6C"
       }
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
+        case ACTION_TYPES.SET_WM_CONFIG:
+          const {config} = action;
+
+          return update (state, {
+            text: {
+              greetingMsg: {$set: config.greeting},
+              chatViewHeader: {$set: config.appearance.widget_title},
+              csatViewHeader: {$set: config.appearance.widget_title},
+              csatBotRequestMsg: {$set: config.csat_bot.req_msg}
+            },
+            color: {
+              primary: {$set: config.appearance.primary_color}
+            }
+          });
+
         default:
           return state;
       }

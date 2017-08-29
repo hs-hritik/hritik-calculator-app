@@ -8,41 +8,58 @@
 define ("components/app",
   [
     "store",
-    "utils/postMessage",
     "constants/eventTypes",
     "actions/appState",
     "components/containers/viewWrapper"
   ],
-  function (store, postMessage, EVENT_TYPES, appStateActions, ViewWrapperContainer) {
+  function (store, EVENT_TYPES, appStateActions, ViewWrapperContainer) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
+    let _isAppMounted = false;
 
     /**
      * Main wrapper component for React application.
      */
     const App = React.createClass ({
       displayName: "App",
+
       render () {
         return (<ViewWrapperContainer />);
+      },
+
+      componentDidMount () {
+        _isAppMounted = true;
+      },
+
+      componentWillUnmount () {
+        _isAppMounted = false;
       }
     });
 
-    const init = (config) => {
-      store.dispatch (appStateActions.setConfig (config));
-
+    /**
+     * Render app.
+     */
+    const init = () => {
       ReactDOM.render (
         <Provider store={store}>
           <App />
         </Provider>,
         document.getElementById ("app")
       );
+    };
 
-      postMessage (EVENT_TYPES.SDK_INITIALISED);
+    /**
+     * Unmount app.
+     */
+    const unmount = () => {
+      ReactDOM.unmountComponentAtNode (document.getElementById ("app"));
     };
 
     return {
-      init
+      isMounted: () => _isAppMounted,
+      init,
+      unmount
     };
   }
 );
