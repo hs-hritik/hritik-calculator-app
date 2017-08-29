@@ -1,0 +1,222 @@
+Branches:
+feature/v1
+
+Changelog:
+Temporarily use .mobi for ec2 api root
+Add check to verify event origin in handler of post message
+Update web chat root path for azure
+Fix Makefile to use GNU Tools
+Remove view icon and scale up file icon
+Fix margin for typing indicator
+Add meta tag for mobile support
+Add meta tag to launcher iframe
+Fix iframe loading for firefox
+Update build process to handle environments (ec2, azure, staging, dev)
+Check if css vars are supported
+Fix message details css
+Change agent ended chat text
+Don't scroll on agent typing
+Add dir auto at multiple places
+Lighten launcher icon on hover
+Remove dummy config
+Remove code to prevent scroll of parent
+Show agent name for every group of agent messages
+Remove download icon svg and use eye icon
+Remove disabled styles for all inputs
+Change ellipsis logic for attachment name
+Change the font weight of attachments text
+Fix dot notation rule
+Change global scss to use custom primary color
+Add download functionality on attachment click
+Replace attachment icons with svg
+Add typing for problem solved message
+Fix messages css
+Fix faq view header
+Fix bug while clearing local storage
+Auto focus info bot field input
+Make iframe hidden by default
+Fix alignment of send btn
+Fix info bot ls related bug
+Reduce margin for messages of the same user
+Add timeout for faq feedback message
+Fix end user first msg bug while creating issue
+Add word break to message
+Fix dot-notation eslint rule
+Send message on faq feedback
+Fix faq message css
+Fix integration testing issues
+Update API route for dev and prod envs
+Add attachment functionality to message
+Move hs branding to bottom
+Fix end chat message css
+Remove tail from messages and fix padding for views
+Fix unread count rendering
+Fix end chat message css
+Update makefile for symlink and create index file for demo
+Change chat footer classes
+Prefill user name and email set by client
+Submit reply on enter
+Fix styles for header
+Move unread count in front
+Fix faq message title
+Fix iframe height and width to make it responsive
+Change messages timeout
+Fix messages css
+Fix message rendering bug on initial load
+Update wm static URL at compile time
+Update symlink source to use relative path
+Add typing animation
+Fix close btn css
+Add message css
+Add css for csat view
+Add powered by helpshift text
+Queue client apis until web sdk is ready
+Change icon url paths
+Change route dir to dist
+Change chat view footer classes
+Handle scroll for typing indicator
+Update reply box component
+Render unread count badge and fix related bug
+Rename pre-chat state constants
+Update throttle calls in lsMiddleware
+Fix ls entities keys
+Change ls keys to short form
+Handle refresh while faqs are being fetched
+Update unread count logic
+Remove faq feedback related code
+Start new conversation if there is no active issue id
+Remove todos that are no longer valid
+Move postMessage calls to postSdkMessage module
+Remove unnecessary SDK_ISSUES_LOADED event
+Change the path for getCss in routes
+Update Makefile to create dist directory
+Pass user-id while creating issue
+Update reset function
+Remove unused CSS
+Show close button for mobile
+Add code to detect mobile device
+Handle ttl in agent typing activity
+Add live updates and listen to agent activity
+Show agent nickname if enabled
+Add info bot field validations
+Destroy web sdk iframe if web messenger is disabled
+Move updateActiveView to actionCreators file
+Remove unnecessary params from xhrs
+Save reply text in localstorage
+Add end chat message
+Remove unnecessary poc features
+Add csat view
+Add csat request message when issue gets resolved
+Add action to reset state
+Handle issue rejection
+Reset chat on timeout
+Rehydrate pre chat issue state from localstorage
+Handle issue state and update lsMiddleware
+Save only required messages in ls
+Process authors entities
+Rehydrate active issue chat from localstorage
+Remove attachments prop from ReplyBox
+Use unix ts instead of Date instance
+Remove input instance from state
+Use uuid for message id instead of counter
+Remove suggestedFaqs from state
+Fix typing bug after getting faq suggestions
+Remove setUser API
+Register user before creating the issue.
+Change active footer at multiple places.
+Update message timestamp rendering
+Remove profileId, apiToken and appId
+Add open, close, and reset APIs
+Set uuid when the userId is passed with config changes
+Change webm routes to websdk routes
+Add validations for info bot field
+Pass first message to answer bot.
+Rename "Get Info Bot" to "Info Bot"
+Save end user first message in store.
+Add closed state in ChatViewFooter
+Add blocked state in ChatViewFooter
+Add info bot feature.
+Bump gunpowder version up to include localstorage and uuid utils
+Use CSS variables to apply wm configured primary color
+Add actions and events related to unread count.
+Update reject and accept faq suggestions actions.
+Update createMessage action.
+Mount react app when widget is maximized
+Update web messenger config in reducers instead of in action
+Use "messenger" instead of "iframe" in the toggle events
+Get web messenger admin configuration
+Rename setConfig to setClientConfig
+Create a global Helpshift function to handle API calls
+Define pre-chat actions.
+Add events related to toggling of iframe.
+Add action to create text message.
+Add functionality to dispatch batched actions.
+Update makefile and gulp to use gunpowder npm package
+Restrict FAQ suggestions to one app
+Change appId identifier to platformId
+Update back to messages icon
+Use icons for csat stars and faq back button
+Add style to message timestamp
+Float message timestamp to the right
+Hightlight stars on hover in StarRating component
+Add faq suggestions title message text
+Toggle launcher button icon
+Move CSAT feedback to the chat view footer component
+Prevent parent page from scrolling when in the iframe
+Add styles for FAQ view
+Add styles for the footer area
+Comment FAQ view footer
+Scroll to bottom when message is added to the list.
+Add agent message when issue gets resolved.
+Add files to use icons
+Add csat review request text.
+Pass authorization header to xhr util.
+Restructure Message component proptypes.
+Fire event to messenger when issues get loaded.
+Add styles for timestamp and FAQ message
+Add styles for the chat view wrapper, header, body, and footer
+Avoid rendering of unnecessary messages.
+Add message when user rejects faq suggestions.
+Add code to register new user.
+Update ReplyBox component.
+Update domain information to use test.helpshift.com
+Add action to start new conversation.
+Fix bug in faq suggestions.
+Add new conversation chat footer.
+Add StarRating component.
+Add ViewHeader in FAQ view.
+Update FAQ view and message components
+Add initial files for SCSS code set up
+Set active issue after creating new issue.
+Update ChatViewFooter component.
+Stop polling if the issue get closed.
+Add action to submit CSAT rating.
+Add action to accept and reject solution.
+Add action to create new issue.
+Call getFaqSuggestions action when user submits first message.
+Render message with FAQ suggestions and handle FAQ click
+Add code to create issue and messages in frontend.
+Add action to get FAQ suggestions
+Add FAQ view container, component, action
+Add polling for messages.
+Add ViewHeader common component.
+Add action to add message.
+Add ReplyBox component.
+Add ViewWrapper, ChatView and Message components.
+Add action and update reducer to update store's active window
+Use arrow functions instead of normal functions.
+Add debug and minified files for react-dom and react-with-addons
+Rename actions and reducers.
+Rename event types.
+Process messages entity.
+Add action to set active issue in store.
+Add set user API and get issues for the user.
+Add (very) basic styles to the messenger iframe
+Add redux thunk and normalizr libraries.
+Add base for react app and redux store.
+Add setup for messenger.js and web sdk.
+Add redux and react-redux libraries.
+Add Makefile and files related to it
+Add gulp files
+Add package.json and other initial files
+Initial empty repository
