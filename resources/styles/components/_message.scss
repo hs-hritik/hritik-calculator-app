@@ -21,6 +21,7 @@
   $right-border-color: color(border, light);
   $end-chat-msg-text-color: color(text, light);
   $end-chat-msg-border-color: color(border, light);
+  $message-details-color: color(text, light);
 
   .hs-message {
     align-self: flex-start;
@@ -69,15 +70,20 @@
 
     &__details {
       display: flex;
+      align-items: flex-end;
       justify-content: space-between;
+      color: $message-details-color;
     }
 
     &__agent-nickname {
       margin-right: gutter(8);
+      font-weight: 500;
     }
 
     &__time-ago {
       margin-left: gutter(8);
+      font-size: font-size(body, small);
+      letter-spacing: -.5px;
     }
 
     &--end-chat {
