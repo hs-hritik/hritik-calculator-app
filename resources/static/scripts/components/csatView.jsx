@@ -51,7 +51,6 @@ define ("components/csatView",
               <div className="hs-csat">
                 {this._renderCsatBody ()}
                 {this._renderCsatFooter ()}
-                <Branding text={text} />
               </div>
             </div>
           </div>
@@ -136,10 +135,11 @@ define ("components/csatView",
         }
 
         return (
-          <div>
+          <div className="hs-csat__footer">
             <button {...btnProps}>
               {btnText}
             </button>
+            <Branding text={text} />
           </div>
         );
       },
