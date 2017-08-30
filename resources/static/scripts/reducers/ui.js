@@ -14,16 +14,16 @@ define ("reducers/ui",
     const INITIAL_STATE = {
       text: {
         chatViewHeader: "Chat with us",
-        greetingMsg: "Hi! How can I help you today?",
-        faqSuggestionsAdditionalHelpMsg: "Do you still need additional help from an agent?",
+        greetingMsg: "Hi, how can we help you?",
+        faqSuggestionsAdditionalHelpMsg: "Do you still want to talk to an agent?",
         faqSuggestionsAdditionalHelpRequiredBtn: "Yes",  // Also used for msg
         faqSuggestionsAdditionalHelpNotRequiredBtn: "No",  // Also used for msg
-        problemSolvedByFaqSuggestionsMsg: "Glad I could help you today.",
-        faqSuggestionsMsgTitleSingle: "Does this FAQ solve your problem?",
-        faqSuggestionsMsgTitleMultpile: "Do these FAQs solve your problem?",
+        problemSolvedByFaqSuggestionsMsg: "Glad we could help you!",
+        faqSuggestionsMsgTitleSingle: "See if this article helps",
+        faqSuggestionsMsgTitleMultpile: "See if these articles help",
         faqViewHeader: "Back",
         closeConversationBtn: "Close",
-        replyBtnPlaceholder: "Send a message...",
+        replyBtnPlaceholder: "Write your message",
         csatBotRequestMsg: "Do you have a moment to rate your experience?",
         csatBotResponseMsg: "Thanks for your feedback!",
         csatBotFormRequestMsg: "How would you rate your chat experience?",
