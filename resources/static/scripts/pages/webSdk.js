@@ -6,11 +6,10 @@
 
 require (
   [
-    "utils/postMessage",
-    "constants/eventTypes",
+    "extras/postSdkMessage",
     "extras/api"
   ],
-  function (postMessage, EVENT_TYPES, api) {
+  function (postSdkMessage, api) {
     "use strict";
 
     /**
@@ -24,5 +23,5 @@ require (
 
     window.addEventListener ("message", onMessage, false);
 
-    postMessage (EVENT_TYPES.SDK_JS_LOADED);
+    postSdkMessage.jsLoaded ();
   });

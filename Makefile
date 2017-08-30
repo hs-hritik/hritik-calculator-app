@@ -2,6 +2,8 @@
 # Makefile for mirkwood project
 #
 
+SHELL=/bin/bash
+
 # Add ./tools directory to path
 export PATH := $(abspath ./tools):$(PATH)
 
@@ -42,7 +44,7 @@ else
 	TEST_TARGETS := eslint gunpowder reactjs sass-lint
 endif
 
-static: npminstall styles gunpowder reactjs compress-js js-libs
+static: dist
 
 bundlerinstall:
 	@echo "\nEnsuring Bundler Installation for SCSS compilation..."
@@ -84,6 +86,89 @@ gunpowder: npminstall
 	@echo "\nInstalling the gunpowder npm package"
 	@mkdir -p resources/static/scripts/gunpowder/node_modules;
 	$(NPM) install --prefix resources/static/scripts/gunpowder;
+
+# The dist task is to compile and compress resources and
+# copy them to the `dist` directory.
+# All resources to be deployed must be copied to the `dist` directory.
+# The styles gunpowder, and reactjs tasks already copy files to the dist
+# directory, so copying html, libs, and fonts to dist here.
+# Create a symlink for messenger.js (the web messenger entry script file) to
+# the dist directory.
+dist: prepare-dist npminstall styles gunpowder reactjs compress-js js-libs copy-html-libs prepare-subdir ec2 azure localshiva clean-subdir
+
+# The distdev task to compile resources and link the dev files to dist directory
+distdev: prepare-dist npminstall styles gunpowder reactjs copy-html-libs prepare-subdir-dev localhost clean-subdir
+
+prepare-dist:
+	@echo "Creating the dist directory"
+	@mkdir -p resources/dist
+	@mkdir -p resources/dist/demo
+	@echo "Done"
+
+copy-html-libs:
+	@cp -R resources/static/{html,libs,fonts} resources/dist
+
+copy-temp:
+	@mkdir -v resources/build
+	@mv -v resources/dist/* resources/build/
+
+prepare-ec2:
+	@echo "Creating ec2 subdirectory in the dist directory"
+	@mkdir resources/dist/ec2
+	@echo "Done"
+
+prepare-azure:
+	@echo "Creating azure subdirectory in the dist directory"
+	@mkdir resources/dist/azure
+	@echo "Done"
+
+prepare-locashiva:
+	@echo "Creating localshiva subdirectory in the dist directory"
+	@mkdir resources/dist/localshiva
+	@echo "Done"
+
+prepare-localhost:
+	@echo "Creating localhost subdirectory in the dist directory"
+	@mkdir resources/dist/localhost
+	@echo "Done"
+
+prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
+
+prepare-subdir-dev: copy-temp prepare-localhost
+
+ec2:
+	@cp -R resources/build/* resources/dist/ec2/
+	@cd resources/dist/ec2; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
+	@cd resources && $(GULP) build-ec2
+
+azure:
+	@cp -R resources/build/* resources/dist/azure/
+	@cd resources/dist/azure; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/azure/demo; ln -sv ../html/demo/index.html .;
+	@cd resources && $(GULP) build-azure
+
+localshiva:
+	@cp -R resources/build/* resources/dist/localshiva/
+	@cd resources/dist/localshiva; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
+	@cd resources && $(GULP) build-localshiva
+
+localhost:
+	@cp -R resources/build/* resources/dist/localhost/
+	@cd resources/dist/localhost; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/localhost/demo; ln -sv ../html/demo/index.html .;
+	@cd resources && $(GULP) build-localhost
+
+clean: clean-subdir
+	@echo "Running make clean to clean the dist directory"
+	@rm -r resources/dist
+	@echo "Done"
+
+clean-subdir:
+	@echo "Cleaning dist directory"
+	@rm -r resources/build
+	@echo "Done"
 
 jstests: $(JS_TEST_TARGETS)
 

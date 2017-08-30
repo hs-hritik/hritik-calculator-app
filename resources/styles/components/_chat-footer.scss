@@ -1,0 +1,95 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group footer
+///
+
+@include component(chat-footer) {
+  $disabled-btn-color: color(bg, gray);
+  $title-error-color: color(error, text);
+  $submit-error-color: color(error, text);
+  $textarea-bg-color: color(bg, white);
+
+  .hs-chat-footer {
+    min-height: 52px;
+    padding: gutter(12);
+
+    &__buttons-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &__button {
+      margin: gutter(0 16);
+      border-radius: 16px;
+    }
+
+    &__field {
+      display: flex;
+      align-items: center;
+    }
+
+    &__title {
+      flex: 1 1 auto;
+      font-size: font-size(body, small);
+    }
+
+    &__text-field {
+      flex: 1 1 auto;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    /// @TODO :- Fix text area scroll bar issue
+    &__text-area {
+      height: 20px;
+      min-height: 20px;
+      padding: gutter(0 36 0 0);
+      background-color: $textarea-bg-color;
+      border-radius: 0;
+      box-shadow: none;
+      resize: none;
+    }
+
+    &__text-field,
+    &__text-area {
+      border: 0;
+    }
+
+    &__submit {
+      display: flex;
+      align-self: flex-end;
+      cursor: pointer;
+    }
+
+    /// form invalid modifier is used to disable elements
+    &--form-invalid {
+      .hs-chat-footer__submit {
+        color: $disabled-btn-color;
+        cursor: not-allowed;
+      }
+    }
+
+    /// form error modifier is used to show form error on elements
+    &--form-error {
+      .hs-chat-footer {
+        &__title {
+          color: $title-error-color;
+        }
+
+        &__submit {
+          color: $submit-error-color;
+        }
+      }
+    }
+  }
+}

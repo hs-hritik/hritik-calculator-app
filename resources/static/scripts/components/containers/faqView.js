@@ -9,13 +9,11 @@ define ("components/containers/faqView",
   [
     "normalizr",
     "components/faqView",
-    "actions/faqView",
-    "actions/appState",
+    "actions/chatView",
     "helpers/entitySchema",
     "constants/activeView"
   ],
-  function (normalizr, FaqView, faqViewActions, appStateActions, entitySchema,
-    ACTIVE_VIEW) {
+  function (normalizr, FaqView, chatViewActions, entitySchema) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -23,7 +21,7 @@ define ("components/containers/faqView",
     const mapStateToProps = (state) => {
       const activeFaqId = state.faqView.activeFaqId;
       const faq = denormalize (activeFaqId, entitySchema.faq, state.entities);
-      // @TODO Handle language
+      // Right now, we only support English FAQs
       const faqEn = faq.translations.en;
       const {title, body} = faqEn;
 
@@ -36,11 +34,8 @@ define ("components/containers/faqView",
 
     const mapDispatchToProps = (dispatch) => {
       return {
-        onFaqFeedbackClick: (feedback) => {
-          dispatch (faqViewActions.submitFaqFeedback (feedback));
-        },
         onBackBtnClick: () => {
-          dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.CHAT));
+          dispatch (chatViewActions.switchToChatView ());
         }
       };
     };

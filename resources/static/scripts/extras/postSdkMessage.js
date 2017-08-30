@@ -1,0 +1,74 @@
+/**
+ * Post sdk messages which would be listened by the parent.
+ * @author Manish Garg <manish@helpshift.com>
+ * @created August 14, 2017
+ */
+
+define ("extras/postSdkMessage",
+  [
+    "constants/eventTypes",
+    "utils/postMessage"
+  ],
+function (EVENT_TYPES, postMessage) {
+  "use strict";
+
+  /**
+   * Post message to toggle messenger.
+   * @param {Boolean} minimized
+   */
+  const toggleMessenger = (minimized) => {
+    postMessage (EVENT_TYPES.SDK_TOGGLE_MESSENGER, {
+      minimized
+    });
+  };
+
+  /**
+   * Post message to indicate reset event.
+   */
+  const reset = () => {
+    postMessage (EVENT_TYPES.SDK_RESET);
+  };
+
+  /**
+   * Post message to update unread count
+   * @param {Number} unreadCount
+   */
+  const updateUnreadCount = (unreadCount) => {
+    postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
+      count: unreadCount
+    });
+  };
+
+  /**
+   * Post message to pass wm config.
+   * @param {Object} config
+   */
+  const wmConfig = (config) => {
+    postMessage (EVENT_TYPES.SDK_CONFIG_LOADED, {
+      wmConfig: config
+    });
+  };
+
+  /**
+   * Post sdk js loaded event.
+   */
+  const jsLoaded = () => {
+    postMessage (EVENT_TYPES.SDK_JS_LOADED);
+  };
+
+  /**
+   * Post sdk initialized event.
+   */
+  const initialized = () => {
+    postMessage (EVENT_TYPES.SDK_INITIALISED);
+  };
+
+  return {
+    toggleMessenger,
+    reset,
+    updateUnreadCount,
+    wmConfig,
+    jsLoaded,
+    initialized
+  };
+});

@@ -1,8 +1,8 @@
 require.config ({
-  baseUrl: "../../static/build/",
+  baseUrl: "/scripts/",
   paths: {
-    libs: "../../static/libs/",
-    reduxThunk: "../../static/libs/redux-thunk",
-    normalizr: "../../static/libs/normalizr"
+    libs: "/libs/",
+    reduxThunk: "/libs/redux-thunk",
+    normalizr: "/libs/normalizr"
   }
 });

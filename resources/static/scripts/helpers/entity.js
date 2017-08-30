@@ -19,20 +19,44 @@ define ("helpers/entity",
     const getProcessedMessageEntities = (messages) => {
       const processedMessages = {};
 
-      objUtils.forEachKey (messages, (id) => {
-        const msg = messages [id];
+      objUtils.forEachKey (messages, (id, msg) => {
         processedMessages [id] = {
           id: msg.id,
           type: msg.type,
           body: msg.body,
           state: msg.state,
-          createdTs: new Date (msg.created_at),
+          createdTs: msg.created_at,
           author: msg.author,
-          isCustomerMsg: (msg.origin !== "admin")
+          isCustomerMsg: (msg.origin !== "admin"),
+          attachments: getProcessedAttachments (msg)
         };
       });
 
       return processedMessages;
+    };
+
+    /**
+     * Returns processed attachment.
+     * @param {Array} attachments - unprocessed message attachment.
+     * @returns {Array} - processed attachments.
+     */
+    // @TODO :- Remove 'msg' param after BE fix, 'attachments' will be the
+    // original parameter
+    const getProcessedAttachments = (msg) => {
+      // @TODO :- Remove array of attachment after BE fix
+      const attachments = msg.attachments || (msg.attachment && [msg.attachment]);
+
+      if (!attachments) {
+        return null;
+      }
+
+      return attachments.map ((attachment) => {
+        return {
+          url: attachment.url,
+          contentType: attachment.content_type,
+          fileName: attachment.file_name
+        };
+      });
     };
 
     /**
@@ -46,16 +70,30 @@ define ("helpers/entity",
       objUtils.forEachKey (faqs, (id, faq) => {
         processedFaqs [id] = {
           id: faq.id,
-          sectionId: faq.section_id,
-          isPublished: faq ["published?"],
-          issueTags: faq.issue_tags,
-          updatedAt: new Date (faq.updated_at),
-          createdAt: new Date (faq.created_at),
           translations: faq.translations
         };
       });
 
       return processedFaqs;
+    };
+
+    /**
+     * Return processed authors entities.
+     * @param {Object} authors - unprocessed authors entities.
+     * @returns {Object} - processed authors entities.
+     */
+    const getProcessedAuthorEntities = (authors) => {
+      const processedAuthors = {};
+
+      objUtils.forEachKey (authors, (id, author) => {
+        processedAuthors [id] = {
+          id: author.id,
+          name: author.name,
+          nickname: author.nickname
+        };
+      });
+
+      return processedAuthors;
     };
 
     /**
@@ -69,6 +107,9 @@ define ("helpers/entity",
       }
       if (entities.faqs) {
         entities.faqs = getProcessedFaqEntities (entities.faqs);
+      }
+      if (entities.authors) {
+        entities.authors = getProcessedAuthorEntities (entities.authors);
       }
 
       return entities;

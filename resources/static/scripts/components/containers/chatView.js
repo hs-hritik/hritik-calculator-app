@@ -11,25 +11,28 @@ define ("components/containers/chatView",
     "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView",
-    "actions/appState",
-    "constants/chatView"
+    "actions/actionCreators",
+    "constants/activeView",
+    "actions/appState"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    appStateActions, CHAT_VIEW_CONSTANTS) {
+    actionCreators, ACTIVE_VIEW, appStateActions) {
     "use strict";
 
     const {denormalize} = normalizr;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const mapStateToProps = (state) => {
       const issueId = state.appState.activeIssueId || state.appState.dummyIssueId;
       const issue = denormalize (issueId, entitySchema.issue, state.entities);
       const messages = issue ? issue.messages : [];
+      const {infoBot} = state.chatView;
 
       return {
         messages,
         activeFooter: state.chatView.activeFooter,
-        csatRating: state.chatView.csatRating,
+        isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
+        infoBotField: infoBot.data [infoBot.currentField],
+        showAgentNickname: state.appState.featuresEnabled.agentNickname,
         text: state.ui.text
       };
     };
@@ -39,25 +42,30 @@ define ("components/containers/chatView",
         onSuggestedFaqClick: (faqId) => {
           dispatch (faqViewActions.getFaq (faqId));
         },
-        onFaqSuggestionFeedback: (feedback) => {
-          if (feedback === "no") {
+        onFaqSuggestionFeedback: (feedbackHelpful) => {
+          if (feedbackHelpful) {
+            dispatch (chatViewActions.acceptFaqSuggestions ());
+          } else {
             dispatch (chatViewActions.rejectFaqSuggestions ());
-          } else {
-            dispatch (chatViewActions.setChatViewFooter (ACTIVE_FOOTER.NEW_CONVERSATION));
           }
         },
-        onIssueFeedback: (feedback) => {
-          if (feedback === "no") {
-            dispatch (chatViewActions.rejectSolution ());
-          } else {
-            dispatch (chatViewActions.acceptSolution ());
-          }
+        onValueChangeInfoBotField: (value) => {
+          dispatch (chatViewActions.updateInfoBotFieldValue ({
+            value,
+            errorMsg: ""
+          }));
         },
-        onSubmitCsatRating: (rating) => {
-          dispatch (chatViewActions.submitCsat (rating));
+        onSubmitInfoBotField: () => {
+          dispatch (chatViewActions.submitInfoBotField ());
         },
-        onStartNewConversation: () => {
-          dispatch (appStateActions.startNewConversation ());
+        onCloseConversation: () => {
+          dispatch (appStateActions.reset ({
+            skipUser: true,
+            minimizeMessenger: true
+          }));
+        },
+        onStartCsatSurveyClick: () => {
+          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
         }
       };
     };

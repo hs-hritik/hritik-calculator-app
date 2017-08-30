@@ -8,9 +8,11 @@ define ("components/viewWrapper",
   [
     "constants/activeView",
     "components/containers/chatView",
-    "components/containers/faqView"
+    "components/containers/faqView",
+    "components/containers/csatView",
+    "extras/postSdkMessage"
   ],
-  function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer) {
+  function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer, postSdkMessage) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -18,11 +20,11 @@ define ("components/viewWrapper",
     return React.createClass ({
       displayName: "ViewWrapper",
       propTypes: {
-        activeView: PropTypes.string.isRequired
+        activeView: PropTypes.string.isRequired,
+        browserIsMobile: PropTypes.bool
       },
 
       render () {
-        // @TODO: Add header component.
         return this._renderActiveViewComponent ();
       },
 
@@ -30,14 +32,31 @@ define ("components/viewWrapper",
        * Render the active view component.
        */
       _renderActiveViewComponent () {
+        const commonProps = {
+          browserIsMobile: this.props.browserIsMobile,
+          onMinimizeConversation: this._onMinimizeConversation
+        };
+
         switch (this.props.activeView) {
           case ACTIVE_VIEW.CHAT:
-            return <ChatViewContainer />;
+            return <ChatViewContainer {...commonProps} />;
+
           case ACTIVE_VIEW.FAQ:
             return <FaqViewContainer />;
+
+          case ACTIVE_VIEW.CSAT:
+            return <CsatViewContainer {...commonProps} />;
+
           default:
             return null;
         }
+      },
+
+      /**
+       * Handler for minimize conversation.
+       */
+      _onMinimizeConversation () {
+        postSdkMessage.toggleMessenger (true);
       }
     });
   }

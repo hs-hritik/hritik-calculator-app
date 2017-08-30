@@ -9,35 +9,39 @@ define ("components/chatView",
     "components/messageList",
     "constants/propTypes",
     "constants/chatView",
+    "constants/keyCodes",
     "gunpowder/utils/classes",
     "components/containers/replyBox",
-    "components/commons/viewHeader",
-    "components/starRating"
+    "components/commons/viewHeader"
   ],
-  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, classes, ReplyBoxContainer,
-    ViewHeader, StarRating) {
+  function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, KEY_CODES,
+    classes, ReplyBoxContainer, ViewHeader) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+    const PropTypes = React.PropTypes,
+          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+
+    const INFO_BOT_FIELD_PROPS = PropTypes.shape ({
+      title: PropTypes.string.isRequired,
+      value: PropTypes.shape ({
+        value: PropTypes.string.isRequired,
+        errorMsg: PropTypes.string
+      }).isRequired
+    });
 
     const ChatViewFooter = React.createClass ({
       displayName: "ChatViewFooter",
       propTypes: {
         activeFooter: PropTypes.string.isRequired,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
-        onIssueFeedback: PropTypes.func.isRequired,
-        onSubmitCsatRating: PropTypes.func.isRequired,
-        onStartNewConversation: PropTypes.func.isRequired,
-        csatRating: PropTypes.number,
+        onCloseConversation: PropTypes.func.isRequired,
+        infoBotField: INFO_BOT_FIELD_PROPS,
+        onSubmitInfoBotField: PropTypes.func.isRequired,
+        onValueChangeInfoBotField: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          faqSuggestionsHelpful: PropTypes.string.isRequired,
-          faqSuggestionsNotHelpful: PropTypes.string.isRequired,
-          problemSolved: PropTypes.string.isRequired,
-          problemNotSolved: PropTypes.string.isRequired,
-          csatReviewRequest: PropTypes.string.isRequired,
-          csatReviewResponse: PropTypes.string.isRequired,
-          startNewConversationBtn: PropTypes.string.isRequired
+          faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
+          faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
+          closeConversationBtn: PropTypes.string.isRequired
         }).isRequired
       },
 
@@ -60,14 +64,14 @@ define ("components/chatView",
           case ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK:
             return this._renderFaqSuggestionsFeedback ();
 
-          case ACTIVE_FOOTER.ISSUE_FEEDBACK:
-            return this._renderIssueFeedback ();
+          case ACTIVE_FOOTER.INFO_BOT:
+            return this._renderInfoBotFooter ();
 
-          case ACTIVE_FOOTER.CSAT:
-            return this._renderCSATFooter ();
+          case ACTIVE_FOOTER.BLOCKED:
+            return this._renderBlockedFooter ();
 
-          case ACTIVE_FOOTER.NEW_CONVERSATION:
-            return this._renderNewConversationBtn ();
+          case ACTIVE_FOOTER.CLOSED:
+            return this._renderClosedConversationFooter ();
 
           default:
             return null;
@@ -75,57 +79,74 @@ define ("components/chatView",
       },
 
       /**
-       * Render CSAT component and "Start new conversation" button.
+       * Render blocked footer
        */
-      _renderCSATFooter () {
+      _renderBlockedFooter () {
         return (
-          <div>
-            {this._renderCSATRating ()}
-            {this._renderNewConversationBtn ()}
-          </div>
+          <div className="hs-chat-footer" />
         );
       },
 
       /**
-       * Render CSAT Rating component if the user hasn't already given any rating.
+       * Render closed conversation footer.
        */
-      _renderCSATRating () {
-        const {text, csatRating} = this.props;
-
-        if (csatRating) {
-          return (
-            <div className="hs-csat">
-              <span>{text.csatReviewResponse}</span>
-            </div>
-          );
-        }
-
-        return (
-          <div className="hs-csat">
-            <span>{text.csatReviewRequest}</span>
-            <StarRating name="csat"
-                        value={csatRating}
-                        onStarClick={this._onStarClick} />
-          </div>
-        );
-      },
-
-      /**
-       * Render "Start new conversation" button.
-       */
-      _renderNewConversationBtn () {
+      _renderClosedConversationFooter () {
         const btnClasses = classes (
           "hs-button",
-          "hs-button--hollow",
-          "hs-button--small"
+          "hs-button--small",
+          "hs-chat-footer__button"
         );
 
         return (
-          <div className="hs-start-conv">
-            <button onClick={this._onStartNewConversationClick}
-                    className={btnClasses}>
-              {this.props.text.startNewConversationBtn}
-            </button>
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__buttons-wrapper">
+              <button onClick={this._onCloseConversationClick}
+                      className={btnClasses}>
+                {this.props.text.closeConversationBtn}
+              </button>
+            </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render info bot footer.
+       */
+      _renderInfoBotFooter () {
+        const field = this.props.infoBotField;
+        const hasError = !!this.props.infoBotField.value.errorMsg;
+
+        const footerClasses = classes (
+          "hs-chat-footer", {
+            "hs-chat-footer--form-error": field.value.errorMsg,
+            "hs-chat-footer--form-invalid": !field.value.value.trim ()
+          }
+        );
+
+        const ionClasses = classes ({
+          "ion-alert-circled": hasError,
+          "ion-send": !hasError
+        });
+
+        return (
+          <div className={footerClasses}>
+            <div className="hs-chat-footer__field">
+              <div className="hs-chat-footer__title">
+               {field.title}
+              </div>
+            </div>
+            <div className="hs-chat-footer__field">
+              <input className="hs-chat-footer__text-field"
+                     dir="auto"
+                     value={field.value.value}
+                     placeholder={field.placeholder}
+                     onChange={this._onInfoBotFieldValueChange}
+                     onKeyUp={this._onInfoBotFieldKeyUp}
+                     autoFocus />
+              <a className="hs-chat-footer__submit">
+                <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
+              </a>
+            </div>
           </div>
         );
       },
@@ -134,66 +155,34 @@ define ("components/chatView",
        * Render FAQ suggestions feedback footer.
        */
       _renderFaqSuggestionsFeedback () {
-        const {faqSuggestionsHelpful, faqSuggestionsNotHelpful} = this.props.text;
-        const helpfulBtnClasses = classes (
-          "hs-button",
-          "hs-button--secondary",
-          "hs-button--hollow",
-          "hs-button--x-small",
-          "hs-faq-suggestions-feedback__btn"
-        );
-        const notHelpfulBtnClasses = classes (
-          "hs-button",
-          "hs-button--hollow",
-          "hs-button--x-small",
-          "hs-faq-suggestions-feedback__btn"
-        );
+        const {faqSuggestionsAdditionalHelpRequiredBtn,
+               faqSuggestionsAdditionalHelpNotRequiredBtn} = this.props.text;
 
-        return (
-          <div className="hs-faq-suggestions-feedback">
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "yes")}
-                    className={helpfulBtnClasses}>
-              {faqSuggestionsHelpful}
-            </button>
-            <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, "no")}
-                    className={notHelpfulBtnClasses}>
-              {faqSuggestionsNotHelpful}
-            </button>
-          </div>
-        );
-      },
-
-      /**
-       * Render Issue feedback footer.
-       */
-      _renderIssueFeedback () {
-        const {problemSolved, problemNotSolved} = this.props.text;
         const btnClasses = classes (
           "hs-button",
           "hs-button--hollow",
-          "hs-button--x-small",
-          "hs-issue-feedback__btn"
+          "hs-button--small",
+          "hs-chat-footer__button"
         );
 
+        // If user does not need additional help (clicking on no), pass true indicating that
+        // faq suggestions were helpful.
+        // If user needs additional help (clicking on yes), pass false indicating that
+        // faq suggestions were not helpful.
         return (
-          <div className="hs-issue-feedback">
-            <button onClick={this._onIssueFeedbackClick.bind (this, "yes")}
-                    className={btnClasses}>
-              {problemSolved}
-            </button>
-            <button onClick={this._onIssueFeedbackClick.bind (this, "no")}
-                    className={btnClasses}>
-              {problemNotSolved}
-            </button>
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__buttons-wrapper">
+              <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, true)}
+                      className={btnClasses}>
+                {faqSuggestionsAdditionalHelpNotRequiredBtn}
+              </button>
+              <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, false)}
+                      className={btnClasses}>
+                {faqSuggestionsAdditionalHelpRequiredBtn}
+              </button>
+            </div>
           </div>
         );
-      },
-
-      /**
-       * Click handler for start new conversation button.
-       */
-      _onStartNewConversationClick () {
-        this.props.onStartNewConversation ();
       },
 
       /**
@@ -205,19 +194,37 @@ define ("components/chatView",
       },
 
       /**
-       * Click handler for issue feedback
-       * @param {String} feedback - "yes" or "no"
+       * Click handler for close button.
        */
-      _onIssueFeedbackClick (feedback) {
-        this.props.onIssueFeedback (feedback);
+      _onCloseConversationClick () {
+        this.props.onCloseConversation ();
       },
 
       /**
-       * Click handler for star
-       * @param {Number} value - star index which is clicked
+       * Change handler for info bot field.
+       * @param {Object} event
        */
-      _onStarClick (value) {
-        this.props.onSubmitCsatRating (value);
+      _onInfoBotFieldValueChange (ev) {
+        this.props.onValueChangeInfoBotField (ev.target.value);
+      },
+
+      /**
+       * Key up handler for info bot field.
+       * @param {Object} event
+       */
+      _onInfoBotFieldKeyUp (ev) {
+        if (ev.keyCode === KEY_CODES.ESCAPE) {
+          ev.target.blur ();
+        } else if (ev.keyCode === KEY_CODES.ENTER) {
+          this.props.onSubmitInfoBotField ();
+        }
+      },
+
+      /**
+       * Click handler for submit info bot field.
+       */
+      _onClickSubmitInfoBotField () {
+        this.props.onSubmitInfoBotField ();
       }
     });
 
@@ -228,32 +235,44 @@ define ("components/chatView",
           PROP_TYPES.MESSAGE
         )).isRequired,
         onSuggestedFaqClick: PropTypes.func,
+        onStartCsatSurveyClick: PropTypes.func,
+        showAgentNickname: PropTypes.bool,
+        isTyping: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
+        browserIsMobile: PropTypes.bool,
+        onMinimizeConversation: PropTypes.func,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
-        onIssueFeedback: PropTypes.func.isRequired,
-        onSubmitCsatRating: PropTypes.func.isRequired,
-        onStartNewConversation: PropTypes.func.isRequired,
-        csatRating: PropTypes.number,
+        onCloseConversation: PropTypes.func.isRequired,
+        infoBotField: INFO_BOT_FIELD_PROPS,
+        onSubmitInfoBotField: PropTypes.func.isRequired,
+        onValueChangeInfoBotField: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired
         }).isRequired
       },
 
       render () {
+        const {browserIsMobile, onMinimizeConversation, text} = this.props;
+
         return (
           <div className="hs-view">
-            <ViewHeader title={this.props.text.chatViewHeader} />
+            <ViewHeader title={text.chatViewHeader}
+                        showCloseBtn={browserIsMobile}
+                        onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
               <MessageList messages={this.props.messages}
+                           isTyping={this.props.isTyping}
+                           showAgentNickname={this.props.showAgentNickname}
                            text={this.props.text}
+                           onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                            onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
             </div>
             <ChatViewFooter activeFooter={this.props.activeFooter}
                             onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
-                            onIssueFeedback={this.props.onIssueFeedback}
-                            onSubmitCsatRating={this.props.onSubmitCsatRating}
-                            onStartNewConversation={this.props.onStartNewConversation}
-                            csatRating={this.props.csatRating}
+                            onCloseConversation={this.props.onCloseConversation}
+                            infoBotField={this.props.infoBotField}
+                            onSubmitInfoBotField={this.props.onSubmitInfoBotField}
+                            onValueChangeInfoBotField={this.props.onValueChangeInfoBotField}
                             text={this.props.text} />
           </div>
         );

@@ -8,3 +8,5 @@ resources/static/css/
 *.scssc
 *.css
 .gem/
+resources/dist/
+resources/build/

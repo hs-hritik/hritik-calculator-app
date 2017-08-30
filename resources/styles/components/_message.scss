@@ -12,46 +12,116 @@
 
 @include component(message) {
 
-  $width: 88%;
-  $bg-color: color(bg, light);
-  $timestamp-color: color(text, light);
-  $suggested-faqs-border-color: color(border, light);
-  $suggested-faqs-bg-color: color(bg, white);
+  $max-width: 88%;
+  $left-bg-color: color(bg, light);
+  $suggested-faq-border-color: color(border, light);
+  $suggested-faq-bg-color: color(bg, white);
   $faq-border-color: color(border, light);
-  $right-bg-color: color(bg, xx-light);
+  $right-bg-color: color(bg, white);
   $right-border-color: color(border, light);
+  $end-chat-msg-text-color: color(text, light);
+  $end-chat-msg-border-color: color(border, light);
+  $message-details-color: color(text, light);
 
   .hs-message {
-    flex: 0 0 auto;
-    width: $width;
-    padding: gutter(8 12);
-    margin-bottom: gutter(16);
-    line-height: 1.5;
-    background-color: $bg-color;
-    border-radius: radius(4 4 4 0);
+    align-self: flex-start;
+    max-width: $max-width;
+    margin-top: gutter(6);
 
-    &__timestamp {
-      display: block;
-      margin-top: gutter(4);
-      color: $timestamp-color;
-      text-align: right;
-    }
-
-    &--suggested-faqs {
-      padding: gutter(8);
-      background-color: $suggested-faqs-bg-color;
-      border: 1px solid $suggested-faqs-border-color;
-
-      &__title {
-        padding-bottom: gutter(12);
-      }
+    &__item {
+      @include word-break;
+      position: relative;
+      flex: 0 0 auto;
+      padding: gutter(8 12);
+      white-space: pre-wrap;
+      background-color: $left-bg-color;
+      border-radius: 6px;
     }
 
     &--right {
-      margin-left: auto;
-      background-color: $right-bg-color;
-      border: 1px solid $right-border-color;
-      border-radius: radius(4 4 0 4);
+      align-self: flex-end;
+
+      .hs-message__item {
+        background-color: $right-bg-color;
+        border: 1px solid $right-border-color;
+      }
     }
+
+    &__suggested-faqs {
+      display: flex;
+      flex-direction: column;
+      margin-top: gutter(6);
+    }
+
+    &__suggested-faq {
+      display: flex;
+      justify-content: space-between;
+      padding: gutter(12);
+      margin: gutter(4 0);
+      background-color: $suggested-faq-bg-color;
+      border-bottom: 1px solid $suggested-faq-border-color;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
+    }
+
+    &__suggested-faq-icon {
+      align-self: center;
+    }
+
+    &__details {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      color: $message-details-color;
+    }
+
+    &__agent-nickname {
+      margin-right: gutter(8);
+      font-weight: 500;
+    }
+
+    &__time-ago {
+      margin-left: gutter(8);
+      font-size: font-size(body, small);
+      letter-spacing: -.5px;
+    }
+
+    &--end-chat {
+      display: flex;
+      align-items: center;
+      align-self: stretch;
+      max-width: 100%;
+      margin: gutter(28 0);
+      color: $end-chat-msg-text-color;
+      text-align: center;
+
+      &::before,
+      &::after {
+        flex: 1 1 auto;
+        height: 1px;
+        background: $end-chat-msg-border-color;
+        content: "";
+      }
+
+      &::before {
+        margin-right: gutter(8);
+      }
+
+      &::after {
+        margin-left: gutter(8);
+      }
+    }
+
+    &:first-child {
+      margin-top: gutter(12);
+    }
+  }
+
+  .hs-message--left + .hs-message--right {
+    margin-top: gutter(16);
+  }
+
+  .hs-message--right + .hs-message--left {
+    margin-top: gutter(16);
   }
 }

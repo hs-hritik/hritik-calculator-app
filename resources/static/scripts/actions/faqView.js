@@ -15,11 +15,11 @@ define ("actions/faqView",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/xhr",
-    "actions/appState",
+    "actions/actionCreators",
     "actions/entities"
   ],
   function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, xhr, entitySchema,
-    entityHelpers, xhrHelpers, appStateActions, entitiesActions) {
+    entityHelpers, xhrHelpers, actionCreators, entitiesActions) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -48,9 +48,6 @@ define ("actions/faqView",
 
         xhr ({
           route: routes.getFaq (appState.domain, faqId),
-          data: {
-            "faq-id": faqId
-          },
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.faq);
@@ -60,39 +57,7 @@ define ("actions/faqView",
 
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (setActiveFaqId (faqId));
-            dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.FAQ));
-          },
-          onFailure: () => {
-            // @TODO: Handle failure.
-          }
-        });
-      };
-    };
-
-    /**
-     * Action to submit the FAQ feedback - whether it was helpful or not.
-     * @param {String} feedback - The feedback value ("yes"/"no")
-     * @returns {Object} - action
-     */
-    const submitFaqFeedback = (feedback) => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-        const faqId = state.faqView.activeFaqId;
-        const isFeedbackHelpful = feedback === "yes";
-
-        dispatch (appStateActions.updateActiveView (ACTIVE_VIEW.CHAT));
-
-        xhr ({
-          route: routes.putFaqFeedback (appState.domain, faqId, isFeedbackHelpful),
-          data: {
-            "identifier": appState.currentUserId,
-            "faq-id": faqId
-          },
-          method: "PUT",
-          headers: xhrHelpers.getCommonHeaders (),
-          onSuccess: () => {
-            // @TODO: Handle success.
+            dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
           },
           onFailure: () => {
             // @TODO: Handle failure.
@@ -102,7 +67,6 @@ define ("actions/faqView",
     };
 
     return {
-      getFaq,
-      submitFaqFeedback
+      getFaq
     };
   });
