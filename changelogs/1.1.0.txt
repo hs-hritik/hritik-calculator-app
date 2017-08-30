@@ -1,0 +1,21 @@
+Branches:
+feature/v1
+
+Changelog:
+Fix iframe width for faq view
+Update gulp tasks to skip replacing fonts directory
+Update web sdk url to include plat id as well
+Fix border radius bug on chrome
+Add support for hex length 3 in shadeColor function
+Don't autofocus if web chat is minimized
+Fix csat footer
+Add box shadow to attachment and rename classes
+Fix word wrap issue on firefox
+Fix scroll issue for safari
+Remove sdk initialised event
+Remove anchor tag urls of attachment
+Add react key to attachments
+Fix csat view and hs branding css
+Fix copies
+Update browser compatibility for mobile
+Fix flex bug in safari
