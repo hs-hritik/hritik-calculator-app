@@ -56,19 +56,11 @@ function (EVENT_TYPES, postMessage) {
     postMessage (EVENT_TYPES.SDK_JS_LOADED);
   };
 
-  /**
-   * Post sdk initialized event.
-   */
-  const initialized = () => {
-    postMessage (EVENT_TYPES.SDK_INITIALISED);
-  };
-
   return {
     toggleMessenger,
     reset,
     updateUnreadCount,
     wmConfig,
-    jsLoaded,
-    initialized
+    jsLoaded
   };
 });
