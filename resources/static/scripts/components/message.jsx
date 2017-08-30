@@ -140,12 +140,14 @@ define ("components/message",
           <div key={index} className="hs-attachment" onClick={clickHandler}>
             <i className="hs-attachment__file-icon"
                dangerouslySetInnerHTML={{__html: FILE_ICON}} />
-            <div className="hs-attachment__text-wrapper">
-              <small className="hs-attachment__text" title={attachment.fileName}>
-                {formattedFileName}
+            <div className="hs-attachment__info-wrapper">
+              <small title={attachment.fileName}>
+                <strong>{formattedFileName}</strong>
               </small>
-              <a>
-                <small className="hs-attachment__text">View</small>
+              <a className="hs-attachment__view-text">
+                <small>
+                  <strong>View</strong>
+                </small>
               </a>
             </div>
           </div>
