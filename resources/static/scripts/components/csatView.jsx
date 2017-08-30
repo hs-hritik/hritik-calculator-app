@@ -50,8 +50,8 @@ define ("components/csatView",
             <div className="hs-view__content">
               <div className="hs-csat">
                 {this._renderCsatBody ()}
-                {this._renderCsatFooter ()}
               </div>
+              {this._renderCsatFooter ()}
             </div>
           </div>
         );
