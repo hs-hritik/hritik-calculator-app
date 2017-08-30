@@ -18,7 +18,7 @@
 
   .hs-message-list {
     display: flex;
-    flex: 1;
+    flex: 1 0 auto;
     flex-direction: column;
     padding: gutter(0 20);
     overflow-y: auto;
