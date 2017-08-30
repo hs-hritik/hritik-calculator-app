@@ -26,6 +26,7 @@ define ("components/replyBox",
          */
         value: PropTypes.string.isRequired,
         disabled: PropTypes.bool,
+        autoFocus: PropTypes.bool,
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
         text: PropTypes.shape ({
@@ -54,7 +55,7 @@ define ("components/replyBox",
                                 onHeightChange={this._onReplyBoxHeightChange}
                                 placeholder={text.replyBtnPlaceholder}
                                 disabled={disabled}
-                                autoFocus
+                                autoFocus={this.props.autoFocus}
                                 dir="auto" />
                 <a className="hs-chat-footer__submit"
                    onClick={this._onReplyClick}>
