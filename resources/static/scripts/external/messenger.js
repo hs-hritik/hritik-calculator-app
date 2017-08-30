@@ -12,7 +12,15 @@
   // On dev env, this gets replaced by a localhost URL.
   // See babel tasks in resources/gulp/javascript.js
   const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
-  const WEB_SDK_URL = `${WEB_CHAT_ROOT}/html`;
+
+  const urlParts = WEB_CHAT_ROOT.split ("://"),
+        PROTOCOL = `${urlParts [0]}://`,
+        PLAT_ID = window.helpshiftConfig.platformId,
+        HOST = urlParts [1],
+        PATH = "/html";
+
+  const WEB_SDK_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
+  const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
 
   const state = {
     unreadCount: 0,
@@ -393,7 +401,7 @@
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
       // Only handle events from our web chat iframe
-      if (event.origin !== WEB_CHAT_ROOT) {
+      if (event.origin !== WEB_SDK_DOMAIN) {
         return;
       }
 
