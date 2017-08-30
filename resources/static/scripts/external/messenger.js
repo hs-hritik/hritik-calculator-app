@@ -19,15 +19,10 @@
     cssConfig: {}
   };
 
-  /**
-   * The event that the parent has to listen before calling Helpshift APIs.
-   */
-  const HS_SDK_LOAD_EVENT = "hs-sdk-load";
   const INIT = "init";
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
-    SDK_INITIALISED: "sdk-initialised",
     SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
     SDK_RESET: "sdk-reset",
@@ -322,19 +317,6 @@
   };
 
   /**
-   * Fire event which represents that the web sdk is ready.
-   * This event has to be consumed by parent page.
-   * After this event is fired, parent can start communicating with
-   * web sdk using APIs. If the parent tries to call APIs before this
-   * event is fired, API won't work as expected (because sdk JavaScript has
-   * not loaded yet or the sdk has not initialised yet.)
-   */
-  const fireWebSdkReadyEvent = () => {
-    const event = new Event(HS_SDK_LOAD_EVENT);
-    doc.dispatchEvent (event);
-  };
-
-  /**
    * Process web messenger config to update the behavior of the widget.
    * @param {Object} - the config object
    */
@@ -435,7 +417,6 @@
           // SDK_CONFIG_LOADED: Represents the loading of web messenger
           // config, which along with other settings, determines whether
           // the widget should load or not.
-          // SDK_INITIALISED: Represents the loading of the wm React app.
 
           // Set the client and wm configs to the app.
           setConfig (window.helpshiftConfig);
@@ -444,10 +425,6 @@
         case EVENT_TYPES.SDK_CONFIG_LOADED:
           // Process wm config to set appearance, etc.
           processWmConfig (data.wmConfig);
-          break;
-
-        case EVENT_TYPES.SDK_INITIALISED:
-          fireWebSdkReadyEvent ();
           break;
 
         case EVENT_TYPES.SDK_TOGGLE_MESSENGER:

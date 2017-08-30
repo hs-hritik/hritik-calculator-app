@@ -61,7 +61,6 @@ define ("extras/api",
       if (!minimized) {
         if (!app.isMounted ()) {
           app.init ();
-          postSdkMessage.initialized ();
         }
 
         // If unreadCount isn't zero and active view is chat view,
