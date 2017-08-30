@@ -229,7 +229,7 @@ $_body-antialiased: true;
     font-weight: font-weight(normal);
     line-height: line-height(body);
     color: $_body-font-color;
-    background: $_body-background;
+    background: transparent;
 
     @if ($_body-antialiased) {
       -moz-osx-font-smoothing: grayscale;
