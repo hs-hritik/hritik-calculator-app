@@ -10,7 +10,6 @@ define ("constants/eventTypes",
 
     return {
       SDK_JS_LOADED: "sdk-js-loaded",
-      SDK_INITIALISED: "sdk-initialised",
       SDK_CONFIG_LOADED: "sdk-config-loaded",
       SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
       SDK_RESET: "sdk-reset",

@@ -443,7 +443,14 @@ define ("actions/appState",
      *                               To lighten the color, give positive value.
      */
     const shadeColor = (color, shadeFactor) => {
-      const f = parseInt (color.slice (1), 16),
+      // Remove #
+      color = color.slice (1);
+      // If color length is 3, change it to 6
+      if (color.length === 3) {
+        color = color [0] + color [0] + color [1] + color [1] + color [2] + color [2];
+      }
+
+      const f = parseInt (color, 16),
             t = shadeFactor < 0 ? 0 : 255,
             p = shadeFactor < 0 ? shadeFactor * -1 : shadeFactor,
             R = f >> 16,

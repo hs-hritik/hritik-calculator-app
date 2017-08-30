@@ -39,11 +39,12 @@ define ("components/messageList",
 
       render () {
         return (
-          <div className="hs-message-list"
-               ref={this._refCallback}>
-            {this._renderMessages ()}
-            {this._renderTypingIndicator ()}
-            <Branding text={this.props.text} />
+          <div ref={this._refCallback} className="hs-view__scroll-wrapper" >
+            <div className="hs-message-list" >
+              {this._renderMessages ()}
+              {this._renderTypingIndicator ()}
+              <Branding text={this.props.text} />
+            </div>
           </div>
         );
       },
@@ -101,20 +102,20 @@ define ("components/messageList",
         );
       },
 
-      _messageListRef: null,
+      _scrollWrapperRef: null,
 
       /**
        * Ref callback handler.
        */
       _refCallback (ref) {
-        this._messageListRef = ref;
+        this._scrollWrapperRef = ref;
       },
 
       /**
        * Scroll message list to the bottom.
        */
       _scrollToBottom () {
-        const node = ReactDOM.findDOMNode (this._messageListRef);
+        const node = ReactDOM.findDOMNode (this._scrollWrapperRef);
         node.scrollTop = node.scrollHeight;
       },
 

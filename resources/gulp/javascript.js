@@ -21,13 +21,13 @@ const PATHS = {
   gunpowderSrc: "static/scripts/gunpowder/node_modules/@helpshiftdev/" +
                 "gunpowder/resources/static/scripts/**/*.+(js|jsx)",
   gunpowderBuild: "dist/scripts/gunpowder",
-  ec2Source: "dist/ec2/**/*.*",
+  ec2Source: ["dist/ec2/**/*.*", "!dist/ec2/fonts/**/*.*"],
   ec2Dest: "dist/ec2/",
-  azureSource: "dist/azure/**/*.*",
+  azureSource: ["dist/azure/**/*.*", "!dist/azure/fonts/**/*.*"],
   azureDest: "dist/azure/",
-  localshivaSource: "dist/localshiva/**/*.*",
+  localshivaSource: ["dist/localshiva/**/*.*", "!dist/localshiva/fonts/**/*.*"],
   localshivaDest: "dist/localshiva/",
-  localhostSource: "dist/localhost/**/*.*",
+  localhostSource: ["dist/localhost/**/*.*", "!dist/localhost/fonts/**/*.*"],
   localhostDest: "dist/localhost/"
 };
 
@@ -132,29 +132,45 @@ gulp.task ("overwrite-min", function () {
 
 gulp.task ("build-ec2", function () {
   gulp.src (PATHS.ec2Source)
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com"))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi"))
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
+        skipBinary: true
+      }))
       .pipe (gulp.dest (PATHS.ec2Dest));
 });
 
 gulp.task ("build-azure", function () {
   gulp.src (PATHS.azureSource)
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com"))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com"))
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
+        skipBinary: true
+      }))
       .pipe (gulp.dest (PATHS.azureDest));
 });
 
 gulp.task ("build-localshiva", function () {
   gulp.src (PATHS.localshivaSource)
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi"))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi"))
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
+        skipBinary: true
+      }))
       .pipe (gulp.dest (PATHS.localshivaDest));
 });
 
 gulp.task ("build-localhost", function () {
   gulp.src (PATHS.localhostSource)
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "http://localhost:3000"))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi"))
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "http://localhost:3000", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
+        skipBinary: true
+      }))
       .pipe (gulp.dest (PATHS.localhostDest));
 });
 

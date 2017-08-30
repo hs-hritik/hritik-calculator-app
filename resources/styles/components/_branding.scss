@@ -11,6 +11,7 @@
   $label-color: color(text, light);
 
   .hs-branding {
+    display: block;
     padding: gutter(8 0);
     margin-top: auto;
     color: $label-color;

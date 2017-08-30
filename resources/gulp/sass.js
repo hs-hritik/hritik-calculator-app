@@ -26,8 +26,9 @@ const PATHS = {
 };
 
 const BROWSER_COMPATIBILITY = [
-  "last 4 versions",
-  "ie > 10"
+  "last 5 versions",
+  "ie > 9",
+  "ios_saf > 8"
 ];
 
 const SASS_OPTIONS = {
@@ -66,7 +67,7 @@ const lintSassDev = (path) => {
              }))
              .on ("end", () => {
                gutil.log (gutil.colors.blue.bold (
-                 `*** END: SCSS Lint ***\n`
+                 "*** END: SCSS Lint ***\n"
                ));
              });
 };
@@ -84,7 +85,7 @@ const lintSassProd = (path) => {
              }))
              .on ("end", () => {
                gutil.log (gutil.colors.blue.bold (
-                 `*** END: SCSS Lint ***\n`
+                 "*** END: SCSS Lint ***\n"
                ));
              })
              .pipe (scssLint.failReporter ("E"));

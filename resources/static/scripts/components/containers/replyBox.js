@@ -18,6 +18,7 @@ define ("components/containers/replyBox",
       return {
         value,
         disabled,
+        autoFocus: !state.appState.minimized,
         text: state.ui.text
       };
     };

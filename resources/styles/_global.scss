@@ -229,11 +229,16 @@ $_body-antialiased: true;
     font-weight: font-weight(normal);
     line-height: line-height(body);
     color: $_body-font-color;
-    background: $_body-background;
+    background: transparent;
 
     @if ($_body-antialiased) {
       -moz-osx-font-smoothing: grayscale;
       -webkit-font-smoothing: antialiased;
     }
+  }
+
+  // Faq can contain an iframe having fixed width which can be greater than web widget width
+  .hs-faq iframe {
+    max-width: 100%;
   }
 }
