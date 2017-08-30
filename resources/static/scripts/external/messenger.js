@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = window.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html";
+        PATH = "/html/";
 
   const WEB_SDK_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
   const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
