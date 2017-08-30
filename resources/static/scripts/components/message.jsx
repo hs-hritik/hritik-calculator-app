@@ -144,7 +144,7 @@ define ("components/message",
               <small className="hs-attachment__text" title={attachment.fileName}>
                 {formattedFileName}
               </small>
-              <a target="_blank" href={attachment.url} >
+              <a>
                 <small className="hs-attachment__text">View</small>
               </a>
             </div>
