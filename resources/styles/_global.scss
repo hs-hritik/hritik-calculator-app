@@ -236,4 +236,9 @@ $_body-antialiased: true;
       -webkit-font-smoothing: antialiased;
     }
   }
+
+  // Faq can contain an iframe having fixed width which can be greater than web widget width
+  .hs-faq iframe {
+    max-width: 100%;
+  }
 }
