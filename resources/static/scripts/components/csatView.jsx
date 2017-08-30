@@ -91,8 +91,7 @@ define ("components/csatView",
                         dir="auto"
                         className="hs-csat__input"
                         onChange={this._onCsatReviewChange}
-                        placeholder={text.csatBotReviewPlaceholder}
-                        autoFocus />
+                        placeholder={text.csatBotReviewPlaceholder} />
             </div>
           </div>
         );
