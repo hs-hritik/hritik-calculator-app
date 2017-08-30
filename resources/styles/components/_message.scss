@@ -29,10 +29,11 @@
     margin-top: gutter(6);
 
     &__item {
-      @include word-break;
       position: relative;
       flex: 0 0 auto;
       padding: gutter(8 12);
+      word-break: normal;
+      word-wrap: break-word;
       white-space: pre-wrap;
       background-color: $left-bg-color;
       border-radius: 6px;
