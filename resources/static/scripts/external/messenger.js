@@ -50,16 +50,17 @@
   // @TODO: Figure out if we have to move styles to css file for this file,
   // or keep in javascript. Also update styles later.
   const LAUNCHER_IFRAME_STYLES = {
-    position: "fixed",
-    bottom: "28px",
-    right: "28px",
-    width: "60px",
-    height: "60px",
+    "position": "fixed",
+    "bottom": "28px",
+    "right": "28px",
+    "width": "60px",
+    "height": "60px",
+    "z-index": "9999999",
     // @TODO: Add box shadow
     // "border-radius": "50%",
     // "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
-    border: "none",
-    overflow: "hidden"
+    "border": "none",
+    "overflow": "hidden"
   };
 
   const LAUNCHER_BUTTON_WRAPPER_STYLES = {

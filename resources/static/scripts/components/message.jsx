@@ -257,16 +257,14 @@ define ("components/message",
       _getAgentNickname () {
         const {message, showAgentNickname} = this.props;
 
-        if (message.isCustomerMsg || message.isSystemMsg || !this.props.isLastMessageInGroup) {
+        if (!showAgentNickname ||
+            message.isCustomerMsg ||
+            message.isSystemMsg ||
+            !this.props.isLastMessageInGroup) {
           return null;
         }
 
-        // If agent nickname is disabled, show "Agent"
-        let agentNickname = "Agent";
-        if (showAgentNickname) {
-          agentNickname = objUtils.getIn (message, ["author", "nickname"]);
-        }
-        return agentNickname;
+        return objUtils.getIn (message, ["author", "name"]);
       },
 
       /**
