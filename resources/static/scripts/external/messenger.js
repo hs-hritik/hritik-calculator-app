@@ -159,7 +159,7 @@
                         </svg>`;
 
   // Reference for web sdk iframe.
-  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl;
+  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false,
@@ -217,9 +217,9 @@
    * @returns {Element} - launcher iframe.
    */
   const createLauncherIframe = () => {
-    const launcherIframe = doc.createElement ("iframe");
-    setStyle (launcherIframe, LAUNCHER_IFRAME_STYLES);
-    return launcherIframe;
+    const iframe = doc.createElement ("iframe");
+    setStyle (iframe, LAUNCHER_IFRAME_STYLES);
+    return iframe;
   };
 
   /**
@@ -299,6 +299,16 @@
   };
 
   /**
+   * Destroy launcher iframe.
+   */
+  const destroyLauncherIframe = () => {
+    if (launcherIframe) {
+      launcherIframe.parentNode.removeChild (launcherIframe);
+      launcherIframe = null;
+    }
+  };
+
+  /**
    * Show/hide web sdk iframe.
    * @param {Object} [config]
    * @param {Boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
@@ -329,17 +339,24 @@
    * @param {Object} - the config object
    */
   const processWmConfig = (config) => {
-    // @TODO: Use the web messenger config to set appearance, etc.
+    // If web chat is not enabled, destroy the iframes.
+    if (!config.widgetEnabled) {
+      destroyWebSdkIframe ();
+      destroyLauncherIframe ();
+      return;
+    }
+
     state.cssConfig = config.cssConfig;
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
 
-    if (!config.widgetEnabled) {
-      destroyWebSdkIframe ();
+    // If sdk is already loaded, don't create the launcher iframe again.
+    if (sdkLoaded) {
       return;
     }
+
     // If the widget is enabled, create the launcher iframe+button and append
     // it to the document.
-    const launcherIframe = createLauncherIframe ();
+    launcherIframe = createLauncherIframe ();
 
     // Append the buttons to iframe once it is loaded.
     // Note: Even though the iframe doesn't have any src, if we try to append
