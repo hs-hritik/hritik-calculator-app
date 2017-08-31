@@ -22,20 +22,21 @@
     cursor: pointer;
     background-color: $attachment-background-color;
     border-radius: radius();
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
 
     &__file-icon {
       padding-top: gutter(2);
       color: $attachment-background-color;
     }
 
-    &__text-wrapper {
+    &__info-wrapper {
       display: flex;
       flex-direction: column;
       margin-left: gutter(8);
     }
 
-    &__text {
-      font-weight: font-weight(bold);
+    &__view-text {
+      margin-top: gutter(-2);
     }
 
     &__download-icon {

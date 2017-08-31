@@ -50,9 +50,8 @@ define ("components/csatView",
             <div className="hs-view__content">
               <div className="hs-csat">
                 {this._renderCsatBody ()}
-                {this._renderCsatFooter ()}
-                <Branding text={text} />
               </div>
+              {this._renderCsatFooter ()}
             </div>
           </div>
         );
@@ -92,8 +91,7 @@ define ("components/csatView",
                         dir="auto"
                         className="hs-csat__input"
                         onChange={this._onCsatReviewChange}
-                        placeholder={text.csatBotReviewPlaceholder}
-                        autoFocus />
+                        placeholder={text.csatBotReviewPlaceholder} />
             </div>
           </div>
         );
@@ -136,10 +134,11 @@ define ("components/csatView",
         }
 
         return (
-          <div>
+          <div className="hs-csat__footer">
             <button {...btnProps}>
               {btnText}
             </button>
+            <Branding text={text} />
           </div>
         );
       },

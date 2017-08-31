@@ -14,5 +14,8 @@
 
   .hs-page {
     height: 100%;
+    overflow: hidden;
+    background: color(bg, white);
+    border-radius: 8px;
   }
 }
