@@ -55,7 +55,7 @@
     "right": "28px",
     "width": "60px",
     "height": "60px",
-    "z-index": "9999999",
+    "z-index": "9999991",
     // @TODO: Add box shadow
     // "border-radius": "50%",
     // "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
@@ -106,7 +106,7 @@
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": 999999,
+    "z-index": "9999999",
     "display": "none"
   };
 
@@ -114,7 +114,10 @@
     "background-color": "#fa3e3e",
     "border-radius": "50%",
     "color": "white",
-    "padding": "2px 6px",
+    "width": "20px",
+    "height": "20px",
+    "line-height": "20px",
+    "text-align": "center",
     "font-size": "12px",
     "position": "absolute",
     "top": "0px",
