@@ -1,0 +1,2 @@
+Changelog:
+Fix z-index of launcher and extra space issue
