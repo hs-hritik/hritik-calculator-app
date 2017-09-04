@@ -89,7 +89,8 @@ define ("reducers/appState",
           return update (state, {
             platformId: {$set: action.config.platformId},
             domain: {$set: action.config.domain},
-            userId: {$set: action.config.userId}
+            userId: {$set: action.config.userId},
+            tags: {$set: action.config.tags}
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
