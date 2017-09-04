@@ -135,7 +135,7 @@ gulp.task ("build-ec2", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
         skipBinary: true
       }))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
+      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
         skipBinary: true
       }))
       .pipe (gulp.dest (PATHS.ec2Dest));

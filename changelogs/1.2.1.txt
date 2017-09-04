@@ -1,0 +1,2 @@
+Changelog:
+Fix agent nickname according to new api

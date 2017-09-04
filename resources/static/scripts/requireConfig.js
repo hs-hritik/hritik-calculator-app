@@ -1,8 +1,10 @@
+const DOMAIN = "{{ENV_WEB_CHAT_ROOT}}";
+
 require.config ({
-  baseUrl: "/scripts/",
+  baseUrl: `${DOMAIN}/scripts/`,
   paths: {
-    libs: "/libs/",
-    reduxThunk: "/libs/redux-thunk",
-    normalizr: "/libs/normalizr"
+    libs: `${DOMAIN}/libs/`,
+    reduxThunk: `${DOMAIN}/libs/redux-thunk`,
+    normalizr: `${DOMAIN}/libs/normalizr`
   }
 });

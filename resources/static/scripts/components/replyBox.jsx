@@ -80,6 +80,7 @@ define ("components/replyBox",
         if (ev.keyCode === KEY_CODES.ENTER) {
           if (!ev.shiftKey) {
             this._submitReply ();
+            ev.preventDefault ();
           }
         } else if (ev.keyCode === KEY_CODES.ESCAPE) {
           ev.target.blur ();

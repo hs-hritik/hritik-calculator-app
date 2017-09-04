@@ -1,0 +1,7 @@
+Branches:
+feature/v1
+
+Changelog:
+Skip re-appending of launcher iframe.
+Update api route for ec2 to use .com
+Update domain for JavaScript to not use domain with platid
