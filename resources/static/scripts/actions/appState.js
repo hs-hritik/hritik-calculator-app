@@ -259,7 +259,7 @@ define ("actions/appState",
      * @returns {(Array|null)} - Processed tags containing only string values
      *                           converted to lowercase
      */
-    const _getProcessedTags = function (tags) {
+    const getProcessedTags = function (tags) {
       let validTags = null;
 
       // Tags must be a non empty array
@@ -293,7 +293,7 @@ define ("actions/appState",
      */
     const setClientConfig = (config) => {
       // Filter string values and convert to lower case
-      config.tags = _getProcessedTags (config.tags);
+      config.tags = getProcessedTags (config.tags);
 
       return {
         type: ACTION_TYPES.SET_CLIENT_CONFIG,
