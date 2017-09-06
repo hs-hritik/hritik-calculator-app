@@ -1039,13 +1039,23 @@ define ("actions/chatView",
         const state = getState (),
               {infoBot} = state.chatView;
 
+        // Trim white spaces in value
         const currentFieldVal = infoBot.data [infoBot.currentField].value;
+        const updatedFieldVal = objUtils.shallowMerge (
+          {
+            value: currentFieldVal.value.trim ()
+          },
+          currentFieldVal,
+          {
+            skip: ["value"]
+          }
+        );
 
         // As we are only saving serializable data in the store,
         // we are not saving the input object inside the store.
         // On submit of info bot field, create an input object instance to
         // validate the info field.
-        const errorMsg = new Input (currentFieldVal).isValid ();
+        const errorMsg = new Input (updatedFieldVal).isValid ();
 
         if (errorMsg) {
           dispatch (updateInfoBotFieldValue ({
@@ -1056,13 +1066,22 @@ define ("actions/chatView",
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
-            body: currentFieldVal.value.trim (),
+            body: updatedFieldVal.value,
             isCustomerMsg: true
           }, {
             typingTimer: null,
             issueId: state.appState.dummyIssueId
           })
         );
+
+        // Update field value with new value in store
+        // We want to save trimmed value in store for name, email etc
+        // So that when other actions read the latest value of any field they
+        // have the latest value
+        dispatch (updateInfoBotFieldValue ({
+          value: updatedFieldVal.value,
+          errorMsg: ""
+        }));
 
         dispatch (changeInfoBotCurrentField ());
 
