@@ -243,18 +243,14 @@ define ("actions/chatView",
               ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
               dispatch (markMessagesSeen ());
             } else {
-              let unreadCount = 0;
-              // If there is no message cursor, that means it's the first load.
-              // Calculate the unread count by looking at each message.
-              if (!state.chatView.activeIssueMsgCursor) {
-                response.messages.forEach ((msg) => {
-                  if (msg.origin === "admin" && msg.state !== "read") {
-                    unreadCount++;
-                  }
-                });
-              } else {
-                unreadCount = response.messages.length + latestState.chatView.unreadCount;
-              }
+              let unreadCount = latestState.chatView.unreadCount;
+              // Calculate unread count for agent messages only
+              response.messages.forEach ((msg) => {
+                if (msg.origin === "admin" && msg.state !== "read") {
+                  unreadCount++;
+                }
+              });
+
               dispatch (setUnreadCount (unreadCount));
               postSdkMessage.updateUnreadCount (unreadCount);
             }
