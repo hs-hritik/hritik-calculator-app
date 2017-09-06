@@ -331,12 +331,12 @@ $defnlist-term-margin-bottom: gutter(4);
   }
 
   // Nested unordered/ordered lists
-  ul,
-  ol {
-    & & {
-      margin-bottom: 0;
-      margin-left: $list-nested-side-margin;
-    }
+  ul ul,
+  ul ol,
+  ol ul,
+  ol ol {
+    margin-bottom: 0;
+    margin-left: $list-nested-side-margin;
   }
 
   // Definition lists

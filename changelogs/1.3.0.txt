@@ -1,0 +1,8 @@
+Branches:
+feature/v1.1
+
+Changelog:
+Update demo to use production app and domain by default
+Remove & & from typography.scss
+Rename function in add tag support functionality
+Add tags support in hs config for creating issue

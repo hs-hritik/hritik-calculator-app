@@ -254,6 +254,26 @@ define ("actions/appState",
     const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
 
     /**
+     * Returns tags array containing string values converted to lowercase
+     * @param {Any} - Unprocessed tags
+     * @returns {(Array|null)} - Processed tags containing only string values
+     *                           converted to lowercase
+     */
+    const getProcessedTags = function (tags) {
+      let validTags = null;
+
+      // Tags must be a non empty array
+      if (Array.isArray (tags) && tags.length) {
+        validTags = tags.filter ((tag) => {
+          // Filter string values
+          return typeof tag === "string";
+        });
+      }
+
+      return validTags;
+    };
+
+    /**
      * Action to set identifier.
      * @param {String} id - identifier
      * @returns {Object} - action
@@ -268,10 +288,15 @@ define ("actions/appState",
      * @param {Object} config
      * @returns {Object} - action
      */
-    const setClientConfig = (config) => ({
-      type: ACTION_TYPES.SET_CLIENT_CONFIG,
-      config
-    });
+    const setClientConfig = (config) => {
+      // Filter string values and convert to lower case
+      config.tags = getProcessedTags (config.tags);
+
+      return {
+        type: ACTION_TYPES.SET_CLIENT_CONFIG,
+        config
+      };
+    };
 
     /**
      * Action to set the web messenger configuration set by the Helpshift admin

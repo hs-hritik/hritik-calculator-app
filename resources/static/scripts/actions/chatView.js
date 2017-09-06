@@ -498,7 +498,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
-        const {dummyIssueId, userId} = appState;
+        const {dummyIssueId, userId, tags} = appState;
         const endUserFirstMsg = getEndUserFirstMessage ();
         dispatch (disableReplyBox ());
 
@@ -510,6 +510,14 @@ define ("actions/chatView",
 
         if (userId) {
           xhrData ["user-id"] = userId;
+        }
+
+        if (tags) {
+          xhrData.meta = JSON.stringify ({
+            custom_meta: {
+              "hs-tags": tags
+            }
+          });
         }
 
         xhr ({
