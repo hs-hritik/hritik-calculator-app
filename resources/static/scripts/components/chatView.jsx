@@ -137,6 +137,7 @@ define ("components/chatView",
             </div>
             <div className="hs-chat-footer__field">
               <input className="hs-chat-footer__text-field"
+                     type="text"
                      dir="auto"
                      value={field.value.value}
                      placeholder={field.placeholder}

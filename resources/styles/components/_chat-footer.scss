@@ -53,16 +53,21 @@
     &__text-area {
       height: 20px;
       min-height: 20px;
-      padding: gutter(0 36 0 0);
       background-color: $textarea-bg-color;
       border-radius: 0;
-      box-shadow: none;
       resize: none;
     }
 
     &__text-field,
     &__text-area {
+      padding: 0;
       border: 0;
+      box-shadow: none;
+
+      &:focus {
+        border: 0;
+        box-shadow: none;
+      }
     }
 
     &__submit {
