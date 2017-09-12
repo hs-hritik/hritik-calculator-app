@@ -24,6 +24,9 @@
 
   const state = {
     unreadCount: 0,
+    widgetOptions: {
+      showLauncher: true
+    },
     cssConfig: {}
   };
 
@@ -201,6 +204,10 @@
    * @param {String} icon - the icon that needs to be set
    */
   const updateLauncherBtnIcon = (icon) => {
+    if (!launcherIframe) {
+      return;
+    }
+
     if (icon === LAUNCHER_ICON.CLOSE) {
       launcherIconEl.innerHTML = CLOSE_ICON;
       // Due the the size and geometry of the close icon, update the
@@ -339,6 +346,31 @@
   };
 
   /**
+   * Set sdk loaded as true and clear api queue
+   */
+  const markSdkReady = () => {
+    sdkLoaded = true;
+    clearApiQueue ();
+  };
+
+  /**
+   * Update web sdk and launcher iframe style
+   * @param {Object} config
+   */
+  const updateFrameStyles = (config) => {
+    // Set styles for launcher iframe
+    state.cssConfig = config.cssConfig;
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
+
+    // Set styles for websdk iframe
+    if (config.browserIsMobile) {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
+    } else {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
+    }
+  };
+
+  /**
    * Process web messenger config to update the behavior of the widget.
    * @param {Object} - the config object
    */
@@ -350,11 +382,18 @@
       return;
     }
 
-    state.cssConfig = config.cssConfig;
-    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
+    updateFrameStyles (config);
 
-    // If sdk is already loaded, don't create the launcher iframe again.
-    if (sdkLoaded) {
+    const launcherHidden = !state.widgetOptions.showLauncher;
+    // If the launcher iframe is hidden by the widget config options
+    // then mark sdk as ready
+    if (launcherHidden) {
+      markSdkReady ();
+    }
+
+    // If launcher is hidden or launcher iframe is already created then
+    // don't create launcherIframe
+    if (launcherHidden || launcherIframe) {
       return;
     }
 
@@ -380,17 +419,7 @@
       });
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
-      // Apply styles for webSdkIframe
-      if (config.browserIsMobile) {
-        setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
-      } else {
-        setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
-      }
-
-      // Set sdk loaded as true
-      sdkLoaded = true;
-      // Clear the api queue
-      clearApiQueue ();
+      markSdkReady ();
     };
 
     doc.body.appendChild (launcherIframe);
@@ -435,6 +464,15 @@
   };
 
   /**
+   * Process widget options and save them in state
+   */
+  const processWidgetOptions = () => {
+    const options = window.helpshiftConfig.widgetOptions || {};
+
+    state.widgetOptions.showLauncher = !!options.showLauncher;
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
@@ -443,6 +481,8 @@
     if (!isWebSdkSupported ()) {
       return;
     }
+
+    processWidgetOptions ();
 
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
