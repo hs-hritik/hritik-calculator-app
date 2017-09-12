@@ -69,10 +69,14 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_WM_CONFIG:
           const {config} = action;
-
+          const greentingFeatureEnabled = config.hasOwnProperty ("greeting_enabled") ?
+                                          config.greeting_enabled : true;
           return update (state, {
             wmEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
+              greeting: {
+                $set: greentingFeatureEnabled
+              },
               answerBot: {$set: config.answer_bot_enabled},
               infoBot: {$set: config.user_info_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
