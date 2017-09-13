@@ -38,11 +38,12 @@
     SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
     SDK_RESET: "sdk-reset",
-    UPDATE_UNREAD_COUNT: "update-unread-count",
+    SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
-    CMD_RESET: "cmd-reset"
+    CMD_RESET: "cmd-reset",
+    CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message"
   };
 
   // Errors message strings
@@ -550,7 +551,7 @@
           });
           break;
 
-        case EVENT_TYPES.UPDATE_UNREAD_COUNT:
+        case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
           renderUnreadCount ();
           break;
@@ -588,13 +589,25 @@
     _postMessage (EVENT_TYPES.CMD_RESET);
   };
 
+  /**
+   * JS API to set initial end user message
+   * @param {String} message - initial user message
+   */
+  const setInitialUserMessage = (message) => {
+    // message should be non-empty string
+    if (message && (typeof message === "string")) {
+      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {message});
+    }
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
     open,
     close,
-    reset
+    reset,
+    setInitialUserMessage
   };
 
   /**

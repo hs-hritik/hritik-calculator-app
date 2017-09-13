@@ -34,7 +34,7 @@ function (EVENT_TYPES, postMessage) {
    * @param {Number} unreadCount
    */
   const updateUnreadCount = (unreadCount) => {
-    postMessage (EVENT_TYPES.UPDATE_UNREAD_COUNT, {
+    postMessage (EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT, {
       count: unreadCount
     });
   };

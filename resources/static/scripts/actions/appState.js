@@ -694,11 +694,24 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set initial user message in store
+     * @param {String} - message
+     * @returns {Object} - Action
+     */
+    const setInitialUserMsg = (message) => {
+      return {
+        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
+        message
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
       setWmConfig,
       toggleMinimized,
-      reset
+      reset,
+      setInitialUserMsg
     };
   });

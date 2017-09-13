@@ -91,6 +91,9 @@ define ("extras/api",
         case EVENT_TYPES.CMD_RESET:
           store.dispatch (appStateActions.reset ());
           break;
+        case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
+          store.dispatch (appStateActions.setInitialUserMsg (data.message));
+          break;
       }
     };
 

@@ -49,7 +49,8 @@ define ("reducers/appState",
       resetTimeout: DEFAULT_RESET_TIMEOUT,
       browserIsMobile: false,
       sdkConfigOptions: {
-        fullScreen: false
+        fullScreen: false,
+        initialUserMessage: ""
       }
     };
 
@@ -155,6 +156,13 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_MOBILE_INFO:
           return update (state, {
             browserIsMobile: {$set: action.browserIsMobile}
+          });
+
+        case ACTION_TYPES.SET_INITIAL_USER_MESSAGE:
+          return update (state, {
+            sdkConfigOptions: {
+              initialUserMessage: {$set: action.message}
+            }
           });
 
         default:
