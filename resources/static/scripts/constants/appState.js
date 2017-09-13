@@ -22,6 +22,10 @@ define ("constants/appState",
         WAITING_FOR_USER_REPLY: "waiting_for_user_reply",
         COMPLETED: "completed"
       },
+      initialUserMessage: {
+        INITIAL: "initial",
+        COMPLETED: "completed"
+      },
       answerBot: {
         INITIAL: "initial",
         FAQS_FETCHED: "faqs_fetched",

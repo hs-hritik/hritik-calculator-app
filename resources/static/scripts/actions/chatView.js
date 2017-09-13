@@ -44,6 +44,7 @@ define ("actions/chatView",
           {Input} = schema;
 
     const GREETING_STATE = PRE_CHAT_STATE.greeting,
+          USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
           ANSWER_BOT_STATE = PRE_CHAT_STATE.answerBot,
           INFO_BOT_STATE = PRE_CHAT_STATE.infoBot;
 
@@ -496,6 +497,14 @@ define ("actions/chatView",
         const {appState} = state;
         const {dummyIssueId, userId, tags} = appState;
         const endUserFirstMsg = getEndUserFirstMessage ();
+
+        // @TODO :- Remove this condition after verifying createIssue is not
+        // called before setting first user message
+        // If first end user message is not present, don't do anything
+        if (!(endUserFirstMsg && endUserFirstMsg.body)) {
+          return;
+        }
+
         dispatch (disableReplyBox ());
 
         const xhrData = {
@@ -777,20 +786,36 @@ define ("actions/chatView",
                 issueId: state.appState.dummyIssueId
               })
             );
-
-            dispatch (
-              batchActions ([
-                setChatViewFooter (ACTIVE_FOOTER.REPLY),
-                updatePreChatFeatureState ("greeting", GREETING_STATE.WAITING_FOR_USER_REPLY)
-              ])
-            );
+            dispatch (startNextPreChatFeature ());
             break;
-
+          // @NOTE :- Skipping wait for user reply state as we want to start
+          // next pre-chat feature. We have moved wait to user reply in
+          // initialUserMessage pre-chat feature.
+          // Keeping this case as the localStorage data on some site can still
+          // contain this state.
+          // @TODO :- Remove this case after implementing migrator for localStorage
           case GREETING_STATE.WAITING_FOR_USER_REPLY:
+          case GREETING_STATE.COMPLETED:
+            dispatch (startNextPreChatFeature ());
+            break;
+        }
+      };
+    };
+
+    /**
+     * Action to start first user message workflow
+     * @returns {Object} - Action
+     */
+    const startInitialUserMsgPreChatFeature = () => {
+      return (dispatch, getState) => {
+        const state = getState (),
+              featureState = state.appState.preChatFeatureState.initialUserMessage;
+
+        switch (featureState) {
+          case USER_MESSAGE_STATE.INITIAL:
             dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
             break;
-
-          case GREETING_STATE.COMPLETED:
+          case USER_MESSAGE_STATE.COMPLETED:
             startNextPreChatFeature ();
             break;
         }
@@ -1200,6 +1225,9 @@ define ("actions/chatView",
         switch (feature) {
           case "greeting":
             dispatch (addGreetingMessage ());
+            break;
+          case "initialUserMessage":
+            dispatch (startInitialUserMsgPreChatFeature ());
             break;
           case "answerBot":
             dispatch (startAnswerBot ());

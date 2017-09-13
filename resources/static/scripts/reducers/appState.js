@@ -32,15 +32,17 @@ define ("reducers/appState",
       issueState: ISSUE_STATE.PRE_CHAT,
       featuresEnabled: {
         greeting: true,
+        initialUserMessage: true,
         answerBot: false,
         infoBot: false,
         csatBot: false,
         agentNickname: false
       },
-      preChatFeatureOrder: ["greeting", "answerBot", "infoBot"],
+      preChatFeatureOrder: ["greeting", "initialUserMessage", "answerBot", "infoBot"],
       preChatFeatureIndex: 0,
       preChatFeatureState: {
         greeting: PRE_CHAT_STATE.greeting.INITIAL,
+        initialUserMessage: PRE_CHAT_STATE.initialUserMessage.INITIAL,
         answerBot: PRE_CHAT_STATE.answerBot.INITIAL,
         infoBot: PRE_CHAT_STATE.infoBot.INITIAL
       },
