@@ -267,9 +267,6 @@ define ("actions/appState",
         validTags = tags.filter ((tag) => {
           // Filter string values
           return typeof tag === "string";
-        }).map ((tag) => {
-          // Convert the string values to lower case
-          return tag.toLowerCase ();
         });
       }
 
