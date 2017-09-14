@@ -17,5 +17,9 @@
     overflow: hidden;
     background: color(bg, white);
     border-radius: 8px;
+
+    &--mobile {
+      border-radius: 0;
+    }
   }
 }
