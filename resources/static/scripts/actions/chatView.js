@@ -243,18 +243,14 @@ define ("actions/chatView",
               ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
               dispatch (markMessagesSeen ());
             } else {
-              let unreadCount = 0;
-              // If there is no message cursor, that means it's the first load.
-              // Calculate the unread count by looking at each message.
-              if (!state.chatView.activeIssueMsgCursor) {
-                response.messages.forEach ((msg) => {
-                  if (msg.origin === "admin" && msg.state !== "read") {
-                    unreadCount++;
-                  }
-                });
-              } else {
-                unreadCount = response.messages.length + latestState.chatView.unreadCount;
-              }
+              let unreadCount = latestState.chatView.unreadCount;
+              // Calculate unread count for agent messages only
+              response.messages.forEach ((msg) => {
+                if (msg.origin === "admin" && msg.state !== "read") {
+                  unreadCount++;
+                }
+              });
+
               dispatch (setUnreadCount (unreadCount));
               postSdkMessage.updateUnreadCount (unreadCount);
             }
@@ -1043,13 +1039,23 @@ define ("actions/chatView",
         const state = getState (),
               {infoBot} = state.chatView;
 
+        // Trim white spaces in value
         const currentFieldVal = infoBot.data [infoBot.currentField].value;
+        const updatedFieldVal = objUtils.shallowMerge (
+          {
+            value: currentFieldVal.value.trim ()
+          },
+          currentFieldVal,
+          {
+            skip: ["value"]
+          }
+        );
 
         // As we are only saving serializable data in the store,
         // we are not saving the input object inside the store.
         // On submit of info bot field, create an input object instance to
         // validate the info field.
-        const errorMsg = new Input (currentFieldVal).isValid ();
+        const errorMsg = new Input (updatedFieldVal).isValid ();
 
         if (errorMsg) {
           dispatch (updateInfoBotFieldValue ({
@@ -1060,13 +1066,22 @@ define ("actions/chatView",
 
         dispatch (
           createMessage (MESSAGE_TYPE.TEXT, {
-            body: currentFieldVal.value.trim (),
+            body: updatedFieldVal.value,
             isCustomerMsg: true
           }, {
             typingTimer: null,
             issueId: state.appState.dummyIssueId
           })
         );
+
+        // Update field value with new value in store
+        // We want to save trimmed value in store for name, email etc
+        // So that when other actions read the latest value of any field they
+        // have the latest value
+        dispatch (updateInfoBotFieldValue ({
+          value: updatedFieldVal.value,
+          errorMsg: ""
+        }));
 
         dispatch (changeInfoBotCurrentField ());
 

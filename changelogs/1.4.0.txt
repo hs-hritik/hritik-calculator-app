@@ -1,0 +1,10 @@
+Branches:
+feature/v1.1
+
+Changelog:
+Fix zoom issue on mobile
+Fix submit button overlap issue
+Trim white spaces for text area
+Fix unread count issue for user message
+Fix border radius issue on mobile
+Add check for local storage support

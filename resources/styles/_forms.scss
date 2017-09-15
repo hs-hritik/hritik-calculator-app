@@ -294,6 +294,11 @@ textarea {
   &.x-small {
     @include input-base(x-small);
   }
+
+  // Set font size for inputs, textarea to 16px to avoid zoom issue on mobile
+  @at-root .hs-page--mobile & {
+    font-size: font-size(body, large);
+  }
 }
 
 textarea {
