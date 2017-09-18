@@ -412,10 +412,38 @@
   };
 
   /**
+   * Return whether web sdk is supported or not
+   * Check for browser features that web sdk uses
+   */
+  const isWebSdkSupported = () => {
+    let supported = true;
+
+    // Check for local storage
+    // Add try-catch as reading localStorage property throws an error if
+    // localStorage is disabled
+    try {
+      supported = !!win.localStorage &&
+                  typeof localStorage.getItem === "function" &&
+                  typeof localStorage.setItem === "function" &&
+                  typeof localStorage.removeItem === "function";
+    } catch (exception) {
+      // @TODO :- Add analytics events for exceptions/failures
+      supported = false;
+    }
+
+    return supported;
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
   const init = () => {
+    // If required features are not supported by browser, don't load iframes
+    if (!isWebSdkSupported ()) {
+      return;
+    }
+
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
 

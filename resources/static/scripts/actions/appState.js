@@ -319,7 +319,8 @@ define ("actions/appState",
               ])
             );
 
-            const primaryColor = store.getState ().ui.color.primary;
+            const {ui, appState} = store.getState ();
+            const primaryColor = ui.color.primary;
             const cssConfig = {
               primaryColor,
               primaryColorLight: shadeColor (primaryColor, 0.20),
@@ -334,6 +335,12 @@ define ("actions/appState",
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
               setStyles (cssConfig);
+
+              if (appState.browserIsMobile) {
+                const page = document.querySelector (".hs-page");
+                page.classList.add ("hs-page--mobile");
+              }
+
               startConversation ();
             }
           }
