@@ -299,6 +299,22 @@ define ("actions/appState",
     };
 
     /**
+     * Apply styles to hs-page
+     */
+    const applyPageStyles = () => {
+      const {appState} = store.getState ();
+      const page = document.querySelector (".hs-page");
+
+      if (appState.browserIsMobile) {
+        page.classList.add ("hs-page--mobile");
+      }
+
+      if (appState.sdkConfigOptions.fullScreen) {
+        page.classList.add ("hs-page--full-screen");
+      }
+    };
+
+    /**
      * Action to set the web messenger configuration set by the Helpshift admin
      * and set it to the store. Post message to the client with the config.
      * This configuration contains settings like if wm is enabled, appearance,
@@ -319,7 +335,7 @@ define ("actions/appState",
               ])
             );
 
-            const {ui, appState} = store.getState ();
+            const {ui} = store.getState ();
             const primaryColor = ui.color.primary;
             const cssConfig = {
               primaryColor,
@@ -336,10 +352,8 @@ define ("actions/appState",
               // configurable CSS value) to the document head.
               setStyles (cssConfig);
 
-              if (appState.browserIsMobile) {
-                const page = document.querySelector (".hs-page");
-                page.classList.add ("hs-page--mobile");
-              }
+              // Apply styles to page
+              applyPageStyles ();
 
               startConversation ();
             }

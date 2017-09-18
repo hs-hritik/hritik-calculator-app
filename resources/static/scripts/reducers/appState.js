@@ -8,9 +8,10 @@ define ("reducers/appState",
   [
     "constants/actionTypes",
     "constants/activeView",
-    "constants/appState"
+    "constants/appState",
+    "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -44,7 +45,10 @@ define ("reducers/appState",
         infoBot: PRE_CHAT_STATE.infoBot.INITIAL
       },
       resetTimeout: DEFAULT_RESET_TIMEOUT,
-      browserIsMobile: false
+      browserIsMobile: false,
+      sdkConfigOptions: {
+        fullScreen: false
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -94,7 +98,14 @@ define ("reducers/appState",
             platformId: {$set: action.config.platformId},
             domain: {$set: action.config.domain},
             userId: {$set: action.config.userId},
-            tags: {$set: action.config.tags}
+            tags: {$set: action.config.tags},
+            sdkConfigOptions: {
+              fullScreen: {
+                $set: objUtils.getIn (
+                  action, ["config", "widgetOptions", "fullScreen"]
+                )
+              }
+            }
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
