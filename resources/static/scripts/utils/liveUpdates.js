@@ -181,13 +181,15 @@ define (
 
 
     const unsubscribe = (topics) => {
-      topics = prepareTopics (topics);
+      if (connected) {
+        topics = prepareTopics (topics);
 
-      connection.send (JSON.stringify ([DIRI_V1.MULTI_UNSUB, topics]));
+        connection.send (JSON.stringify ([DIRI_V1.MULTI_UNSUB, topics]));
 
-      subscribedTopics = subscribedTopics.filter ((t) => {
-        return topics.indexOf (t) === -1;
-      });
+        subscribedTopics = subscribedTopics.filter ((t) => {
+          return topics.indexOf (t) === -1;
+        });
+      }
     };
 
 
