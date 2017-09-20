@@ -28,7 +28,8 @@
       showLauncher: true,
       fullScreen: false
     },
-    cssConfig: {}
+    cssConfig: {},
+    apiEvents: []
   };
 
   const INIT = "init";
@@ -39,11 +40,16 @@
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
     SDK_RESET: "sdk-reset",
     SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
+    SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message"
+  };
+
+  const SUPPORTED_EVENTS = {
+    CHAT_END: "chatEnd"
   };
 
   // Errors message strings
@@ -374,9 +380,8 @@
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
-  const updateFrameStyles = (config) => {
+  const updateIframeStyles = (config) => {
     // Set styles for launcher iframe
-    state.cssConfig = config.cssConfig;
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
 
     // Set styles for websdk iframe
@@ -401,7 +406,9 @@
       return;
     }
 
-    updateFrameStyles (config);
+    state.cssConfig = config.cssConfig;
+
+    updateIframeStyles (config);
 
     const launcherHidden = !state.widgetOptions.showLauncher;
     // If the launcher iframe is hidden by the widget config options
@@ -604,6 +611,13 @@
           close ();
           setConfig (win.helpshiftConfig);
           break;
+
+        case EVENT_TYPES.SDK_EVENT_CHAT_END:
+          state.apiEvents.forEach ((apiEvent) => {
+            if (apiEvent.eventName === SUPPORTED_EVENTS.CHAT_END) {
+              apiEvent.eventHandler ();
+            }
+          });
       }
     }, false);
   };
@@ -654,6 +668,50 @@
     }
   };
 
+  /**
+   * Returns boolean if event name is supported
+   * @param {String} eventName - name of event
+   * @returns {Boolean} - whether event name is supported
+   */
+  const isEventSupported = (eventName) => {
+    for (const event in SUPPORTED_EVENTS) {
+      if (SUPPORTED_EVENTS [event] === eventName) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * JS API to add supported events
+   * @param {String} eventName - name of event
+   * @param {Function} eventHandler - event handler
+   */
+  const addEventListener = (eventName, eventHandler) => {
+    // If event name is supported, add that event
+    if (isEventSupported (eventName) && eventHandler) {
+      state.apiEvents.push ({
+        eventName,
+        eventHandler
+      });
+    }
+  };
+
+  /**
+   * JS API to remove supported events
+   * @param {String} eventName - name of event
+   * @param {Function} eventHandler - event handler
+   */
+  const removeEventListener = (eventName, eventHandler) => {
+    // If event name is supported, remove that event
+    if (isEventSupported (eventName) && eventHandler) {
+      state.apiEvents = state.apiEvents.filter ((apiEvent) => {
+        return !(apiEvent.eventName === eventName &&
+                 apiEvent.eventHandler === eventHandler);
+      });
+    }
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -662,7 +720,9 @@
     open,
     close,
     reset,
-    setInitialUserMessage
+    setInitialUserMessage,
+    addEventListener,
+    removeEventListener
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

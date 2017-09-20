@@ -56,11 +56,19 @@ function (EVENT_TYPES, postMessage) {
     postMessage (EVENT_TYPES.SDK_JS_LOADED);
   };
 
+  /**
+   * Post sdk event for end chat
+   */
+  const chatEndEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CHAT_END);
+  };
+
   return {
     toggleMessenger,
     reset,
     updateUnreadCount,
     wmConfig,
-    jsLoaded
+    jsLoaded,
+    chatEndEvent
   };
 });

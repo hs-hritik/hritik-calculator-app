@@ -13,10 +13,11 @@ define ("components/containers/chatView",
     "actions/faqView",
     "actions/actionCreators",
     "constants/activeView",
-    "actions/appState"
+    "actions/appState",
+    "extras/postSdkMessage"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    actionCreators, ACTIVE_VIEW, appStateActions) {
+    actionCreators, ACTIVE_VIEW, appStateActions, postSdkMessage) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -63,6 +64,8 @@ define ("components/containers/chatView",
             skipUser: true,
             minimizeMessenger: true
           }));
+          // Fire event of chat end
+          postSdkMessage.chatEndEvent ();
         },
         onStartCsatSurveyClick: () => {
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
