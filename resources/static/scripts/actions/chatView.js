@@ -410,27 +410,8 @@ define ("actions/chatView",
         // If there is no active issue, create user message and add it in dummy issue.
         // TODO: Check for issue state (PRE_CHAT) instead of activeIssueId.
         if (!appState.activeIssueId) {
-          dispatch (
-            createMessage (MESSAGE_TYPE.TEXT, {
-              body: replyBox.value,
-              isCustomerMsg: true
-            }, {
-              typingTimer: null,
-              issueId: appState.dummyIssueId,
-              onAddMessage: (msg) => {
-                dispatch (
-                  batchActions ([
-                    setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
-                    setEndUserFirstMessageId (msg.id),
-                    udpateReplyText ("")
-                  ])
-                );
-
-                dispatch (startNextPreChatFeature ());
-              }
-            })
-          );
-
+          // set initial user msg
+          dispatch (createInitialUserMessage (replyBox.value));
           return;
         }
 
@@ -809,16 +790,55 @@ define ("actions/chatView",
     const startInitialUserMsgPreChatFeature = () => {
       return (dispatch, getState) => {
         const state = getState (),
-              featureState = state.appState.preChatFeatureState.initialUserMessage;
+              {appState} = state,
+              {initialUserMessage} = appState.sdkConfigOptions,
+              featureState = appState.preChatFeatureState.initialUserMessage;
 
         switch (featureState) {
           case USER_MESSAGE_STATE.INITIAL:
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+            // If initial user message is present in store,
+            // create message else wait for user input
+            if (initialUserMessage) {
+              dispatch (createInitialUserMessage (initialUserMessage));
+            } else {
+              dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+            }
             break;
           case USER_MESSAGE_STATE.COMPLETED:
             startNextPreChatFeature ();
             break;
         }
+      };
+    };
+
+    /**
+     * Action to create initial user message
+     * @param {String} messageBody - body of user message
+     */
+    const createInitialUserMessage = (messageBody) => {
+      return function (dispatch, getState) {
+        const state = getState ();
+        const {appState} = state;
+
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: messageBody,
+            isCustomerMsg: true
+          }, {
+            typingTimer: null,
+            issueId: appState.dummyIssueId,
+            onAddMessage: (msg) => {
+              dispatch (
+                batchActions ([
+                  setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
+                  setEndUserFirstMessageId (msg.id),
+                  udpateReplyText ("")
+                ])
+              );
+              dispatch (startNextPreChatFeature ());
+            }
+          })
+        );
       };
     };
 
@@ -1256,6 +1276,7 @@ define ("actions/chatView",
       submitInfoBotField,
       updateIssueState,
       markMessagesSeen,
-      switchToChatView
+      switchToChatView,
+      createInitialUserMessage
     };
   });

@@ -51,7 +51,8 @@ define ("reducers/appState",
       sdkConfigOptions: {
         fullScreen: false,
         initialUserMessage: ""
-      }
+      },
+      conversationStarted: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -163,6 +164,16 @@ define ("reducers/appState",
             sdkConfigOptions: {
               initialUserMessage: {$set: action.message}
             }
+          });
+
+        case ACTION_TYPES.SET_CONVERSATION_STARTED:
+          return update (state, {
+            conversationStarted: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_CONVERSATION_ENDED:
+          return update (state, {
+            conversationStarted: {$set: false}
           });
 
         default:

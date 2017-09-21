@@ -127,9 +127,30 @@ define ("actions/appState",
     };
 
     /**
+     * Action to set conversation started
+     * @returns {Object} - Action
+     */
+    const setConversationStarted = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_STARTED
+      };
+    };
+
+    /**
+     * Action to set conversation ended
+     * @returns {Object} - Action
+     */
+    const setConversationEnded = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ENDED
+      };
+    };
+
+    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
+      store.dispatch (setConversationStarted ());
       if (returningUser) {
         // If it's a returning user, that means there could be an
         // ongoing conversation.
@@ -157,6 +178,7 @@ define ("actions/appState",
     const reset = (options = {}) => {
       return (dispatch, getState) => {
         chatViewActions.stopPollingForMessages ();
+        dispatch (setConversationEnded ());
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
@@ -354,8 +376,6 @@ define ("actions/appState",
 
               // Apply styles to page
               applyPageStyles ();
-
-              startConversation ();
             }
           }
         });
@@ -712,6 +732,7 @@ define ("actions/appState",
       setWmConfig,
       toggleMinimized,
       reset,
-      setInitialUserMsg
+      setInitialUserMsg,
+      startConversation
     };
   });
