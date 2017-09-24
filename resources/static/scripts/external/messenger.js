@@ -15,7 +15,7 @@
 
   const urlParts = WEB_CHAT_ROOT.split ("://"),
         PROTOCOL = `${urlParts [0]}://`,
-        PLAT_ID = window.helpshiftConfig.platformId,
+        PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
         PATH = "/html/";
 
@@ -187,8 +187,7 @@
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe;
 
   // Api queue to save the apis and call them after sdk config is loaded
-  let sdkLoaded = false,
-      apiQueue = [];
+  let sdkLoaded = false;
 
   /**
    * Util to set style for a given element.
@@ -453,10 +452,55 @@
   };
 
   /**
+   * Check if the given API is supported
+   * @param {String} api - the API name string
+   * @returns {Boolean}
+   */
+  const isApiValid = (api) => {
+    return typeof helpshiftApis [api] === "function";
+  };
+
+  /**
+   * Get APIs queued with the global Helpshift function defined in the embed
+   * script.
+   * @returns {Array} - List of functions for APIs bound with the arguments.
+   */
+  const getQueuedApis = () => {
+    // The window.Helpshift function defined in the embed script contains a
+    // static queue used to store the API calls made by client side JavaScript.
+    // For each item of the queue, add an item (a function bound with the API's
+    // arguments) to the list to return.
+    const HS = win.Helpshift;
+    const validApiQueue = [];
+
+    if (HS && Array.isArray (HS.q) && HS.q.length) {
+      HS.q.forEach ((queuedArgs) => {
+        const args = [...queuedArgs];
+
+        // The array args contains the API name ("open", "addEventListener", etc)
+        // as the first item. Rest of the items of the args array are the arguments
+        // that the API should execute with.
+        const api = args [0];
+        const apiArgs = args.slice (1);
+
+        if (isApiValid (api)) {
+          validApiQueue.push (helpshiftApis [api].bind (null, ...apiArgs));
+        }
+      });
+    }
+
+    return validApiQueue;
+  };
+
+  /**
    * Execute every queued api and clear the api queue
    */
   const clearApiQueue = () => {
-    apiQueue.forEach ((fn) => fn ());
+    apiQueue.forEach ((fn) => {
+      if (typeof fn === "function") {
+        fn ();
+      }
+    });
     apiQueue = [];
   };
 
@@ -537,7 +581,7 @@
           // the widget should load or not.
 
           // Set the client and wm configs to the app.
-          setConfig (window.helpshiftConfig);
+          setConfig (win.helpshiftConfig);
           break;
 
         case EVENT_TYPES.SDK_CONFIG_LOADED:
@@ -558,10 +602,20 @@
 
         case EVENT_TYPES.SDK_RESET:
           close ();
-          setConfig (window.helpshiftConfig);
+          setConfig (win.helpshiftConfig);
           break;
       }
     }, false);
+  };
+
+  /**
+   * Placeholder JS API to handle the case when the client's page already
+   * has the Helpshift function defined.
+   * This doesn't do anything as of now.
+   */
+  const update = () => {
+    // Probably track that this function was called.
+    return;
   };
 
   /**
@@ -604,11 +658,16 @@
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
+    update,
     open,
     close,
     reset,
     setInitialUserMessage
   };
+
+  // Append the APIs to the local apiQueue variable in order to execute them
+  // after the SDK is loaded.
+  let apiQueue = getQueuedApis ();
 
   /**
    * The global Helpshift function to handle the APIs. It relies on the
@@ -631,15 +690,16 @@
       throw new Error (ERROR_MSG.API_NOT_SUPPORTED);
     }
 
-    // If a] sdk is loaded OR b] the api is init, then directly call the apis
-    // else queue the apis in sequence and call them after sdk config is loaded
-    // Note :- allowing init api because it's the first api that will be called
+    // If a] sdk is loaded OR b] the API is init or update, then directly call
+    // the API
+    // Else queue the API in sequence and call them after SDK config is loaded
+    // Note :- Allowing init API because it's the first API that will be called
     if (sdkLoaded || api === INIT) {
       // Call the Helpshift api with the arguments
       helpshiftApis [api].apply (null, apiArguments);
-    } else {
-      // Queue the apis
-      apiQueue.push (helpshiftApis [api].bind (null, apiArguments));
+    } else if (isApiValid (api)) {
+      // Queue the API, if it's valid
+      apiQueue.push (helpshiftApis [api].bind (null, ...apiArguments));
     }
   };
 }) (window, document);

@@ -53,7 +53,7 @@
       };
     }) ();
 
-    !function(e,t){var n,a=e.getElementsByTagName("script")[0];if  (!e.getElementById(t)){n=e.createElement("script"),n.async=!0,  n.id=t,n.src="{{ENV_WEB_CHAT_ROOT}}/webChat.js";var i=function()  {window.Helpshift("init")};window.attachEvent?n.attachEvent("onload",i)  :n.addEventListener("load",i,!1),a.parentNode.insertBefore(n,a)}}  (document,"hs-wm");
+!function(t,e){if("function"!=typeof window.Helpshift){var n=function(){n.q.push(arguments)};n.q=[],window.Helpshift=n;var i,a=t.getElementsByTagName("script")[0];if(t.getElementById(e))return;i=t.createElement("script"),i.async=!0,i.id=e,i.src="{{ENV_WEB_CHAT_ROOT}}/webChat.js";var o=function(){window.Helpshift("init")};window.attachEvent?i.attachEvent("onload",o):i.addEventListener("load",o,!1),a.parentNode.insertBefore(i,a)}else window.Helpshift("update")}(document,"hs-chat");
     /* eslint-enable */
   </script>
 </body>
