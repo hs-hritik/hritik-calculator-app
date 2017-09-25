@@ -540,8 +540,13 @@
   const processWidgetOptions = () => {
     const options = window.helpshiftConfig.widgetOptions || {};
 
-    state.widgetOptions.showLauncher = !!options.showLauncher;
-    state.widgetOptions.fullScreen = !!options.fullScreen;
+    if (typeof options.showLauncher === "boolean") {
+      state.widgetOptions.showLauncher = options.showLauncher;
+    }
+
+    if (typeof options.fullScreen === "boolean") {
+      state.widgetOptions.fullScreen = options.fullScreen;
+    }
   };
 
   /**
