@@ -628,16 +628,6 @@
   };
 
   /**
-   * Placeholder JS API to handle the case when the client's page already
-   * has the Helpshift function defined.
-   * This doesn't do anything as of now.
-   */
-  const update = () => {
-    // Probably track that this function was called.
-    return;
-  };
-
-  /**
    * JS API to open/maximize/show the messenger widget
    */
   const open = () => {
@@ -721,7 +711,6 @@
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
-    update,
     open,
     close,
     reset,
