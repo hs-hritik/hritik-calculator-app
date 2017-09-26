@@ -18,7 +18,8 @@
     background: color(bg, white);
     border-radius: 8px;
 
-    &--mobile {
+    &--mobile,
+    &--full-screen {
       border-radius: 0;
     }
   }

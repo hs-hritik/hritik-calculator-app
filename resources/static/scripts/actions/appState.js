@@ -127,9 +127,30 @@ define ("actions/appState",
     };
 
     /**
+     * Action to set conversation started
+     * @returns {Object} - Action
+     */
+    const setConversationStarted = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_STARTED
+      };
+    };
+
+    /**
+     * Action to set conversation ended
+     * @returns {Object} - Action
+     */
+    const setConversationEnded = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ENDED
+      };
+    };
+
+    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
+      store.dispatch (setConversationStarted ());
       if (returningUser) {
         // If it's a returning user, that means there could be an
         // ongoing conversation.
@@ -157,6 +178,7 @@ define ("actions/appState",
     const reset = (options = {}) => {
       return (dispatch, getState) => {
         chatViewActions.stopPollingForMessages ();
+        dispatch (setConversationEnded ());
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
@@ -299,6 +321,22 @@ define ("actions/appState",
     };
 
     /**
+     * Apply styles to hs-page
+     */
+    const applyPageStyles = () => {
+      const {appState} = store.getState ();
+      const page = document.querySelector (".hs-page");
+
+      if (appState.browserIsMobile) {
+        page.classList.add ("hs-page--mobile");
+      }
+
+      if (appState.sdkConfigOptions.fullScreen) {
+        page.classList.add ("hs-page--full-screen");
+      }
+    };
+
+    /**
      * Action to set the web messenger configuration set by the Helpshift admin
      * and set it to the store. Post message to the client with the config.
      * This configuration contains settings like if wm is enabled, appearance,
@@ -319,7 +357,7 @@ define ("actions/appState",
               ])
             );
 
-            const {ui, appState} = store.getState ();
+            const {ui} = store.getState ();
             const primaryColor = ui.color.primary;
             const cssConfig = {
               primaryColor,
@@ -336,12 +374,8 @@ define ("actions/appState",
               // configurable CSS value) to the document head.
               setStyles (cssConfig);
 
-              if (appState.browserIsMobile) {
-                const page = document.querySelector (".hs-page");
-                page.classList.add ("hs-page--mobile");
-              }
-
-              startConversation ();
+              // Apply styles to page
+              applyPageStyles ();
             }
           }
         });
@@ -680,11 +714,25 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set initial user message in store
+     * @param {String} - message
+     * @returns {Object} - Action
+     */
+    const setInitialUserMsg = (message) => {
+      return {
+        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
+        message
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
       setWmConfig,
       toggleMinimized,
-      reset
+      reset,
+      setInitialUserMsg,
+      startConversation
     };
   });

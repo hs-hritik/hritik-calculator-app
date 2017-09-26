@@ -15,11 +15,11 @@ define ("extras/api",
     "actions/chatView",
     "components/app"
   ],
-  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, postSdkMessage,
-    appStateActions, chatViewActions, app) {
+  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
+    postSdkMessage, appStateActions, chatViewActions, app) {
     "use strict";
 
-    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS;
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -63,6 +63,11 @@ define ("extras/api",
           app.init ();
         }
 
+        // If conversation is not started, start the conversation
+        if (!appState.conversationStarted) {
+          appStateActions.startConversation ();
+        }
+
         // If unreadCount isn't zero and active view is chat view,
         // dispatch action to mark messages seen.
         if (chatView.unreadCount !== 0 && ACTIVE_VIEW.CHAT === appState.activeView) {
@@ -74,6 +79,36 @@ define ("extras/api",
         store.dispatch (appStateActions.reset ({
           skipUser: true
         }));
+      }
+    };
+
+    /**
+     * Handle intial user message
+     * @param {String} message - initial user message
+     */
+    const handleInitialUserMsg = (message) => {
+      const state = store.getState ();
+      const {appState} = state;
+
+      // If issue state is not pre chat, don't save initial message in store
+      // and dont create initial user message
+      if (appState.issueState !== ISSUE_STATE.PRE_CHAT) {
+        return;
+      }
+
+      // Set initial user message in store
+      store.dispatch (appStateActions.setInitialUserMsg (message));
+
+      const currentPreChatFeature = appState.preChatFeatureOrder [appState.preChatFeatureIndex];
+      // Create initial user message if :-
+      // a] current prechat feature is "initialUserMessage"
+      // b] prechat feature "initialUserMessage" is enabled (currently always enabled)
+      // c] state of "initialUserMessage" is INITIAL
+      if ((currentPreChatFeature === "initialUserMessage") &&
+          (appState.featuresEnabled.initialUserMessage) &&
+          (appState.preChatFeatureState [currentPreChatFeature] ===
+           PRE_CHAT_STATE.initialUserMessage.INITIAL)) {
+        store.dispatch (chatViewActions.createInitialUserMessage (message));
       }
     };
 
@@ -90,6 +125,9 @@ define ("extras/api",
           break;
         case EVENT_TYPES.CMD_RESET:
           store.dispatch (appStateActions.reset ());
+          break;
+        case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
+          handleInitialUserMsg (data.message);
           break;
       }
     };
