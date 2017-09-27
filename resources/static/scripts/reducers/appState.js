@@ -176,6 +176,7 @@ define ("reducers/appState",
             conversationStarted: {$set: false}
           });
 
+        // @TODO :- add case for set cif and reset cif action
         default:
           return state;
       }

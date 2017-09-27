@@ -726,6 +726,30 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set the cifs
+     * @param {Object} cif - data of cif
+     * @returns {Object} - Action
+     */
+    const setCif = (cif) => {
+      return {
+        type: ACTION_TYPES.SET_CIF,
+        cif
+      };
+    };
+
+    /**
+     * Action to replace the cifs
+     * @param {Object} cif - data of cif
+     * @returns {Object} - Action
+     */
+    const replaceCif = (cif) => {
+      return {
+        type: ACTION_TYPES.REPLACE_CIF,
+        cif
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -733,6 +757,8 @@ define ("actions/appState",
       toggleMinimized,
       reset,
       setInitialUserMsg,
-      startConversation
+      startConversation,
+      setCif,
+      replaceCif
     };
   });

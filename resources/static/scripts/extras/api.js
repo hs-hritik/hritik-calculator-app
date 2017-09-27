@@ -129,6 +129,12 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
           handleInitialUserMsg (data.message);
           break;
+        case EVENT_TYPES.CMD_SET_CIF:
+          store.dispatch (appStateActions.setCif (data.cifData));
+          break;
+        case EVENT_TYPES.CMD_REPLACE_CIF:
+          store.dispatch (appStateActions.replaceCif (data.cifData));
+          break;
       }
     };
 
