@@ -1,0 +1,2 @@
+Changelog:
+Fix bug in live updates util
