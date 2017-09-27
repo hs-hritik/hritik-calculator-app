@@ -44,6 +44,7 @@ define ("actions/chatView",
           {Input} = schema;
 
     const GREETING_STATE = PRE_CHAT_STATE.greeting,
+          USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
           ANSWER_BOT_STATE = PRE_CHAT_STATE.answerBot,
           INFO_BOT_STATE = PRE_CHAT_STATE.infoBot;
 
@@ -409,27 +410,8 @@ define ("actions/chatView",
         // If there is no active issue, create user message and add it in dummy issue.
         // TODO: Check for issue state (PRE_CHAT) instead of activeIssueId.
         if (!appState.activeIssueId) {
-          dispatch (
-            createMessage (MESSAGE_TYPE.TEXT, {
-              body: replyBox.value,
-              isCustomerMsg: true
-            }, {
-              typingTimer: null,
-              issueId: appState.dummyIssueId,
-              onAddMessage: (msg) => {
-                dispatch (
-                  batchActions ([
-                    setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
-                    setEndUserFirstMessageId (msg.id),
-                    udpateReplyText ("")
-                  ])
-                );
-
-                dispatch (startNextPreChatFeature ());
-              }
-            })
-          );
-
+          // set initial user msg
+          dispatch (createInitialUserMessage (replyBox.value));
           return;
         }
 
@@ -496,6 +478,14 @@ define ("actions/chatView",
         const {appState} = state;
         const {dummyIssueId, userId, tags} = appState;
         const endUserFirstMsg = getEndUserFirstMessage ();
+
+        // @TODO :- Remove this condition after verifying createIssue is not
+        // called before setting first user message
+        // If first end user message is not present, don't do anything
+        if (!(endUserFirstMsg && endUserFirstMsg.body)) {
+          return;
+        }
+
         dispatch (disableReplyBox ());
 
         const xhrData = {
@@ -777,23 +767,78 @@ define ("actions/chatView",
                 issueId: state.appState.dummyIssueId
               })
             );
-
-            dispatch (
-              batchActions ([
-                setChatViewFooter (ACTIVE_FOOTER.REPLY),
-                updatePreChatFeatureState ("greeting", GREETING_STATE.WAITING_FOR_USER_REPLY)
-              ])
-            );
+            dispatch (startNextPreChatFeature ());
             break;
-
+          // @NOTE :- Skipping wait for user reply state as we want to start
+          // next pre-chat feature. We have moved wait to user reply in
+          // initialUserMessage pre-chat feature.
+          // Keeping this case as the localStorage data on some site can still
+          // contain this state.
+          // @TODO :- Remove this case after implementing migrator for localStorage
           case GREETING_STATE.WAITING_FOR_USER_REPLY:
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
-            break;
-
           case GREETING_STATE.COMPLETED:
+            dispatch (startNextPreChatFeature ());
+            break;
+        }
+      };
+    };
+
+    /**
+     * Action to start first user message workflow
+     * @returns {Object} - Action
+     */
+    const startInitialUserMsgPreChatFeature = () => {
+      return (dispatch, getState) => {
+        const state = getState (),
+              {appState} = state,
+              {initialUserMessage} = appState.sdkConfigOptions,
+              featureState = appState.preChatFeatureState.initialUserMessage;
+
+        switch (featureState) {
+          case USER_MESSAGE_STATE.INITIAL:
+            // If initial user message is present in store,
+            // create message else wait for user input
+            if (initialUserMessage) {
+              dispatch (createInitialUserMessage (initialUserMessage));
+            } else {
+              dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+            }
+            break;
+          case USER_MESSAGE_STATE.COMPLETED:
             startNextPreChatFeature ();
             break;
         }
+      };
+    };
+
+    /**
+     * Action to create initial user message
+     * @param {String} messageBody - body of user message
+     */
+    const createInitialUserMessage = (messageBody) => {
+      return function (dispatch, getState) {
+        const state = getState ();
+        const {appState} = state;
+
+        dispatch (
+          createMessage (MESSAGE_TYPE.TEXT, {
+            body: messageBody,
+            isCustomerMsg: true
+          }, {
+            typingTimer: null,
+            issueId: appState.dummyIssueId,
+            onAddMessage: (msg) => {
+              dispatch (
+                batchActions ([
+                  setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
+                  setEndUserFirstMessageId (msg.id),
+                  udpateReplyText ("")
+                ])
+              );
+              dispatch (startNextPreChatFeature ());
+            }
+          })
+        );
       };
     };
 
@@ -1201,6 +1246,9 @@ define ("actions/chatView",
           case "greeting":
             dispatch (addGreetingMessage ());
             break;
+          case "initialUserMessage":
+            dispatch (startInitialUserMsgPreChatFeature ());
+            break;
           case "answerBot":
             dispatch (startAnswerBot ());
             break;
@@ -1228,6 +1276,7 @@ define ("actions/chatView",
       submitInfoBotField,
       updateIssueState,
       markMessagesSeen,
-      switchToChatView
+      switchToChatView,
+      createInitialUserMessage
     };
   });

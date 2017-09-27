@@ -8,9 +8,10 @@ define ("reducers/appState",
   [
     "constants/actionTypes",
     "constants/activeView",
-    "constants/appState"
+    "constants/appState",
+    "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -31,20 +32,27 @@ define ("reducers/appState",
       issueState: ISSUE_STATE.PRE_CHAT,
       featuresEnabled: {
         greeting: true,
+        initialUserMessage: true,
         answerBot: false,
         infoBot: false,
         csatBot: false,
         agentNickname: false
       },
-      preChatFeatureOrder: ["greeting", "answerBot", "infoBot"],
+      preChatFeatureOrder: ["greeting", "initialUserMessage", "answerBot", "infoBot"],
       preChatFeatureIndex: 0,
       preChatFeatureState: {
         greeting: PRE_CHAT_STATE.greeting.INITIAL,
+        initialUserMessage: PRE_CHAT_STATE.initialUserMessage.INITIAL,
         answerBot: PRE_CHAT_STATE.answerBot.INITIAL,
         infoBot: PRE_CHAT_STATE.infoBot.INITIAL
       },
       resetTimeout: DEFAULT_RESET_TIMEOUT,
-      browserIsMobile: false
+      browserIsMobile: false,
+      sdkConfigOptions: {
+        fullScreen: false,
+        initialUserMessage: ""
+      },
+      conversationStarted: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -69,10 +77,14 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_WM_CONFIG:
           const {config} = action;
-
+          const greentingFeatureEnabled = config.hasOwnProperty ("greeting_enabled") ?
+                                          config.greeting_enabled : true;
           return update (state, {
             wmEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
+              greeting: {
+                $set: greentingFeatureEnabled
+              },
               answerBot: {$set: config.answer_bot_enabled},
               infoBot: {$set: config.user_info_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
@@ -90,7 +102,14 @@ define ("reducers/appState",
             platformId: {$set: action.config.platformId},
             domain: {$set: action.config.domain},
             userId: {$set: action.config.userId},
-            tags: {$set: action.config.tags}
+            tags: {$set: action.config.tags},
+            sdkConfigOptions: {
+              fullScreen: {
+                $set: objUtils.getIn (
+                  action, ["config", "widgetOptions", "fullScreen"]
+                )
+              }
+            }
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
@@ -138,6 +157,23 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_MOBILE_INFO:
           return update (state, {
             browserIsMobile: {$set: action.browserIsMobile}
+          });
+
+        case ACTION_TYPES.SET_INITIAL_USER_MESSAGE:
+          return update (state, {
+            sdkConfigOptions: {
+              initialUserMessage: {$set: action.message}
+            }
+          });
+
+        case ACTION_TYPES.SET_CONVERSATION_STARTED:
+          return update (state, {
+            conversationStarted: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_CONVERSATION_ENDED:
+          return update (state, {
+            conversationStarted: {$set: false}
           });
 
         default:

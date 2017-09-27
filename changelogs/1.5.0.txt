@@ -1,0 +1,14 @@
+Branches:
+feature/msft-integration
+
+Changelog:
+Remove update API from webChat.js
+Fix show launcher condition in process widget config
+Add support to add and remove api events
+Update embed script to support API queue
+Change start conversation workflow
+Provide api to set initial user message
+Add pre chat feature for initial user message
+Add support for fullscreen option in web sdk config
+Integrate config to display greeting message
+Add config to hide launcher iframe
