@@ -719,33 +719,34 @@
   };
 
   /**
-   * Returns true if cif data is valid
-   * @param {Any} cifData - cif data
-   * @returns {Boolean} - whether given object is valid
+   * Return processed data containing cif object which contains only type and value
+   * @param {Object} cifData - data of cif
+   * @returns {Object} - processed cif data
    */
-  const isCifValid = (cifData) => {
+  const getProcessedCifData = (cifData) => {
+    const processedCif = {};
+
     if (!isObject (cifData)) {
-      return false;
+      return processedCif;
     }
 
     for (const cifItem in cifData) {
       if (cifData.hasOwnProperty (cifItem)) {
         const cif = cifData [cifItem];
 
-        if (!isObject (cif)) {
-          return false;
-        }
-
-        // cif is considered invalid if
-        // a] cif value is not present OR
-        // b] data type of cif type is not string
-        if (!cif.hasOwnProperty ("value") || typeof cif.type !== "string") {
-          return false;
+        if (isObject (cif) &&
+            typeof cif.type === "string" &&
+            !!cif.type &&
+            typeof cif.value !== "undefined") {
+          processedCif [cifItem] = {
+            type: cif.type,
+            value: cif.value
+          };
         }
       }
     }
 
-    return true;
+    return processedCif;
   };
 
   /**
@@ -753,11 +754,9 @@
    * @param {Object} cifData - cif data
    */
   const setCustomIssueFields = (cifData) => {
-    if (isCifValid (cifData)) {
-      _postMessage (EVENT_TYPES.CMD_SET_CIF, {
-        cifData
-      });
-    }
+    _postMessage (EVENT_TYPES.CMD_SET_CIF, {
+      cifData: getProcessedCifData (cifData)
+    });
   };
 
   /**
@@ -765,11 +764,9 @@
    * @param {Object} cifData - cif data
    */
   const replaceCustomIssueFields = (cifData) => {
-    if (isCifValid (cifData)) {
-      _postMessage (EVENT_TYPES.CMD_REPLACE_CIF, {
-        cifData
-      });
-    }
+    _postMessage (EVENT_TYPES.CMD_REPLACE_CIF, {
+      cifData: getProcessedCifData (cifData)
+    });
   };
 
   // A map with all the supported APIs. The global Helpshift () call looks
