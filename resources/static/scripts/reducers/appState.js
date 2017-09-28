@@ -102,6 +102,7 @@ define ("reducers/appState",
             platformId: {$set: action.config.platformId},
             domain: {$set: action.config.domain},
             userId: {$set: action.config.userId},
+            resetTimeout: {$set: action.config.resetTimeout},
             tags: {$set: action.config.tags},
             sdkConfigOptions: {
               fullScreen: {

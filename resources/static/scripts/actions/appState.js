@@ -34,9 +34,14 @@ define ("actions/appState",
     postMessage, browserUtils, postSdkMessage) {
     "use strict";
 
-    const {normalize} = normalizr,
-          {ISSUE_STATE} = APP_STATE_CONSTANTS,
-          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+    const {normalize} = normalizr;
+    const {
+      ISSUE_STATE,
+      DEFAULT_RESET_TIMEOUT,
+      MIN_RESET_TIMEOUT,
+      MAX_RESET_TIMEOUT
+    } = APP_STATE_CONSTANTS;
+    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     // Constant indicating whether to skip checking a value in localstorage or not
     const SKIP_LS_CHECK = true;
@@ -276,7 +281,7 @@ define ("actions/appState",
     const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
 
     /**
-     * Returns tags array containing string values converted to lowercase
+     * Return tags array containing string values converted to lowercase
      * @param {Any} - Unprocessed tags
      * @returns {(Array|null)} - Processed tags containing only string values
      *                           converted to lowercase
@@ -293,6 +298,33 @@ define ("actions/appState",
       }
 
       return validTags;
+    };
+
+    /**
+     * Return resetTimeout value to be set in the state by converting the
+     * passed value, in hours, to milliseconds.
+     * @param {number} - Reset timeout passed with client config (in hours)
+     * @returns {number} - Reset timeout value to be set in the state
+     */
+    const getProcessedResetTimeout = function (timeout) {
+      if (typeof timeout === "number") {
+        let effectiveTimeout = timeout;
+
+        // If the passed value is less than the minimum possible value or greater
+        // than the maximum possible value of reset timeout, then set it to the
+        // min or max value, respectively.
+        if (timeout < MIN_RESET_TIMEOUT) {
+          effectiveTimeout = MIN_RESET_TIMEOUT;
+        } else if (timeout > MAX_RESET_TIMEOUT) {
+          effectiveTimeout = MAX_RESET_TIMEOUT;
+        }
+
+        // x hours = x * 60 * 60 * 1000 milliseconds
+        return effectiveTimeout * 3600000;
+      }
+
+      // If an invalid timeout is passed, return the default reset timeout
+      return DEFAULT_RESET_TIMEOUT;
     };
 
     /**
@@ -313,6 +345,9 @@ define ("actions/appState",
     const setClientConfig = (config) => {
       // Filter string values and convert to lower case
       config.tags = getProcessedTags (config.tags);
+
+      // Get the resetTimeout value to be set in the state
+      config.resetTimeout = getProcessedResetTimeout (config.resetTimeout);
 
       return {
         type: ACTION_TYPES.SET_CLIENT_CONFIG,
