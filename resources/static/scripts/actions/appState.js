@@ -726,6 +726,22 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to close the conversation
+     * @returns {Object} - Action
+     */
+    const closeConversation = () => {
+      return (dispatch) => {
+        dispatch (reset ({
+          skipUser: true,
+          minimizeMessenger: true
+        }));
+
+        // Fire event of chat end
+        postSdkMessage.chatEndEvent ();
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -733,6 +749,7 @@ define ("actions/appState",
       toggleMinimized,
       reset,
       setInitialUserMsg,
-      startConversation
+      startConversation,
+      closeConversation
     };
   });

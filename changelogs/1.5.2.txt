@@ -1,0 +1,2 @@
+Changelog:
+Fire close event on CSAT submit
