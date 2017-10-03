@@ -476,7 +476,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
-        const {dummyIssueId, userId, tags} = appState;
+        const {dummyIssueId, userId, tags, cif} = appState;
         const endUserFirstMsg = getEndUserFirstMessage ();
 
         // @TODO :- Remove this condition after verifying createIssue is not
@@ -504,6 +504,11 @@ define ("actions/chatView",
               "hs-tags": tags
             }
           });
+        }
+
+        // If cif is set and contains atleast one field, add to xhr data
+        if (cif && Object.keys (cif).length) {
+          xhrData.custom_fields = JSON.stringify (cif);
         }
 
         xhr ({

@@ -45,7 +45,9 @@
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_RESET: "cmd-reset",
-    CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message"
+    CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
+    CMD_SET_CIF: "cmd-set-cif",
+    CMD_REPLACE_CIF: "cmd-replace-cif"
   };
 
   const SUPPORTED_EVENTS = {
@@ -707,6 +709,66 @@
     }
   };
 
+  /**
+   * Return true if given item is object
+   * @param {Object} item - object to validate
+   * @returns {Boolean} - whether item is object
+   */
+  const isObject = (item) => {
+    return (typeof item === "object" && !Array.isArray (item) && item !== null);
+  };
+
+  /**
+   * Return processed data containing cif object which contains only type and value
+   * @param {Object} cifData - data of cif
+   * @returns {Object} - processed cif data
+   */
+  const getProcessedCifData = (cifData) => {
+    const processedCif = {};
+
+    if (!isObject (cifData)) {
+      return processedCif;
+    }
+
+    for (const cifItem in cifData) {
+      if (cifData.hasOwnProperty (cifItem)) {
+        const cif = cifData [cifItem];
+
+        if (isObject (cif) &&
+            typeof cif.type === "string" &&
+            !!cif.type &&
+            typeof cif.value !== "undefined") {
+          processedCif [cifItem] = {
+            type: cif.type,
+            value: cif.value
+          };
+        }
+      }
+    }
+
+    return processedCif;
+  };
+
+  /**
+   * Set custom issue fields
+   * @param {Object} cifData - cif data
+   */
+  const setCustomIssueFields = (cifData) => {
+    _postMessage (EVENT_TYPES.CMD_SET_CIF, {
+      cifData: getProcessedCifData (cifData)
+    });
+  };
+
+  /**
+   * Replace custom issue fields
+   * @param {Object} cifData - cif data
+   */
+  const replaceCustomIssueFields = (cifData) => {
+    _postMessage (EVENT_TYPES.CMD_REPLACE_CIF, {
+      cifData: getProcessedCifData (cifData)
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -716,7 +778,9 @@
     reset,
     setInitialUserMessage,
     addEventListener,
-    removeEventListener
+    removeEventListener,
+    setCustomIssueFields,
+    replaceCustomIssueFields
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

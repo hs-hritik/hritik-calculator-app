@@ -48,6 +48,8 @@ define ("reducers/appState",
       },
       resetTimeout: DEFAULT_RESET_TIMEOUT,
       browserIsMobile: false,
+      tags: [],
+      cif: {},
       sdkConfigOptions: {
         fullScreen: false,
         initialUserMessage: ""
@@ -174,6 +176,16 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_CONVERSATION_ENDED:
           return update (state, {
             conversationStarted: {$set: false}
+          });
+
+        case ACTION_TYPES.SET_CIF:
+          return update (state, {
+            cif: {$merge: action.cif}
+          });
+
+        case ACTION_TYPES.REPLACE_CIF:
+          return update (state, {
+            cif: {$set: action.cif}
           });
 
         default:
