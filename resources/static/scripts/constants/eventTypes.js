@@ -19,6 +19,8 @@ define ("constants/eventTypes",
       CMD_INITIALISE: "cmd-initialise",
       CMD_SET_CONFIG: "cmd-set-config",
       CMD_RESET: "cmd-reset",
-      CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message"
+      CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
+      CMD_SET_CIF: "cmd-set-cif",
+      CMD_REPLACE_CIF: "cmd-replace-cif"
     };
   });
