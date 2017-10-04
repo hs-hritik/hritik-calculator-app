@@ -12,10 +12,11 @@ define ("reducers/root",
     "reducers/chatView",
     "reducers/faqView",
     "reducers/csatView",
+    "reducers/businessHoursView",
     "constants/actionTypes"
   ],
   function (uiReducer, appStateReducer, entitiesReducer, chatViewReducer,
-    faqViewReducer, csatViewReducer, ACTION_TYPES) {
+    faqViewReducer, csatViewReducer, businessHoursViewReducer, ACTION_TYPES) {
     "use strict";
 
     const update = React.addons.update;
@@ -60,7 +61,8 @@ define ("reducers/root",
       entities: entitiesReducer,
       chatView: chatViewReducer,
       faqView: faqViewReducer,
-      csatView: csatViewReducer
+      csatView: csatViewReducer,
+      businessHoursViewState: businessHoursViewReducer
     }));
   }
 );

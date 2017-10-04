@@ -11,6 +11,7 @@ define ("constants/activeView",
     return {
       CHAT: "CHAT",
       FAQ: "FAQ",
-      CSAT: "CSAT"
+      CSAT: "CSAT",
+      BUSINESS_HOURS: "BUSINESS_HOURS"
     };
   });

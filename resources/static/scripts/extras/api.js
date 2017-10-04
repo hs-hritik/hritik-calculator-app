@@ -13,10 +13,11 @@ define ("extras/api",
     "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
+    "actions/actionCreators",
     "components/app"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
-    postSdkMessage, appStateActions, chatViewActions, app) {
+    postSdkMessage, appStateActions, chatViewActions, actionCreators, app) {
     "use strict";
 
     const {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS;
@@ -56,15 +57,20 @@ define ("extras/api",
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
-      const {appState, chatView} = store.getState ();
+      const {appState, chatView, businessHoursViewState} = store.getState ();
 
       if (!minimized) {
         if (!app.isMounted ()) {
           app.init ();
         }
 
-        // If conversation is not started, start the conversation
-        if (!appState.conversationStarted) {
+        // If out of business hours, show business hours view
+        // Else if conversation is not started, show the conversation view
+        if (businessHoursViewState.outOfBusinessHours) {
+          store.dispatch (
+            actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
+          );
+        } else if (!appState.conversationStarted) {
           appStateActions.startConversation ();
         }
 
