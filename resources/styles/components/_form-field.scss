@@ -1,0 +1,22 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - - - - -
+// Styles for the form field component
+// - - - - - - - - - - - - - - - - - -
+
+///
+/// @group formfield
+///
+
+@include component(form-field) {
+  .hs-form-field {
+    margin-bottom: gutter(12);
+
+    &__label {
+      font-size: font-size(body, small);
+      font-weight: 500;
+    }
+  }
+}

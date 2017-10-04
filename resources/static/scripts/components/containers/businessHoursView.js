@@ -15,7 +15,8 @@ define ("components/containers/businessHoursView",
     const mapStateToProps = (state) => {
       const {contactFormDetails} = state.businessHoursViewState;
       return {
-        contactFormDetails
+        contactFormDetails,
+        text: state.ui.text
       };
     };
 
