@@ -33,7 +33,10 @@ define ("reducers/ui",
         csatLinkCaption: "Take Survey",
         csatViewHeader: "Chat with us",
         infoBotRequestMsg: "Before we begin, we need some more information.",
-        branding: "Powered by Helpshift"
+        branding: "Powered by Helpshift",
+        businessHoursNameLabel: "Name",
+        businessHoursEmailLabel: "Email",
+        businessHoursMessageLabel: "Message"
       },
       color: {
         primary: "#43BF6C"
