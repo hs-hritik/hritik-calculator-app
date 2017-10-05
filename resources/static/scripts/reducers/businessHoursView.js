@@ -17,6 +17,7 @@ define ("reducers/businessHoursView",
 
     const INITIAL_STATE = {
       outOfBusinessHours: false,
+      offlineBehaviour: "",
       contactFormDetails: {
         name: {
           enabled: true,
@@ -51,8 +52,9 @@ define ("reducers/businessHoursView",
           return update (state, {
             // @TODO :- Verify name of key from backend
             // outOfBusinessHours: {$set: action.config.out_of_business_hours}
-            // @NOTE :- Setting true for local testing
-            outOfBusinessHours: {$set: true}
+            // @NOTE :- Setting default values for local testing
+            outOfBusinessHours: {$set: true},
+            offlineBehaviour: {$set: "contact_form"}
             // @TODO :- Add field's enabled property after backend integration
           });
 

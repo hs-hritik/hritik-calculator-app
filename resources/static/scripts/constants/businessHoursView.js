@@ -14,8 +14,14 @@ define ("constants/businessHoursView",
       MESSAGE: "message"
     };
 
+    const OFFLINE_BEHAVIOUR = {
+      CONTACT_FORM: "contact_form",
+      OFFLINE_MESSAGE: "offline_message"
+    };
+
     return {
-      CONTACT_FORM_FIELDS
+      CONTACT_FORM_FIELDS,
+      OFFLINE_BEHAVIOUR
     };
   }
 );

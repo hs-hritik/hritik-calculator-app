@@ -13,10 +13,11 @@ define ("components/containers/businessHoursView",
     "use strict";
 
     const mapStateToProps = (state) => {
-      const {contactFormDetails} = state.businessHoursViewState;
+      const {contactFormDetails, offlineBehaviour} = state.businessHoursViewState;
       return {
         contactFormDetails,
-        text: state.ui.text
+        text: state.ui.text,
+        offlineBehaviour
       };
     };
 

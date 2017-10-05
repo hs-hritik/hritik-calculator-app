@@ -25,6 +25,7 @@ define ("components/businessHoursView",
     }).isRequired;
 
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
+    const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
 
     return React.createClass ({
       displayName: "BusinessHoursView",
@@ -39,6 +40,7 @@ define ("components/businessHoursView",
           email: FORM_FIELD_PROP_TYPE,
           message: FORM_FIELD_PROP_TYPE
         }).isRequired,
+        offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
         onMinimizeConversation: PropTypes.func.isRequired,
         onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
         onSubmitBusinessHoursContactForm: PropTypes.func.isRequired
@@ -55,25 +57,57 @@ define ("components/businessHoursView",
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
-              <div className="hs-business-hours">
-                <div>
-                  <p>
-                    We are currently out of business hours.
-                  </p>
-                  {this._renderFormField (NAME)}
-                  {this._renderFormField (EMAIL)}
-                  {this._renderFormField (MESSAGE)}
-                  <Branding text={text} />
-                </div>
-
-                <div className="hs-business-hours__submit-btn-wrapper">
-                  <button className="hs-business-hours__submit-btn hs-button"
-                          onClick={this._onSendButtonClick} >
-                    Send
-                  </button>
-                </div>
-              </div>
+              {this._renderContactForm ()}
+              {this._renderOfflineMessage ()}
             </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render business hours contact form
+       */
+      _renderContactForm () {
+        if (this.props.offlineBehaviour !== CONTACT_FORM) {
+          return null;
+        }
+
+        // @TODO :- Read info message and the button text from text props
+        const {text} = this.props;
+        return (
+          <div className="hs-business-hours">
+            <div>
+              <p>
+                We are currently out of business hours.
+              </p>
+              {this._renderFormField (NAME)}
+              {this._renderFormField (EMAIL)}
+              {this._renderFormField (MESSAGE)}
+              <Branding text={text} />
+            </div>
+
+            <div className="hs-business-hours__submit-btn-wrapper">
+              <button className="hs-business-hours__submit-btn hs-button"
+                      onClick={this._onSendButtonClick} >
+                Send
+              </button>
+            </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render offline message
+       */
+      _renderOfflineMessage () {
+        if (this.props.offlineBehaviour !== OFFLINE_MESSAGE) {
+          return null;
+        }
+
+        // @TODO :- Add message and close button after backend integration
+        return (
+          <div className="hs-business-hours">
+            Placeholder contents
           </div>
         );
       },
