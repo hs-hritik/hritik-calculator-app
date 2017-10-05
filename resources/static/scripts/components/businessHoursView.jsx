@@ -8,15 +8,20 @@ define ("components/businessHoursView",
   [
     "components/commons/viewHeader",
     "components/commons/branding",
-    "constants/businessHoursView"
+    "constants/businessHoursView",
+    "gunpowder/utils/classes"
   ],
-  function (ViewHeader, Branding, BUSINESS_HOURS_CONTANTS) {
+  function (ViewHeader, Branding, BUSINESS_HOURS_CONTANTS, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
     const FORM_FIELD_PROP_TYPE = PropTypes.shape ({
       enabled: PropTypes.bool,
-      value: PropTypes.string
+      value: PropTypes.shape ({
+        name: PropTypes.string,
+        value: PropTypes.string,
+        validations: PropTypes.array
+      }).isRequired
     }).isRequired;
 
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
@@ -42,6 +47,7 @@ define ("components/businessHoursView",
         const {text, browserIsMobile, onMinimizeConversation} = this.props;
         // @TODO :- Add following
         // 1] Add business hours note
+        // 2] Add error icon on formfield
 
         return (
           <div className="hs-view">
@@ -92,7 +98,9 @@ define ("components/businessHoursView",
             formFieldLabel = text.businessHoursNameLabel;
             inputEl = (
               <input type="text"
-                     value={formField.value}
+                     className="hs-form-field__input"
+                     placeholder={text.businessHoursNamePlaceholder}
+                     value={formField.value.value}
                      onChange={this._onNameChange} />
             );
             break;
@@ -101,7 +109,9 @@ define ("components/businessHoursView",
             formFieldLabel = text.businessHoursEmailLabel;
             inputEl = (
               <input type="text"
-                     value={formField.value}
+                     className="hs-form-field__input"
+                     placeholder={text.businessHoursEmailPlaceholder}
+                     value={formField.value.value}
                      onChange={this._onEmailChange} />
             );
             break;
@@ -109,15 +119,22 @@ define ("components/businessHoursView",
           case MESSAGE:
             formFieldLabel = text.businessHoursMessageLabel;
             inputEl = (
-              <textarea className="hs-business-hours__message"
-                        value={formField.value}
+              <textarea className="hs-form-field__input hs-business-hours__message"
+                        placeholder={text.businessHoursMessagePlaceholder}
+                        value={formField.value.value}
                         onChange={this._onMessageChange} />
             );
             break;
         }
 
+        const formFieldClasses = classes (
+          "hs-form-field", {
+            "hs-form-field--error": !!formField.value.errorMsg
+          }
+        );
+
         return (
-          <div className="hs-form-field">
+          <div className={formFieldClasses}>
             <div className="hs-form-field__label">{formFieldLabel}</div>
             {inputEl}
           </div>

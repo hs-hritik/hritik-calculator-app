@@ -23,7 +23,7 @@ define ("components/containers/businessHoursView",
     const mapDispatchToProps = (dispatch) => {
       return {
         onChangeBusinessHoursContactFormDetails (field, value) {
-          dispatch (businessHoursActions.setBusinessHoursContactFormDetails (field, value));
+          dispatch (businessHoursActions.setBusinessHoursContactFormDetails ({field, value}));
         },
         onSubmitBusinessHoursContactForm () {
           dispatch (businessHoursActions.submitBusinessHoursContactForm ());

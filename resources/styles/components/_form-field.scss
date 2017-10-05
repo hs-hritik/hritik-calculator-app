@@ -18,5 +18,11 @@
       font-size: font-size(body, small);
       font-weight: 500;
     }
+
+    &--error {
+      .hs-form-field__input {
+        border-color: color(error, border);
+      }
+    }
   }
 }

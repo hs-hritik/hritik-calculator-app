@@ -6,10 +6,14 @@
 
 define ("actions/businessHours",
   [
-    "constants/actionTypes"
+    "constants/actionTypes",
+    "actions/batch",
+    "gunpowder/utils/schema"
   ],
-  function (ACTION_TYPES) {
+  function (ACTION_TYPES, batchActions, schema) {
     "use strict";
+
+    const {Input} = schema;
 
     /**
      * Action to set out of business hours boolean
@@ -26,23 +30,69 @@ define ("actions/businessHours",
 
     /**
      * Action to set business hours contact form details
-     * @param {String} field - Name of formfield
-     * @param {String} value - value of formfield
+     * @param {Object} config - Config of formfield
+     * @param {String} config.field - filed name of formfield
+     * @param {String} config.value - value of formfield
+     * @param {String} config.errorMsg - error message of formfield
      * @returns {Object} - Action
      */
-    const setBusinessHoursContactFormDetails = (field, value) => {
+    const setBusinessHoursContactFormDetails = (config) => {
+      const {field, value, errorMsg} = config;
       return {
         type: ACTION_TYPES.SET_BUSINESS_HOURS_CONTACT_FORM_DETAILS,
         field,
-        value
+        value,
+        errorMsg
       };
+    };
+
+    /**
+     * Return Array of action with formfield errors
+     * @param {Object} businessHoursState - state of businessHours
+     * @returns {Array} - Array of actions
+     */
+    const getContactFormErrors = (businessHoursState) => {
+      const {contactFormDetails} = businessHoursState;
+      const formErrors = [];
+
+      for (const contactFormKey in contactFormDetails) {
+        if (contactFormDetails.hasOwnProperty (contactFormKey)) {
+          const formField = contactFormDetails [contactFormKey];
+
+          if (formField.enabled) {
+            const input = new Input (formField.value);
+            const inputError = input.isValid ();
+
+            if (inputError) {
+              formErrors.push (
+                setBusinessHoursContactFormDetails ({
+                  field: contactFormKey,
+                  errorMsg: inputError
+                })
+              );
+            }
+          }
+        }
+      }
+
+      return formErrors;
     };
 
     /**
      * Action to save business hours contact form details
      */
     const submitBusinessHoursContactForm = () => {
-      // @TODO :- Fire xhr and save the user info
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {businessHoursViewState} = state;
+        const formErrors = getContactFormErrors (businessHoursViewState);
+
+        if (formErrors.length) {
+          dispatch (batchActions (formErrors));
+          return;
+        }
+        // @TODO :- Fire xhr and save info
+      };
     };
 
     return {

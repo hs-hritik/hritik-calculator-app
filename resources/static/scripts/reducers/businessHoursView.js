@@ -6,27 +6,41 @@
 
 define ("reducers/businessHoursView",
   [
-    "constants/actionTypes"
+    "constants/actionTypes",
+    "constants/businessHoursView"
   ],
-  function (ACTION_TYPES) {
+  function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS) {
     "use strict";
 
     const update = React.addons.update;
+    const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONSTANTS.CONTACT_FORM_FIELDS;
 
     const INITIAL_STATE = {
       outOfBusinessHours: false,
       contactFormDetails: {
         name: {
           enabled: true,
-          value: ""
+          value: {
+            name: NAME,
+            value: "",
+            validations: ["required"]
+          }
         },
         email: {
           enabled: true,
-          value: ""
+          value: {
+            name: EMAIL,
+            value: "",
+            validations: ["required", "email"]
+          }
         },
         message: {
           enabled: true,
-          value: ""
+          value: {
+            name: MESSAGE,
+            value: "",
+            validations: ["required"]
+          }
         }
       }
     };
@@ -36,7 +50,7 @@ define ("reducers/businessHoursView",
         case ACTION_TYPES.SET_WM_CONFIG:
           return update (state, {
             // @TODO :- Verify name of key from backend
-            // outOfBusinessHours: {$set: config.out_of_business_hours}
+            // outOfBusinessHours: {$set: action.config.out_of_business_hours}
             // @NOTE :- Setting true for local testing
             outOfBusinessHours: {$set: true}
             // @TODO :- Add field's enabled property after backend integration
@@ -49,10 +63,20 @@ define ("reducers/businessHoursView",
           });
 
         case ACTION_TYPES.SET_BUSINESS_HOURS_CONTACT_FORM_DETAILS:
+          const valueUpdateObj = {};
+
+          if (action.hasOwnProperty ("value")) {
+            valueUpdateObj.value = {$set: action.value};
+          }
+
+          if (action.hasOwnProperty ("errorMsg")) {
+            valueUpdateObj.errorMsg = {$set: action.errorMsg};
+          }
+
           return update (state, {
             contactFormDetails: {
               [action.field]: {
-                value: {$set: action.value}
+                value: valueUpdateObj
               }
             }
           });

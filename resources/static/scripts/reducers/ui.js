@@ -36,7 +36,10 @@ define ("reducers/ui",
         branding: "Powered by Helpshift",
         businessHoursNameLabel: "Name",
         businessHoursEmailLabel: "Email",
-        businessHoursMessageLabel: "Message"
+        businessHoursMessageLabel: "Message",
+        businessHoursNamePlaceholder: "Enter your name",
+        businessHoursEmailPlaceholder: "john@example.com",
+        businessHoursMessagePlaceholder: "Write your message"
       },
       color: {
         primary: "#43BF6C"
