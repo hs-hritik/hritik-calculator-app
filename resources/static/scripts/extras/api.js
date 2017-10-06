@@ -64,9 +64,11 @@ define ("extras/api",
           app.init ();
         }
 
-        // If out of business hours, show business hours view
-        // Else if conversation is not started, show the conversation view
-        if (businessHoursViewState.outOfBusinessHours) {
+        // If business hours enabled and currently not in business hours,
+        // then show business hours view
+        // Else if conversation is not started, show conversation view
+        if (businessHoursViewState.businessHoursEnabled &&
+            !businessHoursViewState.inBusinessHours) {
           store.dispatch (
             actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
           );

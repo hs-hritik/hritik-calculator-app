@@ -16,7 +16,8 @@ define ("reducers/businessHoursView",
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONSTANTS.CONTACT_FORM_FIELDS;
 
     const INITIAL_STATE = {
-      outOfBusinessHours: false,
+      businessHoursEnabled: false,
+      inBusinessHours: false,
       offlineBehaviour: "",
       contactFormDetails: {
         name: {
@@ -49,20 +50,30 @@ define ("reducers/businessHoursView",
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
-          return update (state, {
-            // @TODO :- Verify name of key from backend
-            // outOfBusinessHours: {$set: action.config.out_of_business_hours}
-            // @NOTE :- Setting default values for local testing
-            outOfBusinessHours: {$set: true},
-            offlineBehaviour: {$set: "contact_form"}
-            // @TODO :- Add field's enabled property after backend integration
-          });
+          const businessHoursEnabled = action.config.business_hours_enabled;
+          const updateObject = {
+            businessHoursEnabled: {$set: businessHoursEnabled},
+            inBusinessHours: {$set: action.config.in_business_hours}
+          };
 
-        // @TODO :- Verify if this case is required
-        case ACTION_TYPES.SET_OUT_OF_BUSINESS_HOURS:
-          return (state, {
-            outOfBusinessHours: {$set: action.enabled}
-          });
+          if (businessHoursEnabled) {
+            const businessHours = action.config.business_hours;
+            updateObject.offlineBehaviour = {$set: businessHours.offline_behavior};
+
+            updateObject.contactFormDetails = {
+              name: {
+                enabled: {$set: businessHours.cf_fields.name}
+              },
+              email: {
+                enabled: {$set: businessHours.cf_fields.email}
+              },
+              message: {
+                enabled: {$set: businessHours.cf_fields.message}
+              }
+            };
+          }
+
+          return update (state, updateObject);
 
         case ACTION_TYPES.SET_BUSINESS_HOURS_CONTACT_FORM_DETAILS:
           const valueUpdateObj = {};

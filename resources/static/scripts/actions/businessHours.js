@@ -16,19 +16,6 @@ define ("actions/businessHours",
     const {Input} = schema;
 
     /**
-     * Action to set out of business hours boolean
-     * @param {Boolean} enabled - business hours enabled
-     * @returns {Object} - Action
-     */
-    // @TODO :- Verify if this action is required
-    const setOutOfBusinessHours = (enabled) => {
-      return {
-        type: ACTION_TYPES.SET_OUT_OF_BUSINESS_HOURS,
-        enabled
-      };
-    };
-
-    /**
      * Action to set business hours contact form details
      * @param {Object} config - Config of formfield
      * @param {String} config.field - filed name of formfield
@@ -96,7 +83,6 @@ define ("actions/businessHours",
     };
 
     return {
-      setOutOfBusinessHours,
       setBusinessHoursContactFormDetails,
       submitBusinessHoursContactForm
     };

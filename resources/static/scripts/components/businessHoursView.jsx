@@ -32,8 +32,11 @@ define ("components/businessHoursView",
       propTypes: {
         browserIsMobile: PropTypes.bool.isRequired,
         text: PropTypes.shape ({
-          // @TODO :- Replace this with business hours header text
-          chatViewHeader: PropTypes.string.isRequired
+          closeConversationBtn: PropTypes.string.isRequired,
+          businessHoursSubmitBtn: PropTypes.string.isRequired,
+          businessHoursViewHeader: PropTypes.string.isRequired,
+          businessHoursContactFormMessage: PropTypes.string.isRequired,
+          businessHoursOfflineMessage: PropTypes.string.isRequired
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
           name: FORM_FIELD_PROP_TYPE,
@@ -48,12 +51,11 @@ define ("components/businessHoursView",
       render () {
         const {text, browserIsMobile, onMinimizeConversation} = this.props;
         // @TODO :- Add following
-        // 1] Add business hours note
-        // 2] Add error icon on formfield
+        // 1] Add error icon on formfield
 
         return (
           <div className="hs-view">
-            <ViewHeader title={text.chatViewHeader}
+            <ViewHeader title={text.businessHoursViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
@@ -72,14 +74,12 @@ define ("components/businessHoursView",
           return null;
         }
 
-        // @TODO :- Read info message and the button text from text props
         const {text} = this.props;
+
         return (
           <div className="hs-business-hours">
             <div>
-              <p>
-                We are currently out of business hours.
-              </p>
+              <p>{text.businessHoursContactFormMessage}</p>
               {this._renderFormField (NAME)}
               {this._renderFormField (EMAIL)}
               {this._renderFormField (MESSAGE)}
@@ -89,7 +89,7 @@ define ("components/businessHoursView",
             <div className="hs-business-hours__submit-btn-wrapper">
               <button className="hs-business-hours__submit-btn hs-button"
                       onClick={this._onSendButtonClick} >
-                Send
+                {text.businessHoursSubmitBtn}
               </button>
             </div>
           </div>
@@ -104,10 +104,17 @@ define ("components/businessHoursView",
           return null;
         }
 
-        // @TODO :- Add message and close button after backend integration
+        const {text} = this.props;
+
         return (
           <div className="hs-business-hours">
-            Placeholder contents
+            <p>{text.businessHoursOfflineMessage}</p>
+            <div className="hs-business-hours__submit-btn-wrapper">
+              <button className="hs-button hs-business-hours__submit-btn"
+                      onClick={this.props.onMinimizeConversation} >
+                {text.closeConversationBtn}
+              </button>
+            </div>
           </div>
         );
       },
