@@ -7,10 +7,16 @@
 define ("actions/businessHours",
   [
     "constants/actionTypes",
+    "constants/routes",
+    "actions/chatView",
+    "actions/actionCreators",
     "actions/batch",
-    "gunpowder/utils/schema"
+    "helpers/xhr",
+    "gunpowder/utils/schema",
+    "gunpowder/utils/xhr"
   ],
-  function (ACTION_TYPES, batchActions, schema) {
+  function (ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
+    xhrHelpers, schema, xhr) {
     "use strict";
 
     const {Input} = schema;
@@ -66,19 +72,124 @@ define ("actions/businessHours",
     };
 
     /**
+     * Action to set issue created flag as true
+     * @returns {Object} - Action
+     */
+    const setBusinessHoursFormSubmitted = () => {
+      return {
+        type: ACTION_TYPES.SET_BUSINESS_HOURS_FORM_SUBMITTED
+      };
+    };
+
+    /**
+     * Action to set business hours form enabled
+     * @returns {Object} - Action
+     */
+    const enableBusinessHoursContactForm = () => {
+      return {
+        type: ACTION_TYPES.ENABLE_BUSINESS_HOURS_CONTACT_FORM
+      };
+    };
+
+    /**
+     * Action to set business hours form disabled
+     * @returns {Object} - Action
+     */
+    const disableBusinessHoursContactForm = () => {
+      return {
+        type: ACTION_TYPES.DISABLE_BUSINESS_HOURS_CONTACT_FORM
+      };
+    };
+
+    /**
+     * Create issue for out of business hour
+     * @param {Function} dispatch - dispatch
+     * @param {Object} state - state
+     */
+    const createIssue = (config) => {
+      const {id, platformId, message, inBusinessHours, tags, cif, domain,
+             onSuccess, onEnd} = config;
+
+      const xhrData = {
+        "identifier": id,
+        "platform-id": platformId,
+        "message-body": message,
+        "in_business_hours": inBusinessHours
+      };
+
+      if (tags) {
+        xhrData.meta = JSON.stringify ({
+          custom_meta: {
+            "hs-tags": tags
+          }
+        });
+      }
+
+      // If cif is set and contains atleast one field, add to xhr data
+      if (cif && Object.keys (cif).length) {
+        xhrData.custom_fields = JSON.stringify (cif);
+      }
+
+      xhr ({
+        route: routes.postIssue (domain),
+        method: "POST",
+        data: xhrData,
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess,
+        onEnd
+      });
+    };
+
+    /**
      * Action to save business hours contact form details
      */
     const submitBusinessHoursContactForm = () => {
       return (dispatch, getState) => {
         const state = getState ();
-        const {businessHoursViewState} = state;
+        const {businessHoursViewState, appState} = state;
         const formErrors = getContactFormErrors (businessHoursViewState);
 
         if (formErrors.length) {
           dispatch (batchActions (formErrors));
           return;
         }
-        // @TODO :- Fire xhr and save info
+
+        const {contactFormDetails} = businessHoursViewState;
+
+        dispatch (disableBusinessHoursContactForm ());
+
+        chatViewActions.registerUserProfile ({
+          identifier: appState.identifier,
+          name: contactFormDetails.name.value.value,
+          email: contactFormDetails.email.value.value
+        },
+        appState.domain, {
+          onSuccess: (response) => {
+            // @TODO :- Create a util for firing xhrs.
+            // Move registerUserProfile from chatViewActions to util
+            // Remove createIssue method from here and from chat view actions
+            const profileId = response ["profile-id"];
+            const {tags, cif} = appState;
+            const message = contactFormDetails.message.value.value;
+
+            dispatch (actionCreators.setUserProfileId (profileId));
+            createIssue ({
+              id: response.identifier,
+              platformId: appState.platformId,
+              domain: appState.domain,
+              message,
+              inBusinessHours: businessHoursViewState.inBusinessHours,
+              tags,
+              cif,
+              onSuccess: () => {
+                dispatch (setBusinessHoursFormSubmitted ());
+              },
+              onEnd: () => {
+                dispatch (enableBusinessHoursContactForm ());
+              }
+            });
+          }
+        });
       };
     };
 

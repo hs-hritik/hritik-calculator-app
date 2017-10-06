@@ -17,8 +17,10 @@ define ("reducers/businessHoursView",
 
     const INITIAL_STATE = {
       businessHoursEnabled: false,
-      inBusinessHours: false,
+      inBusinessHours: true,
       offlineBehaviour: "",
+      contactFormDisabled: false,
+      contactFormSubmitted: false,
       contactFormDetails: {
         name: {
           enabled: true,
@@ -92,6 +94,21 @@ define ("reducers/businessHoursView",
                 value: valueUpdateObj
               }
             }
+          });
+
+        case ACTION_TYPES.ENABLE_BUSINESS_HOURS_CONTACT_FORM:
+          return update (state, {
+            contactFormDisabled: {$set: false}
+          });
+
+        case ACTION_TYPES.DISABLE_BUSINESS_HOURS_CONTACT_FORM:
+          return update (state, {
+            contactFormDisabled: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_BUSINESS_HOURS_FORM_SUBMITTED:
+          return update (state, {
+            contactFormSubmitted: {$set: true}
           });
 
         default:

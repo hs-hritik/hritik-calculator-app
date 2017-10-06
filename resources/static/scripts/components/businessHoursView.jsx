@@ -36,7 +36,8 @@ define ("components/businessHoursView",
           businessHoursSubmitBtn: PropTypes.string.isRequired,
           businessHoursViewHeader: PropTypes.string.isRequired,
           businessHoursContactFormMessage: PropTypes.string.isRequired,
-          businessHoursOfflineMessage: PropTypes.string.isRequired
+          businessHoursOfflineMessage: PropTypes.string.isRequired,
+          businessHoursThankYouMessage: PropTypes.string.isRequired
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
           name: FORM_FIELD_PROP_TYPE,
@@ -46,12 +47,15 @@ define ("components/businessHoursView",
         offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
         onMinimizeConversation: PropTypes.func.isRequired,
         onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
-        onSubmitBusinessHoursContactForm: PropTypes.func.isRequired
+        onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
+        contactFormSubmitted: PropTypes.bool.isRequired,
+        contactFormDisabled: PropTypes.bool.isRequired
       },
       render () {
         const {text, browserIsMobile, onMinimizeConversation} = this.props;
         // @TODO :- Add following
         // 1] Add error icon on formfield
+        // 2] Center align info message
 
         return (
           <div className="hs-view">
@@ -70,11 +74,11 @@ define ("components/businessHoursView",
        * Render business hours contact form
        */
       _renderContactForm () {
-        if (this.props.offlineBehaviour !== CONTACT_FORM) {
+        const {text, offlineBehaviour, contactFormSubmitted, contactFormDisabled} = this.props;
+
+        if (offlineBehaviour !== CONTACT_FORM || contactFormSubmitted) {
           return null;
         }
-
-        const {text} = this.props;
 
         return (
           <div className="hs-business-hours">
@@ -88,6 +92,7 @@ define ("components/businessHoursView",
 
             <div className="hs-business-hours__submit-btn-wrapper">
               <button className="hs-business-hours__submit-btn hs-button"
+                      disabled={contactFormDisabled}
                       onClick={this._onSendButtonClick} >
                 {text.businessHoursSubmitBtn}
               </button>
@@ -100,18 +105,21 @@ define ("components/businessHoursView",
        * Render offline message
        */
       _renderOfflineMessage () {
-        if (this.props.offlineBehaviour !== OFFLINE_MESSAGE) {
+        const {offlineBehaviour, contactFormSubmitted, text, onMinimizeConversation} = this.props;
+
+        if (offlineBehaviour !== OFFLINE_MESSAGE && !contactFormSubmitted) {
           return null;
         }
 
-        const {text} = this.props;
+        const infoMessage = contactFormSubmitted ? text.businessHoursThankYouMessage :
+                            text.businessHoursOfflineMessage;
 
         return (
           <div className="hs-business-hours">
-            <p>{text.businessHoursOfflineMessage}</p>
+            <p>{infoMessage}</p>
             <div className="hs-business-hours__submit-btn-wrapper">
               <button className="hs-button hs-business-hours__submit-btn"
-                      onClick={this.props.onMinimizeConversation} >
+                      onClick={onMinimizeConversation} >
                 {text.closeConversationBtn}
               </button>
             </div>
@@ -130,7 +138,7 @@ define ("components/businessHoursView",
           return null;
         }
 
-        const {text} = this.props;
+        const {text, contactFormDisabled} = this.props;
         let formFieldLabel = "";
         let inputEl = null;
 
@@ -139,6 +147,7 @@ define ("components/businessHoursView",
             formFieldLabel = text.businessHoursNameLabel;
             inputEl = (
               <input type="text"
+                     disabled={contactFormDisabled}
                      className="hs-form-field__input"
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
@@ -150,6 +159,7 @@ define ("components/businessHoursView",
             formFieldLabel = text.businessHoursEmailLabel;
             inputEl = (
               <input type="text"
+                     disabled={contactFormDisabled}
                      className="hs-form-field__input"
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
@@ -161,6 +171,7 @@ define ("components/businessHoursView",
             formFieldLabel = text.businessHoursMessageLabel;
             inputEl = (
               <textarea className="hs-form-field__input hs-business-hours__message"
+                        disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
                         onChange={this._onMessageChange} />
