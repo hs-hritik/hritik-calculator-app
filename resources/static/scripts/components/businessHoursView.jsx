@@ -53,9 +53,6 @@ define ("components/businessHoursView",
       },
       render () {
         const {text, browserIsMobile, onMinimizeConversation} = this.props;
-        // @TODO :- Add following
-        // 1] Add error icon on formfield
-        // 2] Center align info message
 
         return (
           <div className="hs-view">
@@ -141,6 +138,7 @@ define ("components/businessHoursView",
         const {text, contactFormDisabled} = this.props;
         let formFieldLabel = "";
         let inputEl = null;
+        let errorIconEl = null;
 
         switch (fieldName) {
           case NAME:
@@ -185,10 +183,17 @@ define ("components/businessHoursView",
           }
         );
 
+        if (formField.value.errorMsg) {
+          errorIconEl = (
+            <i className="ion-alert-circled hs-form-field__error-icon" />
+          );
+        }
+
         return (
           <div className={formFieldClasses}>
             <div className="hs-form-field__label">{formFieldLabel}</div>
             {inputEl}
+            {errorIconEl}
           </div>
         );
       },
