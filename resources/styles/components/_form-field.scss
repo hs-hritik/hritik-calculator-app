@@ -1,0 +1,39 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - - - - -
+// Styles for the form field component
+// - - - - - - - - - - - - - - - - - -
+
+///
+/// @group formfield
+///
+
+@include component(form-field) {
+
+  $error-icon-color: color(error, text);
+
+  .hs-form-field {
+    position: relative;
+    margin-bottom: gutter(12);
+
+    &__label {
+      font-size: font-size(body, small);
+      font-weight: 500;
+    }
+
+    &--error {
+      .hs-form-field__input {
+        border-color: color(error, border);
+      }
+    }
+
+    &__error-icon {
+      position: absolute;
+      top: 28px;
+      right: 4px;
+      color: $error-icon-color;
+    }
+  }
+}

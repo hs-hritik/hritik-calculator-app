@@ -1282,6 +1282,7 @@ define ("actions/chatView",
       updateIssueState,
       markMessagesSeen,
       switchToChatView,
-      createInitialUserMessage
+      createInitialUserMessage,
+      registerUserProfile
     };
   });

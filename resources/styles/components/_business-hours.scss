@@ -1,0 +1,34 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - - - - -
+// Styles for the business hours view
+// - - - - - - - - - - - - - - - - - -
+
+///
+/// @group business hours
+///
+
+@include component(business-hours) {
+  .hs-business-hours {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: gutter(20);
+
+    &__message {
+      resize: none;
+    }
+
+    &__submit-btn-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+
+    &__submit-btn {
+      border-radius: 18px;
+    }
+  }
+}
