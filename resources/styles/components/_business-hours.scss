@@ -11,6 +11,7 @@
 ///
 
 @include component(business-hours) {
+
   .hs-business-hours {
     display: flex;
     flex: 1 1 auto;
@@ -20,15 +21,6 @@
 
     &__message {
       resize: none;
-    }
-
-    &__submit-btn-wrapper {
-      display: flex;
-      justify-content: center;
-    }
-
-    &__submit-btn {
-      border-radius: 18px;
     }
   }
 }

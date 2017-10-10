@@ -63,6 +63,7 @@ define ("components/businessHoursView",
               {this._renderContactForm ()}
               {this._renderOfflineMessage ()}
             </div>
+            {this._renderFooter ()}
           </div>
         );
       },
@@ -71,7 +72,7 @@ define ("components/businessHoursView",
        * Render business hours contact form
        */
       _renderContactForm () {
-        const {text, offlineBehaviour, contactFormSubmitted, contactFormDisabled} = this.props;
+        const {text, offlineBehaviour, contactFormSubmitted} = this.props;
 
         if (offlineBehaviour !== CONTACT_FORM || contactFormSubmitted) {
           return null;
@@ -79,21 +80,11 @@ define ("components/businessHoursView",
 
         return (
           <div className="hs-business-hours">
-            <div>
-              <p>{text.businessHoursContactFormMessage}</p>
-              {this._renderFormField (NAME)}
-              {this._renderFormField (EMAIL)}
-              {this._renderFormField (MESSAGE)}
-              <Branding text={text} />
-            </div>
-
-            <div className="hs-business-hours__submit-btn-wrapper">
-              <button className="hs-business-hours__submit-btn hs-button"
-                      disabled={contactFormDisabled}
-                      onClick={this._onSendButtonClick} >
-                {text.businessHoursSubmitBtn}
-              </button>
-            </div>
+            <p>{text.businessHoursContactFormMessage}</p>
+            {this._renderFormField (NAME)}
+            {this._renderFormField (EMAIL)}
+            {this._renderFormField (MESSAGE)}
+            <Branding text={text} />
           </div>
         );
       },
@@ -102,7 +93,7 @@ define ("components/businessHoursView",
        * Render offline message
        */
       _renderOfflineMessage () {
-        const {offlineBehaviour, contactFormSubmitted, text, onMinimizeConversation} = this.props;
+        const {offlineBehaviour, contactFormSubmitted, text} = this.props;
 
         if (offlineBehaviour !== OFFLINE_MESSAGE && !contactFormSubmitted) {
           return null;
@@ -114,12 +105,34 @@ define ("components/businessHoursView",
         return (
           <div className="hs-business-hours">
             <p>{infoMessage}</p>
-            <div className="hs-business-hours__submit-btn-wrapper">
-              <button className="hs-button hs-business-hours__submit-btn"
-                      onClick={onMinimizeConversation} >
-                {text.closeConversationBtn}
-              </button>
-            </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render footer with button
+       */
+      _renderFooter () {
+        const {contactFormSubmitted, text, onMinimizeConversation,
+               contactFormDisabled, offlineBehaviour} = this.props;
+
+        let btnText, clickHandler;
+        if ((offlineBehaviour === CONTACT_FORM && contactFormSubmitted) ||
+             offlineBehaviour === OFFLINE_MESSAGE) {
+          btnText = text.closeConversationBtn;
+          clickHandler = onMinimizeConversation;
+        } else {
+          btnText = text.businessHoursSubmitBtn;
+          clickHandler = this._onSendButtonClick;
+        }
+
+        return (
+          <div className="hs-footer hs-footer--center-items hs-footer--clear-bg">
+            <button className="hs-button hs-footer__btn"
+                    disabled={contactFormDisabled}
+                    onClick={clickHandler} >
+              {btnText}
+            </button>
           </div>
         );
       },
