@@ -63,7 +63,6 @@ define ("components/businessHoursView",
               {this._renderContactForm ()}
               {this._renderOfflineMessage ()}
             </div>
-            {this._renderFooter ()}
           </div>
         );
       },
@@ -80,11 +79,14 @@ define ("components/businessHoursView",
 
         return (
           <div className="hs-business-hours">
-            <p>{text.businessHoursContactFormMessage}</p>
-            {this._renderFormField (NAME)}
-            {this._renderFormField (EMAIL)}
-            {this._renderFormField (MESSAGE)}
-            <Branding text={text} />
+            <div>
+              <p>{text.businessHoursContactFormMessage}</p>
+              {this._renderFormField (NAME)}
+              {this._renderFormField (EMAIL)}
+              {this._renderFormField (MESSAGE)}
+              <Branding text={text} />
+            </div>
+            {this._renderFooter ()}
           </div>
         );
       },
@@ -105,6 +107,10 @@ define ("components/businessHoursView",
         return (
           <div className="hs-business-hours">
             <p>{infoMessage}</p>
+            <div>
+              <Branding text={text} />
+              {this._renderFooter ()}
+            </div>
           </div>
         );
       },
