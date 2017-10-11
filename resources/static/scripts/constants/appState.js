@@ -41,10 +41,14 @@ define ("constants/appState",
     };
 
     const DEFAULT_RESET_TIMEOUT = 43200000;      // 12 hours
+    const MIN_RESET_TIMEOUT = 0;
+    const MAX_RESET_TIMEOUT = 168; // In hours. 1 week.
 
     return {
       ISSUE_STATE,
       PRE_CHAT_STATE,
-      DEFAULT_RESET_TIMEOUT
+      DEFAULT_RESET_TIMEOUT,
+      MIN_RESET_TIMEOUT,
+      MAX_RESET_TIMEOUT
     };
   });

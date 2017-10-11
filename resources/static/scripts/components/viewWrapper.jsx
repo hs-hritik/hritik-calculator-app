@@ -10,9 +10,11 @@ define ("components/viewWrapper",
     "components/containers/chatView",
     "components/containers/faqView",
     "components/containers/csatView",
+    "components/containers/businessHoursView",
     "extras/postSdkMessage"
   ],
-  function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer, postSdkMessage) {
+  function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer,
+    BusinessHoursViewContainer, postSdkMessage) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -46,6 +48,9 @@ define ("components/viewWrapper",
 
           case ACTIVE_VIEW.CSAT:
             return <CsatViewContainer {...commonProps} />;
+
+          case ACTIVE_VIEW.BUSINESS_HOURS:
+            return <BusinessHoursViewContainer {...commonProps} />;
 
           default:
             return null;

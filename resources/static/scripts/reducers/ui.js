@@ -33,7 +33,19 @@ define ("reducers/ui",
         csatLinkCaption: "Take Survey",
         csatViewHeader: "Chat with us",
         infoBotRequestMsg: "Before we begin, we need some more information.",
-        branding: "Powered by Helpshift"
+        branding: "Powered by Helpshift",
+        businessHoursNameLabel: "Name",
+        businessHoursEmailLabel: "Email",
+        businessHoursMessageLabel: "Message",
+        businessHoursNamePlaceholder: "Enter your name",
+        businessHoursEmailPlaceholder: "john@example.com",
+        businessHoursMessagePlaceholder: "Write your message",
+        businessHoursSubmitBtn: "Send",
+        businessHoursThankYouMessage: "Thanks for reaching out. We will get " +
+                                      "back to you soon.",
+        businessHoursViewHeader: "",
+        businessHoursContactFormMessage: "",
+        businessHoursOfflineMessage: ""
       },
       color: {
         primary: "#43BF6C"
@@ -45,13 +57,29 @@ define ("reducers/ui",
         case ACTION_TYPES.SET_WM_CONFIG:
           const {config} = action;
 
+          const textUpdateObj = {
+            greetingMsg: {$set: config.greeting},
+            chatViewHeader: {$set: config.appearance.widget_title},
+            csatViewHeader: {$set: config.appearance.widget_title},
+            csatBotRequestMsg: {$set: config.csat_bot.req_msg}
+          };
+          const businessHoursEnabled = config.business_hours_enabled;
+
+          if (businessHoursEnabled) {
+            const businessHours = config.business_hours;
+            textUpdateObj.businessHoursViewHeader = {
+              $set: businessHours.offline_title
+            };
+            textUpdateObj.businessHoursContactFormMessage = {
+              $set: businessHours.cf_message
+            };
+            textUpdateObj.businessHoursOfflineMessage = {
+              $set: businessHours.offline_message
+            };
+          }
+
           return update (state, {
-            text: {
-              greetingMsg: {$set: config.greeting},
-              chatViewHeader: {$set: config.appearance.widget_title},
-              csatViewHeader: {$set: config.appearance.widget_title},
-              csatBotRequestMsg: {$set: config.csat_bot.req_msg}
-            },
+            text: textUpdateObj,
             color: {
               primary: {$set: config.appearance.primary_color}
             }
