@@ -13,13 +13,14 @@ define ("extras/api",
     "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
+    "actions/actionCreators",
     "components/app"
   ],
-  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, postSdkMessage,
-    appStateActions, chatViewActions, app) {
+  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
+    postSdkMessage, appStateActions, chatViewActions, actionCreators, app) {
     "use strict";
 
-    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS;
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -56,11 +57,23 @@ define ("extras/api",
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
-      const {appState, chatView} = store.getState ();
+      const {appState, chatView, businessHoursViewState} = store.getState ();
 
       if (!minimized) {
         if (!app.isMounted ()) {
           app.init ();
+        }
+
+        // If business hours enabled and currently not in business hours,
+        // then show business hours view
+        // Else if conversation is not started, show conversation view
+        if (businessHoursViewState.businessHoursEnabled &&
+            !businessHoursViewState.inBusinessHours) {
+          store.dispatch (
+            actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
+          );
+        } else if (!appState.conversationStarted) {
+          appStateActions.startConversation ();
         }
 
         // If unreadCount isn't zero and active view is chat view,
@@ -77,6 +90,36 @@ define ("extras/api",
       }
     };
 
+    /**
+     * Handle intial user message
+     * @param {String} message - initial user message
+     */
+    const handleInitialUserMsg = (message) => {
+      const state = store.getState ();
+      const {appState} = state;
+
+      // If issue state is not pre chat, don't save initial message in store
+      // and dont create initial user message
+      if (appState.issueState !== ISSUE_STATE.PRE_CHAT) {
+        return;
+      }
+
+      // Set initial user message in store
+      store.dispatch (appStateActions.setInitialUserMsg (message));
+
+      const currentPreChatFeature = appState.preChatFeatureOrder [appState.preChatFeatureIndex];
+      // Create initial user message if :-
+      // a] current prechat feature is "initialUserMessage"
+      // b] prechat feature "initialUserMessage" is enabled (currently always enabled)
+      // c] state of "initialUserMessage" is INITIAL
+      if ((currentPreChatFeature === "initialUserMessage") &&
+          (appState.featuresEnabled.initialUserMessage) &&
+          (appState.preChatFeatureState [currentPreChatFeature] ===
+           PRE_CHAT_STATE.initialUserMessage.INITIAL)) {
+        store.dispatch (chatViewActions.createInitialUserMessage (message));
+      }
+    };
+
     const handleApis = (type, data) => {
       switch (type) {
         case EVENT_TYPES.CMD_SET_CONFIG:
@@ -90,6 +133,15 @@ define ("extras/api",
           break;
         case EVENT_TYPES.CMD_RESET:
           store.dispatch (appStateActions.reset ());
+          break;
+        case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
+          handleInitialUserMsg (data.message);
+          break;
+        case EVENT_TYPES.CMD_SET_CIF:
+          store.dispatch (appStateActions.setCif (data.cifData));
+          break;
+        case EVENT_TYPES.CMD_REPLACE_CIF:
+          store.dispatch (appStateActions.replaceCif (data.cifData));
           break;
       }
     };

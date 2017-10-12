@@ -1,0 +1,14 @@
+Branches:
+feature/business-hours
+feature/reset-timeout
+
+Changelog:
+Add error icon for fromfield error
+Integrate create issue xhr
+Integrate business hours data from config api
+Add offline message depeding upon behaviour
+Add contact form validation
+Add handlers in business hours view
+Update reset timeout value from helpshiftConfig
+Add layout and css for business hours view
+Add business hours container, view, actions, reducer

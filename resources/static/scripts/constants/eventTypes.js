@@ -13,10 +13,14 @@ define ("constants/eventTypes",
       SDK_CONFIG_LOADED: "sdk-config-loaded",
       SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
       SDK_RESET: "sdk-reset",
-      UPDATE_UNREAD_COUNT: "update-unread-count",
+      SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
+      SDK_EVENT_CHAT_END: "sdk-event-chat-end",
       CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
       CMD_INITIALISE: "cmd-initialise",
       CMD_SET_CONFIG: "cmd-set-config",
-      CMD_RESET: "cmd-reset"
+      CMD_RESET: "cmd-reset",
+      CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
+      CMD_SET_CIF: "cmd-set-cif",
+      CMD_REPLACE_CIF: "cmd-replace-cif"
     };
   });

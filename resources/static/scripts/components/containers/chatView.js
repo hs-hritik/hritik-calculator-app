@@ -59,10 +59,7 @@ define ("components/containers/chatView",
           dispatch (chatViewActions.submitInfoBotField ());
         },
         onCloseConversation: () => {
-          dispatch (appStateActions.reset ({
-            skipUser: true,
-            minimizeMessenger: true
-          }));
+          dispatch (appStateActions.closeConversation ());
         },
         onStartCsatSurveyClick: () => {
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));

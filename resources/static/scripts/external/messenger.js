@@ -15,7 +15,7 @@
 
   const urlParts = WEB_CHAT_ROOT.split ("://"),
         PROTOCOL = `${urlParts [0]}://`,
-        PLAT_ID = window.helpshiftConfig.platformId,
+        PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
         PATH = "/html/";
 
@@ -24,7 +24,12 @@
 
   const state = {
     unreadCount: 0,
-    cssConfig: {}
+    widgetOptions: {
+      showLauncher: true,
+      fullScreen: false
+    },
+    cssConfig: {},
+    apiEvents: []
   };
 
   const INIT = "init";
@@ -34,11 +39,19 @@
     SDK_CONFIG_LOADED: "sdk-config-loaded",
     SDK_TOGGLE_MESSENGER: "sdk-toggle-messenger",
     SDK_RESET: "sdk-reset",
-    UPDATE_UNREAD_COUNT: "update-unread-count",
+    SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
+    SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
-    CMD_RESET: "cmd-reset"
+    CMD_RESET: "cmd-reset",
+    CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
+    CMD_SET_CIF: "cmd-set-cif",
+    CMD_REPLACE_CIF: "cmd-replace-cif"
+  };
+
+  const SUPPORTED_EVENTS = {
+    CHAT_END: "chatEnd"
   };
 
   // Errors message strings
@@ -110,6 +123,22 @@
     "display": "none"
   };
 
+  const MESSENGER_IFRAME_FULL_SCREEN_STYLES = {
+    "position": "fixed",
+    "top": "0px",
+    "left": "0px",
+    "bottom": "0px",
+    "right": "0px",
+    "width": "100%",
+    "height": "100%",
+    "border": "none",
+    "margin": 0,
+    "padding": 0,
+    "overflow": "hidden",
+    "z-index": "9999999",
+    "display": "none"
+  };
+
   const UNREAD_COUNT_STYLES = {
     "background-color": "#fa3e3e",
     "border-radius": "50%",
@@ -166,8 +195,7 @@
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe;
 
   // Api queue to save the apis and call them after sdk config is loaded
-  let sdkLoaded = false,
-      apiQueue = [];
+  let sdkLoaded = false;
 
   /**
    * Util to set style for a given element.
@@ -201,6 +229,10 @@
    * @param {String} icon - the icon that needs to be set
    */
   const updateLauncherBtnIcon = (icon) => {
+    if (!launcherIframe) {
+      return;
+    }
+
     if (icon === LAUNCHER_ICON.CLOSE) {
       launcherIconEl.innerHTML = CLOSE_ICON;
       // Due the the size and geometry of the close icon, update the
@@ -339,6 +371,32 @@
   };
 
   /**
+   * Set sdk loaded as true and clear api queue
+   */
+  const markSdkReady = () => {
+    sdkLoaded = true;
+    clearApiQueue ();
+  };
+
+  /**
+   * Update web sdk and launcher iframe style
+   * @param {Object} config
+   */
+  const updateIframeStyles = (config) => {
+    // Set styles for launcher iframe
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
+
+    // Set styles for websdk iframe
+    if (config.browserIsMobile) {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
+    } else if (state.widgetOptions.fullScreen) {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
+    } else {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
+    }
+  };
+
+  /**
    * Process web messenger config to update the behavior of the widget.
    * @param {Object} - the config object
    */
@@ -351,10 +409,19 @@
     }
 
     state.cssConfig = config.cssConfig;
-    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
 
-    // If sdk is already loaded, don't create the launcher iframe again.
-    if (sdkLoaded) {
+    updateIframeStyles (config);
+
+    const launcherHidden = !state.widgetOptions.showLauncher;
+    // If the launcher iframe is hidden by the widget config options
+    // then mark sdk as ready
+    if (launcherHidden) {
+      markSdkReady ();
+    }
+
+    // If launcher is hidden or launcher iframe is already created then
+    // don't create launcherIframe
+    if (launcherHidden || launcherIframe) {
       return;
     }
 
@@ -380,17 +447,7 @@
       });
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
-      // Apply styles for webSdkIframe
-      if (config.browserIsMobile) {
-        setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
-      } else {
-        setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
-      }
-
-      // Set sdk loaded as true
-      sdkLoaded = true;
-      // Clear the api queue
-      clearApiQueue ();
+      markSdkReady ();
     };
 
     doc.body.appendChild (launcherIframe);
@@ -404,10 +461,55 @@
   };
 
   /**
+   * Check if the given API is supported
+   * @param {String} api - the API name string
+   * @returns {Boolean}
+   */
+  const isApiValid = (api) => {
+    return typeof helpshiftApis [api] === "function";
+  };
+
+  /**
+   * Get APIs queued with the global Helpshift function defined in the embed
+   * script.
+   * @returns {Array} - List of functions for APIs bound with the arguments.
+   */
+  const getQueuedApis = () => {
+    // The window.Helpshift function defined in the embed script contains a
+    // static queue used to store the API calls made by client side JavaScript.
+    // For each item of the queue, add an item (a function bound with the API's
+    // arguments) to the list to return.
+    const HS = win.Helpshift;
+    const validApiQueue = [];
+
+    if (HS && Array.isArray (HS.q) && HS.q.length) {
+      HS.q.forEach ((queuedArgs) => {
+        const args = [...queuedArgs];
+
+        // The array args contains the API name ("open", "addEventListener", etc)
+        // as the first item. Rest of the items of the args array are the arguments
+        // that the API should execute with.
+        const api = args [0];
+        const apiArgs = args.slice (1);
+
+        if (isApiValid (api)) {
+          validApiQueue.push (helpshiftApis [api].bind (null, ...apiArgs));
+        }
+      });
+    }
+
+    return validApiQueue;
+  };
+
+  /**
    * Execute every queued api and clear the api queue
    */
   const clearApiQueue = () => {
-    apiQueue.forEach ((fn) => fn ());
+    apiQueue.forEach ((fn) => {
+      if (typeof fn === "function") {
+        fn ();
+      }
+    });
     apiQueue = [];
   };
 
@@ -435,6 +537,21 @@
   };
 
   /**
+   * Process widget options and save them in state
+   */
+  const processWidgetOptions = () => {
+    const options = window.helpshiftConfig.widgetOptions || {};
+
+    if (typeof options.showLauncher === "boolean") {
+      state.widgetOptions.showLauncher = options.showLauncher;
+    }
+
+    if (typeof options.fullScreen === "boolean") {
+      state.widgetOptions.fullScreen = options.fullScreen;
+    }
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
@@ -443,6 +560,8 @@
     if (!isWebSdkSupported ()) {
       return;
     }
+
+    processWidgetOptions ();
 
     webSdkIframe = createWebSdkIframe ();
     doc.body.appendChild (webSdkIframe);
@@ -476,7 +595,7 @@
           // the widget should load or not.
 
           // Set the client and wm configs to the app.
-          setConfig (window.helpshiftConfig);
+          setConfig (win.helpshiftConfig);
           break;
 
         case EVENT_TYPES.SDK_CONFIG_LOADED:
@@ -490,15 +609,22 @@
           });
           break;
 
-        case EVENT_TYPES.UPDATE_UNREAD_COUNT:
+        case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
           renderUnreadCount ();
           break;
 
         case EVENT_TYPES.SDK_RESET:
           close ();
-          setConfig (window.helpshiftConfig);
+          setConfig (win.helpshiftConfig);
           break;
+
+        case EVENT_TYPES.SDK_EVENT_CHAT_END:
+          state.apiEvents.forEach ((apiEvent) => {
+            if (apiEvent.eventName === SUPPORTED_EVENTS.CHAT_END) {
+              apiEvent.eventHandler ();
+            }
+          });
       }
     }, false);
   };
@@ -528,14 +654,138 @@
     _postMessage (EVENT_TYPES.CMD_RESET);
   };
 
+  /**
+   * JS API to set initial end user message
+   * @param {String} message - initial user message
+   */
+  const setInitialUserMessage = (message) => {
+    // message should be non-empty string
+    if (message && (typeof message === "string")) {
+      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {message});
+    }
+  };
+
+  /**
+   * Returns boolean if event name is supported
+   * @param {String} eventName - name of event
+   * @returns {Boolean} - whether event name is supported
+   */
+  const isEventSupported = (eventName) => {
+    for (const event in SUPPORTED_EVENTS) {
+      if (SUPPORTED_EVENTS [event] === eventName) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * JS API to add supported events
+   * @param {String} eventName - name of event
+   * @param {Function} eventHandler - event handler
+   */
+  const addEventListener = (eventName, eventHandler) => {
+    // If event name is supported, add that event
+    if (isEventSupported (eventName) && eventHandler) {
+      state.apiEvents.push ({
+        eventName,
+        eventHandler
+      });
+    }
+  };
+
+  /**
+   * JS API to remove supported events
+   * @param {String} eventName - name of event
+   * @param {Function} eventHandler - event handler
+   */
+  const removeEventListener = (eventName, eventHandler) => {
+    // If event name is supported, remove that event
+    if (isEventSupported (eventName) && eventHandler) {
+      state.apiEvents = state.apiEvents.filter ((apiEvent) => {
+        return !(apiEvent.eventName === eventName &&
+                 apiEvent.eventHandler === eventHandler);
+      });
+    }
+  };
+
+  /**
+   * Return true if given item is object
+   * @param {Object} item - object to validate
+   * @returns {Boolean} - whether item is object
+   */
+  const isObject = (item) => {
+    return (typeof item === "object" && !Array.isArray (item) && item !== null);
+  };
+
+  /**
+   * Return processed data containing cif object which contains only type and value
+   * @param {Object} cifData - data of cif
+   * @returns {Object} - processed cif data
+   */
+  const getProcessedCifData = (cifData) => {
+    const processedCif = {};
+
+    if (!isObject (cifData)) {
+      return processedCif;
+    }
+
+    for (const cifItem in cifData) {
+      if (cifData.hasOwnProperty (cifItem)) {
+        const cif = cifData [cifItem];
+
+        if (isObject (cif) &&
+            typeof cif.type === "string" &&
+            !!cif.type &&
+            typeof cif.value !== "undefined") {
+          processedCif [cifItem] = {
+            type: cif.type,
+            value: cif.value
+          };
+        }
+      }
+    }
+
+    return processedCif;
+  };
+
+  /**
+   * Set custom issue fields
+   * @param {Object} cifData - cif data
+   */
+  const setCustomIssueFields = (cifData) => {
+    _postMessage (EVENT_TYPES.CMD_SET_CIF, {
+      cifData: getProcessedCifData (cifData)
+    });
+  };
+
+  /**
+   * Replace custom issue fields
+   * @param {Object} cifData - cif data
+   */
+  const replaceCustomIssueFields = (cifData) => {
+    _postMessage (EVENT_TYPES.CMD_REPLACE_CIF, {
+      cifData: getProcessedCifData (cifData)
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
     open,
     close,
-    reset
+    reset,
+    setInitialUserMessage,
+    addEventListener,
+    removeEventListener,
+    setCustomIssueFields,
+    replaceCustomIssueFields
   };
+
+  // Append the APIs to the local apiQueue variable in order to execute them
+  // after the SDK is loaded.
+  let apiQueue = getQueuedApis ();
 
   /**
    * The global Helpshift function to handle the APIs. It relies on the
@@ -558,15 +808,16 @@
       throw new Error (ERROR_MSG.API_NOT_SUPPORTED);
     }
 
-    // If a] sdk is loaded OR b] the api is init, then directly call the apis
-    // else queue the apis in sequence and call them after sdk config is loaded
-    // Note :- allowing init api because it's the first api that will be called
+    // If a] sdk is loaded OR b] the API is init or update, then directly call
+    // the API
+    // Else queue the API in sequence and call them after SDK config is loaded
+    // Note :- Allowing init API because it's the first API that will be called
     if (sdkLoaded || api === INIT) {
       // Call the Helpshift api with the arguments
       helpshiftApis [api].apply (null, apiArguments);
-    } else {
-      // Queue the apis
-      apiQueue.push (helpshiftApis [api].bind (null, apiArguments));
+    } else if (isApiValid (api)) {
+      // Queue the API, if it's valid
+      apiQueue.push (helpshiftApis [api].bind (null, ...apiArguments));
     }
   };
 }) (window, document);

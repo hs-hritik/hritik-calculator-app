@@ -37,10 +37,7 @@ define ("components/containers/csatView",
           dispatch (csatViewActions.updateCsatReview (review));
         },
         onCloseConversation: () => {
-          dispatch (appStateActions.reset ({
-            skipUser: true,
-            minimizeMessenger: true
-          }));
+          dispatch (appStateActions.closeConversation ());
         }
 
       };

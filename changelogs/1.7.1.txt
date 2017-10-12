@@ -1,0 +1,3 @@
+Changelog:
+ Fix footer issue for mobile devices
+Fix button issue for business hours

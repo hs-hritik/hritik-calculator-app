@@ -34,9 +34,14 @@ define ("actions/appState",
     postMessage, browserUtils, postSdkMessage) {
     "use strict";
 
-    const {normalize} = normalizr,
-          {ISSUE_STATE} = APP_STATE_CONSTANTS,
-          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+    const {normalize} = normalizr;
+    const {
+      ISSUE_STATE,
+      DEFAULT_RESET_TIMEOUT,
+      MIN_RESET_TIMEOUT,
+      MAX_RESET_TIMEOUT
+    } = APP_STATE_CONSTANTS;
+    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     // Constant indicating whether to skip checking a value in localstorage or not
     const SKIP_LS_CHECK = true;
@@ -127,9 +132,30 @@ define ("actions/appState",
     };
 
     /**
+     * Action to set conversation started
+     * @returns {Object} - Action
+     */
+    const setConversationStarted = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_STARTED
+      };
+    };
+
+    /**
+     * Action to set conversation ended
+     * @returns {Object} - Action
+     */
+    const setConversationEnded = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ENDED
+      };
+    };
+
+    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
+      store.dispatch (setConversationStarted ());
       if (returningUser) {
         // If it's a returning user, that means there could be an
         // ongoing conversation.
@@ -157,6 +183,7 @@ define ("actions/appState",
     const reset = (options = {}) => {
       return (dispatch, getState) => {
         chatViewActions.stopPollingForMessages ();
+        dispatch (setConversationEnded ());
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
@@ -254,7 +281,7 @@ define ("actions/appState",
     const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
 
     /**
-     * Returns tags array containing string values converted to lowercase
+     * Return tags array containing string values converted to lowercase
      * @param {Any} - Unprocessed tags
      * @returns {(Array|null)} - Processed tags containing only string values
      *                           converted to lowercase
@@ -271,6 +298,33 @@ define ("actions/appState",
       }
 
       return validTags;
+    };
+
+    /**
+     * Return resetTimeout value to be set in the state by converting the
+     * passed value, in hours, to milliseconds.
+     * @param {number} - Reset timeout passed with client config (in hours)
+     * @returns {number} - Reset timeout value to be set in the state
+     */
+    const getProcessedResetTimeout = function (timeout) {
+      if (typeof timeout === "number") {
+        let effectiveTimeout = timeout;
+
+        // If the passed value is less than the minimum possible value or greater
+        // than the maximum possible value of reset timeout, then set it to the
+        // min or max value, respectively.
+        if (timeout < MIN_RESET_TIMEOUT) {
+          effectiveTimeout = MIN_RESET_TIMEOUT;
+        } else if (timeout > MAX_RESET_TIMEOUT) {
+          effectiveTimeout = MAX_RESET_TIMEOUT;
+        }
+
+        // x hours = x * 60 * 60 * 1000 milliseconds
+        return effectiveTimeout * 3600000;
+      }
+
+      // If an invalid timeout is passed, return the default reset timeout
+      return DEFAULT_RESET_TIMEOUT;
     };
 
     /**
@@ -292,10 +346,29 @@ define ("actions/appState",
       // Filter string values and convert to lower case
       config.tags = getProcessedTags (config.tags);
 
+      // Get the resetTimeout value to be set in the state
+      config.resetTimeout = getProcessedResetTimeout (config.resetTimeout);
+
       return {
         type: ACTION_TYPES.SET_CLIENT_CONFIG,
         config
       };
+    };
+
+    /**
+     * Apply styles to hs-page
+     */
+    const applyPageStyles = () => {
+      const {appState} = store.getState ();
+      const page = document.querySelector (".hs-page");
+
+      if (appState.browserIsMobile) {
+        page.classList.add ("hs-page--mobile");
+      }
+
+      if (appState.sdkConfigOptions.fullScreen) {
+        page.classList.add ("hs-page--full-screen");
+      }
     };
 
     /**
@@ -319,7 +392,7 @@ define ("actions/appState",
               ])
             );
 
-            const {ui, appState} = store.getState ();
+            const {ui} = store.getState ();
             const primaryColor = ui.color.primary;
             const cssConfig = {
               primaryColor,
@@ -336,12 +409,8 @@ define ("actions/appState",
               // configurable CSS value) to the document head.
               setStyles (cssConfig);
 
-              if (appState.browserIsMobile) {
-                const page = document.querySelector (".hs-page");
-                page.classList.add ("hs-page--mobile");
-              }
-
-              startConversation ();
+              // Apply styles to page
+              applyPageStyles ();
             }
           }
         });
@@ -680,11 +749,68 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set initial user message in store
+     * @param {String} - message
+     * @returns {Object} - Action
+     */
+    const setInitialUserMsg = (message) => {
+      return {
+        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
+        message
+      };
+    };
+
+    /**
+     * Action to close the conversation
+     * @returns {Object} - Action
+     */
+    const closeConversation = () => {
+      return (dispatch) => {
+        dispatch (reset ({
+          skipUser: true,
+          minimizeMessenger: true
+        }));
+
+        // Fire event of chat end
+        postSdkMessage.chatEndEvent ();
+      };
+    };
+
+    /**
+     * Action to set the cifs
+     * @param {Object} cif - data of cif
+     * @returns {Object} - Action
+     */
+    const setCif = (cif) => {
+      return {
+        type: ACTION_TYPES.SET_CIF,
+        cif
+      };
+    };
+
+    /**
+     * Action to replace the cifs
+     * @param {Object} cif - data of cif
+     * @returns {Object} - Action
+     */
+    const replaceCif = (cif) => {
+      return {
+        type: ACTION_TYPES.REPLACE_CIF,
+        cif
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
       setWmConfig,
       toggleMinimized,
-      reset
+      reset,
+      setInitialUserMsg,
+      startConversation,
+      closeConversation,
+      setCif,
+      replaceCif
     };
   });

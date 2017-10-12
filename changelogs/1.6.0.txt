@@ -1,0 +1,10 @@
+Branches:
+feature/cif-api
+
+Changelog:
+Restore api data after reset
+Filter cif data, remove unwanted keys and add validation
+Integrate cif with create issue xhr
+Add handling for cif actions in app state reducer
+Add events, actions, validations for cif api
+Fix bug in live updates util
