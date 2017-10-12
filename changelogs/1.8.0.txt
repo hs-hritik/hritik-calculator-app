@@ -1,0 +1,6 @@
+Branches:
+feature/local-dev
+
+Changelog:
+Remove array spread operator from webChat.js
+Create/Update gulp tasks for local dev workflow
