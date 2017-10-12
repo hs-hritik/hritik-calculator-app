@@ -22,6 +22,15 @@ const PATHS = {
       "!styles/vendor/**/*.scss",
       "!docs/**/*"
     ]
+  },
+  stylesDev: {
+    src: "styles/**/*.scss",
+    dest: "localhost/css",
+    lint: [
+      "styles/**/*.scss",
+      "!styles/vendor/**/*.scss",
+      "!docs/**/*"
+    ]
   }
 };
 
@@ -121,7 +130,7 @@ const compileSass = (path, prod = false) => {
 
 
 gulp.task ("sass:styles", () => {
-  compileSass (PATHS.styles);
+  compileSass (PATHS.stylesDev);
 });
 
 gulp.task ("sass:compile", () => {
@@ -129,19 +138,9 @@ gulp.task ("sass:compile", () => {
 });
 
 gulp.task ("sass:watch", ["sass:styles"], () => {
-  gulp.watch ([PATHS.styles.src], ["sass:styles"]);
+  gulp.watch ([PATHS.stylesDev.src], ["sass:styles"]);
 });
 
 gulp.task ("sass:lint", function () {
   return lintSassProd (PATHS.styles, true);
-});
-
-
-gulp.task ("sass:audit", ["sass:compile"], (cb) => {
-  fs.readFile ("./static/css/style.css", function (err, data) {
-    const parker = new Parker (require ("parker/metrics/All"));
-    const results = parker.run (data.toString ());
-    console.log (prettyJSON.render (results));
-    cb ();
-  });
 });

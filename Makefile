@@ -15,6 +15,8 @@ GULP ?= gulp
 NPM ?= npm
 
 JS_TEST_TARGETS = reactjs
+GUNPOWDER_SRC = node_modules/@helpshiftdev/gunpowder/resources/static/scripts/*
+GUNPOWDER_DEST = resources/static/scripts/gunpowder
 
 # If GERRIT_CHANGE_ID is set, it implies that the Makefile is invoked
 # on Jenkins. Run only those tests and validations that matter. Decide
@@ -83,21 +85,23 @@ js-libs: npminstall
 	@echo "\nDone..."
 
 gunpowder: npminstall
-	@echo "\nInstalling the gunpowder npm package"
-	@mkdir -p resources/static/scripts/gunpowder/node_modules;
-	$(NPM) install --prefix resources/static/scripts/gunpowder;
+	@echo "Copying gunpowder files to scripts dir"
+	@mkdir -p $(GUNPOWDER_DEST);
+	@cp -r $(GUNPOWDER_SRC) $(GUNPOWDER_DEST);
+	@echo "Done"
 
 # The dist task is to compile and compress resources and
 # copy them to the `dist` directory.
 # All resources to be deployed must be copied to the `dist` directory.
-# The styles gunpowder, and reactjs tasks already copy files to the dist
+# The styles, gunpowder, and reactjs tasks already copy files to the dist
 # directory, so copying html, libs, and fonts to dist here.
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
 dist: prepare-dist npminstall styles gunpowder reactjs compress-js js-libs copy-html-libs prepare-subdir ec2 azure localshiva clean-subdir
 
-# The distdev task to compile resources and link the dev files to dist directory
-distdev: prepare-dist npminstall styles gunpowder reactjs copy-html-libs prepare-subdir-dev localhost clean-subdir
+# The distdev task is to npm install resources and call the gulp task to
+# set the local environment up.
+distdev: npminstall gunpowder localhost
 
 prepare-dist:
 	@echo "Creating the dist directory"
@@ -127,14 +131,7 @@ prepare-locashiva:
 	@mkdir resources/dist/localshiva
 	@echo "Done"
 
-prepare-localhost:
-	@echo "Creating localhost subdirectory in the dist directory"
-	@mkdir resources/dist/localhost
-	@echo "Done"
-
 prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
-
-prepare-subdir-dev: copy-temp prepare-localhost
 
 ec2:
 	@cp -R resources/build/* resources/dist/ec2/
@@ -155,14 +152,19 @@ localshiva:
 	@cd resources && $(GULP) build-localshiva
 
 localhost:
-	@cp -R resources/build/* resources/dist/localhost/
-	@cd resources/dist/localhost; ln -sv scripts/external/messenger.js webChat.js;
-	@cd resources/dist/localhost/demo; ln -sv ../html/demo/index.html .;
-	@cd resources && $(GULP) build-localhost
+	@cd resources && $(GULP) build-localhost;
+	@mkdir -p resources/localhost/demo
 
-clean: clean-subdir
+clean-dev:
+	@echo "Running make clean to clean the dist directory"
+	@rm -r resources/localhost
+	@rm -r resources/static/scripts/gunpowder
+	@echo "Done"
+
+clean:
 	@echo "Running make clean to clean the dist directory"
 	@rm -r resources/dist
+	@rm -r resources/static/scripts/gunpowder
 	@echo "Done"
 
 clean-subdir:
@@ -172,6 +174,6 @@ clean-subdir:
 
 jstests: $(JS_TEST_TARGETS)
 
-test: $(TEST_TARGETS)
+test: clean $(TEST_TARGETS)
 
 .PHONY: test
