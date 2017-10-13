@@ -484,7 +484,17 @@
 
     if (HS && Array.isArray (HS.q) && HS.q.length) {
       HS.q.forEach ((queuedArgs) => {
-        const args = [...queuedArgs];
+        // Convert arguments to an array.
+        // For V8 optimization reasons, using a for loop here, instead of slicing
+        // the arguments to make a new array.
+        // For details, check the following -
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
+        // https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#32-leaking-arguments
+        const queuedArgsLen = queuedArgs.length;
+        const args = [];
+        for (let i = 0; i < queuedArgsLen; i++) {
+          args.push (queuedArgs [i]);
+        }
 
         // The array args contains the API name ("open", "addEventListener", etc)
         // as the first item. Rest of the items of the args array are the arguments
@@ -493,7 +503,10 @@
         const apiArgs = args.slice (1);
 
         if (isApiValid (api)) {
-          validApiQueue.push (helpshiftApis [api].bind (null, ...apiArgs));
+          const apiFn = helpshiftApis [api];
+          // Concatenating apiArgs with null in order to specify the context of
+          // the bound function (null).
+          validApiQueue.push (apiFn.bind.apply (apiFn, [null].concat (apiArgs)));
         }
       });
     }
