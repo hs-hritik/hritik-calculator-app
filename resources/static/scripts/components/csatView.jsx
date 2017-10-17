@@ -75,16 +75,18 @@ define ("components/csatView",
 
         return (
           <div className="hs-csat__form">
-            <h3 className="hs-csat__form-title">
-              {text.csatBotFormRequestMsg}
-            </h3>
-            <div className="hs-csat__stars">
+            <div className="hs-csat__form-item">
+              <h3 className="hs-csat__heading">
+                {text.csatBotFormRequestMsg}
+              </h3>
+            </div>
+            <div className="hs-csat__form-item">
               <StarRating name="csat"
                           value={rating}
                           onStarClick={this._onStarClick} />
             </div>
-            <div>
-              <small className="hs-csat__input-title">
+            <div className="hs-csat__form-item">
+              <small className="hs-csat__form-label">
                 {text.csatBotReviewTitle}
               </small>
               <textarea value={review}
@@ -104,7 +106,7 @@ define ("components/csatView",
         const {text} = this.props;
         return (
           <div className="hs-csat__form">
-            <h3 className="hs-csat__form-title">
+            <h3 className="hs-csat__heading">
               {text.csatBotResponseMsg}
             </h3>
           </div>
@@ -121,7 +123,7 @@ define ("components/csatView",
         btnProps.className = classes (
           "hs-button",
           "hs-button--small",
-          "hs-csat__footer-btn"
+          "hs-footer__btn"
         );
 
         if (this.props.completed) {
@@ -134,11 +136,13 @@ define ("components/csatView",
         }
 
         return (
-          <div className="hs-csat__footer">
-            <button {...btnProps}>
-              {btnText}
-            </button>
-            <Branding text={text} />
+          <div className="hs-footer hs-footer--clear-bg">
+            <div className="hs-footer__vertical-items-wrapper">
+              <button {...btnProps}>
+                {btnText}
+              </button>
+              <Branding text={text} />
+            </div>
           </div>
         );
       },
