@@ -26,14 +26,17 @@ define ("actions/chatView",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
+    "helpers/prepareProcessXhrData",
     "extras/postSdkMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
+    xhrHelpers, liveUpdatesHelpers, prepareProcessXhrDataHelpers, postSdkMessage) {
     "use strict";
+
+    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
@@ -498,12 +501,23 @@ define ("actions/chatView",
           xhrData ["user-id"] = userId;
         }
 
+        const meta = {};
+
         if (tags) {
-          xhrData.meta = JSON.stringify ({
-            custom_meta: {
-              "hs-tags": tags
-            }
-          });
+          meta.custom_meta = {
+            "hs-tags": tags
+          };
+        }
+
+        // @TODO: Add page-url, page-title to deviceInfo.
+        const deviceInfo = getPreparedDeviceInfo ();
+        // Do not pass device_info key if there is no device info extracted.
+        if (deviceInfo) {
+          meta.device_info = deviceInfo;
+        }
+
+        if (Object.keys (meta).length) {
+          xhrData.meta = JSON.stringify (meta);
         }
 
         // If cif is set and contains atleast one field, add to xhr data

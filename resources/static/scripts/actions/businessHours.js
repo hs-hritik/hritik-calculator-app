@@ -12,14 +12,16 @@ define ("actions/businessHours",
     "actions/actionCreators",
     "actions/batch",
     "helpers/xhr",
+    "helpers/prepareProcessXhrData",
     "gunpowder/utils/schema",
     "gunpowder/utils/xhr"
   ],
   function (ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr) {
+    xhrHelpers, prepareProcessXhrDataHelpers, schema, xhr) {
     "use strict";
 
     const {Input} = schema;
+    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     /**
      * Action to set business hours contact form details
@@ -117,12 +119,23 @@ define ("actions/businessHours",
         "in_business_hours": inBusinessHours
       };
 
+      const meta = {};
+
       if (tags) {
-        xhrData.meta = JSON.stringify ({
-          custom_meta: {
-            "hs-tags": tags
-          }
-        });
+        meta.custom_meta = {
+          "hs-tags": tags
+        };
+      }
+
+      // @TODO: Add page-url, page-title to deviceInfo.
+      const deviceInfo = getPreparedDeviceInfo ();
+      // Do not pass device_info key if there is no device info extracted.
+      if (deviceInfo) {
+        meta.device_info = deviceInfo;
+      }
+
+      if (Object.keys (meta).length) {
+        xhrData.meta = JSON.stringify (meta);
       }
 
       // If cif is set and contains atleast one field, add to xhr data
