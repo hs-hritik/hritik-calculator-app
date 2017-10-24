@@ -6,22 +6,22 @@
 
 define ("actions/businessHours",
   [
+    "store",
     "constants/actionTypes",
     "constants/routes",
     "actions/chatView",
     "actions/actionCreators",
     "actions/batch",
     "helpers/xhr",
-    "helpers/prepareProcessXhrData",
     "gunpowder/utils/schema",
-    "gunpowder/utils/xhr"
+    "gunpowder/utils/xhr",
+    "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, prepareProcessXhrDataHelpers, schema, xhr) {
+  function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
+    xhrHelpers, schema, xhr, postSdkMessage) {
     "use strict";
 
     const {Input} = schema;
-    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     /**
      * Action to set business hours contact form details
@@ -104,6 +104,13 @@ define ("actions/businessHours",
     };
 
     /**
+     * Fetch data & creates issue on occurance of corresponding event.
+     */
+    const fetchDataForIssueCreation = () => {
+      postSdkMessage.getParentInfo ();
+    };
+
+    /**
      * Create issue for out of business hour
      * @param {Function} dispatch - dispatch
      * @param {Object} state - state
@@ -112,6 +119,9 @@ define ("actions/businessHours",
       const {id, platformId, message, inBusinessHours, tags, cif, domain,
              onSuccess, onEnd} = config;
 
+      const {appState} = store.getState ();
+      const {metadata} = appState;
+
       const xhrData = {
         "identifier": id,
         "platform-id": platformId,
@@ -119,24 +129,16 @@ define ("actions/businessHours",
         "in_business_hours": inBusinessHours
       };
 
-      const meta = {};
+      const meta = {
+        device_info: metadata
+      };
 
       if (tags) {
         meta.custom_meta = {
           "hs-tags": tags
         };
       }
-
-      // @TODO: Add page-url, page-title to deviceInfo.
-      const deviceInfo = getPreparedDeviceInfo ();
-      // Do not pass device_info key if there is no device info extracted.
-      if (deviceInfo) {
-        meta.device_info = deviceInfo;
-      }
-
-      if (Object.keys (meta).length) {
-        xhrData.meta = JSON.stringify (meta);
-      }
+      xhrData.meta = JSON.stringify (meta);
 
       // If cif is set and contains atleast one field, add to xhr data
       if (cif && Object.keys (cif).length) {
@@ -154,22 +156,14 @@ define ("actions/businessHours",
     };
 
     /**
-     * Action to save business hours contact form details
+     * This action gets called asynchronously from api.js, when parent data
+     * required for issue creation is available.
      */
-    const submitBusinessHoursContactForm = () => {
+    const registerUserAndCreateIssue = () => {
       return (dispatch, getState) => {
         const state = getState ();
         const {businessHoursViewState, appState} = state;
-        const formErrors = getContactFormErrors (businessHoursViewState);
-
-        if (formErrors.length) {
-          dispatch (batchActions (formErrors));
-          return;
-        }
-
         const {contactFormDetails} = businessHoursViewState;
-
-        dispatch (disableBusinessHoursContactForm ());
 
         chatViewActions.registerUserProfile ({
           identifier: appState.identifier,
@@ -206,9 +200,30 @@ define ("actions/businessHours",
       };
     };
 
+    /**
+     * Action to save business hours contact form details
+     */
+    const submitBusinessHoursContactForm = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {businessHoursViewState} = state;
+        const formErrors = getContactFormErrors (businessHoursViewState);
+
+        if (formErrors.length) {
+          dispatch (batchActions (formErrors));
+          return;
+        }
+
+        dispatch (disableBusinessHoursContactForm ());
+        // Get parent data & create issue
+        fetchDataForIssueCreation ();
+      };
+    };
+
     return {
       setBusinessHoursContactFormDetails,
-      submitBusinessHoursContactForm
+      submitBusinessHoursContactForm,
+      registerUserAndCreateIssue
     };
   }
 );

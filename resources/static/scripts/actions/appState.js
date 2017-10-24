@@ -15,6 +15,7 @@ define ("actions/appState",
     "helpers/entity",
     "helpers/xhr",
     "helpers/localStorage",
+    "helpers/prepareProcessXhrData",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
@@ -29,9 +30,9 @@ define ("actions/appState",
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS,
     CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
-    xhrHelpers, lsHelpers, xhr, objUtils, uuidGenerator,
-    store, entitiesActions, chatViewActions, batchActions, actionCreators,
-    postMessage, browserUtils, postSdkMessage) {
+    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, xhr, objUtils, uuidGenerator,
+    store, entitiesActions, chatViewActions, batchActions, actionCreators, postMessage,
+    browserUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -43,6 +44,7 @@ define ("actions/appState",
     } = APP_STATE_CONSTANTS;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
+    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     // Constant indicating whether to skip checking a value in localstorage or not
     const SKIP_LS_CHECK = true;
 
@@ -801,6 +803,20 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set metadata.
+     * @param {Object} metadata
+     * @returns {Object} - Action
+     */
+    const setMetadata = (parentPageInfo) => {
+      const metadata = getPreparedDeviceInfo (parentPageInfo);
+
+      return {
+        type: ACTION_TYPES.SET_METADATA,
+        metadata
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -811,6 +827,7 @@ define ("actions/appState",
       startConversation,
       closeConversation,
       setCif,
-      replaceCif
+      replaceCif,
+      setMetadata
     };
   });

@@ -21,18 +21,21 @@ define (
      * Extracts Browser, OS & Device information based on user agent string &
      * prepares data for createIssue XHR.
      */
-    const getPreparedDeviceInfo = () => {
+    const getPreparedDeviceInfo = (parentPageData) => {
       const uaParser = new UAParser ();
       const browser = uaParser.getBrowser ();
       const device = uaParser.getDevice ();
       const os = uaParser.getOS ();
+
       const result = {
         "os": os.name,
         "os-version": os.version,
         "browser": browser.name,
         "browser-version": browser.version,
         "browser-language": browserUtils.getLanguage (),
-        "device-model": DEVICE_TYPES.indexOf (device.type) !== -1 ? device.model : DESKTOP_DEVICE
+        "device-model": DEVICE_TYPES.indexOf (device.type) !== -1 ? device.model : DESKTOP_DEVICE,
+        "page-title": parentPageData.title,
+        "page-url": parentPageData.url
       };
 
       // This is done to avoid having multiple if conditions for each key.

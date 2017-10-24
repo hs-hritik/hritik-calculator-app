@@ -40,6 +40,13 @@ define ("constants/appState",
       }
     };
 
+    const PRE_CHAT_FEATURES = {
+      GREETING: "greeting",
+      INITIAL_USER_MESSAGE: "initialUserMessage",
+      ANSWER_BOT: "answerBot",
+      INFO_BOT: "infoBot"
+    };
+
     const DEFAULT_RESET_TIMEOUT = 43200000;      // 12 hours
     const MIN_RESET_TIMEOUT = 0;
     const MAX_RESET_TIMEOUT = 168; // In hours. 1 week.
@@ -49,6 +56,7 @@ define ("constants/appState",
       PRE_CHAT_STATE,
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
-      MAX_RESET_TIMEOUT
+      MAX_RESET_TIMEOUT,
+      PRE_CHAT_FEATURES
     };
   });

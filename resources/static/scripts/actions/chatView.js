@@ -26,17 +26,14 @@ define ("actions/chatView",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
-    "helpers/prepareProcessXhrData",
     "extras/postSdkMessage"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, prepareProcessXhrDataHelpers, postSdkMessage) {
+    xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
     "use strict";
-
-    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
@@ -479,7 +476,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
-        const {dummyIssueId, userId, tags, cif} = appState;
+        const {dummyIssueId, userId, tags, cif, metadata} = appState;
         const endUserFirstMsg = getEndUserFirstMessage ();
 
         // @TODO :- Remove this condition after verifying createIssue is not
@@ -501,24 +498,16 @@ define ("actions/chatView",
           xhrData ["user-id"] = userId;
         }
 
-        const meta = {};
+        const meta = {
+          device_info: metadata
+        };
 
         if (tags) {
           meta.custom_meta = {
             "hs-tags": tags
           };
         }
-
-        // @TODO: Add page-url, page-title to deviceInfo.
-        const deviceInfo = getPreparedDeviceInfo ();
-        // Do not pass device_info key if there is no device info extracted.
-        if (deviceInfo) {
-          meta.device_info = deviceInfo;
-        }
-
-        if (Object.keys (meta).length) {
-          xhrData.meta = JSON.stringify (meta);
-        }
+        xhrData.meta = JSON.stringify (meta);
 
         // If cif is set and contains atleast one field, add to xhr data
         if (cif && Object.keys (cif).length) {
@@ -567,6 +556,13 @@ define ("actions/chatView",
           }
         });
       };
+    };
+
+    /**
+     * Fetch data & creates issue on occurance of corresponding event.
+     */
+    const fetchDataForIssueCreation = () => {
+      postSdkMessage.getParentInfo ();
     };
 
     /**
@@ -854,7 +850,8 @@ define ("actions/chatView",
                   udpateReplyText ("")
                 ])
               );
-              dispatch (startNextPreChatFeature ());
+              // Get parent data & create issue
+              fetchDataForIssueCreation ();
             }
           })
         );
@@ -1297,6 +1294,7 @@ define ("actions/chatView",
       markMessagesSeen,
       switchToChatView,
       createInitialUserMessage,
-      registerUserProfile
+      registerUserProfile,
+      startNextPreChatFeature
     };
   });
