@@ -15,10 +15,11 @@ define ("actions/businessHours",
     "helpers/xhr",
     "gunpowder/utils/schema",
     "gunpowder/utils/xhr",
-    "extras/postSdkMessage"
+    "extras/postSdkMessage",
+    "utils/browser"
   ],
   function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr, postSdkMessage) {
+    xhrHelpers, schema, xhr, postSdkMessage, browserUtils) {
     "use strict";
 
     const {Input} = schema;
@@ -126,7 +127,8 @@ define ("actions/businessHours",
         "identifier": id,
         "platform-id": platformId,
         "message-body": message,
-        "in_business_hours": inBusinessHours
+        "in_business_hours": inBusinessHours,
+        "language": browserUtils.getLanguage ()
       };
 
       const meta = {

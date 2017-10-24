@@ -7,10 +7,9 @@
 define (
   "helpers/prepareProcessXhrData",
   [
-    "uaParser",
-    "utils/browser"
+    "uaParser"
   ],
-  function (UAParser, browserUtils) {
+  function (UAParser) {
     "use strict";
 
     const DESKTOP_DEVICE = "Desktop";
@@ -32,7 +31,6 @@ define (
         "os-version": os.version,
         "browser": browser.name,
         "browser-version": browser.version,
-        "browser-language": browserUtils.getLanguage (),
         "device-model": DEVICE_TYPES.indexOf (device.type) !== -1 ? device.model : DESKTOP_DEVICE,
         "page-title": parentPageData.title,
         "page-url": parentPageData.url

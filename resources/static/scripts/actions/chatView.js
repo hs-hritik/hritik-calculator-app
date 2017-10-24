@@ -26,13 +26,14 @@ define ("actions/chatView",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
-    "extras/postSdkMessage"
+    "extras/postSdkMessage",
+    "utils/browser"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
+    xhrHelpers, liveUpdatesHelpers, postSdkMessage, browserUtils) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -491,7 +492,8 @@ define ("actions/chatView",
         const xhrData = {
           "identifier": appState.identifier,
           "platform-id": appState.platformId,
-          "message-body": endUserFirstMsg.body
+          "message-body": endUserFirstMsg.body,
+          "language": browserUtils.getLanguage ()
         };
 
         if (userId) {
