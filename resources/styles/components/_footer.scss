@@ -20,19 +20,33 @@
     background-color: $bg-color;
     border-top: 1px solid $border-color;
 
+    /// Applies default radius to footer buttons
     &__btn {
       border-radius: 18px;
     }
 
+    /// Horizontally center align items
+    /// Add this modifier when you want center align footer buttons
     &--center-items {
       display: flex;
       justify-content: center;
       padding: gutter(8);
     }
 
+    /// Removes default white background and border of footer
     &--clear-bg {
       background: none;
       border: 0;
+    }
+
+    /// Wrapper to align items vertically
+    /// @NOTE :- We need a wrapper as we don't want to grow the items to full
+    /// width in case of vertical alignment of child elements
+    &__vertical-items-wrapper {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
     }
   }
 }

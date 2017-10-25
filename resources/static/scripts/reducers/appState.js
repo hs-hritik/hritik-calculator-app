@@ -50,6 +50,7 @@ define ("reducers/appState",
       browserIsMobile: false,
       tags: [],
       cif: {},
+      metadata: {},
       sdkConfigOptions: {
         fullScreen: false,
         initialUserMessage: ""
@@ -187,6 +188,11 @@ define ("reducers/appState",
         case ACTION_TYPES.REPLACE_CIF:
           return update (state, {
             cif: {$set: action.cif}
+          });
+
+        case ACTION_TYPES.SET_METADATA:
+          return update (state, {
+            metadata: {$set: action.metadata}
           });
 
         default:

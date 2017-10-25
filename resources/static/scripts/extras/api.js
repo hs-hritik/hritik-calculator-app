@@ -13,14 +13,16 @@ define ("extras/api",
     "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
+    "actions/businessHours",
     "actions/actionCreators",
     "components/app"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
-    postSdkMessage, appStateActions, chatViewActions, actionCreators, app) {
+    postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
+    actionCreators, app) {
     "use strict";
 
-    const {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -120,6 +122,24 @@ define ("extras/api",
       }
     };
 
+    /**
+     * Dispatches appropriate action depending on the current chat view
+     */
+    const handleIssueCreation = () => {
+      const {businessHoursViewState, appState} = store.getState ();
+      const currentPreChatFeature = appState.preChatFeatureOrder [
+        appState.preChatFeatureIndex
+      ];
+
+      // @TODO: Move this condition to helpers as it is required often
+      if (businessHoursViewState.businessHoursEnabled &&
+        !businessHoursViewState.inBusinessHours) {
+        store.dispatch (businessHoursActions.registerUserAndCreateIssue ());
+      } else if (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) {
+        store.dispatch (chatViewActions.startNextPreChatFeature ());
+      }
+    };
+
     const handleApis = (type, data) => {
       switch (type) {
         case EVENT_TYPES.CMD_SET_CONFIG:
@@ -142,6 +162,13 @@ define ("extras/api",
           break;
         case EVENT_TYPES.CMD_REPLACE_CIF:
           store.dispatch (appStateActions.replaceCif (data.cifData));
+          break;
+        case EVENT_TYPES.CMD_SET_PARENT_INFO:
+          // This is actual effect of event
+          store.dispatch (appStateActions.setMetadata (data));
+          // This is side effect of event.
+          // @TODO: Handle such side effects at more appropriate place.
+          handleIssueCreation ();
           break;
       }
     };

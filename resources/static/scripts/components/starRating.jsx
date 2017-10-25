@@ -34,7 +34,7 @@ define ("components/starRating",
 
       render () {
         return (
-          <div>
+          <div className="hs-star-rating">
             {this._renderStars ()}
           </div>
         );
@@ -68,7 +68,7 @@ define ("components/starRating",
         };
 
         return (
-          <i className="ion-star hs-csat__star"
+          <i className="ion-star hs-star-rating__icon"
              style={starStyles}
              title={title}
              onMouseEnter={this._onStarMouseEnter.bind (this, idx)}

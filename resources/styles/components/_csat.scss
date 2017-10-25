@@ -13,54 +13,31 @@
 @include component(csat) {
 
   $input-border-color: color(border);
-  $star-font-size: icon-size(xxx-large);
 
   .hs-csat {
     display: flex;
-    align-items: center;
     flex: 1 1 auto;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%;
 
     &__form {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      flex-shrink: 0;
-      padding: gutter(20 32);
+      padding: gutter(40);
     }
 
-    &__form-title {
-      padding: gutter(20);
+    &__form-item {
+      padding: gutter(12 0);
+    }
+
+    &__form-label {
+      font-weight: font-weight(medium);
+    }
+
+    &__heading {
       text-align: center;
-    }
-
-    &__stars {
-      padding-bottom: gutter(20);
-    }
-
-    &__input-title {
-      font-weight: font-weight(bold);
     }
 
     &__input {
-      border: 1px solid $input-border-color;
-      border-radius: radius();
       resize: none;
-    }
-
-    &__star {
-      padding: gutter(0 8);
-      font-size: $star-font-size;
-    }
-
-    &__footer {
-      text-align: center;
-    }
-
-    &__footer-btn {
-      border-radius: 18px;
     }
   }
 }

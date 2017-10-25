@@ -18,7 +18,8 @@ $_palettes: (
   black: (
     dark:      #383f44,
     base:      #576066,
-    light:     #859199
+    light:     #859199,
+    xx-light:  #d5dfe6
   ),
   green: (
     x-dark:    #19803c,
@@ -91,6 +92,7 @@ $_colors: (
     dark: palette(black, dark),
     base: palette(black),
     light: palette(black, light),
+    xx-light: palette(black, xx-light),
     white: palette(gray, xx-light)
   )
 ) !global;
@@ -131,7 +133,7 @@ $_line-heights: (
 /// @type Map
 $_font-weights: (
   normal: 400,
-  medium: 600,
+  medium: 500,
   bold: 600,
 ) !global;
 

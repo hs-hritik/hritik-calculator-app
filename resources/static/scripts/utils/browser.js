@@ -26,7 +26,19 @@ function () {
     );
   };
 
+  /**
+   * Extracts browser language.
+   * Checks & fallbacks are for browser compatibility,
+   * For more info: https://zzz.buzz/2016/01/13/detect-browser-language-in-javascript/
+   * @returns {String} - Language code
+   */
+  const getLanguage = () => {
+    const nav = window.navigator;
+    return nav.languages && nav.languages[0] || nav.language || nav.userLanguage;
+  };
+
   return {
-    isMobile
+    isMobile,
+    getLanguage
   };
 });

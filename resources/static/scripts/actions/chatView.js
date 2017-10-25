@@ -26,13 +26,14 @@ define ("actions/chatView",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
-    "extras/postSdkMessage"
+    "extras/postSdkMessage",
+    "utils/browser"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postSdkMessage) {
+    xhrHelpers, liveUpdatesHelpers, postSdkMessage, browserUtils) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -476,7 +477,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
-        const {dummyIssueId, userId, tags, cif} = appState;
+        const {dummyIssueId, userId, tags, cif, metadata} = appState;
         const endUserFirstMsg = getEndUserFirstMessage ();
 
         // @TODO :- Remove this condition after verifying createIssue is not
@@ -491,20 +492,24 @@ define ("actions/chatView",
         const xhrData = {
           "identifier": appState.identifier,
           "platform-id": appState.platformId,
-          "message-body": endUserFirstMsg.body
+          "message-body": endUserFirstMsg.body,
+          "language": browserUtils.getLanguage ()
         };
 
         if (userId) {
           xhrData ["user-id"] = userId;
         }
 
+        const meta = {
+          device_info: metadata
+        };
+
         if (tags) {
-          xhrData.meta = JSON.stringify ({
-            custom_meta: {
-              "hs-tags": tags
-            }
-          });
+          meta.custom_meta = {
+            "hs-tags": tags
+          };
         }
+        xhrData.meta = JSON.stringify (meta);
 
         // If cif is set and contains atleast one field, add to xhr data
         if (cif && Object.keys (cif).length) {
@@ -553,6 +558,13 @@ define ("actions/chatView",
           }
         });
       };
+    };
+
+    /**
+     * Fetch data & creates issue on occurance of corresponding event.
+     */
+    const fetchDataForIssueCreation = () => {
+      postSdkMessage.getParentInfo ();
     };
 
     /**
@@ -840,7 +852,8 @@ define ("actions/chatView",
                   udpateReplyText ("")
                 ])
               );
-              dispatch (startNextPreChatFeature ());
+              // Get parent data & create issue
+              fetchDataForIssueCreation ();
             }
           })
         );
@@ -1283,6 +1296,7 @@ define ("actions/chatView",
       markMessagesSeen,
       switchToChatView,
       createInitialUserMessage,
-      registerUserProfile
+      registerUserProfile,
+      startNextPreChatFeature
     };
   });
