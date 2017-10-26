@@ -45,7 +45,8 @@ define ("reducers/ui",
                                       "back to you soon.",
         businessHoursViewHeader: "",
         businessHoursContactFormMessage: "",
-        businessHoursOfflineMessage: ""
+        businessHoursOfflineMessage: "",
+        dndInfoText: "Add files or drag here"
       },
       color: {
         primary: "#43BF6C"
