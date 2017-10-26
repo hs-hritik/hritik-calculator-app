@@ -23,6 +23,13 @@ function (EVENT_TYPES, postMessage) {
   };
 
   /**
+   * Post message for getting page information
+   */
+  const getParentInfo = () => {
+    postMessage (EVENT_TYPES.SDK_GET_PARENT_INFO);
+  };
+
+  /**
    * Post message to indicate reset event.
    */
   const reset = () => {
@@ -65,6 +72,7 @@ function (EVENT_TYPES, postMessage) {
 
   return {
     toggleMessenger,
+    getParentInfo,
     reset,
     updateUnreadCount,
     wmConfig,

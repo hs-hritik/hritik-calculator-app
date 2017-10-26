@@ -157,19 +157,19 @@ localhost:
 
 clean-dev:
 	@echo "Running make clean to clean the dist directory"
-	@rm -r resources/localhost
-	@rm -r resources/static/scripts/gunpowder
+	@rm -rf resources/localhost
+	@rm -rf resources/static/scripts/gunpowder
 	@echo "Done"
 
 clean:
 	@echo "Running make clean to clean the dist directory"
-	@rm -r resources/dist
-	@rm -r resources/static/scripts/gunpowder
+	@rm -rf resources/dist
+	@rm -rf resources/static/scripts/gunpowder
 	@echo "Done"
 
 clean-subdir:
 	@echo "Cleaning dist directory"
-	@rm -r resources/build
+	@rm -rf resources/build
 	@echo "Done"
 
 jstests: $(JS_TEST_TARGETS)

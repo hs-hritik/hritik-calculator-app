@@ -6,6 +6,7 @@
 
 define ("actions/businessHours",
   [
+    "store",
     "constants/actionTypes",
     "constants/routes",
     "actions/chatView",
@@ -13,10 +14,12 @@ define ("actions/businessHours",
     "actions/batch",
     "helpers/xhr",
     "gunpowder/utils/schema",
-    "gunpowder/utils/xhr"
+    "gunpowder/utils/xhr",
+    "extras/postSdkMessage",
+    "utils/browser"
   ],
-  function (ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr) {
+  function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
+    xhrHelpers, schema, xhr, postSdkMessage, browserUtils) {
     "use strict";
 
     const {Input} = schema;
@@ -102,6 +105,13 @@ define ("actions/businessHours",
     };
 
     /**
+     * Fetch data & creates issue on occurance of corresponding event.
+     */
+    const fetchDataForIssueCreation = () => {
+      postSdkMessage.getParentInfo ();
+    };
+
+    /**
      * Create issue for out of business hour
      * @param {Function} dispatch - dispatch
      * @param {Object} state - state
@@ -110,20 +120,27 @@ define ("actions/businessHours",
       const {id, platformId, message, inBusinessHours, tags, cif, domain,
              onSuccess, onEnd} = config;
 
+      const {appState} = store.getState ();
+      const {metadata} = appState;
+
       const xhrData = {
         "identifier": id,
         "platform-id": platformId,
         "message-body": message,
-        "in_business_hours": inBusinessHours
+        "in_business_hours": inBusinessHours,
+        "language": browserUtils.getLanguage ()
+      };
+
+      const meta = {
+        device_info: metadata
       };
 
       if (tags) {
-        xhrData.meta = JSON.stringify ({
-          custom_meta: {
-            "hs-tags": tags
-          }
-        });
+        meta.custom_meta = {
+          "hs-tags": tags
+        };
       }
+      xhrData.meta = JSON.stringify (meta);
 
       // If cif is set and contains atleast one field, add to xhr data
       if (cif && Object.keys (cif).length) {
@@ -141,22 +158,14 @@ define ("actions/businessHours",
     };
 
     /**
-     * Action to save business hours contact form details
+     * This action gets called asynchronously from api.js, when parent data
+     * required for issue creation is available.
      */
-    const submitBusinessHoursContactForm = () => {
+    const registerUserAndCreateIssue = () => {
       return (dispatch, getState) => {
         const state = getState ();
         const {businessHoursViewState, appState} = state;
-        const formErrors = getContactFormErrors (businessHoursViewState);
-
-        if (formErrors.length) {
-          dispatch (batchActions (formErrors));
-          return;
-        }
-
         const {contactFormDetails} = businessHoursViewState;
-
-        dispatch (disableBusinessHoursContactForm ());
 
         chatViewActions.registerUserProfile ({
           identifier: appState.identifier,
@@ -193,9 +202,30 @@ define ("actions/businessHours",
       };
     };
 
+    /**
+     * Action to save business hours contact form details
+     */
+    const submitBusinessHoursContactForm = () => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {businessHoursViewState} = state;
+        const formErrors = getContactFormErrors (businessHoursViewState);
+
+        if (formErrors.length) {
+          dispatch (batchActions (formErrors));
+          return;
+        }
+
+        dispatch (disableBusinessHoursContactForm ());
+        // Get parent data & create issue
+        fetchDataForIssueCreation ();
+      };
+    };
+
     return {
       setBusinessHoursContactFormDetails,
-      submitBusinessHoursContactForm
+      submitBusinessHoursContactForm,
+      registerUserAndCreateIssue
     };
   }
 );

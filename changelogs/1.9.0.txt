@@ -1,0 +1,13 @@
+Branches:
+feature/webchat-metadata
+
+Changelog:
+Pass language param instead of device_info.browser-language param
+Get parent info & provide metadata for issue creation
+Add device information to createIssue XHR
+Restructure csat view css
+Change helpshift branding color
+Change global font weight of medium to 500
+Add separate css for star rating component
+Delete clean up dirs if they are present
+Add User Agent parsing library to Mirkwood

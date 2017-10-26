@@ -41,13 +41,15 @@
     SDK_RESET: "sdk-reset",
     SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
+    SDK_GET_PARENT_INFO: "sdk-get-parent-info",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
     CMD_SET_CIF: "cmd-set-cif",
-    CMD_REPLACE_CIF: "cmd-replace-cif"
+    CMD_REPLACE_CIF: "cmd-replace-cif",
+    CMD_SET_PARENT_INFO: "cmd-set-parent-info"
   };
 
   const SUPPORTED_EVENTS = {
@@ -454,6 +456,13 @@
   };
 
   /**
+   * Post message to set page info
+   */
+  const setParentInfo = (data) => {
+    _postMessage (EVENT_TYPES.CMD_SET_PARENT_INFO, data);
+  };
+
+  /**
    * Post message to set config.
    */
   const setConfig = (config) => {
@@ -638,6 +647,13 @@
               apiEvent.eventHandler ();
             }
           });
+          break;
+        case EVENT_TYPES.SDK_GET_PARENT_INFO:
+          setParentInfo ({
+            title: doc.title,
+            url: win.location.href
+          });
+          break;
       }
     }, false);
   };

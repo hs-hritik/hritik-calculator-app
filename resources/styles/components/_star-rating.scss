@@ -1,0 +1,24 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group star
+///
+
+@include component(star-rating) {
+  $star-font-size: icon-size(xxx-large);
+
+  .hs-star-rating {
+    display: flex;
+    justify-content: space-between;
+
+    &__icon {
+      font-size: $star-font-size;
+    }
+  }
+}
