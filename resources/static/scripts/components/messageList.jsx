@@ -17,12 +17,12 @@ define ("components/messageList",
     const PropTypes = React.PropTypes;
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
 
-    const MESSAGE_TYPES_TO_RENDER = [
-      MESSAGE_TYPE.TEXT,
-      MESSAGE_TYPE.FAQ,
-      MESSAGE_TYPE.CSAT,
-      MESSAGE_TYPE.END_CHAT
-    ];
+    const MESSAGE_TYPES_TO_RENDER = (() => {
+      const keys = Object.keys (MESSAGE_TYPE);
+      return keys.map ((key) => {
+        return MESSAGE_TYPE [key];
+      });
+    }) ();
 
     return React.createClass ({
       displayName: "MessageList",

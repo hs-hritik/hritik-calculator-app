@@ -268,16 +268,16 @@ define ("actions/chatView",
               dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
 
               dispatch (
-                createMessage (MESSAGE_TYPE.END_CHAT, null, {
-                  typingTimer: null,
+                createMessage ({
+                  type: MESSAGE_TYPE.END_CHAT,
                   issueId: appState.activeIssueId
                 })
               );
 
               if (appState.featuresEnabled.csatBot) {
                 dispatch (
-                  createMessage (MESSAGE_TYPE.CSAT, null, {
-                    typingTimer: null,
+                  createMessage ({
+                    type: MESSAGE_TYPE.CSAT,
                     issueId: appState.activeIssueId
                   })
                 );
@@ -394,12 +394,13 @@ define ("actions/chatView",
         // If current issue state is rejected, don't fire xhr to send messages to backend.
         if (appState.issueState === ISSUE_STATE.REJECTED) {
           dispatch (
-            createMessage (MESSAGE_TYPE.TEXT, {
-              body: replyBox.value.trim (),
-              isCustomerMsg: true
-            }, {
-              typingTimer: null,
+            createMessage ({
+              type: MESSAGE_TYPE.TEXT,
               issueId: appState.activeIssueId,
+              messageConfig: {
+                body: replyBox.value.trim (),
+                isCustomerMsg: true
+              },
               onAddMessage: () => {
                 dispatch (udpateReplyText (""));
               }
@@ -628,12 +629,12 @@ define ("actions/chatView",
         const state = getState ();
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.faqSuggestionsAdditionalHelpRequiredBtn,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: state.ui.text.faqSuggestionsAdditionalHelpRequiredBtn,
+              isCustomerMsg: true
+            }
           })
         );
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
@@ -650,22 +651,23 @@ define ("actions/chatView",
         const state = getState ();
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.faqSuggestionsAdditionalHelpNotRequiredBtn,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: state.ui.text.faqSuggestionsAdditionalHelpNotRequiredBtn,
+              isCustomerMsg: true
+            }
           })
         );
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
-            isCustomerMsg: false
-          }, {
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_PROBLEM_SOLVED,
-            issueId: state.appState.dummyIssueId
+            messageConfig: {
+              body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
+              isCustomerMsg: false
+            }
           })
         );
 
@@ -708,21 +710,28 @@ define ("actions/chatView",
      * optionally showing system typing indicator.
      * Pass the message object related data in the config object,
      * and additional meta data in options object.
-     * @param {String} messageType - Message type.
-     * @param {Object} config - Data required for creating the message.
-     * @param {Object} options - Additional options for the action.
-     * @param {String} options.issueId - The issue id to which issue belongs.
-     * @param {Number} [options.typingTimer] - If the issue has to be added after sometime,
+     * @param {object} config - Message config.
+     * @param {String} config.type - Message type.
+     * @param {Object} [config.messageConfig] - Data required for creating the message.
+     * @param {String} [config.issueId] - The issue id to which issue belongs.
+     * @param {Number} [config.typingTimer] - If the issue has to be added after sometime,
      *                                         pass the time in milliseconds. Typing indicator
      *                                         would be shown for that time period.
-     * @param {Function} [options.onAddMessage] - The callback function to be executed when the
+     * @param {Function} [config.onAddMessage] - The callback function to be executed when the
      *                                            message is added to the store.
      * @returns {Object} - Action
      */
-    const createMessage = (messageType, config, options) => {
-      return (dispatch) => {
-        const {typingTimer, issueId, onAddMessage} = options;
-        const msg = chatViewHelpers.createMessage (messageType, config);
+    const createMessage = (config) => {
+      return (dispatch, getState) => {
+        const {appState} = getState ();
+        const {
+          type: messageType,
+          issueId = appState.dummyIssueId,
+          typingTimer = false,
+          messageConfig,
+          onAddMessage
+        } = config;
+        const msg = chatViewHelpers.createMessage (messageType, messageConfig);
 
         // As this message is created on frontend,
         // it is already in normalized and processed format.
@@ -776,12 +785,12 @@ define ("actions/chatView",
             const defaultAgentMsgText = state.ui.text.greetingMsg;
 
             dispatch (
-              createMessage (MESSAGE_TYPE.TEXT, {
-                body: defaultAgentMsgText,
-                isCustomerMsg: false
-              }, {
-                typingTimer: null,
-                issueId: state.appState.dummyIssueId
+              createMessage ({
+                type: MESSAGE_TYPE.TEXT,
+                messageConfig: {
+                  body: defaultAgentMsgText,
+                  isCustomerMsg: false
+                }
               })
             );
             dispatch (startNextPreChatFeature ());
@@ -833,17 +842,14 @@ define ("actions/chatView",
      * @param {String} messageBody - body of user message
      */
     const createInitialUserMessage = (messageBody) => {
-      return function (dispatch, getState) {
-        const state = getState ();
-        const {appState} = state;
-
+      return function (dispatch) {
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: messageBody,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: appState.dummyIssueId,
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: messageBody,
+              isCustomerMsg: true
+            },
             onAddMessage: (msg) => {
               dispatch (
                 batchActions ([
@@ -917,11 +923,11 @@ define ("actions/chatView",
                   dispatch (startNextPreChatFeature ());
                 } else {
                   dispatch (
-                    createMessage (MESSAGE_TYPE.FAQ, {
-                      faqs
-                    }, {
-                      typingTimer: null,
-                      issueId: appState.dummyIssueId,
+                    createMessage ({
+                      type: MESSAGE_TYPE.FAQ,
+                      messageConfig: {
+                        faqs
+                      },
                       onAddMessage: () => {
                         onFaqSuggestionMessageAdd ();
                         dispatch (
@@ -965,12 +971,13 @@ define ("actions/chatView",
 
       window.setTimeout (() => {
         store.dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
-            isCustomerMsg: false
-          }, {
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
+              isCustomerMsg: false
+            },
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
-            issueId: state.appState.dummyIssueId,
             onAddMessage: () => {
               store.dispatch (
                 batchActions ([
@@ -1026,12 +1033,13 @@ define ("actions/chatView",
         switch (featureState) {
           case INFO_BOT_STATE.INITIAL:
             dispatch (
-              createMessage (MESSAGE_TYPE.TEXT, {
-                body: state.ui.text.infoBotRequestMsg,
-                isCustomerMsg: false
-              }, {
+              createMessage ({
+                type: MESSAGE_TYPE.TEXT,
+                messageConfig: {
+                  body: state.ui.text.infoBotRequestMsg,
+                  isCustomerMsg: false
+                },
                 typingTimer: TYPING_TIMEOUT.INFO_BOT_REQUEST,
-                issueId: state.appState.dummyIssueId,
                 onAddMessage: () => {
                   dispatch (
                     updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
@@ -1071,12 +1079,14 @@ define ("actions/chatView",
 
         if (currentField) {
           dispatch (
-            createMessage (MESSAGE_TYPE.TEXT, {
-              body: currentField.msg,
-              isCustomerMsg: false
-            }, {
+            createMessage ({
+              type: MESSAGE_TYPE.TEXT,
+
+              messageConfig: {
+                body: currentField.msg,
+                isCustomerMsg: false
+              },
               typingTimer: TYPING_TIMEOUT.INFO_BOT_FIELD,
-              issueId: state.appState.dummyIssueId,
               onAddMessage: () => {
                 dispatch (
                   batchActions ([
@@ -1128,12 +1138,12 @@ define ("actions/chatView",
         }
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: updatedFieldVal.value,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: updatedFieldVal.value,
+              isCustomerMsg: true
+            }
           })
         );
 
@@ -1277,6 +1287,40 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to create multiple attachment messages
+     * @param {Object} files - Files List array like object
+     * @returns {Object} - Action
+     */
+    const createAttachmentMessages = (files) => {
+      return (dispatch) => {
+        // @TODO :- Add validation for
+        // a) file size
+        // b) number of files
+        // c) file extension
+        const filesLength = files.length;
+
+        // @NOTE :- Files is not an array but array like object
+        for (let i = 0; i < filesLength; i++) {
+          dispatch (createAttachmentMessage (files [i]));
+        }
+      };
+    };
+
+    /**
+     * Create attachment message
+     * @param {file} - File object
+     * @returns {Object} - Action
+     */
+    const createAttachmentMessage = (file) => {
+      return createMessage ({
+        type: MESSAGE_TYPE.ATTACHMENT,
+        messageConfig: {
+          file
+        }
+      });
+    };
+
     return {
       udpateReplyText,
       submitReply,
@@ -1297,6 +1341,7 @@ define ("actions/chatView",
       switchToChatView,
       createInitialUserMessage,
       registerUserProfile,
-      startNextPreChatFeature
+      startNextPreChatFeature,
+      createAttachmentMessages
     };
   });

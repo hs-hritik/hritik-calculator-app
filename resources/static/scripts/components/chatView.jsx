@@ -248,6 +248,7 @@ define ("components/chatView",
         infoBotField: INFO_BOT_FIELD_PROPS,
         onSubmitInfoBotField: PropTypes.func.isRequired,
         onValueChangeInfoBotField: PropTypes.func.isRequired,
+        onFilesDrop: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -287,10 +288,8 @@ define ("components/chatView",
        * Handler for files dropped event
        * @param {Object} - files list array like object
        */
-      _onFilesDrop (/* files */) {
-        // @TODO :- Perform following action
-        // 1] Add validation on a) file size b) number of files c) file extension
-        // 2] Add action to save files
+      _onFilesDrop (files) {
+        this.props.onFilesDrop (files);
       }
     });
   }
