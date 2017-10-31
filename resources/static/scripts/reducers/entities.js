@@ -55,6 +55,19 @@ define ("reducers/entities",
             }
           });
 
+        case ACTION_TYPES.REMOVE_MESSAGE:
+          const {messages} = state.issues [action.issueId];
+          const filteredMessages = messages.filter ((message) => {
+            return message !== action.messageId;
+          });
+          return update (state, {
+            issues: {
+              [action.issueId]: {
+                messages: {$set: filteredMessages}
+              }
+            }
+          });
+
         case ACTION_TYPES.SET_MESSAGES:
           return update (state, {
             issues: {

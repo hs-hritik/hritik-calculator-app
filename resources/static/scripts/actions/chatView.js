@@ -27,13 +27,14 @@ define ("actions/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
     "extras/postSdkMessage",
-    "utils/browser"
+    "utils/browser",
+    "utils/upload"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postSdkMessage, browserUtils) {
+    xhrHelpers, liveUpdatesHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -316,12 +317,13 @@ define ("actions/chatView",
      * @param {Object} [callbacks] - optional callbacks
      */
     const postUserMessage = (config, callbacks = {}) => {
+      const {domain, activeIssueId, identifier, msgBody, msgType} = config;
       xhr ({
-        route: routes.postUserReply (config.domain, config.activeIssueId),
+        route: routes.postUserReply (domain, activeIssueId),
         data: {
-          "identifier": config.identifier,
-          "message-body": config.msgBody,
-          "message-type": config.msgType
+          identifier,
+          "message-body": msgBody,
+          "message-type": msgType
         },
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
@@ -528,6 +530,12 @@ define ("actions/chatView",
             dispatch (entitiesActions.setEntities (processedEntities));
 
             const endUserFirstMsgNewId = response.messages [0].id;
+            // @TODO :- Don't directly manage entities from here!
+            // Dispatch an action something like 'ISSUE_CREATED' which will :-
+            // a] Remove dummy messages from entity store and localStorage
+            // b] Replace dummy issue id of first user message with backend id
+            //    in entity store and localStorage
+
             // Replace frontend created user message with backend message,
             // and add all dummy issue messages to the active issue.
             const dummyIssueMsgIds = state.entities.issues [dummyIssueId].messages.slice ();
@@ -768,6 +776,22 @@ define ("actions/chatView",
             onAddMessage (msg);
           }
         }
+      };
+    };
+
+    /**
+     * Action to remove message
+     * @param {Object} config - config required to remove message
+     * @param {String} config.issueId - issue id
+     * @param {String} config.messageId - message id
+     * @returns {Object} - Action
+     */
+    const removeMessage = (config) => {
+      const {issueId, messageId} = config;
+      return {
+        type: ACTION_TYPES.REMOVE_MESSAGE,
+        issueId,
+        messageId
       };
     };
 
@@ -1290,7 +1314,6 @@ define ("actions/chatView",
     /**
      * Action to create multiple attachment messages
      * @param {Object} files - Files List array like object
-     * @returns {Object} - Action
      */
     const createAttachmentMessages = (files) => {
       return (dispatch) => {
@@ -1310,15 +1333,84 @@ define ("actions/chatView",
     /**
      * Create attachment message
      * @param {file} - File object
-     * @returns {Object} - Action
+     * @returns {Function} - Action
      */
     const createAttachmentMessage = (file) => {
-      return createMessage ({
-        type: MESSAGE_TYPE.ATTACHMENT,
-        messageConfig: {
-          file
-        }
-      });
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {appState} = state;
+        const {domain, activeIssueId, identifier} = appState;
+        // @TODO :- Remove message body after BE fix!
+        const msgBody = "Sample attachment";
+        let attachmentMsgId = null;
+
+        upload ({
+          route: routes.postUserReply (domain, activeIssueId),
+          formData: {
+            "identifier": identifier,
+            "issue-id": appState.activeIssueId,
+            "message-body": msgBody,
+            "message-type": MESSAGE_TYPE.ATTACHMENT
+          },
+          file: file,
+          headers: xhrHelpers.getCommonHeaders (),
+          onSuccess: (response) => {
+            // 1] Parse the response and create msg object
+            // 2] Dispatch following actions
+            //   a] Remove the message id
+            //    - Remove attachment dummy message id from message and issue
+            //      entities and local storage
+            //   b] Set message entity with parsed msg object
+            //   - Store the message in entity store under 'messages'
+            //     (check entity reducer)
+            //   - This action is also intercepted by lsMiddleware and it
+            //   stores the message id in localStorage under 'messages'
+            //   c] Add message
+            //   - Store the message id in entity store under 'issue->messages'
+            //     (check entity reducer)
+            //   - lsMiddleware will save message id in localStorage
+            //     under 'issues->messages'
+
+            const newMsgId = response.id;
+            const normalizedData = normalize (response, entitySchema.message);
+            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+            const msg = processedEntities.messages [newMsgId];
+
+            const actionsToDispatch = [
+              removeMessage ({
+                issueId: activeIssueId,
+                messageId: attachmentMsgId
+              }),
+              entitiesActions.setEntities ({
+                messages: {
+                  [msg.id]: msg
+                }
+              }),
+              addMessages (activeIssueId, [msg.id])
+            ];
+            dispatch (batchActions (actionsToDispatch));
+          },
+          onFailure: () => {
+            // @TODO :- Dispatch action to
+            // a] show error on attachment message
+          }
+        });
+
+        // This will create a dummy attachment message
+        dispatch (
+          createMessage ({
+            type: MESSAGE_TYPE.ATTACHMENT,
+            issueId: activeIssueId,
+            messageConfig: {
+              file
+            },
+            onAddMessage (msg) {
+              // @TODO :- Call upload xhr after we get attachmentMsgId
+              attachmentMsgId = msg.id;
+            }
+          })
+        );
+      };
     };
 
     return {

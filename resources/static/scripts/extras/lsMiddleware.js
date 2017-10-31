@@ -50,6 +50,10 @@ define ("extras/lsMiddleware",
           throttledSetLastActivityTime ();
           break;
 
+        case ACTION_TYPES.REMOVE_MESSAGE:
+          lsHelpers.removeMessage (action.issueId, action.messageId);
+          break;
+
         case ACTION_TYPES.SET_ENTITIES:
           // If the action type is SET_ENTITIES, save the issues
           // and messages entities in localstorage.

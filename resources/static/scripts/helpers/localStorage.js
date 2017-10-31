@@ -225,6 +225,29 @@ define ("helpers/localStorage",
       });
     };
 
+    /**
+     * Removes message from entities
+     * @param {String} issueId - current issue id
+     * @param {String} messageId - message id to remove
+     */
+    const removeMessage = (issueId, messageId) => {
+      // Remove message id from 'issues->messages' entity
+      const issueEntities = getEntities ("ISSUES");
+      const filteredMessages = issueEntities [issueId].messages.filter ((message) => {
+        return message !== messageId;
+      });
+      const newIssueEntities = objUtils.setIn (
+        issueEntities, filteredMessages, [issueId, "messages"]
+      );
+      setEntities ("ISSUE", newIssueEntities);
+
+      // Remove message from 'message' entity
+      const messagesEntities = getEntities ("MESSAGES");
+      if (delete messagesEntities [messageId]) {
+        setEntities ("MESSAGES", messagesEntities);
+      }
+    };
+
     return {
       getUserId,
       setUserId,
@@ -251,6 +274,7 @@ define ("helpers/localStorage",
       setReplyText,
       getReplyText,
       setEndUserFirstMsgId,
-      getEndUserFirstMsgId
+      getEndUserFirstMsgId,
+      removeMessage
     };
   });
