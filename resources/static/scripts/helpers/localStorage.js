@@ -6,10 +6,11 @@
 
 define ("helpers/localStorage",
   [
+    "constants/message",
     "gunpowder/utils/localStorage",
     "gunpowder/utils/object"
   ],
-  function (lsUtils, objUtils) {
+  function (MESSAGE_CONSTANTS, lsUtils, objUtils) {
     "use strict";
 
     const KEYS = {
@@ -29,6 +30,8 @@ define ("helpers/localStorage",
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
+
+    const {ATTACHMENT} = MESSAGE_CONSTANTS.TYPE;
 
     /**
      * Get userId
@@ -239,13 +242,71 @@ define ("helpers/localStorage",
       const newIssueEntities = objUtils.setIn (
         issueEntities, filteredMessages, [issueId, "messages"]
       );
-      setEntities ("ISSUE", newIssueEntities);
+
+      lsUtils.setItem (KEYS.ENTITIES_ISSUES, newIssueEntities);
 
       // Remove message from 'message' entity
       const messagesEntities = getEntities ("MESSAGES");
-      if (delete messagesEntities [messageId]) {
-        setEntities ("MESSAGES", messagesEntities);
+      delete messagesEntities [messageId];
+      lsUtils.setItem (KEYS.ENTITIES_MESSAGES, messagesEntities);
+    };
+
+    /**
+     * Removes dummy messages from local storage
+     * a] Remove dummy message data from 'messages' entity
+     * b] Remove dummy message id from 'issue->messages'
+     */
+    const removeDummyMessages = () => {
+      const issueId = getActiveIssueId ();
+      const messagesEntities = getEntities ("MESSAGES") || {};
+      const newMessageEntities = {};
+      const dummyMessageIds = [];
+
+      // This function performs two tasks
+      // a] Remove dummy messages from 'message' entity
+      //    - Loop on all the messages from message entity.
+      //    - If there are any dummy messages, group their ids in an array
+      // b] Remove dummy message ids from 'issue->messages'
+      //    - Loop on dummy message ids array and check that message id
+      //      is present in 'issue->message'
+      //    - If present, skip adding in new message entity i.e. remove dummy message ids
+
+      // a] Remove dummy message from 'message' entity
+      objUtils.forEachKey (messagesEntities, (key, messageEntity) => {
+        // For now we are removing message of type attachment only
+        // If required add a type or some other identifier to remove those
+        // messages after page refresh
+        if (messageEntity.type === ATTACHMENT) {
+          dummyMessageIds.push (key);
+        } else {
+          newMessageEntities [key] = messageEntity;
+        }
+      });
+
+      // If dummy messages are not present, then local storage is clean.
+      // No need to further process anything!
+      if (!dummyMessageIds.length) {
+        return;
       }
+
+      lsUtils.setItem (KEYS.ENTITIES_MESSAGES, newMessageEntities);
+
+      // b] Remove dummy message id from 'issue->message'
+      const issueEntities = getEntities ("ISSUES") || {};
+      const issueMessages = issueEntities [issueId].messages;
+
+      dummyMessageIds.forEach ((dummyIssueId) => {
+        const dummyIssueIndex = issueMessages.indexOf (dummyIssueId);
+        if (dummyIssueIndex !== -1) {
+          issueMessages.splice (dummyIssueIndex, 1);
+        }
+      });
+
+      const newIssueEntities = objUtils.setIn (
+        issueEntities, issueMessages, [issueId, "messages"]
+      );
+
+      lsUtils.setItem (KEYS.ENTITIES_ISSUES, newIssueEntities);
     };
 
     return {
@@ -275,6 +336,7 @@ define ("helpers/localStorage",
       getReplyText,
       setEndUserFirstMsgId,
       getEndUserFirstMsgId,
-      removeMessage
+      removeMessage,
+      removeDummyMessages
     };
   });
