@@ -94,7 +94,12 @@ define ("helpers/chatView",
         isCustomerMsg: true,
         isSystemMsg: true,
         createdTs: Date.now (),
-        file: option.file
+        file: option.file,
+        states: {
+          uploadInProgress: true,
+          error: false,
+          errorCode: null
+        }
       };
     };
 
