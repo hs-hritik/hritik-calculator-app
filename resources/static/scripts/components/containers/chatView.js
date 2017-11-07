@@ -66,6 +66,11 @@ define ("components/containers/chatView",
         },
         onFilesDrop: (files) => {
           dispatch (chatViewActions.createAttachmentMessages (files));
+        },
+        onRetryAttachmentClick: (message) => {
+          dispatch (
+            chatViewActions.createAttachmentMessage (message.file, message.id)
+          );
         }
       };
     };

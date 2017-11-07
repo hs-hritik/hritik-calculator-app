@@ -249,6 +249,7 @@ define ("components/chatView",
         onSubmitInfoBotField: PropTypes.func.isRequired,
         onValueChangeInfoBotField: PropTypes.func.isRequired,
         onFilesDrop: PropTypes.func.isRequired,
+        onRetryAttachmentClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -269,6 +270,7 @@ define ("components/chatView",
                              isTyping={this.props.isTyping}
                              showAgentNickname={this.props.showAgentNickname}
                              text={this.props.text}
+                             onRetryAttachmentClick={this.props.onRetryAttachmentClick}
                              onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                              onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
               </DnDWrapper>

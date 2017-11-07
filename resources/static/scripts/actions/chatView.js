@@ -1335,14 +1335,13 @@ define ("actions/chatView",
      * @param {Object} - File object
      * @returns {Function} - Action
      */
-    const createAttachmentMessage = (file) => {
+    const createAttachmentMessage = (file, attachmentMsgId) => {
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
         const {domain, activeIssueId, identifier} = appState;
         // @TODO :- Remove message body after BE fix!
         const msgBody = "Sample attachment";
-        let attachmentMsgId = null;
 
         upload ({
           route: routes.postUserReply (domain, activeIssueId),
@@ -1397,20 +1396,22 @@ define ("actions/chatView",
           }
         });
 
-        // This will create a dummy attachment message
-        dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.ATTACHMENT,
-            issueId: activeIssueId,
-            messageConfig: {
-              file
-            },
-            onAddMessage (msg) {
-              // @TODO :- Call upload xhr after we get attachmentMsgId
-              attachmentMsgId = msg.id;
-            }
-          })
-        );
+        if (!attachmentMsgId) {
+          // This will create a dummy attachment message
+          dispatch (
+            createMessage ({
+              type: MESSAGE_TYPE.ATTACHMENT,
+              issueId: activeIssueId,
+              messageConfig: {
+                file
+              },
+              onAddMessage (msg) {
+                // @TODO :- Call upload xhr after we get attachmentMsgId
+                attachmentMsgId = msg.id;
+              }
+            })
+          );
+        }
       };
     };
 
@@ -1449,6 +1450,7 @@ define ("actions/chatView",
       createInitialUserMessage,
       registerUserProfile,
       startNextPreChatFeature,
-      createAttachmentMessages
+      createAttachmentMessages,
+      createAttachmentMessage
     };
   });

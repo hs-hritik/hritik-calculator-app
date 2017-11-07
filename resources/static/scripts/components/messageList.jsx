@@ -33,6 +33,7 @@ define ("components/messageList",
         showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
+        onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
       },
@@ -74,13 +75,14 @@ define ("components/messageList",
 
           return (
               <Message message={message}
-                      key={message.id}
-                      isLastMessage={messages.length === (index + 1)}
-                      isLastMessageInGroup={isLastMessageInGroup}
-                      showAgentNickname={this.props.showAgentNickname}
-                      text={this.props.text}
-                      onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
-                      onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+                       key={message.id}
+                       isLastMessage={messages.length === (index + 1)}
+                       isLastMessageInGroup={isLastMessageInGroup}
+                       showAgentNickname={this.props.showAgentNickname}
+                       text={this.props.text}
+                       onRetryAttachmentClick={this.props.onRetryAttachmentClick}
+                       onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
+                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
         });
       },

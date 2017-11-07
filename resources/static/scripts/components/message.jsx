@@ -40,6 +40,7 @@ define ("components/message",
         isLastMessageInGroup: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
+        onRetryAttachmentClick: PropTypes.func,
         text: PropTypes.shape ({
           faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
           faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
@@ -544,7 +545,8 @@ define ("components/message",
        * Click handler for retry attachment
        */
       _onRetryClick () {
-        // @TODO :- Handle retry attachment
+        const {message} = this.props;
+        this.props.onRetryAttachmentClick (message);
       },
 
       componentDidUpdate () {
