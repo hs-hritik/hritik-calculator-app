@@ -45,3 +45,9 @@
     }
   }
 }
+
+// Add icon related style here!
+// In moby this is added in legacy.scss but its not present in mirkwood
+.ion--spinning {
+  @include animation(rotate360, $function: linear, $duration: .75s, $count: infinite);
+}

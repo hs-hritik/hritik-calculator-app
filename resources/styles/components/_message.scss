@@ -22,6 +22,10 @@
   $end-chat-msg-text-color: color(text, light);
   $end-chat-msg-border-color: color(border, light);
   $message-details-color: color(text, light);
+  $failed-img-icon-width: 20px;
+  $failed-img-icon-height: 20px;
+  $failed-img-icon-color: color(error, text);
+  $error-message-border-color: color(error, border);
 
   .hs-message {
     align-self: flex-start;
@@ -32,6 +36,7 @@
       position: relative;
       flex: 0 0 auto;
       padding: gutter(8 12);
+      overflow: hidden;
       word-break: normal;
       word-wrap: break-word;
       white-space: pre-wrap;
@@ -85,6 +90,44 @@
       margin-left: gutter(8);
       font-size: font-size(body, small);
       letter-spacing: -.5px;
+    }
+
+    &__icon-error {
+      padding-right: gutter(4);
+      color: $failed-img-icon-color;
+    }
+
+    &__user-attachment {
+      display: flex;
+      align-items: center;
+    }
+
+    &__failed-img {
+      opacity: .5;
+    }
+
+    &__failed-img-icon {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: $failed-img-icon-width;
+      height: $failed-img-icon-height;
+      margin: auto;
+      color: $failed-img-icon-color;
+    }
+
+    &--no-padding {
+      .hs-message__item {
+        padding: 0;
+      }
+    }
+
+    &--error {
+      .hs-message__item {
+        border-color: $error-message-border-color;
+      }
     }
 
     &--end-chat {

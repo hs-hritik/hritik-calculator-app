@@ -9,12 +9,13 @@ define ("components/message",
     "constants/propTypes",
     "constants/message",
     "constants/icons",
+    "constants/errors",
     "gunpowder/utils/date",
     "gunpowder/utils/classes",
     "gunpowder/utils/object"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, ICONS_CONSTANTS, dateUtils, classes,
-            objUtils) {
+  function (PROP_TYPES, MESSAGE_CONSTANTS, ICONS_CONSTANTS, ERROR_CONSTANTS,
+    dateUtils, classes, objUtils) {
     "use strict";
 
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
@@ -23,8 +24,10 @@ define ("components/message",
     const MAX_CHAR_LIMIT = 22;
     const MAX_EXTENSION_LIMIT = 5;
     const ELLIPSIS_LENGTH = 3;
+    const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
 
     const {FILE_ICON} = ICONS_CONSTANTS;
+    const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
     const PropTypes = React.PropTypes;
 
@@ -53,15 +56,19 @@ define ("components/message",
       },
 
       render () {
-        if (this.props.message.type === MESSAGE_TYPE.END_CHAT) {
+        const {isCustomerMsg, type, states} = this.props.message;
+
+        if (type === MESSAGE_TYPE.END_CHAT) {
           return this._renderEndChatMessage ();
         }
 
-        const {isCustomerMsg} = this.props.message;
         const msgClasses = classes (
           "hs-message", {
             "hs-message--left": !isCustomerMsg,
-            "hs-message--right": isCustomerMsg
+            "hs-message--right": isCustomerMsg,
+            "hs-message--no-padding": isCustomerMsg &&
+                                      this._isAttachmentPreviewable (),
+            "hs-message--error": states && states.error
           }
         );
 
@@ -88,6 +95,9 @@ define ("components/message",
 
           case MESSAGE_TYPE.CSAT:
             return this._renderCsatMessage ();
+
+          case MESSAGE_TYPE.ATTACHMENT:
+            return this._renderAttachmentMessage ();
 
           default:
             return null;
@@ -219,6 +229,121 @@ define ("components/message",
       },
 
       /**
+       * Render attachment message
+       */
+      _renderAttachmentMessage () {
+        const {message} = this.props;
+        const renderConfig = {
+          name: "",
+          url: "",
+          iconClasses: "",
+          retry: false,
+          clickHandler: null
+        };
+        let attachmentEl = null;
+        let attachmentIsPreviewable = false;
+
+        // Attacment message is frontend/dummy message
+        if (message.isSystemMsg) {
+          renderConfig.name = message.file.name;
+          attachmentIsPreviewable = this._isAttachmentPreviewable (
+            renderConfig.name
+          );
+
+          // If attachment message is uploading, set loading icons
+          if (message.states.uploadInProgress) {
+            renderConfig.iconClasses = classes (
+              "ion-load-b",
+              "ion--spinning"
+            );
+          } else if (message.states.error) {
+            // If attachment message has errors, set icon classes depending on
+            // error code. Also attach retry click handler in case of failure is
+            // retryable.
+            const errorCode = message.states.errorCode;
+            const failureIsRetryable = (errorCode === FILE_UPLOAD_ERRORS.RETRY);
+
+            if (failureIsRetryable) {
+              renderConfig.onClick = this._onRetryClick;
+            }
+
+            renderConfig.iconClasses = classes ({
+              "hs-message__failed-img-icon": attachmentIsPreviewable,
+              "hs-message__icon-error": !attachmentIsPreviewable,
+              "ion-alert-circled": errorCode === FILE_UPLOAD_ERRORS.FAILED,
+              "ion-reset": failureIsRetryable
+            });
+          }
+        } else {
+          // Attacment message is backend message
+          const attachment = message.attachments [0];
+          renderConfig.name = attachment.fileName;
+          renderConfig.url = attachment.url;
+          renderConfig.iconClasses = "ion-attachment";
+          attachmentIsPreviewable = this._isAttachmentPreviewable (
+            renderConfig.name
+          );
+        }
+
+        if (attachmentIsPreviewable) {
+          attachmentEl = this._renderPreviewableAttachment (renderConfig);
+        } else {
+          attachmentEl = this._renderNonPreviewableAttachment (renderConfig);
+        }
+
+        return (
+          <div className="hs-message__item">
+            {attachmentEl}
+          </div>
+        );
+      },
+
+      /**
+       * Render previewable attachment
+       * @param {Object} config - render config object
+       * @property {String} config.url - attachment url
+       * @property {Function} config.onClick - attachment layout click handler
+       */
+      _renderPreviewableAttachment (config) {
+        const {url, iconClasses, onClick} = config;
+        const formattedFileName = this._formatFileName (config.name);
+
+        // @TODO :- Get alt text from designers
+        // Render uploaded image
+        if (url) {
+          return (
+            <img src={url} alt={formattedFileName} />
+          );
+        }
+
+        // Render local image
+        return (
+          <div onClick={onClick}>
+            <img ref={this._saveImageRef} className="hs-message__failed-img" />
+            <i className={iconClasses} />
+          </div>
+        );
+      },
+
+      /**
+       * Render non previewable attachment
+       * @param {Object} config - render config object
+       * @param {String} config.name - attachment name
+       * @param {String} config.iconClasses - attachment icon classes
+       * @param {Function} config.onClick - attachment layout click handler
+       */
+      _renderNonPreviewableAttachment (config) {
+        const {name, iconClasses, onClick} = config;
+
+        return (
+          <div className="hs-message__user-attachment" onClick={onClick}>
+            <i className={iconClasses} />
+            <span title={name}>{this._formatFileName (name)}</span>
+          </div>
+        );
+      },
+
+      /**
        * Render end chat message.
        */
       _renderEndChatMessage () {
@@ -330,6 +455,100 @@ define ("components/message",
         const nameStr = fileName.slice (0, nameLimit);
 
         return `${nameStr}...${extension}`;
+      },
+
+      /**
+       * Predicate to check if attachment is of type image
+       * @param {String} name - attachment file name
+       * @returns {Boolean} - attachment is of type image
+       */
+      _isImageAttachment (name) {
+        const {message} = this.props;
+
+        if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
+          return false;
+        }
+
+        if (!name) {
+          name = message.file ? message.file.name :
+                 message.attachments [0].fileName;
+        }
+
+        // If file does not contain any extension
+        if (name.indexOf (".") === -1) {
+          return false;
+        }
+
+        const dotIndex = name.lastIndexOf (".") + 1;
+        const fileExt = name.substr (dotIndex, name.length).toLowerCase ();
+
+        return IMAGE_EXTENSIONS.indexOf (fileExt) !== -1;
+      },
+
+      /**
+       * Predicate to check if attachment is previewable
+       * @param {String} name - attachment file name
+       * @returns {Boolean} - attachment is previewable
+       */
+      _isAttachmentPreviewable (name) {
+        const {message} = this.props;
+
+        if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
+          return false;
+        }
+
+        const isImageAttachment = this._isImageAttachment (name);
+        const localAttachmentHasError = message.isSystemMsg ?
+                                        message.states.error : true;
+
+        // For any attachment to be previewable
+        // a] The type of attachment must be of type image and
+        // b] If it is local image, it should have error
+        //    Do not show preview while uploading!
+        return (isImageAttachment && localAttachmentHasError);
+      },
+
+      /**
+       * Reference for image tag
+       */
+      _imgRef: null,
+
+      /**
+       * Save image reference
+       * @param {Object} ref - DOM reference of image
+       */
+      _saveImageRef (ref) {
+        this._imgRef = ref;
+      },
+
+      /**
+       * Preview attachment
+       */
+      _previewAttachment () {
+        const {message} = this.props;
+
+        if (!this._imgRef || !message.isSystemMsg) {
+          return;
+        }
+
+        const file = message.file;
+        const reader = new FileReader();
+        reader.readAsDataURL (file);
+        reader.onload = (ev) => {
+          // @TODO :- check if image ref has already set src
+          this._imgRef.src = ev.target.result;
+        };
+      },
+
+      /**
+       * Click handler for retry attachment
+       */
+      _onRetryClick () {
+        // @TODO :- Handle retry attachment
+      },
+
+      componentDidUpdate () {
+        this._previewAttachment ();
       }
     });
   }
