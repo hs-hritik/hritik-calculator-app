@@ -77,6 +77,20 @@ define ("reducers/entities",
             }
           });
 
+        case ACTION_TYPES.SET_ATTACHMENT_ERROR:
+          return update (state, {
+            messages: {
+              [action.messageId]: {
+                states: {
+                  uploadInProgress: {$set: false},
+                  // @TODO :- Rename 'error' to 'attachmentHasError'
+                  error: {$set: true},
+                  errorCode: {$set: action.errorCode}
+                }
+              }
+            }
+          });
+
         default:
           return state;
       }

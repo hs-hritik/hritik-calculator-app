@@ -1332,7 +1332,7 @@ define ("actions/chatView",
 
     /**
      * Create attachment message
-     * @param {file} - File object
+     * @param {Object} - File object
      * @returns {Function} - Action
      */
     const createAttachmentMessage = (file) => {
@@ -1390,9 +1390,10 @@ define ("actions/chatView",
             ];
             dispatch (batchActions (actionsToDispatch));
           },
-          onFailure: () => {
-            // @TODO :- Dispatch action to
-            // a] show error on attachment message
+          onFailure: (response) => {
+            dispatch (
+              setAttachmentError (attachmentMsgId, response.errorCode)
+            );
           }
         });
 
@@ -1410,6 +1411,20 @@ define ("actions/chatView",
             }
           })
         );
+      };
+    };
+
+    /**
+     * Action to set attachment error
+     * @param {String} messageId - message id of failed message
+     * @param {Number} errorCode - file upload error code
+     * @returns {Object} - Action
+     */
+    const setAttachmentError = (messageId, errorCode) => {
+      return {
+        type: ACTION_TYPES.SET_ATTACHMENT_ERROR,
+        messageId,
+        errorCode
       };
     };
 
