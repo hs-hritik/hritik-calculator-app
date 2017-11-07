@@ -7,10 +7,11 @@
 define ("components/replyBox",
   [
     "constants/keyCodes",
+    "components/commons/fileInput",
     "gunpowder/utils/classes",
     "gunpowder/widgets/textareaAutosize"
   ],
-  function (KEY_CODES, classes, TextareaAutosize) {
+  function (KEY_CODES, FileInput, classes, TextareaAutosize) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -29,14 +30,18 @@ define ("components/replyBox",
         autoFocus: PropTypes.bool,
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
+        onFilesChange: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           replyBtnPlaceholder: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        issueIsCreated: PropTypes.bool.isRequired
       },
 
       render () {
         const {text, disabled} = this.props;
 
+        // @TODO :- Do not use style of different component here!
+        // Create a separate style sheet for this component
         const replyBoxClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
@@ -57,12 +62,41 @@ define ("components/replyBox",
                                 disabled={disabled}
                                 autoFocus={this.props.autoFocus}
                                 dir="auto" />
-                <a className="hs-chat-footer__submit"
-                   onClick={this._onReplyClick}>
-                  <i className="ion-send" />
-                </a>
+                {this._renderReplyBoxAction ()}
             </div>
           </div>
+        );
+      },
+
+      /**
+       * Render reply box action
+       */
+      _renderReplyBoxAction () {
+        if (this.props.value || !this.props.issueIsCreated) {
+          return this._renderSendButton ();
+        }
+        return this._renderAttachmentButton ();
+      },
+
+
+      /**
+       * Render send button
+       */
+      _renderSendButton () {
+        return (
+          <a className="hs-chat-footer__submit" onClick={this._onReplyClick}>
+            <i className="ion-send" />
+          </a>
+        );
+      },
+
+      /**
+       * Render attachment button
+       */
+      _renderAttachmentButton () {
+        return (
+          <FileInput onChange={this.props.onFilesChange}
+                     iconClasses="ion-attachment" />
         );
       },
 
