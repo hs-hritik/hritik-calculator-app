@@ -44,12 +44,14 @@
     SDK_GET_PARENT_INFO: "sdk-get-parent-info",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
-    CMD_SET_CONFIG: "cmd-set-config",
+    CMD_SET_INITIAL_DATA: "cmd-set-initial-data",
     CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
+    CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
     CMD_SET_CIF: "cmd-set-cif",
     CMD_REPLACE_CIF: "cmd-replace-cif",
-    CMD_SET_PARENT_INFO: "cmd-set-parent-info"
+    CMD_SET_PARENT_INFO: "cmd-set-parent-info",
+    CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules"
   };
 
   const SUPPORTED_EVENTS = {
@@ -463,10 +465,10 @@
   };
 
   /**
-   * Post message to set config.
+   * Post message to set initial app data
    */
-  const setConfig = (config) => {
-    _postMessage (EVENT_TYPES.CMD_SET_CONFIG, config);
+  const setInitialData = (data) => {
+    _postMessage (EVENT_TYPES.CMD_SET_INITIAL_DATA, data);
   };
 
   /**
@@ -616,8 +618,18 @@
           // config, which along with other settings, determines whether
           // the widget should load or not.
 
-          // Set the client and wm configs to the app.
-          setConfig (win.helpshiftConfig);
+          // Set the initial data to the app state. This includes the following.
+          // Client config
+          // Web Chat (backend) config
+          // Identifier
+          // Parent page information (title, URL)
+          setInitialData ({
+            clientConfig: win.helpshiftConfig,
+            parentPageInfo: {
+              title: doc.title,
+              url: win.location.href
+            }
+          });
           break;
 
         case EVENT_TYPES.SDK_CONFIG_LOADED:
@@ -638,7 +650,9 @@
 
         case EVENT_TYPES.SDK_RESET:
           close ();
-          setConfig (win.helpshiftConfig);
+          setInitialData ({
+            clientConfig: win.helpshiftConfig
+          });
           break;
 
         case EVENT_TYPES.SDK_EVENT_CHAT_END:
@@ -691,6 +705,13 @@
     // message should be non-empty string
     if (message && (typeof message === "string")) {
       _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {message});
+    }
+  };
+
+  const setGreetingMessage = (message) => {
+    // message should be a non-empty string
+    if (message && typeof message === "string") {
+      _postMessage (EVENT_TYPES.CMD_SET_GREETING_MESSAGE, {message});
     }
   };
 
@@ -798,6 +819,15 @@
     });
   };
 
+  /**
+   * Handle proactive chat rules API
+   */
+  const setProactiveChatRules = (proactiveChatRules) => {
+    _postMessage (EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES, {
+      proactiveChatRules
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -806,10 +836,12 @@
     close,
     reset,
     setInitialUserMessage,
+    setGreetingMessage,
     addEventListener,
     removeEventListener,
     setCustomIssueFields,
-    replaceCustomIssueFields
+    replaceCustomIssueFields,
+    setProactiveChatRules
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them
