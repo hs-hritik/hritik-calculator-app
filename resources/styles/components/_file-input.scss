@@ -1,0 +1,25 @@
+// Styles for Helpshift Web Chat UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the webchat iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group file input
+///
+
+@include component(file-input) {
+
+  $icon-color: color(primary);
+
+  .hs-file-input {
+    display: flex;
+    color: $icon-color;
+
+    &__file {
+      display: none;
+    }
+  }
+}
