@@ -618,11 +618,7 @@
           // config, which along with other settings, determines whether
           // the widget should load or not.
 
-          // Set the initial data to the app state. This includes the following.
-          // Client config
-          // Web Chat (backend) config
-          // Identifier
-          // Parent page information (title, URL)
+          // Pass client config and parent page info to set initial app data
           setInitialData ({
             clientConfig: win.helpshiftConfig,
             parentPageInfo: {
@@ -708,6 +704,10 @@
     }
   };
 
+  /**
+   * JS API to set greeting message
+   * @param {String} message - greeting message
+   */
   const setGreetingMessage = (message) => {
     // message should be a non-empty string
     if (message && typeof message === "string") {
@@ -821,6 +821,7 @@
 
   /**
    * Handle proactive chat rules API
+   * @param {Object} proactiveChatRules - An object with conditions and actions for proactive chat
    */
   const setProactiveChatRules = (proactiveChatRules) => {
     _postMessage (EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES, {

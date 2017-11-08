@@ -24,46 +24,44 @@ define ("helpers/proactiveChat",
      * @param {Object} rule - The rule object with conditions
      * @returns {boolean}
      */
-    const _conditionsAreValid = (rule) => {
+    const _areConditionsValid = (rule) => {
       const {conditions} = rule;
 
-      conditions.forEach ((condition) => {
-        switch (condition.type) {
-          case CONDITION.PAGE_URL:
-            const conditionPageUrl = condition.value;
-            const pageUrl = store.getState ().appState.parentPageInfo.url;
+      return conditions.every ((condition) => {
+        let valid = true;
 
-            // @TODO: More operators to follow.
-            switch (condition.operator) {
-              case OPERATOR.EQUALS:
-                if (conditionPageUrl !== pageUrl) {
-                  return false;
-                }
-                break;
-            }
-            break;
+        if (condition.type === CONDITION.PAGE_URL) {
+          const conditionPageUrl = condition.value;
+          const pageUrl = store.getState ().appState.parentPageInfo.url;
 
-          case CONDITION.TAG:
-            const conditionTags = condition.value;
-            const pageTags = store.getState ().appState.tags;
+          // @TODO: More operators to follow.
+          switch (condition.operator) {
+            case OPERATOR.EQUALS:
+              if (conditionPageUrl !== pageUrl) {
+                valid = false;
+              }
+              break;
+          }
+        } else if (condition.type === CONDITION.TAG) {
+          const conditionTags = condition.value;
+          const pageTags = store.getState ().appState.tags;
 
-            // @TODO: More operators to follow.
-            switch (condition.operator) {
-              case OPERATOR.EQUALS:
-                const tagsAreValid = conditionTags.every ((tag) => {
-                  return pageTags.indexOf (tag) !== -1;
-                });
+          // @TODO: More operators to follow.
+          switch (condition.operator) {
+            case OPERATOR.EQUALS:
+              const tagsAreValid = conditionTags.every ((tag) => {
+                return pageTags.indexOf (tag) !== -1;
+              });
 
-                if (!tagsAreValid) {
-                  return false;
-                }
-                break;
-            }
-            break;
+              if (!tagsAreValid) {
+                valid = false;
+              }
+              break;
+          }
         }
-      });
 
-      return true;
+        return valid;
+      });
     };
 
     /**
@@ -114,6 +112,7 @@ define ("helpers/proactiveChat",
      * Execute a proactive chat rule
      * @param {Object} rule - The rule object
      */
+    // @TODO: Rename this to _executeRule
     const _execute = (rule) => {
       const {appState} = store.getState ();
 
@@ -121,7 +120,7 @@ define ("helpers/proactiveChat",
       // the conversation hasn't started already
       // no proactive chat rule has been executed
       // all the conditions for the rule satisfy
-      if (!appState.conversationStarted && !_ruleExecuted && _conditionsAreValid (rule)) {
+      if (!appState.conversationStarted && !_ruleExecuted && _areConditionsValid (rule)) {
         _applyActions (rule);
         _ruleExecuted = true;
       }
@@ -134,12 +133,9 @@ define ("helpers/proactiveChat",
      */
     const getProcessedRules = (rules) => {
       return rules.map ((rule) => {
-        const conditions = rule.conditions;
-        const conditionsLength = conditions.length;
+        const {conditions} = rule;
 
-        for (let i = 0; i < conditionsLength; i++) {
-          const condition = conditions [i];
-
+        conditions.forEach ((condition) => {
           switch (condition.type) {
             case CONDITION.TIME_ON_PAGE:
               rule.timeOnPage = condition.value * 1000; // In milliseconds
@@ -151,7 +147,7 @@ define ("helpers/proactiveChat",
               rule.timeLogicOperator = condition.operator;
               break;
           }
-        }
+        });
 
         return rule;
       });

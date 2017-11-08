@@ -220,6 +220,7 @@ define ("helpers/localStorage",
      */
     const reset = (options = {}) => {
       objUtils.forEachKey (KEYS, (key) => {
+        // @TODO: Check for site activity time as well and don't remove it
         if (!(options.skipUser && (USER_KEYS.indexOf (key) !== -1))) {
           lsUtils.removeItem (KEYS [key]);
         }
@@ -228,7 +229,7 @@ define ("helpers/localStorage",
 
     /**
      * Set site activity start time
-     * @param {number} value
+     * @param {number} value - unix timestamp
      */
     const setSiteActivityStartTime = (value) => {
       lsUtils.setItem (KEYS.SITE_ACTIVITY_START_TIME, value);

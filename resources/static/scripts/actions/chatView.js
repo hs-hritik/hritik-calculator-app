@@ -41,8 +41,13 @@ define ("actions/chatView",
           {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
-          {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS,
           {Input} = schema;
+
+    const {
+      ISSUE_STATE,
+      PRE_CHAT_STATE,
+      PRE_CHAT_FEATURES
+    } = APP_STATE_CONSTANTS;
 
     const GREETING_STATE = PRE_CHAT_STATE.greeting,
           USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
@@ -1202,7 +1207,13 @@ define ("actions/chatView",
     const startPreChatFeature = () => {
       return (dispatch, getState) => {
         const {appState} = getState ();
-        const {preChatFeatureOrder, featuresEnabled, preChatFeatureIndex} = appState;
+        const {
+          preChatFeatureOrder,
+          featuresEnabled,
+          preChatFeatureIndex,
+          executeGreetingMessage,
+          dummyIssueId
+        } = appState;
 
         // If the preChatFeatureIndex has reached the length of preChatFeatureOrder list,
         // it means all the pre-chat features are executed and create new issue.
@@ -1211,7 +1222,28 @@ define ("actions/chatView",
           return;
         }
 
-        const feature = preChatFeatureOrder [preChatFeatureIndex];
+        let feature = preChatFeatureOrder [preChatFeatureIndex];
+
+        // Check if we need to execute greeting message pre chat feature. Refer
+        // appState.rehydrate () for explanation of when executing greeting
+        // message is needed.
+        // If so,
+        // set current feature to execute to `greeting`
+        // set the greeting message feature state to initial, so that it executes
+        // set pre chat feature index to greeting message's index i.e. 0
+        // set executeGreetingMessage in the app state to false
+        // clear existing greeting message (or any other message)
+        if (executeGreetingMessage) {
+          feature = PRE_CHAT_FEATURES.GREETING;
+          dispatch (batchActions ([
+            updatePreChatFeatureState (PRE_CHAT_FEATURES.GREETING, GREETING_STATE.INITIAL),
+            actionCreators.setPreChatFeatureIndex (
+              preChatFeatureOrder.indexOf (PRE_CHAT_FEATURES.GREETING)
+            ),
+            actionCreators.setExecuteGreetingMessage (false),
+            setMessages (dummyIssueId, [])
+          ]));
+        }
 
         if (featuresEnabled [feature]) {
           // If the feature is enabled, start the feature.

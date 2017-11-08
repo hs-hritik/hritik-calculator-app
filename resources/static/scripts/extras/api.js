@@ -44,6 +44,7 @@ define ("extras/api",
       // This is useful for application flows that rely on parent page details
       // like URL and title. An example flow is the proactive chat rules flow.
       if (data.parentPageInfo) {
+        // @TODO: Rename setParentInfo to setParentPageInfo
         store.dispatch (appStateActions.setParentInfo (data.parentPageInfo));
       }
 
