@@ -25,7 +25,8 @@ define ("helpers/localStorage",
       INFO_BOT_CURRENT_FIELD: "ibcf",
       END_USER_FIRST_MSG_ID: "eufmi",
       LAST_ACTIVITY_TIME: "lat",
-      REPLY_TEXT: "rt"
+      REPLY_TEXT: "rt",
+      SITE_ACTIVITY_START_TIME: "sast"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -225,6 +226,20 @@ define ("helpers/localStorage",
       });
     };
 
+    /**
+     * Set site activity start time
+     * @param {number} value
+     */
+    const setSiteActivityStartTime = (value) => {
+      lsUtils.setItem (KEYS.SITE_ACTIVITY_START_TIME, value);
+    };
+
+    /**
+     * Get site activity start time
+     * @returns {number} - site activity start time
+     */
+    const getSiteActivityStartTime = () => lsUtils.getItem (KEYS.SITE_ACTIVITY_START_TIME);
+
     return {
       getUserId,
       setUserId,
@@ -251,6 +266,8 @@ define ("helpers/localStorage",
       setReplyText,
       getReplyText,
       setEndUserFirstMsgId,
-      getEndUserFirstMsgId
+      getEndUserFirstMsgId,
+      setSiteActivityStartTime,
+      getSiteActivityStartTime
     };
   });
