@@ -13,10 +13,18 @@
 @include component(file-input) {
 
   $icon-color: color(primary);
+  $info-text-color: color(text, light);
 
   .hs-file-input {
     display: flex;
-    color: $icon-color;
+
+    &__info-text {
+      color: $info-text-color;
+    }
+
+    &__icon {
+      color: $icon-color;
+    }
 
     &__file {
       display: none;

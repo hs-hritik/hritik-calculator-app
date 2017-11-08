@@ -5,7 +5,8 @@
  */
 
 define ("components/commons/fileInput",
-  function () {
+  ["gunpowder/utils/classes"],
+  function (classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -21,13 +22,33 @@ define ("components/commons/fileInput",
         /**
          * Icon classes
          */
-        iconClasses: PropTypes.string.isRequired
+        iconClasses: PropTypes.string.isRequired,
+
+        /**
+         * Info text to be displayed
+         */
+        infoText: PropTypes.string
       },
 
       render () {
+        const {infoText, iconClasses} = this.props;
+        let infoTextEl = null;
+
+        if (infoText) {
+          infoTextEl = (
+            <span className="hs-file-input__info-text">{infoText}</span>
+          );
+        }
+
+        const primaryIconClasses = classes (
+          "hs-file-input__icon",
+          iconClasses
+        );
+
         return (
           <label htmlFor="upload-file" className="hs-file-input">
-            <i className={this.props.iconClasses} />
+            <i className={primaryIconClasses} />
+            {infoTextEl}
             <input type="file"
                    id="upload-file"
                    multiple={true}
