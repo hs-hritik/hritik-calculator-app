@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helpshift Web Chat Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h2>Helpshift Proactive Web Chat Demo</h2>
+
+  <nav>
+    <ul>
+      <li><a href="/demo">Home</a></li>
+      <li><a href="/demo/product.html">Product</a></li>
+      <li><a href="/demo/checkout.html">Checkout</a></li>
+    </ul>
+  </nav>
+
+  <script>
+    /* eslint-disable */
+    var qs = function (a) {
+      if (a == "") return {};
+      var b = {};
+      for (var i = 0; i < a.length; ++i) {
+        var p = a[i].split('=', 2);
+        if (p.length == 1) b[p[0]] = "";else b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+      }
+      return b;
+    } (window.location.search.substr (1).split ('&'));
+
+    (function () {
+      var PLATFORM_ID = qs ["pid"] || "test_platform_20170901110844149-0319dffe2b25f9c",
+        DOMAIN = qs ["domain"] || "test",
+        USER_ID = qs ["userId"],
+        USER_NAME = qs ["userName"],
+        USER_EMAIL = qs ["userEmail"],
+        TAGS;
+
+      // Example :- Pass tags in following way
+      // http://domain.com?domain=test&tags=["web-chat","web-sdk"]
+      try {
+        TAGS = JSON.parse(qs ["tags"]);
+      } catch (exception) {
+        TAGS = null;
+      }
+
+      window.helpshiftConfig = {
+        platformId: PLATFORM_ID,
+        domain: DOMAIN,
+        userId: USER_ID ? USER_ID : "",
+        userName: USER_NAME ? USER_NAME : "",
+        userEmail: USER_EMAIL ? USER_EMAIL : "",
+        tags: TAGS || ["PDP_Chat"]
+      };
+    }) ();
+
+!function(t,e){if("function"!=typeof window.Helpshift){var n=function(){n.q.push(arguments)};n.q=[],window.Helpshift=n;var i,a=t.getElementsByTagName("script")[0];if(t.getElementById(e))return;i=t.createElement("script"),i.async=!0,i.id=e,i.src="{{ENV_WEB_CHAT_ROOT}}/webChat.js";var o=function(){window.Helpshift("init")};window.attachEvent?i.attachEvent("onload",o):i.addEventListener("load",o,!1),a.parentNode.insertBefore(i,a)}else window.Helpshift("update")}(document,"hs-chat");
+/* eslint-enable */
+  </script>
+
+  <script>
+    /* eslint-disable */
+    const BASE_URL = "http://localhost:3000/demo/";
+    const proactiveChatRules = [{
+      // Conditions start here
+      conditions: [{
+        type: "page_url",
+        operator: "equals",
+        value: `${BASE_URL}product.html`
+      }, {
+        type: "time_on_page",
+        operator: "equals",
+        value: 5
+      }, {
+        type: "time_on_site",
+        operator: "equals",
+        value: 30
+      }, {
+        type: "time_logic",
+        operator: "and",
+        value: ["time_on_page", "time_on_site"]
+      }],
+      // Actions start here
+      actions: [{
+        type: "widget",
+        operator: "open",
+        value: true
+      }, {
+        type: "greeting_message",
+        operator: "set",
+        value: "Proactive message triggered from the Product page!"
+      }, {
+        type: "tag",
+        operator: "set",
+        value: ["proactive", "pdp-proactive"]
+      }, {
+        type: "cif",
+        operator: "set",
+        value: {
+          "test_supervisor_n1": {
+            type: "multiline",
+            value: "CIF from the Product page"
+          },
+          "sdk_date": {
+            type: "date",
+            value: Date.now ()
+          }
+        }
+      }]
+    }];
+
+    Helpshift ("setProactiveChatRules", proactiveChatRules);
+    /* eslint-enable */
+  </script>
+</body>
+
+</html>
