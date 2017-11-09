@@ -9,10 +9,12 @@ define ("components/businessHoursView",
     "components/commons/viewHeader",
     "components/commons/branding",
     "components/commons/fileInput",
+    "components/commons/dndWrapper",
     "constants/businessHoursView",
     "gunpowder/utils/classes"
   ],
-  function (ViewHeader, Branding, FileInput, BUSINESS_HOURS_CONTANTS, classes) {
+  function (ViewHeader, Branding, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
+    classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -72,10 +74,13 @@ define ("components/businessHoursView",
             <ViewHeader title={text.businessHoursViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
-            <div className="hs-view__content">
-              {this._renderContactForm ()}
-              {this._renderOfflineMessage ()}
-            </div>
+              <div className="hs-view__content">
+                <DnDWrapper dragInfoText={text.dndInfoText}
+                            onDrop={this.props.onFilesChange} >
+                  {this._renderContactForm ()}
+                  {this._renderOfflineMessage ()}
+                </DnDWrapper>
+              </div>
           </div>
         );
       },
