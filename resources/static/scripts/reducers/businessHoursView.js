@@ -16,6 +16,12 @@ define ("reducers/businessHoursView",
     const update = React.addons.update;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONSTANTS.CONTACT_FORM_FIELDS;
 
+    const MAX_ATTACHMENT_LIMIT = 5;
+    const OPERATIONS = {
+      ADD: "ADD",
+      REMOVE: "REMOVE"
+    };
+
     const INITIAL_STATE = {
       businessHoursEnabled: false,
       inBusinessHours: true,
@@ -48,11 +54,15 @@ define ("reducers/businessHoursView",
           }
         },
         attachmentsMeta: {
-          attachmentsEnabled: false
+          // @TODO :- Remove 'attachmentsLimitExceed'
+          attachmentsEnabled: false,
+          attachmentsLimitExceed: false
         },
         attachments: []
       }
     };
+
+    // @TODO :- Move processing functions to helper
 
     /**
      * Returns processed attachments
@@ -88,7 +98,24 @@ define ("reducers/businessHoursView",
       });
     };
 
+    /**
+     * Predicate to check if attachment limit exceeds
+     * @param {Number} prevLength - length of previously set attachments
+     * @param {Number} newLength - length of new attachments
+     * @param {String} operation - type of operation performed (add/remove)
+     * @returns {Boolean} - attachment limit exceeds
+     */
+    const _doesAttachmentLimitExceed = (prevLength, newLength, operation) => {
+      if (operation === OPERATIONS.ADD) {
+        return (prevLength + newLength) > MAX_ATTACHMENT_LIMIT;
+      }
+
+      return (prevLength - newLength) > MAX_ATTACHMENT_LIMIT;
+    };
+
     return (state = INITIAL_STATE, action) => {
+      let limitExceeds;
+
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
           const businessHoursEnabled = action.config.business_hours_enabled;
@@ -152,19 +179,36 @@ define ("reducers/businessHoursView",
           });
 
         case ACTION_TYPES.ADD_BUSINESS_HOURS_ATTACHMENTS:
+          const processedAttachments = _getProcessedAttachments (action.files);
+          limitExceeds = _doesAttachmentLimitExceed (
+            state.contactFormDetails.attachments.length,
+            processedAttachments.length,
+            OPERATIONS.ADD
+          );
+
           return update (state, {
             contactFormDetails: {
-              attachments: {$push: _getProcessedAttachments (action.files)}
+              attachments: {$push: processedAttachments},
+              attachmentsMeta: {
+                attachmentsLimitExceed: {$set: limitExceeds}
+              }
             }
           });
 
         case ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT:
+          const filteredAttachments = _getFilteredAttachments (
+            state.contactFormDetails.attachments, action.attachmentId
+          );
+          limitExceeds = _doesAttachmentLimitExceed (
+            state.contactFormDetails.attachments.length,
+            filteredAttachments.length,
+            OPERATIONS.REMOVE
+          );
           return update (state, {
             contactFormDetails: {
-              attachments: {
-                $set: _getFilteredAttachments (
-                  state.contactFormDetails.attachments, action.attachmentId
-                )
+              attachments: {$set: filteredAttachments},
+              attachmentsMeta: {
+                attachmentsLimitExceed: {$set: limitExceeds}
               }
             }
           });

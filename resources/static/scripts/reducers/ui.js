@@ -46,7 +46,8 @@ define ("reducers/ui",
         businessHoursViewHeader: "",
         businessHoursContactFormMessage: "",
         businessHoursOfflineMessage: "",
-        dndInfoText: "Add files or drag here"
+        dndInfoText: "Add files or drag here",
+        businessHoursAttachmentsLimitExceed: "Maximum limit of attachments reached"
       },
       color: {
         primary: "#43BF6C"

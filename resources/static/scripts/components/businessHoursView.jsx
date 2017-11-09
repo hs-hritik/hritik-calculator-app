@@ -46,6 +46,7 @@ define ("components/businessHoursView",
           businessHoursContactFormMessage: PropTypes.string.isRequired,
           businessHoursOfflineMessage: PropTypes.string.isRequired,
           businessHoursThankYouMessage: PropTypes.string.isRequired,
+          businessHoursAttachmentsLimitExceed: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
@@ -54,8 +55,9 @@ define ("components/businessHoursView",
           message: FORM_FIELD_PROP_TYPE,
           attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
           attachmentsMeta: PropTypes.shape ({
-            attachmentsEnabled: PropTypes.bool
-          })
+            attachmentsEnabled: PropTypes.bool,
+            attachmentsLimitExceed: PropTypes.bool
+          }).isRequired
         }).isRequired,
         offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
         onMinimizeConversation: PropTypes.func.isRequired,
@@ -342,11 +344,15 @@ define ("components/businessHoursView",
        * Render attachment file limit error
        */
       _renderAttachmentErrors () {
-        // @TODO :- Conditionally render this layout
+        if (!this.props.contactFormDetails.attachmentsMeta.attachmentsLimitExceed) {
+          return null;
+        }
+
+        const {businessHoursAttachmentsLimitExceed} = this.props.text;
         return (
           <small className="hs-business-hours__attachment-limit-error">
             <i className="ion-alert-circled hs-business-hours__small-icon" />
-            <span>Maximum limit of attachments reached</span>
+            <span>{businessHoursAttachmentsLimitExceed}</span>
           </small>
         );
       },
