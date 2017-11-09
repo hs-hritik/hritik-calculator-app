@@ -36,6 +36,12 @@ define ("components/containers/businessHoursView",
         },
         onSubmitBusinessHoursContactForm () {
           dispatch (businessHoursActions.submitBusinessHoursContactForm ());
+        },
+        onFilesChange (files) {
+          dispatch (businessHoursActions.addAttachments (files));
+        },
+        onRemoveAttachment (attachmentId) {
+          dispatch (businessHoursActions.removeAttachment (attachmentId));
         }
       };
     };

@@ -7,9 +7,10 @@
 define ("reducers/businessHoursView",
   [
     "constants/actionTypes",
-    "constants/businessHoursView"
+    "constants/businessHoursView",
+    "gunpowder/utils/uuid"
   ],
-  function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS) {
+  function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS, uuidGenerator) {
     "use strict";
 
     const update = React.addons.update;
@@ -45,14 +46,53 @@ define ("reducers/businessHoursView",
             value: "",
             validations: ["required"]
           }
-        }
+        },
+        attachmentsMeta: {
+          attachmentsEnabled: false
+        },
+        attachments: []
       }
+    };
+
+    /**
+     * Returns processed attachments
+     * @param {Object} files - Files list array like object
+     * @returns {Array} - processed attachments
+     */
+    const _getProcessedAttachments = (files) => {
+      const processedAttachments = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files [i];
+        processedAttachments.push ({
+          id: uuidGenerator (),
+          name: file.name,
+          size: file.size,
+          // file is DOM object and saved in store as we want to send raw file
+          // object in api call when contact form is saved
+          file
+        });
+      }
+
+      return processedAttachments;
+    };
+
+    /**
+     * Returns filtered array excluding attachment to remove
+     * @param {Array} attachments - array of attachments in store
+     * @param {String} attachmentIdToRemove - attachment id to remove
+     */
+    const _getFilteredAttachments = (attachments, attachmentIdToRemove) => {
+      return attachments.filter ((attachment) => {
+        return attachment.id !== attachmentIdToRemove;
+      });
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
           const businessHoursEnabled = action.config.business_hours_enabled;
+          // @TODO :- Set value of 'attachmentsEnabled' after BE integration.
           const updateObject = {
             businessHoursEnabled: {$set: businessHoursEnabled},
             inBusinessHours: {$set: action.config.in_business_hours}
@@ -109,6 +149,24 @@ define ("reducers/businessHoursView",
         case ACTION_TYPES.SET_BUSINESS_HOURS_FORM_SUBMITTED:
           return update (state, {
             contactFormSubmitted: {$set: true}
+          });
+
+        case ACTION_TYPES.ADD_BUSINESS_HOURS_ATTACHMENTS:
+          return update (state, {
+            contactFormDetails: {
+              attachments: {$push: _getProcessedAttachments (action.files)}
+            }
+          });
+
+        case ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT:
+          return update (state, {
+            contactFormDetails: {
+              attachments: {
+                $set: _getFilteredAttachments (
+                  state.contactFormDetails.attachments, action.attachmentId
+                )
+              }
+            }
           });
 
         default:

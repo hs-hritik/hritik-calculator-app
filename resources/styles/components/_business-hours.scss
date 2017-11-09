@@ -12,6 +12,11 @@
 
 @include component(business-hours) {
 
+  $attachment-color: color(text, xx-light);
+  $remove-icon-color: color(text, light);
+  $file-name-color: color(text);
+  $error-color: color(error, text);
+
   .hs-business-hours {
     display: flex;
     flex: 1 1 auto;
@@ -21,6 +26,69 @@
 
     &__message {
       resize: none;
+    }
+
+    &__attachment-wrapper {
+      margin-bottom: gutter(8);
+      background: white;
+      border: 1px solid color(border);
+      border-radius: radius();
+    }
+
+    &__attachment {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: gutter(8);
+      color: $attachment-color;
+    }
+
+    &__small-icon {
+      padding-right: gutter(4);
+      font-size: font-size(body, small);
+    }
+
+    &__remove-icon {
+      color: $remove-icon-color;
+      cursor: pointer;
+    }
+
+    &__file-name {
+      padding-right: gutter(8);
+      color: $file-name-color;
+    }
+
+    &__attachment-placeholder {
+      padding: gutter(8);
+      margin-bottom: gutter(4);
+      cursor: pointer;
+      background: white;
+      border: 1px dashed color(border);
+      border-radius: radius();
+    }
+
+    &__attachment-info-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    &__attachment-name-wrapper {
+      display: flex;
+      flex-direction: column;
+      padding-left: gutter(4);
+    }
+
+    &__attachment-error {
+      display: flex;
+      align-items: center;
+      font-size: font-size(body, small);
+      color: $error-color;
+    }
+
+    &__attachment-limit-error {
+      display: flex;
+      align-items: center;
+      color: $error-color;
     }
   }
 }

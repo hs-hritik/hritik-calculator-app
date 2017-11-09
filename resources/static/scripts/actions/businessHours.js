@@ -222,10 +222,36 @@ define ("actions/businessHours",
       };
     };
 
+    /**
+     * Action to add attachments to store
+     * @param {Object} files - Array like files object
+     * @returns {Object} - Action
+     */
+    const addAttachments = (files) => {
+      return {
+        type: ACTION_TYPES.ADD_BUSINESS_HOURS_ATTACHMENTS,
+        files
+      };
+    };
+
+    /**
+     * Action to remove attachment from store
+     * @param {String} attachmentId - id of attachment
+     * @returns {Object} - Action
+     */
+    const removeAttachment = (attachmentId) => {
+      return {
+        type: ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT,
+        attachmentId
+      };
+    };
+
     return {
       setBusinessHoursContactFormDetails,
       submitBusinessHoursContactForm,
-      registerUserAndCreateIssue
+      registerUserAndCreateIssue,
+      addAttachments,
+      removeAttachment
     };
   }
 );
