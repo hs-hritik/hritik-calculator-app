@@ -16,10 +16,11 @@ define ("actions/businessHours",
     "gunpowder/utils/schema",
     "gunpowder/utils/xhr",
     "extras/postSdkMessage",
-    "utils/browser"
+    "utils/browser",
+    "utils/upload"
   ],
   function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr, postSdkMessage, browserUtils) {
+    xhrHelpers, schema, xhr, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {Input} = schema;
@@ -118,7 +119,7 @@ define ("actions/businessHours",
      */
     const createIssue = (config) => {
       const {id, platformId, message, inBusinessHours, tags, cif, domain,
-             onSuccess, onEnd} = config;
+             onSuccess, onFailure, onEnd, attachments} = config;
 
       const {appState} = store.getState ();
       const {metadata} = appState;
@@ -147,12 +148,13 @@ define ("actions/businessHours",
         xhrData.custom_fields = JSON.stringify (cif);
       }
 
-      xhr ({
+      upload ({
         route: routes.postIssue (domain),
-        method: "POST",
-        data: xhrData,
+        files: attachments,
+        formData: xhrData,
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess,
+        onFailure,
         onEnd
       });
     };
@@ -180,6 +182,12 @@ define ("actions/businessHours",
             const profileId = response ["profile-id"];
             const {tags, cif} = appState;
             const message = contactFormDetails.message.value.value;
+            let attachments = null;
+
+            if (contactFormDetails.attachmentsMeta.attachmentsEnabled &&
+                contactFormDetails.attachments.length) {
+              attachments = contactFormDetails.attachments.map (({file}) => file);
+            }
 
             dispatch (actionCreators.setUserProfileId (profileId));
             createIssue ({
@@ -190,8 +198,12 @@ define ("actions/businessHours",
               inBusinessHours: businessHoursViewState.inBusinessHours,
               tags,
               cif,
+              attachments,
               onSuccess: () => {
                 dispatch (setBusinessHoursFormSubmitted ());
+              },
+              onFailure: () => {
+                // @TODO :- Handle attachment upload failure
               },
               onEnd: () => {
                 dispatch (enableBusinessHoursContactForm ());

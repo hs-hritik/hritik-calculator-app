@@ -12,13 +12,25 @@ define ("utils/upload",
 
     return function (config) {
       var response, errorMsg, key, xhr;
+      // @NOTE :- Do not pass both 'file' and 'files' in config.
+      // These configs should be mutually exclusive.
       var file = config.file;
+      var files = config.files;
       var headers = config.headers;
       var header = null;
       var route = config.route;
       var formData = new FormData ();
+      var i;
 
-      formData.append ("attachment", file);
+      // If only one file is present, add it under 'attachment'.
+      if (file) {
+        formData.append ("attachment", file);
+      } else if (files) {
+        // If multiple files are present, add them under 'attachments'
+        for (i = 0; i < files.length; i++) {
+          formData.append ("attachments", files [i]);
+        }
+      }
 
       if (config.formData) {
         for (key in config.formData) {
@@ -40,7 +52,9 @@ define ("utils/upload",
       xhr.onload = function (event) {
         switch (event.target.status) {
           case 201:
-            config.onSuccess (JSON.parse (this.responseText));
+            if (config.onSuccess) {
+              config.onSuccess (JSON.parse (this.responseText));
+            }
             break;
 
           case 400:
@@ -51,19 +65,29 @@ define ("utils/upload",
             } catch (e) {
               errorMsg = "Default error";
             }
-            config.onFailure ({
-              error     : true,
-              errorMsg  : errorMsg,
-              errorCode : FILE_UPLOAD_ERRORS.RETRY
-            });
+
+            if (config.onFailure) {
+              config.onFailure ({
+                error     : true,
+                errorMsg  : errorMsg,
+                errorCode : FILE_UPLOAD_ERRORS.RETRY,
+                responseData: response
+              });
+            }
             break;
 
           default:
-            config.onFailure ({
-              error     : true,
-              errorMsg  : "Default error",
-              errorCode : FILE_UPLOAD_ERRORS.FAILURE
-            });
+            if (config.onFailure) {
+              config.onFailure ({
+                error     : true,
+                errorMsg  : "Default error",
+                errorCode : FILE_UPLOAD_ERRORS.FAILURE
+              });
+            }
+        }
+
+        if (event.target.readyState === 4 && config.onEnd) {
+          config.onEnd ();
         }
       };
       xhr.send (formData);
@@ -71,11 +95,13 @@ define ("utils/upload",
       return function () {
         xhr.abort ();
         xhr = null;
-        config.onFailure ({
-          error     : true,
-          errorMsg  : "Aborted",
-          errorCode : FILE_UPLOAD_ERRORS.ABORTED
-        });
+        if (config.onAbort) {
+          config.onAbort ({
+            error     : true,
+            errorMsg  : "Aborted",
+            errorCode : FILE_UPLOAD_ERRORS.ABORTED
+          });
+        }
       };
     };
   }
