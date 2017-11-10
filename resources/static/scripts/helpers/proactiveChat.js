@@ -112,8 +112,7 @@ define ("helpers/proactiveChat",
      * Execute a proactive chat rule
      * @param {Object} rule - The rule object
      */
-    // @TODO: Rename this to _executeRule
-    const _execute = (rule) => {
+    const _executeRule = (rule) => {
       const {appState} = store.getState ();
 
       // Execute the rule if
@@ -170,7 +169,7 @@ define ("helpers/proactiveChat",
       // Add proactive chat rules execution to the message queue to be executed
       // after the `time on page` time elapses.
       setTimeout (() => {
-        _execute (rule);
+        _executeRule (rule);
       }, timeOnPage);
 
       // If the user has spent more time than the `time on site` rule, the
@@ -179,10 +178,10 @@ define ("helpers/proactiveChat",
       // message queue to be executed after the `effective time on site` elapses.
       if (effectiveTimeOnSite > 0) {
         setTimeout (() => {
-          _execute (rule);
+          _executeRule (rule);
         }, effectiveTimeOnSite);
       } else {
-        _execute (rule);
+        _executeRule (rule);
       }
     };
 

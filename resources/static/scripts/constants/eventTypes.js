@@ -18,13 +18,13 @@ define ("constants/eventTypes",
       SDK_GET_PARENT_INFO: "sdk-get-parent-info",
       CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
       CMD_INITIALISE: "cmd-initialise",
-      CMD_SET_INITIAL_DATA: "cmd-set-initial-data",
+      CMD_SET_CONFIG: "cmd-set-config",
       CMD_RESET: "cmd-reset",
       CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
       CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
       CMD_SET_CIF: "cmd-set-cif",
       CMD_REPLACE_CIF: "cmd-replace-cif",
-      CMD_SET_PARENT_INFO: "cmd-set-parent-info",
+      CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
       CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules"
     };
   });

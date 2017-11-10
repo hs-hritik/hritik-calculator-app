@@ -33,21 +33,10 @@ define ("extras/api",
      * Set the initial data to the app state.
      * @param {Object} data
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
-     * @param {Object} data.parentPageInfo - Parent page details (title, URL)
      */
-    const setInitialData = (data) => {
+    const setConfig = (data) => {
       store.dispatch (appStateActions.setClientConfig (data.clientConfig));
       store.dispatch (appStateActions.setIdentifier (data.clientConfig.userId));
-
-      // Along with setting client config, identifier and web chat backend
-      // configuration, we need to set parent page information in the store.
-      // This is useful for application flows that rely on parent page details
-      // like URL and title. An example flow is the proactive chat rules flow.
-      if (data.parentPageInfo) {
-        // @TODO: Rename setParentInfo to setParentPageInfo
-        store.dispatch (appStateActions.setParentInfo (data.parentPageInfo));
-      }
-
       store.dispatch (appStateActions.setWmConfig ());
     };
 
@@ -154,8 +143,8 @@ define ("extras/api",
 
     const handleApis = (type, data) => {
       switch (type) {
-        case EVENT_TYPES.CMD_SET_INITIAL_DATA:
-          setInitialData (data);
+        case EVENT_TYPES.CMD_SET_CONFIG:
+          setConfig (data);
           break;
         case EVENT_TYPES.CMD_INITIALISE:
           app.init (data);
@@ -178,7 +167,7 @@ define ("extras/api",
         case EVENT_TYPES.CMD_REPLACE_CIF:
           store.dispatch (appStateActions.replaceCif (data.cifData));
           break;
-        case EVENT_TYPES.CMD_SET_PARENT_INFO:
+        case EVENT_TYPES.CMD_SET_PARENT_PAGE_INFO:
           // This is actual effect of event
           store.dispatch (appStateActions.setMetadata (data));
           // This is side effect of event.
@@ -186,6 +175,9 @@ define ("extras/api",
           handleIssueCreation ();
           break;
         case EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES:
+          if (data.parentPageInfo) {
+            store.dispatch (appStateActions.setParentPageInfo (data.parentPageInfo));
+          }
           store.dispatch (appStateActions.setProactiveChatRules (data.proactiveChatRules));
           store.dispatch (appStateActions.executeProactiveChatRules (data));
           break;

@@ -44,13 +44,13 @@
     SDK_GET_PARENT_INFO: "sdk-get-parent-info",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
-    CMD_SET_INITIAL_DATA: "cmd-set-initial-data",
+    CMD_SET_CONFIG: "cmd-set-config",
     CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
     CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
     CMD_SET_CIF: "cmd-set-cif",
     CMD_REPLACE_CIF: "cmd-replace-cif",
-    CMD_SET_PARENT_INFO: "cmd-set-parent-info",
+    CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules"
   };
 
@@ -460,15 +460,15 @@
   /**
    * Post message to set page info
    */
-  const setParentInfo = (data) => {
-    _postMessage (EVENT_TYPES.CMD_SET_PARENT_INFO, data);
+  const setParentPageInfo = (data) => {
+    _postMessage (EVENT_TYPES.CMD_SET_PARENT_PAGE_INFO, data);
   };
 
   /**
-   * Post message to set initial app data
+   * Post message to set app configuration
    */
-  const setInitialData = (data) => {
-    _postMessage (EVENT_TYPES.CMD_SET_INITIAL_DATA, data);
+  const setConfig = (data) => {
+    _postMessage (EVENT_TYPES.CMD_SET_CONFIG, data);
   };
 
   /**
@@ -619,12 +619,8 @@
           // the widget should load or not.
 
           // Pass client config and parent page info to set initial app data
-          setInitialData ({
-            clientConfig: win.helpshiftConfig,
-            parentPageInfo: {
-              title: doc.title,
-              url: win.location.href
-            }
+          setConfig ({
+            clientConfig: win.helpshiftConfig
           });
           break;
 
@@ -646,7 +642,7 @@
 
         case EVENT_TYPES.SDK_RESET:
           close ();
-          setInitialData ({
+          setConfig ({
             clientConfig: win.helpshiftConfig
           });
           break;
@@ -658,8 +654,9 @@
             }
           });
           break;
+
         case EVENT_TYPES.SDK_GET_PARENT_INFO:
-          setParentInfo ({
+          setParentPageInfo ({
             title: doc.title,
             url: win.location.href
           });
@@ -821,11 +818,19 @@
 
   /**
    * Handle proactive chat rules API
-   * @param {Object} proactiveChatRules - An object with conditions and actions for proactive chat
+   * @param {Object} data
+   * @param {Object} data.proactiveChatRules - An object with conditions and
+   *                 actions for proactive chat
+   * @param {Object} data.parentPageInfo - Parent page information used to set
+   *                 and execute proactive chat rules
    */
   const setProactiveChatRules = (proactiveChatRules) => {
     _postMessage (EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES, {
-      proactiveChatRules
+      proactiveChatRules,
+      parentPageInfo: {
+        title: doc.title,
+        url: win.location.href
+      }
     });
   };
 

@@ -825,7 +825,7 @@ define ("actions/appState",
      * @param {Object} parentPageInfo
      * @returns {Object} - Action
      */
-    const setParentInfo = (parentPageInfo) => {
+    const setParentPageInfo = (parentPageInfo) => {
       return {
         type: ACTION_TYPES.SET_PARENT_PAGE_INFO,
         parentPageInfo
@@ -873,7 +873,7 @@ define ("actions/appState",
       closeConversation,
       replaceCif,
       setMetadata,
-      setParentInfo,
+      setParentPageInfo,
       setProactiveChatRules,
       executeProactiveChatRules
     };
