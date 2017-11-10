@@ -1331,15 +1331,19 @@ define ("actions/chatView",
     };
 
     /**
-     * Create attachment message
-     * @param {Object} - File object
-     * @returns {Function} - Action
+     * Upload an attachment
+     * @param {Function} dispatch - dispatch
+     * @param {Function} getState - get state
+     * @param {Object} config - config containing file and attachmentMsgId
+     * @property {Object} config.file - file object
+     * @property {String} config.attachmentMsgId - attachment message id
      */
-    const createAttachmentMessage = (file, attachmentMsgId) => {
+    const uploadAttachment = (config) => {
       return (dispatch, getState) => {
         const state = getState ();
         const {appState} = state;
         const {domain, activeIssueId, identifier} = appState;
+        const {file, attachmentMsgId} = config;
         // @TODO :- Remove message body after BE fix!
         const msgBody = "Sample attachment";
 
@@ -1395,8 +1399,30 @@ define ("actions/chatView",
             );
           }
         });
+      };
+    };
 
-        if (!attachmentMsgId) {
+    /**
+     * Create attachment message
+     * @param {Object} - File object
+     * @returns {Function} - Action
+     */
+    const createAttachmentMessage = (file, attachmentMsgId) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {appState} = state;
+        const {activeIssueId} = appState;
+
+        if (attachmentMsgId) {
+          dispatch (
+            uploadAttachment ({
+              file,
+              attachmentMsgId
+            })
+          );
+        } else {
+          // If attachmentMsgId is not present, create dummy issue first then
+          // upload an attachment
           // This will create a dummy attachment message
           dispatch (
             createMessage ({
@@ -1406,8 +1432,12 @@ define ("actions/chatView",
                 file
               },
               onAddMessage (msg) {
-                // @TODO :- Call upload xhr after we get attachmentMsgId
-                attachmentMsgId = msg.id;
+                dispatch (
+                  uploadAttachment ({
+                    file,
+                    attachmentMsgId: msg.id
+                  })
+                );
               }
             })
           );
