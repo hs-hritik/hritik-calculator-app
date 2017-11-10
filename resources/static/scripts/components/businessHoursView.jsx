@@ -69,7 +69,15 @@ define ("components/businessHoursView",
         contactFormDisabled: PropTypes.bool.isRequired
       },
       render () {
-        const {text, browserIsMobile, onMinimizeConversation} = this.props;
+        const {
+          text,
+          browserIsMobile,
+          onMinimizeConversation,
+          onFilesChange,
+          contactFormDetails
+        } = this.props;
+
+        const {attachmentsEnabled} = contactFormDetails.attachmentsMeta;
 
         return (
           <div className="hs-view">
@@ -78,7 +86,8 @@ define ("components/businessHoursView",
                         onCloseBtnClick={onMinimizeConversation} />
               <div className="hs-view__content">
                 <DnDWrapper dragInfoText={text.dndInfoText}
-                            onDrop={this.props.onFilesChange} >
+                            onDrop={onFilesChange}
+                            enabled={attachmentsEnabled} >
                   {this._renderContactForm ()}
                   {this._renderOfflineMessage ()}
                 </DnDWrapper>

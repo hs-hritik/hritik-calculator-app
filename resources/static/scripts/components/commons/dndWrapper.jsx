@@ -21,8 +21,20 @@ define ("components/commons/dndWrapper",
         /**
          * Info text when files are dragged on container
          */
-        dragInfoText: PropTypes.string
+        dragInfoText: PropTypes.string,
+
+        /**
+         * Enable drag and drop events
+         */
+        enabled: PropTypes.bool
       },
+
+      getDefaultProps () {
+        return {
+          enabled: true
+        };
+      },
+
       getInitialState () {
         return {
           filesAreDragged: false
@@ -30,15 +42,22 @@ define ("components/commons/dndWrapper",
       },
 
       render () {
+        let dndEventProps = {};
+
+        if (this.props.enabled) {
+          dndEventProps = {
+            onDrag: this._defaultEventHandler,
+            onDragStart: this._defaultEventHandler,
+            onDragOver: this._defaultEventHandler,
+            onDragEnd: this._defaultEventHandler,
+            onDragEnter: this._onDragEnter,
+            onDragLeave: this._onDragLeave,
+            onDrop: this._onDrop
+          };
+        }
+
         return (
-          <div className="hs-dnd-wrapper"
-               onDrag={this._defaultEventHandler}
-               onDragStart={this._defaultEventHandler}
-               onDragOver={this._defaultEventHandler}
-               onDragEnd={this._defaultEventHandler}
-               onDragEnter={this._onDragEnter}
-               onDragLeave={this._onDragLeave}
-               onDrop={this._onDrop}>
+          <div className="hs-dnd-wrapper" {...dndEventProps} >
             {this._renderContents ()}
           </div>
         );

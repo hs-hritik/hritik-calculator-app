@@ -250,6 +250,7 @@ define ("components/chatView",
         onValueChangeInfoBotField: PropTypes.func.isRequired,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
+        issueIsCreated: PropTypes.bool.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -257,7 +258,12 @@ define ("components/chatView",
       },
 
       render () {
-        const {browserIsMobile, onMinimizeConversation, text} = this.props;
+        const {
+          browserIsMobile,
+          onMinimizeConversation,
+          text,
+          issueIsCreated
+        } = this.props;
 
         return (
           <div className="hs-view">
@@ -265,7 +271,9 @@ define ("components/chatView",
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
-              <DnDWrapper onDrop={this._onFilesDrop} dragInfoText={text.dndInfoText}>
+              <DnDWrapper onDrop={this._onFilesDrop}
+                          dragInfoText={text.dndInfoText}
+                          enabled={issueIsCreated} >
                 <MessageList messages={this.props.messages}
                              isTyping={this.props.isTyping}
                              showAgentNickname={this.props.showAgentNickname}

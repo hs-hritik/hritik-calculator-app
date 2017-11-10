@@ -33,7 +33,8 @@ define ("components/containers/chatView",
         isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
         infoBotField: infoBot.data [infoBot.currentField],
         showAgentNickname: state.appState.featuresEnabled.agentNickname,
-        text: state.ui.text
+        text: state.ui.text,
+        issueIsCreated: !!state.appState.activeIssueId
       };
     };
 
