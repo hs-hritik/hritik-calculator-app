@@ -28,9 +28,19 @@ define ("constants/message",
       FAQ_SUGGESTIONS_ADDITIONAL_HELP: 600
     };
 
+    const ORIGIN = {
+      ADMIN: "admin"
+    };
+
+    const STATE = {
+      READ: "read"
+    };
+
     return {
       TYPE,
       TIMEOUT,
-      TYPING_TIMEOUT
+      TYPING_TIMEOUT,
+      ORIGIN,
+      STATE
     };
   });

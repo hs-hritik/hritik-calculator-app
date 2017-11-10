@@ -16,6 +16,7 @@ define ("actions/appState",
     "helpers/xhr",
     "helpers/localStorage",
     "helpers/prepareProcessXhrData",
+    "helpers/audio",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
@@ -30,9 +31,9 @@ define ("actions/appState",
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS,
     CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
-    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, xhr, objUtils, uuidGenerator,
-    store, entitiesActions, chatViewActions, batchActions, actionCreators, postMessage,
-    browserUtils, postSdkMessage) {
+    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
+    xhr, objUtils, uuidGenerator, store, entitiesActions, chatViewActions,
+    batchActions, actionCreators, postMessage, browserUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -394,13 +395,17 @@ define ("actions/appState",
               ])
             );
 
-            const {ui} = store.getState ();
+            const {ui, appState: {featuresEnabled}} = store.getState ();
             const primaryColor = ui.color.primary;
             const cssConfig = {
               primaryColor,
               primaryColorLight: shadeColor (primaryColor, 0.20),
               primaryColorDark: shadeColor (primaryColor, -0.20)
             };
+
+            if (featuresEnabled.audioNotifications) {
+              audioHelpers.init ();
+            }
 
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig (cssConfig));

@@ -25,6 +25,7 @@ define ("actions/chatView",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr",
+    "helpers/audio",
     "helpers/liveUpdates",
     "extras/postSdkMessage",
     "utils/browser"
@@ -33,13 +34,16 @@ define ("actions/chatView",
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postSdkMessage, browserUtils) {
+    xhrHelpers, audioHelpers, liveUpdatesHelpers, postSdkMessage,
+    browserUtils) {
     "use strict";
 
     const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
+          MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
+          MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
           {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS,
           {Input} = schema;
@@ -239,22 +243,27 @@ define ("actions/chatView",
               setActiveIssueMsgCursor (response.messages_cursor)
             ]));
 
+            let unreadCount = latestState.chatView.unreadCount;
+            // Calculate unread count for agent messages only
+            response.messages.forEach ((msg) => {
+              if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
+                  msg.state !== MESSAGES_STATE.READ) {
+                unreadCount++;
+              }
+            });
+
             // If the chat view is active, and the messenger is not in minimized state,
             // that means the user has seen the messages.
             if (!latestState.appState.minimized &&
               ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
               dispatch (markMessagesSeen ());
             } else {
-              let unreadCount = latestState.chatView.unreadCount;
-              // Calculate unread count for agent messages only
-              response.messages.forEach ((msg) => {
-                if (msg.origin === "admin" && msg.state !== "read") {
-                  unreadCount++;
-                }
-              });
-
               dispatch (setUnreadCount (unreadCount));
               postSdkMessage.updateUnreadCount (unreadCount);
+            }
+
+            if (state.chatView.activeIssueMsgCursor && unreadCount) {
+              audioHelpers.playReceive ();
             }
           }
 
@@ -278,7 +287,8 @@ define ("actions/chatView",
                 dispatch (
                   createMessage (MESSAGE_TYPE.CSAT, null, {
                     typingTimer: null,
-                    issueId: appState.activeIssueId
+                    issueId: appState.activeIssueId,
+                    playAudio: true
                   })
                 );
               }
@@ -417,6 +427,10 @@ define ("actions/chatView",
         }
 
         dispatch (disableReplyBox ());
+
+        // @TODO: Move this inside the onSuccess callback of `postUserMessage`
+        // if it is required to be played when message is successfully sent.
+        audioHelpers.playSend ();
 
         postUserMessage ({
           domain: appState.domain,
@@ -665,7 +679,8 @@ define ("actions/chatView",
             isCustomerMsg: false
           }, {
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_PROBLEM_SOLVED,
-            issueId: state.appState.dummyIssueId
+            issueId: state.appState.dummyIssueId,
+            playAudio: true
           })
         );
 
@@ -721,7 +736,12 @@ define ("actions/chatView",
      */
     const createMessage = (messageType, config, options) => {
       return (dispatch) => {
-        const {typingTimer, issueId, onAddMessage} = options;
+        const {
+          typingTimer,
+          issueId,
+          onAddMessage,
+          playAudio = false
+        } = options;
         const msg = chatViewHelpers.createMessage (messageType, config);
 
         // As this message is created on frontend,
@@ -752,11 +772,17 @@ define ("actions/chatView",
             if (onAddMessage) {
               onAddMessage (msg);
             }
+            if (playAudio) {
+              audioHelpers.playAudio (messageType, msg.isCustomerMsg);
+            }
           }, typingTimer);
         } else {
           dispatch (batchActions (actionsToDispatch));
           if (onAddMessage) {
             onAddMessage (msg);
+          }
+          if (playAudio) {
+            audioHelpers.playAudio (messageType, msg.isCustomerMsg);
           }
         }
       };
@@ -844,6 +870,7 @@ define ("actions/chatView",
           }, {
             typingTimer: null,
             issueId: appState.dummyIssueId,
+            playAudio: true,
             onAddMessage: (msg) => {
               dispatch (
                 batchActions ([
@@ -922,6 +949,7 @@ define ("actions/chatView",
                     }, {
                       typingTimer: null,
                       issueId: appState.dummyIssueId,
+                      playAudio: true,
                       onAddMessage: () => {
                         onFaqSuggestionMessageAdd ();
                         dispatch (
@@ -971,6 +999,7 @@ define ("actions/chatView",
           }, {
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
             issueId: state.appState.dummyIssueId,
+            playAudio: true,
             onAddMessage: () => {
               store.dispatch (
                 batchActions ([
@@ -1077,6 +1106,7 @@ define ("actions/chatView",
             }, {
               typingTimer: TYPING_TIMEOUT.INFO_BOT_FIELD,
               issueId: state.appState.dummyIssueId,
+              playAudio: true,
               onAddMessage: () => {
                 dispatch (
                   batchActions ([
@@ -1133,7 +1163,8 @@ define ("actions/chatView",
             isCustomerMsg: true
           }, {
             typingTimer: null,
-            issueId: state.appState.dummyIssueId
+            issueId: state.appState.dummyIssueId,
+            playAudio: true
           })
         );
 
