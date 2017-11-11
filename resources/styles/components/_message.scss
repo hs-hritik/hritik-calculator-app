@@ -102,6 +102,12 @@
       align-items: center;
     }
 
+    &__attachment-error {
+      display: flex;
+      justify-content: flex-end;
+      color: $failed-img-icon-color;
+    }
+
     &__failed-img {
       opacity: .5;
     }

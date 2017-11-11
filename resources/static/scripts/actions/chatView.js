@@ -14,6 +14,7 @@ define ("actions/chatView",
     "constants/activeView",
     "constants/message",
     "constants/appState",
+    "constants/errors",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "gunpowder/utils/schema",
@@ -26,15 +27,17 @@ define ("actions/chatView",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/liveUpdates",
+    "helpers/attachments",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
+    ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, postSdkMessage, browserUtils, upload) {
+    xhrHelpers, liveUpdatesHelpers, attachmentsHelpers, postSdkMessage,
+    browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -44,6 +47,8 @@ define ("actions/chatView",
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
           {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS,
           {Input} = schema;
+
+    const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
     const GREETING_STATE = PRE_CHAT_STATE.greeting,
           USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
@@ -1318,9 +1323,7 @@ define ("actions/chatView",
     const createAttachmentMessages = (files) => {
       return (dispatch) => {
         // @TODO :- Add validation for
-        // a) file size
-        // b) number of files
-        // c) file extension
+        // a) file extension
         const filesLength = files.length;
 
         // @NOTE :- Files is not an array but array like object
@@ -1423,7 +1426,6 @@ define ("actions/chatView",
         } else {
           // If attachmentMsgId is not present, create dummy issue first then
           // upload an attachment
-          // This will create a dummy attachment message
           dispatch (
             createMessage ({
               type: MESSAGE_TYPE.ATTACHMENT,
@@ -1432,12 +1434,21 @@ define ("actions/chatView",
                 file
               },
               onAddMessage (msg) {
-                dispatch (
-                  uploadAttachment ({
-                    file,
-                    attachmentMsgId: msg.id
-                  })
-                );
+                attachmentMsgId = msg.id;
+                // If attachment size is not valid, set error on message
+                // Else upload the file
+                if (!attachmentsHelpers.isAttachmentsSizeValid (msg.file.size)) {
+                  dispatch (
+                    setAttachmentError (attachmentMsgId, FILE_UPLOAD_ERRORS.SIZE_EXCEEDED)
+                  );
+                } else {
+                  dispatch (
+                    uploadAttachment ({
+                      file,
+                      attachmentMsgId
+                    })
+                  );
+                }
               }
             })
           );

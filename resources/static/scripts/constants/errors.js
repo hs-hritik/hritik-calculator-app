@@ -9,7 +9,7 @@ define ("constants/errors",
     "use strict";
 
     const FILE_UPLOAD_ERRORS = {
-      INVALID: 1,
+      SIZE_EXCEEDED: 1,
       RETRY: 2,
       FAILURE: 3,
       ABORTED: 4

@@ -10,20 +10,16 @@ define ("components/message",
     "constants/message",
     "constants/icons",
     "constants/errors",
+    "helpers/attachments",
     "gunpowder/utils/date",
     "gunpowder/utils/classes",
     "gunpowder/utils/object"
   ],
   function (PROP_TYPES, MESSAGE_CONSTANTS, ICONS_CONSTANTS, ERROR_CONSTANTS,
-    dateUtils, classes, objUtils) {
+    attachmentsHelpers, dateUtils, classes, objUtils) {
     "use strict";
 
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
-    // Total character limit is 22
-    // 22 = X (name limit) + 3 (ELLIPSIS_LENGTH) + Y (extension)
-    const MAX_CHAR_LIMIT = 22;
-    const MAX_EXTENSION_LIMIT = 5;
-    const ELLIPSIS_LENGTH = 3;
     const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
 
     const {FILE_ICON} = ICONS_CONSTANTS;
@@ -45,7 +41,10 @@ define ("components/message",
           faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
           faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
-          csatLinkCaption: PropTypes.string.isRequired
+          csatLinkCaption: PropTypes.string.isRequired,
+          attachmentRetryError: PropTypes.string.isRequired,
+          attachmentFileSizeError: PropTypes.string.isRequired,
+          attachmentDefaultError: PropTypes.string.isRequired
         }).isRequired
       },
 
@@ -76,6 +75,7 @@ define ("components/message",
         return (
           <div className={msgClasses}>
             {this._renderMessage ()}
+            {this._renderAttachmentErrors ()}
             {this._renderMessageDetails ()}
           </div>
         );
@@ -143,7 +143,9 @@ define ("components/message",
        */
       _renderAttachment (attachment, index) {
         // @TODO :- Display extension on file icon
-        const formattedFileName = this._formatFileName (attachment.fileName);
+        const formattedFileName = attachmentsHelpers.getFormattedFileName (
+          attachment.fileName
+        );
         const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
 
         /* eslint-disable react/no-danger */
@@ -271,7 +273,7 @@ define ("components/message",
             renderConfig.iconClasses = classes ({
               "hs-message__failed-img-icon": attachmentIsPreviewable,
               "hs-message__icon-error": !attachmentIsPreviewable,
-              "ion-alert-circled": errorCode === FILE_UPLOAD_ERRORS.FAILED,
+              "ion-alert-circled": !failureIsRetryable,
               "ion-reset": failureIsRetryable
             });
           }
@@ -307,7 +309,9 @@ define ("components/message",
        */
       _renderPreviewableAttachment (config) {
         const {url, iconClasses, onClick} = config;
-        const formattedFileName = this._formatFileName (config.name);
+        const formattedFileName = attachmentsHelpers.getFormattedFileName (
+          config.name
+        );
 
         // @TODO :- Get alt text from designers
         // Render uploaded image
@@ -339,7 +343,7 @@ define ("components/message",
         return (
           <div className="hs-message__user-attachment" onClick={onClick}>
             <i className={iconClasses} />
-            <span title={name}>{this._formatFileName (name)}</span>
+            <span title={name}>{attachmentsHelpers.getFormattedFileName (name)}</span>
           </div>
         );
       },
@@ -354,6 +358,28 @@ define ("components/message",
             Chat Ended
           </div>
         );
+      },
+
+      /**
+       * Render attachment errors
+       */
+      _renderAttachmentErrors () {
+        const {message} = this.props;
+
+        let attachmentsErrorEl = null;
+
+        if (message.type === MESSAGE_TYPE.ATTACHMENT && message.isSystemMsg &&
+            message.states.error) {
+          const errorText = this._getAttachmentErrorMessage (message.states.errorCode);
+
+          attachmentsErrorEl = (
+            <div className="hs-message__attachment-error">
+              <small>{errorText}</small>
+            </div>
+          );
+        }
+
+        return attachmentsErrorEl;
       },
 
       /**
@@ -426,36 +452,29 @@ define ("components/message",
       },
 
       /**
-       * Return formatted file name
-       * @NOTE :- Move to gunpowder if required at multiple places
+       * Returns error text depending on error code
+       * @param {Number} errorCode - error code of failure
+       * @returns {String} - error text
        */
-      _formatFileName (fileName) {
-        if (fileName.length <= MAX_CHAR_LIMIT) {
-          return fileName;
+      _getAttachmentErrorMessage (errorCode) {
+        const {text} = this.props;
+        let errorText;
+
+        switch (errorCode) {
+          case FILE_UPLOAD_ERRORS.RETRY:
+            errorText = text.attachmentRetryError;
+            break;
+
+          case FILE_UPLOAD_ERRORS.SIZE_EXCEEDED:
+            errorText = text.attachmentFileSizeError;
+            break;
+
+          default:
+            errorText = text.attachmentDefaultError;
+            break;
         }
 
-        const fileNameArr = fileName.split (".");
-        // If there are multiple dots in file name, then get the last extension
-        // Example :- File name can be "hello.world.text";
-        let extension = fileNameArr.length > 1 ?
-                        fileNameArr [fileNameArr.length - 1] : "";
-
-        // If extension length is greater that MAX_EXTENSION_LIMIT then
-        // get last allowed characters of extension
-        // Example :- a-large-patch-file-name.having.other.multiple.extensions
-        const extensionLength = extension.length;
-        if (extensionLength > MAX_EXTENSION_LIMIT) {
-          extension = extension.slice (
-            extensionLength - MAX_EXTENSION_LIMIT,
-            extensionLength
-          );
-        }
-
-        // Note :- We are using extension.length again as the extension can change
-        const nameLimit = MAX_CHAR_LIMIT - ELLIPSIS_LENGTH - extension.length;
-        const nameStr = fileName.slice (0, nameLimit);
-
-        return `${nameStr}...${extension}`;
+        return errorText;
       },
 
       /**
