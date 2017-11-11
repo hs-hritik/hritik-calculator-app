@@ -14,7 +14,7 @@ define ("constants/proactiveChat",
         TIME_ON_PAGE: "time_on_page",
         TIME_ON_SITE: "time_on_site",
         PAGE_URL: "page_url",
-        TIME_LOGIC: "time_logic"
+        TIME_RELATION: "time_relation"
       },
       OPERATOR: {
         EQUALS: "equals",
@@ -30,6 +30,10 @@ define ("constants/proactiveChat",
         TAG: "tags",
         CIF: "cif",
         WIDGET: "widget"
+      },
+      TIME_RELATION: {
+        AND: "and",
+        OR: "or"
       }
     };
   });

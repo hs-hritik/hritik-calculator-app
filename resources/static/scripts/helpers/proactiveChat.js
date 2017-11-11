@@ -15,7 +15,7 @@ define ("helpers/proactiveChat",
   function (proactiveChatConstants, store, actionCreators, postSdkMessage, lsHelpers) {
     "use strict";
 
-    const {CONDITION, OPERATOR, ACTION} = proactiveChatConstants;
+    const {CONDITION, OPERATOR, ACTION, TIME_RELATION} = proactiveChatConstants;
 
     let _ruleExecuted = false;
 
@@ -177,8 +177,8 @@ define ("helpers/proactiveChat",
             case CONDITION.TIME_ON_SITE:
               rule.timeOnSite = condition.value * 1000; // In milliseconds
               break;
-            case CONDITION.TIME_LOGIC:
-              rule.timeLogicOperator = condition.operator;
+            case CONDITION.TIME_RELATION:
+              rule.timeRelationOperator = condition.operator;
               break;
           }
         });
@@ -192,31 +192,34 @@ define ("helpers/proactiveChat",
      * @param {Object} rule - The rule object
      */
     const enqueue = (rule) => {
-      // @TODO: Check for time logic (And/Or) and setTimeout accordingly
       const timeOnPage = rule.timeOnPage;
       const timeOnSite = rule.timeOnSite;
+      const timeRelation = rule.timeRelationOperator;
 
       const siteActivityStartTime = lsHelpers.getSiteActivityStartTime ();
       const siteActivityStartedAgo = Date.now () - siteActivityStartTime;
 
       const effectiveTimeOnSite = timeOnSite - siteActivityStartedAgo;
 
-      // Add proactive chat rules execution to the message queue to be executed
-      // after the `time on page` time elapses.
-      setTimeout (() => {
-        _executeRule (rule);
-      }, timeOnPage);
-
-      // If the user has spent more time than the `time on site` rule, the
-      // `effective time on site` would turn out to be negative. If so,
-      // execute the proactive chat rule immediately. Else, add it to the
-      // message queue to be executed after the `effective time on site` elapses.
-      if (effectiveTimeOnSite > 0) {
+      // If there's an AND relation b/w time on page and time on site,
+      // execute the rules after both the times have elapsed i.e. set time out
+      // with the greater of the two values.
+      if (timeRelation === TIME_RELATION.AND) {
         setTimeout (() => {
           _executeRule (rule);
-        }, effectiveTimeOnSite);
-      } else {
-        _executeRule (rule);
+        }, Math.max (timeOnPage, effectiveTimeOnSite));
+      } else if (timeRelation === TIME_RELATION.OR) {
+        // If the user has spent more time than the `time on site` rule, the
+        // `effective time on site` would turn out to be negative. If so,
+        // execute the proactive chat rule immediately.
+        if (effectiveTimeOnSite <= 0) {
+          _executeRule (rule);
+        } else {
+          // Else set time out with the smaller of the two values.
+          setTimeout (() => {
+            _executeRule (rule);
+          }, Math.min (timeOnPage, effectiveTimeOnSite));
+        }
       }
     };
 
