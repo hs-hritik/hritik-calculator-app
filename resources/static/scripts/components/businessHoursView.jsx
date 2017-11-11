@@ -11,10 +11,11 @@ define ("components/businessHoursView",
     "components/commons/fileInput",
     "components/commons/dndWrapper",
     "constants/businessHoursView",
+    "helpers/attachments",
     "gunpowder/utils/classes"
   ],
   function (ViewHeader, Branding, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
-    classes) {
+    attachmentsHelpers, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -47,6 +48,7 @@ define ("components/businessHoursView",
           businessHoursOfflineMessage: PropTypes.string.isRequired,
           businessHoursThankYouMessage: PropTypes.string.isRequired,
           businessHoursAttachmentsLimitExceed: PropTypes.string.isRequired,
+          businessHoursAttachmentsSizeExceed: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
@@ -55,8 +57,9 @@ define ("components/businessHoursView",
           message: FORM_FIELD_PROP_TYPE,
           attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
           attachmentsMeta: PropTypes.shape ({
-            attachmentsEnabled: PropTypes.bool,
-            attachmentsLimitExceed: PropTypes.bool
+            enabled: PropTypes.bool,
+            limitExceeded: PropTypes.bool,
+            sizeExceeded: PropTypes.bool
           }).isRequired
         }).isRequired,
         offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
@@ -77,7 +80,7 @@ define ("components/businessHoursView",
           contactFormDetails
         } = this.props;
 
-        const {attachmentsEnabled} = contactFormDetails.attachmentsMeta;
+        const {enabled} = contactFormDetails.attachmentsMeta;
 
         return (
           <div className="hs-view">
@@ -87,7 +90,7 @@ define ("components/businessHoursView",
               <div className="hs-view__content">
                 <DnDWrapper dragInfoText={text.dndInfoText}
                             onDrop={onFilesChange}
-                            enabled={attachmentsEnabled} >
+                            enabled={enabled} >
                   {this._renderContactForm ()}
                   {this._renderOfflineMessage ()}
                 </DnDWrapper>
@@ -251,19 +254,29 @@ define ("components/businessHoursView",
        * Render attachments
        */
       _renderAttachments () {
-        const {attachmentsEnabled} = this.props.contactFormDetails.attachmentsMeta;
+        const {contactFormDetails} = this.props;
+        const {enabled} = contactFormDetails.attachmentsMeta;
 
-        if (!attachmentsEnabled) {
+        if (!enabled) {
           return null;
         }
 
-        const {attachments} = this.props.contactFormDetails;
+        const {attachments} = contactFormDetails;
         let attachmentsWrapperEl = null;
 
         if (attachments.length) {
           const attachmentsEl = attachments.map (this._renderAttachment);
+          const {
+            limitExceeded,
+            sizeExceeded
+          } = contactFormDetails.attachmentsMeta;
+          const wrapperClasses = classes (
+            "hs-business-hours__attachment-wrapper", {
+              error: limitExceeded || sizeExceeded
+            }
+          );
           attachmentsWrapperEl = (
-            <div className="hs-business-hours__attachment-wrapper">
+            <div className={wrapperClasses}>
               {attachmentsEl}
             </div>
           );
@@ -272,8 +285,8 @@ define ("components/businessHoursView",
         return (
           <div>
             {attachmentsWrapperEl}
-            {this._renderPlaceholderAttachment ()}
             {this._renderAttachmentErrors ()}
+            {this._renderPlaceholderAttachment ()}
           </div>
         );
       },
@@ -312,9 +325,8 @@ define ("components/businessHoursView",
           );
         }
 
-        // @TODO :- Do following
-        // a] Display attachment size in MB
-        // b] Format file name
+        const formattedName = attachmentsHelpers.getFormattedFileName (name);
+        const formattedSize = attachmentsHelpers.humanizeFileSize (size);
 
         return (
           <div className="hs-business-hours__attachment" key={id}>
@@ -322,10 +334,10 @@ define ("components/businessHoursView",
               <i className="ion-attachment" />
               <div className="hs-business-hours__attachment-name-wrapper">
                 <div>
-                  <span className="hs-business-hours__file-name">
-                    {name}
+                  <span className="hs-business-hours__file-name" title={name} >
+                    {formattedName}
                   </span>
-                  <span>({size})</span>
+                  <span>({formattedSize})</span>
                 </div>
                 {attachmentErrorEl}
               </div>
@@ -353,16 +365,46 @@ define ("components/businessHoursView",
        * Render attachment file limit error
        */
       _renderAttachmentErrors () {
-        if (!this.props.contactFormDetails.attachmentsMeta.attachmentsLimitExceed) {
+        const {
+          limitExceeded,
+          sizeExceeded
+        } = this.props.contactFormDetails.attachmentsMeta;
+
+        if (!limitExceeded && !sizeExceeded) {
           return null;
         }
 
-        const {businessHoursAttachmentsLimitExceed} = this.props.text;
+        const {
+          businessHoursAttachmentsLimitExceed,
+          businessHoursAttachmentsSizeExceed
+        } = this.props.text;
+
+        let limitExceedInfoTextEl = null;
+        let sizeExceedInfoTextEl = null;
+
+        if (limitExceeded) {
+          limitExceedInfoTextEl = (
+            <small className="hs-business-hours__attachment-limit-error">
+              <i className="ion-alert-circled hs-business-hours__small-icon" />
+              <span>{businessHoursAttachmentsLimitExceed}</span>
+            </small>
+          );
+        }
+
+        if (sizeExceeded) {
+          sizeExceedInfoTextEl = (
+            <small className="hs-business-hours__attachment-limit-error">
+              <i className="ion-alert-circled hs-business-hours__small-icon" />
+              <span>{businessHoursAttachmentsSizeExceed}</span>
+            </small>
+          );
+        }
+
         return (
-          <small className="hs-business-hours__attachment-limit-error">
-            <i className="ion-alert-circled hs-business-hours__small-icon" />
-            <span>{businessHoursAttachmentsLimitExceed}</span>
-          </small>
+          <div>
+            {limitExceedInfoTextEl}
+            {sizeExceedInfoTextEl}
+          </div>
         );
       },
 

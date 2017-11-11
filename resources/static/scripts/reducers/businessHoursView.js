@@ -8,19 +8,17 @@ define ("reducers/businessHoursView",
   [
     "constants/actionTypes",
     "constants/businessHoursView",
+    "constants/attachments",
+    "helpers/attachments",
     "gunpowder/utils/uuid"
   ],
-  function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS, uuidGenerator) {
+  function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS, ATTACHMENT_CONSTANTS,
+    attachmentsHelper, uuidGenerator) {
     "use strict";
 
     const update = React.addons.update;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONSTANTS.CONTACT_FORM_FIELDS;
-
-    const MAX_ATTACHMENT_LIMIT = 5;
-    const OPERATIONS = {
-      ADD: "ADD",
-      REMOVE: "REMOVE"
-    };
+    const {ATTACHMENT_OPERATIONS} = ATTACHMENT_CONSTANTS;
 
     const INITIAL_STATE = {
       businessHoursEnabled: false,
@@ -54,9 +52,9 @@ define ("reducers/businessHoursView",
           }
         },
         attachmentsMeta: {
-          // @TODO :- Remove 'attachmentsLimitExceed'
-          attachmentsEnabled: false,
-          attachmentsLimitExceed: false
+          enabled: false,
+          limitExceeded: false,
+          sizeExceeded: false
         },
         attachments: []
       }
@@ -99,27 +97,28 @@ define ("reducers/businessHoursView",
     };
 
     /**
-     * Predicate to check if attachment limit exceeds
-     * @param {Number} prevLength - length of previously set attachments
-     * @param {Number} newLength - length of new attachments
-     * @param {String} operation - type of operation performed (add/remove)
-     * @returns {Boolean} - attachment limit exceeds
+     * Predicate to check validity of total size of all the attachments
+     * @param {Array} processedAttachments - Array of processed attachments
+     * @returns {Boolean} - Total attachment size is valid
      */
-    const _doesAttachmentLimitExceed = (prevLength, newLength, operation) => {
-      if (operation === OPERATIONS.ADD) {
-        return (prevLength + newLength) > MAX_ATTACHMENT_LIMIT;
-      }
+    const isTotalSizeOfAttachmentsValid = (processedAttachments) => {
+      let totalSize = 0;
 
-      return (prevLength - newLength) > MAX_ATTACHMENT_LIMIT;
+      processedAttachments.forEach ((attachment) => {
+        totalSize += attachment.size;
+      });
+
+      return attachmentsHelper.isAttachmentsSizeValid (totalSize);
     };
 
     return (state = INITIAL_STATE, action) => {
-      let limitExceeds;
+      let attachmentNumberIsInvalid;
+      let attachmentSizeIsInvalid;
 
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
           const businessHoursEnabled = action.config.business_hours_enabled;
-          // @TODO :- Set value of 'attachmentsEnabled' after BE integration.
+          // @TODO :- Set value of 'enabled' in attachmentsMeta after BE integration.
           const updateObject = {
             businessHoursEnabled: {$set: businessHoursEnabled},
             inBusinessHours: {$set: action.config.in_business_hours}
@@ -180,17 +179,24 @@ define ("reducers/businessHoursView",
 
         case ACTION_TYPES.ADD_BUSINESS_HOURS_ATTACHMENTS:
           const processedAttachments = _getProcessedAttachments (action.files);
-          limitExceeds = _doesAttachmentLimitExceed (
+          attachmentNumberIsInvalid = !(attachmentsHelper.isAttachmentsNumberValid (
             state.contactFormDetails.attachments.length,
             processedAttachments.length,
-            OPERATIONS.ADD
-          );
+            ATTACHMENT_OPERATIONS.ADD
+          ));
+          attachmentSizeIsInvalid = !(isTotalSizeOfAttachmentsValid (
+            processedAttachments.concat (state.contactFormDetails.attachments)
+          ));
 
           return update (state, {
+            contactFormDisabled: {
+              $set: (attachmentNumberIsInvalid || attachmentSizeIsInvalid)
+            },
             contactFormDetails: {
               attachments: {$push: processedAttachments},
               attachmentsMeta: {
-                attachmentsLimitExceed: {$set: limitExceeds}
+                limitExceeded: {$set: attachmentNumberIsInvalid},
+                sizeExceeded: {$set: attachmentSizeIsInvalid}
               }
             }
           });
@@ -199,16 +205,26 @@ define ("reducers/businessHoursView",
           const filteredAttachments = _getFilteredAttachments (
             state.contactFormDetails.attachments, action.attachmentId
           );
-          limitExceeds = _doesAttachmentLimitExceed (
+
+          attachmentNumberIsInvalid = !(attachmentsHelper.isAttachmentsNumberValid (
             state.contactFormDetails.attachments.length,
             filteredAttachments.length,
-            OPERATIONS.REMOVE
-          );
+            ATTACHMENT_OPERATIONS.REMOVE
+          ));
+
+          attachmentSizeIsInvalid = !(isTotalSizeOfAttachmentsValid (
+            filteredAttachments
+          ));
+
           return update (state, {
+            contactFormDisabled: {
+              $set: (attachmentNumberIsInvalid || attachmentSizeIsInvalid)
+            },
             contactFormDetails: {
               attachments: {$set: filteredAttachments},
               attachmentsMeta: {
-                attachmentsLimitExceed: {$set: limitExceeds}
+                limitExceeded: {$set: attachmentNumberIsInvalid},
+                sizeExceeded: {$set: attachmentSizeIsInvalid}
               }
             }
           });

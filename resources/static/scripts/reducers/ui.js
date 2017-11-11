@@ -50,7 +50,8 @@ define ("reducers/ui",
         businessHoursContactFormMessage: "",
         businessHoursOfflineMessage: "",
         dndInfoText: "Add files or drag here",
-        businessHoursAttachmentsLimitExceed: "Maximum limit of attachments reached"
+        businessHoursAttachmentsSizeExceed: "Total size of attachments exceed 25 MB",
+        businessHoursAttachmentsLimitExceed: "Attachment exceeds maximum limit of 5"
       },
       color: {
         primary: "#43BF6C"

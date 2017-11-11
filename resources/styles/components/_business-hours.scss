@@ -33,6 +33,10 @@
       background: white;
       border: 1px solid color(border);
       border-radius: radius();
+
+      &.error {
+        border: 1px solid $error-color;
+      }
     }
 
     &__attachment {
@@ -88,6 +92,7 @@
     &__attachment-limit-error {
       display: flex;
       align-items: center;
+      padding: gutter(0 4);
       color: $error-color;
     }
   }
