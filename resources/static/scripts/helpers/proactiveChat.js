@@ -150,6 +150,10 @@ define ("helpers/proactiveChat",
     const _executeRule = (rule) => {
       _applyActions (rule);
       _ruleExecuted = true;
+
+      if (rule.onceOnSite) {
+        lsHelpers.setProactiveChatHasTriggered (true);
+      }
     };
 
     /**
@@ -175,6 +179,9 @@ define ("helpers/proactiveChat",
           }
         });
 
+        // The rule can be configured to be executed only once per site.
+        rule.onceOnSite = rule.meta && rule.meta.trigger_once_on_site;
+
         return rule;
       });
     };
@@ -186,16 +193,20 @@ define ("helpers/proactiveChat",
     const enqueue = (rule) => {
       const {appState, businessHoursViewState} = store.getState ();
 
+      const outOfBusinessHours = businessHoursViewState.businessHoursEnabled &&
+        !businessHoursViewState.inBusinessHours;
+      const ruleExecutedOnSite = rule.onceOnSite && lsHelpers.getProactiveChatHasTriggered ();
+
       // Enqueue the proactive chat rules execution only if
       // the conversation hasn't started already
       // no proactive chat rule has been executed already
+      // if rule is configured to be executed once per site, it hasn't executed at all
       // it's business hours if business hours in enabled
       // all the conditions for the rule satisfy
-      const outOfBusinessHours = businessHoursViewState.businessHoursEnabled &&
-        !businessHoursViewState.inBusinessHours;
       if (
         !appState.conversationStarted &&
         !_ruleExecuted &&
+        !ruleExecutedOnSite &&
         !outOfBusinessHours &&
         _areConditionsValid (rule)
       ) {

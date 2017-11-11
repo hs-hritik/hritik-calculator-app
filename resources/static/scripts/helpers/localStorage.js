@@ -26,7 +26,8 @@ define ("helpers/localStorage",
       END_USER_FIRST_MSG_ID: "eufmi",
       LAST_ACTIVITY_TIME: "lat",
       REPLY_TEXT: "rt",
-      SITE_ACTIVITY_START_TIME: "sast"
+      SITE_ACTIVITY_START_TIME: "sast",
+      PROACTIVE_CHAT_HAS_TRIGGERED: "pcht"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -241,6 +242,20 @@ define ("helpers/localStorage",
      */
     const getSiteActivityStartTime = () => lsUtils.getItem (KEYS.SITE_ACTIVITY_START_TIME);
 
+    /**
+     * Set whether a proactive chat has triggered on the site or not
+     * @param {boolean} triggered
+     */
+    const setProactiveChatHasTriggered = (triggered) => {
+      lsUtils.setItem (KEYS.PROACTIVE_CHAT_HAS_TRIGGERED, triggered);
+    };
+
+    /**
+     * Get whether a proactive chat has triggered on the site or not
+     * @returns {boolean}
+     */
+    const getProactiveChatHasTriggered = () => lsUtils.getItem (KEYS.PROACTIVE_CHAT_HAS_TRIGGERED);
+
     return {
       getUserId,
       setUserId,
@@ -269,6 +284,8 @@ define ("helpers/localStorage",
       setEndUserFirstMsgId,
       getEndUserFirstMsgId,
       setSiteActivityStartTime,
-      getSiteActivityStartTime
+      getSiteActivityStartTime,
+      setProactiveChatHasTriggered,
+      getProactiveChatHasTriggered
     };
   });
