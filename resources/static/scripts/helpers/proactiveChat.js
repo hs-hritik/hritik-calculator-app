@@ -26,34 +26,69 @@ define ("helpers/proactiveChat",
      */
     const _areConditionsValid = (rule) => {
       const {conditions} = rule;
+      const {appState} = store.getState ();
 
       return conditions.every ((condition) => {
         let valid = true;
 
         if (condition.type === CONDITION.PAGE_URL) {
           const conditionPageUrl = condition.value;
-          const pageUrl = store.getState ().appState.parentPageInfo.url;
+          const pageUrl = appState.parentPageInfo.url;
 
-          // @TODO: More operators to follow.
           switch (condition.operator) {
             case OPERATOR.EQUALS:
-              if (conditionPageUrl !== pageUrl) {
+              if (pageUrl !== conditionPageUrl) {
+                valid = false;
+              }
+              break;
+            case OPERATOR.CONTAINS:
+              if (pageUrl.indexOf (conditionPageUrl) === -1) {
+                valid = false;
+              }
+              break;
+            case OPERATOR.STARTS_WITH:
+              if (pageUrl.indexOf (conditionPageUrl) !== 0) {
                 valid = false;
               }
               break;
           }
         } else if (condition.type === CONDITION.TAG) {
           const conditionTags = condition.value;
-          const pageTags = store.getState ().appState.tags;
+          const pageTags = appState.tags;
 
-          // @TODO: More operators to follow.
           switch (condition.operator) {
             case OPERATOR.EQUALS:
-              const tagsAreValid = conditionTags.every ((tag) => {
-                return pageTags.indexOf (tag) !== -1;
-              });
+              // All the tags passed with the page should exactly match the ones
+              // passed in the condition
+              let tagsAreEqual = true;
+              if (conditionTags.length !== pageTags.length) {
+                tagsAreEqual = false;
+              } else {
+                tagsAreEqual = conditionTags.every ((tag) => pageTags.indexOf (tag) !== -1);
+              }
 
-              if (!tagsAreValid) {
+              if (!tagsAreEqual) {
+                valid = false;
+              }
+              break;
+            case OPERATOR.NOT_EQUALS:
+            case OPERATOR.DOES_NOT_CONTAIN:
+              // None of the condition tags should be present in the page tags list
+              const tagsMatch = conditionTags.some (
+                (tag) => pageTags.indexOf (tag) !== -1
+              );
+
+              if (tagsMatch) {
+                valid = false;
+              }
+              break;
+            case OPERATOR.CONTAINS:
+              // Page tags should `contain` all the condition tags
+              const pageTagsContainConditionTags = conditionTags.every (
+                (tag) => pageTags.indexOf (tag) !== -1
+              );
+
+              if (!pageTagsContainConditionTags) {
                 valid = false;
               }
               break;

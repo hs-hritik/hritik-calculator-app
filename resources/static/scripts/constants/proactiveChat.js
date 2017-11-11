@@ -10,7 +10,7 @@ define ("constants/proactiveChat",
 
     return {
       CONDITION: {
-        TAG: "tag",
+        TAG: "tags",
         TIME_ON_PAGE: "time_on_page",
         TIME_ON_SITE: "time_on_site",
         PAGE_URL: "page_url",
@@ -18,12 +18,16 @@ define ("constants/proactiveChat",
       },
       OPERATOR: {
         EQUALS: "equals",
+        NOT_EQUALS: "not_equals",
+        CONTAINS: "contains",
+        DOES_NOT_CONTAIN: "does_not_contain",
+        STARTS_WITH: "starts_with",
         SET: "set",
         OPEN: "open"
       },
       ACTION: {
         GREETING: "greeting_message",
-        TAG: "tag",
+        TAG: "tags",
         CIF: "cif",
         WIDGET: "widget"
       }
