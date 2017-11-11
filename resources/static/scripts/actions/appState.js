@@ -180,7 +180,9 @@ define ("actions/appState",
      * - Minimize messenger if options.minimizeMessenger is true.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                                       By default, user related data will be reset.
+     *                  By default, user related data will be reset.
+     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
+     *                  chat related data or not. By default, they would NOT be reset.
      * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the messenger or not.
      *                                                Defaults to false.
      */
@@ -191,7 +193,8 @@ define ("actions/appState",
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
-          skipUser: options.skipUser
+          skipUser: options.skipUser,
+          resetProactiveChat: options.resetProactiveChat
         });
 
         const {minimized} = getState ().appState;

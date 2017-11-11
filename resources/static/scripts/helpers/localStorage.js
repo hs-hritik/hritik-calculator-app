@@ -31,6 +31,7 @@ define ("helpers/localStorage",
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
+    const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
 
     /**
      * Get userId
@@ -217,12 +218,16 @@ define ("helpers/localStorage",
      * Clear previously saved state from the localstorage.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                                       By default, user related data will be reset.
+     *                  By default, user related data will be reset.
+     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
+     *                  related data. By default, they won't be reset.
      */
     const reset = (options = {}) => {
       objUtils.forEachKey (KEYS, (key) => {
-        // @TODO: Check for site activity time as well and don't remove it
-        if (!(options.skipUser && (USER_KEYS.indexOf (key) !== -1))) {
+        if (
+          !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
+          !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1))
+        ) {
           lsUtils.removeItem (KEYS [key]);
         }
       });
