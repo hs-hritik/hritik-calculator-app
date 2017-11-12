@@ -27,11 +27,16 @@ define ("components/commons/fileInput",
         /**
          * Info text to be displayed
          */
-        infoText: PropTypes.string
+        infoText: PropTypes.string,
+
+        /**
+         * Disable input type
+         */
+        disabled: PropTypes.bool
       },
 
       render () {
-        const {infoText, iconClasses} = this.props;
+        const {infoText, iconClasses, disabled} = this.props;
         let infoTextEl = null;
 
         if (infoText) {
@@ -45,13 +50,20 @@ define ("components/commons/fileInput",
           iconClasses
         );
 
+        const fileInputClasses = classes (
+          "hs-file-input", {
+            "hs-file-input--disabled": disabled
+          }
+        );
+
         return (
-          <label htmlFor="upload-file" className="hs-file-input">
+          <label htmlFor="upload-file" className={fileInputClasses}>
             <i className={primaryIconClasses} />
             {infoTextEl}
             <input type="file"
                    id="upload-file"
                    multiple={true}
+                   disabled={disabled}
                    className="hs-file-input__file"
                    onChange={this._onFilesChange} />
           </label>
