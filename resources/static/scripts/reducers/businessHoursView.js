@@ -118,7 +118,6 @@ define ("reducers/businessHoursView",
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
           const businessHoursEnabled = action.config.business_hours_enabled;
-          // @TODO :- Set value of 'enabled' in attachmentsMeta after BE integration.
           const updateObject = {
             businessHoursEnabled: {$set: businessHoursEnabled},
             inBusinessHours: {$set: action.config.in_business_hours}
@@ -137,6 +136,9 @@ define ("reducers/businessHoursView",
               },
               message: {
                 enabled: {$set: businessHours.cf_fields.message}
+              },
+              attachmentsMeta: {
+                enabled: {$set: businessHours.attachments_enabled}
               }
             };
           }
