@@ -230,7 +230,7 @@ define ("components/message",
           url: "",
           iconClasses: "",
           retry: false,
-          clickHandler: null
+          onClick: null
         };
         let attachmentEl = null;
         let attachmentIsPreviewable = false;
@@ -284,7 +284,7 @@ define ("components/message",
         }
 
         return (
-          <div className="hs-message__item">
+          <div className="hs-message__item hs-message__attachment">
             {attachmentEl}
           </div>
         );
@@ -305,8 +305,9 @@ define ("components/message",
         // @TODO :- Get alt text from designers
         // Render uploaded image
         if (url) {
+          const clickHandler = this._onAttachmentClick.bind (this, url);
           return (
-            <img src={url} alt={formattedFileName} />
+            <img src={url} alt={formattedFileName} onClick={clickHandler} />
           );
         }
 
@@ -328,9 +329,16 @@ define ("components/message",
        */
       _renderNonPreviewableAttachment (config) {
         const {name, iconClasses, onClick} = config;
+        let wrapperClickHandler;
+
+        if (!this.props.message.isSystemMsg) {
+          wrapperClickHandler = this._onAttachmentClick.bind (this, config.url);
+        } else {
+          wrapperClickHandler = onClick;
+        }
 
         return (
-          <div className="hs-message__user-attachment" onClick={onClick}>
+          <div className="hs-message__user-attachment" onClick={wrapperClickHandler}>
             <i className={iconClasses} />
             <span title={name}>{attachmentsHelpers.getFormattedFileName (name)}</span>
           </div>

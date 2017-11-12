@@ -102,6 +102,10 @@
       align-items: center;
     }
 
+    &__attachment {
+      cursor: pointer;
+    }
+
     &__attachment-error {
       display: flex;
       justify-content: flex-end;
