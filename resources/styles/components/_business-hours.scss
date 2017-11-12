@@ -63,8 +63,7 @@
     }
 
     &__attachment-placeholder {
-      padding: gutter(8);
-      margin-bottom: gutter(4);
+      margin: gutter(4 0);
       cursor: pointer;
       background: white;
       border: 1px dashed color(border);

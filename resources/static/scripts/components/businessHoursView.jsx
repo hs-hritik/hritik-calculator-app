@@ -352,9 +352,16 @@ define ("components/businessHoursView",
        */
       _renderPlaceholderAttachment () {
         const {onFilesChange, text: {dndInfoText}} = this.props;
+        const {
+          limitExceeded,
+          sizeExceeded
+        } = this.props.contactFormDetails.attachmentsMeta;
+
+        const disableFileInput = (limitExceeded || sizeExceeded);
         return (
           <div className="hs-business-hours__attachment-placeholder">
             <FileInput iconClasses="ion-attachment"
+                       disabled={disableFileInput}
                        onChange={onFilesChange}
                        infoText={dndInfoText} />
           </div>
