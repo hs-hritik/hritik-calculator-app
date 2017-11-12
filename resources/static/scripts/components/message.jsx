@@ -8,21 +8,19 @@ define ("components/message",
   [
     "constants/propTypes",
     "constants/message",
-    "constants/icons",
     "constants/errors",
     "helpers/attachments",
     "gunpowder/utils/date",
     "gunpowder/utils/classes",
     "gunpowder/utils/object"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, ICONS_CONSTANTS, ERROR_CONSTANTS,
+  function (PROP_TYPES, MESSAGE_CONSTANTS, ERROR_CONSTANTS,
     attachmentsHelpers, dateUtils, classes, objUtils) {
     "use strict";
 
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
     const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
 
-    const {FILE_ICON} = ICONS_CONSTANTS;
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
     const PropTypes = React.PropTypes;
@@ -142,30 +140,21 @@ define ("components/message",
        * Render message attachment
        */
       _renderAttachment (attachment, index) {
-        // @TODO :- Display extension on file icon
         const formattedFileName = attachmentsHelpers.getFormattedFileName (
           attachment.fileName
         );
         const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
 
-        /* eslint-disable react/no-danger */
         return (
           <div key={index} className="hs-attachment" onClick={clickHandler}>
-            <i className="hs-attachment__file-icon"
-               dangerouslySetInnerHTML={{__html: FILE_ICON}} />
+            <i className="ion-attachment hs-attachment__icon" />
             <div className="hs-attachment__info-wrapper">
               <small title={attachment.fileName}>
                 <strong>{formattedFileName}</strong>
               </small>
-              <a className="hs-attachment__view-text">
-                <small>
-                  <strong>View</strong>
-                </small>
-              </a>
             </div>
           </div>
         );
-        /* eslint-enable react/no-danger */
       },
 
       /**

@@ -13,6 +13,7 @@
 @include component(attachment) {
 
   $attachment-background-color: color(bg, white);
+  $icon-color: color(primary);
 
   .hs-attachment {
     display: flex;
@@ -24,23 +25,14 @@
     border-radius: radius();
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
 
-    &__file-icon {
-      padding-top: gutter(2);
-      color: $attachment-background-color;
-    }
-
     &__info-wrapper {
       display: flex;
       flex-direction: column;
       margin-left: gutter(8);
     }
 
-    &__view-text {
-      margin-top: gutter(-2);
-    }
-
-    &__download-icon {
-      margin-right: gutter(4);
+    &__icon {
+      color: $icon-color;
     }
   }
 }
