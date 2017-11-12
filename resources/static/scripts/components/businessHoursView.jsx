@@ -49,6 +49,7 @@ define ("components/businessHoursView",
           businessHoursThankYouMessage: PropTypes.string.isRequired,
           businessHoursAttachmentsLimitExceed: PropTypes.string.isRequired,
           businessHoursAttachmentsSizeExceed: PropTypes.string.isRequired,
+          attachmentDefaultError: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
@@ -69,7 +70,8 @@ define ("components/businessHoursView",
         onFilesChange: PropTypes.func.isRequired,
         onRemoveAttachment: PropTypes.func.isRequired,
         contactFormSubmitted: PropTypes.bool.isRequired,
-        contactFormDisabled: PropTypes.bool.isRequired
+        contactFormDisabled: PropTypes.bool.isRequired,
+        submitInProgress: PropTypes.bool.isRequired
       },
       render () {
         const {
@@ -296,11 +298,12 @@ define ("components/businessHoursView",
        * @param {Object} attachment - attachment object
        */
       _renderAttachment (attachment) {
-        const {uploadInProgress, id, name, size, errorText} = attachment;
+        const {submitInProgress} = this.props;
+        const {id, name, size, attachmentHasError} = attachment;
         let iconEl = null;
         let attachmentErrorEl = null;
 
-        if (uploadInProgress) {
+        if (submitInProgress) {
           iconEl = (
             <i className="ion-load-b ion--spinning" />
           );
@@ -316,11 +319,11 @@ define ("components/businessHoursView",
           );
         }
 
-        if (errorText) {
+        if (attachmentHasError) {
           attachmentErrorEl = (
             <div className="hs-business-hours__attachment-error">
               <i className="ion-alert-circled hs-business-hours__small-icon" />
-              <span>{errorText}</span>
+              <span>{this.props.text.attachmentDefaultError}</span>
             </div>
           );
         }

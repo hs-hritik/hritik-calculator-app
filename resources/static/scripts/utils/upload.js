@@ -58,6 +58,9 @@ define ("utils/upload",
             break;
 
           case 400:
+          case 401:
+          case 500:
+          case 503:
             // if there is a response message, use that.
             try {
               response = JSON.parse (this.responseText);

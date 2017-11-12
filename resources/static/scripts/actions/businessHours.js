@@ -15,12 +15,13 @@ define ("actions/businessHours",
     "helpers/xhr",
     "gunpowder/utils/schema",
     "gunpowder/utils/xhr",
+    "gunpowder/utils/object",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr, postSdkMessage, browserUtils, upload) {
+    xhrHelpers, schema, xhr, objectUtils, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {Input} = schema;
@@ -202,8 +203,19 @@ define ("actions/businessHours",
               onSuccess: () => {
                 dispatch (setBusinessHoursFormSubmitted ());
               },
-              onFailure: () => {
-                // @TODO :- Handle attachment upload failure
+              onFailure: (failureResponse) => {
+                const responseAttachments = objectUtils.getIn (
+                  failureResponse,
+                  ["responseData", "data", "attachments"]
+                );
+                if (responseAttachments && responseAttachments.length) {
+                  const attachmentsWithError = getAttachmentsErrorActions (
+                    responseAttachments
+                  );
+                  if (attachmentsWithError.length) {
+                    dispatch (batchActions (attachmentsWithError));
+                  }
+                }
               },
               onEnd: () => {
                 dispatch (enableBusinessHoursContactForm ());
@@ -256,6 +268,35 @@ define ("actions/businessHours",
         type: ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT,
         attachmentId
       };
+    };
+
+    /**
+     * Action to set attachment error
+     * @param {Number} attachmentIndex - attachment index
+     * @returns {Object} - Action
+     */
+    const setAttachmentError = (attachmentIndex) => {
+      return {
+        type: ACTION_TYPES.SET_BUSINESS_HOURS_ATTACHMENT_ERROR,
+        attachmentIndex
+      };
+    };
+
+    /**
+     * Return array of actions for attachment having error
+     * @param {Array} attachments
+     * @returns {Array} - Array of actions for attachment having error
+     */
+    const getAttachmentsErrorActions = (attachments) => {
+      const errorAttachmentsActions = [];
+
+      attachments.forEach ((attachment, index) => {
+        if (attachment.error) {
+          errorAttachmentsActions.push (setAttachmentError (index));
+        }
+      });
+
+      return errorAttachmentsActions;
     };
 
     return {

@@ -26,6 +26,7 @@ define ("reducers/businessHoursView",
       offlineBehaviour: "",
       contactFormDisabled: false,
       contactFormSubmitted: false,
+      submitInProgress: false,
       contactFormDetails: {
         name: {
           enabled: true,
@@ -78,7 +79,8 @@ define ("reducers/businessHoursView",
           size: file.size,
           // file is DOM object and saved in store as we want to send raw file
           // object in api call when contact form is saved
-          file
+          file,
+          attachmentHasError: false
         });
       }
 
@@ -166,11 +168,13 @@ define ("reducers/businessHoursView",
 
         case ACTION_TYPES.ENABLE_BUSINESS_HOURS_CONTACT_FORM:
           return update (state, {
+            submitInProgress: {$set: false},
             contactFormDisabled: {$set: false}
           });
 
         case ACTION_TYPES.DISABLE_BUSINESS_HOURS_CONTACT_FORM:
           return update (state, {
+            submitInProgress: {$set: true},
             contactFormDisabled: {$set: true}
           });
 
@@ -227,6 +231,17 @@ define ("reducers/businessHoursView",
               attachmentsMeta: {
                 limitExceeded: {$set: attachmentNumberIsInvalid},
                 sizeExceeded: {$set: attachmentSizeIsInvalid}
+              }
+            }
+          });
+
+        case ACTION_TYPES.SET_BUSINESS_HOURS_ATTACHMENT_ERROR:
+          return update (state, {
+            contactFormDetails: {
+              attachments: {
+                [action.attachmentIndex]: {
+                  attachmentHasError: {$set: true}
+                }
               }
             }
           });
