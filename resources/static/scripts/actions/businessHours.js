@@ -185,7 +185,7 @@ define ("actions/businessHours",
             const message = contactFormDetails.message.value.value;
             let attachments = null;
 
-            if (contactFormDetails.attachmentsMeta.enabled &&
+            if (contactFormDetails.attachmentsMeta.featureIsEnabled &&
                 contactFormDetails.attachments.length) {
               attachments = contactFormDetails.attachments.map (({file}) => file);
             }

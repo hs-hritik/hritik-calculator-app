@@ -53,9 +53,9 @@ define ("reducers/businessHoursView",
           }
         },
         attachmentsMeta: {
-          enabled: false,
-          limitExceeded: false,
-          sizeExceeded: false
+          featureIsEnabled: false,
+          limitHasExceeded: false,
+          sizeHasExceeded: false
         },
         attachments: []
       }
@@ -140,7 +140,7 @@ define ("reducers/businessHoursView",
                 enabled: {$set: businessHours.cf_fields.message}
               },
               attachmentsMeta: {
-                enabled: {$set: businessHours.attachments_enabled}
+                featureIsEnabled: {$set: businessHours.attachments_enabled}
               }
             };
           }
@@ -201,8 +201,8 @@ define ("reducers/businessHoursView",
             contactFormDetails: {
               attachments: {$push: processedAttachments},
               attachmentsMeta: {
-                limitExceeded: {$set: attachmentNumberIsInvalid},
-                sizeExceeded: {$set: attachmentSizeIsInvalid}
+                limitHasExceeded: {$set: attachmentNumberIsInvalid},
+                sizeHasExceeded: {$set: attachmentSizeIsInvalid}
               }
             }
           });
@@ -229,8 +229,8 @@ define ("reducers/businessHoursView",
             contactFormDetails: {
               attachments: {$set: filteredAttachments},
               attachmentsMeta: {
-                limitExceeded: {$set: attachmentNumberIsInvalid},
-                sizeExceeded: {$set: attachmentSizeIsInvalid}
+                limitHasExceeded: {$set: attachmentNumberIsInvalid},
+                sizeHasExceeded: {$set: attachmentSizeIsInvalid}
               }
             }
           });
