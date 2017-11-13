@@ -85,6 +85,13 @@ define ("reducers/ui",
             }
           });
 
+        case ACTION_TYPES.SET_GREETING_MESSAGE:
+          return update (state, {
+            text: {
+              greetingMsg: {$set: action.message}
+            }
+          });
+
         default:
           return state;
       }

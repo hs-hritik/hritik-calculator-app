@@ -30,12 +30,13 @@ define ("extras/api",
     ];
 
     /**
-     * Set client and wm configs to the store
-     * @param {Object} clientConfig
+     * Set the initial data to the app state.
+     * @param {Object} data
+     * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
      */
-    const setConfig = (clientConfig) => {
-      store.dispatch (appStateActions.setClientConfig (clientConfig));
-      store.dispatch (appStateActions.setIdentifier (clientConfig.userId));
+    const setConfig = (data) => {
+      store.dispatch (appStateActions.setClientConfig (data.clientConfig));
+      store.dispatch (appStateActions.setIdentifier (data.clientConfig.userId));
       store.dispatch (appStateActions.setWmConfig ());
     };
 
@@ -152,23 +153,36 @@ define ("extras/api",
           handleMessengerToggle (data.minimized);
           break;
         case EVENT_TYPES.CMD_RESET:
-          store.dispatch (appStateActions.reset ());
+          // If the reset API is called manually, reset proactive chat data as well.
+          store.dispatch (appStateActions.reset ({
+            resetProactiveChat: true
+          }));
           break;
         case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
           handleInitialUserMsg (data.message);
           break;
+        case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
+          store.dispatch (actionCreators.setGreetingMsg (data.message));
+          break;
         case EVENT_TYPES.CMD_SET_CIF:
-          store.dispatch (appStateActions.setCif (data.cifData));
+          store.dispatch (actionCreators.setCif (data.cifData));
           break;
         case EVENT_TYPES.CMD_REPLACE_CIF:
           store.dispatch (appStateActions.replaceCif (data.cifData));
           break;
-        case EVENT_TYPES.CMD_SET_PARENT_INFO:
+        case EVENT_TYPES.CMD_SET_PARENT_PAGE_INFO:
           // This is actual effect of event
           store.dispatch (appStateActions.setMetadata (data));
           // This is side effect of event.
           // @TODO: Handle such side effects at more appropriate place.
           handleIssueCreation ();
+          break;
+        case EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES:
+          if (data.parentPageInfo) {
+            store.dispatch (appStateActions.setParentPageInfo (data.parentPageInfo));
+          }
+          store.dispatch (appStateActions.setProactiveChatRules (data.proactiveChatRules));
+          store.dispatch (appStateActions.executeProactiveChatRules (data));
           break;
       }
     };
