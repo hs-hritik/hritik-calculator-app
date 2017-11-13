@@ -334,7 +334,7 @@ define ("components/businessHoursView",
         return (
           <div className="hs-business-hours__attachment" key={id}>
             <div className="hs-business-hours__attachment-info-wrapper">
-              <i className="ion-attachment" />
+              <i className="ion-attachment ion-gray-color" />
               <div className="hs-business-hours__attachment-name-wrapper">
                 <div>
                   <span className="hs-business-hours__file-name" title={name} >
@@ -363,7 +363,7 @@ define ("components/businessHoursView",
         const disableFileInput = (limitExceeded || sizeExceeded);
         return (
           <div className="hs-business-hours__attachment-placeholder">
-            <FileInput iconClasses="ion-attachment"
+            <FileInput iconClasses="ion-attachment ion-gray-color"
                        disabled={disableFileInput}
                        onChange={onFilesChange}
                        infoText={dndInfoText} />

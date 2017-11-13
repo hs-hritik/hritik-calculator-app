@@ -46,8 +46,18 @@
   }
 }
 
+$primary-color: color(primary);
+$dark-gray-color: color(border, dark);
 // Add icon related style here!
 // In moby this is added in legacy.scss but its not present in mirkwood
 .ion--spinning {
   @include animation(rotate360, $function: linear, $duration: .75s, $count: infinite);
+}
+
+.ion-primary-color {
+  color: $primary-color;
+}
+
+.ion-gray-color {
+  color: $dark-gray-color;
 }

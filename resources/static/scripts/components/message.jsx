@@ -111,23 +111,23 @@ define ("components/message",
         return (
           <div className="hs-message__item" dir="auto">
             <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
-            {this._renderAttachments ()}
+            {this._renderAgentAttachments ()}
           </div>
         );
         /* eslint-enable react/no-danger */
       },
 
       /**
-       * Render message attachments
+       * Render agent message attachments
        */
-      _renderAttachments () {
+      _renderAgentAttachments () {
         const {attachments} = this.props.message;
 
         if (!(attachments && attachments.length)) {
           return null;
         }
 
-        const attachmentsEl = attachments.map (this._renderAttachment);
+        const attachmentsEl = attachments.map (this._renderAgentAttachment);
 
         return (
           <div>
@@ -137,9 +137,9 @@ define ("components/message",
       },
 
       /**
-       * Render message attachment
+       * Render agent message attachment
        */
-      _renderAttachment (attachment, index) {
+      _renderAgentAttachment (attachment, index) {
         const formattedFileName = attachmentsHelpers.getFormattedFileName (
           attachment.fileName
         );
@@ -147,7 +147,7 @@ define ("components/message",
 
         return (
           <div key={index} className="hs-attachment" onClick={clickHandler}>
-            <i className="ion-attachment hs-attachment__icon" />
+            <i className="ion-attachment ion-primary-color" />
             <div className="hs-attachment__info-wrapper">
               <small title={attachment.fileName}>
                 <strong>{formattedFileName}</strong>
@@ -271,7 +271,7 @@ define ("components/message",
           const attachment = message.attachments [0];
           renderConfig.name = attachment.fileName;
           renderConfig.url = attachment.url;
-          renderConfig.iconClasses = "ion-attachment";
+          renderConfig.iconClasses = "ion-attachment ion-primary-color";
           attachmentIsPreviewable = this._isAttachmentPreviewable (
             renderConfig.name
           );

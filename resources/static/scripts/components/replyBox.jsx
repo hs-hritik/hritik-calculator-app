@@ -96,7 +96,7 @@ define ("components/replyBox",
       _renderAttachmentButton () {
         return (
           <FileInput onChange={this.props.onFilesChange}
-                     iconClasses="ion-attachment" />
+                     iconClasses="ion-attachment ion-primary-color" />
         );
       },
 
