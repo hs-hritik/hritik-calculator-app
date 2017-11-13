@@ -25,10 +25,13 @@ define ("helpers/localStorage",
       INFO_BOT_CURRENT_FIELD: "ibcf",
       END_USER_FIRST_MSG_ID: "eufmi",
       LAST_ACTIVITY_TIME: "lat",
-      REPLY_TEXT: "rt"
+      REPLY_TEXT: "rt",
+      SITE_ACTIVITY_START_TIME: "sast",
+      PROACTIVE_CHAT_HAS_TRIGGERED: "pcht"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
+    const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
 
     /**
      * Get userId
@@ -215,15 +218,48 @@ define ("helpers/localStorage",
      * Clear previously saved state from the localstorage.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                                       By default, user related data will be reset.
+     *                  By default, user related data will be reset.
+     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
+     *                  related data. By default, they won't be reset.
      */
     const reset = (options = {}) => {
       objUtils.forEachKey (KEYS, (key) => {
-        if (!(options.skipUser && (USER_KEYS.indexOf (key) !== -1))) {
+        if (
+          !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
+          !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1))
+        ) {
           lsUtils.removeItem (KEYS [key]);
         }
       });
     };
+
+    /**
+     * Set site activity start time
+     * @param {number} value - unix timestamp
+     */
+    const setSiteActivityStartTime = (value) => {
+      lsUtils.setItem (KEYS.SITE_ACTIVITY_START_TIME, value);
+    };
+
+    /**
+     * Get site activity start time
+     * @returns {number} - site activity start time
+     */
+    const getSiteActivityStartTime = () => lsUtils.getItem (KEYS.SITE_ACTIVITY_START_TIME);
+
+    /**
+     * Set whether a proactive chat has triggered on the site or not
+     * @param {boolean} triggered
+     */
+    const setProactiveChatHasTriggered = (triggered) => {
+      lsUtils.setItem (KEYS.PROACTIVE_CHAT_HAS_TRIGGERED, triggered);
+    };
+
+    /**
+     * Get whether a proactive chat has triggered on the site or not
+     * @returns {boolean}
+     */
+    const getProactiveChatHasTriggered = () => lsUtils.getItem (KEYS.PROACTIVE_CHAT_HAS_TRIGGERED);
 
     return {
       getUserId,
@@ -251,6 +287,10 @@ define ("helpers/localStorage",
       setReplyText,
       getReplyText,
       setEndUserFirstMsgId,
-      getEndUserFirstMsgId
+      getEndUserFirstMsgId,
+      setSiteActivityStartTime,
+      getSiteActivityStartTime,
+      setProactiveChatHasTriggered,
+      getProactiveChatHasTriggered
     };
   });

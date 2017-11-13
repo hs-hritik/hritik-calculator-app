@@ -59,11 +59,70 @@ define ("actions/actionCreators",
       type: ACTION_TYPES.RESET
     });
 
+    /**
+     * Return the action to set the greeting message string
+     * @param {string} message - the greeting message to set
+     * @returns {Object} - the action object
+     */
+    const setGreetingMsg = (message) => ({
+      type: ACTION_TYPES.SET_GREETING_MESSAGE,
+      message
+    });
+
+    /**
+     * Return the action to set CIF
+     * @param {Object} cif - the CIF object to set
+     * @returns {Object} - the action object
+     */
+    const setCif = (cif) => ({
+      type: ACTION_TYPES.SET_CIF,
+      cif
+    });
+
+    /**
+     * Return the action to set tags
+     * @param {array} tags - the tags list to set
+     * @returns {Object} - the action object
+     */
+    const setTags = (tags) => ({
+      type: ACTION_TYPES.SET_TAGS,
+      tags
+    });
+
+    /**
+     * Return the action to set prechat feature index
+     * @param {number} index - the prechat feature index to set
+     * @returns {Object} - the action object
+     */
+    const setPreChatFeatureIndex = (index) => {
+      return {
+        type: ACTION_TYPES.SET_PRE_CHAT_FEATURE_INDEX,
+        preChatFeatureIndex: index
+      };
+    };
+
+    /**
+     * Return the action to set executeGreetingMessage in app state
+     * @param {boolean} executeGreetingMessagex - set the value to true or false
+     * @returns {Object} - the action object
+     */
+    const setExecuteGreetingMessage = (executeGreetingMessage) => {
+      return {
+        type: ACTION_TYPES.SET_EXECUTE_GREETING_MESSAGE,
+        executeGreetingMessage
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
       toggleAgentTyping,
       setMobileInfo,
-      reset
+      reset,
+      setGreetingMsg,
+      setCif,
+      setTags,
+      setPreChatFeatureIndex,
+      setExecuteGreetingMessage
     };
   });
