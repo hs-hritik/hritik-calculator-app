@@ -148,11 +148,31 @@ define ("helpers/proactiveChat",
      * @param {Object} rule - The rule object
      */
     const _executeRule = (rule) => {
-      _applyActions (rule);
-      _ruleExecuted = true;
+      const {appState, businessHoursViewState} = store.getState ();
 
-      if (rule.onceOnSite) {
-        lsHelpers.setProactiveChatHasTriggered (true);
+      const outOfBusinessHours = businessHoursViewState.businessHoursEnabled &&
+        !businessHoursViewState.inBusinessHours;
+      const ruleExecutedOnSite = rule.onceOnSite && lsHelpers.getProactiveChatHasTriggered ();
+
+      // Execute the proactive chat rule only if
+      // the conversation hasn't started already
+      // no proactive chat rule has been executed already
+      // if rule is configured to be executed once per site, it hasn't executed at all
+      // it's business hours if business hours in enabled
+      // all the conditions for the rule satisfy
+      if (
+        !appState.conversationStarted &&
+        !_ruleExecuted &&
+        !ruleExecutedOnSite &&
+        !outOfBusinessHours &&
+        _areConditionsValid (rule)
+      ) {
+        _applyActions (rule);
+        _ruleExecuted = true;
+
+        if (rule.onceOnSite) {
+          lsHelpers.setProactiveChatHasTriggered (true);
+        }
       }
     };
 
@@ -191,53 +211,34 @@ define ("helpers/proactiveChat",
      * @param {Object} rule - The rule object
      */
     const enqueue = (rule) => {
-      const {appState, businessHoursViewState} = store.getState ();
+      // Enqueue the proactive chat rules
+      const timeOnPage = rule.timeOnPage;
+      const timeOnSite = rule.timeOnSite;
+      const timeRelation = rule.timeRelationOperator;
 
-      const outOfBusinessHours = businessHoursViewState.businessHoursEnabled &&
-        !businessHoursViewState.inBusinessHours;
-      const ruleExecutedOnSite = rule.onceOnSite && lsHelpers.getProactiveChatHasTriggered ();
+      const siteActivityStartTime = lsHelpers.getSiteActivityStartTime ();
+      const siteActivityStartedAgo = Date.now () - siteActivityStartTime;
 
-      // Enqueue the proactive chat rules execution only if
-      // the conversation hasn't started already
-      // no proactive chat rule has been executed already
-      // if rule is configured to be executed once per site, it hasn't executed at all
-      // it's business hours if business hours in enabled
-      // all the conditions for the rule satisfy
-      if (
-        !appState.conversationStarted &&
-        !_ruleExecuted &&
-        !ruleExecutedOnSite &&
-        !outOfBusinessHours &&
-        _areConditionsValid (rule)
-      ) {
-        const timeOnPage = rule.timeOnPage;
-        const timeOnSite = rule.timeOnSite;
-        const timeRelation = rule.timeRelationOperator;
+      const effectiveTimeOnSite = timeOnSite - siteActivityStartedAgo;
 
-        const siteActivityStartTime = lsHelpers.getSiteActivityStartTime ();
-        const siteActivityStartedAgo = Date.now () - siteActivityStartTime;
-
-        const effectiveTimeOnSite = timeOnSite - siteActivityStartedAgo;
-
-        // If there's an AND relation b/w time on page and time on site,
-        // execute the rules after both the times have elapsed i.e. set time out
-        // with the greater of the two values.
-        if (timeRelation === TIME_RELATION.AND) {
+      // If there's an AND relation b/w time on page and time on site,
+      // execute the rules after both the times have elapsed i.e. set time out
+      // with the greater of the two values.
+      if (timeRelation === TIME_RELATION.AND) {
+        setTimeout (() => {
+          _executeRule (rule);
+        }, Math.max (timeOnPage, effectiveTimeOnSite));
+      } else if (timeRelation === TIME_RELATION.OR) {
+        // If the user has spent more time than the `time on site` rule, the
+        // `effective time on site` would turn out to be negative. If so,
+        // execute the proactive chat rule immediately.
+        if (effectiveTimeOnSite <= 0) {
+          _executeRule (rule);
+        } else {
+          // Else set time out with the smaller of the two values.
           setTimeout (() => {
             _executeRule (rule);
-          }, Math.max (timeOnPage, effectiveTimeOnSite));
-        } else if (timeRelation === TIME_RELATION.OR) {
-          // If the user has spent more time than the `time on site` rule, the
-          // `effective time on site` would turn out to be negative. If so,
-          // execute the proactive chat rule immediately.
-          if (effectiveTimeOnSite <= 0) {
-            _executeRule (rule);
-          } else {
-            // Else set time out with the smaller of the two values.
-            setTimeout (() => {
-              _executeRule (rule);
-            }, Math.min (timeOnPage, effectiveTimeOnSite));
-          }
+          }, Math.min (timeOnPage, effectiveTimeOnSite));
         }
       }
     };
