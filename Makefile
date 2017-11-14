@@ -110,7 +110,7 @@ prepare-dist:
 	@echo "Done"
 
 copy-html-libs:
-	@cp -R resources/static/{html,libs,fonts} resources/dist
+	@cp -R resources/static/{html,libs,fonts,assets} resources/dist
 
 copy-temp:
 	@mkdir -v resources/build

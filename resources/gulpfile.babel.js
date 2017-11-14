@@ -16,6 +16,8 @@ const PATHS = {
   htmlSrc: "static/**/*.html",
   fontsSrc: "static/fonts/**/*",
   fontsDest: "localhost/fonts/",
+  assetsSrc: "static/assets/**/*",
+  assetsDest: "localhost/assets",
   // Specific paths to run the local server
   demoSrc: "localhost/html/demo/index.html",
   demoDest: "localhost/demo/",
@@ -89,6 +91,14 @@ gulp.task ("fonts", () => {
 });
 
 /**
+ * Copy assets from source dir (workspace) to destination dir (server)
+ */
+gulp.task ("assets", () => {
+  return gulp.src (PATHS.assetsSrc)
+    .pipe (gulp.dest (PATHS.assetsDest));
+});
+
+/**
  * Local server specific task.
  * Copy the demo entry point HTML to a destination
  */
@@ -102,7 +112,7 @@ gulp.task ("copy-demo", () => {
  */
 gulp.task ("build-localhost", function () {
   console.log ("Preparing resources for local env");
-  runSequence ("html", "sass:styles", "libs", "fonts", "scripts",
+  runSequence ("html", "sass:styles", "libs", "fonts", "assets", "scripts",
     "replace-localhost", "copy-webchat", "copy-demo");
 });
 

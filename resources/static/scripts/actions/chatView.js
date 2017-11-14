@@ -428,10 +428,6 @@ define ("actions/chatView",
 
         dispatch (disableReplyBox ());
 
-        // @TODO: Move this inside the onSuccess callback of `postUserMessage`
-        // if it is required to be played when message is successfully sent.
-        audioHelpers.playSend ();
-
         postUserMessage ({
           domain: appState.domain,
           activeIssueId: appState.activeIssueId,
@@ -443,6 +439,7 @@ define ("actions/chatView",
             dispatch (udpateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (addMessages (appState.activeIssueId, [response.id]));
+            audioHelpers.playSend ();
           },
           onEnd: () => {
             dispatch (enableReplyBox ());
