@@ -128,7 +128,9 @@
       color: $failed-img-icon-color;
     }
 
-    &--no-padding {
+    &--image-attachment {
+      overflow: hidden;
+
       .hs-message__item {
         padding: 0;
       }
@@ -138,6 +140,18 @@
       .hs-message__item {
         border-color: $error-message-border-color;
       }
+    }
+
+    &__image-wrapper {
+      width: 260px;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: 100%;
+    }
+
+    &__height-finder {
+      width: 100%;
+      opacity: 0;
     }
 
     &--end-chat {

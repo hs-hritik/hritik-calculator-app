@@ -23,6 +23,8 @@ define ("components/message",
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
+    const IMAGE_MSG_MAX_HEIGHT = 170;
+
     const PropTypes = React.PropTypes;
 
     return React.createClass ({
@@ -54,6 +56,14 @@ define ("components/message",
         };
       },
 
+      getInitialState () {
+        return {
+          imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT,
+          imageLoaded: false,
+          localImageData: null
+        };
+      },
+
       render () {
         const {isCustomerMsg, type, states} = this.props.message;
 
@@ -65,8 +75,8 @@ define ("components/message",
           "hs-message", {
             "hs-message--left": !isCustomerMsg,
             "hs-message--right": isCustomerMsg,
-            "hs-message--no-padding": isCustomerMsg &&
-                                      this._isAttachmentPreviewable (),
+            "hs-message--image-attachment": isCustomerMsg &&
+                                            this._isAttachmentPreviewable (),
             "hs-message--error": states && states.error
           }
         );
@@ -295,29 +305,89 @@ define ("components/message",
        * Render previewable attachment
        * @param {Object} config - render config object
        * @property {String} config.url - attachment url
-       * @property {Function} config.onClick - attachment layout click handler
        */
       _renderPreviewableAttachment (config) {
-        const {url, iconClasses, onClick} = config;
         // @TODO :- Get alt text from designers
         // Render uploaded image
-        if (url) {
-          const formattedFileName = attachmentsHelpers.getFormattedFileName (
-            config.name
-          );
-          const clickHandler = this._onAttachmentClick.bind (this, url);
-          return (
-            <img src={url}
-                 onLoad={this._onImageLoad}
-                 alt={formattedFileName}
-                 onClick={clickHandler} />
+        if (config.url) {
+          return this._renderUploadedImage (config);
+        }
+        // Render local image
+        return this._renderLocalImage (config);
+      },
+
+      /**
+       * Render uploaded image
+       * @param {Object} config - render config object
+       * @property {String} config.url - attachment url
+       * @property {Function} config.onClick - attachment layout click handler
+       */
+      _renderUploadedImage (config) {
+        const {url} = config;
+        const clickHandler = this._onAttachmentClick.bind (this, url);
+        const wrapperStyles = {
+          backgroundImage: `url(${url})`,
+          height: `${this.state.imageWrapperHeight}px`
+        };
+        let imageEl = null;
+
+        if (!this.state.imageLoaded) {
+          imageEl = (
+            <img className="hs-message__height-finder"
+                 src={url}
+                 onLoad={this._onImageLoad} />
           );
         }
 
-        // Render local image
+        return (
+          <div style={wrapperStyles}
+               className="hs-message__image-wrapper"
+               onClick={clickHandler}>
+            {imageEl}
+          </div>
+        );
+      },
+
+      /**
+       * Render local image
+       * @param {Object} config - render config object
+       * @property {String} config.iconClasses - attachment icon classes
+       * @property {Function} config.onClick - attachment layout click handler
+       */
+      _renderLocalImage (config) {
+        const {iconClasses, onClick} = config;
+        const bgImg = this.state.localImageData ?
+                      `url(${this.state.localImageData})` : "none";
+        let imageEl = null;
+
+        if (!this.state.imageLoaded) {
+          const imageProps = {
+            ref: this._saveLocalImageRef,
+            className: "hs-message__height-finder"
+          };
+
+          if (this.state.localImageData) {
+            imageProps.src = this.state.localImageData;
+            imageProps.onLoad = this._onImageLoad;
+          }
+
+          imageEl = (
+            <img {...imageProps} />
+          );
+        }
+
+        const wrapperStyles = {
+          backgroundImage: bgImg,
+          height: `${this.state.imageWrapperHeight}px`
+        };
+
         return (
           <div onClick={onClick}>
-            <img ref={this._saveImageRef} className="hs-message__failed-img" />
+            <div ref={this._saveLocalImageWrapperRef}
+                 style={wrapperStyles}
+                 className="hs-message__image-wrapper hs-message__failed-img">
+             {imageEl}
+            </div>
             <i className={iconClasses} />
           </div>
         );
@@ -447,10 +517,20 @@ define ("components/message",
       /**
        * Load handler for image tag
        */
-      _onImageLoad () {
+      _onImageLoad (ev) {
+        const imageHeight = ev.target.clientHeight;
+        if (imageHeight < IMAGE_MSG_MAX_HEIGHT) {
+          // Set height of parent div
+          this.setState ({
+            imageWrapperHeight: imageHeight
+          });
+        }
         if (this.props.onImageLoad) {
           this.props.onImageLoad ();
         }
+        this.setState ({
+          imageLoaded: true
+        });
       },
 
       /**
@@ -540,32 +620,51 @@ define ("components/message",
       /**
        * Reference for image tag
        */
-      _imgRef: null,
+      _localImgWrapperRef: null,
+
+      _localImgRef: null,
 
       /**
-       * Save image reference
+       * Save local image wrapper reference
        * @param {Object} ref - DOM reference of image
        */
-      _saveImageRef (ref) {
-        this._imgRef = ref;
+      _saveLocalImageWrapperRef (ref) {
+        this._localImgWrapperRef = ref;
       },
+
+      /**
+       * Save local image reference
+       * @param {Object} ref - DOM reference of image
+       */
+      _saveLocalImageRef (ref) {
+        this._localImgRef = ref;
+      },
+
+      /**
+       * Flag to represent local image is picked up by file reader
+       */
+      _fileRead: false,
 
       /**
        * Preview attachment
        */
       _previewAttachment () {
         const {message} = this.props;
-
-        if (!this._imgRef || !message.isSystemMsg) {
+        if (!this._localImgWrapperRef || !message.isSystemMsg ||
+            this._fileRead) {
           return;
         }
+
+        this._fileRead = true;
 
         const file = message.file;
         const reader = new FileReader();
         reader.readAsDataURL (file);
         reader.onload = (ev) => {
           // @TODO :- check if image ref has already set src
-          this._imgRef.src = ev.target.result;
+          this.setState ({
+            localImageData: ev.target.result
+          });
         };
       },
 
