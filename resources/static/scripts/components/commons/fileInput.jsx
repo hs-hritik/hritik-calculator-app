@@ -32,11 +32,16 @@ define ("components/commons/fileInput",
         /**
          * Disable input type
          */
-        disabled: PropTypes.bool
+        disabled: PropTypes.bool,
+
+        /**
+         * No padding for content
+         */
+        noPadding: PropTypes.bool
       },
 
       render () {
-        const {infoText, iconClasses, disabled} = this.props;
+        const {infoText, iconClasses, disabled, noPadding} = this.props;
         let infoTextEl = null;
 
         if (infoText) {
@@ -52,7 +57,8 @@ define ("components/commons/fileInput",
 
         const fileInputClasses = classes (
           "hs-file-input", {
-            "hs-file-input--disabled": disabled
+            "hs-file-input--disabled": disabled,
+            "hs-file-input--no-padding": noPadding
           }
         );
 
