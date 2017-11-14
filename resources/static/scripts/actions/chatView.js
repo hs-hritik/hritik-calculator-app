@@ -1378,15 +1378,12 @@ define ("actions/chatView",
         const {appState} = state;
         const {domain, activeIssueId, identifier} = appState;
         const {file, attachmentMsgId} = config;
-        // @TODO :- Remove message body after BE fix!
-        const msgBody = "Sample attachment";
 
         upload ({
           route: routes.postUserReply (domain, activeIssueId),
           formData: {
             "identifier": identifier,
             "issue-id": appState.activeIssueId,
-            "message-body": msgBody,
             "message-type": MESSAGE_TYPE.ATTACHMENT
           },
           file: file,
