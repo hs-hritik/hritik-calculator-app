@@ -35,6 +35,7 @@ define ("components/message",
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
+        onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
           faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
           faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
@@ -298,16 +299,18 @@ define ("components/message",
        */
       _renderPreviewableAttachment (config) {
         const {url, iconClasses, onClick} = config;
-        const formattedFileName = attachmentsHelpers.getFormattedFileName (
-          config.name
-        );
-
         // @TODO :- Get alt text from designers
         // Render uploaded image
         if (url) {
+          const formattedFileName = attachmentsHelpers.getFormattedFileName (
+            config.name
+          );
           const clickHandler = this._onAttachmentClick.bind (this, url);
           return (
-            <img src={url} alt={formattedFileName} onClick={clickHandler} />
+            <img src={url}
+                 onLoad={this._onImageLoad}
+                 alt={formattedFileName}
+                 onClick={clickHandler} />
           );
         }
 
@@ -439,6 +442,15 @@ define ("components/message",
         }
 
         return timeAgoStr;
+      },
+
+      /**
+       * Load handler for image tag
+       */
+      _onImageLoad () {
+        if (this.props.onImageLoad) {
+          this.props.onImageLoad ();
+        }
       },
 
       /**
