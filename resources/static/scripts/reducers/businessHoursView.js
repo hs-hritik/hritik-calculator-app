@@ -18,7 +18,10 @@ define ("reducers/businessHoursView",
 
     const update = React.addons.update;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONSTANTS.CONTACT_FORM_FIELDS;
-    const {ATTACHMENT_OPERATIONS} = ATTACHMENT_CONSTANTS;
+    const {
+      ATTACHMENT_OPERATIONS,
+      BUSINESS_HOURS_ALLOWED_REMOVE_COUNT
+    } = ATTACHMENT_CONSTANTS;
 
     const INITIAL_STATE = {
       businessHoursEnabled: false,
@@ -214,7 +217,7 @@ define ("reducers/businessHoursView",
 
           attachmentNumberIsInvalid = !(attachmentsHelper.isAttachmentsNumberValid (
             state.contactFormDetails.attachments.length,
-            filteredAttachments.length,
+            BUSINESS_HOURS_ALLOWED_REMOVE_COUNT,
             ATTACHMENT_OPERATIONS.REMOVE
           ));
 

@@ -27,6 +27,7 @@ define ("constants/attachments",
     const MAX_CHAR_LIMIT = 22;
     const MAX_EXTENSION_LIMIT = 5;
     const ELLIPSIS_LENGTH = 3;
+    const BUSINESS_HOURS_ALLOWED_REMOVE_COUNT = 1;
 
     return {
       MAX_ATTACHMENT_LIMIT,
@@ -36,7 +37,8 @@ define ("constants/attachments",
       UNITS_LIST,
       MAX_CHAR_LIMIT,
       MAX_EXTENSION_LIMIT,
-      ELLIPSIS_LENGTH
+      ELLIPSIS_LENGTH,
+      BUSINESS_HOURS_ALLOWED_REMOVE_COUNT
     };
   }
 );
