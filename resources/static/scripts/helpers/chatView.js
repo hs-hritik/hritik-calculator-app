@@ -83,6 +83,27 @@ define ("helpers/chatView",
     };
 
     /**
+     * Creates attachment message object
+     * @param {Object} option - attachment options
+     * @returns {Object} - attachment message object.
+     */
+    const createAttachmentMessage = (option) => {
+      return {
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
+        type: MESSAGE_TYPE.ATTACHMENT,
+        isCustomerMsg: true,
+        isSystemMsg: true,
+        createdTs: Date.now (),
+        file: option.file,
+        states: {
+          uploadInProgress: true,
+          error: false,
+          errorCode: null
+        }
+      };
+    };
+
+    /**
      * Create message of given type.
      * @param {String} type - Message type.
      * @param {Object} options - Message options.
@@ -100,6 +121,9 @@ define ("helpers/chatView",
 
         case MESSAGE_TYPE.END_CHAT:
           return createEndChatMessage ();
+
+        case MESSAGE_TYPE.ATTACHMENT:
+          return createAttachmentMessage (options);
 
         default:
           return null;

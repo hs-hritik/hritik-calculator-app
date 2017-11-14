@@ -8,10 +8,14 @@ define ("components/businessHoursView",
   [
     "components/commons/viewHeader",
     "components/commons/branding",
+    "components/commons/fileInput",
+    "components/commons/dndWrapper",
     "constants/businessHoursView",
+    "helpers/attachments",
     "gunpowder/utils/classes"
   ],
-  function (ViewHeader, Branding, BUSINESS_HOURS_CONTANTS, classes) {
+  function (ViewHeader, Branding, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
+    attachmentsHelpers, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -23,6 +27,11 @@ define ("components/businessHoursView",
         validations: PropTypes.array
       }).isRequired
     }).isRequired;
+    const ATTACHMENT_PROP_TYPE = PropTypes.shape ({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      size: PropTypes.number
+    });
 
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
@@ -37,32 +46,57 @@ define ("components/businessHoursView",
           businessHoursViewHeader: PropTypes.string.isRequired,
           businessHoursContactFormMessage: PropTypes.string.isRequired,
           businessHoursOfflineMessage: PropTypes.string.isRequired,
-          businessHoursThankYouMessage: PropTypes.string.isRequired
+          businessHoursThankYouMessage: PropTypes.string.isRequired,
+          businessHoursAttachmentsLimitExceedMsg: PropTypes.string.isRequired,
+          businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
+          attachmentDefaultError: PropTypes.string.isRequired,
+          dndInfoText: PropTypes.string.isRequired
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
           name: FORM_FIELD_PROP_TYPE,
           email: FORM_FIELD_PROP_TYPE,
-          message: FORM_FIELD_PROP_TYPE
+          message: FORM_FIELD_PROP_TYPE,
+          attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
+          attachmentsMeta: PropTypes.shape ({
+            featureIsEnabled: PropTypes.bool,
+            limitHasExceeded: PropTypes.bool,
+            sizeHasExceeded: PropTypes.bool
+          }).isRequired
         }).isRequired,
         offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
         onMinimizeConversation: PropTypes.func.isRequired,
         onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
         onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
+        onFilesChange: PropTypes.func.isRequired,
+        onRemoveAttachment: PropTypes.func.isRequired,
         contactFormSubmitted: PropTypes.bool.isRequired,
-        contactFormDisabled: PropTypes.bool.isRequired
+        contactFormDisabled: PropTypes.bool.isRequired,
+        submitInProgress: PropTypes.bool.isRequired
       },
       render () {
-        const {text, browserIsMobile, onMinimizeConversation} = this.props;
+        const {
+          text,
+          browserIsMobile,
+          onMinimizeConversation,
+          onFilesChange,
+          contactFormDetails
+        } = this.props;
+
+        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
 
         return (
           <div className="hs-view">
             <ViewHeader title={text.businessHoursViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
-            <div className="hs-view__content">
-              {this._renderContactForm ()}
-              {this._renderOfflineMessage ()}
-            </div>
+              <div className="hs-view__content">
+                <DnDWrapper dragInfoText={text.dndInfoText}
+                            onDrop={onFilesChange}
+                            enabled={featureIsEnabled} >
+                  {this._renderContactForm ()}
+                  {this._renderOfflineMessage ()}
+                </DnDWrapper>
+              </div>
           </div>
         );
       },
@@ -84,6 +118,7 @@ define ("components/businessHoursView",
               {this._renderFormField (NAME)}
               {this._renderFormField (EMAIL)}
               {this._renderFormField (MESSAGE)}
+              {this._renderAttachments ()}
               <Branding text={text} />
             </div>
             {this._renderFooter ()}
@@ -218,6 +253,179 @@ define ("components/businessHoursView",
       },
 
       /**
+       * Render attachments
+       */
+      _renderAttachments () {
+        const {contactFormDetails} = this.props;
+        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
+
+        if (!featureIsEnabled) {
+          return null;
+        }
+
+        const {attachments} = contactFormDetails;
+        let attachmentsWrapperEl = null;
+
+        if (attachments.length) {
+          const attachmentsEl = attachments.map (this._renderAttachment);
+          const {
+            limitHasExceeded,
+            sizeHasExceeded
+          } = contactFormDetails.attachmentsMeta;
+          const wrapperClasses = classes (
+            "hs-business-hours__attachment-wrapper", {
+              error: limitHasExceeded || sizeHasExceeded
+            }
+          );
+          attachmentsWrapperEl = (
+            <div className={wrapperClasses}>
+              {attachmentsEl}
+            </div>
+          );
+        }
+
+        return (
+          <div>
+            {attachmentsWrapperEl}
+            {this._renderAttachmentErrors ()}
+            {this._renderPlaceholderAttachment ()}
+          </div>
+        );
+      },
+
+      /**
+       * Render attachment
+       * @param {Object} attachment - attachment object
+       */
+      _renderAttachment (attachment) {
+        const {submitInProgress} = this.props;
+        const {id, name, size, attachmentHasError} = attachment;
+        let iconEl = null;
+        let attachmentErrorEl = null;
+
+        if (submitInProgress) {
+          iconEl = (
+            <i className="ion-load-b ion--spinning" />
+          );
+        } else {
+          const iconClasses = classes (
+            "ion-cross",
+            "hs-business-hours__small-icon",
+            "hs-business-hours__remove-icon"
+          );
+          iconEl = (
+            <i className={iconClasses}
+               onClick={this._onRemoveAttachmentClick.bind (this, id)} />
+          );
+        }
+
+        if (attachmentHasError) {
+          attachmentErrorEl = (
+            <div className="hs-business-hours__attachment-error">
+              <i className="ion-alert-circled hs-business-hours__small-icon" />
+              <span>{this.props.text.attachmentDefaultError}</span>
+            </div>
+          );
+        }
+
+        const formattedName = attachmentsHelpers.getFormattedFileName (name);
+        const formattedSize = attachmentsHelpers.humanizeFileSize (size);
+
+        return (
+          <div className="hs-business-hours__attachment" key={id}>
+            <div className="hs-business-hours__attachment-info-wrapper">
+              <i className="ion-attachment ion-gray-color" />
+              <div className="hs-business-hours__attachment-name-wrapper">
+                <div>
+                  <span className="hs-business-hours__file-name" title={name} >
+                    {formattedName}
+                  </span>
+                  <span>({formattedSize})</span>
+                </div>
+                {attachmentErrorEl}
+              </div>
+            </div>
+            {iconEl}
+          </div>
+        );
+      },
+
+      /**
+       * Render placeholder attachment layout
+       */
+      _renderPlaceholderAttachment () {
+        const {onFilesChange, text: {dndInfoText}} = this.props;
+        const {
+          limitHasExceeded,
+          sizeHasExceeded
+        } = this.props.contactFormDetails.attachmentsMeta;
+
+        const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded);
+        return (
+          <div className="hs-business-hours__attachment-placeholder">
+            <FileInput iconClasses="ion-attachment ion-gray-color"
+                       disabled={fileInputIsDisabled}
+                       onChange={onFilesChange}
+                       infoText={dndInfoText} />
+          </div>
+        );
+      },
+
+      /**
+       * Render attachment file limit error
+       */
+      _renderAttachmentErrors () {
+        const {
+          limitHasExceeded,
+          sizeHasExceeded
+        } = this.props.contactFormDetails.attachmentsMeta;
+
+        if (!limitHasExceeded && !sizeHasExceeded) {
+          return null;
+        }
+
+        const {
+          businessHoursAttachmentsLimitExceedMsg,
+          businessHoursAttachmentsSizeExceedMsg
+        } = this.props.text;
+
+        let limitExceedInfoTextEl = null;
+        let sizeExceedInfoTextEl = null;
+
+        if (limitHasExceeded) {
+          limitExceedInfoTextEl = this._renderAttachmentError (
+            businessHoursAttachmentsLimitExceedMsg
+          );
+        }
+
+        if (sizeHasExceeded) {
+          sizeExceedInfoTextEl = this._renderAttachmentError (
+            businessHoursAttachmentsSizeExceedMsg
+          );
+        }
+
+        return (
+          <div>
+            {limitExceedInfoTextEl}
+            {sizeExceedInfoTextEl}
+          </div>
+        );
+      },
+
+      /**
+       * Render attachment error
+       * @param {String} text - error text
+       */
+      _renderAttachmentError (text) {
+        return (
+          <small className="hs-business-hours__attachment-limit-error">
+            <i className="ion-alert-circled hs-business-hours__small-icon" />
+            <span>{text}</span>
+          </small>
+        );
+      },
+
+      /**
        * Change handler for name
        * @param {Object} ev - change event of name input field
        */
@@ -252,6 +460,14 @@ define ("components/businessHoursView",
        */
       _onSendButtonClick () {
         this.props.onSubmitBusinessHoursContactForm ();
+      },
+
+      /**
+       * Click handler for 'X' icon of attachment
+       * @param {String} attachmentId - attachment id to remove
+       */
+      _onRemoveAttachmentClick (attachmentId) {
+        this.props.onRemoveAttachment (attachmentId);
       }
     });
   }

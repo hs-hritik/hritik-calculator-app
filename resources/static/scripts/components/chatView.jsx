@@ -12,10 +12,11 @@ define ("components/chatView",
     "constants/keyCodes",
     "gunpowder/utils/classes",
     "components/containers/replyBox",
-    "components/commons/viewHeader"
+    "components/commons/viewHeader",
+    "components/commons/dndWrapper"
   ],
   function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, KEY_CODES,
-    classes, ReplyBoxContainer, ViewHeader) {
+    classes, ReplyBoxContainer, ViewHeader, DnDWrapper) {
     "use strict";
 
     const PropTypes = React.PropTypes,
@@ -247,13 +248,22 @@ define ("components/chatView",
         infoBotField: INFO_BOT_FIELD_PROPS,
         onSubmitInfoBotField: PropTypes.func.isRequired,
         onValueChangeInfoBotField: PropTypes.func.isRequired,
+        onFilesDrop: PropTypes.func.isRequired,
+        onRetryAttachmentClick: PropTypes.func.isRequired,
+        issueIsCreated: PropTypes.bool.isRequired,
         text: PropTypes.shape ({
-          chatViewHeader: PropTypes.string.isRequired
+          chatViewHeader: PropTypes.string.isRequired,
+          dndInfoText: PropTypes.string.isRequired
         }).isRequired
       },
 
       render () {
-        const {browserIsMobile, onMinimizeConversation, text} = this.props;
+        const {
+          browserIsMobile,
+          onMinimizeConversation,
+          text,
+          issueIsCreated
+        } = this.props;
 
         return (
           <div className="hs-view">
@@ -261,12 +271,17 @@ define ("components/chatView",
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
-              <MessageList messages={this.props.messages}
-                           isTyping={this.props.isTyping}
-                           showAgentNickname={this.props.showAgentNickname}
-                           text={this.props.text}
-                           onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
-                           onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+              <DnDWrapper onDrop={this._onFilesDrop}
+                          dragInfoText={text.dndInfoText}
+                          enabled={issueIsCreated} >
+                <MessageList messages={this.props.messages}
+                             isTyping={this.props.isTyping}
+                             showAgentNickname={this.props.showAgentNickname}
+                             text={this.props.text}
+                             onRetryAttachmentClick={this.props.onRetryAttachmentClick}
+                             onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
+                             onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+              </DnDWrapper>
             </div>
             <ChatViewFooter activeFooter={this.props.activeFooter}
                             onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
@@ -277,6 +292,14 @@ define ("components/chatView",
                             text={this.props.text} />
           </div>
         );
+      },
+
+      /**
+       * Handler for files dropped event
+       * @param {Object} - files list array like object
+       */
+      _onFilesDrop (files) {
+        this.props.onFilesDrop (files);
       }
     });
   }

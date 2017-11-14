@@ -211,7 +211,7 @@ define ("actions/appState",
       const issueState = lsHelpers.getIssueState ();
       switch (issueState) {
         case ISSUE_STATE.PRE_CHAT:
-          rehydrate ();
+          cleanUpAndRehydrate ();
           store.dispatch (chatViewActions.startPreChatFeature ());
           break;
 
@@ -220,7 +220,7 @@ define ("actions/appState",
           // If there is an active issue id in localstorage, set the activeIssueId in state,
           // and start polling for new messages.
           if (activeIssueId) {
-            rehydrate ();
+            cleanUpAndRehydrate ();
             store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
             chatViewActions.startPollingForMessages ();
           } else {
@@ -243,6 +243,14 @@ define ("actions/appState",
           store.dispatch (startNewConversation ());
           break;
       }
+    };
+
+    /**
+     * Cleans up dummy messages and rehydrate the data from localStorage
+     */
+    const cleanUpAndRehydrate = () => {
+      lsHelpers.removeDummyMessages ();
+      rehydrate ();
     };
 
     /**
