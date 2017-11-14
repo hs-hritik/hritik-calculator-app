@@ -16,6 +16,7 @@ define ("actions/appState",
     "helpers/xhr",
     "helpers/localStorage",
     "helpers/prepareProcessXhrData",
+    "helpers/proactiveChat",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
@@ -28,11 +29,10 @@ define ("actions/appState",
     "utils/browser",
     "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS,
-    CHAT_VIEW_CONSTANTS, normalizr, entitySchema, entityHelpers,
-    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, xhr, objUtils, uuidGenerator,
-    store, entitiesActions, chatViewActions, batchActions, actionCreators, postMessage,
-    browserUtils, postSdkMessage) {
+  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS, normalizr,
+    entitySchema, entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
+    proactiveChatHelpers, xhr, objUtils, uuidGenerator, store, entitiesActions,
+    chatViewActions, batchActions, actionCreators, postMessage, browserUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -40,7 +40,9 @@ define ("actions/appState",
       ISSUE_STATE,
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
-      MAX_RESET_TIMEOUT
+      MAX_RESET_TIMEOUT,
+      PRE_CHAT_STATE,
+      PRE_CHAT_FEATURES
     } = APP_STATE_CONSTANTS;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
@@ -178,7 +180,9 @@ define ("actions/appState",
      * - Minimize messenger if options.minimizeMessenger is true.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                                       By default, user related data will be reset.
+     *                  By default, user related data will be reset.
+     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
+     *                  chat related data or not. By default, they would NOT be reset.
      * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the messenger or not.
      *                                                Defaults to false.
      */
@@ -189,7 +193,8 @@ define ("actions/appState",
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
-          skipUser: options.skipUser
+          skipUser: options.skipUser,
+          resetProactiveChat: options.resetProactiveChat
         });
 
         const {minimized} = getState ().appState;
@@ -263,6 +268,18 @@ define ("actions/appState",
             replyText = lsHelpers.getReplyText (),
             endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId ();
 
+      // Handle greeting message prechat feature for proactive chat
+      // If the current prechat feature is `initial user message` and its state
+      // is not completed, rerun the greeting message prechat feature.
+      const {appState} = store.getState ();
+      const currentPreChatFeature = appState.preChatFeatureOrder [preChatFeatureIndex];
+      const initialUserMessageFeatureState = preChatFeatureState.initialUserMessage;
+
+      const executeGreetingPreChatFeature = (
+        (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) &&
+        (initialUserMessageFeatureState !== PRE_CHAT_STATE.initialUserMessage.COMPLETED)
+      );
+
       if (issues || messages) {
         store.dispatch ({
           type: ACTION_TYPES.REHYDRATE,
@@ -273,6 +290,7 @@ define ("actions/appState",
             },
             preChatFeatureIndex,
             preChatFeatureState,
+            executeGreetingPreChatFeature,
             infoBotCurrentField,
             issueState,
             replyText,
@@ -788,18 +806,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set the cifs
-     * @param {Object} cif - data of cif
-     * @returns {Object} - Action
-     */
-    const setCif = (cif) => {
-      return {
-        type: ACTION_TYPES.SET_CIF,
-        cif
-      };
-    };
-
-    /**
      * Action to replace the cifs
      * @param {Object} cif - data of cif
      * @returns {Object} - Action
@@ -825,6 +831,48 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set the parent page info
+     * @param {Object} parentPageInfo
+     * @returns {Object} - Action
+     */
+    const setParentPageInfo = (parentPageInfo) => {
+      return {
+        type: ACTION_TYPES.SET_PARENT_PAGE_INFO,
+        parentPageInfo
+      };
+    };
+
+    /**
+     * Action to set the proactive chat rules in the state
+     * @param {Object} proactiveChatRules
+     * @returns {Object} - Action
+     */
+    const setProactiveChatRules = (proactiveChatRules) => {
+      const processedProactiveChatRules = proactiveChatHelpers.getProcessedRules (
+        proactiveChatRules
+      );
+
+      return {
+        type: ACTION_TYPES.SET_PROACTIVE_CHAT_RULES,
+        proactiveChatRules: processedProactiveChatRules
+      };
+    };
+
+    /**
+     * Action to execute the proactive chat rules.
+     * @returns {Function} - Action
+     */
+    const executeProactiveChatRules = () => {
+      return (dispatch, getState) => {
+        const {proactiveChatRules} = getState ().appState;
+
+        proactiveChatRules.forEach ((rule) => {
+          proactiveChatHelpers.enqueue (rule);
+        });
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -834,8 +882,10 @@ define ("actions/appState",
       setInitialUserMsg,
       startConversation,
       closeConversation,
-      setCif,
       replaceCif,
-      setMetadata
+      setMetadata,
+      setParentPageInfo,
+      setProactiveChatRules,
+      executeProactiveChatRules
     };
   });

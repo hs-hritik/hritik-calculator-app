@@ -17,7 +17,7 @@ const PATHS = {
   fontsSrc: "static/fonts/**/*",
   fontsDest: "localhost/fonts/",
   // Specific paths to run the local server
-  demoSrc: "localhost/html/demo/index.html",
+  demoSrc: "localhost/html/demo/**/*.html",
   demoDest: "localhost/demo/",
   localhostDest: "localhost/"
 };
