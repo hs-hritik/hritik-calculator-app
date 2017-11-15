@@ -54,9 +54,9 @@ define ("constants/appState",
     return {
       ISSUE_STATE,
       PRE_CHAT_STATE,
+      PRE_CHAT_FEATURES,
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
-      MAX_RESET_TIMEOUT,
-      PRE_CHAT_FEATURES
+      MAX_RESET_TIMEOUT
     };
   });

@@ -12,7 +12,8 @@ define ("constants/message",
       TEXT: "Text",
       FAQ: "Faq",
       CSAT: "Csat",
-      END_CHAT: "EndChat"
+      END_CHAT: "EndChat",
+      ATTACHMENT: "Attachment"
     };
 
     // Typing timeout (in milliseconds) for different system generated message.

@@ -19,6 +19,7 @@ $_palettes: (
     dark:      #383f44,
     base:      #576066,
     light:     #859199,
+    x-light:   #b6c3cc,
     xx-light:  #d5dfe6
   ),
   green: (
@@ -92,6 +93,7 @@ $_colors: (
     dark: palette(black, dark),
     base: palette(black),
     light: palette(black, light),
+    x-light: palette(black, x-light),
     xx-light: palette(black, xx-light),
     white: palette(gray, xx-light)
   )

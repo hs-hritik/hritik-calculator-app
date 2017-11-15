@@ -19,7 +19,7 @@ const PATHS = {
   assetsSrc: "static/assets/**/*",
   assetsDest: "localhost/assets",
   // Specific paths to run the local server
-  demoSrc: "localhost/html/demo/index.html",
+  demoSrc: "localhost/html/demo/**/*.html",
   demoDest: "localhost/demo/",
   localhostDest: "localhost/"
 };

@@ -17,7 +17,8 @@ define ("components/containers/businessHoursView",
         contactFormDetails,
         offlineBehaviour,
         contactFormDisabled,
-        contactFormSubmitted
+        contactFormSubmitted,
+        submitInProgress
       } = state.businessHoursViewState;
 
       return {
@@ -25,7 +26,8 @@ define ("components/containers/businessHoursView",
         text: state.ui.text,
         offlineBehaviour,
         contactFormDisabled,
-        contactFormSubmitted
+        contactFormSubmitted,
+        submitInProgress
       };
     };
 
@@ -36,6 +38,12 @@ define ("components/containers/businessHoursView",
         },
         onSubmitBusinessHoursContactForm () {
           dispatch (businessHoursActions.submitBusinessHoursContactForm ());
+        },
+        onFilesChange (files) {
+          dispatch (businessHoursActions.addAttachments (files));
+        },
+        onRemoveAttachment (attachmentId) {
+          dispatch (businessHoursActions.removeAttachment (attachmentId));
         }
       };
     };

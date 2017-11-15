@@ -55,7 +55,13 @@ define ("reducers/appState",
         fullScreen: false,
         initialUserMessage: ""
       },
-      conversationStarted: false
+      conversationStarted: false,
+      executeGreetingMessage: false,
+      parentPageInfo: {
+        title: "",
+        url: ""
+      },
+      proactiveChatRules: []
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -65,6 +71,9 @@ define ("reducers/appState",
 
           if (action.data.preChatFeatureIndex) {
             updateObj.preChatFeatureIndex = {$set: action.data.preChatFeatureIndex};
+          }
+          if (action.data.executeGreetingPreChatFeature) {
+            updateObj.executeGreetingMessage = {$set: action.data.executeGreetingPreChatFeature};
           }
           if (action.data.preChatFeatureState) {
             updateObj.preChatFeatureState = {$set: action.data.preChatFeatureState};
@@ -140,6 +149,11 @@ define ("reducers/appState",
             preChatFeatureIndex: {$set: state.preChatFeatureIndex + 1}
           });
 
+        case ACTION_TYPES.SET_PRE_CHAT_FEATURE_INDEX:
+          return update (state, {
+            preChatFeatureIndex: {$set: action.preChatFeatureIndex}
+          });
+
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           return update (state, {
             issueState: {$set: action.state}
@@ -194,6 +208,29 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_METADATA:
           return update (state, {
             metadata: {$set: action.metadata}
+          });
+
+        case ACTION_TYPES.SET_EXECUTE_GREETING_MESSAGE:
+          return update (state, {
+            executeGreetingMessage: {$set: action.executeGreetingMessage}
+          });
+
+        case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
+          return update (state, {
+            proactiveChatRules: {$set: action.proactiveChatRules}
+          });
+
+        case ACTION_TYPES.SET_TAGS:
+          return update (state, {
+            tags: {$set: action.tags}
+          });
+
+        case ACTION_TYPES.SET_PARENT_PAGE_INFO:
+          return update (state, {
+            parentPageInfo: {
+              title: {$set: action.parentPageInfo.title},
+              url: {$set: action.parentPageInfo.url}
+            }
           });
 
         default:

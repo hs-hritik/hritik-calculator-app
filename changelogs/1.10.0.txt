@@ -1,0 +1,18 @@
+Branches:
+feature/proactive-chat-api
+
+Changelog:
+Check preconditions for proactive chat before executing
+Add support to skip resetting proactive chat keys from LS
+Support proactive chat rule trigger only once per site
+Do not trigger proactive chat during out of business hours
+Handle AND/OR operators for time conditions
+Add operators for URL and Tags conditions
+Rename setInitialData and setParentInfo functions
+Handle proactive chat rules execution
+Add helper funtions for proactive chat rules
+Add API for proactive chat rules
+Add actions for proactive chat rules
+Update reducers with proactive rules changes
+Add new constants for proactive chat rules implementation
+Set up client code for proactive chat rules

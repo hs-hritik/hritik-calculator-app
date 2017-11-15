@@ -50,6 +50,10 @@ define ("extras/lsMiddleware",
           throttledSetLastActivityTime ();
           break;
 
+        case ACTION_TYPES.REMOVE_MESSAGE:
+          lsHelpers.removeMessage (action.issueId, action.messageId);
+          break;
+
         case ACTION_TYPES.SET_ENTITIES:
           // If the action type is SET_ENTITIES, save the issues
           // and messages entities in localstorage.
@@ -113,6 +117,15 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID:
           lsHelpers.setEndUserFirstMsgId (action.id);
           break;
+
+        case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
+          // Proactive chat actions are to be executed based on the time on page
+          // and time on site rules.
+          // Set site activity start time in localstorage. This will be used to
+          // check the `time on site` proactive chat condition.
+          if (!lsHelpers.getSiteActivityStartTime ()) {
+            lsHelpers.setSiteActivityStartTime (Date.now ());
+          }
       }
     };
 

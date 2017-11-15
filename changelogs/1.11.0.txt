@@ -1,0 +1,39 @@
+Branches:
+feature/attachments
+
+Changelog:
+Fix scroll issue on IE
+Fix scroll issue when images are loaded
+Fix validation bug in business hours
+Fix message body for attachment message
+Fix text area resize issue
+Fix variable names in business hours store
+Change attachment icon colors, update ui texts
+Handle attachments error on business hours view
+Open attachment in new tab
+Add attachment icon for agent attachment
+Disable file input in business hours
+Add disable support for file input
+Integrate config api for attachments
+Add attachments validation in business hours view
+Add attachments validation in chat view
+Add attachments helper file and constants file
+Upload attachment after creating dummy issue
+Enable dnd events conditionally
+Integrate file upload xhr in business hours
+Add attachment limit validation
+Integrate dnd wrapper in business hours view
+Add attachments support for business hours view
+Add support for info text in file input component
+Integrate file input in chat view
+Create new file input component for file selection
+Add retry attachment upload functionality
+Render user attachment message
+Handle file upload api failure
+Add states to attachment message
+Clean up dummy messages from local storage on page refresh
+Integrate file upload xhr
+Add file upload util
+Add support for message type attachment
+Integrate dnd wrapper in chat view
+Add drag and drop wrapper component

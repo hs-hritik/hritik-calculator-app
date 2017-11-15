@@ -34,6 +34,9 @@ define ("reducers/ui",
         csatViewHeader: "Chat with us",
         infoBotRequestMsg: "Before we begin, we need some more information.",
         branding: "Powered by Helpshift",
+        attachmentRetryError: "Error: Click  to retry",
+        attachmentFileSizeError: "Attachment exceeds limit of 25MB",
+        attachmentDefaultError: "Error: Failed to upload attachment",
         businessHoursNameLabel: "Name",
         businessHoursEmailLabel: "Email",
         businessHoursMessageLabel: "Message",
@@ -45,7 +48,10 @@ define ("reducers/ui",
                                       "back to you soon.",
         businessHoursViewHeader: "",
         businessHoursContactFormMessage: "",
-        businessHoursOfflineMessage: ""
+        businessHoursOfflineMessage: "",
+        dndInfoText: "Add files or drag here",
+        businessHoursAttachmentsSizeExceedMsg: "Total size of attachments exceed 25 MB",
+        businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5"
       },
       color: {
         primary: "#43BF6C"
@@ -82,6 +88,13 @@ define ("reducers/ui",
             text: textUpdateObj,
             color: {
               primary: {$set: config.appearance.primary_color}
+            }
+          });
+
+        case ACTION_TYPES.SET_GREETING_MESSAGE:
+          return update (state, {
+            text: {
+              greetingMsg: {$set: action.message}
             }
           });
 

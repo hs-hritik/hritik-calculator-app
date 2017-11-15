@@ -14,6 +14,7 @@ define ("actions/chatView",
     "constants/activeView",
     "constants/message",
     "constants/appState",
+    "constants/errors",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "gunpowder/utils/schema",
@@ -27,15 +28,17 @@ define ("actions/chatView",
     "helpers/xhr",
     "helpers/audio",
     "helpers/liveUpdates",
+    "helpers/attachments",
     "extras/postSdkMessage",
-    "utils/browser"
+    "utils/browser",
+    "utils/upload"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS,
+    ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, audioHelpers, liveUpdatesHelpers, postSdkMessage,
-    browserUtils) {
+    xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
+    postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -45,8 +48,14 @@ define ("actions/chatView",
           MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
           MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
-          {ISSUE_STATE, PRE_CHAT_STATE} = APP_STATE_CONSTANTS,
           {Input} = schema;
+
+    const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
+    const {
+      ISSUE_STATE,
+      PRE_CHAT_STATE,
+      PRE_CHAT_FEATURES
+    } = APP_STATE_CONSTANTS;
 
     const GREETING_STATE = PRE_CHAT_STATE.greeting,
           USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
@@ -277,16 +286,16 @@ define ("actions/chatView",
               dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
 
               dispatch (
-                createMessage (MESSAGE_TYPE.END_CHAT, null, {
-                  typingTimer: null,
+                createMessage ({
+                  type: MESSAGE_TYPE.END_CHAT,
                   issueId: appState.activeIssueId
                 })
               );
 
               if (appState.featuresEnabled.csatBot) {
                 dispatch (
-                  createMessage (MESSAGE_TYPE.CSAT, null, {
-                    typingTimer: null,
+                  createMessage ({
+                    type: MESSAGE_TYPE.CSAT,
                     issueId: appState.activeIssueId,
                     playAudio: true
                   })
@@ -326,12 +335,13 @@ define ("actions/chatView",
      * @param {Object} [callbacks] - optional callbacks
      */
     const postUserMessage = (config, callbacks = {}) => {
+      const {domain, activeIssueId, identifier, msgBody, msgType} = config;
       xhr ({
-        route: routes.postUserReply (config.domain, config.activeIssueId),
+        route: routes.postUserReply (domain, activeIssueId),
         data: {
-          "identifier": config.identifier,
-          "message-body": config.msgBody,
-          "message-type": config.msgType
+          identifier,
+          "message-body": msgBody,
+          "message-type": msgType
         },
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
@@ -404,12 +414,13 @@ define ("actions/chatView",
         // If current issue state is rejected, don't fire xhr to send messages to backend.
         if (appState.issueState === ISSUE_STATE.REJECTED) {
           dispatch (
-            createMessage (MESSAGE_TYPE.TEXT, {
-              body: replyBox.value.trim (),
-              isCustomerMsg: true
-            }, {
-              typingTimer: null,
+            createMessage ({
+              type: MESSAGE_TYPE.TEXT,
               issueId: appState.activeIssueId,
+              messageConfig: {
+                body: replyBox.value.trim (),
+                isCustomerMsg: true
+              },
               onAddMessage: () => {
                 dispatch (udpateReplyText (""));
               }
@@ -538,6 +549,12 @@ define ("actions/chatView",
             dispatch (entitiesActions.setEntities (processedEntities));
 
             const endUserFirstMsgNewId = response.messages [0].id;
+            // @TODO :- Don't directly manage entities from here!
+            // Dispatch an action something like 'ISSUE_CREATED' which will :-
+            // a] Remove dummy messages from entity store and localStorage
+            // b] Replace dummy issue id of first user message with backend id
+            //    in entity store and localStorage
+
             // Replace frontend created user message with backend message,
             // and add all dummy issue messages to the active issue.
             const dummyIssueMsgIds = state.entities.issues [dummyIssueId].messages.slice ();
@@ -639,12 +656,12 @@ define ("actions/chatView",
         const state = getState ();
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.faqSuggestionsAdditionalHelpRequiredBtn,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: state.ui.text.faqSuggestionsAdditionalHelpRequiredBtn,
+              isCustomerMsg: true
+            }
           })
         );
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
@@ -661,23 +678,24 @@ define ("actions/chatView",
         const state = getState ();
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.faqSuggestionsAdditionalHelpNotRequiredBtn,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: state.ui.text.faqSuggestionsAdditionalHelpNotRequiredBtn,
+              isCustomerMsg: true
+            }
           })
         );
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
-            isCustomerMsg: false
-          }, {
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_PROBLEM_SOLVED,
-            issueId: state.appState.dummyIssueId,
-            playAudio: true
+            playAudio: true,
+            messageConfig: {
+              body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
+              isCustomerMsg: false
+            }
           })
         );
 
@@ -720,26 +738,29 @@ define ("actions/chatView",
      * optionally showing system typing indicator.
      * Pass the message object related data in the config object,
      * and additional meta data in options object.
-     * @param {String} messageType - Message type.
-     * @param {Object} config - Data required for creating the message.
-     * @param {Object} options - Additional options for the action.
-     * @param {String} options.issueId - The issue id to which issue belongs.
-     * @param {Number} [options.typingTimer] - If the issue has to be added after sometime,
+     * @param {object} config - Message config.
+     * @param {String} config.type - Message type.
+     * @param {Object} [config.messageConfig] - Data required for creating the message.
+     * @param {String} [config.issueId] - The issue id to which issue belongs.
+     * @param {Number} [config.typingTimer] - If the issue has to be added after sometime,
      *                                         pass the time in milliseconds. Typing indicator
      *                                         would be shown for that time period.
-     * @param {Function} [options.onAddMessage] - The callback function to be executed when the
+     * @param {Function} [config.onAddMessage] - The callback function to be executed when the
      *                                            message is added to the store.
      * @returns {Object} - Action
      */
-    const createMessage = (messageType, config, options) => {
-      return (dispatch) => {
+    const createMessage = (config) => {
+      return (dispatch, getState) => {
+        const {appState} = getState ();
         const {
-          typingTimer,
-          issueId,
-          onAddMessage,
-          playAudio = false
-        } = options;
-        const msg = chatViewHelpers.createMessage (messageType, config);
+          type: messageType,
+          issueId = appState.dummyIssueId,
+          typingTimer = false,
+          playAudio = false,
+          messageConfig,
+          onAddMessage
+        } = config;
+        const msg = chatViewHelpers.createMessage (messageType, messageConfig);
 
         // As this message is created on frontend,
         // it is already in normalized and processed format.
@@ -786,6 +807,22 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to remove message
+     * @param {Object} config - config required to remove message
+     * @param {String} config.issueId - issue id
+     * @param {String} config.messageId - message id
+     * @returns {Object} - Action
+     */
+    const removeMessage = (config) => {
+      const {issueId, messageId} = config;
+      return {
+        type: ACTION_TYPES.REMOVE_MESSAGE,
+        issueId,
+        messageId
+      };
+    };
+
+    /**
      * Action to add greeting message.
      * @returns {Object} - Action
      */
@@ -799,12 +836,12 @@ define ("actions/chatView",
             const defaultAgentMsgText = state.ui.text.greetingMsg;
 
             dispatch (
-              createMessage (MESSAGE_TYPE.TEXT, {
-                body: defaultAgentMsgText,
-                isCustomerMsg: false
-              }, {
-                typingTimer: null,
-                issueId: state.appState.dummyIssueId
+              createMessage ({
+                type: MESSAGE_TYPE.TEXT,
+                messageConfig: {
+                  body: defaultAgentMsgText,
+                  isCustomerMsg: false
+                }
               })
             );
             dispatch (startNextPreChatFeature ());
@@ -856,17 +893,14 @@ define ("actions/chatView",
      * @param {String} messageBody - body of user message
      */
     const createInitialUserMessage = (messageBody) => {
-      return function (dispatch, getState) {
-        const state = getState ();
-        const {appState} = state;
-
+      return function (dispatch) {
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: messageBody,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: appState.dummyIssueId,
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: messageBody,
+              isCustomerMsg: true
+            },
             playAudio: true,
             onAddMessage: (msg) => {
               dispatch (
@@ -941,11 +975,11 @@ define ("actions/chatView",
                   dispatch (startNextPreChatFeature ());
                 } else {
                   dispatch (
-                    createMessage (MESSAGE_TYPE.FAQ, {
-                      faqs
-                    }, {
-                      typingTimer: null,
-                      issueId: appState.dummyIssueId,
+                    createMessage ({
+                      type: MESSAGE_TYPE.FAQ,
+                      messageConfig: {
+                        faqs
+                      },
                       playAudio: true,
                       onAddMessage: () => {
                         onFaqSuggestionMessageAdd ();
@@ -990,12 +1024,13 @@ define ("actions/chatView",
 
       window.setTimeout (() => {
         store.dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
-            isCustomerMsg: false
-          }, {
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            messageConfig: {
+              body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
+              isCustomerMsg: false
+            },
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
-            issueId: state.appState.dummyIssueId,
             playAudio: true,
             onAddMessage: () => {
               store.dispatch (
@@ -1052,12 +1087,13 @@ define ("actions/chatView",
         switch (featureState) {
           case INFO_BOT_STATE.INITIAL:
             dispatch (
-              createMessage (MESSAGE_TYPE.TEXT, {
-                body: state.ui.text.infoBotRequestMsg,
-                isCustomerMsg: false
-              }, {
+              createMessage ({
+                type: MESSAGE_TYPE.TEXT,
+                messageConfig: {
+                  body: state.ui.text.infoBotRequestMsg,
+                  isCustomerMsg: false
+                },
                 typingTimer: TYPING_TIMEOUT.INFO_BOT_REQUEST,
-                issueId: state.appState.dummyIssueId,
                 onAddMessage: () => {
                   dispatch (
                     updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
@@ -1097,12 +1133,14 @@ define ("actions/chatView",
 
         if (currentField) {
           dispatch (
-            createMessage (MESSAGE_TYPE.TEXT, {
-              body: currentField.msg,
-              isCustomerMsg: false
-            }, {
+            createMessage ({
+              type: MESSAGE_TYPE.TEXT,
+
+              messageConfig: {
+                body: currentField.msg,
+                isCustomerMsg: false
+              },
               typingTimer: TYPING_TIMEOUT.INFO_BOT_FIELD,
-              issueId: state.appState.dummyIssueId,
               playAudio: true,
               onAddMessage: () => {
                 dispatch (
@@ -1155,13 +1193,13 @@ define ("actions/chatView",
         }
 
         dispatch (
-          createMessage (MESSAGE_TYPE.TEXT, {
-            body: updatedFieldVal.value,
-            isCustomerMsg: true
-          }, {
-            typingTimer: null,
-            issueId: state.appState.dummyIssueId,
-            playAudio: true
+          createMessage ({
+            type: MESSAGE_TYPE.TEXT,
+            playAudio: true,
+            messageConfig: {
+              body: updatedFieldVal.value,
+              isCustomerMsg: true
+            }
           })
         );
 
@@ -1230,7 +1268,13 @@ define ("actions/chatView",
     const startPreChatFeature = () => {
       return (dispatch, getState) => {
         const {appState} = getState ();
-        const {preChatFeatureOrder, featuresEnabled, preChatFeatureIndex} = appState;
+        const {
+          preChatFeatureOrder,
+          featuresEnabled,
+          preChatFeatureIndex,
+          executeGreetingMessage,
+          dummyIssueId
+        } = appState;
 
         // If the preChatFeatureIndex has reached the length of preChatFeatureOrder list,
         // it means all the pre-chat features are executed and create new issue.
@@ -1239,7 +1283,28 @@ define ("actions/chatView",
           return;
         }
 
-        const feature = preChatFeatureOrder [preChatFeatureIndex];
+        let feature = preChatFeatureOrder [preChatFeatureIndex];
+
+        // Check if we need to execute greeting message pre chat feature. Refer
+        // appState.rehydrate () for explanation of when executing greeting
+        // message is needed.
+        // If so,
+        // set current feature to execute to `greeting`
+        // set the greeting message feature state to initial, so that it executes
+        // set pre chat feature index to greeting message's index i.e. 0
+        // set executeGreetingMessage in the app state to false
+        // clear existing greeting message (or any other message)
+        if (executeGreetingMessage) {
+          feature = PRE_CHAT_FEATURES.GREETING;
+          dispatch (batchActions ([
+            updatePreChatFeatureState (PRE_CHAT_FEATURES.GREETING, GREETING_STATE.INITIAL),
+            actionCreators.setPreChatFeatureIndex (
+              preChatFeatureOrder.indexOf (PRE_CHAT_FEATURES.GREETING)
+            ),
+            actionCreators.setExecuteGreetingMessage (false),
+            setMessages (dummyIssueId, [])
+          ]));
+        }
 
         if (featuresEnabled [feature]) {
           // If the feature is enabled, start the feature.
@@ -1305,6 +1370,157 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to create multiple attachment messages
+     * @param {Object} files - Files List array like object
+     */
+    const createAttachmentMessages = (files) => {
+      return (dispatch) => {
+        // @TODO :- Add validation for
+        // a) file extension
+        const filesLength = files.length;
+
+        // @NOTE :- Files is not an array but array like object
+        for (let i = 0; i < filesLength; i++) {
+          dispatch (createAttachmentMessage (files [i]));
+        }
+      };
+    };
+
+    /**
+     * Upload an attachment
+     * @param {Function} dispatch - dispatch
+     * @param {Function} getState - get state
+     * @param {Object} config - config containing file and attachmentMsgId
+     * @property {Object} config.file - file object
+     * @property {String} config.attachmentMsgId - attachment message id
+     */
+    const uploadAttachment = (config) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {appState} = state;
+        const {domain, activeIssueId, identifier} = appState;
+        const {file, attachmentMsgId} = config;
+
+        upload ({
+          route: routes.postUserReply (domain, activeIssueId),
+          formData: {
+            "identifier": identifier,
+            "issue-id": appState.activeIssueId,
+            "message-type": MESSAGE_TYPE.ATTACHMENT
+          },
+          file: file,
+          headers: xhrHelpers.getCommonHeaders (),
+          onSuccess: (response) => {
+            // 1] Parse the response and create msg object
+            // 2] Dispatch following actions
+            //   a] Remove the message id
+            //    - Remove attachment dummy message id from message and issue
+            //      entities and local storage
+            //   b] Set message entity with parsed msg object
+            //   - Store the message in entity store under 'messages'
+            //     (check entity reducer)
+            //   - This action is also intercepted by lsMiddleware and it
+            //   stores the message id in localStorage under 'messages'
+            //   c] Add message
+            //   - Store the message id in entity store under 'issue->messages'
+            //     (check entity reducer)
+            //   - lsMiddleware will save message id in localStorage
+            //     under 'issues->messages'
+
+            const newMsgId = response.id;
+            const normalizedData = normalize (response, entitySchema.message);
+            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+            const msg = processedEntities.messages [newMsgId];
+
+            const actionsToDispatch = [
+              removeMessage ({
+                issueId: activeIssueId,
+                messageId: attachmentMsgId
+              }),
+              entitiesActions.setEntities ({
+                messages: {
+                  [msg.id]: msg
+                }
+              }),
+              addMessages (activeIssueId, [msg.id])
+            ];
+            dispatch (batchActions (actionsToDispatch));
+          },
+          onFailure: (response) => {
+            dispatch (
+              setAttachmentError (attachmentMsgId, response.errorCode)
+            );
+          }
+        });
+      };
+    };
+
+    /**
+     * Create attachment message
+     * @param {Object} - File object
+     * @returns {Function} - Action
+     */
+    const createAttachmentMessage = (file, attachmentMsgId) => {
+      return (dispatch, getState) => {
+        const state = getState ();
+        const {appState} = state;
+        const {activeIssueId} = appState;
+
+        if (attachmentMsgId) {
+          dispatch (
+            uploadAttachment ({
+              file,
+              attachmentMsgId
+            })
+          );
+        } else {
+          // If attachmentMsgId is not present, create dummy issue first then
+          // upload an attachment
+          dispatch (
+            createMessage ({
+              type: MESSAGE_TYPE.ATTACHMENT,
+              issueId: activeIssueId,
+              messageConfig: {
+                file
+              },
+              onAddMessage (msg) {
+                attachmentMsgId = msg.id;
+                // If attachment size is not valid, set error on message
+                // Else upload the file
+                if (!attachmentsHelpers.isAttachmentsSizeValid (msg.file.size)) {
+                  dispatch (
+                    setAttachmentError (attachmentMsgId, FILE_UPLOAD_ERRORS.SIZE_EXCEEDED)
+                  );
+                } else {
+                  dispatch (
+                    uploadAttachment ({
+                      file,
+                      attachmentMsgId
+                    })
+                  );
+                }
+              }
+            })
+          );
+        }
+      };
+    };
+
+    /**
+     * Action to set attachment error
+     * @param {String} messageId - message id of failed message
+     * @param {Number} errorCode - file upload error code
+     * @returns {Object} - Action
+     */
+    const setAttachmentError = (messageId, errorCode) => {
+      return {
+        type: ACTION_TYPES.SET_ATTACHMENT_ERROR,
+        messageId,
+        errorCode
+      };
+    };
+
     return {
       udpateReplyText,
       submitReply,
@@ -1325,6 +1541,8 @@ define ("actions/chatView",
       switchToChatView,
       createInitialUserMessage,
       registerUserProfile,
-      startNextPreChatFeature
+      startNextPreChatFeature,
+      createAttachmentMessages,
+      createAttachmentMessage
     };
   });
