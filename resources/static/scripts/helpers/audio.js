@@ -46,8 +46,7 @@ define ("helpers/audio",
      * @param {String} messageType - The type of message that was created.
      * @param {Boolean} isCustomerMsg - Message is created by customer or not.
      */
-    const playAudio = (messageType, isCustomerMsg) => {
-      // @TODO - messageType will be used when attachment branch is merged
+    const playAudio = (isCustomerMsg) => {
       if (isCustomerMsg) {
         playSend ();
       } else {

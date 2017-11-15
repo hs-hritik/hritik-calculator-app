@@ -791,7 +791,7 @@ define ("actions/chatView",
               onAddMessage (msg);
             }
             if (playAudio) {
-              audioHelpers.playAudio (messageType, msg.isCustomerMsg);
+              audioHelpers.playAudio (msg.isCustomerMsg);
             }
           }, typingTimer);
         } else {
@@ -800,7 +800,7 @@ define ("actions/chatView",
             onAddMessage (msg);
           }
           if (playAudio) {
-            audioHelpers.playAudio (messageType, msg.isCustomerMsg);
+            audioHelpers.playAudio (msg.isCustomerMsg);
           }
         }
       };
@@ -1446,6 +1446,7 @@ define ("actions/chatView",
               addMessages (activeIssueId, [msg.id])
             ];
             dispatch (batchActions (actionsToDispatch));
+            audioHelpers.playSend ();
           },
           onFailure: (response) => {
             dispatch (
