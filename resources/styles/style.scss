@@ -8,14 +8,14 @@
 @import "utils/functions";
 @import "utils/mixins";
 
+// Include animation
+@import "animations/animations";
+
+// Include hs-global and hs-typography styles
 @import "global";
 @import "typography";
 @import "icons";
 @import "forms";
-
-@import "animations/animations";
-
-// Include hs-global and hs-typography styles
 
 @include hs-global-styles;
 @include hs-typography-resets;
@@ -25,6 +25,8 @@
 @import "components/button";
 @import "components/form-field";
 @import "components/star-rating";
+@import "components/dnd-wrapper";
+@import "components/file-input";
 
 @import "components/page";
 @import "components/view";

@@ -19,7 +19,8 @@ define ("components/containers/replyBox",
         value,
         disabled,
         autoFocus: !state.appState.minimized,
-        text: state.ui.text
+        text: state.ui.text,
+        issueIsCreated: !!state.appState.activeIssueId
       };
     };
 
@@ -30,6 +31,9 @@ define ("components/containers/replyBox",
         },
         onSubmitReply: () => {
           dispatch (chatViewActions.submitReply ());
+        },
+        onFilesChange: (files) => {
+          dispatch (chatViewActions.createAttachmentMessages (files));
         }
       };
     };

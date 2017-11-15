@@ -12,11 +12,11 @@ define ("components/containers/chatView",
     "actions/chatView",
     "actions/faqView",
     "actions/actionCreators",
-    "constants/activeView",
-    "actions/appState"
+    "actions/appState",
+    "constants/activeView"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    actionCreators, ACTIVE_VIEW, appStateActions) {
+    actionCreators, appStateActions, ACTIVE_VIEW) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -33,7 +33,8 @@ define ("components/containers/chatView",
         isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
         infoBotField: infoBot.data [infoBot.currentField],
         showAgentNickname: state.appState.featuresEnabled.agentNickname,
-        text: state.ui.text
+        text: state.ui.text,
+        issueIsCreated: !!state.appState.activeIssueId
       };
     };
 
@@ -63,6 +64,14 @@ define ("components/containers/chatView",
         },
         onStartCsatSurveyClick: () => {
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
+        },
+        onFilesDrop: (files) => {
+          dispatch (chatViewActions.createAttachmentMessages (files));
+        },
+        onRetryAttachmentClick: (message) => {
+          dispatch (
+            chatViewActions.createAttachmentMessage (message.file, message.id)
+          );
         }
       };
     };

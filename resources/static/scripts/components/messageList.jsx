@@ -9,20 +9,24 @@ define ("components/messageList",
     "components/message",
     "constants/propTypes",
     "constants/message",
-    "components/commons/branding"
+    "components/commons/branding",
+    "gunpowder/utils/throttle"
   ],
-  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, Branding) {
+  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, Branding, throttle) {
     "use strict";
 
     const PropTypes = React.PropTypes;
     const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
 
-    const MESSAGE_TYPES_TO_RENDER = [
-      MESSAGE_TYPE.TEXT,
-      MESSAGE_TYPE.FAQ,
-      MESSAGE_TYPE.CSAT,
-      MESSAGE_TYPE.END_CHAT
-    ];
+    const MESSAGE_TYPES_TO_RENDER = (() => {
+      const keys = Object.keys (MESSAGE_TYPE);
+      return keys.map ((key) => {
+        return MESSAGE_TYPE [key];
+      });
+    }) ();
+
+    // Scroll throttle time in ms
+    const SCROLL_THROTTLE_TIMER = 250;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -33,6 +37,7 @@ define ("components/messageList",
         showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
+        onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
       },
@@ -74,13 +79,15 @@ define ("components/messageList",
 
           return (
               <Message message={message}
-                      key={message.id}
-                      isLastMessage={messages.length === (index + 1)}
-                      isLastMessageInGroup={isLastMessageInGroup}
-                      showAgentNickname={this.props.showAgentNickname}
-                      text={this.props.text}
-                      onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
-                      onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+                       key={message.id}
+                       isLastMessage={messages.length === (index + 1)}
+                       isLastMessageInGroup={isLastMessageInGroup}
+                       showAgentNickname={this.props.showAgentNickname}
+                       text={this.props.text}
+                       onImageLoad={this._throttledScrollBottom}
+                       onRetryAttachmentClick={this.props.onRetryAttachmentClick}
+                       onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
+                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
         });
       },
@@ -112,6 +119,13 @@ define ("components/messageList",
       },
 
       /**
+       * Throttled scroll bottom method used to delay scroll bottom execution
+       * As images can load simultaneously, this method will get called
+       * multiple times
+       */
+      _throttledScrollBottom: null,
+
+      /**
        * Scroll message list to the bottom.
        */
       _scrollToBottom () {
@@ -124,7 +138,14 @@ define ("components/messageList",
        * or if there is typing indicator.
        */
       componentDidUpdate (prevProps) {
-        if ((this.props.messages.length > prevProps.messages.length)) {
+        const currentValidMessages = this.props.messages.filter ((message) => {
+          return !!message;
+        });
+        const previousValidMessages = prevProps.messages.filter ((message) => {
+          return !!message;
+        });
+
+        if ((currentValidMessages.length > previousValidMessages.length)) {
           this._scrollToBottom ();
         }
       },
@@ -133,6 +154,13 @@ define ("components/messageList",
        * Scroll the bottom when the component is mounted.
        */
       componentDidMount () {
+        // @TODO :- Remove throttling logic as the image will have fixed width
+        // and height. We will not require bottom scrolling logic then.
+        // Also we will need to fix the width and height of image container
+        // when it is being uploaded (dummy message) and after it is uploaded (BE message)
+        this._throttledScrollBottom = throttle (
+          this._scrollToBottom, SCROLL_THROTTLE_TIMER
+        );
         this._scrollToBottom ();
       }
     });

@@ -55,11 +55,38 @@ define ("reducers/entities",
             }
           });
 
+        case ACTION_TYPES.REMOVE_MESSAGE:
+          const {messages} = state.issues [action.issueId];
+          const filteredMessages = messages.filter ((message) => {
+            return message !== action.messageId;
+          });
+          return update (state, {
+            issues: {
+              [action.issueId]: {
+                messages: {$set: filteredMessages}
+              }
+            }
+          });
+
         case ACTION_TYPES.SET_MESSAGES:
           return update (state, {
             issues: {
               [action.issueId]: {
                 messages: {$set: action.msgIds}
+              }
+            }
+          });
+
+        case ACTION_TYPES.SET_ATTACHMENT_ERROR:
+          return update (state, {
+            messages: {
+              [action.messageId]: {
+                states: {
+                  uploadInProgress: {$set: false},
+                  // @TODO :- Rename 'error' to 'attachmentHasError'
+                  error: {$set: true},
+                  errorCode: {$set: action.errorCode}
+                }
               }
             }
           });
