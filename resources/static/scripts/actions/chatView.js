@@ -223,7 +223,8 @@ define ("actions/chatView",
             {appState} = state;
 
       const xhrData = {
-        identifier: appState.identifier
+        "identifier": appState.identifier,
+        "new-timestamp": Date.now ()
       };
 
       if (state.chatView.activeIssueMsgCursor) {
