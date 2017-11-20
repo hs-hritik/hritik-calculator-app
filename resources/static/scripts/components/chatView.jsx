@@ -270,10 +270,10 @@ define ("components/chatView",
             <ViewHeader title={text.chatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
-            <div className="hs-view__content">
-              <DnDWrapper onDrop={this._onFilesDrop}
-                          dragInfoText={text.dndInfoText}
-                          enabled={issueIsCreated} >
+            <DnDWrapper onDrop={this._onFilesDrop}
+                        dragInfoText={text.dndInfoText}
+                        enabled={issueIsCreated} >
+              <div className="hs-view__content">
                 <MessageList messages={this.props.messages}
                              isTyping={this.props.isTyping}
                              showAgentNickname={this.props.showAgentNickname}
@@ -281,15 +281,15 @@ define ("components/chatView",
                              onRetryAttachmentClick={this.props.onRetryAttachmentClick}
                              onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                              onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
-              </DnDWrapper>
-            </div>
-            <ChatViewFooter activeFooter={this.props.activeFooter}
-                            onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
-                            onCloseConversation={this.props.onCloseConversation}
-                            infoBotField={this.props.infoBotField}
-                            onSubmitInfoBotField={this.props.onSubmitInfoBotField}
-                            onValueChangeInfoBotField={this.props.onValueChangeInfoBotField}
-                            text={this.props.text} />
+              </div>
+              <ChatViewFooter activeFooter={this.props.activeFooter}
+                              onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
+                              onCloseConversation={this.props.onCloseConversation}
+                              infoBotField={this.props.infoBotField}
+                              onSubmitInfoBotField={this.props.onSubmitInfoBotField}
+                              onValueChangeInfoBotField={this.props.onValueChangeInfoBotField}
+                              text={this.props.text} />
+            </DnDWrapper>
           </div>
         );
       },

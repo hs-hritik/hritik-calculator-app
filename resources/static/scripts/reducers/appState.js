@@ -100,7 +100,8 @@ define ("reducers/appState",
               answerBot: {$set: config.answer_bot_enabled},
               infoBot: {$set: config.user_info_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
-              agentNickname: {$set: config.agent_nickname_enabled}
+              agentNickname: {$set: config.agent_nickname_enabled},
+              audioNotifications: {$set: config.audio_notifications_enabled}
             }
           });
 
