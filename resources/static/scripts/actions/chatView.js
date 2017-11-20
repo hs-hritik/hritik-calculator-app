@@ -26,6 +26,7 @@ define ("actions/chatView",
     "helpers/entity",
     "helpers/chatView",
     "helpers/xhr",
+    "helpers/audio",
     "helpers/liveUpdates",
     "helpers/attachments",
     "extras/postSdkMessage",
@@ -36,14 +37,16 @@ define ("actions/chatView",
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
     xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
     actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, liveUpdatesHelpers, attachmentsHelpers, postSdkMessage,
-    browserUtils, upload) {
+    xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
+    postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
+          MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
+          MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
           {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
@@ -250,22 +253,27 @@ define ("actions/chatView",
               setActiveIssueMsgCursor (response.messages_cursor)
             ]));
 
+            let unreadCount = latestState.chatView.unreadCount;
+            // Calculate unread count for agent messages only
+            response.messages.forEach ((msg) => {
+              if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
+                  msg.state !== MESSAGES_STATE.READ) {
+                unreadCount++;
+              }
+            });
+
             // If the chat view is active, and the messenger is not in minimized state,
             // that means the user has seen the messages.
             if (!latestState.appState.minimized &&
               ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
               dispatch (markMessagesSeen ());
             } else {
-              let unreadCount = latestState.chatView.unreadCount;
-              // Calculate unread count for agent messages only
-              response.messages.forEach ((msg) => {
-                if (msg.origin === "admin" && msg.state !== "read") {
-                  unreadCount++;
-                }
-              });
-
               dispatch (setUnreadCount (unreadCount));
               postSdkMessage.updateUnreadCount (unreadCount);
+            }
+
+            if (state.chatView.activeIssueMsgCursor && unreadCount) {
+              audioHelpers.playReceive ();
             }
           }
 
@@ -289,7 +297,8 @@ define ("actions/chatView",
                 dispatch (
                   createMessage ({
                     type: MESSAGE_TYPE.CSAT,
-                    issueId: appState.activeIssueId
+                    issueId: appState.activeIssueId,
+                    playAudio: true
                   })
                 );
               }
@@ -442,6 +451,7 @@ define ("actions/chatView",
             dispatch (udpateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (addMessages (appState.activeIssueId, [response.id]));
+            audioHelpers.playSend ();
           },
           onEnd: () => {
             dispatch (enableReplyBox ());
@@ -682,6 +692,7 @@ define ("actions/chatView",
           createMessage ({
             type: MESSAGE_TYPE.TEXT,
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_PROBLEM_SOLVED,
+            playAudio: true,
             messageConfig: {
               body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
               isCustomerMsg: false
@@ -746,6 +757,7 @@ define ("actions/chatView",
           type: messageType,
           issueId = appState.dummyIssueId,
           typingTimer = false,
+          playAudio = false,
           messageConfig,
           onAddMessage
         } = config;
@@ -779,11 +791,17 @@ define ("actions/chatView",
             if (onAddMessage) {
               onAddMessage (msg);
             }
+            if (playAudio) {
+              audioHelpers.playAudio (msg.isCustomerMsg);
+            }
           }, typingTimer);
         } else {
           dispatch (batchActions (actionsToDispatch));
           if (onAddMessage) {
             onAddMessage (msg);
+          }
+          if (playAudio) {
+            audioHelpers.playAudio (msg.isCustomerMsg);
           }
         }
       };
@@ -884,6 +902,7 @@ define ("actions/chatView",
               body: messageBody,
               isCustomerMsg: true
             },
+            playAudio: true,
             onAddMessage: (msg) => {
               dispatch (
                 batchActions ([
@@ -962,6 +981,7 @@ define ("actions/chatView",
                       messageConfig: {
                         faqs
                       },
+                      playAudio: true,
                       onAddMessage: () => {
                         onFaqSuggestionMessageAdd ();
                         dispatch (
@@ -1012,6 +1032,7 @@ define ("actions/chatView",
               isCustomerMsg: false
             },
             typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
+            playAudio: true,
             onAddMessage: () => {
               store.dispatch (
                 batchActions ([
@@ -1121,6 +1142,7 @@ define ("actions/chatView",
                 isCustomerMsg: false
               },
               typingTimer: TYPING_TIMEOUT.INFO_BOT_FIELD,
+              playAudio: true,
               onAddMessage: () => {
                 dispatch (
                   batchActions ([
@@ -1174,6 +1196,7 @@ define ("actions/chatView",
         dispatch (
           createMessage ({
             type: MESSAGE_TYPE.TEXT,
+            playAudio: true,
             messageConfig: {
               body: updatedFieldVal.value,
               isCustomerMsg: true
@@ -1424,6 +1447,7 @@ define ("actions/chatView",
               addMessages (activeIssueId, [msg.id])
             ];
             dispatch (batchActions (actionsToDispatch));
+            audioHelpers.playSend ();
           },
           onFailure: (response) => {
             dispatch (
