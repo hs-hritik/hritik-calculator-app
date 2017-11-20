@@ -1,0 +1,9 @@
+Branches:
+feature/audio-notification
+feature/proactive-chat-conditions
+
+Changelog:
+Change dnd wrapper position in chat view
+Play "send" audio after attachment upload
+Add gulp task to copy assets to dist directory
+Play audio feedback on sending/receiving messages
