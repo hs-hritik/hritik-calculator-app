@@ -1,0 +1,2 @@
+Changelog:
+Wrap fetchMessage's onsuccess in try catch
