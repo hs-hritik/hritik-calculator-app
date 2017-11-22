@@ -239,70 +239,76 @@ define ("actions/chatView",
         data: xhrData,
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
-          const latestState = store.getState ();
+          // @TODO - This is to make sure that onEnd is called even if
+          // any code in onSuccess results in an Exception.
+          try {
+            const latestState = store.getState ();
 
-          if (response.messages.length) {
-            const normalizedData = normalize (response, entitySchema.messages);
-            const processedEntities = entityHelpers.getProcessedEntities (
-              normalizedData.entities
-            );
-
-            dispatch (batchActions ([
-              entitiesActions.setEntities (processedEntities),
-              addMessages (appState.activeIssueId, normalizedData.result.messages),
-              setActiveIssueMsgCursor (response.messages_cursor)
-            ]));
-
-            let unreadCount = latestState.chatView.unreadCount;
-            // Calculate unread count for agent messages only
-            response.messages.forEach ((msg) => {
-              if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
-                  msg.state !== MESSAGES_STATE.READ) {
-                unreadCount++;
-              }
-            });
-
-            // If the chat view is active, and the messenger is not in minimized state,
-            // that means the user has seen the messages.
-            if (!latestState.appState.minimized &&
-              ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
-              dispatch (markMessagesSeen ());
-            } else {
-              dispatch (setUnreadCount (unreadCount));
-              postSdkMessage.updateUnreadCount (unreadCount);
-            }
-
-            if (state.chatView.activeIssueMsgCursor && unreadCount) {
-              audioHelpers.playReceive ();
-            }
-          }
-
-          // If issue is resolved or rejected, stop polling and ask user for feedback.
-          const issueState = response.issue_state_data.state;
-          if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
-            dispatch (updateIssueState (issueState));
-            stopPollingForMessages ();
-
-            if (issueState === ISSUE_STATE.RESOLVED) {
-              dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
-
-              dispatch (
-                createMessage ({
-                  type: MESSAGE_TYPE.END_CHAT,
-                  issueId: appState.activeIssueId
-                })
+            if (response.messages.length) {
+              const normalizedData = normalize (response, entitySchema.messages);
+              const processedEntities = entityHelpers.getProcessedEntities (
+                normalizedData.entities
               );
 
-              if (appState.featuresEnabled.csatBot) {
-                dispatch (
-                  createMessage ({
-                    type: MESSAGE_TYPE.CSAT,
-                    issueId: appState.activeIssueId,
-                    playAudio: true
-                  })
-                );
+              dispatch (batchActions ([
+                entitiesActions.setEntities (processedEntities),
+                addMessages (appState.activeIssueId, normalizedData.result.messages),
+                setActiveIssueMsgCursor (response.messages_cursor)
+              ]));
+
+              let unreadCount = latestState.chatView.unreadCount;
+              // Calculate unread count for agent messages only
+              response.messages.forEach ((msg) => {
+                if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
+                    msg.state !== MESSAGES_STATE.READ) {
+                  unreadCount++;
+                }
+              });
+
+              // If the chat view is active, and the messenger is not in minimized state,
+              // that means the user has seen the messages.
+              if (!latestState.appState.minimized &&
+                ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
+                dispatch (markMessagesSeen ());
+              } else {
+                dispatch (setUnreadCount (unreadCount));
+                postSdkMessage.updateUnreadCount (unreadCount);
+              }
+
+              if (state.chatView.activeIssueMsgCursor && unreadCount) {
+                audioHelpers.playReceive ();
               }
             }
+
+            // If issue is resolved or rejected, stop polling and ask user for feedback.
+            const issueState = response.issue_state_data.state;
+            if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
+              dispatch (updateIssueState (issueState));
+              stopPollingForMessages ();
+
+              if (issueState === ISSUE_STATE.RESOLVED) {
+                dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
+
+                dispatch (
+                  createMessage ({
+                    type: MESSAGE_TYPE.END_CHAT,
+                    issueId: appState.activeIssueId
+                  })
+                );
+
+                if (appState.featuresEnabled.csatBot) {
+                  dispatch (
+                    createMessage ({
+                      type: MESSAGE_TYPE.CSAT,
+                      issueId: appState.activeIssueId,
+                      playAudio: true
+                    })
+                  );
+                }
+              }
+            }
+          } catch (ex) {
+            // @TODO - Ideally, this exception should be logged to server.
           }
         },
         onFailure: () => {
