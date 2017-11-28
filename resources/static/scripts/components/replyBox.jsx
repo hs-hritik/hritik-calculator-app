@@ -27,7 +27,7 @@ define ("components/replyBox",
          */
         value: PropTypes.string.isRequired,
         disabled: PropTypes.bool,
-        autoFocus: PropTypes.bool,
+        widgetIsOpened: PropTypes.bool,
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
         onFilesChange: PropTypes.func.isRequired,
@@ -60,7 +60,8 @@ define ("components/replyBox",
                                 onHeightChange={this._onReplyBoxHeightChange}
                                 placeholder={text.replyBtnPlaceholder}
                                 disabled={disabled}
-                                autoFocus={this.props.autoFocus}
+                                autoFocus
+                                ref={this._saveTextAreaRef}
                                 dir="auto" />
                 {this._renderReplyBoxAction ()}
             </div>
@@ -77,7 +78,6 @@ define ("components/replyBox",
         }
         return this._renderAttachmentButton ();
       },
-
 
       /**
        * Render send button
@@ -140,6 +140,29 @@ define ("components/replyBox",
        */
       _submitReply () {
         this.props.onSubmitReply ();
+      },
+
+      /**
+       * Reference of textarea
+       */
+      _textAreaRef: null,
+
+      /**
+       * Save textarea reference
+       * @param {Object} ref - DOM reference
+       */
+      _saveTextAreaRef (ref) {
+        this._textAreaRef = ref;
+      },
+
+      componentDidUpdate (prevProps) {
+        // Focus the textarea in following cases
+        // 1] When message and attachment is added
+        // 2] Widget is opened
+        if ((prevProps.disabled && !this.props.disabled) ||
+            (!prevProps.widgetIsOpened && this.props.widgetIsOpened)) {
+          this._textAreaRef.focus ();
+        }
       }
     });
   }

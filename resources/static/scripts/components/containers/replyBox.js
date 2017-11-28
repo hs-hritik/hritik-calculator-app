@@ -18,7 +18,7 @@ define ("components/containers/replyBox",
       return {
         value,
         disabled,
-        autoFocus: !state.appState.minimized,
+        widgetIsOpened: !state.appState.minimized,
         text: state.ui.text,
         issueIsCreated: !!state.appState.activeIssueId
       };
