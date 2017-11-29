@@ -40,6 +40,12 @@ define ("components/commons/fileInput",
         noPadding: PropTypes.bool
       },
 
+      getInitialState () {
+        return {
+          fileInputValue: ""
+        };
+      },
+
       render () {
         const {infoText, iconClasses, disabled, noPadding} = this.props;
         let infoTextEl = null;
@@ -63,16 +69,19 @@ define ("components/commons/fileInput",
         );
 
         return (
-          <label htmlFor="upload-file" className={fileInputClasses}>
-            <i className={primaryIconClasses} />
-            {infoTextEl}
+          <div>
+            <label htmlFor="upload-file" className={fileInputClasses}>
+              <i className={primaryIconClasses} />
+              {infoTextEl}
+            </label>
             <input type="file"
+                   value={this.state.fileInputValue}
                    id="upload-file"
                    multiple={true}
                    disabled={disabled}
                    className="hs-file-input__file"
                    onChange={this._onFilesChange} />
-          </label>
+          </div>
         );
       },
 
@@ -81,6 +90,9 @@ define ("components/commons/fileInput",
        * @param {Object} ev - event object
        */
       _onFilesChange (ev) {
+        this.setState ({
+          fileInputValue: ""
+        });
         this.props.onChange (ev.target.files);
       }
     });

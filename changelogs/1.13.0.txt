@@ -1,0 +1,5 @@
+Branches:
+feature/auto-focus-fix
+
+Changelog:
+Fix textarea auto focus issue

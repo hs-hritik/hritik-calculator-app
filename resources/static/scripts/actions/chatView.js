@@ -1387,10 +1387,17 @@ define ("actions/chatView",
         // a) file extension
         const filesLength = files.length;
 
+        dispatch (disableReplyBox ());
         // @NOTE :- Files is not an array but array like object
         for (let i = 0; i < filesLength; i++) {
           dispatch (createAttachmentMessage (files [i]));
         }
+        // Timeout is used to avoid enabling replyBox in same update cycle
+        // This provides async execution of enabling replyBox
+        // Requirement :- Auto focus on text area after adding attachments
+        window.setTimeout (() => {
+          dispatch (enableReplyBox ());
+        }, 0);
       };
     };
 
