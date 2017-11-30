@@ -10,6 +10,7 @@ define ("actions/appState",
     "constants/routes",
     "constants/appState",
     "constants/chatView",
+    "constants/analytics",
     "normalizr",
     "helpers/entitySchema",
     "helpers/entity",
@@ -18,6 +19,7 @@ define ("actions/appState",
     "helpers/prepareProcessXhrData",
     "helpers/audio",
     "helpers/proactiveChat",
+    "helpers/analytics",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
@@ -30,10 +32,11 @@ define ("actions/appState",
     "utils/browser",
     "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS, normalizr,
-    entitySchema, entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
-    audioHelpers, proactiveChatHelpers, xhr, objUtils, uuidGenerator, store, entitiesActions,
-    chatViewActions, batchActions, actionCreators, postMessage, browserUtils, postSdkMessage) {
+  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS, analyticsConstants,
+    normalizr, entitySchema, entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
+    audioHelpers, proactiveChatHelpers, analyticsHelpers, xhr, objUtils, uuidGenerator,
+    store, entitiesActions, chatViewActions, batchActions, actionCreators, postMessage,
+    browserUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -46,6 +49,8 @@ define ("actions/appState",
       PRE_CHAT_FEATURES
     } = APP_STATE_CONSTANTS;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+
+    const {EVENT} = analyticsConstants;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     // Constant indicating whether to skip checking a value in localstorage or not
@@ -178,13 +183,13 @@ define ("actions/appState",
      * - Dispatch action to reset the store.
      * - Post reset message to parent.
      * - Clear localstorage.
-     * - Minimize messenger if options.minimizeMessenger is true.
+     * - Minimize widget if options.minimizeMessenger is true.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
      *                  By default, user related data will be reset.
      * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
      *                  chat related data or not. By default, they would NOT be reset.
-     * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the messenger or not.
+     * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the widget or not.
      *                                                Defaults to false.
      */
     const reset = (options = {}) => {
@@ -401,7 +406,7 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set the web messenger configuration set by the Helpshift admin
+     * Action to set the web chat configuration set by the Helpshift admin
      * and set it to the store. Post message to the client with the config.
      * This configuration contains settings like if wm is enabled, appearance,
      * answer bot, etc.
@@ -421,7 +426,13 @@ define ("actions/appState",
               ])
             );
 
-            const {ui, appState: {featuresEnabled}} = store.getState ();
+            const {
+              ui,
+              appState: {
+                featuresEnabled,
+                wmEnabled: widgetEnabled
+              }
+            } = store.getState ();
             const primaryColor = ui.color.primary;
             const cssConfig = {
               primaryColor,
@@ -436,14 +447,17 @@ define ("actions/appState",
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig (cssConfig));
 
-            if (response.wm_widget_enabled) {
-              // A side-effect of getting the web messenger config would be to
+            if (widgetEnabled) {
+              // A side-effect of getting the web chat config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
               setStyles (cssConfig);
 
               // Apply styles to page
               applyPageStyles ();
+
+              // If the widget is enabled, track the widget load event
+              analyticsHelpers.track (EVENT.WIDGET_LOAD);
             }
           }
         });
@@ -451,7 +465,7 @@ define ("actions/appState",
     };
 
     /**
-     * Get web messenger config via the HS API.
+     * Get web chat config via the HS API.
      * @param {String} domain
      * @param {String} platformId
      * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
@@ -472,7 +486,7 @@ define ("actions/appState",
     };
 
     /**
-     * Return client relevant web messenger config object
+     * Return client relevant web chat config object
      * @param {Object} response - the GET wm config response object
      * @returns {Object} - the config object for client
      */
