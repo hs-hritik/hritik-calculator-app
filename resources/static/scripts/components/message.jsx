@@ -214,19 +214,9 @@ define ("components/message",
        * Render csat request message.
        */
       _renderCsatMessage () {
-        const {text} = this.props;
-
-        // @TODO: Rename classes.
         return (
           <div className="hs-message__item">
-            {text.csatBotRequestMsg}
-            <div className="hs-message__suggested-faqs">
-              <a className="hs-message__suggested-faq"
-                 onClick={this.props.onStartCsatSurveyClick}>
-                {text.csatLinkCaption}
-                <i className="ion-chevron-right hs-message__suggested-faq-icon" />
-              </a>
-            </div>
+            {this.props.text.csatBotRequestMsg}
           </div>
         );
       },
