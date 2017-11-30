@@ -15,11 +15,12 @@ define ("extras/api",
     "actions/chatView",
     "actions/businessHours",
     "actions/actionCreators",
+    "actions/csatView",
     "components/app"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, app) {
+    actionCreators, csatViewActions, app) {
     "use strict";
 
     const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
@@ -47,6 +48,18 @@ define ("extras/api",
      */
     const isIssueClosed = (issueState) => {
       return ISSUE_CLOSED_STATES.indexOf (issueState) !== -1;
+    };
+
+    /**
+     * Handle CSAT rating submission
+     */
+    const handleCsatRatingSubmission = () => {
+      // If current view is CSAT view and user has not submitted the rating,
+      // submit the rating on minimize
+      const {appState, csatView} = store.getState ();
+      if (appState.activeView === ACTIVE_VIEW.CSAT && !csatView.completed) {
+        store.dispatch (csatViewActions.submitCsat ());
+      }
     };
 
     /**
@@ -86,6 +99,7 @@ define ("extras/api",
         }
 
       } else if (isIssueClosed (appState.issueState)) {
+        handleCsatRatingSubmission ();
         // If minimized is true, and issue state is closed, reset the conversation.
         store.dispatch (appStateActions.reset ({
           skipUser: true
