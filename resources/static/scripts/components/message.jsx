@@ -42,7 +42,6 @@ define ("components/message",
           faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
           faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
-          csatLinkCaption: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired
