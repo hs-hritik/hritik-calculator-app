@@ -13,10 +13,11 @@ define ("components/containers/chatView",
     "actions/faqView",
     "actions/actionCreators",
     "actions/appState",
+    "actions/csatView",
     "constants/activeView"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    actionCreators, appStateActions, ACTIVE_VIEW) {
+    actionCreators, appStateActions, csatViewActions, ACTIVE_VIEW) {
     "use strict";
 
     const {denormalize} = normalizr;
@@ -26,9 +27,11 @@ define ("components/containers/chatView",
       const issue = denormalize (issueId, entitySchema.issue, state.entities);
       const messages = issue ? issue.messages : [];
       const {infoBot} = state.chatView;
+      const {rating} = state.csatView;
 
       return {
         messages,
+        rating,
         activeFooter: state.chatView.activeFooter,
         isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
         infoBotField: infoBot.data [infoBot.currentField],
@@ -72,6 +75,10 @@ define ("components/containers/chatView",
           dispatch (
             chatViewActions.createAttachmentMessage (message.file, message.id)
           );
+        },
+        onStarClick: (updatedRating) => {
+          dispatch (csatViewActions.updateCsatRating (updatedRating));
+          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
         }
       };
     };
