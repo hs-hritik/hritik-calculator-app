@@ -1,0 +1,5 @@
+Branches:
+feature/thread-up-fix
+
+Changelog:
+Handle exception in data parsing of iframe messages
