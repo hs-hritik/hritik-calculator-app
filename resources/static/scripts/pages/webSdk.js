@@ -17,8 +17,12 @@ require (
      * @param {Event} event
      */
     const onMessage = (event) => {
-      const {type, data} = JSON.parse (event.data);
-      api.handle (type, data);
+      try {
+        const {type, data} = JSON.parse (event.data);
+        api.handle (type, data);
+      } catch (exception) {
+        // We are not handling any kind of exception if data parsing fails
+      }
     };
 
     window.addEventListener ("message", onMessage, false);
