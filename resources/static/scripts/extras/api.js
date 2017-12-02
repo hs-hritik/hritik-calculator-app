@@ -105,9 +105,11 @@ define ("extras/api",
 
     /**
      * Handle intial user message
-     * @param {String} message - initial user message
+     * @param {Object} [config]
+     * @param {string} [config.message] - Initial user message.
+     * @param {string} [config.source] - Source for the function call - user action, api, etc.
      */
-    const handleInitialUserMsg = (message) => {
+    const handleInitialUserMsg = ({message, source}) => {
       const state = store.getState ();
       const {appState} = state;
 
@@ -131,6 +133,13 @@ define ("extras/api",
            PRE_CHAT_STATE.initialUserMessage.INITIAL)) {
         store.dispatch (chatViewActions.createInitialUserMessage (message));
       }
+
+      // Track the conversation started event.
+      // Pass source as "API" because this is the handler function for
+      // the setInitialUserMessage API.
+      analyticsHelpers.track (EVENT.CONVERSATION_STARTED, {
+        source
+      });
     };
 
     /**
@@ -169,7 +178,7 @@ define ("extras/api",
           }));
           break;
         case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
-          handleInitialUserMsg (data.message);
+          handleInitialUserMsg (data);
           break;
         case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
           store.dispatch (actionCreators.setGreetingMsg (data.message));

@@ -15,6 +15,7 @@ define ("actions/chatView",
     "constants/message",
     "constants/appState",
     "constants/errors",
+    "constants/analytics",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "gunpowder/utils/schema",
@@ -29,16 +30,17 @@ define ("actions/chatView",
     "helpers/audio",
     "helpers/liveUpdates",
     "helpers/attachments",
+    "helpers/analytics",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
-    xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
-    actionCreators, entitySchema, entityHelpers, chatViewHelpers,
+    analyticsConstants, xhr, arrayUtils, schema, objUtils, entitiesActions,
+    batchActions, actionCreators, entitySchema, entityHelpers, chatViewHelpers,
     xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -61,6 +63,8 @@ define ("actions/chatView",
           USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
           ANSWER_BOT_STATE = PRE_CHAT_STATE.answerBot,
           INFO_BOT_STATE = PRE_CHAT_STATE.infoBot;
+
+    const {EVENT} = analyticsConstants;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -441,6 +445,9 @@ define ("actions/chatView",
         if (!appState.activeIssueId) {
           // set initial user msg
           dispatch (createInitialUserMessage (replyBox.value));
+
+          // Track the conversation started event.
+          analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
           return;
         }
 

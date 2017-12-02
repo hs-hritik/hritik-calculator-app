@@ -11,7 +11,8 @@ define ("constants/analytics",
     return {
       EVENT: {
         WIDGET_LOAD: "WIDGET_LOAD",
-        WIDGET_OPEN: "WIDGET_OPEN"
+        WIDGET_OPEN: "WIDGET_OPEN",
+        CONVERSATION_STARTED: "CONVERSATION_STARTED"
       },
       SOURCE: {
         API: "API"

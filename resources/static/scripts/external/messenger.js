@@ -706,7 +706,10 @@
   const setInitialUserMessage = (message) => {
     // message should be non-empty string
     if (message && (typeof message === "string")) {
-      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {message});
+      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
+        message,
+        source: SOURCE.API
+      });
     }
   };
 

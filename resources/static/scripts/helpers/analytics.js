@@ -135,12 +135,12 @@ define ("helpers/analytics",
     };
 
     /**
-     * Track the widget open event
+     * Track the widget open event.
      * @param {Object} [config]
-     * @param {boolean} [config.source] - whether the widget was opened via an API
+     * @param {string} [config.source] - whether the widget was opened via an API
      *    call or a user action.
      */
-    const _trackWidgetOpen = (config) => {
+    const _trackWidgetOpen = (config = {}) => {
       const {
         businessHoursViewState: bhState
       } = store.getState ();
@@ -170,6 +170,27 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track the conversation started event. This is event is tracked when the end
+     * user starts the conversation (e.g. submits the first reply).
+     * @param {Object} [config]
+     * @param {string} [config.source] - whether the end user's first message was
+     *    set via an API call or a user action.
+     */
+    const _trackConversationStarted = (config = {}) => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            s: config.source === SOURCE.API ? "js" : "u"
+          },
+          t: "cs"
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
@@ -181,6 +202,9 @@ define ("helpers/analytics",
           break;
         case EVENT.WIDGET_OPEN:
           _trackWidgetOpen (config);
+          break;
+        case EVENT.CONVERSATION_STARTED:
+          _trackConversationStarted (config);
           break;
       }
     };
