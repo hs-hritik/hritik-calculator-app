@@ -10,16 +10,18 @@ define ("extras/api",
     "constants/eventTypes",
     "constants/appState",
     "constants/activeView",
+    "constants/analytics",
     "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
     "actions/businessHours",
     "actions/actionCreators",
-    "components/app"
+    "components/app",
+    "helpers/analytics"
   ],
-  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
+  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, app) {
+    actionCreators, app, analyticsHelpers) {
     "use strict";
 
     const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
@@ -28,6 +30,8 @@ define ("extras/api",
       ISSUE_STATE.REJECTED,
       ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
     ];
+
+    const {EVENT} = analyticsConstants;
 
     /**
      * Set the initial data to the app state.
@@ -50,12 +54,14 @@ define ("extras/api",
     };
 
     /**
-     * Handle messenger toggle. Mount the top level React component if it's
+     * Handle web chat toggle. Mount the top level React component if it's
      * not mounted already and post sdk initialized event.
      * Dispatch the action to update the messenger-minimized flag and mark messages seen.
-     * @param {Boolean} minimized - If the messenger is in minimized state
+     * @param {Object} config
+     * @param {boolean} config.minimized - If the web chat widget is in minimized state.
+     * @param {boolean} [config.source] - Source for the function call - user action, api, etc.
      */
-    const handleMessengerToggle = (minimized) => {
+    const handleMessengerToggle = ({minimized, source}) => {
       store.dispatch (appStateActions.toggleMinimized (minimized));
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
@@ -67,9 +73,9 @@ define ("extras/api",
           app.init ();
         }
 
-        // If business hours enabled and currently not in business hours,
-        // then show business hours view
-        // Else if conversation is not started, show conversation view
+        // If business hours is enabled and it's out of business hours currently,
+        // show business hours view
+        // Else if conversation is not started, show the conversation view
         if (businessHoursViewState.businessHoursEnabled &&
             !businessHoursViewState.inBusinessHours) {
           store.dispatch (
@@ -85,6 +91,10 @@ define ("extras/api",
           store.dispatch (chatViewActions.markMessagesSeen ());
         }
 
+        // Track the widget open event
+        analyticsHelpers.track (EVENT.WIDGET_OPEN, {
+          source
+        });
       } else if (isIssueClosed (appState.issueState)) {
         // If minimized is true, and issue state is closed, reset the conversation.
         store.dispatch (appStateActions.reset ({
@@ -150,7 +160,7 @@ define ("extras/api",
           app.init (data);
           break;
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
-          handleMessengerToggle (data.minimized);
+          handleMessengerToggle (data);
           break;
         case EVENT_TYPES.CMD_RESET:
           // If the reset API is called manually, reset proactive chat data as well.

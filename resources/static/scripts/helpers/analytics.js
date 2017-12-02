@@ -8,16 +8,59 @@ define ("helpers/analytics",
   [
     "constants/analytics",
     "constants/routes",
+    "constants/appState",
+    "constants/businessHoursView",
     "store",
     "helpers/xhr",
+    "helpers/localStorage",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object"
   ],
-  function (analyticsConstants, routes, store, xhrHelpers, xhr, objUtils) {
+  function (analyticsConstants, routes, APP_STATE_CONSTANTS, BUSINESS_HOURS_CONSTANTS,
+    store, xhrHelpers, lsHelpers, xhr, objUtils) {
     "use strict";
 
-    const {EVENT} = analyticsConstants;
+    const {
+      ISSUE_STATE
+    } = APP_STATE_CONSTANTS;
+    const {
+      OFFLINE_BEHAVIOUR
+    } = BUSINESS_HOURS_CONSTANTS;
+    const {EVENT, SOURCE} = analyticsConstants;
     let _route;
+
+    /**
+     * Determine whether a backend issue exists in the system.
+     * @returns {boolean}
+     */
+    const _doesIssueExist = () => {
+      const {
+        businessHoursViewState: bhState
+      } = store.getState ();
+
+      // @TODO: Move this logic to a helper module.
+      const outOfBusinessHours = bhState.businessHoursEnabled && !bhState.inBusinessHours;
+
+      // Read the issue state from localstorage to get this information on page
+      // reloads before the state is re-hydrated.
+      const issueState = lsHelpers.getIssueState ();
+
+      // An issue exists
+      // If it's out of business hours and
+      //    offline behavior is `contact_form` and
+      //    contact form has been submitted
+      // Or
+      // If it's in business hours and
+      //    there's an active issue
+      if (outOfBusinessHours) {
+        return (
+          bhState.offlineBehaviour === OFFLINE_BEHAVIOUR.CONTACT_FORM &&
+          bhState.contactFormSubmitted
+        );
+      } else {
+        return issueState === ISSUE_STATE.ACTIVE;
+      }
+    };
 
     /**
      * Get the XHR route for tracking analytics events.
@@ -92,13 +135,52 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track the widget open event
+     * @param {Object} [config]
+     * @param {boolean} [config.source] - whether the widget was opened via an API
+     *    call or a user action.
+     */
+    const _trackWidgetOpen = (config) => {
+      const {
+        businessHoursViewState: bhState
+      } = store.getState ();
+
+      const outOfBusinessHours = (
+        bhState.businessHoursEnabled && !bhState.inBusinessHours
+      ) ? 1 : 0;
+
+      // Track `c` is an issue exists, `i`, if it doesn't.
+      const issueExists = _doesIssueExist ();
+
+      // @TODO: Send the long issue ID (with `id`) when the API starts sending
+      // it with create issue API response.
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            // @TODO: Move the event strings to the constant file.
+            s: config.source === SOURCE.API ? "js" : "u",
+            b: outOfBusinessHours
+          },
+          t: issueExists ? "c" : "i"
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
+     * @param {Object} [config]
      */
-    const track = (event) => {
+    const track = (event, config) => {
       switch (event) {
         case EVENT.WIDGET_LOAD:
           _trackWidgetLoad ();
+          break;
+        case EVENT.WIDGET_OPEN:
+          _trackWidgetOpen (config);
           break;
       }
     };
