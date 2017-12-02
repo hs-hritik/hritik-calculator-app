@@ -470,6 +470,13 @@ define ("actions/chatView",
             dispatch (enableReplyBox ());
           }
         });
+
+        // Track message added event.
+        // @TODO: Check if this needs to be tracked when the add message XHR
+        // succeeds. That should not be the case so as to be aligned to the
+        // end user's first message event (conversation started) tracking, which
+        // is tracked as soon as it's added.
+        analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
     };
 
@@ -591,6 +598,9 @@ define ("actions/chatView",
               ])
             );
             startPollingForMessages ();
+
+            // Track the issue created event.
+            analyticsHelpers.track (EVENT.ISSUE_CREATED);
           },
           onFailure: () => {
             // @TODO: Handler failure.
@@ -1526,6 +1536,13 @@ define ("actions/chatView",
             })
           );
         }
+
+        // Track message added event.
+        // @TODO: Check if this needs to be tracked when the add message XHR
+        // succeeds. That should not be the case so as to be aligned to the
+        // end user's first message event (conversation started) tracking, which
+        // is tracked as soon as it's added.
+        analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
     };
 

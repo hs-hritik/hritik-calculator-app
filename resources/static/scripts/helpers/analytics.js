@@ -170,7 +170,7 @@ define ("helpers/analytics",
     };
 
     /**
-     * Track the conversation started event. This is event is tracked when the end
+     * Track the conversation started event. This event is tracked when the end
      * user starts the conversation (e.g. submits the first reply).
      * @param {Object} [config]
      * @param {string} [config.source] - whether the end user's first message was
@@ -184,6 +184,39 @@ define ("helpers/analytics",
             s: config.source === SOURCE.API ? "js" : "u"
           },
           t: "cs"
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the issue created event. This event is tracked only when the issue
+     * creation succeeds.
+     */
+    const _trackIssueCreated = () => {
+      // @TODO: Send the long issue ID (with `d.id`) when the API starts sending
+      // it with the create issue API response.
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          t: "p"
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the message added event.
+     */
+    const _trackMessageAdded = () => {
+      // @TODO: Send the long issue ID (with `d.id`) when the API starts sending
+      // it with the create issue API response.
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          t: "m"
         }])
       };
 
@@ -205,6 +238,12 @@ define ("helpers/analytics",
           break;
         case EVENT.CONVERSATION_STARTED:
           _trackConversationStarted (config);
+          break;
+        case EVENT.ISSUE_CREATED:
+          _trackIssueCreated ();
+          break;
+        case EVENT.MESSAGE_ADDED:
+          _trackMessageAdded ();
           break;
       }
     };
