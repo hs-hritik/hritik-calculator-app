@@ -1022,6 +1022,11 @@ define ("actions/chatView",
                 dispatch (startNextPreChatFeature ());
               }
             }));
+
+            // Track answer bot requested event here.
+            analyticsHelpers.track (EVENT.ANS_BOT_REQUESTED, {
+              query: endUserFirstMsg.body
+            });
             break;
 
           case ANSWER_BOT_STATE.FAQS_FETCHED:

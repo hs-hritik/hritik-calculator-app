@@ -219,6 +219,25 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track answer bot requested event.
+     * @param {Object} config
+     * @param {string} config.query - End user's query for the answer bot.
+     */
+    const _trackAnsBotRequested = (config) => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            q: config.query
+          },
+          t: PAYLOAD_EVENT.ANS_BOT_REQUESTED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
@@ -239,6 +258,9 @@ define ("helpers/analytics",
           break;
         case EVENT.MESSAGE_ADDED:
           _trackMessageAdded ();
+          break;
+        case EVENT.ANS_BOT_REQUESTED:
+          _trackAnsBotRequested (config);
           break;
       }
     };
