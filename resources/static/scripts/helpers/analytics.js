@@ -13,11 +13,12 @@ define ("helpers/analytics",
     "store",
     "helpers/xhr",
     "helpers/localStorage",
+    "helpers/common",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object"
   ],
   function (analyticsConstants, routes, APP_STATE_CONSTANTS, BUSINESS_HOURS_CONSTANTS,
-    store, xhrHelpers, lsHelpers, xhr, objUtils) {
+    store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils) {
     "use strict";
 
     const {
@@ -38,8 +39,7 @@ define ("helpers/analytics",
         businessHoursViewState: bhState
       } = store.getState ();
 
-      // @TODO: Move this logic to a helper module.
-      const outOfBusinessHours = bhState.businessHoursEnabled && !bhState.inBusinessHours;
+      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours ();
 
       // Read the issue state from localstorage to get this information on page
       // reloads before the state is re-hydrated.
@@ -141,13 +141,7 @@ define ("helpers/analytics",
      *    call or a user action.
      */
     const _trackWidgetOpen = (config = {}) => {
-      const {
-        businessHoursViewState: bhState
-      } = store.getState ();
-
-      const outOfBusinessHours = (
-        bhState.businessHoursEnabled && !bhState.inBusinessHours
-      ) ? 1 : 0;
+      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 1 : 0;
 
       // Track `c` is an issue exists, `i`, if it doesn't.
       const issueExists = _doesIssueExist ();
