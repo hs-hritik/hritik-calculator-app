@@ -27,7 +27,7 @@ define ("helpers/analytics",
     const {
       OFFLINE_BEHAVIOUR
     } = BUSINESS_HOURS_CONSTANTS;
-    const {EVENT, SOURCE} = analyticsConstants;
+    const {EVENT, PAYLOAD_EVENT, SOURCE, PAYLOAD_SOURCE} = analyticsConstants;
     let _route;
 
     /**
@@ -127,7 +127,7 @@ define ("helpers/analytics",
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
-          t: "a"
+          t: PAYLOAD_EVENT.WIDGET_LOAD
         }])
       };
 
@@ -152,11 +152,12 @@ define ("helpers/analytics",
         e: JSON.stringify ([{
           ts: Date.now (),
           d: {
-            // @TODO: Move the event strings to the constant file.
-            s: config.source === SOURCE.API ? "js" : "u",
+            s: config.source === SOURCE.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
             b: outOfBusinessHours
           },
-          t: issueExists ? "c" : "i"
+          t: issueExists ?
+            PAYLOAD_EVENT.WIDGET_OPEN_WITH_ISSUE :
+            PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE
         }])
       };
 
@@ -175,9 +176,9 @@ define ("helpers/analytics",
         e: JSON.stringify ([{
           ts: Date.now (),
           d: {
-            s: config.source === SOURCE.API ? "js" : "u"
+            s: config.source === SOURCE.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER
           },
-          t: "cs"
+          t: PAYLOAD_EVENT.CONVERSATION_STARTED
         }])
       };
 
@@ -194,7 +195,7 @@ define ("helpers/analytics",
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
-          t: "p"
+          t: PAYLOAD_EVENT.ISSUE_CREATED
         }])
       };
 
@@ -210,7 +211,7 @@ define ("helpers/analytics",
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
-          t: "m"
+          t: PAYLOAD_EVENT.MESSAGE_ADDED
         }])
       };
 
