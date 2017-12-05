@@ -1014,6 +1014,12 @@ define ("actions/chatView",
                     })
                   );
                 }
+
+                // Track answer bot result event with the returned FAQ IDs
+                analyticsHelpers.track (EVENT.ANS_BOT_RESULT, {
+                  query: endUserFirstMsg.body,
+                  faqIds: faqs.map ((faq) => faq.id)
+                });
               },
               onFailure: () => {
                 dispatch (toggleSystemTyping (false));

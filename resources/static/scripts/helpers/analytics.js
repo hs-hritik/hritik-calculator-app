@@ -223,14 +223,35 @@ define ("helpers/analytics",
      * @param {Object} config
      * @param {string} config.query - End user's query for the answer bot.
      */
-    const _trackAnsBotRequested = (config) => {
+    const _trackAnsBotRequested = ({query}) => {
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
           d: {
-            q: config.query
+            q: query
           },
           t: PAYLOAD_EVENT.ANS_BOT_REQUESTED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track answer bot result event.
+     * @param {Object} config
+     * @param {string} config.query - End user's query for the answer bot.
+     * @param {array} config.faqIds - List of FAQ IDs in case of a successful get FAQ request.
+     */
+    const _trackAnsBotResult = ({query, faqIds}) => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            q: query,
+            ids: faqIds
+          },
+          t: PAYLOAD_EVENT.ANS_BOT_RESULT
         }])
       };
 
@@ -261,6 +282,9 @@ define ("helpers/analytics",
           break;
         case EVENT.ANS_BOT_REQUESTED:
           _trackAnsBotRequested (config);
+          break;
+        case EVENT.ANS_BOT_RESULT:
+          _trackAnsBotResult (config);
           break;
       }
     };
