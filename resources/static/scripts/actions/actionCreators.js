@@ -113,6 +113,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to set if the suggested FAQ read event has been tracked.
+     * @param {boolean} isTracked
+     * @returns {Object}
+     */
+    const setSuggestedFaqReadTracked = (isTracked) => {
+      return {
+        type: ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED,
+        isTracked
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -123,6 +135,7 @@ define ("actions/actionCreators",
       setCif,
       setTags,
       setPreChatFeatureIndex,
-      setExecuteGreetingMessage
+      setExecuteGreetingMessage,
+      setSuggestedFaqReadTracked
     };
   });

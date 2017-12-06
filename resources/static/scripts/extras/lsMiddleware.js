@@ -126,6 +126,11 @@ define ("extras/lsMiddleware",
           if (!lsHelpers.getSiteActivityStartTime ()) {
             lsHelpers.setSiteActivityStartTime (Date.now ());
           }
+          break;
+
+        case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
+          lsHelpers.setSuggestedFaqReadTracked (action.isTracked);
+          break;
       }
     };
 

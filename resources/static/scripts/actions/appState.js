@@ -272,7 +272,8 @@ define ("actions/appState",
             issueState = lsHelpers.getIssueState (),
             userProfileId = lsHelpers.getUserProfileId (),
             replyText = lsHelpers.getReplyText (),
-            endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId ();
+            endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId (),
+            suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked ();
 
       // Handle greeting message prechat feature for proactive chat
       // If the current prechat feature is `initial user message` and its state
@@ -301,7 +302,8 @@ define ("actions/appState",
             issueState,
             replyText,
             userProfileId,
-            endUserFirstMsgId
+            endUserFirstMsgId,
+            suggestedFaqReadTracked
           }
         });
       }

@@ -61,7 +61,10 @@ define ("reducers/appState",
         title: "",
         url: ""
       },
-      proactiveChatRules: []
+      proactiveChatRules: [],
+      analytics: {
+        suggestedFaqReadTracked: false
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -83,6 +86,11 @@ define ("reducers/appState",
           }
           if (action.data.userProfileId) {
             updateObj.userProfileId = {$set: action.data.userProfileId};
+          }
+          if (action.data.suggestedFaqReadTracked) {
+            updateObj.analytics = {
+              suggestedFaqReadTracked: {$set: action.data.suggestedFaqReadTracked}
+            };
           }
 
           return update (state, updateObj);
@@ -230,6 +238,13 @@ define ("reducers/appState",
             parentPageInfo: {
               title: {$set: action.parentPageInfo.title},
               url: {$set: action.parentPageInfo.url}
+            }
+          });
+
+        case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
+          return update (state, {
+            analytics: {
+              suggestedFaqReadTracked: {$set: action.isTracked}
             }
           });
 

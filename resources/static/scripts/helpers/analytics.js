@@ -15,10 +15,11 @@ define ("helpers/analytics",
     "helpers/localStorage",
     "helpers/common",
     "gunpowder/utils/xhr",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "actions/actionCreators"
   ],
   function (analyticsConstants, routes, APP_STATE_CONSTANTS, BUSINESS_HOURS_CONSTANTS,
-    store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils) {
+    store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils, actionCreators) {
     "use strict";
 
     const {
@@ -107,8 +108,9 @@ define ("helpers/analytics",
     /**
      * Fire the XHR to track the given event payload.
      * @param {Object} payload - The event payload with name, event timestamp etc.
+     * @param {Object} [config]
      */
-    const _fireTrackingXhr = (payload) => {
+    const _fireTrackingXhr = (payload, config = {}) => {
       const defaultPayload = _getDefaultPayload ();
       const data = objUtils.shallowMerge (defaultPayload, payload);
 
@@ -116,7 +118,12 @@ define ("helpers/analytics",
         route: _route || _getRoute (),
         headers: xhrHelpers.getCommonHeaders (),
         data,
-        method: "POST"
+        method: "POST",
+        onSuccess: (response) => {
+          if (typeof config.onSuccess === "function") {
+            config.onSuccess (response);
+          }
+        }
       });
     };
 
@@ -259,6 +266,43 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track FAQ read events.
+     * 1. Suggested FAQ Read (has to be tracked only once, even after page reloads)
+     * 2. FAQ Read
+     * @param {Object} config
+     * @param {string} config.faqId - FAQ ID that was read.
+     */
+    const _trackFaqRead = ({faqId}) => {
+      const {appState} = store.getState ();
+
+      const eventData = [{
+        ts: Date.now (),
+        d: {
+          id: faqId
+        },
+        t: PAYLOAD_EVENT.FAQ_READ
+      }];
+
+      if (!appState.analytics.suggestedFaqReadTracked) {
+        eventData.push ({
+          ts: Date.now (),
+          t: PAYLOAD_EVENT.SUGGESTED_FAQ_READ
+        });
+      }
+
+      const eventPayload = {
+        e: JSON.stringify (eventData)
+      };
+
+      _fireTrackingXhr (eventPayload, {
+        onSuccess: () => {
+          // Store the fact that the SUGGESTED_FAQ_READ event has been tracked once
+          store.dispatch (actionCreators.setSuggestedFaqReadTracked (true));
+        }
+      });
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
@@ -286,6 +330,8 @@ define ("helpers/analytics",
         case EVENT.ANS_BOT_RESULT:
           _trackAnsBotResult (config);
           break;
+        case EVENT.FAQ_READ:
+          _trackFaqRead (config);
       }
     };
 

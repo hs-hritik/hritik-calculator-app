@@ -28,7 +28,8 @@ define ("helpers/localStorage",
       LAST_ACTIVITY_TIME: "lat",
       REPLY_TEXT: "rt",
       SITE_ACTIVITY_START_TIME: "sast",
-      PROACTIVE_CHAT_HAS_TRIGGERED: "pcht"
+      PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
+      SUGGESTED_FAQ_READ_TRACKED: "sfrt"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -345,6 +346,20 @@ define ("helpers/localStorage",
      */
     const getProactiveChatHasTriggered = () => lsUtils.getItem (KEYS.PROACTIVE_CHAT_HAS_TRIGGERED);
 
+    /**
+     * Set whether the suggested FAQ read event has been tracked or not
+     * @param {boolean} isTracked
+     */
+    const setSuggestedFaqReadTracked = (isTracked) => {
+      lsUtils.setItem (KEYS.SUGGESTED_FAQ_READ_TRACKED, isTracked);
+    };
+
+    /**
+     * Get whether the suggested FAQ read event has been tracked or not
+     * @returns {boolean}
+     */
+    const getSuggestedFaqReadTracked = () => lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
+
     return {
       getUserId,
       setUserId,
@@ -377,6 +392,8 @@ define ("helpers/localStorage",
       setSiteActivityStartTime,
       getSiteActivityStartTime,
       setProactiveChatHasTriggered,
-      getProactiveChatHasTriggered
+      getProactiveChatHasTriggered,
+      setSuggestedFaqReadTracked,
+      getSuggestedFaqReadTracked
     };
   });
