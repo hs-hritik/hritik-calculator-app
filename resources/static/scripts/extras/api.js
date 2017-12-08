@@ -29,6 +29,7 @@ define ("extras/api",
       ISSUE_STATE.REJECTED,
       ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
     ];
+    const SKIP_REVIEW_COMMENTS = true;
 
     /**
      * Set the initial data to the app state.
@@ -58,7 +59,7 @@ define ("extras/api",
       // submit the rating on minimize
       const {appState, csatView} = store.getState ();
       if (appState.activeView === ACTIVE_VIEW.CSAT && !csatView.completed) {
-        store.dispatch (csatViewActions.submitCsat ());
+        store.dispatch (csatViewActions.submitCsat (SKIP_REVIEW_COMMENTS));
       }
     };
 
