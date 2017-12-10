@@ -1,0 +1,5 @@
+Branches:
+feature/widget-position-api
+
+Changelog:
+Add support to position widget on bottom left
