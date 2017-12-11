@@ -17,11 +17,12 @@ define ("helpers/analytics",
     "helpers/common",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
+    "utils/browser",
     "actions/actionCreators"
   ],
   function (analyticsConstants, routes, appStateConstants, businessHoursConstants,
     chatViewConstants, store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils,
-    actionCreators) {
+    browserUtils, actionCreators) {
     "use strict";
 
     const {
@@ -44,6 +45,7 @@ define ("helpers/analytics",
     } = analyticsConstants;
 
     let _route;
+    const _isBot = browserUtils.isBot ();
 
     /**
      * Determine whether a backend issue exists in the system.
@@ -374,37 +376,40 @@ define ("helpers/analytics",
      * @param {Object} [config]
      */
     const track = (event, config) => {
-      switch (event) {
-        case EVENT.WIDGET_LOAD:
-          _trackWidgetLoad ();
-          break;
-        case EVENT.WIDGET_OPEN:
-          _trackWidgetOpen (config);
-          break;
-        case EVENT.CONVERSATION_STARTED:
-          _trackConversationStarted (config);
-          break;
-        case EVENT.ISSUE_CREATED:
-          _trackIssueCreated ();
-          break;
-        case EVENT.MESSAGE_ADDED:
-          _trackMessageAdded ();
-          break;
-        case EVENT.ANS_BOT_REQUESTED:
-          _trackAnsBotRequested (config);
-          break;
-        case EVENT.ANS_BOT_RESULT:
-          _trackAnsBotResult (config);
-          break;
-        case EVENT.FAQ_READ:
-          _trackFaqRead (config);
-          break;
-        case EVENT.INFO_BOT_REQUESTED:
-          _trackInfoBotRequested ();
-          break;
-        case EVENT.INFO_BOT_FIELD_CAPTURED:
-          _trackInfoBotFieldCaptured ();
-          break;
+      // Do not track the event if initiated via a search engine bot or crawler.
+      if (!_isBot) {
+        switch (event) {
+          case EVENT.WIDGET_LOAD:
+            _trackWidgetLoad ();
+            break;
+          case EVENT.WIDGET_OPEN:
+            _trackWidgetOpen (config);
+            break;
+          case EVENT.CONVERSATION_STARTED:
+            _trackConversationStarted (config);
+            break;
+          case EVENT.ISSUE_CREATED:
+            _trackIssueCreated ();
+            break;
+          case EVENT.MESSAGE_ADDED:
+            _trackMessageAdded ();
+            break;
+          case EVENT.ANS_BOT_REQUESTED:
+            _trackAnsBotRequested (config);
+            break;
+          case EVENT.ANS_BOT_RESULT:
+            _trackAnsBotResult (config);
+            break;
+          case EVENT.FAQ_READ:
+            _trackFaqRead (config);
+            break;
+          case EVENT.INFO_BOT_REQUESTED:
+            _trackInfoBotRequested ();
+            break;
+          case EVENT.INFO_BOT_FIELD_CAPTURED:
+            _trackInfoBotFieldCaptured ();
+            break;
+        }
       }
     };
 
