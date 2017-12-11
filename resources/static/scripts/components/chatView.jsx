@@ -13,10 +13,11 @@ define ("components/chatView",
     "gunpowder/utils/classes",
     "components/containers/replyBox",
     "components/commons/viewHeader",
-    "components/commons/dndWrapper"
+    "components/commons/dndWrapper",
+    "components/starRating"
   ],
   function (MessageList, PROP_TYPES, CHAT_VIEW_CONSTANTS, KEY_CODES,
-    classes, ReplyBoxContainer, ViewHeader, DnDWrapper) {
+    classes, ReplyBoxContainer, ViewHeader, DnDWrapper, StarRating) {
     "use strict";
 
     const PropTypes = React.PropTypes,
@@ -34,11 +35,13 @@ define ("components/chatView",
       displayName: "ChatViewFooter",
       propTypes: {
         activeFooter: PropTypes.string.isRequired,
+        rating: PropTypes.number,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
         infoBotField: INFO_BOT_FIELD_PROPS,
         onSubmitInfoBotField: PropTypes.func.isRequired,
         onValueChangeInfoBotField: PropTypes.func.isRequired,
+        onStarClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
           faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
@@ -74,6 +77,9 @@ define ("components/chatView",
           case ACTIVE_FOOTER.CLOSED:
             return this._renderClosedConversationFooter ();
 
+          case ACTIVE_FOOTER.CSAT:
+            return this._renderCsatFooter ();
+
           default:
             return null;
         }
@@ -106,6 +112,19 @@ define ("components/chatView",
                 {this.props.text.closeConversationBtn}
               </button>
             </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render csat footer
+       */
+      _renderCsatFooter () {
+        return (
+          <div className="hs-chat-footer__csat-footer">
+            <StarRating name="csat"
+                        value={this.props.rating}
+                        onStarClick={this.props.onStarClick} />
           </div>
         );
       },
@@ -236,6 +255,7 @@ define ("components/chatView",
         messages: PropTypes.arrayOf (PropTypes.shape (
           PROP_TYPES.MESSAGE
         )).isRequired,
+        rating: PropTypes.number,
         onSuggestedFaqClick: PropTypes.func,
         onStartCsatSurveyClick: PropTypes.func,
         showAgentNickname: PropTypes.bool,
@@ -250,6 +270,7 @@ define ("components/chatView",
         onValueChangeInfoBotField: PropTypes.func.isRequired,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
+        onStarClick: PropTypes.func.isRequired,
         issueIsCreated: PropTypes.bool.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
@@ -283,6 +304,8 @@ define ("components/chatView",
                              onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
               </div>
               <ChatViewFooter activeFooter={this.props.activeFooter}
+                              rating={this.props.rating}
+                              onStarClick={this.props.onStarClick}
                               onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
                               onCloseConversation={this.props.onCloseConversation}
                               infoBotField={this.props.infoBotField}

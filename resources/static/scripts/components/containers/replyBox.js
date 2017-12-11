@@ -20,7 +20,8 @@ define ("components/containers/replyBox",
         disabled,
         widgetIsOpened: !state.appState.minimized,
         text: state.ui.text,
-        issueIsCreated: !!state.appState.activeIssueId
+        issueIsCreated: !!state.appState.activeIssueId,
+        browserIsMobile: state.appState.browserIsMobile
       };
     };
 

@@ -18,7 +18,7 @@ define ("actions/csatView",
      * Action to submit csat rating and review.
      * @returns {Function} - action
      */
-    const submitCsat = () => {
+    const submitCsat = (skipReviewComments = false) => {
       return (dipatch, getState) => {
         const {appState, csatView} = getState ();
 
@@ -35,7 +35,7 @@ define ("actions/csatView",
         };
 
         const csatReview = csatView.review.trim ();
-        if (csatReview) {
+        if (csatReview && !skipReviewComments) {
           xhrData.comment = csatReview;
         }
 

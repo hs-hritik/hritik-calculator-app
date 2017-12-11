@@ -31,6 +31,7 @@ define ("components/replyBox",
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
         onFilesChange: PropTypes.func.isRequired,
+        browserIsMobile: PropTypes.bool.isRequired,
         text: PropTypes.shape ({
           replyBtnPlaceholder: PropTypes.string.isRequired
         }).isRequired,
@@ -159,8 +160,11 @@ define ("components/replyBox",
         // Focus the textarea in following cases
         // 1] When message and attachment is added
         // 2] Widget is opened
-        if ((prevProps.disabled && !this.props.disabled) ||
-            (!prevProps.widgetIsOpened && this.props.widgetIsOpened)) {
+        // 3] Browser is not mobile
+        const messageIsAdded = (prevProps.disabled && !this.props.disabled);
+        const widgetIsOpened = (!prevProps.widgetIsOpened && this.props.widgetIsOpened);
+        const browserIsNotMobile = !this.props.browserIsMobile;
+        if ((messageIsAdded || widgetIsOpened) && browserIsNotMobile) {
           this._textAreaRef.focus ();
         }
       }
