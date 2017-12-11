@@ -131,6 +131,10 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
           lsHelpers.setSuggestedFaqReadTracked (action.isTracked);
           break;
+
+        case ACTION_TYPES.SET_CONVERSATION_ID:
+          lsHelpers.setConversationId (action.cid);
+          break;
       }
     };
 

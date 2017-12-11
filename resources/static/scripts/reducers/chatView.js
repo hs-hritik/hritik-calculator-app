@@ -53,7 +53,8 @@ define ("reducers/chatView",
             prefilled: false
           }
         }
-      }
+      },
+      conversationId: ""
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -72,6 +73,9 @@ define ("reducers/chatView",
           }
           if (action.data.endUserFirstMsgId) {
             updateObj.endUserFirstMsgId = {$set: action.data.endUserFirstMsgId};
+          }
+          if (action.data.conversationId) {
+            updateObj.conversationId = {$set: action.data.conversationId};
           }
           return update (state, updateObj);
 
@@ -196,6 +200,11 @@ define ("reducers/chatView",
             infoBot: {
               data: infoBotChangeObj
             }
+          });
+
+        case ACTION_TYPES.SET_CONVERSATION_ID:
+          return update (state, {
+            conversationId: {$set: action.cid}
           });
 
         default:

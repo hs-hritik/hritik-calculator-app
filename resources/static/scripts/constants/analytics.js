@@ -25,6 +25,13 @@ define ("constants/analytics",
       },
       // The PAYLOAD_EVENT constant is to be used with the tracking XHR's payload.
       PAYLOAD_EVENT: {
+        PLAT_ID: "platform-id",
+        ID: "id",
+        DEVICE_ID: "did",
+        TIMESTAMP: "timestamp",
+        USER_ID: "uid",
+        PROFILE_ID: "profile-id",
+        CONVERSATION_ID: "conv-id",
         WIDGET_LOAD: "a",
         WIDGET_OPEN_WITH_ISSUE: "c",
         WIDGET_OPEN_WITHOUT_ISSUE: "i",

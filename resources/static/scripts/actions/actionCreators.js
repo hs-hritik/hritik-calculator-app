@@ -125,6 +125,19 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to set the conversation ID in the store. Conversation IDs
+     * are used only with analytics event tracking.
+     * @param {string} cid - The conversation ID, a random UUID string
+     * @returns {Object}
+     */
+    const setConversationId = (cid) => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ID,
+        cid
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -136,6 +149,7 @@ define ("actions/actionCreators",
       setTags,
       setPreChatFeatureIndex,
       setExecuteGreetingMessage,
-      setSuggestedFaqReadTracked
+      setSuggestedFaqReadTracked,
+      setConversationId
     };
   });

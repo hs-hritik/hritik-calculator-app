@@ -94,28 +94,37 @@ define ("helpers/analytics",
      */
     const _getDefaultPayload = () => {
       const {
-        platformId,
-        identifier,
-        userId,
-        userProfileId
-      } = store.getState ().appState;
+        appState: {
+          platformId,
+          identifier,
+          userId,
+          userProfileId
+        },
+        chatView: {
+          conversationId
+        }
+      } = store.getState ();
 
       // @TODO: Add `ln` (language) to the following object.
       // @TODO: Backend needs `cc` (country code) as well, but we don't have this
       // information. Add it to the following object when we implement it.
       const payload = {
-        "platform-id": platformId,
-        "id": identifier,
-        "did": identifier, // Device ID
-        "timestamp": Date.now () // Timestamp of when the event is tracked (XHR fired)
+        [PAYLOAD_EVENT.PLAT_ID]: platformId,
+        [PAYLOAD_EVENT.ID]: identifier,
+        [PAYLOAD_EVENT.DEVICE_ID]: identifier, // Device ID
+        [PAYLOAD_EVENT.TIMESTAMP]: Date.now () // Timestamp of when the event is tracked (XHR fired)
       };
 
       if (userId) {
-        payload.uid = userId;
+        payload [PAYLOAD_EVENT.USER_ID] = userId;
       }
 
       if (userProfileId) {
-        payload ["profile-id"] = userProfileId;
+        payload [PAYLOAD_EVENT.PROFILE_ID] = userProfileId;
+      }
+
+      if (conversationId) {
+        payload [PAYLOAD_EVENT.CONVERSATION_ID] = conversationId;
       }
 
       return payload;

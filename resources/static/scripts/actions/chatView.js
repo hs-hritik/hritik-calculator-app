@@ -20,6 +20,7 @@ define ("actions/chatView",
     "gunpowder/utils/array",
     "gunpowder/utils/schema",
     "gunpowder/utils/object",
+    "gunpowder/utils/uuid",
     "actions/entities",
     "actions/batch",
     "actions/actionCreators",
@@ -37,7 +38,7 @@ define ("actions/chatView",
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
-    analyticsConstants, xhr, arrayUtils, schema, objUtils, entitiesActions,
+    analyticsConstants, xhr, arrayUtils, schema, objUtils, uuidGenerator, entitiesActions,
     batchActions, actionCreators, entitySchema, entityHelpers, chatViewHelpers,
     xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
     analyticsHelpers, postSdkMessage, browserUtils, upload) {
@@ -927,11 +928,16 @@ define ("actions/chatView",
             },
             playAudio: true,
             onAddMessage: (msg) => {
+              // Along with other actions, set a random Conversation ID in the
+              // store. Conversation IDs are generated every time the end user
+              // posts the first message (manually or set via API), and sent
+              // with the payload of every subsequent analytics event.
               dispatch (
                 batchActions ([
                   setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
                   setEndUserFirstMessageId (msg.id),
-                  udpateReplyText ("")
+                  udpateReplyText (""),
+                  actionCreators.setConversationId (uuidGenerator ())
                 ])
               );
               // Get parent data & create issue

@@ -29,7 +29,8 @@ define ("helpers/localStorage",
       REPLY_TEXT: "rt",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
-      SUGGESTED_FAQ_READ_TRACKED: "sfrt"
+      SUGGESTED_FAQ_READ_TRACKED: "sfrt",
+      CONVERSATION_ID: "ci"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -360,6 +361,20 @@ define ("helpers/localStorage",
      */
     const getSuggestedFaqReadTracked = () => lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
 
+    /**
+     * Set the conversation ID (created when the end user posts the first message)
+     * @param {string} cid - The conversation ID
+     */
+    const setConversationId = (cid) => {
+      lsUtils.setItem (KEYS.CONVERSATION_ID, cid);
+    };
+
+    /**
+     * Get the conversation ID.
+     * @returns {string}
+     */
+    const getConversationId = () => lsUtils.getItem (KEYS.CONVERSATION_ID);
+
     return {
       getUserId,
       setUserId,
@@ -394,6 +409,8 @@ define ("helpers/localStorage",
       setProactiveChatHasTriggered,
       getProactiveChatHasTriggered,
       setSuggestedFaqReadTracked,
-      getSuggestedFaqReadTracked
+      getSuggestedFaqReadTracked,
+      setConversationId,
+      getConversationId
     };
   });
