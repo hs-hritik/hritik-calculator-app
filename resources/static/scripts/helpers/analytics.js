@@ -10,6 +10,7 @@ define ("helpers/analytics",
     "constants/routes",
     "constants/appState",
     "constants/businessHoursView",
+    "constants/chatView",
     "store",
     "helpers/xhr",
     "helpers/localStorage",
@@ -18,17 +19,30 @@ define ("helpers/analytics",
     "gunpowder/utils/object",
     "actions/actionCreators"
   ],
-  function (analyticsConstants, routes, APP_STATE_CONSTANTS, BUSINESS_HOURS_CONSTANTS,
-    store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils, actionCreators) {
+  function (analyticsConstants, routes, appStateConstants, businessHoursConstants,
+    chatViewConstants, store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils,
+    actionCreators) {
     "use strict";
 
     const {
       ISSUE_STATE
-    } = APP_STATE_CONSTANTS;
+    } = appStateConstants;
+
     const {
       OFFLINE_BEHAVIOUR
-    } = BUSINESS_HOURS_CONSTANTS;
-    const {EVENT, PAYLOAD_EVENT, SOURCE, PAYLOAD_SOURCE} = analyticsConstants;
+    } = businessHoursConstants;
+
+    const {
+      INFO_BOT_FIELDS
+    } = chatViewConstants;
+
+    const {
+      EVENT,
+      PAYLOAD_EVENT,
+      SOURCE,
+      PAYLOAD_SOURCE
+    } = analyticsConstants;
+
     let _route;
 
     /**
@@ -303,6 +317,58 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track info bot requested event.
+     */
+    const _trackInfoBotRequested = () => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          t: PAYLOAD_EVENT.INFO_BOT_REQUESTED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track info bot field captured event. The following fields are supported.
+     * Name.
+     * Email.
+     */
+    const _trackInfoBotFieldCaptured = () => {
+      const {
+        chatView: {
+          infoBot: {
+            currentField,
+            data: infoBotData
+          }
+        }
+      } = store.getState ();
+
+      const eventData = {
+        ts: Date.now ()
+      };
+
+      if (currentField === INFO_BOT_FIELDS.NAME) {
+        eventData.d = {
+          p: infoBotData [INFO_BOT_FIELDS.NAME].prefilled ? 1 : 0
+        };
+        eventData.t = PAYLOAD_EVENT.INFO_BOT_NAME_CAPTURED;
+      } else {
+        eventData.d = {
+          p: infoBotData [INFO_BOT_FIELDS.EMAIL].prefilled ? 1 : 0
+        };
+        eventData.t = PAYLOAD_EVENT.INFO_BOT_EMAIL_CAPTURED;
+      }
+
+      const eventPayload = {
+        e: JSON.stringify ([eventData])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
@@ -332,6 +398,13 @@ define ("helpers/analytics",
           break;
         case EVENT.FAQ_READ:
           _trackFaqRead (config);
+          break;
+        case EVENT.INFO_BOT_REQUESTED:
+          _trackInfoBotRequested ();
+          break;
+        case EVENT.INFO_BOT_FIELD_CAPTURED:
+          _trackInfoBotFieldCaptured ();
+          break;
       }
     };
 

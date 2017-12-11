@@ -49,7 +49,7 @@ define ("actions/chatView",
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
           MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
-          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
+          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -1137,6 +1137,8 @@ define ("actions/chatView",
                 }
               })
             );
+            // Track info bot requested (started) event here.
+            analyticsHelpers.track (EVENT.INFO_BOT_REQUESTED);
             break;
 
           case INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED:
@@ -1204,15 +1206,12 @@ define ("actions/chatView",
 
         // Trim white spaces in value
         const currentFieldVal = infoBot.data [infoBot.currentField].value;
-        const updatedFieldVal = objUtils.shallowMerge (
-          {
-            value: currentFieldVal.value.trim ()
-          },
-          currentFieldVal,
-          {
-            skip: ["value"]
-          }
-        );
+        const updatedFieldVal = objUtils.shallowMerge ({
+          value: currentFieldVal.value.trim ()
+        },
+        currentFieldVal, {
+          skip: ["value"]
+        });
 
         // As we are only saving serializable data in the store,
         // we are not saving the input object inside the store.
@@ -1246,6 +1245,9 @@ define ("actions/chatView",
           value: updatedFieldVal.value,
           errorMsg: ""
         }));
+
+        // Track info bot value (name, email, etc) captured event here.
+        analyticsHelpers.track (EVENT.INFO_BOT_FIELD_CAPTURED);
 
         dispatch (changeInfoBotCurrentField ());
 
@@ -1359,8 +1361,8 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState (),
               infoBotData = state.chatView.infoBot.data,
-              name = infoBotData.name.value.value,
-              email = infoBotData.email.value.value;
+              name = infoBotData [INFO_BOT_FIELDS.NAME].value.value,
+              email = infoBotData [INFO_BOT_FIELDS.EMAIL].value.value;
 
         const user = {
           identifier: state.appState.identifier

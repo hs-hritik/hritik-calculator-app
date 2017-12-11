@@ -13,7 +13,7 @@ define ("reducers/chatView",
     "use strict";
 
     const update = React.addons.update,
-          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+          {ACTIVE_FOOTER, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_STATE = {
       replyBox: {
@@ -30,7 +30,7 @@ define ("reducers/chatView",
         fieldsRequired: ["name", "email"],
         currentField: "",
         data: {
-          name: {
+          [INFO_BOT_FIELDS.NAME]: {
             title: "Your Name",
             msg: "What's your name?",
             placeholder: "Enter your name",
@@ -38,9 +38,10 @@ define ("reducers/chatView",
               value: "",
               errorMsg: "",
               validations: ["required"]
-            }
+            },
+            prefilled: false
           },
-          email: {
+          [INFO_BOT_FIELDS.EMAIL]: {
             title: "Your Email Address",
             msg: "What's your email?",
             placeholder: "Enter your email",
@@ -48,7 +49,8 @@ define ("reducers/chatView",
               value: "",
               errorMsg: "",
               validations: ["required", "email"]
-            }
+            },
+            prefilled: false
           }
         }
       }
@@ -172,19 +174,21 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_CLIENT_CONFIG:
           const {userName, userEmail} = action.config,
                 infoBotChangeObj = {};
-          if (typeof userName === "string") {
-            infoBotChangeObj.name = {
+          if (typeof userName === "string" && userName) {
+            infoBotChangeObj [INFO_BOT_FIELDS.NAME] = {
               value: {
                 value: {$set: userName}
-              }
+              },
+              prefilled: {$set: true}
             };
           }
 
-          if (typeof userEmail === "string") {
-            infoBotChangeObj.email = {
+          if (typeof userEmail === "string" && userEmail) {
+            infoBotChangeObj [INFO_BOT_FIELDS.EMAIL] = {
               value: {
                 value: {$set: userEmail}
-              }
+              },
+              prefilled: {$set: true}
             };
           }
 
