@@ -382,30 +382,47 @@ define ("helpers/analytics",
       const {
         chatView: {
           infoBot: {
+            fieldsRequired,
             currentField,
             data: infoBotData
           }
         }
       } = store.getState ();
 
-      const eventData = {
+      const infoBotFieldCapturedEventData = {
         ts: Date.now ()
       };
 
       if (currentField === INFO_BOT_FIELDS.NAME) {
-        eventData.d = {
+        infoBotFieldCapturedEventData.d = {
           p: infoBotData [INFO_BOT_FIELDS.NAME].prefilled ? 1 : 0
         };
-        eventData.t = PAYLOAD_EVENT.INFO_BOT_NAME_CAPTURED;
+        infoBotFieldCapturedEventData.t = PAYLOAD_EVENT.INFO_BOT_NAME_CAPTURED;
       } else {
-        eventData.d = {
+        infoBotFieldCapturedEventData.d = {
           p: infoBotData [INFO_BOT_FIELDS.EMAIL].prefilled ? 1 : 0
         };
-        eventData.t = PAYLOAD_EVENT.INFO_BOT_EMAIL_CAPTURED;
+        infoBotFieldCapturedEventData.t = PAYLOAD_EVENT.INFO_BOT_EMAIL_CAPTURED;
+      }
+
+      // If all info bot fields are asked, track the info bot finished event as
+      // well.
+      let infoBotFinishedEventData;
+      if (fieldsRequired.indexOf (currentField) === (fieldsRequired.length - 1)) {
+        infoBotFinishedEventData = {
+          ts: Date.now (),
+          t: PAYLOAD_EVENT.INFO_BOT_FINISHED
+        };
+      }
+
+      const eventData = [infoBotFieldCapturedEventData];
+
+      if (infoBotFinishedEventData) {
+        eventData.push (infoBotFinishedEventData);
       }
 
       const eventPayload = {
-        e: JSON.stringify ([eventData])
+        e: JSON.stringify (eventData)
       };
 
       _fireTrackingXhr (eventPayload);

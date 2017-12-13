@@ -1132,11 +1132,12 @@ define ("actions/chatView",
                     updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
                   );
                   dispatch (askInfoBotField ());
+
+                  // Track info bot requested (started) event here.
+                  analyticsHelpers.track (EVENT.INFO_BOT_REQUESTED);
                 }
               })
             );
-            // Track info bot requested (started) event here.
-            analyticsHelpers.track (EVENT.INFO_BOT_REQUESTED);
             break;
 
           case INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED:

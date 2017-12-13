@@ -46,6 +46,7 @@ define ("constants/analytics",
         INFO_BOT_REQUESTED: "ibr",
         INFO_BOT_NAME_CAPTURED: "ibnc",
         INFO_BOT_EMAIL_CAPTURED: "ibec",
+        INFO_BOT_FINISHED: "ibf",
         ISSUE_DEFLECTED: "abta",
         ISSUE_NOT_DEFLECTED: "abtaf"
       },
