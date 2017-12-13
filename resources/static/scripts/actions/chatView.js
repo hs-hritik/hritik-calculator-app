@@ -32,6 +32,7 @@ define ("actions/chatView",
     "helpers/liveUpdates",
     "helpers/attachments",
     "helpers/analytics",
+    "helpers/common",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
@@ -41,7 +42,7 @@ define ("actions/chatView",
     analyticsConstants, xhr, arrayUtils, schema, objUtils, uuidGenerator, entitiesActions,
     batchActions, actionCreators, entitySchema, entityHelpers, chatViewHelpers,
     xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -522,7 +523,7 @@ define ("actions/chatView",
         const state = getState ();
         const {appState} = state;
         const {dummyIssueId, userId, tags, cif, metadata} = appState;
-        const endUserFirstMsg = getEndUserFirstMessage ();
+        const endUserFirstMsg = commonHelpers.getEndUserFirstMessage ();
 
         // @TODO :- Remove this condition after verifying createIssue is not
         // called before setting first user message
@@ -691,6 +692,11 @@ define ("actions/chatView",
         );
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
         dispatch (startNextPreChatFeature ());
+
+        // Track issue deflection failure event here.
+        analyticsHelpers.track (EVENT.ISSUE_DEFLECTION, {
+          deflected: false
+        });
       };
     };
 
@@ -730,6 +736,11 @@ define ("actions/chatView",
             setChatViewFooter (ACTIVE_FOOTER.CLOSED)
           ])
         );
+
+        // Track issue deflection successful event here.
+        analyticsHelpers.track (EVENT.ISSUE_DEFLECTION, {
+          deflected: true
+        });
       };
     };
 
@@ -963,25 +974,6 @@ define ("actions/chatView",
     };
 
     /**
-     * Return end user first message.
-     * @returns {Object} - end user first message
-     */
-    const getEndUserFirstMessage = () => {
-      const {chatView, entities} = store.getState ();
-      const {endUserFirstMsgId} = chatView;
-      let message = null;
-
-      for (const id in entities.messages) {
-        if (entities.messages.hasOwnProperty (id) && (id === endUserFirstMsgId)) {
-          message = entities.messages [id];
-          break;
-        }
-      }
-
-      return message;
-    };
-
-    /**
      * Action to start answer bot workflow (FAQ suggestions).
      * @returns {Object} - Action
      */
@@ -992,7 +984,7 @@ define ("actions/chatView",
 
         switch (featureState) {
           case ANSWER_BOT_STATE.INITIAL:
-            const endUserFirstMsg = getEndUserFirstMessage ();
+            const endUserFirstMsg = commonHelpers.getEndUserFirstMessage ();
 
             dispatch (toggleSystemTyping (true));
 

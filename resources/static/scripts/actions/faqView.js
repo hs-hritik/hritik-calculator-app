@@ -69,8 +69,9 @@ define ("actions/faqView",
               faqId
             });
 
-            // @TODO: For issue deflection events, we also need to pass the order in which
-            // the FAQs were fetched. Store the order in the state and local storage.
+            // For issue deflection events, we need to send a list of FAQ IDs
+            // in the order they were read.
+            dispatch (actionCreators.updateReadFaqList (faqId));
           },
           onFailure: () => {
             // @TODO: Handle failure.

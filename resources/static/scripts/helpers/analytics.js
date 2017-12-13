@@ -328,6 +328,38 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track issue deflection (successful and failed) events.
+     * @param {Object} config
+     * @param {boolean} config.deflected - Whether deflection succeeded or failed.
+     */
+    const _trackIssueDeflection = ({deflected}) => {
+      const {readFaqList} = store.getState ().chatView;
+
+      // Send a maximum of 10 latest items in the read FAQ list.
+      const latestReadFaqList = readFaqList.slice (Math.max (readFaqList.length - 10, 0));
+      const eventData = {
+        ts: Date.now (),
+        d: {
+          q: commonHelpers.getEndUserFirstMessage ().body,
+          ids: commonHelpers.getSuggestedFaqs ().map ((faq) => faq.id),
+          rids: latestReadFaqList
+        }
+      };
+
+      if (deflected) {
+        eventData.t = PAYLOAD_EVENT.ISSUE_DEFLECTED;
+      } else {
+        eventData.t = PAYLOAD_EVENT.ISSUE_NOT_DEFLECTED;
+      }
+
+      const eventPayload = {
+        e: JSON.stringify ([eventData])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
      * Track info bot requested event.
      */
     const _trackInfoBotRequested = () => {
@@ -411,6 +443,9 @@ define ("helpers/analytics",
             break;
           case EVENT.FAQ_READ:
             _trackFaqRead (config);
+            break;
+          case EVENT.ISSUE_DEFLECTION:
+            _trackIssueDeflection (config);
             break;
           case EVENT.INFO_BOT_REQUESTED:
             _trackInfoBotRequested ();

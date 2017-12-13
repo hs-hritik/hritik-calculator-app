@@ -30,7 +30,8 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      CONVERSATION_ID: "ci"
+      CONVERSATION_ID: "ci",
+      READ_FAQ_LIST: "rfl"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -375,6 +376,20 @@ define ("helpers/localStorage",
      */
     const getConversationId = () => lsUtils.getItem (KEYS.CONVERSATION_ID);
 
+    /**
+     * Set the read FAQ list.
+     * @param {array} faqList
+     */
+    const setReadFaqList = (faqList) => {
+      lsUtils.setItem (KEYS.READ_FAQ_LIST, JSON.stringify (faqList));
+    };
+
+    /**
+     * Get the read FAQ list.
+     * @returns {string}
+     */
+    const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST);
+
     return {
       getUserId,
       setUserId,
@@ -411,6 +426,8 @@ define ("helpers/localStorage",
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
       setConversationId,
-      getConversationId
+      getConversationId,
+      setReadFaqList,
+      getReadFaqList
     };
   });

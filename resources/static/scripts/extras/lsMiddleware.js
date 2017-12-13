@@ -135,6 +135,14 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.SET_CONVERSATION_ID:
           lsHelpers.setConversationId (action.cid);
           break;
+
+        case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
+          // Because the chat view reducer updates the chat view state with the
+          // new FAQ ID by pushing it to the existing FAQ list, we can simply
+          // set the local storage with that list.
+          const faqList = state.chatView.readFaqList.slice ();
+          lsHelpers.setReadFaqList (faqList);
+          break;
       }
     };
 

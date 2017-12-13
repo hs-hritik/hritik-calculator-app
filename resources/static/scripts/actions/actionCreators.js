@@ -138,6 +138,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to update the read FAQs list in the store.
+     * @param {string} faqId
+     * @returns {Object}
+     */
+    const updateReadFaqList = (faqId) => {
+      return {
+        type: ACTION_TYPES.UPDATE_READ_FAQ_LIST,
+        faqId
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -150,6 +162,7 @@ define ("actions/actionCreators",
       setPreChatFeatureIndex,
       setExecuteGreetingMessage,
       setSuggestedFaqReadTracked,
-      setConversationId
+      setConversationId,
+      updateReadFaqList
     };
   });

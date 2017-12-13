@@ -54,7 +54,8 @@ define ("reducers/chatView",
           }
         }
       },
-      conversationId: ""
+      conversationId: "",
+      readFaqList: []
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -76,6 +77,9 @@ define ("reducers/chatView",
           }
           if (action.data.conversationId) {
             updateObj.conversationId = {$set: action.data.conversationId};
+          }
+          if (action.data.readFaqList) {
+            updateObj.readFaqList = {$set: JSON.parse (action.data.readFaqList)};
           }
           return update (state, updateObj);
 
@@ -205,6 +209,11 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_CONVERSATION_ID:
           return update (state, {
             conversationId: {$set: action.cid}
+          });
+
+        case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
+          return update (state, {
+            readFaqList: {$push: [action.faqId]}
           });
 
         default:

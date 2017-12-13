@@ -21,7 +21,8 @@ define ("constants/analytics",
         ANS_BOT_RESULT: "ANS_BOT_RESULT",
         FAQ_READ: "FAQ_READ",
         INFO_BOT_REQUESTED: "INFO_BOT_REQUESTED",
-        INFO_BOT_FIELD_CAPTURED: "INFO_BOT_FIELD_CAPTURED"
+        INFO_BOT_FIELD_CAPTURED: "INFO_BOT_FIELD_CAPTURED",
+        ISSUE_DEFLECTION: "ISSUE_DEFLECTION"
       },
       // The PAYLOAD_EVENT constant is to be used with the tracking XHR's payload.
       PAYLOAD_EVENT: {
@@ -44,7 +45,9 @@ define ("constants/analytics",
         FAQ_READ: "f",
         INFO_BOT_REQUESTED: "ibr",
         INFO_BOT_NAME_CAPTURED: "ibnc",
-        INFO_BOT_EMAIL_CAPTURED: "ibec"
+        INFO_BOT_EMAIL_CAPTURED: "ibec",
+        ISSUE_DEFLECTED: "abta",
+        ISSUE_NOT_DEFLECTED: "abtaf"
       },
       // The SOURCE constant is to be used in web chat internal logic and not with
       // the tracking XHR's payload.
