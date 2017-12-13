@@ -309,6 +309,11 @@ define ("actions/chatView",
                       playAudio: true
                     })
                   );
+
+                  // Track the CSAT requested event.
+                  analyticsHelpers.track (EVENT.CSAT, {
+                    event: EVENT.CSAT_REQUESTED
+                  });
                 } else {
                   dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
                 }

@@ -429,6 +429,38 @@ define ("helpers/analytics",
     };
 
     /**
+     * Track CSAT events. The following events are tracked.
+     * 1. CSAT requested
+     * 2. Taking CSAT survey
+     * 3. CSAT submitted
+     * @param {Object} config
+     * @param {string} config.event - The CSAT event to track
+     */
+    const _trackCsatEvents = ({event}) => {
+      const eventData = {
+        ts: Date.now ()
+      };
+
+      switch (event) {
+        case EVENT.CSAT_REQUESTED:
+          eventData.t = PAYLOAD_EVENT.CSAT_REQUESTED;
+          break;
+        case EVENT.CSAT_TAKING_SURVEY:
+          eventData.t = PAYLOAD_EVENT.CSAT_TAKING_SURVEY;
+          break;
+        case EVENT.CSAT_SURVEY_SUBMITTED:
+          eventData.t = PAYLOAD_EVENT.CSAT_SURVEY_SUBMITTED;
+          break;
+      }
+
+      const eventPayload = {
+        e: JSON.stringify (eventData)
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
@@ -469,6 +501,9 @@ define ("helpers/analytics",
             break;
           case EVENT.INFO_BOT_FIELD_CAPTURED:
             _trackInfoBotFieldCaptured ();
+            break;
+          case EVENT.CSAT:
+            _trackCsatEvents (config);
             break;
         }
       }
