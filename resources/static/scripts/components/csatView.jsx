@@ -30,7 +30,7 @@ define ("components/csatView",
         onCloseConversation: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           csatViewHeader: PropTypes.string.isRequired,
-          csatBotFormRequestMsg: PropTypes.string.isRequired,
+          csatBotRequestMsg: PropTypes.string.isRequired,
           csatBotResponseMsg: PropTypes.string.isRequired,
           csatBotFormSubmitBtn: PropTypes.string.isRequired,
           closeConversationBtn: PropTypes.string.isRequired,
@@ -77,7 +77,7 @@ define ("components/csatView",
           <div className="hs-csat__form">
             <div className="hs-csat__form-item">
               <h3 className="hs-csat__heading">
-                {text.csatBotFormRequestMsg}
+                {text.csatBotRequestMsg}
               </h3>
             </div>
             <div className="hs-csat__form-item">

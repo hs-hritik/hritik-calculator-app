@@ -76,6 +76,10 @@
       cursor: pointer;
     }
 
+    &__csat-footer {
+      padding: gutter(20 52);
+    }
+
     /// form invalid modifier is used to disable elements
     &--form-invalid {
       .hs-chat-footer__submit {

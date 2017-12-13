@@ -13,7 +13,8 @@ define ("constants/chatView",
       FAQ_SUGGESTIONS_FEEDBACK: "FAQ_SUGGESTIONS_FEEDBACK",
       INFO_BOT: "INFO_BOT",
       BLOCKED: "BLOCKED",
-      CLOSED: "CLOSED"
+      CLOSED: "CLOSED",
+      CSAT: "CSAT"
     };
 
     const INFO_BOT_FIELDS = {

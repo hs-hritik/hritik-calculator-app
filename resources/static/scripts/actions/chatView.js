@@ -293,8 +293,6 @@ define ("actions/chatView",
               stopPollingForMessages ();
 
               if (issueState === ISSUE_STATE.RESOLVED) {
-                dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
-
                 dispatch (
                   createMessage ({
                     type: MESSAGE_TYPE.END_CHAT,
@@ -303,6 +301,7 @@ define ("actions/chatView",
                 );
 
                 if (appState.featuresEnabled.csatBot) {
+                  dispatch (setChatViewFooter (ACTIVE_FOOTER.CSAT));
                   dispatch (
                     createMessage ({
                       type: MESSAGE_TYPE.CSAT,
@@ -310,6 +309,8 @@ define ("actions/chatView",
                       playAudio: true
                     })
                   );
+                } else {
+                  dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
                 }
               }
             }

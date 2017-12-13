@@ -1,0 +1,12 @@
+Branches:
+feature/inline-csat
+
+Changelog:
+Add support for other widget positions
+Handle auto focus for mobiles
+Skip review comments in case of widget minimize
+Use csat message customized from dashboard on csat view
+Handle CSAT rating submission on widget minimize
+Add star rating component in CSAT footer
+Add CSAT to active footers in chat view constants
+Change csat message layout

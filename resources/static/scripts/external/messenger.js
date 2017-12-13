@@ -22,11 +22,18 @@
   const WEB_SDK_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
   const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
 
+  const WIDGET_POSITIONS = {
+    TOP_LEFT: "top-left",
+    TOP_RIGHT: "top-right",
+    BOTTOM_LEFT: "bottom-left",
+    BOTTOM_RIGHT: "bottom-right"
+  };
   const state = {
     unreadCount: 0,
     widgetOptions: {
       showLauncher: true,
-      fullScreen: false
+      fullScreen: false,
+      position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
     apiEvents: []
@@ -391,12 +398,59 @@
   };
 
   /**
+   * Update widget position
+   */
+  const updateWidgetPosition = () => {
+    switch (state.widgetOptions.position) {
+      case WIDGET_POSITIONS.BOTTOM_LEFT:
+        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.right = "auto";
+
+        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.right = "auto";
+
+        UNREAD_COUNT_STYLES.left = "4px";
+        UNREAD_COUNT_STYLES.right = "auto";
+        break;
+
+      case WIDGET_POSITIONS.TOP_LEFT:
+        LAUNCHER_IFRAME_STYLES.top = "28px";
+        LAUNCHER_IFRAME_STYLES.right = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = "auto";
+        LAUNCHER_IFRAME_STYLES.left = "28px";
+
+        MESSENGER_IFRAME_STYLES.top = "100px";
+        MESSENGER_IFRAME_STYLES.right = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = "auto";
+        MESSENGER_IFRAME_STYLES.left = "28px";
+
+        UNREAD_COUNT_STYLES.left = "4px";
+        UNREAD_COUNT_STYLES.right = "auto";
+        break;
+
+      case WIDGET_POSITIONS.TOP_RIGHT:
+        LAUNCHER_IFRAME_STYLES.top = "28px";
+        LAUNCHER_IFRAME_STYLES.right = "28px";
+        LAUNCHER_IFRAME_STYLES.bottom = "auto";
+        LAUNCHER_IFRAME_STYLES.left = "auto";
+
+        MESSENGER_IFRAME_STYLES.top = "100px";
+        MESSENGER_IFRAME_STYLES.right = "28px";
+        MESSENGER_IFRAME_STYLES.bottom = "auto";
+        MESSENGER_IFRAME_STYLES.left = "auto";
+        break;
+    }
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
   const updateIframeStyles = (config) => {
     // Set styles for launcher iframe
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
+
+    updateWidgetPosition ();
 
     // Set styles for websdk iframe
     if (config.browserIsMobile) {
@@ -580,6 +634,10 @@
 
     if (typeof options.fullScreen === "boolean") {
       state.widgetOptions.fullScreen = options.fullScreen;
+    }
+
+    if (typeof options.position === "string") {
+      state.widgetOptions.position = options.position;
     }
   };
 
