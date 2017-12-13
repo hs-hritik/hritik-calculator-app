@@ -150,6 +150,19 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to set the internal issue ID in the store. Internal issue
+     * ID is the long issue ID of the formal domain_issue_randomstring
+     * @param {string} id
+     * @returns {Object}
+     */
+    const setInternalIssueId = (id) => {
+      return {
+        type: ACTION_TYPES.SET_INTERNAL_ISSUE_ID,
+        id
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -163,6 +176,7 @@ define ("actions/actionCreators",
       setExecuteGreetingMessage,
       setSuggestedFaqReadTracked,
       setConversationId,
-      updateReadFaqList
+      updateReadFaqList,
+      setInternalIssueId
     };
   });

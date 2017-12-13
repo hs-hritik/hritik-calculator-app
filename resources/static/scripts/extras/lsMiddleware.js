@@ -86,6 +86,10 @@ define ("extras/lsMiddleware",
           lsHelpers.setActiveIssueId (action.id);
           break;
 
+        case ACTION_TYPES.SET_INTERNAL_ISSUE_ID:
+          lsHelpers.setInternalIssueId (action.id);
+          break;
+
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           lsHelpers.setIssueState (action.state);
           break;

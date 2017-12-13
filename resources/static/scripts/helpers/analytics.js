@@ -45,7 +45,19 @@ define ("helpers/analytics",
     } = analyticsConstants;
 
     let _route;
+    let _internalIssueId;
     const _isBot = browserUtils.isBot ();
+
+    /**
+     * Get the internal issue ID used with the payload of analytics events.
+     * Also, cache the value in a local variable because it remains the same until
+     * the conversation is not reset.
+     */
+    const _getInternalIssueId = () => {
+      const {internalIssueId} = store.getState ().appState;
+      _internalIssueId = internalIssueId;
+      return _internalIssueId;
+    };
 
     /**
      * Determine whether a backend issue exists in the system.
@@ -178,19 +190,23 @@ define ("helpers/analytics",
       // Track `c` is an issue exists, `i`, if it doesn't.
       const issueExists = _doesIssueExist ();
 
-      // @TODO: Send the long issue ID (with `id`) when the API starts sending
-      // it with create issue API response.
+      const eventData = {
+        ts: Date.now (),
+        d: {
+          s: config.source === SOURCE.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
+          b: outOfBusinessHours
+        }
+      };
+
+      if (issueExists) {
+        eventData.d.id = _internalIssueId || _getInternalIssueId ();
+        eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITH_ISSUE;
+      } else {
+        eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE;
+      }
+
       const eventPayload = {
-        e: JSON.stringify ([{
-          ts: Date.now (),
-          d: {
-            s: config.source === SOURCE.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
-            b: outOfBusinessHours
-          },
-          t: issueExists ?
-            PAYLOAD_EVENT.WIDGET_OPEN_WITH_ISSUE :
-            PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE
-        }])
+        e: JSON.stringify ([eventData])
       };
 
       _fireTrackingXhr (eventPayload);
@@ -227,6 +243,9 @@ define ("helpers/analytics",
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
+          d: {
+            id: _internalIssueId || _getInternalIssueId ()
+          },
           t: PAYLOAD_EVENT.ISSUE_CREATED
         }])
       };
@@ -243,6 +262,9 @@ define ("helpers/analytics",
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
+          d: {
+            id: _internalIssueId || _getInternalIssueId ()
+          },
           t: PAYLOAD_EVENT.MESSAGE_ADDED
         }])
       };
@@ -438,7 +460,10 @@ define ("helpers/analytics",
      */
     const _trackCsatEvents = ({event}) => {
       const eventData = {
-        ts: Date.now ()
+        ts: Date.now (),
+        d: {
+          id: _internalIssueId || _getInternalIssueId ()
+        }
       };
 
       switch (event) {

@@ -223,6 +223,12 @@ define ("actions/appState",
 
         case ISSUE_STATE.ACTIVE:
           const activeIssueId = lsHelpers.getActiveIssueId ();
+          const internalIssueId = lsHelpers.getInternalIssueId ();
+
+          if (internalIssueId) {
+            store.dispatch (actionCreators.setInternalIssueId (internalIssueId));
+          }
+
           // If there is an active issue id in localstorage, set the activeIssueId in state,
           // and start polling for new messages.
           if (activeIssueId) {
@@ -739,6 +745,7 @@ define ("actions/appState",
               }
             }),
             chatViewActions.setActiveIssue (null),
+            actionCreators.setInternalIssueId (null),
             chatViewActions.updateIssueState (ISSUE_STATE.PRE_CHAT),
             chatViewActions.setChatViewFooter (ACTIVE_FOOTER.BLOCKED)
           ])

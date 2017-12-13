@@ -600,6 +600,7 @@ define ("actions/chatView",
                 // Remove messages from dummy issue
                 setMessages (dummyIssueId, []),
                 setActiveIssue (newIssueId),
+                actionCreators.setInternalIssueId (response.internal_id),
                 setEndUserFirstMessageId (endUserFirstMsgNewId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
                 setChatViewFooter (ACTIVE_FOOTER.REPLY)

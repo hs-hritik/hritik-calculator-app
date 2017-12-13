@@ -22,6 +22,7 @@ define ("reducers/appState",
       minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
+      internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
       // identifier is the uuid (Universally unique identifier)
       identifier: "",
@@ -137,6 +138,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
           return update (state, {
             activeIssueId: {$set: action.id}
+          });
+
+        case ACTION_TYPES.SET_INTERNAL_ISSUE_ID:
+          return update (state, {
+            internalIssueId: {$set: action.id}
           });
 
         case ACTION_TYPES.UPDATE_ACTIVE_VIEW:

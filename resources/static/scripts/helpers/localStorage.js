@@ -17,6 +17,7 @@ define ("helpers/localStorage",
       USER_ID: "ui",
       IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
+      INTERNAL_ISSUE_ID: "iii",
       USER_PROFILE_ID: "upi",
       ENTITIES_ISSUES: "ei",
       ENTITIES_MESSAGES: "em",
@@ -107,6 +108,20 @@ define ("helpers/localStorage",
      */
     const setActiveIssueId = (id) => {
       lsUtils.setItem (KEYS.ACTIVE_ISSUE_ID, id);
+    };
+
+    /**
+     * Get the internal issue ID.
+     * @returns {string}
+     */
+    const getInternalIssueId = () => lsUtils.getItem (KEYS.INTERNAL_ISSUE_ID);
+
+    /**
+     * Set the internal issue ID.
+     * @param {string} id
+     */
+    const setInternalIssueId = (id) => {
+      lsUtils.setItem (KEYS.INTERNAL_ISSUE_ID, id);
     };
 
     /**
@@ -401,6 +416,8 @@ define ("helpers/localStorage",
       reset,
       getActiveIssueId,
       setActiveIssueId,
+      getInternalIssueId,
+      setInternalIssueId,
       getUserProfileId,
       setUserProfileId,
       setIssueState,
