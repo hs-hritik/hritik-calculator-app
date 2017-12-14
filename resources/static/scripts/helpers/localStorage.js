@@ -396,14 +396,14 @@ define ("helpers/localStorage",
      * @param {array} faqList
      */
     const setReadFaqList = (faqList) => {
-      lsUtils.setItem (KEYS.READ_FAQ_LIST, JSON.stringify (faqList));
+      lsUtils.setItem (KEYS.READ_FAQ_LIST, faqList);
     };
 
     /**
      * Get the read FAQ list.
      * @returns {string}
      */
-    const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST);
+    const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
 
     return {
       getUserId,

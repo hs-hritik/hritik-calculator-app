@@ -79,7 +79,7 @@ define ("reducers/chatView",
             updateObj.conversationId = {$set: action.data.conversationId};
           }
           if (action.data.readFaqList) {
-            updateObj.readFaqList = {$set: JSON.parse (action.data.readFaqList)};
+            updateObj.readFaqList = {$set: action.data.readFaqList};
           }
           return update (state, updateObj);
 
