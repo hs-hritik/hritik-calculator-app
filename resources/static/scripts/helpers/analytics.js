@@ -47,6 +47,7 @@ define ("helpers/analytics",
     let _route;
     let _internalIssueId;
     const _isBot = browserUtils.isBot ();
+    const _lang = browserUtils.getLanguage ();
 
     /**
      * Get the internal issue ID used with the payload of analytics events.
@@ -124,7 +125,8 @@ define ("helpers/analytics",
         [PAYLOAD_EVENT.PLAT_ID]: platformId,
         [PAYLOAD_EVENT.ID]: identifier,
         [PAYLOAD_EVENT.DEVICE_ID]: identifier, // Device ID
-        [PAYLOAD_EVENT.TIMESTAMP]: Date.now () // Timestamp of when the event is tracked (XHR fired)
+        [PAYLOAD_EVENT.TIMESTAMP]: Date.now (), // Timestamp of when the event is tracked
+        [PAYLOAD_EVENT.LANGUAGE]: _lang
       };
 
       if (userId) {
