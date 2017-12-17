@@ -146,6 +146,10 @@ define ("extras/lsMiddleware",
           // set the local storage with that list.
           lsHelpers.setReadFaqList (state.chatView.readFaqList);
           break;
+
+        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
+          lsHelpers.setInfoBotRequestedTimestamp (action.ts);
+          break;
       }
     };
 

@@ -64,7 +64,8 @@ define ("reducers/appState",
       },
       proactiveChatRules: [],
       analytics: {
-        suggestedFaqReadTracked: false
+        suggestedFaqReadTracked: false,
+        infoBotRequestedTimestamp: Date.now ()
       }
     };
 
@@ -72,6 +73,7 @@ define ("reducers/appState",
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           const updateObj = {};
+          updateObj.analytics = {};
 
           if (action.data.preChatFeatureIndex) {
             updateObj.preChatFeatureIndex = {$set: action.data.preChatFeatureIndex};
@@ -89,8 +91,13 @@ define ("reducers/appState",
             updateObj.userProfileId = {$set: action.data.userProfileId};
           }
           if (action.data.suggestedFaqReadTracked) {
-            updateObj.analytics = {
-              suggestedFaqReadTracked: {$set: action.data.suggestedFaqReadTracked}
+            updateObj.analytics.suggestedFaqReadTracked = {
+              $set: action.data.suggestedFaqReadTracked
+            };
+          }
+          if (action.data.infoBotRequestedTimestamp) {
+            updateObj.analytics.infoBotRequestedTimestamp = {
+              $set: action.data.infoBotRequestedTimestamp
             };
           }
 
@@ -251,6 +258,13 @@ define ("reducers/appState",
           return update (state, {
             analytics: {
               suggestedFaqReadTracked: {$set: action.isTracked}
+            }
+          });
+
+        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
+          return update (state, {
+            analytics: {
+              infoBotRequestedTimestamp: {$set: action.ts}
             }
           });
 

@@ -32,7 +32,8 @@ define ("helpers/localStorage",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
       CONVERSATION_ID: "ci",
-      READ_FAQ_LIST: "rfl"
+      READ_FAQ_LIST: "rfl",
+      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -405,6 +406,20 @@ define ("helpers/localStorage",
      */
     const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
 
+    /**
+     * Set the timestamp when the info bot gets requested
+     * @param {number} ts
+     */
+    const setInfoBotRequestedTimestamp = (ts) => {
+      lsUtils.setItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP, ts);
+    };
+
+    /**
+     * Get the timestamp when the info bot gets requested
+     * @returns {number}
+     */
+    const getInfoBotRequestedTimestamp = () => lsUtils.getItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP);
+
     return {
       getUserId,
       setUserId,
@@ -445,6 +460,8 @@ define ("helpers/localStorage",
       setConversationId,
       getConversationId,
       setReadFaqList,
-      getReadFaqList
+      getReadFaqList,
+      setInfoBotRequestedTimestamp,
+      getInfoBotRequestedTimestamp
     };
   });

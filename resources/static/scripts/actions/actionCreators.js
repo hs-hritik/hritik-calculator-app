@@ -163,6 +163,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to set the timestamp when the info bot gets requested.
+     * @param {string} number
+     * @returns {Object}
+     */
+    const setInfoBotRequestedTimestamp = (ts) => {
+      return {
+        type: ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP,
+        ts
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -177,6 +189,7 @@ define ("actions/actionCreators",
       setSuggestedFaqReadTracked,
       setConversationId,
       updateReadFaqList,
-      setInternalIssueId
+      setInternalIssueId,
+      setInfoBotRequestedTimestamp
     };
   });

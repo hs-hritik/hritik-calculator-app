@@ -322,7 +322,11 @@ define ("helpers/analytics",
      * @param {string} config.faqId - FAQ ID that was read.
      */
     const _trackFaqRead = ({faqId}) => {
-      const {appState} = store.getState ();
+      const {appState: {
+        analytics: {
+          suggestedFaqReadTracked
+        }
+      }} = store.getState ();
 
       const eventData = [{
         ts: Date.now (),
@@ -332,7 +336,7 @@ define ("helpers/analytics",
         t: PAYLOAD_EVENT.FAQ_READ
       }];
 
-      if (!appState.analytics.suggestedFaqReadTracked) {
+      if (!suggestedFaqReadTracked) {
         eventData.push ({
           ts: Date.now (),
           t: PAYLOAD_EVENT.SUGGESTED_FAQ_READ
@@ -387,13 +391,15 @@ define ("helpers/analytics",
      * Track info bot requested event.
      */
     const _trackInfoBotRequested = () => {
+      const timestamp = Date.now ();
       const eventPayload = {
         e: JSON.stringify ([{
-          ts: Date.now (),
+          ts: timestamp,
           t: PAYLOAD_EVENT.INFO_BOT_REQUESTED
         }])
       };
 
+      store.dispatch (actionCreators.setInfoBotRequestedTimestamp (timestamp));
       _fireTrackingXhr (eventPayload);
     };
 
@@ -410,22 +416,26 @@ define ("helpers/analytics",
             currentField,
             data: infoBotData
           }
+        },
+        appState: {
+          analytics: {
+            infoBotRequestedTimestamp
+          }
         }
       } = store.getState ();
 
       const infoBotFieldCapturedEventData = {
-        ts: Date.now ()
+        ts: Date.now (),
+        d: {
+          [PAYLOAD_EVENT.INFO_BOT_REQUESTED_TIMESTAMP]: infoBotRequestedTimestamp
+        }
       };
 
+      infoBotFieldCapturedEventData.d.p = infoBotData [currentField].prefilled ? 1 : 0;
+
       if (currentField === INFO_BOT_FIELDS.NAME) {
-        infoBotFieldCapturedEventData.d = {
-          p: infoBotData [INFO_BOT_FIELDS.NAME].prefilled ? 1 : 0
-        };
         infoBotFieldCapturedEventData.t = PAYLOAD_EVENT.INFO_BOT_NAME_CAPTURED;
       } else {
-        infoBotFieldCapturedEventData.d = {
-          p: infoBotData [INFO_BOT_FIELDS.EMAIL].prefilled ? 1 : 0
-        };
         infoBotFieldCapturedEventData.t = PAYLOAD_EVENT.INFO_BOT_EMAIL_CAPTURED;
       }
 
@@ -435,6 +445,9 @@ define ("helpers/analytics",
       if (fieldsRequired.indexOf (currentField) === (fieldsRequired.length - 1)) {
         infoBotFinishedEventData = {
           ts: Date.now (),
+          d: {
+            [PAYLOAD_EVENT.INFO_BOT_REQUESTED_TIMESTAMP]: infoBotRequestedTimestamp
+          },
           t: PAYLOAD_EVENT.INFO_BOT_FINISHED
         };
       }
