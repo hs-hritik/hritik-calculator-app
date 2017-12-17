@@ -40,7 +40,7 @@ define ("helpers/analytics",
     const {
       EVENT,
       PAYLOAD_EVENT,
-      SOURCE,
+      TRIGGER,
       PAYLOAD_SOURCE
     } = analyticsConstants;
 
@@ -183,7 +183,7 @@ define ("helpers/analytics",
     /**
      * Track the widget open event.
      * @param {Object} [config]
-     * @param {string} [config.source] - whether the widget was opened via an API
+     * @param {string} [config.trigger] - whether the widget was opened via an API
      *    call or a user action.
      */
     const _trackWidgetOpen = (config = {}) => {
@@ -195,7 +195,7 @@ define ("helpers/analytics",
       const eventData = {
         ts: Date.now (),
         d: {
-          s: config.source === SOURCE.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
+          s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
           b: outOfBusinessHours
         }
       };
@@ -218,7 +218,7 @@ define ("helpers/analytics",
      * Track the conversation started event. This event is tracked when the end
      * user starts the conversation (e.g. submits the first reply).
      * @param {Object} [config]
-     * @param {string} [config.source] - whether the end user's first message was
+     * @param {string} [config.trigger] - whether the end user's first message was
      *    set via an API call or a user action.
      */
     const _trackConversationStarted = (config = {}) => {
@@ -226,7 +226,7 @@ define ("helpers/analytics",
         e: JSON.stringify ([{
           ts: Date.now (),
           d: {
-            s: config.source === SOURCE.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER
+            s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER
           },
           t: PAYLOAD_EVENT.CONVERSATION_STARTED
         }])

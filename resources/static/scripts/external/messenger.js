@@ -73,8 +73,9 @@
 
   // A constant to indicate the source that triggered a function call, communication
   // b/w app and client, etc. For example, via API, user action, etc.
-  const SOURCE = {
-    API: "API"
+  const TRIGGER = {
+    API: "API",
+    RESET: "RESET"
   };
 
   // @TODO: Figure out if we have to move styles to css file for this file,
@@ -365,7 +366,7 @@
    * Show/hide web sdk iframe.
    * @param {Object} [config]
    * @param {boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
-   * @param {boolean} [config.source] - Source for the function call - user action, api, etc.
+   * @param {boolean} [config.trigger] - Source for the function call - user action, api, etc.
    */
   const toggleWebSdkIframe = (config = {}) => {
     const currentlyMinimized = webSdkIframe.style.display === "none";
@@ -384,7 +385,7 @@
 
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
       minimized: !currentlyMinimized,
-      source: config.source
+      trigger: config.trigger
     });
     renderUnreadCount ();
   };
@@ -709,7 +710,8 @@
         case EVENT_TYPES.SDK_RESET:
           close ();
           setConfig ({
-            clientConfig: win.helpshiftConfig
+            clientConfig: win.helpshiftConfig,
+            trigger: TRIGGER.RESET
           });
           break;
 
@@ -737,7 +739,7 @@
   const open = () => {
     toggleWebSdkIframe ({
       minimized: false,
-      source: SOURCE.API
+      trigger: TRIGGER.API
     });
   };
 
@@ -766,7 +768,7 @@
     if (message && (typeof message === "string")) {
       _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
         message,
-        source: SOURCE.API
+        trigger: TRIGGER.API
       });
     }
   };

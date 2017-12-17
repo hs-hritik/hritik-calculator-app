@@ -58,9 +58,9 @@ define ("constants/analytics",
         CSAT_TAKING_SURVEY: "cbts",
         CSAT_SURVEY_SUBMITTED: "cbc"
       },
-      // The SOURCE constant is to be used in web chat internal logic and not with
+      // The TRIGGER constant is to be used in web chat internal logic and not with
       // the tracking XHR's payload.
-      SOURCE: {
+      TRIGGER: {
         API: "API"
       },
       // The PAYLOAD_SOURCE constant is to be used with the tracking XHR's payload.

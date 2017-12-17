@@ -39,11 +39,14 @@ define ("extras/api",
      * Set the initial data to the app state.
      * @param {Object} data
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
+     * @param {string} data.trigger - The source that triggered setting the config
      */
     const setConfig = (data) => {
       store.dispatch (appStateActions.setClientConfig (data.clientConfig));
       store.dispatch (appStateActions.setIdentifier (data.clientConfig.userId));
-      store.dispatch (appStateActions.setWmConfig ());
+      store.dispatch (appStateActions.setWmConfig ({
+        trigger: data.trigger
+      }));
     };
 
     /**
@@ -73,9 +76,10 @@ define ("extras/api",
      * Dispatch the action to update the messenger-minimized flag and mark messages seen.
      * @param {Object} config
      * @param {boolean} config.minimized - If the web chat widget is in minimized state.
-     * @param {boolean} [config.source] - Source for the function call - user action, api, etc.
+     * @param {boolean} [config.trigger] - Source that triggered the function
+     *    call - user action, api, etc.
      */
-    const handleMessengerToggle = ({minimized, source}) => {
+    const handleMessengerToggle = ({minimized, trigger}) => {
       store.dispatch (appStateActions.toggleMinimized (minimized));
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
@@ -107,7 +111,7 @@ define ("extras/api",
 
         // Track the widget open event
         analyticsHelpers.track (EVENT.WIDGET_OPEN, {
-          source
+          trigger
         });
       } else if (isIssueClosed (appState.issueState)) {
         handleCsatRatingSubmission ();
@@ -122,9 +126,10 @@ define ("extras/api",
      * Handle intial user message
      * @param {Object} [config]
      * @param {string} [config.message] - Initial user message.
-     * @param {string} [config.source] - Source for the function call - user action, api, etc.
+     * @param {string} [config.trigger] - Source that triggered the function
+     *    call - user action, api, etc.
      */
-    const handleInitialUserMsg = ({message, source}) => {
+    const handleInitialUserMsg = ({message, trigger}) => {
       const state = store.getState ();
       const {appState} = state;
 
@@ -150,10 +155,10 @@ define ("extras/api",
       }
 
       // Track the conversation started event.
-      // Pass source as "API" because this is the handler function for
+      // Pass trigger as "API" because this is the handler function for
       // the setInitialUserMessage API.
       analyticsHelpers.track (EVENT.CONVERSATION_STARTED, {
-        source
+        trigger
       });
     };
 

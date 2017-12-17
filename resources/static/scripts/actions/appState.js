@@ -46,7 +46,8 @@ define ("actions/appState",
       MIN_RESET_TIMEOUT,
       MAX_RESET_TIMEOUT,
       PRE_CHAT_STATE,
-      PRE_CHAT_FEATURES
+      PRE_CHAT_FEATURES,
+      TRIGGER
     } = APP_STATE_CONSTANTS;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
@@ -422,8 +423,10 @@ define ("actions/appState",
      * and set it to the store. Post message to the client with the config.
      * This configuration contains settings like if wm is enabled, appearance,
      * answer bot, etc.
+     * @param {Object} options
+     * @param {string} options.trigger - The source that triggered setting the config
      */
-    const setWmConfig = () => {
+    const setWmConfig = ({trigger}) => {
       return (dispatch, getState) => {
         const state = getState ();
         const {domain, platformId} = state.appState;
@@ -469,7 +472,10 @@ define ("actions/appState",
               applyPageStyles ();
 
               // If the widget is enabled, track the widget load event
-              analyticsHelpers.track (EVENT.WIDGET_LOAD);
+              // Do not track this event if the config was set via the reset flow.
+              if (trigger !== TRIGGER.RESET) {
+                analyticsHelpers.track (EVENT.WIDGET_LOAD);
+              }
             }
           }
         });

@@ -51,12 +51,17 @@ define ("constants/appState",
     const MIN_RESET_TIMEOUT = 0;
     const MAX_RESET_TIMEOUT = 168; // In hours. 1 week.
 
+    const TRIGGER = {
+      RESET: "RESET"
+    };
+
     return {
       ISSUE_STATE,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
-      MAX_RESET_TIMEOUT
+      MAX_RESET_TIMEOUT,
+      TRIGGER
     };
   });
