@@ -187,7 +187,7 @@ define ("helpers/analytics",
      *    call or a user action.
      */
     const _trackWidgetOpen = (config = {}) => {
-      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 1 : 0;
+      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 0 : 1;
 
       // Track `c` is an issue exists, `i`, if it doesn't.
       const issueExists = _doesIssueExist ();
