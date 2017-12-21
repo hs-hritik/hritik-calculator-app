@@ -51,7 +51,7 @@ define ("constants/routes",
                        `${endpoint}/subscribe/websocket/?origin_v3=${token}&` +
                        `platform_id=${platformId}&domain=${domain}`;
 
-    const postAnalyticsEvent = (domain) => `${BASE}${domain}/events`;
+    const postAnalyticsEvent = (domain) => `${WEB_SDK_API_ROOT}/events/v1/${domain}/websdk/`;
 
     return {
       getWmConfig,
