@@ -5,11 +5,21 @@
  */
 
 define ("reducers/ui",
-  ["constants/actionTypes"],
-  function (ACTION_TYPES) {
+  [
+    "constants/actionTypes",
+    "constants/uiConfig",
+    "helpers/ui"
+  ],
+  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, uiHelpers) {
     "use strict";
 
     const update = React.addons.update;
+    const {
+      DEFAULT_UI_CONFIG,
+      PRIMARY_COLOR,
+      PRIMARY_COLOR_DARK,
+      PRIMARY_COLOR_LIGHT
+    } = UI_CONFIG_CONSTANTS;
 
     const INITIAL_STATE = {
       text: {
@@ -51,9 +61,62 @@ define ("reducers/ui",
         businessHoursAttachmentsSizeExceedMsg: "Total size of attachments exceed 25 MB",
         businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5"
       },
-      color: {
-        primary: "#43BF6C"
+      uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
+        // First elem in config is flattened ui config options (keys)
+        const key = config [0];
+        // Second elem in config is css variable name
+        const cssVarName = config [1];
+        // Third elem in config is the value
+        const value = config [2];
+
+        obj [key] = {
+          key,
+          value,
+          cssVarName,
+          setByConfig: false
+        };
+
+        return obj;
+      }, {})
+    };
+
+    /**
+     * Return update object for given ui config
+     * @param {Object} uiConfig - ui config
+     * @param {String} primaryColor - primary color
+     * @returns {Object} - update ui object
+     */
+    const getUIConfigUpdateObj = (uiConfig, primaryColor) => {
+      const allowedUpdateKeys = ["key", "value", "setByConfig"];
+      const updateObj = {};
+
+      for (const key in uiConfig) {
+        if (uiConfig.hasOwnProperty (key)) {
+          const config = uiConfig [key];
+          updateObj [key] = {};
+          // By pass unwanted keys set in ui config
+          allowedUpdateKeys.forEach ((allowedKey) => {
+            const configValue = config [allowedKey];
+            updateObj [key][allowedKey] = {$set: configValue};
+
+            if (configValue === PRIMARY_COLOR) {
+              primaryColor = config.value;
+            }
+          });
+        }
       }
+
+      // Set light and dark shades of primary color
+      updateObj [PRIMARY_COLOR_LIGHT] = {
+        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_LIGHT)},
+        setByConfig: {$set:true}
+      };
+      updateObj [PRIMARY_COLOR_DARK] = {
+        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_DARK)},
+        setByConfig: {$set: true}
+      };
+
+      return updateObj;
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -84,8 +147,11 @@ define ("reducers/ui",
 
           return update (state, {
             text: textUpdateObj,
-            color: {
-              primary: {$set: config.appearance.primary_color}
+            uiConfig: {
+              [PRIMARY_COLOR]: {
+                value: {$set: config.appearance.primary_color},
+                setByConfig: {$set: true}
+              }
             }
           });
 
@@ -94,6 +160,13 @@ define ("reducers/ui",
             text: {
               greetingMsg: {$set: action.message}
             }
+          });
+
+        case ACTION_TYPES.SET_UI_CONFIG:
+          return update (state, {
+            uiConfig: getUIConfigUpdateObj (
+              action.uiConfig, state.uiConfig [PRIMARY_COLOR].value
+            )
           });
 
         default:

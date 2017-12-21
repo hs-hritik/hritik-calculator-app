@@ -10,6 +10,7 @@ define ("actions/appState",
     "constants/routes",
     "constants/appState",
     "constants/chatView",
+    "constants/uiConfig",
     "normalizr",
     "helpers/entitySchema",
     "helpers/entity",
@@ -18,22 +19,27 @@ define ("actions/appState",
     "helpers/prepareProcessXhrData",
     "helpers/audio",
     "helpers/proactiveChat",
+    "helpers/ui",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
+    "gunpowder/utils/array",
     "store",
     "actions/entities",
     "actions/chatView",
+    "actions/ui",
     "actions/batch",
     "actions/actionCreators",
     "utils/postMessage",
     "utils/browser",
     "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS, normalizr,
-    entitySchema, entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
-    audioHelpers, proactiveChatHelpers, xhr, objUtils, uuidGenerator, store, entitiesActions,
-    chatViewActions, batchActions, actionCreators, postMessage, browserUtils, postSdkMessage) {
+  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
+    UI_CONFIG_CONSTANTS, normalizr, entitySchema, entityHelpers, xhrHelpers,
+    lsHelpers, prepareProcessXhrDataHelpers, audioHelpers, proactiveChatHelpers,
+    uiHelpers, xhr, objUtils, uuidGenerator, arrayUtils, store, entitiesActions,
+    chatViewActions, uiActions, batchActions, actionCreators, postMessage,
+    browserUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -46,6 +52,12 @@ define ("actions/appState",
       PRE_CHAT_FEATURES
     } = APP_STATE_CONSTANTS;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+
+    const {
+      PRIMARY_COLOR,
+      PRIMARY_COLOR_LIGHT,
+      LAUNCHER_TEXT_COLOR
+    } = UI_CONFIG_CONSTANTS;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     // Constant indicating whether to skip checking a value in localstorage or not
@@ -406,7 +418,7 @@ define ("actions/appState",
      * This configuration contains settings like if wm is enabled, appearance,
      * answer bot, etc.
      */
-    const setWmConfig = () => {
+    const setWmConfig = (helpshiftConfig) => {
       return (dispatch, getState) => {
         const state = getState ();
         const {domain, platformId} = state.appState;
@@ -421,26 +433,21 @@ define ("actions/appState",
               ])
             );
 
-            const {ui, appState: {featuresEnabled}} = store.getState ();
-            const primaryColor = ui.color.primary;
-            const cssConfig = {
-              primaryColor,
-              primaryColorLight: shadeColor (primaryColor, 0.20),
-              primaryColorDark: shadeColor (primaryColor, -0.20)
-            };
+            dispatch (uiActions.setUIConfig (helpshiftConfig.uiConfig));
 
+            const {appState: {featuresEnabled}} = store.getState ();
             if (featuresEnabled.audioNotifications) {
               audioHelpers.init ();
             }
 
             // Send the config event loaded back to the client
-            postSdkMessage.wmConfig (getClientWmConfig (cssConfig));
+            postSdkMessage.wmConfig (getClientWmConfig ());
 
             if (response.wm_widget_enabled) {
               // A side-effect of getting the web messenger config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
-              setStyles (cssConfig);
+              setStyles ();
 
               // Apply styles to page
               applyPageStyles ();
@@ -476,13 +483,24 @@ define ("actions/appState",
      * @param {Object} response - the GET wm config response object
      * @returns {Object} - the config object for client
      */
-    const getClientWmConfig = (cssConfig) => {
-      const {appState} = store.getState ();
+    const getClientWmConfig = () => {
+      const {appState, ui} = store.getState ();
+      const {uiConfig} = ui;
 
+      const primaryColor = uiConfig [PRIMARY_COLOR].value;
+      const primaryColorLight = uiConfig [PRIMARY_COLOR_LIGHT].value;
+      // @TODO :- Add check :
+      // If text color for launcher icon is set from "widget/launcher" set, use it
+      // Else use LAUNCHER_TEXT_COLOR
+      const textColor = LAUNCHER_TEXT_COLOR;
       return {
         widgetEnabled: appState.wmEnabled,
         browserIsMobile: appState.browserIsMobile,
-        cssConfig
+        cssConfig: {
+          launcherBgColor: primaryColor,
+          launcherBgColorLight: primaryColorLight,
+          launcherTextColor: textColor
+        }
       };
     };
 
@@ -500,7 +518,7 @@ define ("actions/appState",
      * Get CSS over the wire, add it to the document and
      * update the custom CSS variables.
      */
-    const setStyles = (cssConfig) => {
+    const setStyles = () => {
       getCss ({
         onSuccess: (css) => {
           // Check if CSS variable is supported by the client. If yes,
@@ -522,9 +540,9 @@ define ("actions/appState",
 
           if (isCssVarSupported) {
             _addStyleToDocument (css);
-            _updateCssVars (cssConfig);
+            _updateCssVars ();
           } else {
-            const updatedCss = _getCssVarsUpdatedCss (css, cssConfig);
+            const updatedCss = _getCssVarsUpdatedCss (css);
             _addStyleToDocument (updatedCss);
           }
         }
@@ -564,81 +582,40 @@ define ("actions/appState",
     };
 
     /**
-     * Lighten or darken the given color.
-     * Usage example:
-     *  - To lighten a color by 10%
-     *    shadeColor ("#123456", 0.1)
-     *  - To darken a color by 10%
-     *    shadeColor ("#123456", -0.1)
-     * Taken from: https://stackoverflow.com/a/13542669/3785351
-     * @param {String} color - The string of the color which has to be lighten or darken.
-     *                         Only hex is supported. (# must be passed in the beginning.)
-     * @param {Number} shadeFactor - Between -1 to 1. To darken the color, give negative value.
-     *                               To lighten the color, give positive value.
-     */
-    const shadeColor = (color, shadeFactor) => {
-      // Remove #
-      color = color.slice (1);
-      // If color length is 3, change it to 6
-      if (color.length === 3) {
-        color = color [0] + color [0] + color [1] + color [1] + color [2] + color [2];
-      }
-
-      const f = parseInt (color, 16),
-            t = shadeFactor < 0 ? 0 : 255,
-            p = shadeFactor < 0 ? shadeFactor * -1 : shadeFactor,
-            R = f >> 16,
-            G = f >> 8 & 0x00FF,
-            B = f & 0x0000FF;
-
-      return "#" +
-        (0x1000000 + (Math.round ((t - R) * p) + R) *
-         0x10000 + (Math.round ((t - G) * p) + G) *
-         0x100 + (Math.round ((t - B) * p) + B)
-        ).toString (16).slice (1);
-    };
-
-    /**
      * Update CSS variables with the configured values and set the values in
      * the document's css.
-     * @param {Object} - cssConfig, the object with css configured values
      */
-    const _updateCssVars = (cssConfig) => {
-      document.body.style.setProperty (
-        "--hs-custom-primary-color", cssConfig.primaryColor
-      );
-      document.body.style.setProperty (
-        "--hs-custom-primary-color-dark", cssConfig.primaryColorDark
-      );
-      document.body.style.setProperty (
-        "--hs-custom-primary-color-light", cssConfig.primaryColorLight
-      );
+    const _updateCssVars = () => {
+      const {uiConfig} = store.getState ().ui;
+
+      Object.keys (uiConfig).forEach ((key) => {
+        const {cssVarName, value, setByConfig} = uiConfig [key];
+
+        if (setByConfig) {
+          document.body.style.setProperty (
+            cssVarName, value
+          );
+        }
+      });
     };
 
     /**
      * Update and return the css string with variables
      * replaced by the configured values
      * @param {String} - css, the css string
-     * @param {Object} - cssConfig, the object with css configured values
+     * @returns {String} - The replaced css string
      */
-    const _getCssVarsUpdatedCss = (css, cssConfig) => {
-      // Because we need to replace variable strings containing special chars
-      // like "(" and ")", we need to escape these chars when creating the
-      // regular expression. A list with all regexp strings params for the vars.
-      const cssVarsRegexpList = [
-        "var\\(--hs-custom-primary-color\\)",
-        "var\\(--hs-custom-primary-color-light\\)",
-        "var\\(--hs-custom-primary-color-dark\\)"
-      ];
+    const _getCssVarsUpdatedCss = (css) => {
+      const {uiConfig} = store.getState ().ui;
+      const cssVarsRegexpList = [];
+      const cssVarsValuesMap = {};
 
-      // When regular expression matches, we need to replace the matches
-      // with the configured values. Mapping all such matches with the values to
-      // be replaced.
-      const cssVarsValuesMap = {
-        "var(--hs-custom-primary-color)": cssConfig.primaryColor,
-        "var(--hs-custom-primary-color-light)": cssConfig.primaryColorLight,
-        "var(--hs-custom-primary-color-dark)": cssConfig.primaryColorDark
-      };
+      Object.keys (uiConfig).forEach ((key) => {
+        const {cssVarName, value} = uiConfig [key];
+
+        cssVarsRegexpList.push (`var\\(${cssVarName}\\)`);
+        cssVarsValuesMap [`var(${cssVarName})`] = value;
+      });
 
       return replaceAll (css, cssVarsRegexpList, cssVarsValuesMap);
     };
