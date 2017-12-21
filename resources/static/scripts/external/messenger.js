@@ -170,7 +170,7 @@
     MESSENGER: "MESSENGER"
   };
 
-  const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+  let CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
                         viewBox="0 0 560 560">
                         <polygon fill="#FFFFFF" fill-rule="evenodd"
                           points="470 127.997 432.003 90 280 242.003 127.997 90 90
@@ -178,7 +178,7 @@
                                   432.003 470 470 432.003 317.997 280"/>
                       </svg>`;
 
-  const MESSENGER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+  let MESSENGER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
                           viewBox="0 0 560 560">
                           <g fill="#FFFFFF" fill-rule="evenodd" transform="translate(60 77)">
                             <path d="M363.373365,0 L10.16125,0 C5.42701923,0 0,3.96105769
@@ -287,13 +287,13 @@
 
     launcherButton.addEventListener ("mouseenter", () => {
       setStyle (launcherButton, {
-        background: state.cssConfig.primaryColorLight
+        background: state.cssConfig.launcherBgColorLight
       });
     });
 
     launcherButton.addEventListener ("mouseleave", () => {
       setStyle (launcherButton, {
-        background: state.cssConfig.primaryColor
+        background: state.cssConfig.launcherBgColor
       });
     });
 
@@ -435,13 +435,25 @@
   };
 
   /**
+   * Update launcher icon styles
+   */
+  const updateLauncherIconStyles = () => {
+    const {launcherBgColor, launcherTextColor} = state.cssConfig;
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = launcherBgColor;
+
+    const colorRegEx = /fill="*"/g;
+
+    CLOSE_ICON = CLOSE_ICON.replace (colorRegEx, `fill="${launcherTextColor}"`);
+    MESSENGER_ICON = MESSENGER_ICON.replace (colorRegEx, `fill="${launcherTextColor}"`);
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
   const updateIframeStyles = (config) => {
     // Set styles for launcher iframe
-    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
-
+    updateLauncherIconStyles ();
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
