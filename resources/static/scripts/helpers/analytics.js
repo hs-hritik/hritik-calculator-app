@@ -294,21 +294,36 @@ define ("helpers/analytics",
     };
 
     /**
-     * Track answer bot result event.
+     * Track answer bot result and ans bot finished (if no FAQs were returned) events.
      * @param {Object} config
      * @param {string} config.query - End user's query for the answer bot.
      * @param {array} config.faqIds - List of FAQ IDs in case of a successful get FAQ request.
      */
     const _trackAnsBotResult = ({query, faqIds}) => {
-      const eventPayload = {
-        e: JSON.stringify ([{
+      const answerBotResultEventData = {
+        ts: Date.now (),
+        d: {
+          q: query,
+          ids: faqIds
+        },
+        t: PAYLOAD_EVENT.ANS_BOT_RESULT
+      };
+
+      const eventData = [answerBotResultEventData];
+
+      // If no FAQs were returned by the engine, we need to track the
+      // answer bot finished event as well.
+      if (!(faqIds && faqIds.length)) {
+        const answerBotFinishedEventData = {
           ts: Date.now (),
-          d: {
-            q: query,
-            ids: faqIds
-          },
-          t: PAYLOAD_EVENT.ANS_BOT_RESULT
-        }])
+          t: PAYLOAD_EVENT.ANS_BOT_FINISHED
+        };
+
+        eventData.push (answerBotFinishedEventData);
+      }
+
+      const eventPayload = {
+        e: JSON.stringify (eventData)
       };
 
       _fireTrackingXhr (eventPayload);
@@ -356,7 +371,7 @@ define ("helpers/analytics",
     };
 
     /**
-     * Track issue deflection (successful and failed) events.
+     * Track issue deflection (successful and failed) and ans bot finished events.
      * @param {Object} config
      * @param {boolean} config.deflected - Whether deflection succeeded or failed.
      */
@@ -365,7 +380,7 @@ define ("helpers/analytics",
 
       // Send a maximum of 10 latest items in the read FAQ list.
       const latestReadFaqList = readFaqList.slice (Math.max (readFaqList.length - 10, 0));
-      const eventData = {
+      const issueDeflectionEventData = {
         ts: Date.now (),
         d: {
           q: commonHelpers.getEndUserFirstMessage ().body,
@@ -375,13 +390,20 @@ define ("helpers/analytics",
       };
 
       if (deflected) {
-        eventData.t = PAYLOAD_EVENT.ISSUE_DEFLECTED;
+        issueDeflectionEventData.t = PAYLOAD_EVENT.ISSUE_DEFLECTED;
       } else {
-        eventData.t = PAYLOAD_EVENT.ISSUE_NOT_DEFLECTED;
+        issueDeflectionEventData.t = PAYLOAD_EVENT.ISSUE_NOT_DEFLECTED;
       }
 
+      // With every issue deflection (successful or failed), we need to track
+      // answer bot finished event as well.
+      const answerBotFinishedEventData = {
+        ts: Date.now (),
+        t: PAYLOAD_EVENT.ANS_BOT_FINISHED
+      };
+
       const eventPayload = {
-        e: JSON.stringify ([eventData])
+        e: JSON.stringify ([issueDeflectionEventData, answerBotFinishedEventData])
       };
 
       _fireTrackingXhr (eventPayload);
