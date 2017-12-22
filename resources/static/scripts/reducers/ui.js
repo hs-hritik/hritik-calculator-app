@@ -16,9 +16,16 @@ define ("reducers/ui",
     const update = React.addons.update;
     const {
       DEFAULT_UI_CONFIG,
-      PRIMARY_COLOR,
-      PRIMARY_COLOR_DARK,
-      PRIMARY_COLOR_LIGHT
+      FLATTENED_UI_CONFIG: {
+        PRIMARY_COLOR,
+        PRIMARY_COLOR_DARK,
+        PRIMARY_COLOR_LIGHT,
+        INITIAL_PRIMARY_BG_COLOR,
+        INITIAL_PRIMARY_TEXT_COLOR,
+        HEADER_BG_COLOR,
+        HEADER_TEXT_COLOR
+      },
+      DERIVED_ID
     } = UI_CONFIG_CONSTANTS;
 
     const INITIAL_STATE = {
@@ -69,11 +76,13 @@ define ("reducers/ui",
         // Third elem in config is the value
         const value = config [2];
 
+        // If the config is derived, then set setByConfig flag as true
+        // as we want to update only those css variables which are set by config
         obj [key] = {
           key,
           value,
           cssVarName,
-          setByConfig: false
+          setByConfig: key.indexOf (DERIVED_ID) !== -1
         };
 
         return obj;
@@ -82,19 +91,20 @@ define ("reducers/ui",
 
     /**
      * Return update object for given ui config
-     * @param {Object} uiConfig - ui config
-     * @param {String} primaryColor - primary color
-     * @returns {Object} - update ui object
+     * @param {Object} storeUIConfig - config object already set in ui store
+     * @param {Object} uiConfig - config object passed by developers
+     * @returns {Object} - update ui object used to set in store
      */
-    const getUIConfigUpdateObj = (uiConfig, primaryColor) => {
+    const getUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
       const allowedUpdateKeys = ["key", "value", "setByConfig"];
+      let primaryColor = storeUIConfig [PRIMARY_COLOR].value;
       const updateObj = {};
 
       for (const key in uiConfig) {
         if (uiConfig.hasOwnProperty (key)) {
           const config = uiConfig [key];
           updateObj [key] = {};
-          // By pass unwanted keys set in ui config
+          // Bypass unwanted keys set in ui config
           allowedUpdateKeys.forEach ((allowedKey) => {
             const configValue = config [allowedKey];
             updateObj [key][allowedKey] = {$set: configValue};
@@ -108,12 +118,32 @@ define ("reducers/ui",
 
       // Set light and dark shades of primary color
       updateObj [PRIMARY_COLOR_LIGHT] = {
-        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_LIGHT)},
-        setByConfig: {$set:true}
+        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_LIGHT)}
       };
       updateObj [PRIMARY_COLOR_DARK] = {
-        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_DARK)},
-        setByConfig: {$set: true}
+        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_DARK)}
+      };
+
+      // Derive colors for chat widget header
+      // Precedence for setting header's background color
+      // 1. developer config's 'initial' set
+      // 2. developer config's 'primary' set
+      // 3. ui state (default)
+      const headerBgConfig = uiConfig [INITIAL_PRIMARY_BG_COLOR] ||
+                             uiConfig [PRIMARY_COLOR] ||
+                             storeUIConfig [INITIAL_PRIMARY_BG_COLOR];
+      updateObj [HEADER_BG_COLOR] = {
+        value: {$set: headerBgConfig.value}
+      };
+
+      // Precedence for setting header's text color
+      // 1. developer config's 'initial' set
+      // 2. ui state (default)
+      // @NOTE :- There is no option to set primary text color in 'primary' set
+      const headerTextConfig = uiConfig [INITIAL_PRIMARY_TEXT_COLOR] ||
+                               storeUIConfig [INITIAL_PRIMARY_TEXT_COLOR];
+      updateObj [HEADER_TEXT_COLOR] = {
+        value: {$set: headerTextConfig.value}
       };
 
       return updateObj;
@@ -164,9 +194,7 @@ define ("reducers/ui",
 
         case ACTION_TYPES.SET_UI_CONFIG:
           return update (state, {
-            uiConfig: getUIConfigUpdateObj (
-              action.uiConfig, state.uiConfig [PRIMARY_COLOR].value
-            )
+            uiConfig: getUIConfigUpdateObj (state.uiConfig, action.uiConfig)
           });
 
         default:
