@@ -1,0 +1,29 @@
+Branches:
+feature/analytics
+
+Changelog:
+Update CSAT payload to use a list
+Update endpoint for event tracking
+Track answer bot finished event
+Change event payload value for in/out-of business hours
+Send info bot requested timestamp with other info bot events
+Do not track widget load from the reset flow
+Send language with the default payload for events
+Do not stringify faq list before setting it to LS
+Add `ab` as a prefix to answer bot events
+Send internal issue id with event payloads
+Track CSAT events
+Track info bot finished event
+Track issue deflection events
+Send conversation ID with all events after end user's first message
+Ignore events triggered by search engine bots
+Track info bot events
+Track FAQ read events
+Track answer bot result event
+Track answer bot requested event
+Move payload event strings to the constant file
+Move business hours check to a helper module
+Track issue created and message added events
+Track conversation started event
+Track widget open event
+Bootstrap analytics event tracking functionality
