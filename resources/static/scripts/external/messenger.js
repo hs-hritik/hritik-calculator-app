@@ -435,14 +435,22 @@
   };
 
   /**
-   * Update launcher icon styles
+   * Update launcher styles
    */
-  const updateLauncherIconStyles = () => {
-    const {launcherBgColor, launcherTextColor} = state.cssConfig;
+  const updateLauncherStyles = () => {
+    const {
+      launcherBgColor,
+      launcherTextColor,
+      notificationBgColor,
+      notificationTextColor
+    } = state.cssConfig;
+
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = launcherBgColor;
 
-    const colorRegEx = /fill="*"/g;
+    UNREAD_COUNT_STYLES.background = notificationBgColor;
+    UNREAD_COUNT_STYLES.color = notificationTextColor;
 
+    const colorRegEx = /fill="*"/g;
     CLOSE_ICON = CLOSE_ICON.replace (colorRegEx, `fill="${launcherTextColor}"`);
     MESSENGER_ICON = MESSENGER_ICON.replace (colorRegEx, `fill="${launcherTextColor}"`);
   };
@@ -453,7 +461,7 @@
    */
   const updateIframeStyles = (config) => {
     // Set styles for launcher iframe
-    updateLauncherIconStyles ();
+    updateLauncherStyles ();
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
