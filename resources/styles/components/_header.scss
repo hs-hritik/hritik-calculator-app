@@ -12,8 +12,8 @@
 
 @include component(header) {
   $padding: gutter(12);
-  $bg-color: var(--hs-primary-color);
-  $color: color(text, white);
+  $bg-color: var(--hs-header-bg-color);
+  $color: var(--hs-header-text-color);
   $link-color: color(text, white);
 
   .hs-header {

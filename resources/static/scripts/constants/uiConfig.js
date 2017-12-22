@@ -8,10 +8,58 @@ define ("constants/uiConfig",
   function () {
     "use strict";
 
-    const LAUNCHER_TEXT_COLOR = "#fff"; // white
-    const PRIMARY_COLOR = "primary.color";
-    const PRIMARY_COLOR_DARK = "primary.colorDark";
-    const PRIMARY_COLOR_LIGHT = "primary.colorLight";
+    // Prefix used for derived keys
+    const DERIVED_ID = "derived";
+
+    // Colors map like we maintain in global scss
+    const COLORS = {
+      PRIMARY: "#43BF6C",
+      GRAY: {
+        XX_LIGHT: "#FFFFFF"
+      },
+      RED: {
+        DARK: "#E65050"
+      }
+    };
+
+    /**
+     * Flattened object keys of ui config object passed by developers
+     * Example :
+     *  uiCofig: {
+     *   primary: {
+     *     color: "#0000ff",
+     *     font: "arial"
+     *   }
+     *  }
+     *  is flattened to -> "primary.color", "primary.font" and likewise.
+     * Here 'primary' represents set and 'color' represents set item.
+     * @NOTE :- This config also contains derived keys which are computed w.r.t
+     * some value. Example : Shades are computed based on primary color.
+     * Even if the developer pass the dervied value, it will be overwritten by
+     * computed value.
+     * Derived values are used for internal purpose and not meant be to
+     * configured by developers.
+     */
+    const FLATTENED_UI_CONFIG = {
+      // @TODO :- Rename 'primary' set to 'base' set
+      // Primary set
+      PRIMARY_COLOR: "primary.color",
+      PRIMARY_FONT: "primary.font",
+      PRIMARY_COLOR_DARK: `${DERIVED_ID}.primary.colorDark`,
+      PRIMARY_COLOR_LIGHT: `${DERIVED_ID}.primary.colorLightD`,
+
+      // Initial Set (widget/launcher set)
+      INITIAL_PRIMARY_BG_COLOR: "initial.primaryBgColor",
+      INITIAL_SECONDARY_BG_COLOR: "initial.secondaryBgColor",
+      INITIAL_PRIMARY_TEXT_COLOR: "initial.primaryTextColor",
+      INITIAL_SECONDARY_TEXT_COLOR: "initial.secondaryTextColor",
+
+      // Derived header css
+      // @NOTE :- Header colors are specially derived colors as the their value is
+      // dependant on multiple sets i.e a) primary set b) initial set
+      HEADER_BG_COLOR: `${DERIVED_ID}.headerBgColor`,
+      HEADER_TEXT_COLOR: `${DERIVED_ID}.headerTextColor`
+    };
 
     /**
      * DEFAULT_UI_CONFIG contains a mapping of developer config, css variable name
@@ -23,17 +71,61 @@ define ("constants/uiConfig",
      * [config hierarchy (setName.uiConfigName), css variable name, value of variable]
      */
     const DEFAULT_UI_CONFIG = [
-      ["primary.color", "--hs-primary-color", "#43BF6C"],
-      ["primary.colorDark", "--hs-primary-color-dark", "#43BF6C"],
-      ["primary.colorLight", "--hs-primary-color-light", "#43BF6C"],
-      ["primary.font", "--hs-primary-font", ""]
+      [
+        FLATTENED_UI_CONFIG.PRIMARY_COLOR,
+        "--hs-primary-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.PRIMARY_COLOR_DARK,
+        "--hs-primary-color-dark",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.PRIMARY_COLOR_LIGHT,
+        "--hs-primary-color-light",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.PRIMARY_FONT,
+        "--hs-primary-font",
+        ""
+      ],
+      [
+        FLATTENED_UI_CONFIG.INITIAL_PRIMARY_BG_COLOR,
+        "--hs-initial-primary-bg-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.INITIAL_PRIMARY_TEXT_COLOR,
+        "--hs-initial-primary-text-color",
+        COLORS.GRAY.XX_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.INITIAL_SECONDARY_BG_COLOR,
+        "--hs-initial-secondary-bg-color",
+        COLORS.RED.DARK
+      ],
+      [
+        FLATTENED_UI_CONFIG.INITIAL_SECONDARY_TEXT_COLOR,
+        "--hs-initial-secondary-text-color",
+        COLORS.GRAY.XX_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.HEADER_BG_COLOR,
+        "--hs-header-bg-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.HEADER_TEXT_COLOR,
+        "--hs-header-text-color",
+        COLORS.GRAY.XX_LIGHT
+      ]
     ];
 
     return {
-      LAUNCHER_TEXT_COLOR,
-      PRIMARY_COLOR,
-      PRIMARY_COLOR_DARK,
-      PRIMARY_COLOR_LIGHT,
+      DERIVED_ID,
+      FLATTENED_UI_CONFIG,
       DEFAULT_UI_CONFIG
     };
   }
