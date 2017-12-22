@@ -1,0 +1,577 @@
+/**
+ * Helpers for analytics (event tracking, etc).
+ * @author Prasenjit Sharan <prasenjit@helpshift.com>
+ * @created 29 Nov, 2017
+ */
+
+define ("helpers/analytics",
+  [
+    "constants/analytics",
+    "constants/routes",
+    "constants/appState",
+    "constants/businessHoursView",
+    "constants/chatView",
+    "store",
+    "helpers/xhr",
+    "helpers/localStorage",
+    "helpers/common",
+    "gunpowder/utils/xhr",
+    "gunpowder/utils/object",
+    "utils/browser",
+    "actions/actionCreators"
+  ],
+  function (analyticsConstants, routes, appStateConstants, businessHoursConstants,
+    chatViewConstants, store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils,
+    browserUtils, actionCreators) {
+    "use strict";
+
+    const {
+      ISSUE_STATE
+    } = appStateConstants;
+
+    const {
+      OFFLINE_BEHAVIOUR
+    } = businessHoursConstants;
+
+    const {
+      INFO_BOT_FIELDS
+    } = chatViewConstants;
+
+    const {
+      EVENT,
+      PAYLOAD_EVENT,
+      TRIGGER,
+      PAYLOAD_SOURCE
+    } = analyticsConstants;
+
+    let _route;
+    let _internalIssueId;
+    const _isBot = browserUtils.isBot ();
+    const _lang = browserUtils.getLanguage ();
+
+    /**
+     * Get the internal issue ID used with the payload of analytics events.
+     * Also, cache the value in a local variable because it remains the same until
+     * the conversation is not reset.
+     */
+    const _getInternalIssueId = () => {
+      const {internalIssueId} = store.getState ().appState;
+      _internalIssueId = internalIssueId;
+      return _internalIssueId;
+    };
+
+    /**
+     * Determine whether a backend issue exists in the system.
+     * @returns {boolean}
+     */
+    const _doesIssueExist = () => {
+      const {
+        businessHoursViewState: bhState
+      } = store.getState ();
+
+      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours ();
+
+      // Read the issue state from localstorage to get this information on page
+      // reloads before the state is re-hydrated.
+      const issueState = lsHelpers.getIssueState ();
+
+      // An issue exists
+      // If it's out of business hours and
+      //    offline behavior is `contact_form` and
+      //    contact form has been submitted
+      // Or
+      // If it's in business hours and
+      //    there's an active issue
+      if (outOfBusinessHours) {
+        return (
+          bhState.offlineBehaviour === OFFLINE_BEHAVIOUR.CONTACT_FORM &&
+          bhState.contactFormSubmitted
+        );
+      } else {
+        return issueState === ISSUE_STATE.ACTIVE;
+      }
+    };
+
+    /**
+     * Get the XHR route for tracking analytics events.
+     * Also, cache the value in a local variable because it remains the same.
+     */
+    const _getRoute = () => {
+      const {domain} = store.getState ().appState;
+      _route = routes.postAnalyticsEvent (domain);
+      return _route;
+    };
+
+    /**
+     * Get the event XHR payload that needs to be passed along with all the calls.
+     */
+    const _getDefaultPayload = () => {
+      const {
+        appState: {
+          platformId,
+          identifier,
+          userId,
+          userProfileId
+        },
+        chatView: {
+          conversationId
+        }
+      } = store.getState ();
+
+      // @TODO: Add `ln` (language) to the following object.
+      // @TODO: Backend needs `cc` (country code) as well, but we don't have this
+      // information. Add it to the following object when we implement it.
+      const payload = {
+        [PAYLOAD_EVENT.PLAT_ID]: platformId,
+        [PAYLOAD_EVENT.ID]: identifier,
+        [PAYLOAD_EVENT.DEVICE_ID]: identifier, // Device ID
+        [PAYLOAD_EVENT.TIMESTAMP]: Date.now (), // Timestamp of when the event is tracked
+        [PAYLOAD_EVENT.LANGUAGE]: _lang
+      };
+
+      if (userId) {
+        payload [PAYLOAD_EVENT.USER_ID] = userId;
+      }
+
+      if (userProfileId) {
+        payload [PAYLOAD_EVENT.PROFILE_ID] = userProfileId;
+      }
+
+      if (conversationId) {
+        payload [PAYLOAD_EVENT.CONVERSATION_ID] = conversationId;
+      }
+
+      return payload;
+    };
+
+    /**
+     * Fire the XHR to track the given event payload.
+     * @param {Object} payload - The event payload with name, event timestamp etc.
+     * @param {Object} [config]
+     */
+    const _fireTrackingXhr = (payload, config = {}) => {
+      const defaultPayload = _getDefaultPayload ();
+      const data = objUtils.shallowMerge (defaultPayload, payload);
+
+      xhr ({
+        route: _route || _getRoute (),
+        headers: xhrHelpers.getCommonHeaders (),
+        data,
+        method: "POST",
+        onSuccess: (response) => {
+          if (typeof config.onSuccess === "function") {
+            config.onSuccess (response);
+          }
+        }
+      });
+    };
+
+    /**
+     * Track the widget load event.
+     */
+    const _trackWidgetLoad = () => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          t: PAYLOAD_EVENT.WIDGET_LOAD
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the widget open event.
+     * @param {Object} [config]
+     * @param {string} [config.trigger] - whether the widget was opened via an API
+     *    call or a user action.
+     */
+    const _trackWidgetOpen = (config = {}) => {
+      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 0 : 1;
+
+      // Track `c` is an issue exists, `i`, if it doesn't.
+      const issueExists = _doesIssueExist ();
+
+      const eventData = {
+        ts: Date.now (),
+        d: {
+          s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
+          b: outOfBusinessHours
+        }
+      };
+
+      if (issueExists) {
+        eventData.d.id = _internalIssueId || _getInternalIssueId ();
+        eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITH_ISSUE;
+      } else {
+        eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE;
+      }
+
+      const eventPayload = {
+        e: JSON.stringify ([eventData])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the conversation started event. This event is tracked when the end
+     * user starts the conversation (e.g. submits the first reply).
+     * @param {Object} [config]
+     * @param {string} [config.trigger] - whether the end user's first message was
+     *    set via an API call or a user action.
+     */
+    const _trackConversationStarted = (config = {}) => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER
+          },
+          t: PAYLOAD_EVENT.CONVERSATION_STARTED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the issue created event. This event is tracked only when the issue
+     * creation succeeds.
+     */
+    const _trackIssueCreated = () => {
+      // @TODO: Send the long issue ID (with `d.id`) when the API starts sending
+      // it with the create issue API response.
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            id: _internalIssueId || _getInternalIssueId ()
+          },
+          t: PAYLOAD_EVENT.ISSUE_CREATED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the message added event.
+     */
+    const _trackMessageAdded = () => {
+      // @TODO: Send the long issue ID (with `d.id`) when the API starts sending
+      // it with the create issue API response.
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            id: _internalIssueId || _getInternalIssueId ()
+          },
+          t: PAYLOAD_EVENT.MESSAGE_ADDED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track answer bot requested event.
+     * @param {Object} config
+     * @param {string} config.query - End user's query for the answer bot.
+     */
+    const _trackAnsBotRequested = ({query}) => {
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: Date.now (),
+          d: {
+            q: query
+          },
+          t: PAYLOAD_EVENT.ANS_BOT_REQUESTED
+        }])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track answer bot result and ans bot finished (if no FAQs were returned) events.
+     * @param {Object} config
+     * @param {string} config.query - End user's query for the answer bot.
+     * @param {array} config.faqIds - List of FAQ IDs in case of a successful get FAQ request.
+     */
+    const _trackAnsBotResult = ({query, faqIds}) => {
+      const answerBotResultEventData = {
+        ts: Date.now (),
+        d: {
+          q: query,
+          ids: faqIds
+        },
+        t: PAYLOAD_EVENT.ANS_BOT_RESULT
+      };
+
+      const eventData = [answerBotResultEventData];
+
+      // If no FAQs were returned by the engine, we need to track the
+      // answer bot finished event as well.
+      if (!(faqIds && faqIds.length)) {
+        const answerBotFinishedEventData = {
+          ts: Date.now (),
+          t: PAYLOAD_EVENT.ANS_BOT_FINISHED
+        };
+
+        eventData.push (answerBotFinishedEventData);
+      }
+
+      const eventPayload = {
+        e: JSON.stringify (eventData)
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track FAQ read events.
+     * 1. Suggested FAQ Read (has to be tracked only once, even after page reloads)
+     * 2. FAQ Read
+     * @param {Object} config
+     * @param {string} config.faqId - FAQ ID that was read.
+     */
+    const _trackFaqRead = ({faqId}) => {
+      const {appState: {
+        analytics: {
+          suggestedFaqReadTracked
+        }
+      }} = store.getState ();
+
+      const eventData = [{
+        ts: Date.now (),
+        d: {
+          id: faqId
+        },
+        t: PAYLOAD_EVENT.FAQ_READ
+      }];
+
+      if (!suggestedFaqReadTracked) {
+        eventData.push ({
+          ts: Date.now (),
+          t: PAYLOAD_EVENT.SUGGESTED_FAQ_READ
+        });
+      }
+
+      const eventPayload = {
+        e: JSON.stringify (eventData)
+      };
+
+      _fireTrackingXhr (eventPayload, {
+        onSuccess: () => {
+          // Store the fact that the SUGGESTED_FAQ_READ event has been tracked once
+          store.dispatch (actionCreators.setSuggestedFaqReadTracked (true));
+        }
+      });
+    };
+
+    /**
+     * Track issue deflection (successful and failed) and ans bot finished events.
+     * @param {Object} config
+     * @param {boolean} config.deflected - Whether deflection succeeded or failed.
+     */
+    const _trackIssueDeflection = ({deflected}) => {
+      const {readFaqList} = store.getState ().chatView;
+
+      // Send a maximum of 10 latest items in the read FAQ list.
+      const latestReadFaqList = readFaqList.slice (Math.max (readFaqList.length - 10, 0));
+      const issueDeflectionEventData = {
+        ts: Date.now (),
+        d: {
+          q: commonHelpers.getEndUserFirstMessage ().body,
+          ids: commonHelpers.getSuggestedFaqs ().map ((faq) => faq.id),
+          rids: latestReadFaqList
+        }
+      };
+
+      if (deflected) {
+        issueDeflectionEventData.t = PAYLOAD_EVENT.ISSUE_DEFLECTED;
+      } else {
+        issueDeflectionEventData.t = PAYLOAD_EVENT.ISSUE_NOT_DEFLECTED;
+      }
+
+      // With every issue deflection (successful or failed), we need to track
+      // answer bot finished event as well.
+      const answerBotFinishedEventData = {
+        ts: Date.now (),
+        t: PAYLOAD_EVENT.ANS_BOT_FINISHED
+      };
+
+      const eventPayload = {
+        e: JSON.stringify ([issueDeflectionEventData, answerBotFinishedEventData])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track info bot requested event.
+     */
+    const _trackInfoBotRequested = () => {
+      const timestamp = Date.now ();
+      const eventPayload = {
+        e: JSON.stringify ([{
+          ts: timestamp,
+          t: PAYLOAD_EVENT.INFO_BOT_REQUESTED
+        }])
+      };
+
+      store.dispatch (actionCreators.setInfoBotRequestedTimestamp (timestamp));
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track info bot field captured event. The following fields are supported.
+     * Name.
+     * Email.
+     */
+    const _trackInfoBotFieldCaptured = () => {
+      const {
+        chatView: {
+          infoBot: {
+            fieldsRequired,
+            currentField,
+            data: infoBotData
+          }
+        },
+        appState: {
+          analytics: {
+            infoBotRequestedTimestamp
+          }
+        }
+      } = store.getState ();
+
+      const infoBotFieldCapturedEventData = {
+        ts: Date.now (),
+        d: {
+          [PAYLOAD_EVENT.INFO_BOT_REQUESTED_TIMESTAMP]: infoBotRequestedTimestamp
+        }
+      };
+
+      infoBotFieldCapturedEventData.d.p = infoBotData [currentField].prefilled ? 1 : 0;
+
+      if (currentField === INFO_BOT_FIELDS.NAME) {
+        infoBotFieldCapturedEventData.t = PAYLOAD_EVENT.INFO_BOT_NAME_CAPTURED;
+      } else {
+        infoBotFieldCapturedEventData.t = PAYLOAD_EVENT.INFO_BOT_EMAIL_CAPTURED;
+      }
+
+      // If all info bot fields are asked, track the info bot finished event as
+      // well.
+      let infoBotFinishedEventData;
+      if (fieldsRequired.indexOf (currentField) === (fieldsRequired.length - 1)) {
+        infoBotFinishedEventData = {
+          ts: Date.now (),
+          d: {
+            [PAYLOAD_EVENT.INFO_BOT_REQUESTED_TIMESTAMP]: infoBotRequestedTimestamp
+          },
+          t: PAYLOAD_EVENT.INFO_BOT_FINISHED
+        };
+      }
+
+      const eventData = [infoBotFieldCapturedEventData];
+
+      if (infoBotFinishedEventData) {
+        eventData.push (infoBotFinishedEventData);
+      }
+
+      const eventPayload = {
+        e: JSON.stringify (eventData)
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track CSAT events. The following events are tracked.
+     * 1. CSAT requested
+     * 2. Taking CSAT survey
+     * 3. CSAT submitted
+     * @param {Object} config
+     * @param {string} config.event - The CSAT event to track
+     */
+    const _trackCsatEvents = ({event}) => {
+      const eventData = {
+        ts: Date.now (),
+        d: {
+          id: _internalIssueId || _getInternalIssueId ()
+        }
+      };
+
+      switch (event) {
+        case EVENT.CSAT_REQUESTED:
+          eventData.t = PAYLOAD_EVENT.CSAT_REQUESTED;
+          break;
+        case EVENT.CSAT_TAKING_SURVEY:
+          eventData.t = PAYLOAD_EVENT.CSAT_TAKING_SURVEY;
+          break;
+        case EVENT.CSAT_SURVEY_SUBMITTED:
+          eventData.t = PAYLOAD_EVENT.CSAT_SURVEY_SUBMITTED;
+          break;
+      }
+
+      const eventPayload = {
+        e: JSON.stringify ([eventData])
+      };
+
+      _fireTrackingXhr (eventPayload);
+    };
+
+    /**
+     * Track the given event with relevant data.
+     * @param {string} event - The event to track.
+     * @param {Object} [config]
+     */
+    const track = (event, config) => {
+      // Do not track the event if initiated via a search engine bot or crawler.
+      if (!_isBot) {
+        switch (event) {
+          case EVENT.WIDGET_LOAD:
+            _trackWidgetLoad ();
+            break;
+          case EVENT.WIDGET_OPEN:
+            _trackWidgetOpen (config);
+            break;
+          case EVENT.CONVERSATION_STARTED:
+            _trackConversationStarted (config);
+            break;
+          case EVENT.ISSUE_CREATED:
+            _trackIssueCreated ();
+            break;
+          case EVENT.MESSAGE_ADDED:
+            _trackMessageAdded ();
+            break;
+          case EVENT.ANS_BOT_REQUESTED:
+            _trackAnsBotRequested (config);
+            break;
+          case EVENT.ANS_BOT_RESULT:
+            _trackAnsBotResult (config);
+            break;
+          case EVENT.FAQ_READ:
+            _trackFaqRead (config);
+            break;
+          case EVENT.ISSUE_DEFLECTION:
+            _trackIssueDeflection (config);
+            break;
+          case EVENT.INFO_BOT_REQUESTED:
+            _trackInfoBotRequested ();
+            break;
+          case EVENT.INFO_BOT_FIELD_CAPTURED:
+            _trackInfoBotFieldCaptured ();
+            break;
+          case EVENT.CSAT:
+            _trackCsatEvents (config);
+            break;
+        }
+      }
+    };
+
+    return {
+      track
+    };
+  });

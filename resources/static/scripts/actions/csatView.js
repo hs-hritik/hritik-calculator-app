@@ -6,13 +6,20 @@
 
 define ("actions/csatView",
   [
+    "store",
     "constants/actionTypes",
     "constants/routes",
+    "constants/activeView",
+    "constants/analytics",
     "gunpowder/utils/xhr",
-    "helpers/xhr"
+    "helpers/xhr",
+    "helpers/analytics"
   ],
-  function (ACTION_TYPES, routes, xhr, xhrHelpers) {
+  function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants, xhr,
+    xhrHelpers, analyticsHelpers) {
     "use strict";
+
+    const {EVENT} = analyticsConstants;
 
     /**
      * Action to submit csat rating and review.
@@ -45,6 +52,12 @@ define ("actions/csatView",
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST"
         });
+
+        // Track CSAT submitted event here (we don't have to wait for the CSAT
+        // submitted XHR).
+        analyticsHelpers.track (EVENT.CSAT, {
+          event: EVENT.CSAT_SURVEY_SUBMITTED
+        });
       };
     };
 
@@ -54,6 +67,21 @@ define ("actions/csatView",
      * @returns {Object} - action
      */
     const updateCsatRating = (rating) => {
+      // If the chat view is active, this function is called when the end user
+      // clicks on the star ratings on the chat view footer. Analytics treats this
+      // as the `taking survey` event. Track it here.
+      const {
+        appState: {
+          activeView
+        }
+      } = store.getState ();
+
+      if (activeView === ACTIVE_VIEW.CHAT) {
+        analyticsHelpers.track (EVENT.CSAT, {
+          event: EVENT.CSAT_TAKING_SURVEY
+        });
+      }
+
       return {
         type: ACTION_TYPES.UPDATE_CSAT_RATING,
         rating

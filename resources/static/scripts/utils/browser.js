@@ -37,8 +37,24 @@ function () {
     return nav.languages && nav.languages[0] || nav.language || nav.userLanguage;
   };
 
+  /**
+   * Determine if the current environment is search engine bots, crawlers, etc by
+   * reading the user agent string and looking for the UA strings used by the most
+   * common search engine bots and crawler programs.
+   * For more discussion on the solution, please see
+   * https://stackoverflow.com/a/20084661/1093247
+   * https://webmasters.stackexchange.com/a/64805
+   * @returns {boolean}
+   */
+  const isBot = () => {
+    return navigator && (
+      /bot|googlebot|crawler|spider|robot|crawling/i.test (navigator.userAgent)
+    );
+  };
+
   return {
     isMobile,
-    getLanguage
+    getLanguage,
+    isBot
   };
 });
