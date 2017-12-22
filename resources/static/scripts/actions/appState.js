@@ -54,10 +54,11 @@ define ("actions/appState",
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const {
-      PRIMARY_COLOR,
-      PRIMARY_COLOR_LIGHT,
-      LAUNCHER_TEXT_COLOR
-    } = UI_CONFIG_CONSTANTS;
+      HEADER_BG_COLOR,
+      HEADER_TEXT_COLOR,
+      INITIAL_SECONDARY_BG_COLOR,
+      INITIAL_SECONDARY_TEXT_COLOR
+    } = UI_CONFIG_CONSTANTS.FLATTENED_UI_CONFIG;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     // Constant indicating whether to skip checking a value in localstorage or not
@@ -433,7 +434,9 @@ define ("actions/appState",
               ])
             );
 
-            dispatch (uiActions.setUIConfig (helpshiftConfig.uiConfig));
+            if (helpshiftConfig.uiConfig && typeof helpshiftConfig.uiConfig === "object") {
+              dispatch (uiActions.setUIConfig (helpshiftConfig.uiConfig));
+            }
 
             const {appState: {featuresEnabled}} = store.getState ();
             if (featuresEnabled.audioNotifications) {
@@ -479,28 +482,40 @@ define ("actions/appState",
     };
 
     /**
+     * Returns launcher iframe's css configuration
+     * @returns {Object} - css config
+     */
+    const getLauncherCssConfig = () => {
+      const {ui: {uiConfig}} = store.getState ();
+      const launcherBgColor = uiConfig [HEADER_BG_COLOR].value;
+
+      return {
+        // Set to launcher icon background
+        launcherBgColor,
+        // Set to launcher icon background on hover
+        launcherBgColorLight: uiHelpers.shadeColor (
+          launcherBgColor, uiHelpers.SHADE_LIGHT
+        ),
+        // Set to launcher icon text i.e. chat and close icon
+        launcherTextColor: uiConfig [HEADER_TEXT_COLOR].value,
+        // Set to unread count background
+        notificationBgColor: uiConfig [INITIAL_SECONDARY_BG_COLOR].value,
+        // Set to unread count text i.e. unread count number
+        notificationTextColor: uiConfig [INITIAL_SECONDARY_TEXT_COLOR].value
+      };
+    };
+
+    /**
      * Return client relevant web messenger config object
      * @param {Object} response - the GET wm config response object
      * @returns {Object} - the config object for client
      */
     const getClientWmConfig = () => {
-      const {appState, ui} = store.getState ();
-      const {uiConfig} = ui;
-
-      const primaryColor = uiConfig [PRIMARY_COLOR].value;
-      const primaryColorLight = uiConfig [PRIMARY_COLOR_LIGHT].value;
-      // @TODO :- Add check :
-      // If text color for launcher icon is set from "widget/launcher" set, use it
-      // Else use LAUNCHER_TEXT_COLOR
-      const textColor = LAUNCHER_TEXT_COLOR;
+      const {appState} = store.getState ();
       return {
         widgetEnabled: appState.wmEnabled,
         browserIsMobile: appState.browserIsMobile,
-        cssConfig: {
-          launcherBgColor: primaryColor,
-          launcherBgColorLight: primaryColorLight,
-          launcherTextColor: textColor
-        }
+        cssConfig: getLauncherCssConfig ()
       };
     };
 
