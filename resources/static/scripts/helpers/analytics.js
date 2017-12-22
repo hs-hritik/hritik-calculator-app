@@ -516,7 +516,7 @@ define ("helpers/analytics",
       }
 
       const eventPayload = {
-        e: JSON.stringify (eventData)
+        e: JSON.stringify ([eventData])
       };
 
       _fireTrackingXhr (eventPayload);
