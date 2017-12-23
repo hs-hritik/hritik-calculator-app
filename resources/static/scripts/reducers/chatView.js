@@ -13,7 +13,7 @@ define ("reducers/chatView",
     "use strict";
 
     const update = React.addons.update,
-          {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
+          {ACTIVE_FOOTER, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_STATE = {
       replyBox: {
@@ -30,7 +30,7 @@ define ("reducers/chatView",
         fieldsRequired: ["name", "email"],
         currentField: "",
         data: {
-          name: {
+          [INFO_BOT_FIELDS.NAME]: {
             title: "Your Name",
             msg: "What's your name?",
             placeholder: "Enter your name",
@@ -38,9 +38,10 @@ define ("reducers/chatView",
               value: "",
               errorMsg: "",
               validations: ["required"]
-            }
+            },
+            prefilled: false
           },
-          email: {
+          [INFO_BOT_FIELDS.EMAIL]: {
             title: "Your Email Address",
             msg: "What's your email?",
             placeholder: "Enter your email",
@@ -48,10 +49,13 @@ define ("reducers/chatView",
               value: "",
               errorMsg: "",
               validations: ["required", "email"]
-            }
+            },
+            prefilled: false
           }
         }
-      }
+      },
+      conversationId: "",
+      readFaqList: []
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -70,6 +74,12 @@ define ("reducers/chatView",
           }
           if (action.data.endUserFirstMsgId) {
             updateObj.endUserFirstMsgId = {$set: action.data.endUserFirstMsgId};
+          }
+          if (action.data.conversationId) {
+            updateObj.conversationId = {$set: action.data.conversationId};
+          }
+          if (action.data.readFaqList) {
+            updateObj.readFaqList = {$set: action.data.readFaqList};
           }
           return update (state, updateObj);
 
@@ -172,19 +182,21 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_CLIENT_CONFIG:
           const {userName, userEmail} = action.config,
                 infoBotChangeObj = {};
-          if (typeof userName === "string") {
-            infoBotChangeObj.name = {
+          if (typeof userName === "string" && userName) {
+            infoBotChangeObj [INFO_BOT_FIELDS.NAME] = {
               value: {
                 value: {$set: userName}
-              }
+              },
+              prefilled: {$set: true}
             };
           }
 
-          if (typeof userEmail === "string") {
-            infoBotChangeObj.email = {
+          if (typeof userEmail === "string" && userEmail) {
+            infoBotChangeObj [INFO_BOT_FIELDS.EMAIL] = {
               value: {
                 value: {$set: userEmail}
-              }
+              },
+              prefilled: {$set: true}
             };
           }
 
@@ -192,6 +204,16 @@ define ("reducers/chatView",
             infoBot: {
               data: infoBotChangeObj
             }
+          });
+
+        case ACTION_TYPES.SET_CONVERSATION_ID:
+          return update (state, {
+            conversationId: {$set: action.cid}
+          });
+
+        case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
+          return update (state, {
+            readFaqList: {$push: [action.faqId]}
           });
 
         default:

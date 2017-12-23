@@ -17,10 +17,16 @@ define ("constants/chatView",
       CSAT: "CSAT"
     };
 
+    const INFO_BOT_FIELDS = {
+      NAME: "name",
+      EMAIL: "email"
+    };
+
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
 
     return {
       ACTIVE_FOOTER,
+      INFO_BOT_FIELDS,
       MESSAGES_POLLING_TIMEOUT
     };
   });
