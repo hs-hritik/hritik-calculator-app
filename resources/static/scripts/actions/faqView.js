@@ -11,18 +11,23 @@ define ("actions/faqView",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
+    "constants/analytics",
     "gunpowder/utils/xhr",
     "helpers/entitySchema",
     "helpers/entity",
     "helpers/xhr",
+    "helpers/analytics",
     "actions/actionCreators",
     "actions/entities"
   ],
-  function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, xhr, entitySchema,
-    entityHelpers, xhrHelpers, actionCreators, entitiesActions) {
+  function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
+    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
+    entitiesActions) {
     "use strict";
 
     const {normalize} = normalizr;
+
+    const {EVENT} = analyticsConstants;
 
     /**
      * Action to set the active FAQ id in the FAQ View store
@@ -58,6 +63,15 @@ define ("actions/faqView",
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (setActiveFaqId (faqId));
             dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
+
+            // Track FAQ read (same as fetched from backend) event here.
+            analyticsHelpers.track (EVENT.FAQ_READ, {
+              faqId
+            });
+
+            // For issue deflection events, we need to send a list of FAQ IDs
+            // in the order they were read.
+            dispatch (actionCreators.updateReadFaqList (faqId));
           },
           onFailure: () => {
             // @TODO: Handle failure.

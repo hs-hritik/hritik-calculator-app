@@ -113,6 +113,68 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to set if the suggested FAQ read event has been tracked.
+     * @param {boolean} isTracked
+     * @returns {Object}
+     */
+    const setSuggestedFaqReadTracked = (isTracked) => {
+      return {
+        type: ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED,
+        isTracked
+      };
+    };
+
+    /**
+     * Return the action to set the conversation ID in the store. Conversation IDs
+     * are used only with analytics event tracking.
+     * @param {string} cid - The conversation ID, a random UUID string
+     * @returns {Object}
+     */
+    const setConversationId = (cid) => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ID,
+        cid
+      };
+    };
+
+    /**
+     * Return the action to update the read FAQs list in the store.
+     * @param {string} faqId
+     * @returns {Object}
+     */
+    const updateReadFaqList = (faqId) => {
+      return {
+        type: ACTION_TYPES.UPDATE_READ_FAQ_LIST,
+        faqId
+      };
+    };
+
+    /**
+     * Return the action to set the internal issue ID in the store. Internal issue
+     * ID is the long issue ID of the formal domain_issue_randomstring
+     * @param {string} id
+     * @returns {Object}
+     */
+    const setInternalIssueId = (id) => {
+      return {
+        type: ACTION_TYPES.SET_INTERNAL_ISSUE_ID,
+        id
+      };
+    };
+
+    /**
+     * Return the action to set the timestamp when the info bot gets requested.
+     * @param {string} number
+     * @returns {Object}
+     */
+    const setInfoBotRequestedTimestamp = (ts) => {
+      return {
+        type: ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP,
+        ts
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -123,6 +185,11 @@ define ("actions/actionCreators",
       setCif,
       setTags,
       setPreChatFeatureIndex,
-      setExecuteGreetingMessage
+      setExecuteGreetingMessage,
+      setSuggestedFaqReadTracked,
+      setConversationId,
+      updateReadFaqList,
+      setInternalIssueId,
+      setInfoBotRequestedTimestamp
     };
   });

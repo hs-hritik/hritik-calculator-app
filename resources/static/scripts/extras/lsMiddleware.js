@@ -86,6 +86,10 @@ define ("extras/lsMiddleware",
           lsHelpers.setActiveIssueId (action.id);
           break;
 
+        case ACTION_TYPES.SET_INTERNAL_ISSUE_ID:
+          lsHelpers.setInternalIssueId (action.id);
+          break;
+
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           lsHelpers.setIssueState (action.state);
           break;
@@ -126,6 +130,26 @@ define ("extras/lsMiddleware",
           if (!lsHelpers.getSiteActivityStartTime ()) {
             lsHelpers.setSiteActivityStartTime (Date.now ());
           }
+          break;
+
+        case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
+          lsHelpers.setSuggestedFaqReadTracked (action.isTracked);
+          break;
+
+        case ACTION_TYPES.SET_CONVERSATION_ID:
+          lsHelpers.setConversationId (action.cid);
+          break;
+
+        case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
+          // Because the chat view reducer updates the chat view state with the
+          // new FAQ ID by pushing it to the existing FAQ list, we can simply
+          // set the local storage with that list.
+          lsHelpers.setReadFaqList (state.chatView.readFaqList);
+          break;
+
+        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
+          lsHelpers.setInfoBotRequestedTimestamp (action.ts);
+          break;
       }
     };
 
