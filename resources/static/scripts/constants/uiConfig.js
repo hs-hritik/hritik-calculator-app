@@ -26,27 +26,26 @@ define ("constants/uiConfig",
      * Flattened object keys of ui config object passed by developers
      * Example :
      *  uiCofig: {
-     *   primary: {
+     *   base: {
      *     color: "#0000ff",
      *     font: "arial"
      *   }
      *  }
-     *  is flattened to -> "primary.color", "primary.font" and likewise.
-     * Here 'primary' represents set and 'color' represents set item.
+     *  is flattened to -> "base.color", "base.font" and likewise
+     * Here 'base' represents set and 'color' represents set item
      * @NOTE :- This config also contains derived keys which are computed w.r.t
-     * some value. Example : Shades are computed based on primary color.
+     * some value. Example : Shades are computed based on base color.
      * Even if the developer pass the dervied value, it will be overwritten by
      * computed value.
      * Derived values are used for internal purpose and not meant be to
      * configured by developers.
      */
     const FLATTENED_UI_CONFIG = {
-      // @TODO :- Rename 'primary' set to 'base' set
-      // Primary set
-      PRIMARY_COLOR: "primary.color",
-      PRIMARY_FONT: "primary.font",
-      PRIMARY_COLOR_DARK: `${DERIVED_ID}.primary.colorDark`,
-      PRIMARY_COLOR_LIGHT: `${DERIVED_ID}.primary.colorLightD`,
+      // Base set
+      BASE_COLOR: "base.color",
+      BASE_FONT: "base.font",
+      BASE_COLOR_DARK: `${DERIVED_ID}.base.colorDark`,
+      BASE_COLOR_LIGHT: `${DERIVED_ID}.base.colorLightD`,
 
       // Initial Set (widget/launcher set)
       INITIAL_PRIMARY_BG_COLOR: "initial.primaryBgColor",
@@ -72,23 +71,23 @@ define ("constants/uiConfig",
      */
     const DEFAULT_UI_CONFIG = [
       [
-        FLATTENED_UI_CONFIG.PRIMARY_COLOR,
-        "--hs-primary-color",
+        FLATTENED_UI_CONFIG.BASE_COLOR,
+        "--hs-base-color",
         COLORS.PRIMARY
       ],
       [
-        FLATTENED_UI_CONFIG.PRIMARY_COLOR_DARK,
-        "--hs-primary-color-dark",
+        FLATTENED_UI_CONFIG.BASE_COLOR_DARK,
+        "--hs-base-color-dark",
         COLORS.PRIMARY
       ],
       [
-        FLATTENED_UI_CONFIG.PRIMARY_COLOR_LIGHT,
-        "--hs-primary-color-light",
+        FLATTENED_UI_CONFIG.BASE_COLOR_LIGHT,
+        "--hs-base-color-light",
         COLORS.PRIMARY
       ],
       [
-        FLATTENED_UI_CONFIG.PRIMARY_FONT,
-        "--hs-primary-font",
+        FLATTENED_UI_CONFIG.BASE_FONT,
+        "--hs-base-font",
         ""
       ],
       [

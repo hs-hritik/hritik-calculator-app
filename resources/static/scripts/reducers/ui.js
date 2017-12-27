@@ -17,9 +17,9 @@ define ("reducers/ui",
     const {
       DEFAULT_UI_CONFIG,
       FLATTENED_UI_CONFIG: {
-        PRIMARY_COLOR,
-        PRIMARY_COLOR_DARK,
-        PRIMARY_COLOR_LIGHT,
+        BASE_COLOR,
+        BASE_COLOR_DARK,
+        BASE_COLOR_LIGHT,
         INITIAL_PRIMARY_BG_COLOR,
         INITIAL_PRIMARY_TEXT_COLOR,
         HEADER_BG_COLOR,
@@ -98,7 +98,7 @@ define ("reducers/ui",
      */
     const getUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
       const allowedUpdateKeys = ["key", "value", "setByConfig"];
-      let primaryColor = storeUIConfig [PRIMARY_COLOR].value;
+      let baseColor = storeUIConfig [BASE_COLOR].value;
       const updateObj = {};
 
       for (const key in uiConfig) {
@@ -110,28 +110,28 @@ define ("reducers/ui",
             const configValue = config [allowedKey];
             updateObj [key][allowedKey] = {$set: configValue};
 
-            if (configValue === PRIMARY_COLOR) {
-              primaryColor = config.value;
+            if (configValue === BASE_COLOR) {
+              baseColor = config.value;
             }
           });
         }
       }
 
-      // Set light and dark shades of primary color
-      updateObj [PRIMARY_COLOR_LIGHT] = {
-        value: {$set: uiHelpers.shadeColor (primaryColor, SHADES.LIGHT_20)}
+      // Set light and dark shades of base color
+      updateObj [BASE_COLOR_LIGHT] = {
+        value: {$set: uiHelpers.shadeColor (baseColor, SHADES.LIGHT_20)}
       };
-      updateObj [PRIMARY_COLOR_DARK] = {
-        value: {$set: uiHelpers.shadeColor (primaryColor, SHADES.DARK_20)}
+      updateObj [BASE_COLOR_DARK] = {
+        value: {$set: uiHelpers.shadeColor (baseColor, SHADES.DARK_20)}
       };
 
       // Derive colors for chat widget header
       // Precedence for setting header's background color
       // 1. developer config's 'initial' set
-      // 2. developer config's 'primary' set
+      // 2. developer config's 'base' set
       // 3. ui state (default)
       const headerBgConfig = uiConfig [INITIAL_PRIMARY_BG_COLOR] ||
-                             uiConfig [PRIMARY_COLOR] ||
+                             uiConfig [BASE_COLOR] ||
                              storeUIConfig [INITIAL_PRIMARY_BG_COLOR];
       updateObj [HEADER_BG_COLOR] = {
         value: {$set: headerBgConfig.value}
@@ -140,7 +140,7 @@ define ("reducers/ui",
       // Precedence for setting header's text color
       // 1. developer config's 'initial' set
       // 2. ui state (default)
-      // @NOTE :- There is no option to set primary text color in 'primary' set
+      // @NOTE :- There is no option to set primary text color in 'base' set
       const headerTextConfig = uiConfig [INITIAL_PRIMARY_TEXT_COLOR] ||
                                storeUIConfig [INITIAL_PRIMARY_TEXT_COLOR];
       updateObj [HEADER_TEXT_COLOR] = {
@@ -179,7 +179,7 @@ define ("reducers/ui",
           return update (state, {
             text: textUpdateObj,
             uiConfig: {
-              [PRIMARY_COLOR]: {
+              [BASE_COLOR]: {
                 value: {$set: config.appearance.primary_color},
                 setByConfig: {$set: true}
               }

@@ -74,9 +74,9 @@ $_colors: (
   ),
   primary: (
     x-dark: palette(green, x-dark),
-    dark: var(--hs-primary-color-dark),
-    base: var(--hs-primary-color),
-    light: var(--hs-primary-color-light),
+    dark: var(--hs-base-color-dark),
+    base: var(--hs-base-color),
+    light: var(--hs-base-color-light),
     x-light: palette(green, x-light),
     xx-light: palette(green, xx-light)
   ),

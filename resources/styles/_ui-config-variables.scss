@@ -11,11 +11,10 @@
 // See https://developer.mozilla.org/en-US/docs/Web/CSS/:root
 
 :root {
-  // @TODO :- Rename 'primary' color to 'base' color
-  --hs-primary-color: "#43bf6c";
-  --hs-primary-color-dark: "";
-  --hs-primary-color-light: "";
-  --hs-primary-font: $_font-family-system;
+  --hs-base-color: "#43bf6c";
+  --hs-base-color-dark: "";
+  --hs-base-color-light: "";
+  --hs-base-font: $_font-family-system;
   --hs-initial-primary-bg-color: color(primary);
   --hs-initial-primary-text-color: color(text, white);
   --hs-initial-secondary-bg-color: "#fa3e3e";
