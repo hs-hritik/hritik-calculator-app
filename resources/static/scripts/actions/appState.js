@@ -607,13 +607,11 @@ define ("actions/appState",
       const {uiConfig} = store.getState ().ui;
 
       Object.keys (uiConfig).forEach ((key) => {
-        const {cssVarName, value, setByConfig} = uiConfig [key];
+        const {cssVarName, value} = uiConfig [key];
 
-        if (setByConfig) {
-          document.body.style.setProperty (
-            cssVarName, value
-          );
-        }
+        document.body.style.setProperty (
+          cssVarName, value
+        );
       });
     };
 

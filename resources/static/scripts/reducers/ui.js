@@ -23,9 +23,10 @@ define ("reducers/ui",
         INITIAL_PRIMARY_BG_COLOR,
         INITIAL_PRIMARY_TEXT_COLOR,
         HEADER_BG_COLOR,
-        HEADER_TEXT_COLOR
+        HEADER_TEXT_COLOR,
+        CHAT_WIDGET_ACCENT_COLOR,
+        CHAT_WIDGET_ACCENT_COLOR_LIGHT
       },
-      DERIVED_ID,
       SHADES
     } = UI_CONFIG_CONSTANTS;
 
@@ -77,13 +78,10 @@ define ("reducers/ui",
         // Third elem in config is the value
         const value = config [2];
 
-        // If the config is derived, then set setByConfig flag as true
-        // as we want to update only those css variables which are set by config
         obj [key] = {
           key,
           value,
-          cssVarName,
-          setByConfig: key.indexOf (DERIVED_ID) !== -1
+          cssVarName
         };
 
         return obj;
@@ -97,7 +95,7 @@ define ("reducers/ui",
      * @returns {Object} - update ui object used to set in store
      */
     const getUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
-      const allowedUpdateKeys = ["key", "value", "setByConfig"];
+      const allowedUpdateKeys = ["key", "value"];
       let baseColor = storeUIConfig [BASE_COLOR].value;
       const updateObj = {};
 
@@ -117,12 +115,31 @@ define ("reducers/ui",
         }
       }
 
-      // Set light and dark shades of base color
+      // Set light and dark shades for
+      // 1. Base light color
+      // 2. Base dark color
+      // 3. Chat widget accent color (used by links)
       updateObj [BASE_COLOR_LIGHT] = {
         value: {$set: uiHelpers.shadeColor (baseColor, SHADES.LIGHT_20)}
       };
       updateObj [BASE_COLOR_DARK] = {
         value: {$set: uiHelpers.shadeColor (baseColor, SHADES.DARK_20)}
+      };
+
+      const accentColorConfig = uiConfig [CHAT_WIDGET_ACCENT_COLOR] ||
+                                uiConfig [BASE_COLOR] ||
+                                storeUIConfig [BASE_COLOR];
+
+      updateObj [CHAT_WIDGET_ACCENT_COLOR] = {
+        value: {$set: accentColorConfig.value}
+      };
+
+      updateObj [CHAT_WIDGET_ACCENT_COLOR_LIGHT] = {
+        value: {
+          $set: uiHelpers.shadeColor (
+            accentColorConfig.value, SHADES.LIGHT_10
+          )
+        }
       };
 
       // Derive colors for chat widget header
@@ -180,8 +197,7 @@ define ("reducers/ui",
             text: textUpdateObj,
             uiConfig: {
               [BASE_COLOR]: {
-                value: {$set: config.appearance.primary_color},
-                setByConfig: {$set: true}
+                value: {$set: config.appearance.primary_color}
               }
             }
           });

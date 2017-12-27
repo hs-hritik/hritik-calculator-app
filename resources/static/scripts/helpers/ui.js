@@ -88,8 +88,7 @@ define ("helpers/ui",
 
             finalConfig [configKey] = {
               key: configKey,
-              value: configValue,
-              setByConfig: true
+              value: configValue
             };
           }
         });

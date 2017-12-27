@@ -14,8 +14,13 @@ define ("constants/uiConfig",
     // Colors map like we maintain in global scss
     const COLORS = {
       PRIMARY: "#43BF6C",
+      BLACK: {
+        BASE: "#576066",
+        DARK: "#383F44"
+      },
       GRAY: {
-        XX_LIGHT: "#FFFFFF"
+        XX_LIGHT: "#FFFFFF",
+        X_LIGHT: "#F8F9F9"
       },
       RED: {
         DARK: "#E65050"
@@ -57,7 +62,15 @@ define ("constants/uiConfig",
       // @NOTE :- Header colors are specially derived colors as the their value is
       // dependant on multiple sets i.e a) primary set b) initial set
       HEADER_BG_COLOR: `${DERIVED_ID}.headerBgColor`,
-      HEADER_TEXT_COLOR: `${DERIVED_ID}.headerTextColor`
+      HEADER_TEXT_COLOR: `${DERIVED_ID}.headerTextColor`,
+
+      // Chat widget set
+      CHAT_WIDGET_BG_COLOR: "chatWidget.primaryBgColor",
+      CHAT_WIDGET_PRIMARY_TEXT_COLOR: "chatWidget.primaryTextColor",
+      CHAT_WIDGET_SECONDARY_TEXT_COLOR: "chatWidget.secondaryTextColor",
+      CHAT_WIDGET_ACCENT_COLOR: "chatWidget.accentColor",
+      CHAT_WIDGET_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.chatWidget.accentColorLight`,
+      CHAT_WIDGET_ERROR: "chatWidget.error"
     };
 
     /**
@@ -119,11 +132,42 @@ define ("constants/uiConfig",
         FLATTENED_UI_CONFIG.HEADER_TEXT_COLOR,
         "--hs-header-text-color",
         COLORS.GRAY.XX_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.CHAT_WIDGET_BG_COLOR,
+        "--hs-chat-widget-bg-color",
+        COLORS.GRAY.X_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.CHAT_WIDGET_PRIMARY_TEXT_COLOR,
+        "--hs-chat-widget-primary-text-color",
+        COLORS.BLACK.DARK
+      ],
+      [
+        FLATTENED_UI_CONFIG.CHAT_WIDGET_SECONDARY_TEXT_COLOR,
+        "--hs-chat-widget-secondary-text-color",
+        COLORS.BLACK.BASE
+      ],
+      [
+        FLATTENED_UI_CONFIG.CHAT_WIDGET_ACCENT_COLOR,
+        "--hs-chat-widget-accent-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.CHAT_WIDGET_ACCENT_COLOR_LIGHT,
+        "--hs-chat-widget-accent-color-light",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.CHAT_WIDGET_ERROR,
+        "--hs-chat-widget-error",
+        COLORS.RED.DARK
       ]
     ];
 
     // Shades for colors
     const SHADES = {
+      LIGHT_10: 0.10,
       LIGHT_20: 0.20,
       DARK_20: -0.20
     };
