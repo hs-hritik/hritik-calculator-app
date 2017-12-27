@@ -25,7 +25,8 @@ define ("reducers/ui",
         HEADER_BG_COLOR,
         HEADER_TEXT_COLOR
       },
-      DERIVED_ID
+      DERIVED_ID,
+      SHADES
     } = UI_CONFIG_CONSTANTS;
 
     const INITIAL_STATE = {
@@ -118,10 +119,10 @@ define ("reducers/ui",
 
       // Set light and dark shades of primary color
       updateObj [PRIMARY_COLOR_LIGHT] = {
-        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_LIGHT)}
+        value: {$set: uiHelpers.shadeColor (primaryColor, SHADES.LIGHT_20)}
       };
       updateObj [PRIMARY_COLOR_DARK] = {
-        value: {$set: uiHelpers.shadeColor (primaryColor, uiHelpers.SHADE_DARK)}
+        value: {$set: uiHelpers.shadeColor (primaryColor, SHADES.DARK_20)}
       };
 
       // Derive colors for chat widget header

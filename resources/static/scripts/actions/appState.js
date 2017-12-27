@@ -54,11 +54,14 @@ define ("actions/appState",
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const {
-      HEADER_BG_COLOR,
-      HEADER_TEXT_COLOR,
-      INITIAL_SECONDARY_BG_COLOR,
-      INITIAL_SECONDARY_TEXT_COLOR
-    } = UI_CONFIG_CONSTANTS.FLATTENED_UI_CONFIG;
+      FLATTENED_UI_CONFIG: {
+        HEADER_BG_COLOR,
+        HEADER_TEXT_COLOR,
+        INITIAL_SECONDARY_BG_COLOR,
+        INITIAL_SECONDARY_TEXT_COLOR
+      },
+      SHADES
+    } = UI_CONFIG_CONSTANTS;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     // Constant indicating whether to skip checking a value in localstorage or not
@@ -494,7 +497,7 @@ define ("actions/appState",
         launcherBgColor,
         // Set to launcher icon background on hover
         launcherBgColorLight: uiHelpers.shadeColor (
-          launcherBgColor, uiHelpers.SHADE_LIGHT
+          launcherBgColor, SHADES.LIGHT_20
         ),
         // Set to launcher icon text i.e. chat and close icon
         launcherTextColor: uiConfig [HEADER_TEXT_COLOR].value,

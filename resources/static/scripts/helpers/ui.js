@@ -14,9 +14,6 @@ define ("helpers/ui",
 
     const {DEFAULT_UI_CONFIG} = UI_CONFIG_CONSTANTS;
 
-    // @TODO :- Move shade factor constants to constants file
-    const SHADE_LIGHT = 0.20;
-    const SHADE_DARK = -0.20;
     // First column of DEFAULT_UI_CONFIG contains the allowed keys
     const VALID_CONFIG_KEYS = DEFAULT_UI_CONFIG.map ((config) => config [0]);
 
@@ -103,8 +100,6 @@ define ("helpers/ui",
 
     return {
       shadeColor,
-      SHADE_LIGHT,
-      SHADE_DARK,
       getValidUIConfig
     };
   }

@@ -123,10 +123,17 @@ define ("constants/uiConfig",
       ]
     ];
 
+    // Shades for colors
+    const SHADES = {
+      LIGHT_20: 0.20,
+      DARK_20: -0.20
+    };
+
     return {
       DERIVED_ID,
       FLATTENED_UI_CONFIG,
-      DEFAULT_UI_CONFIG
+      DEFAULT_UI_CONFIG,
+      SHADES
     };
   }
 );
