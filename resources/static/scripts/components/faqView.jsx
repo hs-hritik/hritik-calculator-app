@@ -38,8 +38,9 @@ define ("components/faqView",
                         onBackBtnClick={onBackBtnClick} />
             <div className="hs-view__content">
               <div className="hs-faq" dir="auto">
-                <h3>{title}</h3>
-                <div dangerouslySetInnerHTML={{__html: body}} />
+                <h3 className="hs-faq__title" >{title}</h3>
+                <div className="hs-faq__body"
+                     dangerouslySetInnerHTML={{__html: body}} />
               </div>
               <Branding text={text} />
             </div>

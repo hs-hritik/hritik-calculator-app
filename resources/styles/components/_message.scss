@@ -26,6 +26,7 @@
   $failed-img-icon-height: 20px;
   $failed-img-icon-color: color(error, text);
   $error-message-border-color: color(error, border);
+  $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
 
   .hs-message {
     align-self: flex-start;
@@ -90,6 +91,8 @@
       margin-left: gutter(8);
       font-size: font-size(body, small);
       letter-spacing: -.5px;
+      color: $chat-widget-secondary-text-color;
+      opacity: .6;
     }
 
     &__icon-error {

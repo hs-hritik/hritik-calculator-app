@@ -114,7 +114,9 @@ define ("components/businessHoursView",
         return (
           <div className="hs-business-hours">
             <div>
-              <p>{text.businessHoursContactFormMessage}</p>
+              <p className="hs-business-hours__offline-message">
+                {text.businessHoursContactFormMessage}
+              </p>
               {this._renderFormField (NAME)}
               {this._renderFormField (EMAIL)}
               {this._renderFormField (MESSAGE)}
@@ -136,12 +138,22 @@ define ("components/businessHoursView",
           return null;
         }
 
-        const infoMessage = contactFormSubmitted ? text.businessHoursThankYouMessage :
-                            text.businessHoursOfflineMessage;
+        let infoMessage;
+        let messageClass = "";
+
+        if (contactFormSubmitted) {
+          infoMessage = text.businessHoursThankYouMessage;
+          messageClass = "hs-business-hours__thank-you-message";
+        } else {
+          infoMessage = text.businessHoursOfflineMessage;
+          messageClass = "hs-business-hours__offline-message";
+        }
 
         return (
           <div className="hs-business-hours">
-            <p>{infoMessage}</p>
+            <p className={messageClass}>
+              {infoMessage}
+            </p>
             <div>
               <Branding text={text} />
               {this._renderFooter ()}
@@ -245,7 +257,9 @@ define ("components/businessHoursView",
 
         return (
           <div className={formFieldClasses}>
-            <div className="hs-form-field__label">{formFieldLabel}</div>
+            <div className="hs-form-field__label hs-business-hours__form-label">
+              {formFieldLabel}
+            </div>
             {inputEl}
             {errorIconEl}
           </div>

@@ -16,6 +16,8 @@
   $remove-icon-color: color(text, light);
   $file-name-color: color(text);
   $error-color: color(error, text);
+  $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
+  $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
 
   .hs-business-hours {
     display: flex;
@@ -26,6 +28,15 @@
 
     &__message {
       resize: none;
+    }
+
+    &__form-label,
+    &__thank-you-message {
+      color: $chat-widget-primary-text-color;
+    }
+
+    &__offline-message {
+      color: $chat-widget-secondary-text-color;
     }
 
     &__attachment-wrapper {

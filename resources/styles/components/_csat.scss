@@ -13,6 +13,7 @@
 @include component(csat) {
 
   $input-border-color: color(border);
+  $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
 
   .hs-csat {
     display: flex;
@@ -33,6 +34,7 @@
     }
 
     &__heading {
+      color: $chat-widget-primary-text-color;
       text-align: center;
     }
 

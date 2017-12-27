@@ -12,14 +12,14 @@
 
 @include component(view) {
 
-  $bg-color: color(bg, x-light);
+  $chat-widget-bg-color: var(--hs-chat-widget-bg-color);
 
   .hs-view {
     display: flex;
     flex: 1;
     flex-direction: column;
     height: 100%;
-    background-color: $bg-color;
+    background-color: $chat-widget-bg-color;
 
     &__content {
       display: flex;

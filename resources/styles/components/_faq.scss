@@ -12,8 +12,29 @@
 
 @include component(faq) {
 
+  $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
+  $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
+  $chat-widget-accent-color: var(--hs-chat-widget-accent-color);
+  $chat-widget-accent-color-light: var(--hs-chat-widget-accent-color-light);
+
   .hs-faq {
     flex: 1;
     padding: gutter(16 16 0 16);
+
+    &__title {
+      color: $chat-widget-primary-text-color;
+    }
+
+    &__body {
+      color: $chat-widget-secondary-text-color;
+
+      a {
+        color: $chat-widget-accent-color;
+
+        &:hover {
+          color: $chat-widget-accent-color-light;
+        }
+      }
+    }
   }
 }
