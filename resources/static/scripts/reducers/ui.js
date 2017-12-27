@@ -41,7 +41,7 @@ define ("reducers/ui",
         businessHoursNamePlaceholder: "Enter your name",
         businessHoursEmailPlaceholder: "john@example.com",
         businessHoursMessagePlaceholder: "Write your message",
-        businessHoursSubmitBtn: "Send",
+        businessHoursSubmitBtn: "Submit",
         businessHoursThankYouMessage: "Thanks for reaching out. We will get " +
                                       "back to you soon.",
         businessHoursViewHeader: "",

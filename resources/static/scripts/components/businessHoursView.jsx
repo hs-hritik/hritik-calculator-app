@@ -95,6 +95,7 @@ define ("components/businessHoursView",
                             enabled={featureIsEnabled} >
                   {this._renderContactForm ()}
                   {this._renderOfflineMessage ()}
+                  {this._renderFooter ()}
                 </DnDWrapper>
               </div>
           </div>
@@ -121,7 +122,6 @@ define ("components/businessHoursView",
               {this._renderAttachments ()}
               <Branding text={text} />
             </div>
-            {this._renderFooter ()}
           </div>
         );
       },
@@ -144,7 +144,6 @@ define ("components/businessHoursView",
             <p>{infoMessage}</p>
             <div>
               <Branding text={text} />
-              {this._renderFooter ()}
             </div>
           </div>
         );
@@ -168,7 +167,7 @@ define ("components/businessHoursView",
         }
 
         return (
-          <div className="hs-footer hs-footer--center-items hs-footer--clear-bg">
+          <div className="hs-footer hs-footer--center-items">
             <button className="hs-button hs-footer__btn"
                     disabled={contactFormDisabled}
                     onClick={clickHandler} >

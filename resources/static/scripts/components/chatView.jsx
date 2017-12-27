@@ -100,7 +100,6 @@ define ("components/chatView",
       _renderClosedConversationFooter () {
         const btnClasses = classes (
           "hs-button",
-          "hs-button--small",
           "hs-chat-footer__button"
         );
 
@@ -182,7 +181,6 @@ define ("components/chatView",
         const btnClasses = classes (
           "hs-button",
           "hs-button--hollow",
-          "hs-button--small",
           "hs-chat-footer__button"
         );
 

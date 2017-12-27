@@ -33,12 +33,6 @@
       padding: gutter(8);
     }
 
-    /// Removes default white background and border of footer
-    &--clear-bg {
-      background: none;
-      border: 0;
-    }
-
     /// Wrapper to align items vertically
     /// @NOTE :- We need a wrapper as we don't want to grow the items to full
     /// width in case of vertical alignment of child elements
