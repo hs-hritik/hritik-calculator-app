@@ -17,7 +17,8 @@ define ("constants/uiConfig",
       TRANSPARENT: "transparent",
       BLACK: {
         BASE: "#576066",
-        DARK: "#383F44"
+        DARK: "#383F44",
+        X_LIGHT: "#B6C3CC"
       },
       GRAY: {
         LIGHT: "#E8E9EB",
@@ -26,6 +27,9 @@ define ("constants/uiConfig",
       },
       RED: {
         DARK: "#E65050"
+      },
+      YELLOW: {
+        DARK: "#F2B230"
       }
     };
 
@@ -86,7 +90,11 @@ define ("constants/uiConfig",
       AGENT_MESSAGE_BORDER_COLOR: "agentMessage.borderColor",
       AGENT_MESSAGE_PRIMARY_TEXT_COLOR: "agentMessage.primaryTextColor",
       AGENT_MESSAGE_ACCENT_COLOR: "agentMessage.accentColor",
-      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.agentMessage.accentColor`
+      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.agentMessage.accentColor`,
+
+      // CSAT set
+      CSAT_BG_COLOR: "csat.bgColor",
+      CSAT_ACCENT_COLOR: "csat.accentColor"
     };
 
     /**
@@ -228,6 +236,16 @@ define ("constants/uiConfig",
         FLATTENED_UI_CONFIG.AGENT_MESSAGE_ACCENT_COLOR_LIGHT,
         "--hs-agent-message-accent-color-light",
         COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.CSAT_BG_COLOR,
+        "--hs-csat-bg-color",
+        COLORS.BLACK.X_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.CSAT_ACCENT_COLOR,
+        "--hs-csat-accent-color",
+        COLORS.YELLOW.DARK
       ]
     ];
 
