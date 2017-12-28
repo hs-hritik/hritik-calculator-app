@@ -271,7 +271,7 @@ define ("components/message",
           const attachment = message.attachments [0];
           renderConfig.name = attachment.fileName;
           renderConfig.url = attachment.url;
-          renderConfig.iconClasses = "ion-attachment ion-primary-color";
+          renderConfig.iconClasses = "ion-attachment";
           attachmentIsPreviewable = this._isAttachmentPreviewable (
             renderConfig.name
           );

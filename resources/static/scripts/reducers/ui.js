@@ -16,6 +16,7 @@ define ("reducers/ui",
     const update = React.addons.update;
     const {
       DEFAULT_UI_CONFIG,
+      FLATTENED_UI_CONFIG,
       FLATTENED_UI_CONFIG: {
         BASE_COLOR,
         BASE_COLOR_DARK,
@@ -23,10 +24,9 @@ define ("reducers/ui",
         INITIAL_PRIMARY_BG_COLOR,
         INITIAL_PRIMARY_TEXT_COLOR,
         HEADER_BG_COLOR,
-        HEADER_TEXT_COLOR,
-        CHAT_WIDGET_ACCENT_COLOR,
-        CHAT_WIDGET_ACCENT_COLOR_LIGHT
+        HEADER_TEXT_COLOR
       },
+      ACCENT_COLOR_SETS,
       SHADES
     } = UI_CONFIG_CONSTANTS;
 
@@ -118,7 +118,6 @@ define ("reducers/ui",
       // Set light and dark shades for
       // 1. Base light color
       // 2. Base dark color
-      // 3. Chat widget accent color (used by links)
       updateObj [BASE_COLOR_LIGHT] = {
         value: {$set: uiHelpers.shadeColor (baseColor, SHADES.LIGHT_20)}
       };
@@ -126,21 +125,24 @@ define ("reducers/ui",
         value: {$set: uiHelpers.shadeColor (baseColor, SHADES.DARK_20)}
       };
 
-      const accentColorConfig = uiConfig [CHAT_WIDGET_ACCENT_COLOR] ||
-                                uiConfig [BASE_COLOR] ||
-                                storeUIConfig [BASE_COLOR];
+      // Derive accent colors from accent color sets
+      ACCENT_COLOR_SETS.forEach ((set) => {
+        const accentColor = FLATTENED_UI_CONFIG [`${set}_ACCENT_COLOR`];
+        const accentColorLight = FLATTENED_UI_CONFIG [`${set}_ACCENT_COLOR_LIGHT`];
+        const accentColorConfig = uiConfig [accentColor] ||
+                                  uiConfig [BASE_COLOR] ||
+                                  storeUIConfig [BASE_COLOR];
 
-      updateObj [CHAT_WIDGET_ACCENT_COLOR] = {
-        value: {$set: accentColorConfig.value}
-      };
+        updateObj [accentColor] = {
+          value: {$set: accentColorConfig.value}
+        };
 
-      updateObj [CHAT_WIDGET_ACCENT_COLOR_LIGHT] = {
-        value: {
-          $set: uiHelpers.shadeColor (
-            accentColorConfig.value, SHADES.LIGHT_10
-          )
-        }
-      };
+        updateObj [accentColorLight] = {
+          value: {
+            $set: uiHelpers.shadeColor (accentColorConfig.value, SHADES.LIGHT_10)
+          }
+        };
+      });
 
       // Derive colors for chat widget header
       // Precedence for setting header's background color

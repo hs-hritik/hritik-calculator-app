@@ -19,6 +19,7 @@ define ("constants/uiConfig",
         DARK: "#383F44"
       },
       GRAY: {
+        LIGHT: "#E8E9EB",
         XX_LIGHT: "#FFFFFF",
         X_LIGHT: "#F8F9F9"
       },
@@ -70,7 +71,14 @@ define ("constants/uiConfig",
       CHAT_WIDGET_SECONDARY_TEXT_COLOR: "chatWidget.secondaryTextColor",
       CHAT_WIDGET_ACCENT_COLOR: "chatWidget.accentColor",
       CHAT_WIDGET_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.chatWidget.accentColorLight`,
-      CHAT_WIDGET_ERROR: "chatWidget.error"
+      CHAT_WIDGET_ERROR: "chatWidget.error",
+
+      // User message set
+      USER_MESSAGE_BG_COLOR: "userMessage.bgColor",
+      USER_MESSAGE_BORDER_COLOR: "userMessage.borderColor",
+      USER_MESSAGE_PRIMARY_TEXT_COLOR: "userMessage.primaryTextColor",
+      USER_MESSAGE_ACCENT_COLOR: "userMessage.accentColor",
+      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userMessage.accentColor`
     };
 
     /**
@@ -162,8 +170,36 @@ define ("constants/uiConfig",
         FLATTENED_UI_CONFIG.CHAT_WIDGET_ERROR,
         "--hs-chat-widget-error",
         COLORS.RED.DARK
+      ],
+      [
+        FLATTENED_UI_CONFIG.USER_MESSAGE_BG_COLOR,
+        "--hs-user-message-bg-color",
+        COLORS.GRAY.XX_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.USER_MESSAGE_BORDER_COLOR,
+        "--hs-user-message-border-color",
+        COLORS.GRAY.LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.USER_MESSAGE_PRIMARY_TEXT_COLOR,
+        "--hs-user-message-primary-text-color",
+        COLORS.BLACK.BASE
+      ],
+      [
+        FLATTENED_UI_CONFIG.USER_MESSAGE_ACCENT_COLOR,
+        "--hs-user-message-accent-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.USER_MESSAGE_ACCENT_COLOR_LIGHT,
+        "--hs-user-message-accent-color-light",
+        COLORS.PRIMARY
       ]
     ];
+
+    // Sets which has accent color
+    const ACCENT_COLOR_SETS = ["CHAT_WIDGET", "USER_MESSAGE"];
 
     // Shades for colors
     const SHADES = {
@@ -176,6 +212,7 @@ define ("constants/uiConfig",
       DERIVED_ID,
       FLATTENED_UI_CONFIG,
       DEFAULT_UI_CONFIG,
+      ACCENT_COLOR_SETS,
       SHADES
     };
   }
