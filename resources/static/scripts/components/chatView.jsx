@@ -49,6 +49,12 @@ define ("components/chatView",
         }).isRequired
       },
 
+      getInitialState () {
+        return {
+          infoBotFooterIsFocussed: false
+        };
+      },
+
       render () {
         return (
           <div className="hs-footer">
@@ -138,7 +144,8 @@ define ("components/chatView",
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": field.value.errorMsg,
-            "hs-chat-footer--form-invalid": !field.value.value.trim ()
+            "hs-chat-footer--form-invalid": !field.value.value.trim (),
+            "hs-chat-footer--colored-border": this.state.infoBotFooterIsFocussed
           }
         );
 
@@ -162,6 +169,8 @@ define ("components/chatView",
                      placeholder={field.placeholder}
                      onChange={this._onInfoBotFieldValueChange}
                      onKeyUp={this._onInfoBotFieldKeyUp}
+                     onFocus={this._onInfoBotFooterFocus}
+                     onBlur={this._onInfoBotFooterBlur}
                      autoFocus />
               <a className="hs-chat-footer__submit">
                 <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
@@ -237,6 +246,24 @@ define ("components/chatView",
         } else if (ev.keyCode === KEY_CODES.ENTER) {
           this.props.onSubmitInfoBotField ();
         }
+      },
+
+      /**
+       * Handler for the focus event on the info bot text input.
+       */
+      _onInfoBotFooterFocus () {
+        this.setState ({
+          infoBotFooterIsFocussed: true
+        });
+      },
+
+      /**
+       * Handler for the blur event on the info bot text input.
+       */
+      _onInfoBotFooterBlur () {
+        this.setState ({
+          infoBotFooterIsFocussed: false
+        });
       },
 
       /**

@@ -15,10 +15,13 @@
   $title-error-color: color(error, text);
   $submit-error-color: color(error, text);
   $textarea-bg-color: color(bg, white);
+  $border-color: color(primary);
 
   .hs-chat-footer {
     min-height: 52px;
     padding: gutter(12);
+    border: 1px solid transparent;
+    border-radius: radius(0 0 8 8);
 
     &__buttons-wrapper {
       display: flex;
@@ -99,6 +102,10 @@
           color: $submit-error-color;
         }
       }
+    }
+
+    &--colored-border {
+      border-color: $border-color;
     }
   }
 }
