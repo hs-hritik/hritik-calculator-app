@@ -14,6 +14,7 @@ define ("constants/uiConfig",
     // Colors map like we maintain in global scss
     const COLORS = {
       PRIMARY: "#43BF6C",
+      TRANSPARENT: "transparent",
       BLACK: {
         BASE: "#576066",
         DARK: "#383F44"
@@ -78,7 +79,14 @@ define ("constants/uiConfig",
       USER_MESSAGE_BORDER_COLOR: "userMessage.borderColor",
       USER_MESSAGE_PRIMARY_TEXT_COLOR: "userMessage.primaryTextColor",
       USER_MESSAGE_ACCENT_COLOR: "userMessage.accentColor",
-      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userMessage.accentColor`
+      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userMessage.accentColor`,
+
+      // Agent message set
+      AGENT_MESSAGE_BG_COLOR: "agentMessage.bgColor",
+      AGENT_MESSAGE_BORDER_COLOR: "agentMessage.borderColor",
+      AGENT_MESSAGE_PRIMARY_TEXT_COLOR: "agentMessage.primaryTextColor",
+      AGENT_MESSAGE_ACCENT_COLOR: "agentMessage.accentColor",
+      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.agentMessage.accentColor`
     };
 
     /**
@@ -195,11 +203,36 @@ define ("constants/uiConfig",
         FLATTENED_UI_CONFIG.USER_MESSAGE_ACCENT_COLOR_LIGHT,
         "--hs-user-message-accent-color-light",
         COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.AGENT_MESSAGE_BG_COLOR,
+        "--hs-agent-message-bg-color",
+        COLORS.GRAY.LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.AGENT_MESSAGE_BORDER_COLOR,
+        "--hs-agent-message-border-color",
+        COLORS.TRANSPARENT
+      ],
+      [
+        FLATTENED_UI_CONFIG.AGENT_MESSAGE_PRIMARY_TEXT_COLOR,
+        "--hs-agent-message-primary-text-color",
+        COLORS.BLACK.BASE
+      ],
+      [
+        FLATTENED_UI_CONFIG.AGENT_MESSAGE_ACCENT_COLOR,
+        "--hs-agent-message-accent-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.AGENT_MESSAGE_ACCENT_COLOR_LIGHT,
+        "--hs-agent-message-accent-color-light",
+        COLORS.PRIMARY
       ]
     ];
 
     // Sets which has accent color
-    const ACCENT_COLOR_SETS = ["CHAT_WIDGET", "USER_MESSAGE"];
+    const ACCENT_COLOR_SETS = ["CHAT_WIDGET", "USER_MESSAGE", "AGENT_MESSAGE"];
 
     // Shades for colors
     const SHADES = {

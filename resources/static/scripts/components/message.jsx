@@ -157,7 +157,7 @@ define ("components/message",
 
         return (
           <div key={index} className="hs-attachment" onClick={clickHandler}>
-            <i className="ion-attachment ion-primary-color" />
+            <i className="ion-attachment" />
             <div className="hs-attachment__info-wrapper">
               <small title={attachment.fileName}>
                 <strong>{formattedFileName}</strong>

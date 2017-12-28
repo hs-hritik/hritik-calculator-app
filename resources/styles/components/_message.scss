@@ -13,10 +13,7 @@
 @include component(message) {
 
   $max-width: 88%;
-  $left-bg-color: color(bg, light);
-  $suggested-faq-border-color: color(border, light);
   $suggested-faq-bg-color: color(bg, white);
-  $faq-border-color: color(border, light);
   $end-chat-msg-text-color: color(text, light);
   $end-chat-msg-border-color: color(border, light);
   $message-details-color: color(text, light);
@@ -32,6 +29,12 @@
   $user-message-accent-color: var(--hs-user-message-accent-color);
   $user-message-accent-color-light: var(--hs-user-message-accent-color-light);
 
+  $agent-message-bg-color: var(--hs-agent-message-bg-color);
+  $agent-message-border-color: var(--hs-agent-message-border-color);
+  $agent-message-primary-text-color: var(--hs-agent-message-primary-text-color);
+  $agent-message-accent-color: var(--hs-agent-message-accent-color);
+  $agent-message-accent-color-light: var(--hs-agent-message-accent-color-light);
+
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
@@ -42,11 +45,21 @@
       flex: 0 0 auto;
       padding: gutter(8 12);
       overflow: hidden;
+      color: $agent-message-primary-text-color;
       word-break: normal;
       word-wrap: break-word;
       white-space: pre-wrap;
-      background-color: $left-bg-color;
+      background-color: $agent-message-bg-color;
+      border: 1px solid $agent-message-border-color;
       border-radius: 6px;
+
+      a {
+        color: $agent-message-accent-color;
+
+        &:hover {
+          color: $agent-message-accent-color-light;
+        }
+      }
     }
 
     &--right {
