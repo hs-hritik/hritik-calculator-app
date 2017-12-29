@@ -224,63 +224,66 @@ define ("components/message",
        * Render attachment message
        */
       _renderAttachmentMessage () {
-        const {message} = this.props;
-        const renderConfig = {
-          name: "",
-          url: "",
-          iconClasses: "",
-          retry: false,
-          onClick: null
-        };
+        const {
+          message: {
+            isSystemMsg,
+            states: messageStates,
+            file,
+            attachments
+          }
+        } = this.props;
+
         let attachmentEl = null;
         let attachmentIsPreviewable = false;
 
-        // Attacment message is frontend/dummy message
-        if (message.isSystemMsg) {
-          renderConfig.name = message.file.name;
-          attachmentIsPreviewable = this._isAttachmentPreviewable (
-            renderConfig.name
-          );
+        // Attachment message is a frontend/dummy message
+        if (isSystemMsg) {
+          this._attachmentRenderConfig.name = file.name;
+          attachmentIsPreviewable = this._isAttachmentPreviewable ();
 
           // If attachment message is uploading, set loading icons
-          if (message.states.uploadInProgress) {
-            renderConfig.iconClasses = classes (
+          if (messageStates.uploadInProgress) {
+            this._attachmentRenderConfig.iconClasses = classes (
               "ion-load-b",
               "ion--spinning"
             );
-          } else if (message.states.error) {
+          } else if (messageStates.error) {
             // If attachment message has errors, set icon classes depending on
             // error code. Also attach retry click handler in case of failure is
             // retryable.
-            const errorCode = message.states.errorCode;
+            const errorCode = messageStates.errorCode;
             const failureIsRetryable = (errorCode === FILE_UPLOAD_ERRORS.RETRY);
 
             if (failureIsRetryable) {
-              renderConfig.onClick = this._onRetryClick;
+              this._attachmentRenderConfig.onClick = this._onRetryClick;
+            } else {
+              this._attachmentRenderConfig.onClick = null;
             }
 
-            renderConfig.iconClasses = classes ({
+            this._attachmentRenderConfig.iconClasses = classes ({
               "hs-message__failed-img-icon": attachmentIsPreviewable,
               "hs-message__icon-error": !attachmentIsPreviewable,
               "ion-alert-circled": !failureIsRetryable,
               "ion-reset": failureIsRetryable
             });
+          } else {
+            this._attachmentRenderConfig.iconClasses = "";
           }
         } else {
-          // Attacment message is backend message
-          const attachment = message.attachments [0];
-          renderConfig.name = attachment.fileName;
-          renderConfig.url = attachment.url;
-          renderConfig.iconClasses = "ion-attachment ion-primary-color";
-          attachmentIsPreviewable = this._isAttachmentPreviewable (
-            renderConfig.name
-          );
+          // Attachment message is a backend message
+          const attachment = attachments [0];
+
+          this._attachmentRenderConfig.name = attachment.fileName;
+          this._attachmentRenderConfig.url = attachment.url;
+          this._attachmentRenderConfig.iconClasses = "ion-attachment ion-primary-color";
+
+          attachmentIsPreviewable = this._isAttachmentPreviewable ();
         }
 
         if (attachmentIsPreviewable) {
-          attachmentEl = this._renderPreviewableAttachment (renderConfig);
+          attachmentEl = this._renderPreviewableAttachment ();
         } else {
-          attachmentEl = this._renderNonPreviewableAttachment (renderConfig);
+          attachmentEl = this._renderNonPreviewableAttachment ();
         }
 
         return (
@@ -292,27 +295,23 @@ define ("components/message",
 
       /**
        * Render previewable attachment
-       * @param {Object} config - render config object
-       * @property {String} config.url - attachment url
        */
-      _renderPreviewableAttachment (config) {
+      _renderPreviewableAttachment () {
         // @TODO :- Get alt text from designers
         // Render uploaded image
-        if (config.url) {
-          return this._renderUploadedImage (config);
+        if (this._attachmentRenderConfig.url) {
+          return this._renderUploadedImage ();
         }
         // Render local image
-        return this._renderLocalImage (config);
+        return this._renderLocalImage ();
       },
 
       /**
        * Render uploaded image
-       * @param {Object} config - render config object
-       * @property {String} config.url - attachment url
-       * @property {Function} config.onClick - attachment layout click handler
        */
-      _renderUploadedImage (config) {
-        const {url} = config;
+      _renderUploadedImage () {
+        const {url} = this._attachmentRenderConfig;
+
         const clickHandler = this._onAttachmentClick.bind (this, url);
         const wrapperStyles = {
           backgroundImage: `url(${url})`,
@@ -339,12 +338,10 @@ define ("components/message",
 
       /**
        * Render local image
-       * @param {Object} config - render config object
-       * @property {String} config.iconClasses - attachment icon classes
-       * @property {Function} config.onClick - attachment layout click handler
        */
-      _renderLocalImage (config) {
-        const {iconClasses, onClick} = config;
+      _renderLocalImage () {
+        const {iconClasses, onClick} = this._attachmentRenderConfig;
+
         const bgImg = this.state.localImageData ?
                       `url(${this.state.localImageData})` : "none";
         let imageEl = null;
@@ -384,17 +381,14 @@ define ("components/message",
 
       /**
        * Render non previewable attachment
-       * @param {Object} config - render config object
-       * @param {String} config.name - attachment name
-       * @param {String} config.iconClasses - attachment icon classes
-       * @param {Function} config.onClick - attachment layout click handler
        */
-      _renderNonPreviewableAttachment (config) {
-        const {name, iconClasses, onClick} = config;
+      _renderNonPreviewableAttachment () {
+        const {name, iconClasses, onClick, url} = this._attachmentRenderConfig;
+
         let wrapperClickHandler;
 
         if (!this.props.message.isSystemMsg) {
-          wrapperClickHandler = this._onAttachmentClick.bind (this, config.url);
+          wrapperClickHandler = this._onAttachmentClick.bind (this, url);
         } else {
           wrapperClickHandler = onClick;
         }
@@ -588,14 +582,16 @@ define ("components/message",
        * @param {String} name - attachment file name
        * @returns {Boolean} - attachment is previewable
        */
-      _isAttachmentPreviewable (name) {
+      _isAttachmentPreviewable () {
         const {message} = this.props;
 
         if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
           return false;
         }
 
-        const isImageAttachment = this._isImageAttachment (name);
+        const isImageAttachment = this._isImageAttachment (
+          this._attachmentRenderConfig.name
+        );
         const localAttachmentHasError = message.isSystemMsg ?
                                         message.states.error : true;
 
@@ -612,6 +608,14 @@ define ("components/message",
       _localImgWrapperRef: null,
 
       _localImgRef: null,
+
+      _attachmentRenderConfig: {
+        name: "",
+        url: "",
+        iconClasses: "",
+        retry: false,
+        onClick: null
+      },
 
       /**
        * Save local image wrapper reference
@@ -667,6 +671,15 @@ define ("components/message",
 
       componentDidUpdate () {
         this._previewAttachment ();
+
+        // Reset attachment render config for the next render.
+        this._attachmentRenderConfig = {
+          name: "",
+          url: "",
+          iconClasses: "",
+          retry: false,
+          onClick: null
+        };
       }
     });
   }
