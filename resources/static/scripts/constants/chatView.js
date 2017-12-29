@@ -23,10 +23,14 @@ define ("constants/chatView",
     };
 
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
+    // @TODO - Below time interval's value is open to discussion
+    // 6500 seems too low according to new conditions
+    const MESSAGES_FORCE_POLLING_TIMEOUT = 6500;
 
     return {
       ACTIVE_FOOTER,
       INFO_BOT_FIELDS,
-      MESSAGES_POLLING_TIMEOUT
+      MESSAGES_POLLING_TIMEOUT,
+      MESSAGES_FORCE_POLLING_TIMEOUT
     };
   });

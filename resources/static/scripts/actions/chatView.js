@@ -51,7 +51,12 @@ define ("actions/chatView",
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
           MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
-          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS,
+          {
+            ACTIVE_FOOTER,
+            MESSAGES_POLLING_TIMEOUT,
+            MESSAGES_FORCE_POLLING_TIMEOUT,
+            INFO_BOT_FIELDS
+          } = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -71,7 +76,9 @@ define ("actions/chatView",
     let systemTypingTimerId = null,
         pollingEnabled = false,
         fetchMessagesXhr = null,
-        fetchMessagesTimer = null;
+        fetchMessagesTimer = null,
+        lastFetchStartTime = null,
+        lastFetchCompleted = false;
 
     /**
      * Action to update reply text.
@@ -117,12 +124,45 @@ define ("actions/chatView",
       };
     };
 
+
+    /**
+     * To be called at specified intervals to poll for new messages.
+     * If the fetching is still going on for more than
+     * MESSAGES_FORCE_POLLING_TIMEOUT, it aborts the last xhr and
+     * starts a new one.
+     */
+    const _restartFetchMessages = () => {
+      if (!pollingEnabled) {
+        window.clearTimeout (fetchMessagesTimer);
+        return;
+      }
+
+      if (lastFetchCompleted) {
+        fetchMessages ();
+        return;
+      }
+
+      const timeSinceLastFetch = Date.now () - lastFetchStartTime;
+
+      if (timeSinceLastFetch >= MESSAGES_FORCE_POLLING_TIMEOUT) {
+        if (fetchMessagesXhr) {
+          fetchMessagesXhr.abort ();
+          fetchMessagesXhr = null;
+        }
+        fetchMessages ();
+      }
+    };
+
     /**
      * Start polling for messages.
      */
     const startPollingForMessages = () => {
       pollingEnabled = true;
+      lastFetchCompleted = true;
+
       fetchMessages ();
+
+      fetchMessagesTimer = window.setInterval (_restartFetchMessages, MESSAGES_POLLING_TIMEOUT);
 
       liveUpdatesHelpers.openWsConnection ();
       // Since the ws connection is asynchronous, this call to subscribe
@@ -240,6 +280,9 @@ define ("actions/chatView",
         xhrData ["messages-cursor"] = state.chatView.activeIssueMsgCursor;
       }
 
+      lastFetchStartTime = Date.now ();
+      lastFetchCompleted = false;
+
       fetchMessagesXhr = xhr ({
         route: routes.getMessages (appState.domain, appState.activeIssueId),
         data: xhrData,
@@ -327,10 +370,7 @@ define ("actions/chatView",
           // @TODO: Handler failure.
         },
         onEnd: () => {
-          if (pollingEnabled) {
-            fetchMessagesTimer = window.setTimeout (fetchMessages,
-                                                    MESSAGES_POLLING_TIMEOUT);
-          }
+          lastFetchCompleted = true;
         }
       });
     };
