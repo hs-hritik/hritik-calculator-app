@@ -39,12 +39,14 @@ define ("components/message",
         onRetryAttachmentClick: PropTypes.func,
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
+          timeAgoJustNow: PropTypes.string.isRequired,
           faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
           faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
-          attachmentDefaultError: PropTypes.string.isRequired
+          attachmentDefaultError: PropTypes.string.isRequired,
+          attachmentUploadingStatus: PropTypes.string.isRequired
         }).isRequired
       },
 
@@ -260,12 +262,12 @@ define ("components/message",
               this._attachmentRenderConfig.onClick = null;
             }
 
-            this._attachmentRenderConfig.iconClasses = classes ({
-              "hs-message__failed-img-icon": attachmentIsPreviewable,
-              "hs-message__icon-error": !attachmentIsPreviewable,
-              "ion-alert-circled": !failureIsRetryable,
-              "ion-reset": failureIsRetryable
-            });
+            this._attachmentRenderConfig.iconClasses = classes (
+              "hs-message__icon-error", {
+                "ion-alert-circled": !failureIsRetryable,
+                "ion-reset": failureIsRetryable
+              }
+            );
           } else {
             this._attachmentRenderConfig.iconClasses = "";
           }
@@ -340,7 +342,7 @@ define ("components/message",
        * Render local image
        */
       _renderLocalImage () {
-        const {iconClasses, onClick} = this._attachmentRenderConfig;
+        const {onClick} = this._attachmentRenderConfig;
 
         const bgImg = this.state.localImageData ?
                       `url(${this.state.localImageData})` : "none";
@@ -374,7 +376,6 @@ define ("components/message",
                  className="hs-message__image-wrapper hs-message__failed-img">
              {imageEl}
             </div>
-            <i className={iconClasses} />
           </div>
         );
       },
@@ -423,11 +424,11 @@ define ("components/message",
 
         if (message.type === MESSAGE_TYPE.ATTACHMENT && message.isSystemMsg &&
             message.states.error) {
-          const errorText = this._getAttachmentErrorMessage (message.states.errorCode);
+          const errorTextEl = this._getAttachmentErrorMessageEl (message.states.errorCode);
 
           attachmentsErrorEl = (
             <div className="hs-message__attachment-error">
-              <small>{errorText}</small>
+              {errorTextEl}
             </div>
           );
         }
@@ -480,13 +481,31 @@ define ("components/message",
           return null;
         }
 
-        const {message} = this.props;
-        const timeAgoMs = Date.now () - message.createdTs;
+        const {
+          message: {
+            type: messageType,
+            states: messageStates,
+            createdTs
+          },
+          text
+        } = this.props;
+
+        // If the message is of type attachment and it's uploading at the moment,
+        // show `Uploading..` and return.
+        if (
+          messageType === MESSAGE_TYPE.ATTACHMENT &&
+          messageStates &&
+          messageStates.uploadInProgress
+        ) {
+          return text.attachmentUploadingStatus;
+        }
+
+        const timeAgoMs = Date.now () - createdTs;
         let timeAgoStr;
 
         // If the message came in the last one minute, show "just now".
         if (timeAgoMs < 60000) {
-          timeAgoStr = "just now";
+          timeAgoStr = text.timeAgoJustNow;
         } else {
           timeAgoStr = dateUtils.humanizeDuration (timeAgoMs, {
             shortForm: true,
@@ -526,27 +545,43 @@ define ("components/message",
       /**
        * Returns error text depending on error code
        * @param {Number} errorCode - error code of failure
-       * @returns {String} - error text
+       * @returns {Element} - The attachment error message element
        */
-      _getAttachmentErrorMessage (errorCode) {
+      _getAttachmentErrorMessageEl (errorCode) {
         const {text} = this.props;
-        let errorText;
+        const {iconClasses} = this._attachmentRenderConfig;
+        let errorTextEl;
 
         switch (errorCode) {
           case FILE_UPLOAD_ERRORS.RETRY:
-            errorText = text.attachmentRetryError;
+            errorTextEl = [
+              <i className={iconClasses} />,
+              <small>
+                {text.attachmentRetryError}
+              </small>
+            ];
             break;
 
           case FILE_UPLOAD_ERRORS.SIZE_EXCEEDED:
-            errorText = text.attachmentFileSizeError;
+            errorTextEl = [
+              <i className={iconClasses} />,
+              <small>
+                {text.attachmentFileSizeError}
+              </small>
+            ];
             break;
 
           default:
-            errorText = text.attachmentDefaultError;
+            errorTextEl = [
+              <i className={iconClasses} />,
+              <small>
+                {text.attachmentDefaultError}
+              </small>
+            ];
             break;
         }
 
-        return errorText;
+        return errorTextEl;
       },
 
       /**

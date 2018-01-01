@@ -26,6 +26,7 @@
   $failed-img-icon-height: 20px;
   $failed-img-icon-color: color(error, text);
   $error-message-border-color: color(error, border);
+  $attachment-text-color: color(primary);
 
   .hs-message {
     align-self: flex-start;
@@ -94,12 +95,13 @@
 
     &__icon-error {
       padding-right: gutter(4);
-      color: $failed-img-icon-color;
+      font-size: icon-size(xx-small);
     }
 
     &__user-attachment {
       display: flex;
       align-items: center;
+      color: $attachment-text-color;
     }
 
     &__attachment {
@@ -108,24 +110,13 @@
 
     &__attachment-error {
       display: flex;
+      align-items: center;
       justify-content: flex-end;
       color: $failed-img-icon-color;
     }
 
     &__failed-img {
       opacity: .5;
-    }
-
-    &__failed-img-icon {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      width: $failed-img-icon-width;
-      height: $failed-img-icon-height;
-      margin: auto;
-      color: $failed-img-icon-color;
     }
 
     &--image-attachment {

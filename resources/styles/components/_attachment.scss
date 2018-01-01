@@ -13,11 +13,13 @@
 @include component(attachment) {
 
   $attachment-background-color: color(bg, white);
+  $attachment-color: color(primary);
 
   .hs-attachment {
     display: flex;
     padding: gutter(8);
     margin-top: gutter(8);
+    color: $attachment-color;
     white-space: nowrap;
     cursor: pointer;
     background-color: $attachment-background-color;
