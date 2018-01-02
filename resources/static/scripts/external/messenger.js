@@ -40,6 +40,7 @@
   };
 
   const INIT = "init";
+  const FORCE_UPDATE_STYLES = true;
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
@@ -49,6 +50,7 @@
     SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_GET_PARENT_INFO: "sdk-get-parent-info",
+    SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -58,7 +60,8 @@
     CMD_SET_CIF: "cmd-set-cif",
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
-    CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules"
+    CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
+    CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config"
   };
 
   const SUPPORTED_EVENTS = {
@@ -203,7 +206,8 @@
                         </svg>`;
 
   // Reference for web sdk iframe.
-  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe;
+  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
+      launcherButton;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
@@ -274,7 +278,7 @@
    * @returns {Element} - launcher button div.
    */
   const createLauncherButton = () => {
-    const launcherButton = doc.createElement ("a");
+    launcherButton = doc.createElement ("a");
     launcherIconEl = doc.createElement ("span");
     launcherIconEl.innerHTML = MESSENGER_ICON;
 
@@ -437,7 +441,7 @@
   /**
    * Update launcher styles
    */
-  const updateLauncherStyles = () => {
+  const updateLauncherStyles = (forceUpdateStyles) => {
     const {
       launcherBgColor,
       launcherTextColor,
@@ -450,9 +454,19 @@
     UNREAD_COUNT_STYLES.background = notificationBgColor;
     UNREAD_COUNT_STYLES.color = notificationTextColor;
 
-    const colorRegEx = /fill="*"/g;
-    CLOSE_ICON = CLOSE_ICON.replace (colorRegEx, `fill="${launcherTextColor}"`);
-    MESSENGER_ICON = MESSENGER_ICON.replace (colorRegEx, `fill="${launcherTextColor}"`);
+    const colorRegEx = /fill=".+"\s/;
+    const replaceValue = `fill="${launcherTextColor}" `;
+
+    CLOSE_ICON = CLOSE_ICON.replace (colorRegEx, replaceValue);
+    MESSENGER_ICON = MESSENGER_ICON.replace (colorRegEx, replaceValue);
+
+    if (forceUpdateStyles) {
+      setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
+      setStyle (unreadCountEl, UNREAD_COUNT_STYLES);
+      const icon = webSdkIframe.style.display === "none" ?
+                   LAUNCHER_ICON.MESSENGER : LAUNCHER_ICON.CLOSE;
+      updateLauncherBtnIcon (icon);
+    }
   };
 
   /**
@@ -739,6 +753,11 @@
             url: win.location.href
           });
           break;
+
+        case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
+          state.cssConfig = data.cssConfig;
+          updateLauncherStyles (FORCE_UPDATE_STYLES);
+          break;
       }
     }, false);
   };
@@ -912,6 +931,16 @@
     });
   };
 
+  /**
+   * JS API to update ui config
+   * @param {Object} uiConfig - ui config
+   */
+  const updateUIConfig = (uiConfig) => {
+    _postMessage (EVENT_TYPES.CMD_UPDATE_UI_CONFIG, {
+      uiConfig
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -925,7 +954,8 @@
     removeEventListener,
     setCustomIssueFields,
     replaceCustomIssueFields,
-    setProactiveChatRules
+    setProactiveChatRules,
+    updateUIConfig
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

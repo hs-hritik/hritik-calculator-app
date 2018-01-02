@@ -16,6 +16,7 @@ define ("constants/eventTypes",
       SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
       SDK_EVENT_CHAT_END: "sdk-event-chat-end",
       SDK_GET_PARENT_INFO: "sdk-get-parent-info",
+      SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
       CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
       CMD_INITIALISE: "cmd-initialise",
       CMD_SET_CONFIG: "cmd-set-config",
@@ -25,6 +26,7 @@ define ("constants/eventTypes",
       CMD_SET_CIF: "cmd-set-cif",
       CMD_REPLACE_CIF: "cmd-replace-cif",
       CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
-      CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules"
+      CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
+      CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config"
     };
   });

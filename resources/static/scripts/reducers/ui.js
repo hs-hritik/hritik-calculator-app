@@ -94,7 +94,7 @@ define ("reducers/ui",
      * @param {Object} uiConfig - config object passed by developers
      * @returns {Object} - update ui object used to set in store
      */
-    const getUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
+    const getSetUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
       const allowedUpdateKeys = ["key", "value"];
       let baseColor = storeUIConfig [BASE_COLOR].value;
       const updateObj = {};
@@ -169,6 +169,85 @@ define ("reducers/ui",
       return updateObj;
     };
 
+    /**
+     * Return update object for update ui config api
+     * @param {Object} storeUIConfig - config object already set in ui store
+     * @param {Object} uiConfig - config object passed by developers
+     * @returns {Object} - update ui object used to set in store
+     */
+    const getUpdateUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
+      const allowedUpdateKeys = ["key", "value"];
+      const updateObj = {};
+
+      // A] Copy only allowed keys for a predefined set in updateObj
+      for (const set in uiConfig) {
+        if (uiConfig.hasOwnProperty (set)) {
+          const config = uiConfig [set];
+          updateObj [set] = {};
+
+          allowedUpdateKeys.forEach ((allowedKey) => {
+            const configValue = config [allowedKey];
+            if (configValue) {
+              updateObj [set][allowedKey] = {$set: configValue};
+
+              // If base colors are to be derived
+              if (configValue === BASE_COLOR) {
+                const baseColor = config.value;
+
+                updateObj [BASE_COLOR_LIGHT] = {
+                  value: {$set: uiHelpers.shadeColor (baseColor, SHADES.LIGHT_20)}
+                };
+                updateObj [BASE_COLOR_DARK] = {
+                  value: {$set: uiHelpers.shadeColor (baseColor, SHADES.DARK_20)}
+                };
+              }
+            }
+          });
+        }
+      }
+
+      // B] If accent color belongs to valid set and is passed in config
+      // derive accent colors
+      ACCENT_COLOR_SETS.forEach ((accentSet) => {
+        const accentColor = FLATTENED_UI_CONFIG [`${accentSet}_ACCENT_COLOR`];
+
+        if (uiConfig [accentColor]) {
+          const accentColorLight = FLATTENED_UI_CONFIG [`${accentSet}_ACCENT_COLOR_LIGHT`];
+          const accentColorConfig = uiConfig [accentColor] ||
+                                    uiConfig [BASE_COLOR] ||
+                                    storeUIConfig [BASE_COLOR];
+
+          updateObj [accentColor] = {
+            value: {$set: accentColorConfig.value}
+          };
+
+          updateObj [accentColorLight] = {
+            value: {
+              $set: uiHelpers.shadeColor (accentColorConfig.value, SHADES.LIGHT_10)
+            }
+          };
+        }
+      });
+
+      // C] Update header styles if passed in ui config
+      const headerBgConfig = uiConfig [INITIAL_PRIMARY_BG_COLOR] ||
+                             uiConfig [BASE_COLOR];
+      if (headerBgConfig) {
+        updateObj [HEADER_BG_COLOR] = {
+          value: {$set: headerBgConfig.value}
+        };
+      }
+
+      const headerTextConfig = uiConfig [INITIAL_PRIMARY_TEXT_COLOR];
+      if (headerTextConfig) {
+        updateObj [HEADER_TEXT_COLOR] = {
+          value: {$set: headerTextConfig.value}
+        };
+      }
+
+      return updateObj;
+    };
+
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
@@ -213,7 +292,12 @@ define ("reducers/ui",
 
         case ACTION_TYPES.SET_UI_CONFIG:
           return update (state, {
-            uiConfig: getUIConfigUpdateObj (state.uiConfig, action.uiConfig)
+            uiConfig: getSetUIConfigUpdateObj (state.uiConfig, action.uiConfig)
+          });
+
+        case ACTION_TYPES.UPDATE_UI_CONFIG:
+          return update (state, {
+            uiConfig: getUpdateUIConfigUpdateObj (state.uiConfig, action.uiConfig)
           });
 
         default:

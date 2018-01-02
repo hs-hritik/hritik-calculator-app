@@ -16,11 +16,12 @@ define ("extras/api",
     "actions/businessHours",
     "actions/actionCreators",
     "actions/csatView",
+    "actions/ui",
     "components/app"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, app) {
+    actionCreators, csatViewActions, uiActions, app) {
     "use strict";
 
     const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
@@ -199,6 +200,9 @@ define ("extras/api",
           store.dispatch (appStateActions.setProactiveChatRules (data.proactiveChatRules));
           store.dispatch (appStateActions.executeProactiveChatRules (data));
           break;
+        case EVENT_TYPES.CMD_UPDATE_UI_CONFIG:
+          store.dispatch (uiActions.updateUIConfig (data.uiConfig));
+          store.dispatch (appStateActions.updateStyles ());
       }
     };
 

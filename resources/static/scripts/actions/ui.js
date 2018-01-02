@@ -26,8 +26,24 @@ define ("actions/ui",
       };
     };
 
+
+    /**
+     * Action to update UI configuration
+     * @param {Object} hsUIConfig - helpshift UI config
+     * @returns {Object} - Action
+     */
+    const updateUIConfig = (hsUIConfig) => {
+      const validUIConfig = uiHelpers.getValidUIConfig (hsUIConfig);
+
+      return {
+        type: ACTION_TYPES.UPDATE_UI_CONFIG,
+        uiConfig: validUIConfig
+      };
+    };
+
     return {
-      setUIConfig
+      setUIConfig,
+      updateUIConfig
     };
   }
 );

@@ -69,6 +69,9 @@ define ("actions/appState",
 
     let returningUser = false;
 
+    const isCssVarSupported = (window.CSS && window.CSS.supports &&
+                               window.CSS.supports ("--fake-var", 0));
+
     /**
      * Set the identifier in the state to identify the user (or the chat session).
      * The creation of a new identifier depends on the userId passed here.
@@ -551,11 +554,6 @@ define ("actions/appState",
           // 2. Replace the variables.
           // For unsupported browsers - the reverse.
 
-          let isCssVarSupported = false;
-          if (window.CSS && window.CSS.supports && window.CSS.supports ("--fake-var", 0)) {
-            isCssVarSupported = true;
-          }
-
           if (isCssVarSupported) {
             _addStyleToDocument (css);
             _updateCssVars ();
@@ -585,16 +583,38 @@ define ("actions/appState",
     };
 
     /**
+     * Post ui config updated event
+     * This event is used to pass updated launcher styles to messenger js
+     */
+    const _postUIConfigUpdatedEvent = () => {
+      postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ());
+    };
+
+    /**
      * Create a style tag and add it to document's head.
      * @param {String} - css, a string with the CSS styles
      */
     // @TODO: Check if we should move this to a utility module, or a helper.
     const _addStyleToDocument = (css) => {
+      const styleTagId = "hs-style";
       const head = document.head,
             style = document.createElement ("style");
 
       style.type = "text/css";
+      style.id = styleTagId;
       style.appendChild (document.createTextNode (css));
+
+      // If existing style tag is present, remove it as we don't want two style
+      // tags appended to head
+      const existingStyles = document.getElementById (styleTagId);
+      if (existingStyles) {
+        // Post ui config event if existing style is present i.e. after updating
+        // ui config and appending the new styles.
+        // For the first time, do not post update event as launcher styles will be
+        // updated throught sdk config loaded event.
+        _postUIConfigUpdatedEvent ();
+        head.removeChild (existingStyles);
+      }
 
       head.appendChild (style);
     };
@@ -871,6 +891,21 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Update styles with new ui config
+     */
+    const updateStyles = () => {
+      // If css variables are supported, directly update the vars
+      if (isCssVarSupported) {
+        _updateCssVars ();
+        _postUIConfigUpdatedEvent ();
+        return;
+      }
+      // Else load css file, replace placeholders with new values and append to
+      // head
+      setStyles ();
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -884,6 +919,7 @@ define ("actions/appState",
       setMetadata,
       setParentPageInfo,
       setProactiveChatRules,
-      executeProactiveChatRules
+      executeProactiveChatRules,
+      updateStyles
     };
   });
