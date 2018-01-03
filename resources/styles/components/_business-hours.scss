@@ -12,7 +12,9 @@
 
 @include component(business-hours) {
 
+  $attachment-bg: color(bg, white);
   $attachment-color: color(text, xx-light);
+  $attachment-border-color: color(border);
   $remove-icon-color: color(text, light);
   $file-name-color: color(text);
   $error-color: color(error, text);
@@ -37,12 +39,10 @@
 
     &__attachment-wrapper {
       margin-bottom: gutter(8);
-      background: white;
-      border: 1px solid color(border);
-      border-radius: radius();
 
       &.error {
         border: 1px solid $error-color;
+        border-radius: radius();
       }
     }
 
@@ -51,7 +51,23 @@
       align-items: center;
       justify-content: space-between;
       padding: gutter(8);
+      margin: gutter(8 0 4);
       color: $attachment-color;
+      background: $attachment-bg;
+      border: 1px solid $attachment-border-color;
+      border-radius: radius();
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    &__attachment-with-error {
+      border-color: $error-color;
     }
 
     &__small-icon {
@@ -70,7 +86,7 @@
     }
 
     &__attachment-placeholder {
-      margin: gutter(4 0);
+      margin: gutter(8 0);
       cursor: pointer;
       background: white;
       border: 1px dashed color(border);
@@ -91,6 +107,7 @@
     &__attachment-error {
       display: flex;
       align-items: center;
+      padding: gutter(0 8 8);
       font-size: font-size(body, small);
       color: $error-color;
     }
