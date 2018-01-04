@@ -133,7 +133,7 @@ define ("actions/chatView",
      */
     const _restartFetchMessages = () => {
       if (!pollingEnabled) {
-        window.clearTimeout (fetchMessagesTimer);
+        window.clearInterval (fetchMessagesTimer);
         return;
       }
 
@@ -181,7 +181,7 @@ define ("actions/chatView",
         return;
       }
 
-      window.clearTimeout (fetchMessagesTimer);
+      window.clearInterval (fetchMessagesTimer);
 
       if (fetchMessagesXhr) {
         fetchMessagesXhr.abort ();
