@@ -74,6 +74,13 @@
     API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported"
   };
 
+  // A constant to indicate the source that triggered a function call, communication
+  // b/w app and client, etc. For example, via API, user action, etc.
+  const TRIGGER = {
+    API: "API",
+    RESET: "RESET"
+  };
+
   // @TODO: Figure out if we have to move styles to css file for this file,
   // or keep in javascript. Also update styles later.
   const LAUNCHER_IFRAME_STYLES = {
@@ -362,7 +369,8 @@
   /**
    * Show/hide web sdk iframe.
    * @param {Object} [config]
-   * @param {Boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
+   * @param {boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
+   * @param {boolean} [config.trigger] - Source for the function call - user action, api, etc.
    */
   const toggleWebSdkIframe = (config = {}) => {
     const currentlyMinimized = webSdkIframe.style.display === "none";
@@ -380,7 +388,8 @@
     }
 
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
-      minimized: !currentlyMinimized
+      minimized: !currentlyMinimized,
+      trigger: config.trigger
     });
     renderUnreadCount ();
   };
@@ -735,7 +744,8 @@
         case EVENT_TYPES.SDK_RESET:
           close ();
           setConfig ({
-            clientConfig: win.helpshiftConfig
+            clientConfig: win.helpshiftConfig,
+            trigger: TRIGGER.RESET
           });
           break;
 
@@ -767,7 +777,8 @@
    */
   const open = () => {
     toggleWebSdkIframe ({
-      minimized: false
+      minimized: false,
+      trigger: TRIGGER.API
     });
   };
 
@@ -794,7 +805,10 @@
   const setInitialUserMessage = (message) => {
     // message should be non-empty string
     if (message && (typeof message === "string")) {
-      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {message});
+      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
+        message,
+        trigger: TRIGGER.API
+      });
     }
   };
 

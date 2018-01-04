@@ -95,6 +95,7 @@ define ("components/businessHoursView",
                             enabled={featureIsEnabled} >
                   {this._renderContactForm ()}
                   {this._renderOfflineMessage ()}
+                  {this._renderFooter ()}
                 </DnDWrapper>
               </div>
           </div>
@@ -123,7 +124,6 @@ define ("components/businessHoursView",
               {this._renderAttachments ()}
               <Branding text={text} />
             </div>
-            {this._renderFooter ()}
           </div>
         );
       },
@@ -156,7 +156,6 @@ define ("components/businessHoursView",
             </p>
             <div>
               <Branding text={text} />
-              {this._renderFooter ()}
             </div>
           </div>
         );
@@ -180,7 +179,7 @@ define ("components/businessHoursView",
         }
 
         return (
-          <div className="hs-footer hs-footer--center-items hs-footer--clear-bg">
+          <div className="hs-footer hs-footer--center-items">
             <button className="hs-button hs-footer__btn"
                     disabled={contactFormDisabled}
                     onClick={clickHandler} >
@@ -270,14 +269,20 @@ define ("components/businessHoursView",
        * Render attachments
        */
       _renderAttachments () {
-        const {contactFormDetails} = this.props;
-        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
+        const {
+          contactFormDetails: {
+            attachments,
+            attachmentsMeta,
+            attachmentsMeta: {
+              featureIsEnabled
+            }
+          }
+        } = this.props;
 
         if (!featureIsEnabled) {
           return null;
         }
 
-        const {attachments} = contactFormDetails;
         let attachmentsWrapperEl = null;
 
         if (attachments.length) {
@@ -285,7 +290,7 @@ define ("components/businessHoursView",
           const {
             limitHasExceeded,
             sizeHasExceeded
-          } = contactFormDetails.attachmentsMeta;
+          } = attachmentsMeta;
           const wrapperClasses = classes (
             "hs-business-hours__attachment-wrapper", {
               error: limitHasExceeded || sizeHasExceeded
@@ -345,8 +350,14 @@ define ("components/businessHoursView",
         const formattedName = attachmentsHelpers.getFormattedFileName (name);
         const formattedSize = attachmentsHelpers.humanizeFileSize (size);
 
-        return (
-          <div className="hs-business-hours__attachment" key={id}>
+        const attachmentClasses = classes (
+          "hs-business-hours__attachment", {
+            "hs-business-hours__attachment-with-error": attachmentHasError
+          }
+        );
+
+        return ([
+          (<div className={attachmentClasses} key={id}>
             <div className="hs-business-hours__attachment-info-wrapper">
               <i className="ion-attachment ion-gray-color" />
               <div className="hs-business-hours__attachment-name-wrapper">
@@ -356,12 +367,12 @@ define ("components/businessHoursView",
                   </span>
                   <span>({formattedSize})</span>
                 </div>
-                {attachmentErrorEl}
               </div>
             </div>
             {iconEl}
-          </div>
-        );
+          </div>),
+          attachmentErrorEl
+        ]);
       },
 
       /**

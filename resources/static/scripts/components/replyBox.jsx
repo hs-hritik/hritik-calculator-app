@@ -38,6 +38,12 @@ define ("components/replyBox",
         issueIsCreated: PropTypes.bool.isRequired
       },
 
+      getInitialState () {
+        return {
+          textareaIsFocussed: false
+        };
+      },
+
       render () {
         const {text, disabled} = this.props;
 
@@ -45,7 +51,8 @@ define ("components/replyBox",
         // Create a separate style sheet for this component
         const replyBoxClasses = classes (
           "hs-chat-footer", {
-            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
+            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim (),
+            "hs-chat-footer--colored-border": this.state.textareaIsFocussed
           }
         );
 
@@ -56,6 +63,8 @@ define ("components/replyBox",
                                 className="hs-chat-footer__text-area"
                                 onKeyDown={this._onReplyTextKeyDown}
                                 onChange={this._onReplyTextChange}
+                                onFocus={this._onFocus}
+                                onBlur={this._onBlur}
                                 minRows={TEXT_AREA_MIN_ROWS}
                                 maxRows={TEXT_AREA_MAX_ROWS}
                                 onHeightChange={this._onReplyBoxHeightChange}
@@ -127,6 +136,24 @@ define ("components/replyBox",
        */
       _onReplyTextChange (ev) {
         this.props.onChangeReplyBoxValue (ev.target.value);
+      },
+
+      /**
+       * Handler for the focus event on the reply box textarea.
+       */
+      _onFocus () {
+        this.setState ({
+          textareaIsFocussed: true
+        });
+      },
+
+      /**
+       * Handler for the blur event on the reply box textarea.
+       */
+      _onBlur () {
+        this.setState ({
+          textareaIsFocussed: false
+        });
       },
 
       /**

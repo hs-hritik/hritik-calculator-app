@@ -17,6 +17,7 @@ define ("helpers/localStorage",
       USER_ID: "ui",
       IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
+      INTERNAL_ISSUE_ID: "iii",
       USER_PROFILE_ID: "upi",
       ENTITIES_ISSUES: "ei",
       ENTITIES_MESSAGES: "em",
@@ -28,7 +29,11 @@ define ("helpers/localStorage",
       LAST_ACTIVITY_TIME: "lat",
       REPLY_TEXT: "rt",
       SITE_ACTIVITY_START_TIME: "sast",
-      PROACTIVE_CHAT_HAS_TRIGGERED: "pcht"
+      PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
+      SUGGESTED_FAQ_READ_TRACKED: "sfrt",
+      CONVERSATION_ID: "ci",
+      READ_FAQ_LIST: "rfl",
+      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt"
     };
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
@@ -104,6 +109,20 @@ define ("helpers/localStorage",
      */
     const setActiveIssueId = (id) => {
       lsUtils.setItem (KEYS.ACTIVE_ISSUE_ID, id);
+    };
+
+    /**
+     * Get the internal issue ID.
+     * @returns {string}
+     */
+    const getInternalIssueId = () => lsUtils.getItem (KEYS.INTERNAL_ISSUE_ID);
+
+    /**
+     * Set the internal issue ID.
+     * @param {string} id
+     */
+    const setInternalIssueId = (id) => {
+      lsUtils.setItem (KEYS.INTERNAL_ISSUE_ID, id);
     };
 
     /**
@@ -345,6 +364,62 @@ define ("helpers/localStorage",
      */
     const getProactiveChatHasTriggered = () => lsUtils.getItem (KEYS.PROACTIVE_CHAT_HAS_TRIGGERED);
 
+    /**
+     * Set whether the suggested FAQ read event has been tracked or not
+     * @param {boolean} isTracked
+     */
+    const setSuggestedFaqReadTracked = (isTracked) => {
+      lsUtils.setItem (KEYS.SUGGESTED_FAQ_READ_TRACKED, isTracked);
+    };
+
+    /**
+     * Get whether the suggested FAQ read event has been tracked or not
+     * @returns {boolean}
+     */
+    const getSuggestedFaqReadTracked = () => lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
+
+    /**
+     * Set the conversation ID (created when the end user posts the first message)
+     * @param {string} cid - The conversation ID
+     */
+    const setConversationId = (cid) => {
+      lsUtils.setItem (KEYS.CONVERSATION_ID, cid);
+    };
+
+    /**
+     * Get the conversation ID.
+     * @returns {string}
+     */
+    const getConversationId = () => lsUtils.getItem (KEYS.CONVERSATION_ID);
+
+    /**
+     * Set the read FAQ list.
+     * @param {array} faqList
+     */
+    const setReadFaqList = (faqList) => {
+      lsUtils.setItem (KEYS.READ_FAQ_LIST, faqList);
+    };
+
+    /**
+     * Get the read FAQ list.
+     * @returns {string}
+     */
+    const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
+
+    /**
+     * Set the timestamp when the info bot gets requested
+     * @param {number} ts
+     */
+    const setInfoBotRequestedTimestamp = (ts) => {
+      lsUtils.setItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP, ts);
+    };
+
+    /**
+     * Get the timestamp when the info bot gets requested
+     * @returns {number}
+     */
+    const getInfoBotRequestedTimestamp = () => lsUtils.getItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP);
+
     return {
       getUserId,
       setUserId,
@@ -356,6 +431,8 @@ define ("helpers/localStorage",
       reset,
       getActiveIssueId,
       setActiveIssueId,
+      getInternalIssueId,
+      setInternalIssueId,
       getUserProfileId,
       setUserProfileId,
       setIssueState,
@@ -377,6 +454,14 @@ define ("helpers/localStorage",
       setSiteActivityStartTime,
       getSiteActivityStartTime,
       setProactiveChatHasTriggered,
-      getProactiveChatHasTriggered
+      getProactiveChatHasTriggered,
+      setSuggestedFaqReadTracked,
+      getSuggestedFaqReadTracked,
+      setConversationId,
+      getConversationId,
+      setReadFaqList,
+      getReadFaqList,
+      setInfoBotRequestedTimestamp,
+      getInfoBotRequestedTimestamp
     };
   });

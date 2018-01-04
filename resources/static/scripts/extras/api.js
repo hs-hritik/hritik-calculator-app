@@ -10,6 +10,7 @@ define ("extras/api",
     "constants/eventTypes",
     "constants/appState",
     "constants/activeView",
+    "constants/analytics",
     "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
@@ -17,11 +18,12 @@ define ("extras/api",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
-    "components/app"
+    "components/app",
+    "helpers/analytics"
   ],
-  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW,
+  function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, uiActions, app) {
+    actionCreators, csatViewActions, uiActions, app, analyticsHelpers) {
     "use strict";
 
     const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
@@ -32,15 +34,21 @@ define ("extras/api",
     ];
     const SKIP_REVIEW_COMMENTS = true;
 
+    const {EVENT} = analyticsConstants;
+
     /**
      * Set the initial data to the app state.
      * @param {Object} data
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
+     * @param {string} data.trigger - The source that triggered setting the config
      */
     const setConfig = (data) => {
       store.dispatch (appStateActions.setClientConfig (data.clientConfig));
       store.dispatch (appStateActions.setIdentifier (data.clientConfig.userId));
-      store.dispatch (appStateActions.setWmConfig (data.clientConfig));
+      store.dispatch (appStateActions.setWmConfig ({
+        trigger: data.trigger,
+        helpshiftConfig: data.clientConfig
+      }));
     };
 
     /**
@@ -65,12 +73,15 @@ define ("extras/api",
     };
 
     /**
-     * Handle messenger toggle. Mount the top level React component if it's
+     * Handle web chat toggle. Mount the top level React component if it's
      * not mounted already and post sdk initialized event.
      * Dispatch the action to update the messenger-minimized flag and mark messages seen.
-     * @param {Boolean} minimized - If the messenger is in minimized state
+     * @param {Object} config
+     * @param {boolean} config.minimized - If the web chat widget is in minimized state.
+     * @param {boolean} [config.trigger] - Source that triggered the function
+     *    call - user action, api, etc.
      */
-    const handleMessengerToggle = (minimized) => {
+    const handleMessengerToggle = ({minimized, trigger}) => {
       store.dispatch (appStateActions.toggleMinimized (minimized));
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
@@ -82,9 +93,9 @@ define ("extras/api",
           app.init ();
         }
 
-        // If business hours enabled and currently not in business hours,
-        // then show business hours view
-        // Else if conversation is not started, show conversation view
+        // If business hours is enabled and it's out of business hours currently,
+        // show business hours view
+        // Else if conversation is not started, show the conversation view
         if (businessHoursViewState.businessHoursEnabled &&
             !businessHoursViewState.inBusinessHours) {
           store.dispatch (
@@ -100,6 +111,10 @@ define ("extras/api",
           store.dispatch (chatViewActions.markMessagesSeen ());
         }
 
+        // Track the widget open event
+        analyticsHelpers.track (EVENT.WIDGET_OPEN, {
+          trigger
+        });
       } else if (isIssueClosed (appState.issueState)) {
         handleCsatRatingSubmission ();
         // If minimized is true, and issue state is closed, reset the conversation.
@@ -111,9 +126,12 @@ define ("extras/api",
 
     /**
      * Handle intial user message
-     * @param {String} message - initial user message
+     * @param {Object} [config]
+     * @param {string} [config.message] - Initial user message.
+     * @param {string} [config.trigger] - Source that triggered the function
+     *    call - user action, api, etc.
      */
-    const handleInitialUserMsg = (message) => {
+    const handleInitialUserMsg = ({message, trigger}) => {
       const state = store.getState ();
       const {appState} = state;
 
@@ -137,6 +155,13 @@ define ("extras/api",
            PRE_CHAT_STATE.initialUserMessage.INITIAL)) {
         store.dispatch (chatViewActions.createInitialUserMessage (message));
       }
+
+      // Track the conversation started event.
+      // Pass trigger as "API" because this is the handler function for
+      // the setInitialUserMessage API.
+      analyticsHelpers.track (EVENT.CONVERSATION_STARTED, {
+        trigger
+      });
     };
 
     /**
@@ -166,7 +191,7 @@ define ("extras/api",
           app.init (data);
           break;
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
-          handleMessengerToggle (data.minimized);
+          handleMessengerToggle (data);
           break;
         case EVENT_TYPES.CMD_RESET:
           // If the reset API is called manually, reset proactive chat data as well.
@@ -175,7 +200,7 @@ define ("extras/api",
           }));
           break;
         case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
-          handleInitialUserMsg (data.message);
+          handleInitialUserMsg (data);
           break;
         case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
           store.dispatch (actionCreators.setGreetingMsg (data.message));

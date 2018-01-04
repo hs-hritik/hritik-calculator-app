@@ -15,10 +15,12 @@ define ("actions/chatView",
     "constants/message",
     "constants/appState",
     "constants/errors",
+    "constants/analytics",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
     "gunpowder/utils/schema",
     "gunpowder/utils/object",
+    "gunpowder/utils/uuid",
     "actions/entities",
     "actions/batch",
     "actions/actionCreators",
@@ -29,16 +31,18 @@ define ("actions/chatView",
     "helpers/audio",
     "helpers/liveUpdates",
     "helpers/attachments",
+    "helpers/analytics",
+    "helpers/common",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
-    xhr, arrayUtils, schema, objUtils, entitiesActions, batchActions,
-    actionCreators, entitySchema, entityHelpers, chatViewHelpers,
+    analyticsConstants, xhr, arrayUtils, schema, objUtils, uuidGenerator, entitiesActions,
+    batchActions, actionCreators, entitySchema, entityHelpers, chatViewHelpers,
     xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr,
@@ -47,7 +51,7 @@ define ("actions/chatView",
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
           MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
           MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
-          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT} = CHAT_VIEW_CONSTANTS,
+          {ACTIVE_FOOTER, MESSAGES_POLLING_TIMEOUT, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -61,6 +65,8 @@ define ("actions/chatView",
           USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
           ANSWER_BOT_STATE = PRE_CHAT_STATE.answerBot,
           INFO_BOT_STATE = PRE_CHAT_STATE.infoBot;
+
+    const {EVENT} = analyticsConstants;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -303,6 +309,11 @@ define ("actions/chatView",
                       playAudio: true
                     })
                   );
+
+                  // Track the CSAT requested event.
+                  analyticsHelpers.track (EVENT.CSAT, {
+                    event: EVENT.CSAT_REQUESTED
+                  });
                 } else {
                   dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
                 }
@@ -442,6 +453,9 @@ define ("actions/chatView",
         if (!appState.activeIssueId) {
           // set initial user msg
           dispatch (createInitialUserMessage (replyBox.value));
+
+          // Track the conversation started event.
+          analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
           return;
         }
 
@@ -464,6 +478,13 @@ define ("actions/chatView",
             dispatch (enableReplyBox ());
           }
         });
+
+        // Track message added event.
+        // @TODO: Check if this needs to be tracked when the add message XHR
+        // succeeds. That should not be the case so as to be aligned to the
+        // end user's first message event (conversation started) tracking, which
+        // is tracked as soon as it's added.
+        analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
     };
 
@@ -508,7 +529,7 @@ define ("actions/chatView",
         const state = getState ();
         const {appState} = state;
         const {dummyIssueId, userId, tags, cif, metadata} = appState;
-        const endUserFirstMsg = getEndUserFirstMessage ();
+        const endUserFirstMsg = commonHelpers.getEndUserFirstMessage ();
 
         // @TODO :- Remove this condition after verifying createIssue is not
         // called before setting first user message
@@ -579,12 +600,16 @@ define ("actions/chatView",
                 // Remove messages from dummy issue
                 setMessages (dummyIssueId, []),
                 setActiveIssue (newIssueId),
+                actionCreators.setInternalIssueId (response.internal_id),
                 setEndUserFirstMessageId (endUserFirstMsgNewId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
                 setChatViewFooter (ACTIVE_FOOTER.REPLY)
               ])
             );
             startPollingForMessages ();
+
+            // Track the issue created event.
+            analyticsHelpers.track (EVENT.ISSUE_CREATED);
           },
           onFailure: () => {
             // @TODO: Handler failure.
@@ -674,6 +699,11 @@ define ("actions/chatView",
         );
         dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
         dispatch (startNextPreChatFeature ());
+
+        // Track issue deflection failure event here.
+        analyticsHelpers.track (EVENT.ISSUE_DEFLECTION, {
+          deflected: false
+        });
       };
     };
 
@@ -713,6 +743,11 @@ define ("actions/chatView",
             setChatViewFooter (ACTIVE_FOOTER.CLOSED)
           ])
         );
+
+        // Track issue deflection successful event here.
+        analyticsHelpers.track (EVENT.ISSUE_DEFLECTION, {
+          deflected: true
+        });
       };
     };
 
@@ -911,11 +946,16 @@ define ("actions/chatView",
             },
             playAudio: true,
             onAddMessage: (msg) => {
+              // Along with other actions, set a random Conversation ID in the
+              // store. Conversation IDs are generated every time the end user
+              // posts the first message (manually or set via API), and sent
+              // with the payload of every subsequent analytics event.
               dispatch (
                 batchActions ([
                   setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
                   setEndUserFirstMessageId (msg.id),
-                  udpateReplyText ("")
+                  udpateReplyText (""),
+                  actionCreators.setConversationId (uuidGenerator ())
                 ])
               );
               // Get parent data & create issue
@@ -941,25 +981,6 @@ define ("actions/chatView",
     };
 
     /**
-     * Return end user first message.
-     * @returns {Object} - end user first message
-     */
-    const getEndUserFirstMessage = () => {
-      const {chatView, entities} = store.getState ();
-      const {endUserFirstMsgId} = chatView;
-      let message = null;
-
-      for (const id in entities.messages) {
-        if (entities.messages.hasOwnProperty (id) && (id === endUserFirstMsgId)) {
-          message = entities.messages [id];
-          break;
-        }
-      }
-
-      return message;
-    };
-
-    /**
      * Action to start answer bot workflow (FAQ suggestions).
      * @returns {Object} - Action
      */
@@ -970,7 +991,7 @@ define ("actions/chatView",
 
         switch (featureState) {
           case ANSWER_BOT_STATE.INITIAL:
-            const endUserFirstMsg = getEndUserFirstMessage ();
+            const endUserFirstMsg = commonHelpers.getEndUserFirstMessage ();
 
             dispatch (toggleSystemTyping (true));
 
@@ -998,6 +1019,12 @@ define ("actions/chatView",
                     })
                   );
                 }
+
+                // Track answer bot result event with the returned FAQ IDs
+                analyticsHelpers.track (EVENT.ANS_BOT_RESULT, {
+                  query: endUserFirstMsg.body,
+                  faqIds: faqs.map ((faq) => faq.id)
+                });
               },
               onFailure: () => {
                 dispatch (toggleSystemTyping (false));
@@ -1006,6 +1033,11 @@ define ("actions/chatView",
                 dispatch (startNextPreChatFeature ());
               }
             }));
+
+            // Track answer bot requested event here.
+            analyticsHelpers.track (EVENT.ANS_BOT_REQUESTED, {
+              query: endUserFirstMsg.body
+            });
             break;
 
           case ANSWER_BOT_STATE.FAQS_FETCHED:
@@ -1107,6 +1139,9 @@ define ("actions/chatView",
                     updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
                   );
                   dispatch (askInfoBotField ());
+
+                  // Track info bot requested (started) event here.
+                  analyticsHelpers.track (EVENT.INFO_BOT_REQUESTED);
                 }
               })
             );
@@ -1177,15 +1212,12 @@ define ("actions/chatView",
 
         // Trim white spaces in value
         const currentFieldVal = infoBot.data [infoBot.currentField].value;
-        const updatedFieldVal = objUtils.shallowMerge (
-          {
-            value: currentFieldVal.value.trim ()
-          },
-          currentFieldVal,
-          {
-            skip: ["value"]
-          }
-        );
+        const updatedFieldVal = objUtils.shallowMerge ({
+          value: currentFieldVal.value.trim ()
+        },
+        currentFieldVal, {
+          skip: ["value"]
+        });
 
         // As we are only saving serializable data in the store,
         // we are not saving the input object inside the store.
@@ -1219,6 +1251,9 @@ define ("actions/chatView",
           value: updatedFieldVal.value,
           errorMsg: ""
         }));
+
+        // Track info bot value (name, email, etc) captured event here.
+        analyticsHelpers.track (EVENT.INFO_BOT_FIELD_CAPTURED);
 
         dispatch (changeInfoBotCurrentField ());
 
@@ -1332,8 +1367,8 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState (),
               infoBotData = state.chatView.infoBot.data,
-              name = infoBotData.name.value.value,
-              email = infoBotData.email.value.value;
+              name = infoBotData [INFO_BOT_FIELDS.NAME].value.value,
+              email = infoBotData [INFO_BOT_FIELDS.EMAIL].value.value;
 
         const user = {
           identifier: state.appState.identifier
@@ -1520,6 +1555,13 @@ define ("actions/chatView",
             })
           );
         }
+
+        // Track message added event.
+        // @TODO: Check if this needs to be tracked when the add message XHR
+        // succeeds. That should not be the case so as to be aligned to the
+        // end user's first message event (conversation started) tracking, which
+        // is tracked as soon as it's added.
+        analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
     };
 

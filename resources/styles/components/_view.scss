@@ -34,6 +34,12 @@
       flex-direction: column;
       flex-grow: 1;
       overflow-y: auto;
+      // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
+      // and Chrome behave.
+      // Details –
+      // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
+      -ms-overflow-style: -ms-autohiding-scrollbar;
     }
   }
 }

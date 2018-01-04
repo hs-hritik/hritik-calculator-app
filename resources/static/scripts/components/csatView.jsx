@@ -50,6 +50,7 @@ define ("components/csatView",
             <div className="hs-view__content">
               <div className="hs-csat">
                 {this._renderCsatBody ()}
+                <Branding text={text} />
                 {this._renderCsatFooter ()}
               </div>
             </div>
@@ -122,7 +123,6 @@ define ("components/csatView",
         let btnText;
         btnProps.className = classes (
           "hs-button",
-          "hs-button--small",
           "hs-footer__btn"
         );
 
@@ -136,12 +136,11 @@ define ("components/csatView",
         }
 
         return (
-          <div className="hs-footer hs-footer--clear-bg">
+          <div className="hs-footer hs-footer--center-items">
             <div className="hs-footer__vertical-items-wrapper">
               <button {...btnProps}>
                 {btnText}
               </button>
-              <Branding text={text} />
             </div>
           </div>
         );

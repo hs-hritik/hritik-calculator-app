@@ -22,6 +22,7 @@ define ("reducers/appState",
       minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
+      internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
       // identifier is the uuid (Universally unique identifier)
       identifier: "",
@@ -61,13 +62,18 @@ define ("reducers/appState",
         title: "",
         url: ""
       },
-      proactiveChatRules: []
+      proactiveChatRules: [],
+      analytics: {
+        suggestedFaqReadTracked: false,
+        infoBotRequestedTimestamp: Date.now ()
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           const updateObj = {};
+          updateObj.analytics = {};
 
           if (action.data.preChatFeatureIndex) {
             updateObj.preChatFeatureIndex = {$set: action.data.preChatFeatureIndex};
@@ -83,6 +89,16 @@ define ("reducers/appState",
           }
           if (action.data.userProfileId) {
             updateObj.userProfileId = {$set: action.data.userProfileId};
+          }
+          if (action.data.suggestedFaqReadTracked) {
+            updateObj.analytics.suggestedFaqReadTracked = {
+              $set: action.data.suggestedFaqReadTracked
+            };
+          }
+          if (action.data.infoBotRequestedTimestamp) {
+            updateObj.analytics.infoBotRequestedTimestamp = {
+              $set: action.data.infoBotRequestedTimestamp
+            };
           }
 
           return update (state, updateObj);
@@ -129,6 +145,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_ACTIVE_ISSUE:
           return update (state, {
             activeIssueId: {$set: action.id}
+          });
+
+        case ACTION_TYPES.SET_INTERNAL_ISSUE_ID:
+          return update (state, {
+            internalIssueId: {$set: action.id}
           });
 
         case ACTION_TYPES.UPDATE_ACTIVE_VIEW:
@@ -230,6 +251,20 @@ define ("reducers/appState",
             parentPageInfo: {
               title: {$set: action.parentPageInfo.title},
               url: {$set: action.parentPageInfo.url}
+            }
+          });
+
+        case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
+          return update (state, {
+            analytics: {
+              suggestedFaqReadTracked: {$set: action.isTracked}
+            }
+          });
+
+        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
+          return update (state, {
+            analytics: {
+              infoBotRequestedTimestamp: {$set: action.ts}
             }
           });
 
