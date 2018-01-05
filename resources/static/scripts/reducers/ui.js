@@ -213,7 +213,7 @@ define ("reducers/ui",
       ACCENT_COLOR_SETS.forEach ((accentSet) => {
         const accentColor = FLATTENED_UI_CONFIG [`${accentSet}_ACCENT_COLOR`];
 
-        if (uiConfig [accentColor]) {
+        if (uiConfig [accentColor] || uiConfig [BASE_COLOR]) {
           const accentColorLight = FLATTENED_UI_CONFIG [`${accentSet}_ACCENT_COLOR_LIGHT`];
           const accentColorConfig = uiConfig [accentColor] ||
                                     uiConfig [BASE_COLOR] ||
