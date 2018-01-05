@@ -36,14 +36,17 @@ define ("components/csatView",
           closeConversationBtn: PropTypes.string.isRequired,
           csatBotReviewPlaceholder: PropTypes.string.isRequired,
           csatBotReviewTitle: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        })
       },
 
       render () {
-        const {text, browserIsMobile, onMinimizeConversation} = this.props;
+        const {text, browserIsMobile, onMinimizeConversation, viewStyles} = this.props;
 
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.csatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />

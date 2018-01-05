@@ -5,14 +5,22 @@
  */
 
 define ("components/containers/viewWrapper",
-  ["components/viewWrapper"],
-  function (ViewWrapper) {
+  [
+    "components/viewWrapper",
+    "constants/uiConfig"
+  ],
+  function (ViewWrapper, UI_CONFIG_CONSTANTS) {
     "use strict";
+
+    const {BASE_FONT} = UI_CONFIG_CONSTANTS.FLATTENED_UI_CONFIG;
 
     const mapStateToProps = (state) => {
       return {
         activeView: state.appState.activeView,
-        browserIsMobile: state.appState.browserIsMobile
+        browserIsMobile: state.appState.browserIsMobile,
+        viewStyles: {
+          fontFamily: state.ui.uiConfig [BASE_FONT].value
+        }
       };
     };
 

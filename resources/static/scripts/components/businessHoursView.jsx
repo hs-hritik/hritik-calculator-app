@@ -71,7 +71,10 @@ define ("components/businessHoursView",
         onRemoveAttachment: PropTypes.func.isRequired,
         contactFormSubmitted: PropTypes.bool.isRequired,
         contactFormDisabled: PropTypes.bool.isRequired,
-        submitInProgress: PropTypes.bool.isRequired
+        submitInProgress: PropTypes.bool.isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        })
       },
       render () {
         const {
@@ -79,13 +82,14 @@ define ("components/businessHoursView",
           browserIsMobile,
           onMinimizeConversation,
           onFilesChange,
-          contactFormDetails
+          contactFormDetails,
+          viewStyles
         } = this.props;
 
         const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
 
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.businessHoursViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />

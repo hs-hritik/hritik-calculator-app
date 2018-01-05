@@ -300,7 +300,10 @@ define ("components/chatView",
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        })
       },
 
       render () {
@@ -308,11 +311,12 @@ define ("components/chatView",
           browserIsMobile,
           onMinimizeConversation,
           text,
-          issueIsCreated
+          issueIsCreated,
+          viewStyles
         } = this.props;
 
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.chatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
