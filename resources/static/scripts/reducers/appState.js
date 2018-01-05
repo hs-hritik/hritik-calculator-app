@@ -274,6 +274,7 @@ define ("reducers/appState",
             footerIsActive: {$set: true}
           });
 
+        case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
         case ACTION_TYPES.SET_FOOTER_INACTIVE:
           return update (state, {
             footerIsActive: {$set: false}
