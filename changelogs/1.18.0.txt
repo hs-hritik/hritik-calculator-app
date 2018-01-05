@@ -1,0 +1,7 @@
+Branches:
+feature/ONCALL-2066-alternate-fix
+
+Changelog:
+Add audio.play in try-catch block
+Fix: Change clearTimeout to clearInterval
+Use setInterval instead of timeout for message polling
