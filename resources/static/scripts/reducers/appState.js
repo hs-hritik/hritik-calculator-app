@@ -66,7 +66,8 @@ define ("reducers/appState",
       analytics: {
         suggestedFaqReadTracked: false,
         infoBotRequestedTimestamp: Date.now ()
-      }
+      },
+      footerIsActive: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -266,6 +267,16 @@ define ("reducers/appState",
             analytics: {
               infoBotRequestedTimestamp: {$set: action.ts}
             }
+          });
+
+        case ACTION_TYPES.SET_FOOTER_ACTIVE:
+          return update (state, {
+            footerIsActive: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_FOOTER_INACTIVE:
+          return update (state, {
+            footerIsActive: {$set: false}
           });
 
         default:

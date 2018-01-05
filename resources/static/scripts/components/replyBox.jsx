@@ -35,24 +35,24 @@ define ("components/replyBox",
         text: PropTypes.shape ({
           replyBtnPlaceholder: PropTypes.string.isRequired
         }).isRequired,
-        issueIsCreated: PropTypes.bool.isRequired
-      },
-
-      getInitialState () {
-        return {
-          textareaIsFocussed: false
-        };
+        issueIsCreated: PropTypes.bool.isRequired,
+        onFooterFocus: PropTypes.func,
+        onFooterBlur: PropTypes.func
       },
 
       render () {
-        const {text, disabled} = this.props;
+        const {
+          text,
+          disabled,
+          onFooterFocus,
+          onFooterBlur
+        } = this.props;
 
         // @TODO :- Do not use style of different component here!
         // Create a separate style sheet for this component
         const replyBoxClasses = classes (
           "hs-chat-footer", {
-            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim (),
-            "hs-chat-footer--colored-border": this.state.textareaIsFocussed
+            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
           }
         );
 
@@ -63,8 +63,8 @@ define ("components/replyBox",
                                 className="hs-chat-footer__text-area"
                                 onKeyDown={this._onReplyTextKeyDown}
                                 onChange={this._onReplyTextChange}
-                                onFocus={this._onFocus}
-                                onBlur={this._onBlur}
+                                onFocus={onFooterFocus}
+                                onBlur={onFooterBlur}
                                 minRows={TEXT_AREA_MIN_ROWS}
                                 maxRows={TEXT_AREA_MAX_ROWS}
                                 onHeightChange={this._onReplyBoxHeightChange}
@@ -137,24 +137,6 @@ define ("components/replyBox",
        */
       _onReplyTextChange (ev) {
         this.props.onChangeReplyBoxValue (ev.target.value);
-      },
-
-      /**
-       * Handler for the focus event on the reply box textarea.
-       */
-      _onFocus () {
-        this.setState ({
-          textareaIsFocussed: true
-        });
-      },
-
-      /**
-       * Handler for the blur event on the reply box textarea.
-       */
-      _onBlur () {
-        this.setState ({
-          textareaIsFocussed: false
-        });
       },
 
       /**

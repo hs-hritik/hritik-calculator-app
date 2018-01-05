@@ -22,7 +22,6 @@
   .hs-chat-footer {
     min-height: 52px;
     padding: gutter(12);
-    border: 1px solid $form-border-color;
     border-radius: radius(0 0 8 8);
 
     &__buttons-wrapper {
@@ -115,10 +114,6 @@
       .hs-chat-footer__submit {
         color: $form-error;
       }
-    }
-
-    &--colored-border {
-      border-color: $form-accent-color;
     }
   }
 }

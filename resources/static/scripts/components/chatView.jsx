@@ -46,18 +46,19 @@ define ("components/chatView",
           faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
           faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
           closeConversationBtn: PropTypes.string.isRequired
-        }).isRequired
-      },
-
-      getInitialState () {
-        return {
-          infoBotFooterIsFocussed: false
-        };
+        }).isRequired,
+        footerIsActive: PropTypes.bool,
+        onFooterFocus: PropTypes.func,
+        onFooterBlur: PropTypes.func
       },
 
       render () {
+        const footerClasses = classes ("hs-footer", {
+          "hs-footer--active" : this.props.footerIsActive
+        });
+
         return (
-          <div className="hs-footer">
+          <div className={footerClasses}>
             {this._renderFooterComponent ()}
           </div>
         );
@@ -126,10 +127,12 @@ define ("components/chatView",
        */
       _renderCsatFooter () {
         return (
-          <div className="hs-chat-footer__csat-footer">
-            <StarRating name="csat"
-                        value={this.props.rating}
-                        onStarClick={this.props.onStarClick} />
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__csat-footer">
+              <StarRating name="csat"
+                          value={this.props.rating}
+                          onStarClick={this.props.onStarClick} />
+            </div>
           </div>
         );
       },
@@ -138,14 +141,17 @@ define ("components/chatView",
        * Render info bot footer.
        */
       _renderInfoBotFooter () {
-        const field = this.props.infoBotField;
+        const {
+          infoBotField: field,
+          onFooterFocus,
+          onFooterBlur
+        } = this.props;
         const hasError = !!this.props.infoBotField.value.errorMsg;
 
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": field.value.errorMsg,
-            "hs-chat-footer--form-invalid": !field.value.value.trim (),
-            "hs-chat-footer--colored-border": this.state.infoBotFooterIsFocussed
+            "hs-chat-footer--form-invalid": !field.value.value.trim ()
           }
         );
 
@@ -169,8 +175,8 @@ define ("components/chatView",
                      placeholder={field.placeholder}
                      onChange={this._onInfoBotFieldValueChange}
                      onKeyUp={this._onInfoBotFieldKeyUp}
-                     onFocus={this._onInfoBotFooterFocus}
-                     onBlur={this._onInfoBotFooterBlur}
+                     onFocus={onFooterFocus}
+                     onBlur={onFooterBlur}
                      autoFocus />
               <a className="hs-chat-footer__submit">
                 <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
@@ -249,24 +255,6 @@ define ("components/chatView",
       },
 
       /**
-       * Handler for the focus event on the info bot text input.
-       */
-      _onInfoBotFooterFocus () {
-        this.setState ({
-          infoBotFooterIsFocussed: true
-        });
-      },
-
-      /**
-       * Handler for the blur event on the info bot text input.
-       */
-      _onInfoBotFooterBlur () {
-        this.setState ({
-          infoBotFooterIsFocussed: false
-        });
-      },
-
-      /**
        * Click handler for submit info bot field.
        */
       _onClickSubmitInfoBotField () {
@@ -303,7 +291,10 @@ define ("components/chatView",
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        footerIsActive: PropTypes.bool,
+        onFooterFocus: PropTypes.func,
+        onFooterBlur: PropTypes.func
       },
 
       render () {
@@ -334,6 +325,9 @@ define ("components/chatView",
               </div>
               <ChatViewFooter activeFooter={this.props.activeFooter}
                               rating={this.props.rating}
+                              footerIsActive={this.props.footerIsActive}
+                              onFooterFocus={this.props.onFooterFocus}
+                              onFooterBlur={this.props.onFooterBlur}
                               onStarClick={this.props.onStarClick}
                               onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
                               onCloseConversation={this.props.onCloseConversation}

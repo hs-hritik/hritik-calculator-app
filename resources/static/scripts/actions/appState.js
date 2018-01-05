@@ -939,6 +939,26 @@ define ("actions/appState",
       setStyles ();
     };
 
+    /**
+     * Action to set footer active
+     * @returns {Object} - Action
+     */
+    const setFooterActive = () => {
+      return {
+        type: ACTION_TYPES.SET_FOOTER_ACTIVE
+      };
+    };
+
+    /**
+     * Action to set footer inactive
+     * @returns {Object} - Action
+     */
+    const setFooterInactive = () => {
+      return {
+        type: ACTION_TYPES.SET_FOOTER_INACTIVE
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -953,6 +973,8 @@ define ("actions/appState",
       setParentPageInfo,
       setProactiveChatRules,
       executeProactiveChatRules,
-      updateStyles
+      updateStyles,
+      setFooterActive,
+      setFooterInactive
     };
   });
