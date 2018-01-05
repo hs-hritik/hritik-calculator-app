@@ -13,27 +13,28 @@
 @include component(message) {
 
   $max-width: 88%;
-  $suggested-faq-bg-color: color(bg, white);
-  $end-chat-msg-text-color: color(text, light);
-  $end-chat-msg-border-color: color(border, light);
-  $message-details-color: color(text, light);
   $failed-img-icon-width: 20px;
   $failed-img-icon-height: 20px;
-  $failed-img-icon-color: color(error, text);
-  $error-message-border-color: color(error, border);
+
   $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
+  $chat-widget-error: var(--hs-chat-widget-error);
 
   $user-message-bg-color: var(--hs-user-message-bg-color);
   $user-message-border-color: var(--hs-user-message-border-color);
   $user-message-primary-text-color: var(--hs-user-message-primary-text-color);
   $user-message-accent-color: var(--hs-user-message-accent-color);
   $user-message-accent-color-light: var(--hs-user-message-accent-color-light);
+  $user-message-error: var(--hs-user-message-error);
 
   $agent-message-bg-color: var(--hs-agent-message-bg-color);
   $agent-message-border-color: var(--hs-agent-message-border-color);
   $agent-message-primary-text-color: var(--hs-agent-message-primary-text-color);
   $agent-message-accent-color: var(--hs-agent-message-accent-color);
   $agent-message-accent-color-light: var(--hs-agent-message-accent-color-light);
+
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-accent-color-light: var(--hs-form-accent-color-light);
 
   .hs-message {
     align-self: flex-start;
@@ -83,9 +84,15 @@
       justify-content: space-between;
       padding: gutter(12);
       margin: gutter(4 0);
-      background-color: $suggested-faq-bg-color;
+      color: $form-accent-color;
+      cursor: pointer;
+      background-color: $form-bg-color;
       border-radius: 6px;
       box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
+
+      &:hover {
+        color: $form-accent-color-light;
+      }
     }
 
     &__suggested-faq-icon {
@@ -97,7 +104,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      color: $message-details-color;
+      color: $chat-widget-secondary-text-color;
     }
 
     &__agent-nickname {
@@ -109,8 +116,7 @@
       margin-left: gutter(8);
       font-size: font-size(body, small);
       letter-spacing: -.5px;
-      color: $chat-widget-secondary-text-color;
-      opacity: .6;
+      opacity: .8;
     }
 
     &__icon-error {
@@ -136,7 +142,7 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      color: $failed-img-icon-color;
+      color: $chat-widget-error;
     }
 
     &__failed-img {
@@ -153,7 +159,7 @@
 
     &--error {
       .hs-message__item {
-        border-color: $error-message-border-color;
+        border-color: $user-message-error;
       }
     }
 
@@ -175,14 +181,14 @@
       align-self: stretch;
       max-width: 100%;
       margin: gutter(28 0);
-      color: $end-chat-msg-text-color;
+      color: $chat-widget-secondary-text-color;
       text-align: center;
 
       &::before,
       &::after {
         flex: 1 1 auto;
         height: 1px;
-        background: $end-chat-msg-border-color;
+        background: $chat-widget-secondary-text-color;
         content: "";
       }
 

@@ -208,14 +208,16 @@ define ("components/businessHoursView",
         let formFieldLabel = "";
         let inputEl = null;
         let errorIconEl = null;
+        let inputClasses = "";
 
         switch (fieldName) {
           case NAME:
             formFieldLabel = text.businessHoursNameLabel;
+            inputClasses = "hs-form-field__input hs-business-hours__form-input";
             inputEl = (
               <input type="text"
                      disabled={contactFormDisabled}
-                     className="hs-form-field__input"
+                     className={inputClasses}
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
                      onChange={this._onNameChange} />
@@ -224,10 +226,11 @@ define ("components/businessHoursView",
 
           case EMAIL:
             formFieldLabel = text.businessHoursEmailLabel;
+            inputClasses = "hs-form-field__input hs-business-hours__form-input";
             inputEl = (
               <input type="text"
                      disabled={contactFormDisabled}
-                     className="hs-form-field__input"
+                     className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
                      onChange={this._onEmailChange} />
@@ -236,8 +239,10 @@ define ("components/businessHoursView",
 
           case MESSAGE:
             formFieldLabel = text.businessHoursMessageLabel;
+            inputClasses = "hs-form-field__input hs-business-hours__message " +
+                           "hs-business-hours__form-input";
             inputEl = (
-              <textarea className="hs-form-field__input hs-business-hours__message"
+              <textarea className={inputClasses}
                         disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
@@ -362,16 +367,14 @@ define ("components/businessHoursView",
 
         return ([
           (<div className={attachmentClasses} key={id}>
-            <div className="hs-business-hours__attachment-info-wrapper">
-              <i className="ion-attachment ion-gray-color" />
-              <div className="hs-business-hours__attachment-name-wrapper">
-                <div>
-                  <span className="hs-business-hours__file-name" title={name} >
-                    {formattedName}
-                  </span>
-                  <span>({formattedSize})</span>
-                </div>
-              </div>
+            <div className="hs-business-hours__attachment-details-wrapper">
+              <i className="ion-attachment" />
+              <span className="hs-business-hours__attachment-name">
+                {formattedName}
+              </span>
+              <span className="hs-business-hours__attachment-size" >
+                ({formattedSize})
+              </span>
             </div>
             {iconEl}
           </div>),
@@ -392,9 +395,10 @@ define ("components/businessHoursView",
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded);
         return (
           <div className="hs-business-hours__attachment-placeholder">
-            <FileInput iconClasses="ion-attachment ion-gray-color"
+            <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
+                       labelClasses="hs-business-hours__attachment-placeholder-text"
                        infoText={dndInfoText} />
           </div>
         );

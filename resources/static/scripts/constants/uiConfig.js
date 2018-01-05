@@ -21,6 +21,7 @@ define ("constants/uiConfig",
         X_LIGHT: "#B6C3CC"
       },
       GRAY: {
+        BASE: "#D4D7D9",
         LIGHT: "#E8E9EB",
         XX_LIGHT: "#FFFFFF",
         X_LIGHT: "#F8F9F9"
@@ -83,14 +84,23 @@ define ("constants/uiConfig",
       USER_MESSAGE_BORDER_COLOR: "userMessage.borderColor",
       USER_MESSAGE_PRIMARY_TEXT_COLOR: "userMessage.primaryTextColor",
       USER_MESSAGE_ACCENT_COLOR: "userMessage.accentColor",
-      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userMessage.accentColor`,
+      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userMessage.accentColorLight`,
+      USER_MESSAGE_ERROR: "userMessage.error",
 
       // Agent message set
       AGENT_MESSAGE_BG_COLOR: "agentMessage.bgColor",
       AGENT_MESSAGE_BORDER_COLOR: "agentMessage.borderColor",
       AGENT_MESSAGE_PRIMARY_TEXT_COLOR: "agentMessage.primaryTextColor",
       AGENT_MESSAGE_ACCENT_COLOR: "agentMessage.accentColor",
-      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.agentMessage.accentColor`,
+      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.agentMessage.accentColorLight`,
+
+      // Form set
+      FORM_BG_COLOR: "form.bgColor",
+      FORM_BORDER_COLOR: "form.borderColor",
+      FORM_PRIMARY_TEXT_COLOR: "form.primaryTextColor",
+      FORM_ACCENT_COLOR: "form.accentColor",
+      FORM_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.form.accentColorLight`,
+      FORM_ERROR: "form.error",
 
       // CSAT set
       CSAT_BG_COLOR: "csat.bgColor",
@@ -213,6 +223,11 @@ define ("constants/uiConfig",
         COLORS.PRIMARY
       ],
       [
+        FLATTENED_UI_CONFIG.USER_MESSAGE_ERROR,
+        "--hs-user-message-error",
+        COLORS.RED.DARK
+      ],
+      [
         FLATTENED_UI_CONFIG.AGENT_MESSAGE_BG_COLOR,
         "--hs-agent-message-bg-color",
         COLORS.GRAY.LIGHT
@@ -246,15 +261,45 @@ define ("constants/uiConfig",
         FLATTENED_UI_CONFIG.CSAT_ACCENT_COLOR,
         "--hs-csat-accent-color",
         COLORS.YELLOW.DARK
+      ],
+      [
+        FLATTENED_UI_CONFIG.FORM_BG_COLOR,
+        "--hs-form-bg-color",
+        COLORS.GRAY.XX_LIGHT
+      ],
+      [
+        FLATTENED_UI_CONFIG.FORM_BORDER_COLOR,
+        "--hs-form-border-color",
+        COLORS.GRAY.BASE
+      ],
+      [
+        FLATTENED_UI_CONFIG.FORM_PRIMARY_TEXT_COLOR,
+        "--hs-form-primary-text-color",
+        COLORS.BLACK.BASE
+      ],
+      [
+        FLATTENED_UI_CONFIG.FORM_ACCENT_COLOR,
+        "--hs-form-accent-color",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.FORM_ACCENT_COLOR_LIGHT,
+        "--hs-form-accent-color-light",
+        COLORS.PRIMARY
+      ],
+      [
+        FLATTENED_UI_CONFIG.FORM_ERROR,
+        "--hs-form-error",
+        COLORS.RED.DARK
       ]
     ];
 
     // Sets which has accent color
-    const ACCENT_COLOR_SETS = ["CHAT_WIDGET", "USER_MESSAGE", "AGENT_MESSAGE"];
+    const ACCENT_COLOR_SETS = ["CHAT_WIDGET", "USER_MESSAGE", "AGENT_MESSAGE", "FORM"];
 
     // Shades for colors
     const SHADES = {
-      LIGHT_10: 0.10,
+      LIGHT_40: 0.40,
       LIGHT_20: 0.20,
       DARK_20: -0.20
     };

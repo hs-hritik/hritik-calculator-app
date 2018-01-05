@@ -107,7 +107,8 @@ define ("components/replyBox",
         return (
           <FileInput onChange={this.props.onFilesChange}
                      noPadding
-                     iconClasses="ion-attachment ion-primary-color" />
+                     labelClasses="hs-chat-footer__attachment-icon"
+                     iconClasses="ion-attachment" />
         );
       },
 

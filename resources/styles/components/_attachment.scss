@@ -12,19 +12,24 @@
 
 @include component(attachment) {
 
-  $attachment-background-color: color(bg, white);
-  $attachment-color: color(primary);
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-accent-color-light: var(--hs-form-accent-color-light);
 
   .hs-attachment {
     display: flex;
     padding: gutter(8);
     margin-top: gutter(8);
-    color: $attachment-color;
+    color: $form-accent-color;
     white-space: nowrap;
     cursor: pointer;
-    background-color: $attachment-background-color;
+    background-color: $form-bg-color;
     border-radius: radius();
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
+
+    &:hover {
+      color: $form-accent-color-light;
+    }
 
     &__info-wrapper {
       display: flex;

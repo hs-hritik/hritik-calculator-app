@@ -141,7 +141,7 @@ define ("reducers/ui",
 
         updateObj [accentColorLight] = {
           value: {
-            $set: uiHelpers.shadeColor (accentColorConfig.value, SHADES.LIGHT_10)
+            $set: uiHelpers.shadeColor (accentColorConfig.value, SHADES.LIGHT_40)
           }
         };
       });
@@ -225,7 +225,7 @@ define ("reducers/ui",
 
           updateObj [accentColorLight] = {
             value: {
-              $set: uiHelpers.shadeColor (accentColorConfig.value, SHADES.LIGHT_10)
+              $set: uiHelpers.shadeColor (accentColorConfig.value, SHADES.LIGHT_40)
             }
           };
         }

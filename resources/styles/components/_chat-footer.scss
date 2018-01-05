@@ -11,16 +11,18 @@
 ///
 
 @include component(chat-footer) {
-  $disabled-btn-color: color(bg, gray);
-  $title-error-color: color(error, text);
-  $submit-error-color: color(error, text);
-  $textarea-bg-color: color(bg, white);
-  $border-color: color(primary);
+
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-border-color: var(--hs-form-border-color);
+  $form-primary-text-color: var(--hs-form-primary-text-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-accent-color-light: var(--hs-form-accent-color-light);
+  $form-error: var(--hs-form-error);
 
   .hs-chat-footer {
     min-height: 52px;
     padding: gutter(12);
-    border: 1px solid transparent;
+    border: 1px solid $form-border-color;
     border-radius: radius(0 0 8 8);
 
     &__buttons-wrapper {
@@ -31,7 +33,14 @@
 
     &__button {
       margin: gutter(0 16);
+      color: $form-accent-color;
+      border-color: $form-accent-color;
       border-radius: 16px;
+
+      &:hover {
+        color: $form-accent-color-light;
+        border-color: $form-accent-color-light;
+      }
     }
 
     &__field {
@@ -42,6 +51,7 @@
     &__title {
       flex: 1 1 auto;
       font-size: font-size(body, small);
+      color: $form-primary-text-color;
     }
 
     &__text-field {
@@ -56,7 +66,6 @@
     &__text-area {
       height: 20px;
       min-height: 20px;
-      background-color: $textarea-bg-color;
       border-radius: 0;
       resize: none;
     }
@@ -64,13 +73,22 @@
     &__text-field,
     &__text-area {
       padding: 0;
+      color: $form-primary-text-color;
+      background-color: $form-bg-color;
       border: 0;
       box-shadow: none;
 
       &:focus {
+        color: $form-primary-text-color;
+        background-color: $form-bg-color;
         border: 0;
         box-shadow: none;
       }
+    }
+
+    &__attachment-icon,
+    &__submit {
+      color: $form-accent-color;
     }
 
     &__submit {
@@ -86,26 +104,21 @@
     /// form invalid modifier is used to disable elements
     &--form-invalid {
       .hs-chat-footer__submit {
-        color: $disabled-btn-color;
         cursor: not-allowed;
+        opacity: .4;
       }
     }
 
     /// form error modifier is used to show form error on elements
     &--form-error {
-      .hs-chat-footer {
-        &__title {
-          color: $title-error-color;
-        }
-
-        &__submit {
-          color: $submit-error-color;
-        }
+      .hs-chat-footer__title,
+      .hs-chat-footer__submit {
+        color: $form-error;
       }
     }
 
     &--colored-border {
-      border-color: $border-color;
+      border-color: $form-accent-color;
     }
   }
 }

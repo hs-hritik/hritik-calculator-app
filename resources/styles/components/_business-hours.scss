@@ -12,14 +12,15 @@
 
 @include component(business-hours) {
 
-  $attachment-bg: color(bg, white);
-  $attachment-color: color(text, xx-light);
-  $attachment-border-color: color(border);
-  $remove-icon-color: color(text, light);
-  $file-name-color: color(text);
-  $error-color: color(error, text);
   $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
   $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
+  $chat-widget-error: var(--hs-chat-widget-error);
+
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-border-color: var(--hs-form-border-color);
+  $form-primary-text-color: var(--hs-form-primary-text-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-error: var(--hs-form-error);
 
   .hs-business-hours {
     display: flex;
@@ -48,11 +49,23 @@
       color: $chat-widget-secondary-text-color;
     }
 
+    &__form-input {
+      color: $form-primary-text-color;
+      background-color: $form-bg-color;
+      border-color: $form-border-color;
+
+      &:focus {
+        color: $form-primary-text-color;
+        background-color: $form-bg-color;
+        border-color: $form-accent-color;
+      }
+    }
+
     &__attachment-wrapper {
       margin-bottom: gutter(8);
 
       &.error {
-        border: 1px solid $error-color;
+        border: 1px solid $form-error;
         border-radius: radius();
       }
     }
@@ -63,9 +76,9 @@
       justify-content: space-between;
       padding: gutter(8);
       margin: gutter(8 0 4);
-      color: $attachment-color;
-      background: $attachment-bg;
-      border: 1px solid $attachment-border-color;
+      color: $form-primary-text-color;
+      background: $form-bg-color;
+      border: 1px solid $form-border-color;
       border-radius: radius();
 
       &:first-child {
@@ -78,7 +91,7 @@
     }
 
     &__attachment-with-error {
-      border-color: $error-color;
+      border-color: $form-error;
     }
 
     &__small-icon {
@@ -87,32 +100,36 @@
     }
 
     &__remove-icon {
-      color: $remove-icon-color;
+      color: $form-primary-text-color;
       cursor: pointer;
-    }
-
-    &__file-name {
-      padding-right: gutter(8);
-      color: $file-name-color;
     }
 
     &__attachment-placeholder {
       margin: gutter(8 0);
       cursor: pointer;
-      background: white;
-      border: 1px dashed color(border);
+      background: $form-bg-color;
+      border: 1px dashed $form-border-color;
       border-radius: radius();
     }
 
-    &__attachment-info-wrapper {
-      display: flex;
-      align-items: center;
+    &__attachment-placeholder-text {
+      color: $form-primary-text-color;
+      opacity: .4;
     }
 
-    &__attachment-name-wrapper {
+    &__attachment-details-wrapper {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      color: $form-primary-text-color;
+    }
+
+    &__attachment-name,
+    &__attachment-size {
       padding-left: gutter(4);
+    }
+
+    &__attachment-size {
+      opacity: .25;
     }
 
     &__attachment-error {
@@ -120,14 +137,14 @@
       align-items: center;
       padding: gutter(0 8 8);
       font-size: font-size(body, small);
-      color: $error-color;
+      color: $chat-widget-error;
     }
 
     &__attachment-limit-error {
       display: flex;
       align-items: center;
       padding: gutter(0 4);
-      color: $error-color;
+      color: $chat-widget-error;
     }
   }
 }

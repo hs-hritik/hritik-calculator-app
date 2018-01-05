@@ -12,7 +12,7 @@
 
 @include component(form-field) {
 
-  $error-icon-color: color(error, text);
+  $form-error: var(--hs-form-error);
 
   .hs-form-field {
     position: relative;
@@ -25,7 +25,7 @@
 
     &--error {
       .hs-form-field__input {
-        border-color: color(error, border);
+        border-color: $form-error;
       }
     }
 
@@ -33,7 +33,7 @@
       position: absolute;
       top: 28px;
       right: 4px;
-      color: $error-icon-color;
+      color: $form-error;
     }
   }
 }

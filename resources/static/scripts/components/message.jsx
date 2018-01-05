@@ -200,13 +200,13 @@ define ("components/message",
 
         return suggestedFaqs.map ((faq) => {
           return (
-            <a key={faq.id}
-               className="hs-message__suggested-faq"
-               dir="auto"
-               onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
+            <span key={faq.id}
+                  className="hs-message__suggested-faq"
+                  dir="auto"
+                  onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
-            </a>
+            </span>
           );
         });
       },
