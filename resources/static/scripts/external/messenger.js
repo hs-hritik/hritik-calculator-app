@@ -51,6 +51,7 @@
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_GET_PARENT_INFO: "sdk-get-parent-info",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
+    SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -71,7 +72,8 @@
   // Errors message strings
   const ERROR_MSG = {
     NO_API_NAME: "API name is not passed with the Helpshift call",
-    API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported"
+    API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported",
+    UI_CONFIG_ERROR_PREFIX: "HelpshiftUIConfigError: "
   };
 
   // A constant to indicate the source that triggered a function call, communication
@@ -677,6 +679,25 @@
   };
 
   /**
+   * Log ui config errors on console
+   * @param {Array} errors - list of errors
+   */
+  const logUIConfigErrors = (errors) => {
+    const prefix = ERROR_MSG.UI_CONFIG_ERROR_PREFIX;
+
+    errors.forEach ((error) => {
+      const {set, value, info} = error;
+      const setText = "Set = " + set;
+      const valueText = value ? " | Value = " + value : "";
+      const infoText = " | Info = " + info;
+
+      /* eslint-disable */
+      console.error (prefix + setText + valueText + infoText);
+      /* eslint-enable */
+    });
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
@@ -767,6 +788,10 @@
         case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
           state.cssConfig = data.cssConfig;
           updateLauncherStyles (FORCE_UPDATE_STYLES);
+          break;
+
+        case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
+          logUIConfigErrors (data.errors);
           break;
       }
     }, false);

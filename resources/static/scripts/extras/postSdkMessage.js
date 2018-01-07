@@ -80,6 +80,16 @@ function (EVENT_TYPES, postMessage) {
     });
   };
 
+  /**
+   * Post sdk event to log ui config errors
+   * @param {Array} errors - list of ui config errors
+   */
+  const uiConfigErrors = (errors) => {
+    postMessage (EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS, {
+      errors
+    });
+  };
+
   return {
     toggleMessenger,
     getParentInfo,
@@ -88,6 +98,7 @@ function (EVENT_TYPES, postMessage) {
     wmConfig,
     jsLoaded,
     chatEndEvent,
-    uiConfigUpdatedEvent
+    uiConfigUpdatedEvent,
+    uiConfigErrors
   };
 });

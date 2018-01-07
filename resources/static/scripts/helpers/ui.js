@@ -7,12 +7,21 @@
 
 define ("helpers/ui",
   [
-    "constants/uiConfig"
+    "constants/uiConfig",
+    "utils/color",
+    "utils/dataType",
+    "extras/postSdkMessage"
   ],
-  function (UI_CONFIG_CONSTANTS) {
+  function (UI_CONFIG_CONSTANTS, colorUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
-    const {DEFAULT_UI_CONFIG} = UI_CONFIG_CONSTANTS;
+    const {
+      DEFAULT_UI_CONFIG,
+      FLATTENED_UI_CONFIG: {
+        BASE_FONT
+      }
+    } = UI_CONFIG_CONSTANTS;
+    const {isHexColor} = colorUtils;
 
     // First column of DEFAULT_UI_CONFIG contains the allowed keys
     const VALID_CONFIG_KEYS = DEFAULT_UI_CONFIG.map ((config) => config [0]);
@@ -53,6 +62,20 @@ define ("helpers/ui",
     };
 
     /**
+     * Predicate to validate font family
+     * @param {Any} fontFamily - font family set by developer
+     */
+    const isFontFamilyValid = (fontFamily) => {
+      // Font family is valid if
+      // 1] It is a string
+      // 2] It does NOT have trailing comma
+      // 3] It does NOT contain semi colon
+      return (typeof fontFamily === "string" &&
+              fontFamily.charAt (fontFamily.length - 1) !== "," &&
+              fontFamily.indexOf (";") === -1);
+    };
+
+    /**
      * Return valid ui configs
      * @param {Object} uiConfig - object of ui config data
      * @returns {Object} - Object of ui config data
@@ -60,10 +83,21 @@ define ("helpers/ui",
     const getValidUIConfig = (uiConfig) => {
       const finalConfig = {};
       const sets = Object.keys (uiConfig);
+      const uiConfigErrors = [];
 
       sets.forEach ((set) => {
-        const setItems = Object.keys (uiConfig [set]);
+        const uiConfigSet = uiConfig [set];
 
+        if (!dataTypeUtils.isObject (uiConfigSet)) {
+          uiConfigErrors.push ({
+            set: set,
+            value: (typeof uiConfigSet),
+            info: "Set has an invalid value"
+          });
+          return;
+        }
+
+        const setItems = Object.keys (uiConfigSet);
         setItems.forEach ((setItem) => {
           /**
            * Config key is derived by flattening 'set' and 'set item' of ui config.
@@ -82,17 +116,48 @@ define ("helpers/ui",
           */
           const configKey = `${set}.${setItem}`;
 
-          // @TODO :- Add 'value' validations here!
           if (VALID_CONFIG_KEYS.indexOf (configKey) !== -1) {
             const configValue = uiConfig [set] [setItem];
 
-            finalConfig [configKey] = {
-              key: configKey,
-              value: configValue
-            };
+            if (configKey === BASE_FONT) {
+              // Validate if font family is valid
+              if (isFontFamilyValid (configValue)) {
+                finalConfig [configKey] = {
+                  key: configKey,
+                  value: configValue
+                };
+              } else {
+                uiConfigErrors.push ({
+                  set: configKey,
+                  value: configValue,
+                  info: "Value is not a valid font family"
+                });
+              }
+            } else if (isHexColor (configValue)) {
+              // Validate if the config value is hex value
+              finalConfig [configKey] = {
+                key: configKey,
+                value: configValue
+              };
+            } else {
+              uiConfigErrors.push ({
+                set: configKey,
+                value: configValue,
+                info: "Value is not a hex color value"
+              });
+            }
+          } else {
+            uiConfigErrors.push ({
+              set: configKey,
+              info: "Set is not valid"
+            });
           }
         });
       });
+
+      if (uiConfigErrors.length) {
+        postSdkMessage.uiConfigErrors (uiConfigErrors);
+      }
 
       return finalConfig;
     };
