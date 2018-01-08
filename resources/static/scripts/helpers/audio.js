@@ -29,7 +29,11 @@ define ("helpers/audio",
       const {appState} = store.getState ();
 
       if (appState.featuresEnabled.audioNotifications && sounds [type]) {
-        sounds [type].play ();
+        try {
+          sounds [type].play ();
+        } catch (ex) {
+          // Empty catch block
+        }
       }
     };
 
