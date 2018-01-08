@@ -1,0 +1,40 @@
+Branches:
+feature/ui-customizations
+
+Changelog:
+Rename developer's ui config sets and keys
+Bug Fix : Set default value of base set to dashboard config
+Bug Fix : Remove border radius from footer for mobile and full screen
+Bug Fix : Apply correct colors to csat input
+Add ui config validations and error logging
+Bug Fix : Accent colors should be derived for base set
+Bug Fix : Set footer as inactive when chat footer changes
+Move active footer data to store
+Apply UI configuration to Form set
+Add support for label classes in file input
+Apply font family to view container
+Move error message out of attachment box from business hours form
+Standardize error icons for message bubbles
+Provide api to update the ui config
+Refactor attachment message rendering logic
+Apply UI configuration to CSAT set
+Apply UI configuration to agent message set
+Apply UI configuration to user message set
+Apply UI configuration to chat widget set
+Add border to reply box and info box text box
+Add support for 8px radius
+Setup base for chat widget set
+Remove ui config css variables
+Rename primary set to base set
+Move shade colors to ui constants
+Change link color for header
+Apply css for unread count in launcher icon
+Modify app state and pass launcher's css to webchat
+Modify ui reducer to derive header colors
+Restructure ui config
+Update footers as part of UX standardization
+Apply primary color to launcher and chat view header
+Modify ui reducer and css variable replacement logic
+Add ui action and ui helpers
+Add ui config constants
+Add new css variables file
