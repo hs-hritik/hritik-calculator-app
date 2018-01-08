@@ -34,6 +34,7 @@ define ("actions/appState",
     "actions/actionCreators",
     "utils/postMessage",
     "utils/browser",
+    "utils/dataType",
     "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
@@ -41,7 +42,7 @@ define ("actions/appState",
     xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
     proactiveChatHelpers, uiHelpers, analyticsHelpers, xhr, objUtils, uuidGenerator,
     arrayUtils, store, entitiesActions, chatViewActions, uiActions, batchActions,
-    actionCreators, postMessage, browserUtils, postSdkMessage) {
+    actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -60,6 +61,7 @@ define ("actions/appState",
       FLATTENED_UI_CONFIG: {
         HEADER_BG_COLOR,
         HEADER_TEXT_COLOR,
+        BASE_COLOR,
         INITIAL_SECONDARY_BG_COLOR,
         INITIAL_SECONDARY_TEXT_COLOR
       },
@@ -460,16 +462,34 @@ define ("actions/appState",
               ])
             );
 
-            if (helpshiftConfig.uiConfig && typeof helpshiftConfig.uiConfig === "object") {
-              dispatch (uiActions.setUIConfig (helpshiftConfig.uiConfig));
-            }
-
             const {
               appState: {
                 featuresEnabled,
                 wmEnabled: widgetEnabled
+              },
+              ui: {
+                uiConfig
               }
             } = store.getState ();
+
+            let finalUIConfig;
+            // If ui config is passed in helpshift config options, use that
+            // Else create a ui config having base color set from dashboard
+            if (dataTypeUtils.isObject (helpshiftConfig.uiConfig)) {
+              finalUIConfig = helpshiftConfig.uiConfig;
+            } else {
+              const baseData = BASE_COLOR.split (".");
+              // name of base set
+              const baseSet = baseData [0];
+              // value of base set
+              const baseValue = baseData [1];
+              finalUIConfig = {
+                [baseSet]: {
+                  [baseValue]: uiConfig [BASE_COLOR].value
+                }
+              };
+            }
+            dispatch (uiActions.setUIConfig (finalUIConfig));
 
             if (featuresEnabled.audioNotifications) {
               audioHelpers.init ();
