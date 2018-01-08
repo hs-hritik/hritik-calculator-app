@@ -50,7 +50,7 @@ define ("components/viewWrapper",
             return <ChatViewContainer {...commonProps} />;
 
           case ACTIVE_VIEW.FAQ:
-            return <FaqViewContainer />;
+            return <FaqViewContainer {...commonProps} />;
 
           case ACTIVE_VIEW.CSAT:
             return <CsatViewContainer {...commonProps} />;
