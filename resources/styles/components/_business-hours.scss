@@ -12,30 +12,61 @@
 
 @include component(business-hours) {
 
-  $attachment-color: color(text, xx-light);
-  $remove-icon-color: color(text, light);
-  $file-name-color: color(text);
-  $error-color: color(error, text);
+  $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
+  $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
+  $chat-widget-error: var(--hs-chat-widget-error);
+
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-border-color: var(--hs-form-border-color);
+  $form-primary-text-color: var(--hs-form-primary-text-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-error: var(--hs-form-error);
 
   .hs-business-hours {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
     justify-content: space-between;
-    padding: gutter(20);
+    padding: gutter(20 20 0 20);
+    overflow-y: scroll;
+    // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
+    // and Chrome behave.
+    // Details –
+    // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 
     &__message {
       resize: none;
     }
 
+    &__form-label,
+    &__thank-you-message {
+      color: $chat-widget-primary-text-color;
+    }
+
+    &__offline-message {
+      color: $chat-widget-secondary-text-color;
+    }
+
+    &__form-input {
+      color: $form-primary-text-color;
+      background-color: $form-bg-color;
+      border-color: $form-border-color;
+
+      &:focus {
+        color: $form-primary-text-color;
+        background-color: $form-bg-color;
+        border-color: $form-accent-color;
+      }
+    }
+
     &__attachment-wrapper {
       margin-bottom: gutter(8);
-      background: white;
-      border: 1px solid color(border);
-      border-radius: radius();
 
       &.error {
-        border: 1px solid $error-color;
+        border: 1px solid $form-error;
+        border-radius: radius();
       }
     }
 
@@ -44,7 +75,23 @@
       align-items: center;
       justify-content: space-between;
       padding: gutter(8);
-      color: $attachment-color;
+      margin: gutter(8 0 4);
+      color: $form-primary-text-color;
+      background: $form-bg-color;
+      border: 1px solid $form-border-color;
+      border-radius: radius();
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    &__attachment-with-error {
+      border-color: $form-error;
     }
 
     &__small-icon {
@@ -53,46 +100,51 @@
     }
 
     &__remove-icon {
-      color: $remove-icon-color;
+      color: $form-primary-text-color;
       cursor: pointer;
-    }
-
-    &__file-name {
-      padding-right: gutter(8);
-      color: $file-name-color;
     }
 
     &__attachment-placeholder {
-      margin: gutter(4 0);
+      margin: gutter(8 0);
       cursor: pointer;
-      background: white;
-      border: 1px dashed color(border);
+      background: $form-bg-color;
+      border: 1px dashed $form-border-color;
       border-radius: radius();
     }
 
-    &__attachment-info-wrapper {
-      display: flex;
-      align-items: center;
+    &__attachment-placeholder-text {
+      color: $form-primary-text-color;
+      opacity: .4;
     }
 
-    &__attachment-name-wrapper {
+    &__attachment-details-wrapper {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      color: $form-primary-text-color;
+    }
+
+    &__attachment-name,
+    &__attachment-size {
       padding-left: gutter(4);
+    }
+
+    &__attachment-size {
+      opacity: .25;
     }
 
     &__attachment-error {
       display: flex;
       align-items: center;
+      padding: gutter(0 8 8);
       font-size: font-size(body, small);
-      color: $error-color;
+      color: $chat-widget-error;
     }
 
     &__attachment-limit-error {
       display: flex;
       align-items: center;
       padding: gutter(0 4);
-      color: $error-color;
+      color: $chat-widget-error;
     }
   }
 }

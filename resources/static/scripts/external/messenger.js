@@ -40,6 +40,7 @@
   };
 
   const INIT = "init";
+  const FORCE_UPDATE_STYLES = true;
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
@@ -49,6 +50,8 @@
     SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_GET_PARENT_INFO: "sdk-get-parent-info",
+    SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
+    SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -58,7 +61,8 @@
     CMD_SET_CIF: "cmd-set-cif",
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
-    CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules"
+    CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
+    CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config"
   };
 
   const SUPPORTED_EVENTS = {
@@ -68,7 +72,8 @@
   // Errors message strings
   const ERROR_MSG = {
     NO_API_NAME: "API name is not passed with the Helpshift call",
-    API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported"
+    API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported",
+    UI_CONFIG_ERROR_PREFIX: "HelpshiftUIConfigError: "
   };
 
   // A constant to indicate the source that triggered a function call, communication
@@ -177,7 +182,7 @@
     MESSENGER: "MESSENGER"
   };
 
-  const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+  let CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
                         viewBox="0 0 560 560">
                         <polygon fill="#FFFFFF" fill-rule="evenodd"
                           points="470 127.997 432.003 90 280 242.003 127.997 90 90
@@ -185,7 +190,7 @@
                                   432.003 470 470 432.003 317.997 280"/>
                       </svg>`;
 
-  const MESSENGER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
+  let MESSENGER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
                           viewBox="0 0 560 560">
                           <g fill="#FFFFFF" fill-rule="evenodd" transform="translate(60 77)">
                             <path d="M363.373365,0 L10.16125,0 C5.42701923,0 0,3.96105769
@@ -210,7 +215,8 @@
                         </svg>`;
 
   // Reference for web sdk iframe.
-  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe;
+  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
+      launcherButton;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
@@ -281,7 +287,7 @@
    * @returns {Element} - launcher button div.
    */
   const createLauncherButton = () => {
-    const launcherButton = doc.createElement ("a");
+    launcherButton = doc.createElement ("a");
     launcherIconEl = doc.createElement ("span");
     launcherIconEl.innerHTML = MESSENGER_ICON;
 
@@ -294,13 +300,13 @@
 
     launcherButton.addEventListener ("mouseenter", () => {
       setStyle (launcherButton, {
-        background: state.cssConfig.primaryColorLight
+        background: state.cssConfig.launcherBgColorLight
       });
     });
 
     launcherButton.addEventListener ("mouseleave", () => {
       setStyle (launcherButton, {
-        background: state.cssConfig.primaryColor
+        background: state.cssConfig.launcherBgColor
       });
     });
 
@@ -444,13 +450,43 @@
   };
 
   /**
+   * Update launcher styles
+   */
+  const updateLauncherStyles = (forceUpdateStyles) => {
+    const {
+      launcherBgColor,
+      launcherTextColor,
+      notificationBgColor,
+      notificationTextColor
+    } = state.cssConfig;
+
+    LAUNCHER_BUTTON_WRAPPER_STYLES.background = launcherBgColor;
+
+    UNREAD_COUNT_STYLES.background = notificationBgColor;
+    UNREAD_COUNT_STYLES.color = notificationTextColor;
+
+    const colorRegEx = /fill=".+"\s/;
+    const replaceValue = `fill="${launcherTextColor}" `;
+
+    CLOSE_ICON = CLOSE_ICON.replace (colorRegEx, replaceValue);
+    MESSENGER_ICON = MESSENGER_ICON.replace (colorRegEx, replaceValue);
+
+    if (forceUpdateStyles) {
+      setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
+      setStyle (unreadCountEl, UNREAD_COUNT_STYLES);
+      const icon = webSdkIframe.style.display === "none" ?
+                   LAUNCHER_ICON.MESSENGER : LAUNCHER_ICON.CLOSE;
+      updateLauncherBtnIcon (icon);
+    }
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
   const updateIframeStyles = (config) => {
     // Set styles for launcher iframe
-    LAUNCHER_BUTTON_WRAPPER_STYLES.background = state.cssConfig.primaryColor;
-
+    updateLauncherStyles ();
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
@@ -643,6 +679,25 @@
   };
 
   /**
+   * Log ui config errors on console
+   * @param {Array} errors - list of errors
+   */
+  const logUIConfigErrors = (errors) => {
+    const prefix = ERROR_MSG.UI_CONFIG_ERROR_PREFIX;
+
+    errors.forEach ((error) => {
+      const {set, value, info} = error;
+      const setText = "Set = " + set;
+      const valueText = value ? " | Value = " + value : "";
+      const infoText = " | Info = " + info;
+
+      /* eslint-disable */
+      console.error (prefix + setText + valueText + infoText);
+      /* eslint-enable */
+    });
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
@@ -728,6 +783,15 @@
             title: doc.title,
             url: win.location.href
           });
+          break;
+
+        case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
+          state.cssConfig = data.cssConfig;
+          updateLauncherStyles (FORCE_UPDATE_STYLES);
+          break;
+
+        case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
+          logUIConfigErrors (data.errors);
           break;
       }
     }, false);
@@ -906,6 +970,16 @@
     });
   };
 
+  /**
+   * JS API to update ui config
+   * @param {Object} uiConfig - ui config
+   */
+  const updateUIConfig = (uiConfig) => {
+    _postMessage (EVENT_TYPES.CMD_UPDATE_UI_CONFIG, {
+      uiConfig
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -919,7 +993,8 @@
     removeEventListener,
     setCustomIssueFields,
     replaceCustomIssueFields,
-    setProactiveChatRules
+    setProactiveChatRules,
+    updateUIConfig
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

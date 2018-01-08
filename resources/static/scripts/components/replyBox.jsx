@@ -35,11 +35,18 @@ define ("components/replyBox",
         text: PropTypes.shape ({
           replyBtnPlaceholder: PropTypes.string.isRequired
         }).isRequired,
-        issueIsCreated: PropTypes.bool.isRequired
+        issueIsCreated: PropTypes.bool.isRequired,
+        onFooterFocus: PropTypes.func,
+        onFooterBlur: PropTypes.func
       },
 
       render () {
-        const {text, disabled} = this.props;
+        const {
+          text,
+          disabled,
+          onFooterFocus,
+          onFooterBlur
+        } = this.props;
 
         // @TODO :- Do not use style of different component here!
         // Create a separate style sheet for this component
@@ -56,6 +63,8 @@ define ("components/replyBox",
                                 className="hs-chat-footer__text-area"
                                 onKeyDown={this._onReplyTextKeyDown}
                                 onChange={this._onReplyTextChange}
+                                onFocus={onFooterFocus}
+                                onBlur={onFooterBlur}
                                 minRows={TEXT_AREA_MIN_ROWS}
                                 maxRows={TEXT_AREA_MAX_ROWS}
                                 onHeightChange={this._onReplyBoxHeightChange}
@@ -98,7 +107,8 @@ define ("components/replyBox",
         return (
           <FileInput onChange={this.props.onFilesChange}
                      noPadding
-                     iconClasses="ion-attachment ion-primary-color" />
+                     labelClasses="hs-chat-footer__attachment-icon"
+                     iconClasses="ion-attachment" />
         );
       },
 

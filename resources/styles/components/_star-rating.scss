@@ -12,13 +12,31 @@
 
 @include component(star-rating) {
   $star-font-size: icon-size(xxx-large);
+  $csat-bg-color: var(--hs-csat-bg-color);
+  $csat-accent-color: var(--hs-csat-accent-color);
 
   .hs-star-rating {
     display: flex;
     justify-content: space-between;
 
-    &__icon {
+    &__icon,
+    &__active-icon {
       font-size: $star-font-size;
+    }
+
+    &__icon {
+      color: $csat-bg-color;
+    }
+
+    &__active-icon {
+      color: $csat-accent-color;
+    }
+
+    &--edit-mode {
+      .hs-star-rating__icon,
+      .hs-star-rating__active-icon {
+        cursor: pointer;
+      }
     }
   }
 }

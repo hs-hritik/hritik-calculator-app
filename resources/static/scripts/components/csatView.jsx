@@ -23,6 +23,7 @@ define ("components/csatView",
         review: PropTypes.string,
         completed: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onSubmitCsat: PropTypes.func.isRequired,
         onUpdateCsatRating: PropTypes.func.isRequired,
@@ -36,20 +37,24 @@ define ("components/csatView",
           closeConversationBtn: PropTypes.string.isRequired,
           csatBotReviewPlaceholder: PropTypes.string.isRequired,
           csatBotReviewTitle: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        })
       },
 
       render () {
-        const {text, browserIsMobile, onMinimizeConversation} = this.props;
+        const {text, browserIsMobile, onMinimizeConversation, viewStyles} = this.props;
 
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.csatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
               <div className="hs-csat">
                 {this._renderCsatBody ()}
+                <Branding text={text} />
                 {this._renderCsatFooter ()}
               </div>
             </div>
@@ -117,12 +122,17 @@ define ("components/csatView",
        * Render csat footer.
        */
       _renderCsatFooter () {
-        const {text, rating} = this.props,
-              btnProps = {};
+        const {
+          text,
+          rating,
+          browserIsMobile,
+          allowFullScreen
+        } = this.props;
+        const btnProps = {};
         let btnText;
+
         btnProps.className = classes (
           "hs-button",
-          "hs-button--small",
           "hs-footer__btn"
         );
 
@@ -135,13 +145,19 @@ define ("components/csatView",
           btnProps.disabled = (rating === 0);
         }
 
+        const footerClasses = classes ("hs-footer",
+        "hs-footer--center-items", {
+          "hs-footer--mobile": browserIsMobile,
+          "hs-footer--full-screen": allowFullScreen
+        }
+      );
+
         return (
-          <div className="hs-footer hs-footer--clear-bg">
+          <div className={footerClasses}>
             <div className="hs-footer__vertical-items-wrapper">
               <button {...btnProps}>
                 {btnText}
               </button>
-              <Branding text={text} />
             </div>
           </div>
         );

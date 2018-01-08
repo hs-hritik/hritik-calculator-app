@@ -5,7 +5,8 @@
  */
 
 define ("components/starRating",
-  function () {
+  ["gunpowder/utils/classes"],
+  function (classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -33,13 +34,21 @@ define ("components/starRating",
       },
 
       render () {
+        const {editing} = this.props;
+        const starRatingClasses = classes ("hs-star-rating", {
+          "hs-star-rating--edit-mode": editing
+        });
+
         return (
-          <div className="hs-star-rating">
+          <div className={starRatingClasses}>
             {this._renderStars ()}
           </div>
         );
       },
 
+      /**
+       * Render stars group
+       */
       _renderStars () {
         const {starCount} = this.props;
         const starElements = [];
@@ -51,25 +60,23 @@ define ("components/starRating",
         return starElements;
       },
 
+      /**
+       * Render star icon
+       */
       _renderStar (idx) {
-        const {editing, value} = this.props;
+        const {value} = this.props;
         const {hoverValue} = this.state;
-        let activeStarValue = value;
-
-        if (hoverValue > 0) {
-          activeStarValue = hoverValue;
-        }
+        const activeStarValue = hoverValue || value;
         const title = (idx === 1) ? "1 star" : `${idx} stars`;
 
-        // @TODO: Move styles to css.
-        const starStyles = {
-          cursor: editing ? "pointer" : "default",
-          color: activeStarValue >= idx ? "#ffb400" : "#b6c3cc"
-        };
+        const active = (activeStarValue >= idx);
+        const starIconClasses = classes ("ion-star", {
+          "hs-star-rating__active-icon": active,
+          "hs-star-rating__icon": !active
+        });
 
         return (
-          <i className="ion-star hs-star-rating__icon"
-             style={starStyles}
+          <i className={starIconClasses}
              title={title}
              onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
              onMouseLeave={this._onStarMouseLeave}
