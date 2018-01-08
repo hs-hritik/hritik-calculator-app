@@ -40,6 +40,7 @@ define ("components/businessHoursView",
       displayName: "BusinessHoursView",
       propTypes: {
         browserIsMobile: PropTypes.bool.isRequired,
+        allowFullScreen: PropTypes.bool,
         text: PropTypes.shape ({
           closeConversationBtn: PropTypes.string.isRequired,
           businessHoursSubmitBtn: PropTypes.string.isRequired,
@@ -169,8 +170,15 @@ define ("components/businessHoursView",
        * Render footer with button
        */
       _renderFooter () {
-        const {contactFormSubmitted, text, onMinimizeConversation,
-               contactFormDisabled, offlineBehaviour} = this.props;
+        const {
+          contactFormSubmitted,
+          text,
+          onMinimizeConversation,
+          contactFormDisabled,
+          offlineBehaviour,
+          browserIsMobile,
+          allowFullScreen
+        } = this.props;
 
         let btnText, clickHandler;
         if ((offlineBehaviour === CONTACT_FORM && contactFormSubmitted) ||
@@ -182,8 +190,14 @@ define ("components/businessHoursView",
           clickHandler = this._onSendButtonClick;
         }
 
+        const footerClasses = classes ("hs-footer",
+        "hs-footer--center-items", {
+          "hs-footer--mobile": browserIsMobile,
+          "hs-footer--full-screen": allowFullScreen
+        });
+
         return (
-          <div className="hs-footer hs-footer--center-items">
+          <div className={footerClasses}>
             <button className="hs-button hs-footer__btn"
                     disabled={contactFormDisabled}
                     onClick={clickHandler} >

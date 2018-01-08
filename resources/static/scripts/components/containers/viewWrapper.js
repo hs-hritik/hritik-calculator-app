@@ -18,6 +18,7 @@ define ("components/containers/viewWrapper",
       return {
         activeView: state.appState.activeView,
         browserIsMobile: state.appState.browserIsMobile,
+        allowFullScreen: state.appState.sdkConfigOptions.fullScreen,
         viewStyles: {
           fontFamily: state.ui.uiConfig [BASE_FONT].value
         }

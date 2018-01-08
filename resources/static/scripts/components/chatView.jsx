@@ -36,6 +36,8 @@ define ("components/chatView",
       propTypes: {
         activeFooter: PropTypes.string.isRequired,
         rating: PropTypes.number,
+        browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
         infoBotField: INFO_BOT_FIELD_PROPS,
@@ -53,8 +55,16 @@ define ("components/chatView",
       },
 
       render () {
+        const {
+          footerIsActive,
+          browserIsMobile,
+          allowFullScreen
+        } = this.props;
+
         const footerClasses = classes ("hs-footer", {
-          "hs-footer--active" : this.props.footerIsActive
+          "hs-footer--active" : footerIsActive,
+          "hs-footer--mobile": browserIsMobile,
+          "hs-footer--full-screen": allowFullScreen
         });
 
         return (
@@ -275,6 +285,7 @@ define ("components/chatView",
         isTyping: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
         browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
@@ -325,6 +336,8 @@ define ("components/chatView",
               </div>
               <ChatViewFooter activeFooter={this.props.activeFooter}
                               rating={this.props.rating}
+                              browserIsMobile={browserIsMobile}
+                              allowFullScreen={this.props.allowFullScreen}
                               footerIsActive={this.props.footerIsActive}
                               onFooterFocus={this.props.onFooterFocus}
                               onFooterBlur={this.props.onFooterBlur}

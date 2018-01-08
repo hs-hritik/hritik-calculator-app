@@ -23,6 +23,7 @@ define ("components/csatView",
         review: PropTypes.string,
         completed: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onSubmitCsat: PropTypes.func.isRequired,
         onUpdateCsatRating: PropTypes.func.isRequired,
@@ -121,9 +122,15 @@ define ("components/csatView",
        * Render csat footer.
        */
       _renderCsatFooter () {
-        const {text, rating} = this.props,
-              btnProps = {};
+        const {
+          text,
+          rating,
+          browserIsMobile,
+          allowFullScreen
+        } = this.props;
+        const btnProps = {};
         let btnText;
+
         btnProps.className = classes (
           "hs-button",
           "hs-footer__btn"
@@ -138,8 +145,15 @@ define ("components/csatView",
           btnProps.disabled = (rating === 0);
         }
 
+        const footerClasses = classes ("hs-footer",
+        "hs-footer--center-items", {
+          "hs-footer--mobile": browserIsMobile,
+          "hs-footer--full-screen": allowFullScreen
+        }
+      );
+
         return (
-          <div className="hs-footer hs-footer--center-items">
+          <div className={footerClasses}>
             <div className="hs-footer__vertical-items-wrapper">
               <button {...btnProps}>
                 {btnText}

@@ -24,6 +24,7 @@ define ("components/viewWrapper",
       propTypes: {
         activeView: PropTypes.string.isRequired,
         browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         })
@@ -39,6 +40,7 @@ define ("components/viewWrapper",
       _renderActiveViewComponent () {
         const commonProps = {
           browserIsMobile: this.props.browserIsMobile,
+          allowFullScreen: this.props.allowFullScreen,
           onMinimizeConversation: this._onMinimizeConversation,
           viewStyles: this.props.viewStyles
         };
