@@ -43,7 +43,7 @@ define ("constants/uiConfig",
      *     font: "arial"
      *   }
      *  }
-     *  is flattened to -> "base.color", "base.font" and likewise
+     *  is flattened to -> "global.color", "global.font" and likewise
      * Here 'base' represents set and 'color' represents set item
      * @NOTE :- This config also contains derived keys which are computed w.r.t
      * some value. Example : Shades are computed based on base color.
@@ -54,16 +54,16 @@ define ("constants/uiConfig",
      */
     const FLATTENED_UI_CONFIG = {
       // Base set
-      BASE_COLOR: "base.color",
-      BASE_FONT: "base.font",
-      BASE_COLOR_DARK: `${DERIVED_ID}.base.colorDark`,
-      BASE_COLOR_LIGHT: `${DERIVED_ID}.base.colorLightD`,
+      BASE_COLOR: "global.color",
+      BASE_FONT: "global.fontFamily",
+      BASE_COLOR_DARK: `${DERIVED_ID}.global.colorDark`,
+      BASE_COLOR_LIGHT: `${DERIVED_ID}.global.colorLightD`,
 
       // Initial Set (widget/launcher set)
-      INITIAL_PRIMARY_BG_COLOR: "initial.primaryBgColor",
-      INITIAL_SECONDARY_BG_COLOR: "initial.secondaryBgColor",
-      INITIAL_PRIMARY_TEXT_COLOR: "initial.primaryTextColor",
-      INITIAL_SECONDARY_TEXT_COLOR: "initial.secondaryTextColor",
+      INITIAL_PRIMARY_BG_COLOR: "widgetFrame.primaryBgColor",
+      INITIAL_SECONDARY_BG_COLOR: "widgetFrame.secondaryBgColor",
+      INITIAL_PRIMARY_TEXT_COLOR: "widgetFrame.primaryTextColor",
+      INITIAL_SECONDARY_TEXT_COLOR: "widgetFrame.secondaryTextColor",
 
       // Derived header css
       // @NOTE :- Header colors are specially derived colors as the their value is
@@ -77,33 +77,33 @@ define ("constants/uiConfig",
       CHAT_WIDGET_SECONDARY_TEXT_COLOR: "chatWidget.secondaryTextColor",
       CHAT_WIDGET_ACCENT_COLOR: "chatWidget.accentColor",
       CHAT_WIDGET_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.chatWidget.accentColorLight`,
-      CHAT_WIDGET_ERROR: "chatWidget.error",
+      CHAT_WIDGET_ERROR: "chatWidget.errorColor",
 
       // User message set
-      USER_MESSAGE_BG_COLOR: "userMessage.bgColor",
-      USER_MESSAGE_BORDER_COLOR: "userMessage.borderColor",
-      USER_MESSAGE_PRIMARY_TEXT_COLOR: "userMessage.primaryTextColor",
-      USER_MESSAGE_ACCENT_COLOR: "userMessage.accentColor",
-      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userMessage.accentColorLight`,
-      USER_MESSAGE_ERROR: "userMessage.error",
+      USER_MESSAGE_BG_COLOR: "userBubble.primaryBgColor",
+      USER_MESSAGE_BORDER_COLOR: "userBubble.borderColor",
+      USER_MESSAGE_PRIMARY_TEXT_COLOR: "userBubble.primaryTextColor",
+      USER_MESSAGE_ACCENT_COLOR: "userBubble.accentColor",
+      USER_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.userBubble.accentColorLight`,
+      USER_MESSAGE_ERROR: "userBubble.errorColor",
 
       // Agent message set
-      AGENT_MESSAGE_BG_COLOR: "agentMessage.bgColor",
-      AGENT_MESSAGE_BORDER_COLOR: "agentMessage.borderColor",
-      AGENT_MESSAGE_PRIMARY_TEXT_COLOR: "agentMessage.primaryTextColor",
-      AGENT_MESSAGE_ACCENT_COLOR: "agentMessage.accentColor",
-      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.agentMessage.accentColorLight`,
+      AGENT_MESSAGE_BG_COLOR: "supportBubble.primaryBgColor",
+      AGENT_MESSAGE_BORDER_COLOR: "supportBubble.borderColor",
+      AGENT_MESSAGE_PRIMARY_TEXT_COLOR: "supportBubble.primaryTextColor",
+      AGENT_MESSAGE_ACCENT_COLOR: "supportBubble.accentColor",
+      AGENT_MESSAGE_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.supportBubble.accentColorLight`,
 
       // Form set
-      FORM_BG_COLOR: "form.bgColor",
+      FORM_BG_COLOR: "form.primaryBgColor",
       FORM_BORDER_COLOR: "form.borderColor",
       FORM_PRIMARY_TEXT_COLOR: "form.primaryTextColor",
       FORM_ACCENT_COLOR: "form.accentColor",
       FORM_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.form.accentColorLight`,
-      FORM_ERROR: "form.error",
+      FORM_ERROR: "form.errorColor",
 
       // CSAT set
-      CSAT_BG_COLOR: "csat.bgColor",
+      CSAT_BG_COLOR: "csat.primaryBgColor",
       CSAT_ACCENT_COLOR: "csat.accentColor"
     };
 
