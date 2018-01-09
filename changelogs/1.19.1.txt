@@ -1,0 +1,6 @@
+Changelog:
+Rename ui config to camel case
+Apply ui config data after reset
+UX change : Add only top border to footer
+Bug Fix : Add reset api handling to each reducer
+Bug Fix : Apply font family to faq view
