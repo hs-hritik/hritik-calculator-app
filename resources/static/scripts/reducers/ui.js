@@ -87,7 +87,8 @@ define ("reducers/ui",
         };
 
         return obj;
-      }, {})
+      }, {}),
+      developerUiConfig: null
     };
 
     /**
@@ -302,10 +303,16 @@ define ("reducers/ui",
             uiConfig: getUpdateUIConfigUpdateObj (state.uiConfig, action.uiConfig)
           });
 
+        case ACTION_TYPES.SET_DEVELOPER_UI_CONFIG:
+          return update (state, {
+            developerUiConfig: {$set: action.uiConfig}
+          });
+
         case ACTION_TYPES.RESET:
-          // Retain the ui config set throught api
+          // Retain the ui config and developer config set throught api
           return update (INITIAL_STATE, {
-            uiConfig: {$set: state.uiConfig}
+            uiConfig: {$set: state.uiConfig},
+            developerUiConfig: {$set: state.developerUiConfig}
           });
 
         default:

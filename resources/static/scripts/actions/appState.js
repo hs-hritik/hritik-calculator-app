@@ -468,28 +468,35 @@ define ("actions/appState",
                 wmEnabled: widgetEnabled
               },
               ui: {
-                uiConfig
+                uiConfig,
+                developerUiConfig
               }
             } = store.getState ();
 
-            let finalUIConfig;
+            let finalUiConfig;
             // If ui config is passed in helpshift config options, use that
+            // Else use previously set developer config
             // Else create a ui config having base color set from dashboard
-            if (dataTypeUtils.isObject (helpshiftConfig.uiConfig)) {
-              finalUIConfig = helpshiftConfig.uiConfig;
+            if (dataTypeUtils.isObject (helpshiftConfig.uiConfig) &&
+                Object.keys (helpshiftConfig.uiConfig).length) {
+              finalUiConfig = helpshiftConfig.uiConfig;
+            } else if (developerUiConfig) {
+              finalUiConfig = developerUiConfig;
             } else {
               const baseData = BASE_COLOR.split (".");
               // name of base set
               const baseSet = baseData [0];
               // value of base set
               const baseValue = baseData [1];
-              finalUIConfig = {
+
+              finalUiConfig = {
                 [baseSet]: {
                   [baseValue]: uiConfig [BASE_COLOR].value
                 }
               };
             }
-            dispatch (uiActions.setUIConfig (finalUIConfig));
+            dispatch (uiActions.setUIConfig (finalUiConfig));
+            dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
 
             if (featuresEnabled.audioNotifications) {
               audioHelpers.init ();

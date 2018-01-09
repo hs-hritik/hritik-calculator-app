@@ -26,7 +26,6 @@ define ("actions/ui",
       };
     };
 
-
     /**
      * Action to update UI configuration
      * @param {Object} hsUIConfig - helpshift UI config
@@ -41,9 +40,22 @@ define ("actions/ui",
       };
     };
 
+    /**
+     * Action to set developer ui config
+     * @param {Object} uiConfig - developer ui config
+     * @returns {Object} - Action
+     */
+    const setDeveloperUiConfig = (uiConfig) => {
+      return {
+        type: ACTION_TYPES.SET_DEVELOPER_UI_CONFIG,
+        uiConfig
+      };
+    };
+
     return {
       setUIConfig,
-      updateUIConfig
+      updateUIConfig,
+      setDeveloperUiConfig
     };
   }
 );
