@@ -80,7 +80,7 @@ define ("helpers/ui",
      * @param {Object} uiConfig - object of ui config data
      * @returns {Object} - Object of ui config data
      */
-    const getValidUIConfig = (uiConfig) => {
+    const getValidUiConfig = (uiConfig) => {
       const finalConfig = {};
       const sets = Object.keys (uiConfig);
       const uiConfigErrors = [];
@@ -164,7 +164,7 @@ define ("helpers/ui",
 
     return {
       shadeColor,
-      getValidUIConfig
+      getValidUiConfig
     };
   }
 );

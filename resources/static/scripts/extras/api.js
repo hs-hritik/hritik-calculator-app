@@ -226,7 +226,7 @@ define ("extras/api",
           store.dispatch (appStateActions.executeProactiveChatRules (data));
           break;
         case EVENT_TYPES.CMD_UPDATE_UI_CONFIG:
-          store.dispatch (uiActions.updateUIConfig (data.uiConfig));
+          store.dispatch (uiActions.updateUiConfig (data.uiConfig));
           store.dispatch (uiActions.setDeveloperUiConfig (data.uiConfig));
           store.dispatch (appStateActions.updateStyles ());
       }

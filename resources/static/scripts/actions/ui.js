@@ -14,29 +14,29 @@ define ("actions/ui",
 
     /**
      * Action to set UI configuration
-     * @param {Object} hsUIConfig - helpshift UI config
+     * @param {Object} hsUiConfig - helpshift UI config
      * @returns {Object} - Action
      */
-    const setUIConfig = (hsUIConfig) => {
-      const validUIConfig = uiHelpers.getValidUIConfig (hsUIConfig);
+    const setUiConfig = (hsUiConfig) => {
+      const validUiConfig = uiHelpers.getValidUiConfig (hsUiConfig);
 
       return {
         type: ACTION_TYPES.SET_UI_CONFIG,
-        uiConfig: validUIConfig
+        uiConfig: validUiConfig
       };
     };
 
     /**
      * Action to update UI configuration
-     * @param {Object} hsUIConfig - helpshift UI config
+     * @param {Object} hsUiConfig - helpshift UI config
      * @returns {Object} - Action
      */
-    const updateUIConfig = (hsUIConfig) => {
-      const validUIConfig = uiHelpers.getValidUIConfig (hsUIConfig);
+    const updateUiConfig = (hsUiConfig) => {
+      const validUiConfig = uiHelpers.getValidUiConfig (hsUiConfig);
 
       return {
         type: ACTION_TYPES.UPDATE_UI_CONFIG,
-        uiConfig: validUIConfig
+        uiConfig: validUiConfig
       };
     };
 
@@ -53,8 +53,8 @@ define ("actions/ui",
     };
 
     return {
-      setUIConfig,
-      updateUIConfig,
+      setUiConfig,
+      updateUiConfig,
       setDeveloperUiConfig
     };
   }

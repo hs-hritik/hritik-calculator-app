@@ -495,7 +495,7 @@ define ("actions/appState",
                 }
               };
             }
-            dispatch (uiActions.setUIConfig (finalUiConfig));
+            dispatch (uiActions.setUiConfig (finalUiConfig));
             dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
 
             if (featuresEnabled.audioNotifications) {
@@ -645,7 +645,7 @@ define ("actions/appState",
      * Post ui config updated event
      * This event is used to pass updated launcher styles to messenger js
      */
-    const _postUIConfigUpdatedEvent = () => {
+    const _postUiConfigUpdatedEvent = () => {
       postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ());
     };
 
@@ -671,7 +671,7 @@ define ("actions/appState",
         // ui config and appending the new styles.
         // For the first time, do not post update event as launcher styles will be
         // updated throught sdk config loaded event.
-        _postUIConfigUpdatedEvent ();
+        _postUiConfigUpdatedEvent ();
         head.removeChild (existingStyles);
       }
 
@@ -958,7 +958,7 @@ define ("actions/appState",
       // If css variables are supported, directly update the vars
       if (isCssVarSupported) {
         _updateCssVars ();
-        _postUIConfigUpdatedEvent ();
+        _postUiConfigUpdatedEvent ();
         return;
       }
       // Else load css file, replace placeholders with new values and append to

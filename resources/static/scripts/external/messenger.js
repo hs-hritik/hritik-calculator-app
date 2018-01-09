@@ -73,7 +73,7 @@
   const ERROR_MSG = {
     NO_API_NAME: "API name is not passed with the Helpshift call",
     API_NOT_SUPPORTED: "The API name passed with the Helpshift call is not supported",
-    UI_CONFIG_ERROR_PREFIX: "HelpshiftUIConfigError: "
+    UI_CONFIG_ERROR_PREFIX: "HelpshiftUiConfigError: "
   };
 
   // A constant to indicate the source that triggered a function call, communication
@@ -682,7 +682,7 @@
    * Log ui config errors on console
    * @param {Array} errors - list of errors
    */
-  const logUIConfigErrors = (errors) => {
+  const logUiConfigErrors = (errors) => {
     const prefix = ERROR_MSG.UI_CONFIG_ERROR_PREFIX;
 
     errors.forEach ((error) => {
@@ -791,7 +791,7 @@
           break;
 
         case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
-          logUIConfigErrors (data.errors);
+          logUiConfigErrors (data.errors);
           break;
       }
     }, false);
@@ -974,7 +974,7 @@
    * JS API to update ui config
    * @param {Object} uiConfig - ui config
    */
-  const updateUIConfig = (uiConfig) => {
+  const updateUiConfig = (uiConfig) => {
     _postMessage (EVENT_TYPES.CMD_UPDATE_UI_CONFIG, {
       uiConfig
     });
@@ -994,7 +994,7 @@
     setCustomIssueFields,
     replaceCustomIssueFields,
     setProactiveChatRules,
-    updateUIConfig
+    updateUiConfig
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

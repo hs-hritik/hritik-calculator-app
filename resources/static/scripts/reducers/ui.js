@@ -93,13 +93,13 @@ define ("reducers/ui",
 
     /**
      * Return update object for given ui config
-     * @param {Object} storeUIConfig - config object already set in ui store
+     * @param {Object} storeUiConfig - config object already set in ui store
      * @param {Object} uiConfig - config object passed by developers
      * @returns {Object} - update ui object used to set in store
      */
-    const getSetUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
+    const getSetUiConfigUpdateObj = (storeUiConfig, uiConfig) => {
       const allowedUpdateKeys = ["key", "value"];
-      let baseColor = storeUIConfig [BASE_COLOR].value;
+      let baseColor = storeUiConfig [BASE_COLOR].value;
       const updateObj = {};
 
       for (const key in uiConfig) {
@@ -134,7 +134,7 @@ define ("reducers/ui",
         const accentColorLight = FLATTENED_UI_CONFIG [`${set}_ACCENT_COLOR_LIGHT`];
         const accentColorConfig = uiConfig [accentColor] ||
                                   uiConfig [BASE_COLOR] ||
-                                  storeUIConfig [BASE_COLOR];
+                                  storeUiConfig [BASE_COLOR];
 
         updateObj [accentColor] = {
           value: {$set: accentColorConfig.value}
@@ -154,7 +154,7 @@ define ("reducers/ui",
       // 3. ui state (default)
       const headerBgConfig = uiConfig [INITIAL_PRIMARY_BG_COLOR] ||
                              uiConfig [BASE_COLOR] ||
-                             storeUIConfig [INITIAL_PRIMARY_BG_COLOR];
+                             storeUiConfig [INITIAL_PRIMARY_BG_COLOR];
       updateObj [HEADER_BG_COLOR] = {
         value: {$set: headerBgConfig.value}
       };
@@ -164,7 +164,7 @@ define ("reducers/ui",
       // 2. ui state (default)
       // @NOTE :- There is no option to set primary text color in 'base' set
       const headerTextConfig = uiConfig [INITIAL_PRIMARY_TEXT_COLOR] ||
-                               storeUIConfig [INITIAL_PRIMARY_TEXT_COLOR];
+                               storeUiConfig [INITIAL_PRIMARY_TEXT_COLOR];
       updateObj [HEADER_TEXT_COLOR] = {
         value: {$set: headerTextConfig.value}
       };
@@ -174,11 +174,11 @@ define ("reducers/ui",
 
     /**
      * Return update object for update ui config api
-     * @param {Object} storeUIConfig - config object already set in ui store
+     * @param {Object} storeUiConfig - config object already set in ui store
      * @param {Object} uiConfig - config object passed by developers
      * @returns {Object} - update ui object used to set in store
      */
-    const getUpdateUIConfigUpdateObj = (storeUIConfig, uiConfig) => {
+    const getUpdateUiConfigUpdateObj = (storeUiConfig, uiConfig) => {
       const allowedUpdateKeys = ["key", "value"];
       const updateObj = {};
 
@@ -218,7 +218,7 @@ define ("reducers/ui",
           const accentColorLight = FLATTENED_UI_CONFIG [`${accentSet}_ACCENT_COLOR_LIGHT`];
           const accentColorConfig = uiConfig [accentColor] ||
                                     uiConfig [BASE_COLOR] ||
-                                    storeUIConfig [BASE_COLOR];
+                                    storeUiConfig [BASE_COLOR];
 
           updateObj [accentColor] = {
             value: {$set: accentColorConfig.value}
@@ -295,12 +295,12 @@ define ("reducers/ui",
 
         case ACTION_TYPES.SET_UI_CONFIG:
           return update (state, {
-            uiConfig: getSetUIConfigUpdateObj (state.uiConfig, action.uiConfig)
+            uiConfig: getSetUiConfigUpdateObj (state.uiConfig, action.uiConfig)
           });
 
         case ACTION_TYPES.UPDATE_UI_CONFIG:
           return update (state, {
-            uiConfig: getUpdateUIConfigUpdateObj (state.uiConfig, action.uiConfig)
+            uiConfig: getUpdateUiConfigUpdateObj (state.uiConfig, action.uiConfig)
           });
 
         case ACTION_TYPES.SET_DEVELOPER_UI_CONFIG:
