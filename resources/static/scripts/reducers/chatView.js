@@ -216,6 +216,9 @@ define ("reducers/chatView",
             readFaqList: {$push: [action.faqId]}
           });
 
+        case ACTION_TYPES.RESET:
+          return INITIAL_STATE;
+
         default:
           return state;
       }

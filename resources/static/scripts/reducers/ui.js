@@ -302,6 +302,12 @@ define ("reducers/ui",
             uiConfig: getUpdateUIConfigUpdateObj (state.uiConfig, action.uiConfig)
           });
 
+        case ACTION_TYPES.RESET:
+          // Retain the ui config set throught api
+          return update (INITIAL_STATE, {
+            uiConfig: {$set: state.uiConfig}
+          });
+
         default:
           return state;
       }

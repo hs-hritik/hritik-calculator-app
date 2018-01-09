@@ -280,6 +280,12 @@ define ("reducers/appState",
             footerIsActive: {$set: false}
           });
 
+        case ACTION_TYPES.RESET:
+          // Retain the cif values set throught api
+          return update (INITIAL_STATE, {
+            cif: {$set: state.cif}
+          });
+
         default:
           return state;
       }
