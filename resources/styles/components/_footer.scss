@@ -21,7 +21,7 @@
   .hs-footer {
     flex: 0 0 auto;
     background-color: $form-bg-color;
-    border: 1px solid $form-border-color;
+    border-top: 1px solid $form-border-color;
     border-radius: radius(0 0 8 8);
 
     /// Applies default radius to footer buttons
