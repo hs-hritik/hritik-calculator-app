@@ -9,14 +9,20 @@ define ("helpers/common",
   [
     "store",
     "gunpowder/utils/object",
-    "constants/message"
+    "constants/message",
+    "constants/businessHoursView"
   ],
-  function (store, objectUtils, messageConstants) {
+  function (store, objectUtils, messageConstants, bhConstants) {
     "use strict";
 
     const {
       TYPE: MESSAGE_TYPE
     } = messageConstants;
+
+    const {
+      OFFLINE_BEHAVIOUR
+    } = bhConstants;
+
     /**
      * Determine whether out of business hours logic is applicable based on if
      * the feature is enabled and the current time falls in the out of business
@@ -29,6 +35,23 @@ define ("helpers/common",
       } = store.getState ();
 
       return bhState.businessHoursEnabled && !bhState.inBusinessHours;
+    };
+
+    /**
+     * Determine whether the hide widget business hours configuration applies.
+     * @returns {boolean} - True, if does.
+     */
+    const isWidgetHiddenOutOfBusinessHours = () => {
+      const {
+        businessHoursViewState: {
+          offlineBehaviour
+        }
+      } = store.getState ();
+
+      // Return true IF
+      // it is out of business hours AND
+      // the offline behavior selected is `hide_widget`
+      return isOutOfBusinessHours () && offlineBehaviour === OFFLINE_BEHAVIOUR.HIDE_WIDGET;
     };
 
     /**
@@ -78,6 +101,7 @@ define ("helpers/common",
 
     return {
       isOutOfBusinessHours,
+      isWidgetHiddenOutOfBusinessHours,
       getEndUserFirstMessage,
       getSuggestedFaqs
     };
