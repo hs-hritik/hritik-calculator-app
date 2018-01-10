@@ -22,6 +22,7 @@ define ("actions/appState",
     "helpers/proactiveChat",
     "helpers/ui",
     "helpers/analytics",
+    "helpers/common",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
@@ -40,7 +41,7 @@ define ("actions/appState",
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
     UI_CONFIG_CONSTANTS, analyticsConstants, normalizr, entitySchema, entityHelpers,
     xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
-    proactiveChatHelpers, uiHelpers, analyticsHelpers, xhr, objUtils, uuidGenerator,
+    proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils, uuidGenerator,
     arrayUtils, store, entitiesActions, chatViewActions, uiActions, batchActions,
     actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
@@ -577,8 +578,10 @@ define ("actions/appState",
      */
     const getClientWmConfig = () => {
       const {appState} = store.getState ();
+      const hideWidget = commonHelpers.isWidgetHiddenOutOfBusinessHours ();
+
       return {
-        widgetEnabled: appState.wmEnabled,
+        widgetEnabled: appState.wmEnabled && !hideWidget,
         browserIsMobile: appState.browserIsMobile,
         cssConfig: getLauncherCssConfig ()
       };
