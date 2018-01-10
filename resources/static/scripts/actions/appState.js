@@ -10,6 +10,7 @@ define ("actions/appState",
     "constants/routes",
     "constants/appState",
     "constants/chatView",
+    "constants/uiConfig",
     "constants/analytics",
     "normalizr",
     "helpers/entitySchema",
@@ -19,24 +20,29 @@ define ("actions/appState",
     "helpers/prepareProcessXhrData",
     "helpers/audio",
     "helpers/proactiveChat",
+    "helpers/ui",
     "helpers/analytics",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
+    "gunpowder/utils/array",
     "store",
     "actions/entities",
     "actions/chatView",
+    "actions/ui",
     "actions/batch",
     "actions/actionCreators",
     "utils/postMessage",
     "utils/browser",
+    "utils/dataType",
     "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS, analyticsConstants,
-    normalizr, entitySchema, entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
-    audioHelpers, proactiveChatHelpers, analyticsHelpers, xhr, objUtils, uuidGenerator,
-    store, entitiesActions, chatViewActions, batchActions, actionCreators, postMessage,
-    browserUtils, postSdkMessage) {
+  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
+    UI_CONFIG_CONSTANTS, analyticsConstants, normalizr, entitySchema, entityHelpers,
+    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
+    proactiveChatHelpers, uiHelpers, analyticsHelpers, xhr, objUtils, uuidGenerator,
+    arrayUtils, store, entitiesActions, chatViewActions, uiActions, batchActions,
+    actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -51,6 +57,16 @@ define ("actions/appState",
     } = APP_STATE_CONSTANTS;
     const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
+    const {
+      FLATTENED_UI_CONFIG: {
+        HEADER_BG_COLOR,
+        HEADER_TEXT_COLOR,
+        BASE_COLOR,
+        INITIAL_SECONDARY_BG_COLOR,
+        INITIAL_SECONDARY_TEXT_COLOR
+      },
+      SHADES
+    } = UI_CONFIG_CONSTANTS;
     const {EVENT} = analyticsConstants;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -58,6 +74,9 @@ define ("actions/appState",
     const SKIP_LS_CHECK = true;
 
     let returningUser = false;
+
+    const isCssVarSupported = (window.CSS && window.CSS.supports &&
+                               window.CSS.supports ("--fake-var", 0));
 
     /**
      * Set the identifier in the state to identify the user (or the chat session).
@@ -428,7 +447,7 @@ define ("actions/appState",
      * @param {Object} options
      * @param {string} options.trigger - The source that triggered setting the config
      */
-    const setWmConfig = ({trigger}) => {
+    const setWmConfig = ({trigger, helpshiftConfig}) => {
       return (dispatch, getState) => {
         const state = getState ();
         const {domain, platformId} = state.appState;
@@ -444,31 +463,53 @@ define ("actions/appState",
             );
 
             const {
-              ui,
               appState: {
                 featuresEnabled,
                 wmEnabled: widgetEnabled
+              },
+              ui: {
+                uiConfig,
+                developerUiConfig
               }
             } = store.getState ();
-            const primaryColor = ui.color.primary;
-            const cssConfig = {
-              primaryColor,
-              primaryColorLight: shadeColor (primaryColor, 0.20),
-              primaryColorDark: shadeColor (primaryColor, -0.20)
-            };
+
+            let finalUiConfig;
+            // If ui config is passed in helpshift config options, use that
+            // Else use previously set developer config
+            // Else create a ui config having base color set from dashboard
+            if (dataTypeUtils.isObject (helpshiftConfig.uiConfig) &&
+                Object.keys (helpshiftConfig.uiConfig).length) {
+              finalUiConfig = helpshiftConfig.uiConfig;
+            } else if (developerUiConfig) {
+              finalUiConfig = developerUiConfig;
+            } else {
+              const baseData = BASE_COLOR.split (".");
+              // name of base set
+              const baseSet = baseData [0];
+              // value of base set
+              const baseValue = baseData [1];
+
+              finalUiConfig = {
+                [baseSet]: {
+                  [baseValue]: uiConfig [BASE_COLOR].value
+                }
+              };
+            }
+            dispatch (uiActions.setUiConfig (finalUiConfig));
+            dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
 
             if (featuresEnabled.audioNotifications) {
               audioHelpers.init ();
             }
 
             // Send the config event loaded back to the client
-            postSdkMessage.wmConfig (getClientWmConfig (cssConfig));
+            postSdkMessage.wmConfig (getClientWmConfig ());
 
             if (widgetEnabled) {
               // A side-effect of getting the web chat config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
-              setStyles (cssConfig);
+              setStyles ();
 
               // Apply styles to page
               applyPageStyles ();
@@ -506,17 +547,40 @@ define ("actions/appState",
     };
 
     /**
+     * Returns launcher iframe's css configuration
+     * @returns {Object} - css config
+     */
+    const getLauncherCssConfig = () => {
+      const {ui: {uiConfig}} = store.getState ();
+      const launcherBgColor = uiConfig [HEADER_BG_COLOR].value;
+
+      return {
+        // Set to launcher icon background
+        launcherBgColor,
+        // Set to launcher icon background on hover
+        launcherBgColorLight: uiHelpers.shadeColor (
+          launcherBgColor, SHADES.LIGHT_20
+        ),
+        // Set to launcher icon text i.e. chat and close icon
+        launcherTextColor: uiConfig [HEADER_TEXT_COLOR].value,
+        // Set to unread count background
+        notificationBgColor: uiConfig [INITIAL_SECONDARY_BG_COLOR].value,
+        // Set to unread count text i.e. unread count number
+        notificationTextColor: uiConfig [INITIAL_SECONDARY_TEXT_COLOR].value
+      };
+    };
+
+    /**
      * Return client relevant web chat config object
      * @param {Object} response - the GET wm config response object
      * @returns {Object} - the config object for client
      */
-    const getClientWmConfig = (cssConfig) => {
+    const getClientWmConfig = () => {
       const {appState} = store.getState ();
-
       return {
         widgetEnabled: appState.wmEnabled,
         browserIsMobile: appState.browserIsMobile,
-        cssConfig
+        cssConfig: getLauncherCssConfig ()
       };
     };
 
@@ -534,7 +598,7 @@ define ("actions/appState",
      * Get CSS over the wire, add it to the document and
      * update the custom CSS variables.
      */
-    const setStyles = (cssConfig) => {
+    const setStyles = () => {
       getCss ({
         onSuccess: (css) => {
           // Check if CSS variable is supported by the client. If yes,
@@ -549,16 +613,11 @@ define ("actions/appState",
           // 2. Replace the variables.
           // For unsupported browsers - the reverse.
 
-          let isCssVarSupported = false;
-          if (window.CSS && window.CSS.supports && window.CSS.supports ("--fake-var", 0)) {
-            isCssVarSupported = true;
-          }
-
           if (isCssVarSupported) {
             _addStyleToDocument (css);
-            _updateCssVars (cssConfig);
+            _updateCssVars ();
           } else {
-            const updatedCss = _getCssVarsUpdatedCss (css, cssConfig);
+            const updatedCss = _getCssVarsUpdatedCss (css);
             _addStyleToDocument (updatedCss);
           }
         }
@@ -583,96 +642,75 @@ define ("actions/appState",
     };
 
     /**
+     * Post ui config updated event
+     * This event is used to pass updated launcher styles to messenger js
+     */
+    const _postUiConfigUpdatedEvent = () => {
+      postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ());
+    };
+
+    /**
      * Create a style tag and add it to document's head.
      * @param {String} - css, a string with the CSS styles
      */
     // @TODO: Check if we should move this to a utility module, or a helper.
     const _addStyleToDocument = (css) => {
+      const styleTagId = "hs-style";
       const head = document.head,
             style = document.createElement ("style");
 
       style.type = "text/css";
+      style.id = styleTagId;
       style.appendChild (document.createTextNode (css));
+
+      // If existing style tag is present, remove it as we don't want two style
+      // tags appended to head
+      const existingStyles = document.getElementById (styleTagId);
+      if (existingStyles) {
+        // Post ui config event if existing style is present i.e. after updating
+        // ui config and appending the new styles.
+        // For the first time, do not post update event as launcher styles will be
+        // updated throught sdk config loaded event.
+        _postUiConfigUpdatedEvent ();
+        head.removeChild (existingStyles);
+      }
 
       head.appendChild (style);
     };
 
     /**
-     * Lighten or darken the given color.
-     * Usage example:
-     *  - To lighten a color by 10%
-     *    shadeColor ("#123456", 0.1)
-     *  - To darken a color by 10%
-     *    shadeColor ("#123456", -0.1)
-     * Taken from: https://stackoverflow.com/a/13542669/3785351
-     * @param {String} color - The string of the color which has to be lighten or darken.
-     *                         Only hex is supported. (# must be passed in the beginning.)
-     * @param {Number} shadeFactor - Between -1 to 1. To darken the color, give negative value.
-     *                               To lighten the color, give positive value.
-     */
-    const shadeColor = (color, shadeFactor) => {
-      // Remove #
-      color = color.slice (1);
-      // If color length is 3, change it to 6
-      if (color.length === 3) {
-        color = color [0] + color [0] + color [1] + color [1] + color [2] + color [2];
-      }
-
-      const f = parseInt (color, 16),
-            t = shadeFactor < 0 ? 0 : 255,
-            p = shadeFactor < 0 ? shadeFactor * -1 : shadeFactor,
-            R = f >> 16,
-            G = f >> 8 & 0x00FF,
-            B = f & 0x0000FF;
-
-      return "#" +
-        (0x1000000 + (Math.round ((t - R) * p) + R) *
-         0x10000 + (Math.round ((t - G) * p) + G) *
-         0x100 + (Math.round ((t - B) * p) + B)
-        ).toString (16).slice (1);
-    };
-
-    /**
      * Update CSS variables with the configured values and set the values in
      * the document's css.
-     * @param {Object} - cssConfig, the object with css configured values
      */
-    const _updateCssVars = (cssConfig) => {
-      document.body.style.setProperty (
-        "--hs-custom-primary-color", cssConfig.primaryColor
-      );
-      document.body.style.setProperty (
-        "--hs-custom-primary-color-dark", cssConfig.primaryColorDark
-      );
-      document.body.style.setProperty (
-        "--hs-custom-primary-color-light", cssConfig.primaryColorLight
-      );
+    const _updateCssVars = () => {
+      const {uiConfig} = store.getState ().ui;
+
+      Object.keys (uiConfig).forEach ((key) => {
+        const {cssVarName, value} = uiConfig [key];
+
+        document.body.style.setProperty (
+          cssVarName, value
+        );
+      });
     };
 
     /**
      * Update and return the css string with variables
      * replaced by the configured values
      * @param {String} - css, the css string
-     * @param {Object} - cssConfig, the object with css configured values
+     * @returns {String} - The replaced css string
      */
-    const _getCssVarsUpdatedCss = (css, cssConfig) => {
-      // Because we need to replace variable strings containing special chars
-      // like "(" and ")", we need to escape these chars when creating the
-      // regular expression. A list with all regexp strings params for the vars.
-      const cssVarsRegexpList = [
-        "var\\(--hs-custom-primary-color\\)",
-        "var\\(--hs-custom-primary-color-light\\)",
-        "var\\(--hs-custom-primary-color-dark\\)"
-      ];
+    const _getCssVarsUpdatedCss = (css) => {
+      const {uiConfig} = store.getState ().ui;
+      const cssVarsRegexpList = [];
+      const cssVarsValuesMap = {};
 
-      // When regular expression matches, we need to replace the matches
-      // with the configured values. Mapping all such matches with the values to
-      // be replaced.
-      const cssVarsValuesMap = {
-        "var(--hs-custom-primary-color)": cssConfig.primaryColor,
-        "var(--hs-custom-primary-color-light)": cssConfig.primaryColorLight,
-        "var(--hs-custom-primary-color-dark)": cssConfig.primaryColorDark
-      };
+      Object.keys (uiConfig).forEach ((key) => {
+        const {cssVarName, value} = uiConfig [key];
+
+        cssVarsRegexpList.push (`var\\(${cssVarName}\\)`);
+        cssVarsValuesMap [`var(${cssVarName})`] = value;
+      });
 
       return replaceAll (css, cssVarsRegexpList, cssVarsValuesMap);
     };
@@ -913,6 +951,41 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Update styles with new ui config
+     */
+    const updateStyles = () => {
+      // If css variables are supported, directly update the vars
+      if (isCssVarSupported) {
+        _updateCssVars ();
+        _postUiConfigUpdatedEvent ();
+        return;
+      }
+      // Else load css file, replace placeholders with new values and append to
+      // head
+      setStyles ();
+    };
+
+    /**
+     * Action to set footer active
+     * @returns {Object} - Action
+     */
+    const setFooterActive = () => {
+      return {
+        type: ACTION_TYPES.SET_FOOTER_ACTIVE
+      };
+    };
+
+    /**
+     * Action to set footer inactive
+     * @returns {Object} - Action
+     */
+    const setFooterInactive = () => {
+      return {
+        type: ACTION_TYPES.SET_FOOTER_INACTIVE
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -926,6 +999,9 @@ define ("actions/appState",
       setMetadata,
       setParentPageInfo,
       setProactiveChatRules,
-      executeProactiveChatRules
+      executeProactiveChatRules,
+      updateStyles,
+      setFooterActive,
+      setFooterInactive
     };
   });

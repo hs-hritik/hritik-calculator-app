@@ -12,7 +12,11 @@
 
 @include component(csat) {
 
-  $input-border-color: color(border);
+  $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-border-color: var(--hs-form-border-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-primary-text-color: var(--hs-form-primary-text-color);
 
   .hs-csat {
     display: flex;
@@ -30,14 +34,25 @@
 
     &__form-label {
       font-weight: font-weight(medium);
+      color: $chat-widget-primary-text-color;
     }
 
     &__heading {
+      color: $chat-widget-primary-text-color;
       text-align: center;
     }
 
     &__input {
+      color: $form-primary-text-color;
+      background-color: $form-bg-color;
+      border-color: $form-border-color;
       resize: none;
+
+      &:focus {
+        color: $form-primary-text-color;
+        background-color: $form-bg-color;
+        border-color: $form-accent-color;
+      }
     }
   }
 }

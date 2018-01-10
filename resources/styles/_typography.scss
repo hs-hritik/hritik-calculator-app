@@ -30,7 +30,9 @@
 
 /// Font family for header elements.
 /// @type String | List
-$header-font-family: $_font-family;
+// @NOTE :- In order to support font family ui config,
+// we are not using following header font family variable
+// $header-font-family: $_font-family;
 
 /// Font weight of headers.
 /// @type String
@@ -250,7 +252,6 @@ $defnlist-term-margin-bottom: gutter(4);
   h6 {
     margin-top: 0;
     margin-bottom: $header-margin-bottom;
-    font-family: $header-font-family;
     font-style: $header-font-style;
     font-weight: $header-font-weight;
     line-height: line-height();

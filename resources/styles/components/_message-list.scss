@@ -13,8 +13,10 @@
 @include component(message-list) {
 
   $timestamp-color: color(text, light);
-  $typing-bg-color: color(bg, light);
-  $typing-dot-color: color(text, light);
+
+  $agent-message-bg-color: var(--hs-agent-message-bg-color);
+  $agent-message-border-color: var(--hs-agent-message-border-color);
+  $agent-message-primary-text-color: var(--hs-agent-message-primary-text-color);
 
   .hs-message-list {
     display: flex;
@@ -36,7 +38,8 @@
       width: 52px;
       padding: gutter(16 0);
       margin-top: gutter(12);
-      background-color: $typing-bg-color;
+      background-color: $agent-message-bg-color;
+      border: 1px solid $agent-message-border-color;
       border-radius: 6px;
     }
 
@@ -45,7 +48,7 @@
       width: 8px;
       height: 8px;
       margin: gutter(0 2);
-      background: $typing-dot-color;
+      background: $agent-message-primary-text-color;
       border-radius: 50%;
     }
 

@@ -22,6 +22,10 @@ define ("reducers/faqView",
           return update (state, {
             activeFaqId: {$set: action.faqId}
           });
+
+        case ACTION_TYPES.RESET:
+          return INITIAL_STATE;
+
         default:
           return state;
       }

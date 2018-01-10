@@ -24,22 +24,26 @@ define ("components/faqView",
         onBackBtnClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqViewHeader: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        })
       },
 
       render () {
-        const {title, body, text, onBackBtnClick} = this.props;
+        const {title, body, text, onBackBtnClick, viewStyles} = this.props;
 
         /* eslint-disable react/no-danger */
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.faqViewHeader}
                         showBackBtn={true}
                         onBackBtnClick={onBackBtnClick} />
             <div className="hs-view__content">
               <div className="hs-faq" dir="auto">
-                <h3>{title}</h3>
-                <div dangerouslySetInnerHTML={{__html: body}} />
+                <h3 className="hs-faq__title" >{title}</h3>
+                <div className="hs-faq__body"
+                     dangerouslySetInnerHTML={{__html: body}} />
               </div>
               <Branding text={text} />
             </div>

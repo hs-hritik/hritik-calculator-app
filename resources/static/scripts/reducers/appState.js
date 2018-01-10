@@ -66,7 +66,8 @@ define ("reducers/appState",
       analytics: {
         suggestedFaqReadTracked: false,
         infoBotRequestedTimestamp: Date.now ()
-      }
+      },
+      footerIsActive: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -266,6 +267,23 @@ define ("reducers/appState",
             analytics: {
               infoBotRequestedTimestamp: {$set: action.ts}
             }
+          });
+
+        case ACTION_TYPES.SET_FOOTER_ACTIVE:
+          return update (state, {
+            footerIsActive: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
+        case ACTION_TYPES.SET_FOOTER_INACTIVE:
+          return update (state, {
+            footerIsActive: {$set: false}
+          });
+
+        case ACTION_TYPES.RESET:
+          // Retain the cif values set throught api
+          return update (INITIAL_STATE, {
+            cif: {$set: state.cif}
           });
 
         default:

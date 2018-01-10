@@ -8,13 +8,14 @@
 
 @include component(branding) {
 
-  $label-color: color(text, xx-light);
+  $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
 
   .hs-branding {
     display: block;
     padding: gutter(8 0);
     margin-top: auto;
-    color: $label-color;
+    color: $chat-widget-secondary-text-color;
     text-align: center;
+    opacity: .4;
   }
 }

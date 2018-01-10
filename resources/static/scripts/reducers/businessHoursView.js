@@ -249,6 +249,9 @@ define ("reducers/businessHoursView",
             }
           });
 
+        case ACTION_TYPES.RESET:
+          return INITIAL_STATE;
+
         default:
           return state;
       }

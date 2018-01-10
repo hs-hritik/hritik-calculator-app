@@ -74,9 +74,9 @@ $_colors: (
   ),
   primary: (
     x-dark: palette(green, x-dark),
-    dark: var(--hs-custom-primary-color-dark),
-    base: var(--hs-custom-primary-color),
-    light: var(--hs-custom-primary-color-light),
+    dark: var(--hs-base-color-dark),
+    base: var(--hs-base-color),
+    light: var(--hs-base-color-light),
     x-light: palette(green, x-light),
     xx-light: palette(green, xx-light)
   ),
@@ -159,6 +159,7 @@ $_gutter-base: 4px;
 /// Border radius
 /// @type Map
 $_radius: (
+  large: 8,
   base: 4,
   small: 2,
   round: 50%
@@ -202,13 +203,6 @@ $_body-antialiased: true;
 
 @mixin hs-global-styles() {
   @include _hs-normalize;
-
-  // The selector :root is usually used with CSS variables, which matches
-  // the root level element (in this case, html), but its specificity is higher.
-  // See https://developer.mozilla.org/en-US/docs/Web/CSS/:root
-  :root {
-    --hs-custom-primary-color: color(primary);
-  }
 
   html,
   body {

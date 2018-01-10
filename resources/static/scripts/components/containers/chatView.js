@@ -37,7 +37,8 @@ define ("components/containers/chatView",
         infoBotField: infoBot.data [infoBot.currentField],
         showAgentNickname: state.appState.featuresEnabled.agentNickname,
         text: state.ui.text,
-        issueIsCreated: !!state.appState.activeIssueId
+        issueIsCreated: !!state.appState.activeIssueId,
+        footerIsActive: state.appState.footerIsActive
       };
     };
 
@@ -79,6 +80,12 @@ define ("components/containers/chatView",
         onStarClick: (updatedRating) => {
           dispatch (csatViewActions.updateCsatRating (updatedRating));
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
+        },
+        onFooterFocus: () => {
+          dispatch (appStateActions.setFooterActive ());
+        },
+        onFooterBlur: () => {
+          dispatch (appStateActions.setFooterInactive ());
         }
       };
     };

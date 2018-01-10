@@ -70,6 +70,26 @@ function (EVENT_TYPES, postMessage) {
     postMessage (EVENT_TYPES.SDK_EVENT_CHAT_END);
   };
 
+  /**
+   * Post sdk event for ui config update
+   * @param {Object} cssConfig - css config/styles for launcher icon
+   */
+  const uiConfigUpdatedEvent = (cssConfig) => {
+    postMessage (EVENT_TYPES.SDK_UI_CONFIG_UPDATED, {
+      cssConfig
+    });
+  };
+
+  /**
+   * Post sdk event to log ui config errors
+   * @param {Array} errors - list of ui config errors
+   */
+  const uiConfigErrors = (errors) => {
+    postMessage (EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS, {
+      errors
+    });
+  };
+
   return {
     toggleMessenger,
     getParentInfo,
@@ -77,6 +97,8 @@ function (EVENT_TYPES, postMessage) {
     updateUnreadCount,
     wmConfig,
     jsLoaded,
-    chatEndEvent
+    chatEndEvent,
+    uiConfigUpdatedEvent,
+    uiConfigErrors
   };
 });

@@ -36,6 +36,8 @@ define ("components/chatView",
       propTypes: {
         activeFooter: PropTypes.string.isRequired,
         rating: PropTypes.number,
+        browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
         infoBotField: INFO_BOT_FIELD_PROPS,
@@ -46,12 +48,27 @@ define ("components/chatView",
           faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
           faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
           closeConversationBtn: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        footerIsActive: PropTypes.bool,
+        onFooterFocus: PropTypes.func,
+        onFooterBlur: PropTypes.func
       },
 
       render () {
+        const {
+          footerIsActive,
+          browserIsMobile,
+          allowFullScreen
+        } = this.props;
+
+        const footerClasses = classes ("hs-footer", {
+          "hs-footer--active" : footerIsActive,
+          "hs-footer--mobile": browserIsMobile,
+          "hs-footer--full-screen": allowFullScreen
+        });
+
         return (
-          <div className="hs-footer">
+          <div className={footerClasses}>
             {this._renderFooterComponent ()}
           </div>
         );
@@ -100,7 +117,6 @@ define ("components/chatView",
       _renderClosedConversationFooter () {
         const btnClasses = classes (
           "hs-button",
-          "hs-button--small",
           "hs-chat-footer__button"
         );
 
@@ -121,10 +137,12 @@ define ("components/chatView",
        */
       _renderCsatFooter () {
         return (
-          <div className="hs-chat-footer__csat-footer">
-            <StarRating name="csat"
-                        value={this.props.rating}
-                        onStarClick={this.props.onStarClick} />
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__csat-footer">
+              <StarRating name="csat"
+                          value={this.props.rating}
+                          onStarClick={this.props.onStarClick} />
+            </div>
           </div>
         );
       },
@@ -133,7 +151,11 @@ define ("components/chatView",
        * Render info bot footer.
        */
       _renderInfoBotFooter () {
-        const field = this.props.infoBotField;
+        const {
+          infoBotField: field,
+          onFooterFocus,
+          onFooterBlur
+        } = this.props;
         const hasError = !!this.props.infoBotField.value.errorMsg;
 
         const footerClasses = classes (
@@ -163,6 +185,8 @@ define ("components/chatView",
                      placeholder={field.placeholder}
                      onChange={this._onInfoBotFieldValueChange}
                      onKeyUp={this._onInfoBotFieldKeyUp}
+                     onFocus={onFooterFocus}
+                     onBlur={onFooterBlur}
                      autoFocus />
               <a className="hs-chat-footer__submit">
                 <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
@@ -182,7 +206,6 @@ define ("components/chatView",
         const btnClasses = classes (
           "hs-button",
           "hs-button--hollow",
-          "hs-button--small",
           "hs-chat-footer__button"
         );
 
@@ -262,6 +285,7 @@ define ("components/chatView",
         isTyping: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
         browserIsMobile: PropTypes.bool,
+        allowFullScreen: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onCloseConversation: PropTypes.func.isRequired,
@@ -275,7 +299,13 @@ define ("components/chatView",
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
-        }).isRequired
+        }).isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        }),
+        footerIsActive: PropTypes.bool,
+        onFooterFocus: PropTypes.func,
+        onFooterBlur: PropTypes.func
       },
 
       render () {
@@ -283,11 +313,12 @@ define ("components/chatView",
           browserIsMobile,
           onMinimizeConversation,
           text,
-          issueIsCreated
+          issueIsCreated,
+          viewStyles
         } = this.props;
 
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.chatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
@@ -305,6 +336,11 @@ define ("components/chatView",
               </div>
               <ChatViewFooter activeFooter={this.props.activeFooter}
                               rating={this.props.rating}
+                              browserIsMobile={browserIsMobile}
+                              allowFullScreen={this.props.allowFullScreen}
+                              footerIsActive={this.props.footerIsActive}
+                              onFooterFocus={this.props.onFooterFocus}
+                              onFooterBlur={this.props.onFooterBlur}
                               onStarClick={this.props.onStarClick}
                               onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
                               onCloseConversation={this.props.onCloseConversation}

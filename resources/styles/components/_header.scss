@@ -12,9 +12,8 @@
 
 @include component(header) {
   $padding: gutter(12);
-  $bg-color: color(primary);
-  $color: color(text, white);
-  $link-color: color(text, white);
+  $bg-color: var(--hs-header-bg-color);
+  $header-text-color: var(--hs-header-text-color);
 
   .hs-header {
     display: flex;
@@ -24,13 +23,13 @@
     height: 52px;
     padding: $padding;
     font-weight: font-weight(bold);
-    color: $color;
+    color: $header-text-color;
     background-color: $bg-color;
 
     &__link {
       display: flex;
       align-items: center;
-      color: $link-color;
+      color: $header-text-color;
     }
 
     &__back-icon {

@@ -40,6 +40,7 @@ define ("components/businessHoursView",
       displayName: "BusinessHoursView",
       propTypes: {
         browserIsMobile: PropTypes.bool.isRequired,
+        allowFullScreen: PropTypes.bool,
         text: PropTypes.shape ({
           closeConversationBtn: PropTypes.string.isRequired,
           businessHoursSubmitBtn: PropTypes.string.isRequired,
@@ -71,7 +72,10 @@ define ("components/businessHoursView",
         onRemoveAttachment: PropTypes.func.isRequired,
         contactFormSubmitted: PropTypes.bool.isRequired,
         contactFormDisabled: PropTypes.bool.isRequired,
-        submitInProgress: PropTypes.bool.isRequired
+        submitInProgress: PropTypes.bool.isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        })
       },
       render () {
         const {
@@ -79,13 +83,14 @@ define ("components/businessHoursView",
           browserIsMobile,
           onMinimizeConversation,
           onFilesChange,
-          contactFormDetails
+          contactFormDetails,
+          viewStyles
         } = this.props;
 
         const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
 
         return (
-          <div className="hs-view">
+          <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.businessHoursViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
@@ -95,6 +100,7 @@ define ("components/businessHoursView",
                             enabled={featureIsEnabled} >
                   {this._renderContactForm ()}
                   {this._renderOfflineMessage ()}
+                  {this._renderFooter ()}
                 </DnDWrapper>
               </div>
           </div>
@@ -114,14 +120,15 @@ define ("components/businessHoursView",
         return (
           <div className="hs-business-hours">
             <div>
-              <p>{text.businessHoursContactFormMessage}</p>
+              <p className="hs-business-hours__offline-message">
+                {text.businessHoursContactFormMessage}
+              </p>
               {this._renderFormField (NAME)}
               {this._renderFormField (EMAIL)}
               {this._renderFormField (MESSAGE)}
               {this._renderAttachments ()}
               <Branding text={text} />
             </div>
-            {this._renderFooter ()}
           </div>
         );
       },
@@ -136,15 +143,24 @@ define ("components/businessHoursView",
           return null;
         }
 
-        const infoMessage = contactFormSubmitted ? text.businessHoursThankYouMessage :
-                            text.businessHoursOfflineMessage;
+        let infoMessage;
+        let messageClass = "";
+
+        if (contactFormSubmitted) {
+          infoMessage = text.businessHoursThankYouMessage;
+          messageClass = "hs-business-hours__thank-you-message";
+        } else {
+          infoMessage = text.businessHoursOfflineMessage;
+          messageClass = "hs-business-hours__offline-message";
+        }
 
         return (
           <div className="hs-business-hours">
-            <p>{infoMessage}</p>
+            <p className={messageClass}>
+              {infoMessage}
+            </p>
             <div>
               <Branding text={text} />
-              {this._renderFooter ()}
             </div>
           </div>
         );
@@ -154,8 +170,15 @@ define ("components/businessHoursView",
        * Render footer with button
        */
       _renderFooter () {
-        const {contactFormSubmitted, text, onMinimizeConversation,
-               contactFormDisabled, offlineBehaviour} = this.props;
+        const {
+          contactFormSubmitted,
+          text,
+          onMinimizeConversation,
+          contactFormDisabled,
+          offlineBehaviour,
+          browserIsMobile,
+          allowFullScreen
+        } = this.props;
 
         let btnText, clickHandler;
         if ((offlineBehaviour === CONTACT_FORM && contactFormSubmitted) ||
@@ -167,8 +190,14 @@ define ("components/businessHoursView",
           clickHandler = this._onSendButtonClick;
         }
 
+        const footerClasses = classes ("hs-footer",
+        "hs-footer--center-items", {
+          "hs-footer--mobile": browserIsMobile,
+          "hs-footer--full-screen": allowFullScreen
+        });
+
         return (
-          <div className="hs-footer hs-footer--center-items hs-footer--clear-bg">
+          <div className={footerClasses}>
             <button className="hs-button hs-footer__btn"
                     disabled={contactFormDisabled}
                     onClick={clickHandler} >
@@ -193,14 +222,16 @@ define ("components/businessHoursView",
         let formFieldLabel = "";
         let inputEl = null;
         let errorIconEl = null;
+        let inputClasses = "";
 
         switch (fieldName) {
           case NAME:
             formFieldLabel = text.businessHoursNameLabel;
+            inputClasses = "hs-form-field__input hs-business-hours__form-input";
             inputEl = (
               <input type="text"
                      disabled={contactFormDisabled}
-                     className="hs-form-field__input"
+                     className={inputClasses}
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
                      onChange={this._onNameChange} />
@@ -209,10 +240,11 @@ define ("components/businessHoursView",
 
           case EMAIL:
             formFieldLabel = text.businessHoursEmailLabel;
+            inputClasses = "hs-form-field__input hs-business-hours__form-input";
             inputEl = (
               <input type="text"
                      disabled={contactFormDisabled}
-                     className="hs-form-field__input"
+                     className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
                      onChange={this._onEmailChange} />
@@ -221,8 +253,10 @@ define ("components/businessHoursView",
 
           case MESSAGE:
             formFieldLabel = text.businessHoursMessageLabel;
+            inputClasses = "hs-form-field__input hs-business-hours__message " +
+                           "hs-business-hours__form-input";
             inputEl = (
-              <textarea className="hs-form-field__input hs-business-hours__message"
+              <textarea className={inputClasses}
                         disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
@@ -245,7 +279,9 @@ define ("components/businessHoursView",
 
         return (
           <div className={formFieldClasses}>
-            <div className="hs-form-field__label">{formFieldLabel}</div>
+            <div className="hs-form-field__label hs-business-hours__form-label">
+              {formFieldLabel}
+            </div>
             {inputEl}
             {errorIconEl}
           </div>
@@ -256,14 +292,20 @@ define ("components/businessHoursView",
        * Render attachments
        */
       _renderAttachments () {
-        const {contactFormDetails} = this.props;
-        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
+        const {
+          contactFormDetails: {
+            attachments,
+            attachmentsMeta,
+            attachmentsMeta: {
+              featureIsEnabled
+            }
+          }
+        } = this.props;
 
         if (!featureIsEnabled) {
           return null;
         }
 
-        const {attachments} = contactFormDetails;
         let attachmentsWrapperEl = null;
 
         if (attachments.length) {
@@ -271,7 +313,7 @@ define ("components/businessHoursView",
           const {
             limitHasExceeded,
             sizeHasExceeded
-          } = contactFormDetails.attachmentsMeta;
+          } = attachmentsMeta;
           const wrapperClasses = classes (
             "hs-business-hours__attachment-wrapper", {
               error: limitHasExceeded || sizeHasExceeded
@@ -331,23 +373,27 @@ define ("components/businessHoursView",
         const formattedName = attachmentsHelpers.getFormattedFileName (name);
         const formattedSize = attachmentsHelpers.humanizeFileSize (size);
 
-        return (
-          <div className="hs-business-hours__attachment" key={id}>
-            <div className="hs-business-hours__attachment-info-wrapper">
-              <i className="ion-attachment ion-gray-color" />
-              <div className="hs-business-hours__attachment-name-wrapper">
-                <div>
-                  <span className="hs-business-hours__file-name" title={name} >
-                    {formattedName}
-                  </span>
-                  <span>({formattedSize})</span>
-                </div>
-                {attachmentErrorEl}
-              </div>
+        const attachmentClasses = classes (
+          "hs-business-hours__attachment", {
+            "hs-business-hours__attachment-with-error": attachmentHasError
+          }
+        );
+
+        return ([
+          (<div className={attachmentClasses} key={id}>
+            <div className="hs-business-hours__attachment-details-wrapper">
+              <i className="ion-attachment" />
+              <span className="hs-business-hours__attachment-name">
+                {formattedName}
+              </span>
+              <span className="hs-business-hours__attachment-size" >
+                ({formattedSize})
+              </span>
             </div>
             {iconEl}
-          </div>
-        );
+          </div>),
+          attachmentErrorEl
+        ]);
       },
 
       /**
@@ -363,9 +409,10 @@ define ("components/businessHoursView",
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded);
         return (
           <div className="hs-business-hours__attachment-placeholder">
-            <FileInput iconClasses="ion-attachment ion-gray-color"
+            <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
+                       labelClasses="hs-business-hours__attachment-placeholder-text"
                        infoText={dndInfoText} />
           </div>
         );

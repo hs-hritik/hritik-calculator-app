@@ -7,9 +7,10 @@
 define ("components/containers/replyBox",
   [
     "components/replyBox",
-    "actions/chatView"
+    "actions/chatView",
+    "actions/appState"
   ],
-  function (ReplyBox, chatViewActions) {
+  function (ReplyBox, chatViewActions, appStateActions) {
     "use strict";
 
     const mapStateToProps = (state) => {
@@ -35,6 +36,12 @@ define ("components/containers/replyBox",
         },
         onFilesChange: (files) => {
           dispatch (chatViewActions.createAttachmentMessages (files));
+        },
+        onFooterFocus: () => {
+          dispatch (appStateActions.setFooterActive ());
+        },
+        onFooterBlur: () => {
+          dispatch (appStateActions.setFooterInactive ());
         }
       };
     };

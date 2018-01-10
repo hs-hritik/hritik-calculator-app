@@ -12,17 +12,28 @@
 
 @include component(footer) {
 
-  $bg-color: color(bg, white);
-  $border-color: color(border, light);
+  $form-bg-color: var(--hs-form-bg-color);
+  $form-border-color: var(--hs-form-border-color);
+  $form-primary-text-color: var(--hs-form-primary-text-color);
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-accent-color-light: var(--hs-form-accent-color-light);
 
   .hs-footer {
     flex: 0 0 auto;
-    background-color: $bg-color;
-    border-top: 1px solid $border-color;
+    background-color: $form-bg-color;
+    border-top: 1px solid $form-border-color;
+    border-radius: radius(0 0 8 8);
 
     /// Applies default radius to footer buttons
     &__btn {
+      color: $form-bg-color;
+      background-color: $form-accent-color;
       border-radius: 18px;
+
+      &:hover {
+        color: $form-bg-color;
+        background-color: $form-accent-color-light;
+      }
     }
 
     /// Horizontally center align items
@@ -33,12 +44,6 @@
       padding: gutter(8);
     }
 
-    /// Removes default white background and border of footer
-    &--clear-bg {
-      background: none;
-      border: 0;
-    }
-
     /// Wrapper to align items vertically
     /// @NOTE :- We need a wrapper as we don't want to grow the items to full
     /// width in case of vertical alignment of child elements
@@ -47,6 +52,17 @@
       align-items: center;
       flex-direction: column;
       justify-content: center;
+    }
+
+    /// Modifier to be applied when footer is active
+    &--active {
+      border-color: $form-accent-color;
+    }
+
+    /// Modifier to be applied for mobile browser and full screen
+    &--mobile,
+    &--full-screen {
+      border-radius: 0;
     }
   }
 }
