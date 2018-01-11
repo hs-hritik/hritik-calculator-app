@@ -1,0 +1,5 @@
+Branches:
+feature/bh-hide-widget
+
+Changelog:
+Hide widget if business hours offline behavior is set so

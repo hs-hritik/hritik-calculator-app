@@ -16,7 +16,8 @@ define ("constants/businessHoursView",
 
     const OFFLINE_BEHAVIOUR = {
       CONTACT_FORM: "contact_form",
-      OFFLINE_MESSAGE: "offline_message"
+      OFFLINE_MESSAGE: "offline_message",
+      HIDE_WIDGET: "hide_widget"
     };
 
     return {
