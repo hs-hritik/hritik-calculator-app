@@ -8,12 +8,199 @@
     body {
       font-family: sans-serif;
     }
+
+    .row {
+      padding: 10px;
+      background-color: #efefef;
+      margin: 10px 0;
+    }
+
+    .row > div {
+      display: inline;
+      padding-left: 10px;
+    }
+
+    .btn {
+      position: relative;
+      display: inline-block;
+      height: auto;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      text-transform: uppercase;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      outline: 0;
+      transition: background-color .125s ease-out;
+      color: #fff;
+      background-color: #3d80cc;
+      border-color: transparent;
+    }
+
+    .btn:hover {
+      color: #fff;
+      text-decoration: none;
+      background-color: #215fa6;
+      box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    }
+
+    .btn--secondary {
+      color: #f66;
+      background-color: transparent;
+      border-color: #f66;
+    }
+
+    .btn--secondary:hover {
+      color: #f66;
+      text-decoration: none;
+      background-color: #ffe6e6;
+      box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
+    }
+
+    textarea {
+      font-family: "myriad-pro", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #576066;
+      height: auto;
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 8px 12px;
+      outline: 0;
+      transition: border-color .125s ease-out;
+      width: 100%;
+      color: #576066;
+      border-radius: 4px;
+      background: #fff;
+      border: 1px solid #c8cacc;
+      box-shadow: rgba(0, 0, 0, 0.12) 0 1px 4px inset;
+    }
+
+    #uiConfigTextarea {
+      width: 70%;
+      height: 200px;
+    }
   </style>
 
+  <script>
+    var DEFAULT_UI_CONFIG = {
+      "global": {
+        "color": "",
+        "fontFamily": ""
+      },
+      "widgetFrame": {
+        "primaryBgColor": "",
+        "primaryTextColor": "",
+        "secondaryBgColor": "",
+        "secondaryTextColor": ""
+      },
+      "chatWidget": {
+        "primaryBgColor": "",
+        "primaryTextColor": "",
+        "secondaryTextColor": "",
+        "accentColor": "",
+        "errorColor": ""
+      },
+      "userBubble": {
+        "primaryBgColor": "",
+        "borderColor": "",
+        "primaryTextColor": "",
+        "accentColor": "",
+        "errorColor": ""
+      },
+      "supportBubble": {
+        "primaryBgColor": "",
+        "borderColor": "",
+        "primaryTextColor": "",
+        "accentColor": ""
+      },
+      "csat": {
+        "primaryBgColor": "",
+        "accentColor": ""
+      },
+      "form": {
+        "primaryBgColor": "",
+        "borderColor": "",
+        "primaryTextColor": "",
+        "accentColor": "",
+        "errorColor": ""
+      }
+    };
+
+    window.addEventListener("load", function () {
+      // Set default ui confing value in textarea
+      var uiConfigTextarea = document.querySelector("#uiConfigTextarea");
+      uiConfigTextarea.value = JSON.stringify(DEFAULT_UI_CONFIG, null, 4);
+
+      // Add click event for show button
+      var showBtn = document.querySelector("#showBtn");
+      showBtn.addEventListener("click", function () {
+        window.Helpshift("open");
+      });
+
+      // Add click event for hide button
+      var hideBtn = document.querySelector("#hideBtn");
+      hideBtn.addEventListener("click", function () {
+        window.Helpshift("close");
+      });
+
+      // Add click event for reset button
+      var resetBtn = document.querySelector("#resetBtn");
+      resetBtn.addEventListener("click", function () {
+        window.Helpshift("reset");
+      });
+
+      // Add click event for apply button
+      var applyBtn = document.querySelector("#applyUiConfigBtn");
+      applyBtn.addEventListener("click", function () {
+        var uiConfig = null;
+        try {
+          uiConfig = JSON.parse(uiConfigTextarea.value);
+        } catch (ex) {
+          console.log (ex);
+        }
+
+        if (uiConfig) {
+          window.Helpshift("updateUiConfig", uiConfig);
+        }
+      });
+    });
+  </script>
 </head>
 
 <body>
-  <h2>Helpshift Web Chat Demo</h2>
+  <div>
+    <h2>Helpshift Web Chat Demo</h2>
+    <div class="row">
+      <button class="btn" id="showBtn">Show</button>
+      <div>Opens the widget.</div>
+    </div>
+    <div class="row">
+      <button class="btn" id="hideBtn">Hide</button>
+      <div>Closes the widget.</div>
+    </div>
+    <div class="row">
+      <button class="btn btn--secondary" id="resetBtn">Reset</button>
+      <div>Resets all the data including chat states like faq, answer bot and existing conversation.</div>
+    </div>
+    <div class="row">
+      <h4>UI Config</h4>
+      <span>Applies the below ui configuration to webchat widget. (Please use hex values).</span>
+      <br/>
+      <br/>
+      <textarea id="uiConfigTextarea"></textarea>
+      <br/>
+      <button class="btn" id="applyUiConfigBtn">Apply</button>
+    </div>
+  </div>
 
   <script>
     /* eslint-disable */
