@@ -26,14 +26,14 @@ define ("actions/csatView",
      * @returns {Function} - action
      */
     const submitCsat = (skipReviewComments = false) => {
-      return (dipatch, getState) => {
+      return (dispatch, getState) => {
         const {appState, csatView} = getState ();
 
         if (!csatView.rating) {
           return;
         }
 
-        dipatch (markCsatCompleted ());
+        dispatch (markCsatCompleted ());
 
         const xhrData = {
           "identifier": appState.identifier,
