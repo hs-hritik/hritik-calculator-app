@@ -242,6 +242,7 @@ define ("actions/appState",
           store.dispatch (chatViewActions.startPreChatFeature ());
           break;
 
+        case ISSUE_STATE.RESOLVED:
         case ISSUE_STATE.ACTIVE:
           const activeIssueId = lsHelpers.getActiveIssueId ();
           const internalIssueId = lsHelpers.getInternalIssueId ();
@@ -264,7 +265,6 @@ define ("actions/appState",
           }
           break;
 
-        case ISSUE_STATE.RESOLVED:
         case ISSUE_STATE.REJECTED:
         case ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS:
           // For post chat state, start new conversation.
@@ -989,6 +989,26 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set resolution question as completed
+     * @returns {Object} - Action
+     */
+    const setResolutionQuestionCompleted = () => {
+      return {
+        type: ACTION_TYPES.SET_RESOLUTION_QUESTION_COMPLETED
+      };
+    };
+
+    /**
+     * Action to set csat as completed
+     * @returns {Object} - Action
+     */
+    const setCsatCompleted = () => {
+      return {
+        type: ACTION_TYPES.SET_CSAT_COMPLETED
+      };
+    };
+
     return {
       setIdentifier,
       setClientConfig,
@@ -1005,6 +1025,8 @@ define ("actions/appState",
       executeProactiveChatRules,
       updateStyles,
       setFooterActive,
-      setFooterInactive
+      setFooterInactive,
+      setResolutionQuestionCompleted,
+      setCsatCompleted
     };
   });

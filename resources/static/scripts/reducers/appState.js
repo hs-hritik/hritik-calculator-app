@@ -9,9 +9,10 @@ define ("reducers/appState",
     "constants/actionTypes",
     "constants/activeView",
     "constants/appState",
+    "helpers/localStorage",
     "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, lsHelpers, objUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -37,7 +38,8 @@ define ("reducers/appState",
         answerBot: false,
         infoBot: false,
         csatBot: false,
-        agentNickname: false
+        agentNickname: false,
+        resolutionQuestion: true
       },
       preChatFeatureOrder: ["greeting", "initialUserMessage", "answerBot", "infoBot"],
       preChatFeatureIndex: 0,
@@ -67,7 +69,9 @@ define ("reducers/appState",
         suggestedFaqReadTracked: false,
         infoBotRequestedTimestamp: Date.now ()
       },
-      footerIsActive: false
+      footerIsActive: false,
+      resolutionQuestionCompleted: lsHelpers.getResolutionQuestionStatus (),
+      csatCompleted: lsHelpers.getCsatStatus ()
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -214,7 +218,9 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_CONVERSATION_ENDED:
           return update (state, {
-            conversationStarted: {$set: false}
+            conversationStarted: {$set: false},
+            resolutionQuestionCompleted: {$set: false},
+            csatCompleted: {$set: false}
           });
 
         case ACTION_TYPES.SET_CIF:
@@ -278,6 +284,16 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_FOOTER_INACTIVE:
           return update (state, {
             footerIsActive: {$set: false}
+          });
+
+        case ACTION_TYPES.SET_RESOLUTION_QUESTION_COMPLETED:
+          return update (state, {
+            resolutionQuestionCompleted: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_CSAT_COMPLETED:
+          return update (state, {
+            csatCompleted: {$set: true}
           });
 
         case ACTION_TYPES.RESET:
