@@ -126,8 +126,7 @@
     "border-radius": "8px",
     "z-index": "9999999",
     "overflow":"hidden",
-    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)",
-    "display": "none"
+    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
 
   const MESSENGER_IFRAME_MOBILE_STYLES = {
@@ -142,8 +141,7 @@
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999",
-    "display": "none"
+    "z-index": "9999999"
   };
 
   const MESSENGER_IFRAME_FULL_SCREEN_STYLES = {
@@ -158,8 +156,7 @@
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999",
-    "display": "none"
+    "z-index": "9999999"
   };
 
   const UNREAD_COUNT_STYLES = {
@@ -763,7 +760,6 @@
           break;
 
         case EVENT_TYPES.SDK_RESET:
-          close ();
           setConfig ({
             clientConfig: win.helpshiftConfig,
             trigger: TRIGGER.RESET

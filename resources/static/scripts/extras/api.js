@@ -49,6 +49,20 @@ define ("extras/api",
         trigger: data.trigger,
         helpshiftConfig: data.clientConfig
       }));
+
+      // @TODO - Revisit this approach once reset behaviour changes are implemented
+      const {appState, businessHoursViewState} = store.getState ();
+      // If business hours is enabled and it's out of business hours currently,
+      // show business hours view
+      // Else if conversation is not started, show the conversation view
+      if (businessHoursViewState.businessHoursEnabled &&
+          !businessHoursViewState.inBusinessHours) {
+        store.dispatch (
+          actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
+        );
+      } else if (!appState.conversationStarted) {
+        appStateActions.startConversation ();
+      }
     };
 
     /**
@@ -86,23 +100,11 @@ define ("extras/api",
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
-      const {appState, chatView, businessHoursViewState} = store.getState ();
+      const {appState, chatView} = store.getState ();
 
       if (!minimized) {
         if (!app.isMounted ()) {
           app.init ();
-        }
-
-        // If business hours is enabled and it's out of business hours currently,
-        // show business hours view
-        // Else if conversation is not started, show the conversation view
-        if (businessHoursViewState.businessHoursEnabled &&
-            !businessHoursViewState.inBusinessHours) {
-          store.dispatch (
-            actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
-          );
-        } else if (!appState.conversationStarted) {
-          appStateActions.startConversation ();
         }
 
         // If unreadCount isn't zero and active view is chat view,
@@ -116,11 +118,8 @@ define ("extras/api",
           trigger
         });
       } else if (isIssueClosed (appState.issueState)) {
+        // @TODO : Change this default rating submission after confirming with product
         handleCsatRatingSubmission ();
-        // If minimized is true, and issue state is closed, reset the conversation.
-        store.dispatch (appStateActions.reset ({
-          skipUser: true
-        }));
       }
     };
 
