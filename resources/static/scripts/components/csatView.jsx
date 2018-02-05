@@ -21,20 +21,17 @@ define ("components/csatView",
       propTypes: {
         rating: PropTypes.number.isRequired,
         review: PropTypes.string,
-        completed: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onSubmitCsat: PropTypes.func.isRequired,
         onUpdateCsatRating: PropTypes.func.isRequired,
         onUpdateCsatReview: PropTypes.func.isRequired,
-        onCloseConversation: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           csatViewHeader: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           csatBotResponseMsg: PropTypes.string.isRequired,
           csatBotFormSubmitBtn: PropTypes.string.isRequired,
-          closeConversationBtn: PropTypes.string.isRequired,
           csatBotReviewPlaceholder: PropTypes.string.isRequired,
           csatBotReviewTitle: PropTypes.string.isRequired
         }).isRequired,
@@ -66,16 +63,6 @@ define ("components/csatView",
        * Render csat body.
        */
       _renderCsatBody () {
-        if (this.props.completed) {
-          return this._renderCsatResponseMsg ();
-        }
-        return this._renderCsatForm ();
-      },
-
-      /**
-       * Render csat form.
-       */
-      _renderCsatForm () {
         const {text, rating, review} = this.props;
 
         return (
@@ -105,20 +92,6 @@ define ("components/csatView",
       },
 
       /**
-       * Render csat response message.
-       */
-      _renderCsatResponseMsg () {
-        const {text} = this.props;
-        return (
-          <div className="hs-csat__form">
-            <h3 className="hs-csat__heading">
-              {text.csatBotResponseMsg}
-            </h3>
-          </div>
-        );
-      },
-
-      /**
        * Render csat footer.
        */
       _renderCsatFooter () {
@@ -128,35 +101,25 @@ define ("components/csatView",
           browserIsMobile,
           allowFullScreen
         } = this.props;
-        const btnProps = {};
-        let btnText;
-
-        btnProps.className = classes (
+        const btnClasses = classes (
           "hs-button",
           "hs-footer__btn"
         );
-
-        if (this.props.completed) {
-          btnText = text.closeConversationBtn;
-          btnProps.onClick = this.props.onCloseConversation;
-        } else {
-          btnText = text.csatBotFormSubmitBtn;
-          btnProps.onClick = this.props.onSubmitCsat;
-          btnProps.disabled = (rating === 0);
-        }
-
+        const btnDisabled = (rating === 0);
         const footerClasses = classes ("hs-footer",
-        "hs-footer--center-items", {
-          "hs-footer--mobile": browserIsMobile,
-          "hs-footer--full-screen": allowFullScreen
-        }
-      );
+          "hs-footer--center-items", {
+            "hs-footer--mobile": browserIsMobile,
+            "hs-footer--full-screen": allowFullScreen
+          }
+        );
 
         return (
           <div className={footerClasses}>
             <div className="hs-footer__vertical-items-wrapper">
-              <button {...btnProps}>
-                {btnText}
+              <button className={btnClasses}
+                      onClick={this.props.onSubmitCsat}
+                      disabled={btnDisabled} >
+                {text.csatBotFormSubmitBtn}
               </button>
             </div>
           </div>

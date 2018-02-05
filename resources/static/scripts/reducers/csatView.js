@@ -13,8 +13,7 @@ define ("reducers/csatView",
 
     const INITIAL_STATE = {
       rating: 0,
-      review: "",
-      completed: false
+      review: ""
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -27,11 +26,6 @@ define ("reducers/csatView",
         case ACTION_TYPES.UPDATE_CSAT_REVIEW:
           return update (state, {
             review: {$set: action.review}
-          });
-
-        case ACTION_TYPES.MARK_CSAT_COMPLETED:
-          return update (state, {
-            completed: {$set: true}
           });
 
         case ACTION_TYPES.RESET:
