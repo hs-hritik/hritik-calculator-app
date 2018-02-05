@@ -14,7 +14,8 @@ define ("components/containers/chatView",
     "actions/actionCreators",
     "actions/appState",
     "actions/csatView",
-    "constants/activeView"
+    "constants/activeView",
+    "constants/chatView"
   ],
   function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
     actionCreators, appStateActions, csatViewActions, ACTIVE_VIEW) {
@@ -63,9 +64,6 @@ define ("components/containers/chatView",
         onSubmitInfoBotField: () => {
           dispatch (chatViewActions.submitInfoBotField ());
         },
-        onCloseConversation: () => {
-          dispatch (appStateActions.closeConversation ());
-        },
         onStartCsatSurveyClick: () => {
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
         },
@@ -86,6 +84,18 @@ define ("components/containers/chatView",
         },
         onFooterBlur: () => {
           dispatch (appStateActions.setFooterInactive ());
+        },
+        onAcceptResolutionQuestionClick: () => {
+          // @TODO :- Dispatch action to accept resolution question
+          dispatch (appStateActions.setResolutionQuestionCompleted ());
+          dispatch (chatViewActions.showPostIssueResolutionFooter ());
+        },
+        onRejectResolutionQuestionClick: () => {
+          dispatch (chatViewActions.rejectResolutionQuestion ());
+        },
+        onStartNewConversation: () => {
+          dispatch (appStateActions.reset ());
+          appStateActions.startConversation ();
         }
       };
     };

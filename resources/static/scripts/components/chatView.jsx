@@ -39,15 +39,20 @@ define ("components/chatView",
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
-        onCloseConversation: PropTypes.func.isRequired,
         infoBotField: INFO_BOT_FIELD_PROPS,
         onSubmitInfoBotField: PropTypes.func.isRequired,
         onValueChangeInfoBotField: PropTypes.func.isRequired,
+        onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
+        onRejectResolutionQuestionClick: PropTypes.func.isRequired,
+        onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          faqSuggestionsAdditionalHelpRequiredBtn: PropTypes.string.isRequired,
-          faqSuggestionsAdditionalHelpNotRequiredBtn: PropTypes.string.isRequired,
-          closeConversationBtn: PropTypes.string.isRequired
+          labelYes: PropTypes.string.isRequired,
+          labelNo: PropTypes.string.isRequired,
+          closeConversationBtn: PropTypes.string.isRequired,
+          csatBotRequestMsg: PropTypes.string.isRequired,
+          chatViewConversationResolutionQuestion: PropTypes.string.isRequired,
+          chatViewStartNewConversation: PropTypes.string.isRequired
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -91,11 +96,14 @@ define ("components/chatView",
           case ACTIVE_FOOTER.BLOCKED:
             return this._renderBlockedFooter ();
 
-          case ACTIVE_FOOTER.CLOSED:
-            return this._renderClosedConversationFooter ();
-
           case ACTIVE_FOOTER.CSAT:
             return this._renderCsatFooter ();
+
+          case ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION:
+            return this._renderConversationResolutionFooter ();
+
+          case ACTIVE_FOOTER.START_NEW_CONVERSATION:
+            return this._renderStartNewConversationFooter ();
 
           default:
             return null;
@@ -112,20 +120,48 @@ define ("components/chatView",
       },
 
       /**
-       * Render closed conversation footer.
+       * Render csat footer
        */
-      _renderClosedConversationFooter () {
+      _renderCsatFooter () {
+        return (
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__heading" >
+              <strong className="hs-chat-footer__heading-text" >
+                {this.props.text.csatBotRequestMsg}
+              </strong>
+            </div>
+            <div className="hs-chat-footer__csat-footer">
+              <StarRating name="csat"
+                          value={this.props.rating}
+                          onStarClick={this.props.onStarClick} />
+            </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render conversation resolution footer
+       */
+      _renderConversationResolutionFooter () {
         const btnClasses = classes (
           "hs-button",
+          "hs-button--hollow",
           "hs-chat-footer__button"
         );
 
         return (
           <div className="hs-chat-footer">
+            <div className="hs-chat-footer__heading" >
+              <strong>{this.props.text.chatViewConversationResolutionQuestion}</strong>
+            </div>
             <div className="hs-chat-footer__buttons-wrapper">
-              <button onClick={this._onCloseConversationClick}
-                      className={btnClasses}>
-                {this.props.text.closeConversationBtn}
+              <button className={btnClasses}
+                      onClick={this.props.onRejectResolutionQuestionClick}>
+                {this.props.text.labelNo}
+              </button>
+              <button className={btnClasses}
+                      onClick={this.props.onAcceptResolutionQuestionClick}>
+                {this.props.text.labelYes}
               </button>
             </div>
           </div>
@@ -133,15 +169,21 @@ define ("components/chatView",
       },
 
       /**
-       * Render csat footer
+       * Render start new conversation footer
        */
-      _renderCsatFooter () {
+      _renderStartNewConversationFooter () {
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-chat-footer__button"
+        );
+
         return (
           <div className="hs-chat-footer">
-            <div className="hs-chat-footer__csat-footer">
-              <StarRating name="csat"
-                          value={this.props.rating}
-                          onStarClick={this.props.onStarClick} />
+            <div className="hs-chat-footer__buttons-wrapper">
+              <button className={btnClasses} onClick={this.props.onStartNewConversation}>
+                {this.props.text.chatViewStartNewConversation}
+              </button>
             </div>
           </div>
         );
@@ -200,8 +242,7 @@ define ("components/chatView",
        * Render FAQ suggestions feedback footer.
        */
       _renderFaqSuggestionsFeedback () {
-        const {faqSuggestionsAdditionalHelpRequiredBtn,
-               faqSuggestionsAdditionalHelpNotRequiredBtn} = this.props.text;
+        const {labelYes, labelNo} = this.props.text;
 
         const btnClasses = classes (
           "hs-button",
@@ -218,11 +259,11 @@ define ("components/chatView",
             <div className="hs-chat-footer__buttons-wrapper">
               <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, true)}
                       className={btnClasses}>
-                {faqSuggestionsAdditionalHelpNotRequiredBtn}
+                {labelNo}
               </button>
               <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, false)}
                       className={btnClasses}>
-                {faqSuggestionsAdditionalHelpRequiredBtn}
+                {labelYes}
               </button>
             </div>
           </div>
@@ -235,13 +276,6 @@ define ("components/chatView",
        */
       _onFaqSuggestionsFeedbackClick (feedback) {
         this.props.onFaqSuggestionFeedback (feedback);
-      },
-
-      /**
-       * Click handler for close button.
-       */
-      _onCloseConversationClick () {
-        this.props.onCloseConversation ();
       },
 
       /**
@@ -288,7 +322,6 @@ define ("components/chatView",
         allowFullScreen: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
-        onCloseConversation: PropTypes.func.isRequired,
         infoBotField: INFO_BOT_FIELD_PROPS,
         onSubmitInfoBotField: PropTypes.func.isRequired,
         onValueChangeInfoBotField: PropTypes.func.isRequired,
@@ -296,6 +329,9 @@ define ("components/chatView",
         onRetryAttachmentClick: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
         issueIsCreated: PropTypes.bool.isRequired,
+        onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
+        onRejectResolutionQuestionClick: PropTypes.func.isRequired,
+        onStartNewConversation: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -314,9 +350,24 @@ define ("components/chatView",
           onMinimizeConversation,
           text,
           issueIsCreated,
-          viewStyles
+          viewStyles,
+          activeFooter,
+          rating,
+          allowFullScreen,
+          footerIsActive,
+          onFooterFocus,
+          onFooterBlur,
+          onStarClick,
+          onFaqSuggestionFeedback,
+          onAcceptResolutionQuestionClick,
+          onRejectResolutionQuestionClick,
+          onStartNewConversation,
+          infoBotField,
+          onSubmitInfoBotField,
+          onValueChangeInfoBotField
         } = this.props;
 
+        // @TODO :- Create a container component for ChatViewFooter
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.chatViewHeader}
@@ -334,19 +385,21 @@ define ("components/chatView",
                              onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                              onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
               </div>
-              <ChatViewFooter activeFooter={this.props.activeFooter}
-                              rating={this.props.rating}
+              <ChatViewFooter activeFooter={activeFooter}
+                              rating={rating}
                               browserIsMobile={browserIsMobile}
-                              allowFullScreen={this.props.allowFullScreen}
-                              footerIsActive={this.props.footerIsActive}
-                              onFooterFocus={this.props.onFooterFocus}
-                              onFooterBlur={this.props.onFooterBlur}
-                              onStarClick={this.props.onStarClick}
-                              onFaqSuggestionFeedback={this.props.onFaqSuggestionFeedback}
-                              onCloseConversation={this.props.onCloseConversation}
-                              infoBotField={this.props.infoBotField}
-                              onSubmitInfoBotField={this.props.onSubmitInfoBotField}
-                              onValueChangeInfoBotField={this.props.onValueChangeInfoBotField}
+                              allowFullScreen={allowFullScreen}
+                              footerIsActive={footerIsActive}
+                              onFooterFocus={onFooterFocus}
+                              onFooterBlur={onFooterBlur}
+                              onStarClick={onStarClick}
+                              onFaqSuggestionFeedback={onFaqSuggestionFeedback}
+                              onStartNewConversation={onStartNewConversation}
+                              onAcceptResolutionQuestionClick={onAcceptResolutionQuestionClick}
+                              onRejectResolutionQuestionClick={onRejectResolutionQuestionClick}
+                              infoBotField={infoBotField}
+                              onSubmitInfoBotField={onSubmitInfoBotField}
+                              onValueChangeInfoBotField={onValueChangeInfoBotField}
                               text={this.props.text} />
             </DnDWrapper>
           </div>

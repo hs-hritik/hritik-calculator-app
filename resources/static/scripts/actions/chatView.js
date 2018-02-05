@@ -336,30 +336,7 @@ define ("actions/chatView",
               stopPollingForMessages ();
 
               if (issueState === ISSUE_STATE.RESOLVED) {
-                dispatch (
-                  createMessage ({
-                    type: MESSAGE_TYPE.END_CHAT,
-                    issueId: appState.activeIssueId
-                  })
-                );
-
-                if (appState.featuresEnabled.csatBot) {
-                  dispatch (setChatViewFooter (ACTIVE_FOOTER.CSAT));
-                  dispatch (
-                    createMessage ({
-                      type: MESSAGE_TYPE.CSAT,
-                      issueId: appState.activeIssueId,
-                      playAudio: true
-                    })
-                  );
-
-                  // Track the CSAT requested event.
-                  analyticsHelpers.track (EVENT.CSAT, {
-                    event: EVENT.CSAT_REQUESTED
-                  });
-                } else {
-                  dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
-                }
+                dispatch (showPostIssueResolutionFooter ());
               }
             }
           } catch (ex) {
@@ -373,6 +350,37 @@ define ("actions/chatView",
           lastFetchCompleted = true;
         }
       });
+    };
+
+    /**
+     * Action to show footer post issue resolution
+     * @returns {Function} - Action
+     */
+    const showPostIssueResolutionFooter = () => {
+      return (dispatch, getState) => {
+        const {
+          resolutionQuestionCompleted,
+          csatCompleted,
+          featuresEnabled: {
+            resolutionQuestion: resolutionQuestionEnabled,
+            csatBot: csatBotEnabled
+          }
+        } = getState ().appState;
+
+        if (resolutionQuestionEnabled && !resolutionQuestionCompleted) {
+          dispatch (setChatViewFooter (
+            ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION
+          ));
+        } else if (csatBotEnabled && !csatCompleted) {
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.CSAT));
+          // Track the CSAT requested event.
+          analyticsHelpers.track (EVENT.CSAT, {
+            event: EVENT.CSAT_REQUESTED
+          });
+        } else {
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+        }
+      };
     };
 
     /**
@@ -732,7 +740,7 @@ define ("actions/chatView",
           createMessage ({
             type: MESSAGE_TYPE.TEXT,
             messageConfig: {
-              body: state.ui.text.faqSuggestionsAdditionalHelpRequiredBtn,
+              body: state.ui.text.labelYes,
               isCustomerMsg: true
             }
           })
@@ -759,7 +767,7 @@ define ("actions/chatView",
           createMessage ({
             type: MESSAGE_TYPE.TEXT,
             messageConfig: {
-              body: state.ui.text.faqSuggestionsAdditionalHelpNotRequiredBtn,
+              body: state.ui.text.labelNo,
               isCustomerMsg: true
             }
           })
@@ -780,7 +788,7 @@ define ("actions/chatView",
         dispatch (
           batchActions ([
             updateIssueState (ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS),
-            setChatViewFooter (ACTIVE_FOOTER.CLOSED)
+            setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION)
           ])
         );
 
@@ -1619,6 +1627,18 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to reject resolution question
+     * @returns {Function} - Action
+     */
+    const rejectResolutionQuestion = () => {
+      return (dispatch) => {
+        // @TODO :- dispatch action to send user message to backend
+        // User message will be = `No, I need more help`
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+      };
+    };
+
     return {
       udpateReplyText,
       submitReply,
@@ -1641,6 +1661,8 @@ define ("actions/chatView",
       registerUserProfile,
       startNextPreChatFeature,
       createAttachmentMessages,
-      createAttachmentMessage
+      createAttachmentMessage,
+      showPostIssueResolutionFooter,
+      rejectResolutionQuestion
     };
   });
