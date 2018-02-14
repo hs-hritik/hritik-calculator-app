@@ -175,6 +175,28 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to set resolution question as completed
+     * @param {Boolean} completed - whether resolution question is completed
+     * @returns {Object} - Action
+     */
+    const setResolutionQuestionCompleted = (completed) => {
+      return {
+        type: ACTION_TYPES.SET_RESOLUTION_QUESTION_COMPLETED,
+        completed
+      };
+    };
+
+    /**
+     * Action to set csat as completed
+     * @returns {Object} - Action
+     */
+    const setCsatCompleted = () => {
+      return {
+        type: ACTION_TYPES.SET_CSAT_COMPLETED
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -190,6 +212,8 @@ define ("actions/actionCreators",
       setConversationId,
       updateReadFaqList,
       setInternalIssueId,
-      setInfoBotRequestedTimestamp
+      setInfoBotRequestedTimestamp,
+      setResolutionQuestionCompleted,
+      setCsatCompleted
     };
   });

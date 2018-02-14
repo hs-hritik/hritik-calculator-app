@@ -70,8 +70,10 @@ define ("reducers/appState",
         infoBotRequestedTimestamp: Date.now ()
       },
       footerIsActive: false,
-      resolutionQuestionCompleted: lsHelpers.getResolutionQuestionStatus (),
-      csatCompleted: lsHelpers.getCsatStatus ()
+      postChatFeatures: {
+        resolutionQuestionCompleted: false,
+        csatCompleted: false
+      }
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -219,8 +221,10 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_CONVERSATION_ENDED:
           return update (state, {
             conversationStarted: {$set: false},
-            resolutionQuestionCompleted: {$set: false},
-            csatCompleted: {$set: false}
+            postChatFeatures: {
+              resolutionQuestionCompleted: {$set: false},
+              csatCompleted: {$set: false}
+            }
           });
 
         case ACTION_TYPES.SET_CIF:
@@ -288,12 +292,16 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_RESOLUTION_QUESTION_COMPLETED:
           return update (state, {
-            resolutionQuestionCompleted: {$set: true}
+            postChatFeatures: {
+              resolutionQuestionCompleted: {$set: action.completed}
+            }
           });
 
         case ACTION_TYPES.SET_CSAT_COMPLETED:
           return update (state, {
-            csatCompleted: {$set: true}
+            postChatFeatures: {
+              csatCompleted: {$set: true}
+            }
           });
 
         case ACTION_TYPES.RESET:
