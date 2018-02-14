@@ -7,7 +7,6 @@
 define ("actions/csatView",
   [
     "store",
-    "actions/appState",
     "actions/actionCreators",
     "actions/chatView",
     "constants/actionTypes",
@@ -18,7 +17,7 @@ define ("actions/csatView",
     "helpers/xhr",
     "helpers/analytics"
   ],
-  function (store, appStateActions, actionCreator, chatViewActions, ACTION_TYPES,
+  function (store, actionCreator, chatViewActions, ACTION_TYPES,
     routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers) {
     "use strict";
 
@@ -56,7 +55,7 @@ define ("actions/csatView",
             // a] Set active view to chat view
             dispatch (actionCreator.updateActiveView (ACTIVE_VIEW.CHAT));
             // b] Set csat step as completed
-            dispatch (appStateActions.setCsatCompleted ());
+            dispatch (actionCreator.setCsatCompleted ());
             // c] Set footer to start new conversation footer
             dispatch (chatViewActions.showPostIssueResolutionFooter ());
           }

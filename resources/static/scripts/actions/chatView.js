@@ -45,7 +45,7 @@ define ("actions/chatView",
     analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
-    const {normalize} = normalizr,
+    const {normalize, denormalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
@@ -261,6 +261,35 @@ define ("actions/chatView",
     };
 
     /**
+     * Handles post chat feature steps
+     * Marks post chat steps as completed depending on the config
+     * @param {Object} config - config required to handle post chat features
+     * @param {Boolean} config.isCsatSubmitted - csat rating submitted
+     */
+    const handlePostChatFeatureSteps = (config) => {
+      const {isCsatSubmitted} = config;
+      const {dispatch} = store;
+      const {entities, appState: {activeIssueId}} = store.getState ();
+      const issue = denormalize (activeIssueId, entitySchema.issue, entities);
+      const lastMessageType = issue.messages [issue.messages.length - 1].type;
+      const actionsToDispatch = [];
+
+      // If type of last message in message list is either accepted or rejected by user,
+      // set resolution question step as completed
+      if (lastMessageType === MESSAGE_TYPE.ACCEPTED ||
+          lastMessageType === MESSAGE_TYPE.REJECTED) {
+        actionsToDispatch.push (actionCreators.setResolutionQuestionCompleted (true));
+      }
+
+      // If csat rating is submitted by the user, set csat step as completed
+      if (isCsatSubmitted) {
+        actionsToDispatch.push (actionCreators.setCsatCompleted ());
+      }
+
+      dispatch (batchActions (actionsToDispatch));
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -288,12 +317,20 @@ define ("actions/chatView",
         data: xhrData,
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
-          // @TODO - This is to make sure that onEnd is called even if
+          // @NOTE - This is to make sure that onEnd is called even if
           // any code in onSuccess results in an Exception.
           try {
             const latestState = store.getState ();
+            const {
+              messages,
+              issue_state_data: {
+                state: issueState
+              },
+              csat_received: isCsatSubmitted,
+              messages_cursor: messageCursor
+            } = response;
 
-            if (response.messages.length) {
+            if (messages.length) {
               const normalizedData = normalize (response, entitySchema.messages);
               const processedEntities = entityHelpers.getProcessedEntities (
                 normalizedData.entities
@@ -302,12 +339,12 @@ define ("actions/chatView",
               dispatch (batchActions ([
                 entitiesActions.setEntities (processedEntities),
                 addMessages (appState.activeIssueId, normalizedData.result.messages),
-                setActiveIssueMsgCursor (response.messages_cursor)
+                setActiveIssueMsgCursor (messageCursor)
               ]));
 
               let unreadCount = latestState.chatView.unreadCount;
               // Calculate unread count for agent messages only
-              response.messages.forEach ((msg) => {
+              messages.forEach ((msg) => {
                 if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
                     msg.state !== MESSAGES_STATE.READ) {
                   unreadCount++;
@@ -330,12 +367,12 @@ define ("actions/chatView",
             }
 
             // If issue is resolved or rejected, stop polling and ask user for feedback.
-            const issueState = response.issue_state_data.state;
             if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
               dispatch (updateIssueState (issueState));
               stopPollingForMessages ();
 
               if (issueState === ISSUE_STATE.RESOLVED) {
+                handlePostChatFeatureSteps ({isCsatSubmitted});
                 dispatch (showPostIssueResolutionFooter ());
               }
             }
@@ -359,8 +396,10 @@ define ("actions/chatView",
     const showPostIssueResolutionFooter = () => {
       return (dispatch, getState) => {
         const {
-          resolutionQuestionCompleted,
-          csatCompleted,
+          postChatFeatures: {
+            resolutionQuestionCompleted,
+            csatCompleted
+          },
           featuresEnabled: {
             resolutionQuestion: resolutionQuestionEnabled,
             csatBot: csatBotEnabled
@@ -397,12 +436,26 @@ define ("actions/chatView",
 
     /**
      * Fire xhr to post message as a user.
-     * @param {Object} config - data required for xhr. Required keys:
-     *                          domain, activeIssueId, identifier, msgBody, msgType,
-     * @param {Object} [callbacks] - optional callbacks
+     * @param {Object} config - data required for xhr
+     * @param {String} config.domain - domain
+     * @param {String} config.activeIssueId - active issue id
+     * @param {String} config.identifier - user identifier
+     * @param {String} config.msgBody - message body
+     * @param {String} config.msgType - message type
+     * @param {Function} config.onSuccess - success callback
+     * @param {Function} config.onEnd - end callback
      */
-    const postUserMessage = (config, callbacks = {}) => {
-      const {domain, activeIssueId, identifier, msgBody, msgType} = config;
+    const postUserMessage = (config) => {
+      const {
+        domain,
+        activeIssueId,
+        identifier,
+        msgBody,
+        msgType,
+        onSuccess,
+        onEnd
+      } = config;
+
       xhr ({
         route: routes.postUserReply (domain, activeIssueId),
         data: {
@@ -416,18 +469,14 @@ define ("actions/chatView",
           const normalizedData = normalize (response, entitySchema.message);
           const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
 
-          if (callbacks.onSuccess) {
-            callbacks.onSuccess (response, processedEntities);
+          if (onSuccess) {
+            onSuccess (response, processedEntities);
           }
         },
         onFailure: () => {
           // @TODO: Handler failure.
         },
-        onEnd: () => {
-          if (callbacks.onEnd) {
-            callbacks.onEnd ();
-          }
-        }
+        onEnd
       });
     };
 
@@ -514,9 +563,15 @@ define ("actions/chatView",
           activeIssueId: appState.activeIssueId,
           identifier: appState.identifier,
           msgBody: replyBox.value,
-          msgType: MESSAGE_TYPE.TEXT
-        }, {
+          msgType: MESSAGE_TYPE.TEXT,
           onSuccess: (response, processedEntities) => {
+            // Set resolution question step as incomplete if the user has added
+            // a message after the issue is resolved. Also start polling for new messages.
+            if (appState.issueState === ISSUE_STATE.RESOLVED) {
+              dispatch (actionCreators.setResolutionQuestionCompleted (false));
+              dispatch (updateIssueState (ISSUE_STATE.ACTIVE));
+              startPollingForMessages ();
+            }
             dispatch (udpateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (addMessages (appState.activeIssueId, [response.id]));
@@ -1628,14 +1683,51 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to accept resolution question
+     * @returns {Function} - Action
+     */
+    const acceptResolutionQuestion = () => {
+      return (dispatch, getState) => {
+        const {appState, ui} = getState ();
+
+        postUserMessage ({
+          domain: appState.domain,
+          activeIssueId: appState.activeIssueId,
+          identifier: appState.identifier,
+          msgBody: ui.text.chatViewAcceptedTheSolution,
+          msgType: MESSAGE_TYPE.ACCEPTED,
+          onSuccess: () => {
+            dispatch (actionCreators.setResolutionQuestionCompleted (true));
+            dispatch (showPostIssueResolutionFooter ());
+          }
+        });
+      };
+    };
+
+    /**
      * Action to reject resolution question
      * @returns {Function} - Action
      */
     const rejectResolutionQuestion = () => {
-      return (dispatch) => {
-        // @TODO :- dispatch action to send user message to backend
-        // User message will be = `No, I need more help`
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+      return (dispatch, getState) => {
+        const {appState, ui} = getState ();
+
+        postUserMessage ({
+          domain: appState.domain,
+          activeIssueId: appState.activeIssueId,
+          identifier: appState.identifier,
+          msgBody: ui.text.chatViewRejectedTheSolution,
+          msgType: MESSAGE_TYPE.REJECTED,
+          onSuccess: () => {
+            dispatch (
+              batchActions ([
+                actionCreators.setResolutionQuestionCompleted (true),
+                // @TODO - Set footer for resolution rejected
+                setChatViewFooter (ACTIVE_FOOTER.REPLY)
+              ])
+            );
+          }
+        });
       };
     };
 
@@ -1663,6 +1755,7 @@ define ("actions/chatView",
       createAttachmentMessages,
       createAttachmentMessage,
       showPostIssueResolutionFooter,
+      acceptResolutionQuestion,
       rejectResolutionQuestion
     };
   });

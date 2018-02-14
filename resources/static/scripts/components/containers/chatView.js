@@ -86,9 +86,7 @@ define ("components/containers/chatView",
           dispatch (appStateActions.setFooterInactive ());
         },
         onAcceptResolutionQuestionClick: () => {
-          // @TODO :- Dispatch action to accept resolution question
-          dispatch (appStateActions.setResolutionQuestionCompleted ());
-          dispatch (chatViewActions.showPostIssueResolutionFooter ());
+          dispatch (chatViewActions.acceptResolutionQuestion ());
         },
         onRejectResolutionQuestionClick: () => {
           dispatch (chatViewActions.rejectResolutionQuestion ());
