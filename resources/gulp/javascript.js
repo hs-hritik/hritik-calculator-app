@@ -218,11 +218,20 @@ gulp.task ("copy-webchat", () => {
  * Replace localhost specific template strings with given values
  */
 gulp.task ("replace-localhost", function () {
+  // Read command line args to get webchat root and api root urls and use them if passed
+  // Sample usage is as follows :
+  // gulp --webchat http://localsite.helfshift.mobi --api http://localsite.helfshift.mobi
+  // This allows configuration of local site and api server
+  const webChatRoot = gutil.env.webchat ? gutil.env.webchat :
+                      "http://localhost:3000";
+  const apiRoot = gutil.env.api ? gutil.env.api :
+                  "https://api.helpshift.com";
+
   return gulp.src (PATHS.localhostSource)
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "http://localhost:3000", {
+      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", webChatRoot, {
         skipBinary: true
       }))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
+      .pipe (replace ("{{ENV_API_ROOT}}", apiRoot, {
         skipBinary: true
       }))
       .pipe (gulp.dest (PATHS.localhostDest));
