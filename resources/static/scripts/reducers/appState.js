@@ -24,6 +24,7 @@ define ("reducers/appState",
       activeIssueId: "",
       internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
+      deviceId: "",
       // identifier is the uuid (Universally unique identifier)
       identifier: "",
       userProfileId: "",
@@ -120,6 +121,11 @@ define ("reducers/appState",
               agentNickname: {$set: config.agent_nickname_enabled},
               audioNotifications: {$set: config.audio_notifications_enabled}
             }
+          });
+
+        case ACTION_TYPES.SET_DEVICE_ID:
+          return update (state, {
+            deviceId: {$set: action.id}
           });
 
         case ACTION_TYPES.SET_IDENTIFIER:
@@ -281,7 +287,7 @@ define ("reducers/appState",
           });
 
         case ACTION_TYPES.RESET:
-          // Retain the cif values set throught api
+          // Retain the cif values set through the api
           return update (INITIAL_STATE, {
             cif: {$set: state.cif}
           });

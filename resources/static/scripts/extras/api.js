@@ -44,6 +44,7 @@ define ("extras/api",
      */
     const setConfig = (data) => {
       store.dispatch (appStateActions.setClientConfig (data.clientConfig));
+      store.dispatch (appStateActions.setDeviceId ());
       store.dispatch (appStateActions.setIdentifier (data.clientConfig.userId));
       store.dispatch (appStateActions.setWmConfig ({
         trigger: data.trigger,

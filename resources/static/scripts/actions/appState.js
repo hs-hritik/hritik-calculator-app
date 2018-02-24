@@ -80,6 +80,26 @@ define ("actions/appState",
                                window.CSS.supports ("--fake-var", 0));
 
     /**
+     * Set the Device id value in the state/localstorage via an action.
+     * If a value is present in the localstorage, keep using the same
+     * value.
+     */
+    const setDeviceId = () => {
+      return () => {
+        let dId = lsHelpers.getDeviceId ();
+
+        // Create a new device id if one doesn't exist already.
+        // Set it in the local storage.
+        if (!dId) {
+          dId = uuidGenerator ();
+        }
+
+        // Set the device id in the state.
+        store.dispatch (setDeviceIdValue ());
+      };
+    };
+
+    /**
      * Set the identifier in the state to identify the user (or the chat session).
      * The creation of a new identifier depends on the userId passed here.
      * If the current userId is different than the one stored in the
@@ -395,6 +415,16 @@ define ("actions/appState",
       // If an invalid timeout is passed, return the default reset timeout
       return DEFAULT_RESET_TIMEOUT;
     };
+
+    /**
+     * Action to set device id.
+     * @param {String} id - device id
+     * @returns {Object}
+     */
+    const setDeviceIdValue = (id) => ({
+      type: ACTION_TYPES.SET_DEVICE_ID,
+      id
+    });
 
     /**
      * Action to set identifier.
@@ -990,6 +1020,7 @@ define ("actions/appState",
     };
 
     return {
+      setDeviceId,
       setIdentifier,
       setClientConfig,
       setWmConfig,

@@ -15,6 +15,7 @@ define ("helpers/localStorage",
 
     const KEYS = {
       USER_ID: "ui",
+      DEVICE_ID: "di",
       IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
@@ -38,8 +39,31 @@ define ("helpers/localStorage",
 
     const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
+    const DEVICE_ID_KEY = "DEVICE_ID";
 
     const {ATTACHMENT} = MESSAGE_CONSTANTS.TYPE;
+
+    /**
+     * A helper function to check if a localstorage key should be
+     * cleared. It depends on the `options` object passed with the
+     * `reset` call and, of course, the key.
+     * The DEVICE_ID key should never be reset. We use DEVICE_ID to
+     * identify a browser (the device). Its value should remain the
+     * same irrespective of who (the user) is using it.
+     *
+     * @param {string} key
+     * @param {Object} [options]
+     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
+     *                  By default, user related data will be reset.
+     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
+     *                  related data. By default, they won't be reset.
+     * @returns {boolean}
+     */
+    const _shouldKeyReset = (key, options) => {
+      return !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
+             !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1)) &&
+             !(key === DEVICE_ID_KEY);
+    };
 
     /**
      * Get userId
@@ -61,6 +85,20 @@ define ("helpers/localStorage",
     const removeUserId = () => lsUtils.removeItem (KEYS.USER_ID);
 
     /**
+     * Get the device id
+     * @returns {string}
+     */
+    const getDeviceId = () => lsUtils.getItem (KEYS.DEVICE_ID);
+
+    /**
+     * Set the device id passed to the lsUtils
+     * @param {string} - id
+     */
+    const setDeviceId = (id) => {
+      lsUtils.setItem (KEYS.DEVICE_ID, id);
+    };
+
+    /**
      * Get identifier
      * @returns {String} - identifier
      */
@@ -68,7 +106,7 @@ define ("helpers/localStorage",
 
     /**
      * Set identifier passed to the lsUtils
-     * @param {String} - userId
+     * @param {String} - identifier
      */
     const setIdentifier = (identifier) => {
       lsUtils.removeItem (KEYS.USER_PROFILE_ID);
@@ -246,10 +284,7 @@ define ("helpers/localStorage",
      */
     const reset = (options = {}) => {
       objUtils.forEachKey (KEYS, (key) => {
-        if (
-          !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
-          !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1))
-        ) {
+        if (_shouldKeyReset (key, options)) {
           lsUtils.removeItem (KEYS [key]);
         }
       });
@@ -424,6 +459,8 @@ define ("helpers/localStorage",
       getUserId,
       setUserId,
       removeUserId,
+      getDeviceId,
+      setDeviceId,
       getIdentifier,
       setIdentifier,
       getEntities,

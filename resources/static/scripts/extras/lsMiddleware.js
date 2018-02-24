@@ -150,6 +150,13 @@ define ("extras/lsMiddleware",
         case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
           lsHelpers.setInfoBotRequestedTimestamp (action.ts);
           break;
+
+        case ACTION_TYPES.SET_DEVICE_ID:
+          // Set the device id in localstorage only if it doesn't exist already.
+          if (!lsHelpers.getDeviceId ()) {
+            lsHelpers.setDeviceId (action.id);
+          }
+          break;
       }
     };
 
