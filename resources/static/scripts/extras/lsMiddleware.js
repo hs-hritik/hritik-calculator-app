@@ -40,6 +40,11 @@ define ("extras/lsMiddleware",
       const state = store.getState ();
 
       switch (action.type) {
+        case ACTION_TYPES.SET_CLIENT_CONFIG:
+          // This is used to keep track of userId, passed with helpsfhitConfig.
+          lsHelpers.setUserId (action.config.userId);
+          break;
+
         case ACTION_TYPES.ADD_MESSAGES:
         case ACTION_TYPES.SET_MESSAGES:
           // If the action type is ADD_MESSAGES or SET_MESSAGES,

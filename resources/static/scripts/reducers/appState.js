@@ -25,10 +25,14 @@ define ("reducers/appState",
       internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
       deviceId: "",
-      // identifier is the uuid (Universally unique identifier)
+      // User id values
+      // 1. anonUserIdentifier (created for anon user / default profile)
+      // 2. userId (passed with helpshiftConfig)
+      anonUserIdentifier: "",
+      // @TODO: Identifier will go away. Also, remove the switch case that sets it.
       identifier: "",
-      userProfileId: "",
       userId: "",
+      userProfileId: "",
       platformId: "",
       domain: "",
       issueState: ISSUE_STATE.PRE_CHAT,
@@ -128,9 +132,9 @@ define ("reducers/appState",
             deviceId: {$set: action.id}
           });
 
-        case ACTION_TYPES.SET_IDENTIFIER:
+        case ACTION_TYPES.SET_ANON_USER_ID:
           return update (state, {
-            identifier: {$set: action.id}
+            anonUserIdentifier: {$set: action.id}
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:

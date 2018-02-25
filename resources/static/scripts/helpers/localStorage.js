@@ -16,7 +16,7 @@ define ("helpers/localStorage",
     const KEYS = {
       USER_ID: "ui",
       DEVICE_ID: "di",
-      IDENTIFIER: "i",
+      ANON_USER_ID: "aui",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
       USER_PROFILE_ID: "upi",
@@ -37,7 +37,7 @@ define ("helpers/localStorage",
       INFO_BOT_REQUESTED_TIMESTAMP: "ibrt"
     };
 
-    const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
+    const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
 
@@ -99,18 +99,17 @@ define ("helpers/localStorage",
     };
 
     /**
-     * Get identifier
-     * @returns {String} - identifier
+     * Get anon user id
+     * @returns {string}
      */
-    const getIdentifier = () => lsUtils.getItem (KEYS.IDENTIFIER);
+    const getAnonUserId = () => lsUtils.getItem (KEYS.ANON_USER_ID);
 
     /**
-     * Set identifier passed to the lsUtils
-     * @param {String} - identifier
+     * Set anon user id
+     * @param {string} - id
      */
-    const setIdentifier = (identifier) => {
-      lsUtils.removeItem (KEYS.USER_PROFILE_ID);
-      lsUtils.setItem (KEYS.IDENTIFIER, identifier);
+    const setAnonUserId = (id) => {
+      lsUtils.setItem (KEYS.ANON_USER_ID, id);
     };
 
     /**
@@ -461,8 +460,8 @@ define ("helpers/localStorage",
       removeUserId,
       getDeviceId,
       setDeviceId,
-      getIdentifier,
-      setIdentifier,
+      getAnonUserId,
+      setAnonUserId,
       getEntities,
       setEntities,
       reset,

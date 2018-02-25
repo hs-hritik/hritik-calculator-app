@@ -71,8 +71,6 @@ define ("actions/appState",
     const {EVENT} = analyticsConstants;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
-    // Constant indicating whether to skip checking a value in localstorage or not
-    const SKIP_LS_CHECK = true;
 
     let returningUser = false;
 
@@ -100,82 +98,57 @@ define ("actions/appState",
     };
 
     /**
-     * Set the identifier in the state to identify the user (or the chat session).
-     * The creation of a new identifier depends on the userId passed here.
-     * If the current userId is different than the one stored in the
-     * localstorage, we create a new identifier and update the value.
-     * For details about implementation see -
-     * https://helpshift.atlassian.net/wiki/display/FRON/Possible+Solution+for+Identity+Problem
-     * @param {String} userId
+     * Set user identifier for anon user in state and localstorage.
+     *
+     * A user is identified by one the following two identifiers -
+     * 1. userId
+     *    - passed with the helpshiftConfig object
+     *    - denotes a "logged in user"
+     *    - is stored in localstorage (persisted across page reloads)
+     * 2. anonUserIdentifier
+     *    - created for anonymous (non-logged-in) user
+     *    - is associated with the "default profile"
+     *    - has a special format (hsft_anon_<timestamp>_<15 random characters>)
+     *    - is stored in localstorage (persisted across page reloads)
+     *
+     * Web Chat communicates with backend with either of the two values (with the
+     * `uid` key with APIs).
+     * `userId` always means the value passed with helpshiftConfig. This value
+     * gets set in the state and the localstorage with the SET_CLIENT_CONFIG action.
      */
-    const setIdentifier = (userId) => {
+    const setAnonUserId = () => {
       return () => {
-        const prevUserId = lsHelpers.getUserId ();
-        // identifier is the uuid (Universally unique identifier)
-        const identifier = uuidGenerator ();
-
-        const lastActivityTime = lsHelpers.getLastActivityTime (),
-              {resetTimeout} = store.getState ().appState;
-
-        // If the last activity was done before reset timeout,
-        // use the new identifier.
-        if (lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) {
-          lsHelpers.setUserId (userId);
-          dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
-          return;
-        }
-
-        if (isUserIdValid (prevUserId)) {
-          if (!isUserIdValid (userId)) {
-            // User A -> null
-            // If an identifier does not exist, set one in state and localstorage.
-            dispatchAndSetIdentifier (identifier);
-          } else if (userId !== prevUserId) {
-            // User A -> User B
-            // Set the userId in localstorage.
-            // Set the identifier in state and localstorage.
-            lsHelpers.setUserId (userId);
-            dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
-          } else {
-            // User A -> User A
-            // User id - No action.
-            // Set the identifier in state
-            dispatchAndSetIdentifier (identifier);
-          }
-        } else if (isUserIdValid (userId)) {
-          // null -> User A
-          // Set the userId in localstorage.
-          // If an identifier does not exist, set one in state and localstorage.
-          lsHelpers.setUserId (userId);
-          dispatchAndSetIdentifier (identifier);
-        } else {
-          // null -> null
-          // There would be no userId in localstorage, no action.
-          // If an identifier does not exist, set one in state and localstorage.
-          dispatchAndSetIdentifier (identifier);
-        }
+        // @TODO: Replace uuid with the special anon user id format.
+        // @TODO: Also, update the function name to something like `generateUuid`.
+        const anonUserId = uuidGenerator ();
+        dispatchAndSetAnonUserId (anonUserId);
       };
     };
 
     /**
-     * Auxiliary function to dispatch and set the identifier to app state and
-     * localstorage respectively if identifier isn't present in localstorage.
-     * @param {String} identifier - identifier
-     * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
-     * to be checked if identifier exists.
+     * Dispatch and set the anon user id in the app state and localstorage respectively.
+     * Checks localstorage if an anon user id already exists.
+     * If it does, it gets the value from the ls and sets it in the
+     * state while not affecting ls at all.
+     * If it does not exist, it sets a new value (`anonUserId`) in state
+     * and localstorage.
+     *
+     * @param {string} anonUserId - Identifier for the anon user.
      */
-    const dispatchAndSetIdentifier = (identifier, skipLsCheck) => {
-      if (skipLsCheck || !lsHelpers.getIdentifier ()) {
-        store.dispatch (setIdentifierValue (identifier));
-        lsHelpers.setIdentifier (identifier);
+    const dispatchAndSetAnonUserId = (anonUserId) => {
+      const currentAnonUserId = lsHelpers.getAnonUserId ();
+
+      if (!currentAnonUserId) {
+        store.dispatch (setAnonUserIdValue (anonUserId));
+        lsHelpers.setAnonUserId (anonUserId);
+
+        // @TODO: Double check this with the updated business logic.
         // If we are saving a new identifier, that means it's a new user.
         returningUser = false;
       } else {
-        // If a new identifier is not set in the state and ls, set the identifier
-        // stored in the localstorage to the sate because the initial state
-        // does not have an identifier.
-        const currentIdentifier = lsHelpers.getIdentifier ();
-        store.dispatch (setIdentifierValue (currentIdentifier));
+        store.dispatch (setAnonUserIdValue (currentAnonUserId));
+
+        // @TODO: Double check this with the updated business logic.
         // If we are using the already saved identifier,
         // that means it's a returning user.
         returningUser = true;
@@ -363,13 +336,6 @@ define ("actions/appState",
     };
 
     /**
-     * Return true if the passed user id valid.
-     * @param {String} userId
-     * @returns {Boolean}
-     */
-    const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
-
-    /**
      * Return tags array containing string values converted to lowercase
      * @param {Any} - Unprocessed tags
      * @returns {(Array|null)} - Processed tags containing only string values
@@ -427,12 +393,12 @@ define ("actions/appState",
     });
 
     /**
-     * Action to set identifier.
-     * @param {String} id - identifier
-     * @returns {Object} - action
+     * Action to set anon user id.
+     * @param {string} id - anon user id
+     * @returns {Object}
      */
-    const setIdentifierValue = (id) => ({
-      type: ACTION_TYPES.SET_IDENTIFIER,
+    const setAnonUserIdValue = (id) => ({
+      type: ACTION_TYPES.SET_ANON_USER_ID,
       id
     });
 
@@ -1021,7 +987,7 @@ define ("actions/appState",
 
     return {
       setDeviceId,
-      setIdentifier,
+      setAnonUserId,
       setClientConfig,
       setWmConfig,
       toggleMinimized,
