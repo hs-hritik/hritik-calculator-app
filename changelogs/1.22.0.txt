@@ -1,0 +1,5 @@
+Branches:
+feature/z-index
+
+Changelog:
+Add support for setting z-index of web chat launcher
