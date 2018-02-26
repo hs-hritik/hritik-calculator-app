@@ -93,7 +93,7 @@ define ("actions/appState",
         }
 
         // Set the device id in the state.
-        store.dispatch (setDeviceIdValue ());
+        store.dispatch (setDeviceIdValue (dId));
       };
     };
 
@@ -439,8 +439,8 @@ define ("actions/appState",
     /**
      * Action to set the web chat configuration set by the Helpshift admin
      * and set it to the store. Post message to the client with the config.
-     * This configuration contains settings like if wm is enabled, appearance,
-     * answer bot, etc.
+     * This configuration contains settings like if web chat is enabled,
+     * appearance, etc.
      * @param {Object} options
      * @param {string} options.trigger - The source that triggered setting the config
      */
@@ -524,14 +524,15 @@ define ("actions/appState",
 
     /**
      * Get web chat config via the HS API.
-     * @param {String} domain
-     * @param {String} platformId
+     * @param {string} domain
+     * @param {string} platformId
      * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
      */
     const getWmConfig = (domain, platformId, callbacks) => {
       xhr ({
         route: routes.getWmConfig (domain, platformId),
         headers: xhrHelpers.getCommonHeaders (),
+        data: xhrHelpers.getPreparedXhrData (),
         onSuccess: (response) => {
           if (callbacks.onSuccess) {
             callbacks.onSuccess (response);

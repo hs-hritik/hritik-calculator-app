@@ -32,9 +32,14 @@ define ("reducers/appState",
       // @TODO: Identifier will go away. Also, remove the switch case that sets it.
       identifier: "",
       userId: "",
+      userName: "",
+      userEmail: "",
+      userHash: "",
       userProfileId: "",
       platformId: "",
       domain: "",
+      // Whether an issue (active/resolved) exists for this profile
+      issueExists: false,
       issueState: ISSUE_STATE.PRE_CHAT,
       featuresEnabled: {
         greeting: true,
@@ -124,7 +129,8 @@ define ("reducers/appState",
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
               audioNotifications: {$set: config.audio_notifications_enabled}
-            }
+            },
+            issueExists: {$set: config.issue_exists}
           });
 
         case ACTION_TYPES.SET_DEVICE_ID:
@@ -142,6 +148,9 @@ define ("reducers/appState",
             platformId: {$set: action.config.platformId},
             domain: {$set: action.config.domain},
             userId: {$set: action.config.userId},
+            userName: {$set: action.config.userName},
+            userEmail: {$set: action.config.userEmail},
+            userHash: {$set: action.config.userHash},
             resetTimeout: {$set: action.config.resetTimeout},
             tags: {$set: action.config.tags},
             sdkConfigOptions: {

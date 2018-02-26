@@ -180,6 +180,7 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:
+          // @TODO: Remove this during clean up. This will be unnecessary with chat bots.
           const {userName, userEmail} = action.config,
                 infoBotChangeObj = {};
           if (typeof userName === "string" && userName) {
