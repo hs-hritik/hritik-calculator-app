@@ -279,6 +279,14 @@
   const createLauncherIframe = () => {
     const iframe = doc.createElement ("iframe");
     setStyle (iframe, LAUNCHER_IFRAME_STYLES);
+
+    // Update z-index of launcher if it was passed with helpshfitConfig
+    if (typeof state.widgetOptions.zIndex === "number") {
+      setStyle (iframe, {
+        zIndex: state.widgetOptions.zIndex
+      });
+    }
+
     return iframe;
   };
 
@@ -497,6 +505,17 @@
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
     }
+
+    // Update z-index of the web chat iframe if it was passed with helpshfitConfig
+    // The client (via helpshiftConfig) can set the z-index value of the launcher
+    // iframe. We derive the z-index value for the chat widget iframe by incrementing
+    // it by a number. Incrementing by 10, the choice of number doesn't make much
+    // of a difference.
+    if (typeof state.widgetOptions.zIndex === "number") {
+      setStyle (webSdkIframe, {
+        zIndex: state.widgetOptions.zIndex + 10
+      });
+    }
   };
 
   /**
@@ -675,6 +694,10 @@
 
     if (typeof options.position === "string") {
       state.widgetOptions.position = options.position;
+    }
+
+    if (typeof options.zIndex === "number") {
+      state.widgetOptions.zIndex = options.zIndex;
     }
   };
 
