@@ -19,11 +19,12 @@ define ("extras/api",
     "actions/csatView",
     "actions/ui",
     "components/app",
-    "helpers/analytics"
+    "helpers/analytics",
+    "helpers/common"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, uiActions, app, analyticsHelpers) {
+    actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers) {
     "use strict";
 
     const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
@@ -49,20 +50,6 @@ define ("extras/api",
         trigger: data.trigger,
         helpshiftConfig: data.clientConfig
       }));
-
-      // @TODO - Revisit this approach once reset behaviour changes are implemented
-      const {appState, businessHoursViewState} = store.getState ();
-      // If business hours is enabled and it's out of business hours currently,
-      // show business hours view
-      // Else if conversation is not started, show the conversation view
-      if (businessHoursViewState.businessHoursEnabled &&
-          !businessHoursViewState.inBusinessHours) {
-        store.dispatch (
-          actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
-        );
-      } else if (!appState.conversationStarted) {
-        appStateActions.startConversation ();
-      }
     };
 
     /**
@@ -167,14 +154,12 @@ define ("extras/api",
      * Dispatches appropriate action depending on the current chat view
      */
     const handleIssueCreation = () => {
-      const {businessHoursViewState, appState} = store.getState ();
+      const {appState} = store.getState ();
       const currentPreChatFeature = appState.preChatFeatureOrder [
         appState.preChatFeatureIndex
       ];
 
-      // @TODO: Move this condition to helpers as it is required often
-      if (businessHoursViewState.businessHoursEnabled &&
-        !businessHoursViewState.inBusinessHours) {
+      if (commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (businessHoursActions.registerUserAndCreateIssue ());
       } else if (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) {
         store.dispatch (chatViewActions.startNextPreChatFeature ());

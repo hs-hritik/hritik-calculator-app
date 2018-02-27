@@ -12,6 +12,7 @@ define ("actions/appState",
     "constants/chatView",
     "constants/uiConfig",
     "constants/analytics",
+    "constants/activeView",
     "normalizr",
     "helpers/entitySchema",
     "helpers/entity",
@@ -39,11 +40,11 @@ define ("actions/appState",
     "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
-    UI_CONFIG_CONSTANTS, analyticsConstants, normalizr, entitySchema, entityHelpers,
-    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
-    proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils, uuidGenerator,
-    arrayUtils, store, entitiesActions, chatViewActions, uiActions, batchActions,
-    actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
+    UI_CONFIG_CONSTANTS, analyticsConstants, ACTIVE_VIEW, normalizr, entitySchema,
+    entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
+    proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils,
+    uuidGenerator, arrayUtils, store, entitiesActions, chatViewActions, uiActions,
+    batchActions, actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -441,6 +442,26 @@ define ("actions/appState",
     };
 
     /**
+     * Set view according to business hours
+     * For in business hours, show chat view
+     * For out of business hours, show out of business hours view
+     */
+    const setViewAccordingToBusinessHours = () => {
+      const {appState} = store.getState ();
+      // If business hours is enabled and it's out of business hours currently,
+      // show out of business hours view
+      // Else if conversation is not started, show the chat view
+      if (commonHelpers.isOutOfBusinessHours ()) {
+        store.dispatch (
+          actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
+        );
+      } else if (!appState.conversationStarted) {
+        // @TODO - revisit start conversation after conversation data is moved to backend
+        startConversation ();
+      }
+    };
+
+    /**
      * Action to set the web chat configuration set by the Helpshift admin
      * and set it to the store. Post message to the client with the config.
      * This configuration contains settings like if wm is enabled, appearance,
@@ -498,6 +519,8 @@ define ("actions/appState",
             }
             dispatch (uiActions.setUiConfig (finalUiConfig));
             dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
+
+            setViewAccordingToBusinessHours ();
 
             if (featuresEnabled.audioNotifications) {
               audioHelpers.init ();
