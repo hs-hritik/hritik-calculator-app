@@ -75,6 +75,7 @@ define ("components/chatViewFooter",
       _renderFooterComponent () {
         switch (this.props.activeFooter) {
           case ACTIVE_FOOTER.REPLY:
+          case ACTIVE_FOOTER.SOLUTION_REJECTED:
             return <ReplyBoxContainer />;
 
           case ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK:

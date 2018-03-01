@@ -568,8 +568,11 @@ define ("actions/chatView",
             // Set resolution question step as incomplete if the user has added
             // a message after the issue is resolved. Also start polling for new messages.
             if (appState.issueState === ISSUE_STATE.RESOLVED) {
-              dispatch (actionCreators.setResolutionQuestionCompleted (false));
-              dispatch (updateIssueState (ISSUE_STATE.ACTIVE));
+              batchActions ([
+                dispatch (actionCreators.setResolutionQuestionCompleted (false)),
+                dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY)),
+                dispatch (updateIssueState (ISSUE_STATE.ACTIVE))
+              ]);
               startPollingForMessages ();
             }
             dispatch (udpateReplyText (""));
@@ -1722,8 +1725,7 @@ define ("actions/chatView",
             dispatch (
               batchActions ([
                 actionCreators.setResolutionQuestionCompleted (true),
-                // @TODO - Set footer for resolution rejected
-                setChatViewFooter (ACTIVE_FOOTER.REPLY)
+                setChatViewFooter (ACTIVE_FOOTER.SOLUTION_REJECTED)
               ])
             );
           }
