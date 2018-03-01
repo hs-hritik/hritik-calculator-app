@@ -35,7 +35,6 @@ define ("components/message",
         isLastMessage: PropTypes.bool,
         isLastMessageInGroup: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
-        onStartCsatSurveyClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
