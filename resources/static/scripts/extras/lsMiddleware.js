@@ -87,7 +87,7 @@ define ("extras/lsMiddleware",
           }
           break;
 
-        case ACTION_TYPES.SET_ACTIVE_ISSUE:
+        case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
           lsHelpers.setActiveIssueId (action.id);
           break;
 

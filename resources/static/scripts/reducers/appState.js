@@ -162,7 +162,7 @@ define ("reducers/appState",
             }
           });
 
-        case ACTION_TYPES.SET_ACTIVE_ISSUE:
+        case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
           return update (state, {
             activeIssueId: {$set: action.id}
           });

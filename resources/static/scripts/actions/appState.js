@@ -156,6 +156,31 @@ define ("actions/appState",
     };
 
     /**
+     * Initialize Web Chat by setting issue details to the state. This function
+     * is triggered by the client once it's done processing the config via the
+     * CMD_INITIALIZE event.
+     *
+     * After Web Chat gets the configuration from the backend, it needs to
+     * determine whether an active issue exists for the profile so that it can
+     * either start polling for messages (if issue exists) or wait for the
+     * web chat widget to open, in which case a pre-issue gets created.
+     * This function is to set issue details in the state.
+     */
+    const initialize = () => {
+      const {
+        appState: {
+          wmEnabled: wcEnabled
+        }
+      } = store.getState ();
+
+      if (!wcEnabled || commonHelpers.isOutOfBusinessHours ()) {
+        return;
+      }
+
+      store.dispatch (setIssueState ());
+    };
+
+    /**
      * Action to set conversation started
      * @returns {Object} - Action
      */
@@ -226,6 +251,7 @@ define ("actions/appState",
 
     /**
      * Handle ongoing conversation.
+     * @TODO: This function will need clean up with the chat bots changes.
      */
     const handleOngoingConversation = () => {
       const issueState = lsHelpers.getIssueState ();
@@ -247,7 +273,7 @@ define ("actions/appState",
           // and start polling for new messages.
           if (activeIssueId) {
             cleanUpAndRehydrate ();
-            store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
+            store.dispatch (chatViewActions.setActiveIssueId (activeIssueId));
             chatViewActions.startPollingForMessages ();
           } else {
             // Ideally, this shouldn't be the case because we are first setting the
@@ -741,9 +767,10 @@ define ("actions/appState",
      * and return the active issue id.
      * If there is no active issue, return null.
      * @param {Object} issues - issues entity.
-     * @returns {String|null} - active issue id or null
+     * @returns {string|null} - active issue id or null
      */
     const _getActiveIssueId = (issues) => {
+      // @TODO: Update it depending on how are we going to handle pre-issues.
       let activeIssueId = null;
 
       objUtils.forEachKey (issues, (id, issue) => {
@@ -790,7 +817,7 @@ define ("actions/appState",
                 }
               }
             }),
-            chatViewActions.setActiveIssue (null),
+            chatViewActions.setActiveIssueId (null),
             actionCreators.setInternalIssueId (null),
             chatViewActions.updateIssueState (ISSUE_STATE.PRE_CHAT),
             chatViewActions.setChatViewFooter (ACTIVE_FOOTER.BLOCKED)
@@ -801,39 +828,41 @@ define ("actions/appState",
     };
 
     /**
-     * Action to get user issues.
-     * @param {Object} user - user object. Contains id, name and email.
+     * Action to set issue state in the state. Gets all the issues first via the
+     * GET issues API and then sets the issue details from its response.
      * @returns {Object} - action
      */
-    // @TODO: Remove the getIssues function if not required.
-    // Temporarily disabling no-unused-vars to avoid eslint error.
-    /* eslint-disable no-unused-vars */
-    const getIssues = (identifier) => {
-    /* eslint-enable no-unused-vars */
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-        xhr ({
-          route: routes.getMyIssues (appState.domain),
-          data: {
-            "identifier": identifier,
-            "platform-id": appState.platformId
-          },
-          headers: xhrHelpers.getCommonHeaders (),
+    const setIssueState = () => {
+      return (dispatch) => {
+        getIssues ({
           onSuccess: (response) => {
             const normalizedData = normalize (response, entitySchema.issues);
-            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+            const processedEntities = entityHelpers.getProcessedEntities (
+              normalizedData.entities
+            );
 
             dispatch (entitiesActions.setEntities (processedEntities));
 
             const activeIssueId = _getActiveIssueId (processedEntities.issues);
 
+            // @TODO: Handle active pre-issue as well.
             if (activeIssueId) {
-              // Active issue workflow
-              dispatch (chatViewActions.setActiveIssue (activeIssueId));
+              dispatch (
+                batchActions ([
+                  chatViewActions.setActiveIssueId (activeIssueId),
+                  // @TODO: Set internal issue id to the long issue id
+                  // of the issue, e.g. test_issue_123456.
+                  actionCreators.setInternalIssueId (activeIssueId)
+                ])
+              );
               chatViewActions.startPollingForMessages ();
             } else {
-              dispatch (startNewConversation ());
+              dispatch (
+                batchActions ([
+                  chatViewActions.setActiveIssueId (null),
+                  actionCreators.setInternalIssueId (null)
+                ])
+              );
             }
           },
           onFailure: () => {
@@ -841,6 +870,25 @@ define ("actions/appState",
           }
         });
       };
+    };
+
+    /**
+     * Call the `GET issues` API to get the list of issue for the given profile.
+     * The response may contain issue or pre-issue objects.
+     * @param {object} config
+     * @param {function} config.onSuccess
+     * @param {function} config.onFailure
+     */
+    const getIssues = ({onSuccess, onFailure}) => {
+      const {appState} = store.getState ();
+
+      xhr ({
+        route: routes.getIssues (appState.domain),
+        data: xhrHelpers.getPreparedXhrData (),
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess,
+        onFailure
+      });
     };
 
     /**
@@ -991,6 +1039,7 @@ define ("actions/appState",
       setAnonUserId,
       setClientConfig,
       setWmConfig,
+      initialize,
       toggleMinimized,
       reset,
       setInitialUserMsg,

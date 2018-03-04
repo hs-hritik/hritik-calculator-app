@@ -15,7 +15,7 @@ define ("constants/routes",
 
     const getCss = () => "/css/style.css";
 
-    const getMyIssues = (domain) => `${BASE}${domain}/my-issues`;
+    const getIssues = (domain) => `${BASE}${domain}/issues`;
 
     const postUserReply = (domain, issueId) =>
                            `${BASE}${domain}/issues/${issueId}/messages/user`;
@@ -56,7 +56,7 @@ define ("constants/routes",
     return {
       getWmConfig,
       getCss,
-      getMyIssues,
+      getIssues,
       postUserReply,
       getMessages,
       getFaq,

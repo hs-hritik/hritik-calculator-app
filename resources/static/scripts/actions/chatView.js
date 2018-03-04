@@ -639,7 +639,7 @@ define ("actions/chatView",
                 setMessages (newIssueId, dummyIssueMsgIds),
                 // Remove messages from dummy issue
                 setMessages (dummyIssueId, []),
-                setActiveIssue (newIssueId),
+                setActiveIssueId (newIssueId),
                 actionCreators.setInternalIssueId (response.internal_id),
                 setEndUserFirstMessageId (endUserFirstMsgNewId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
@@ -709,13 +709,13 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to set active issue.
+     * Action to set active issue id.
      * @param {String} activeIssueId - active issue id.
      * @returns {Object} - action
      */
-    const setActiveIssue = (activeIssueId) => {
+    const setActiveIssueId = (activeIssueId) => {
       return {
-        type: ACTION_TYPES.SET_ACTIVE_ISSUE,
+        type: ACTION_TYPES.SET_ACTIVE_ISSUE_ID,
         id: activeIssueId
       };
     };
@@ -1627,7 +1627,7 @@ define ("actions/chatView",
       getFaqSuggestions,
       addMessages,
       setMessages,
-      setActiveIssue,
+      setActiveIssueId,
       setChatViewFooter,
       rejectFaqSuggestions,
       acceptFaqSuggestions,
