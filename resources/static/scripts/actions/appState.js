@@ -56,7 +56,6 @@ define ("actions/appState",
       PRE_CHAT_FEATURES,
       TRIGGER
     } = APP_STATE_CONSTANTS;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const {
       FLATTENED_UI_CONFIG: {
@@ -795,35 +794,18 @@ define ("actions/appState",
     /**
      * Action to start new conversation.
      * Reset the previous localstorage data (if any).
-     * Creates dummy issue entity.
-     * The initial conversation on the web sdk would not be part of an
-     * issue created on the server. So, we need to create a dummy issue
-     * on frontend and add messages to it.
+     * Creates pre-issue on the backend.
      * @returns {Function} - action.
      */
     const startNewConversation = () => {
-      return (dispatch, getState) => {
+      return (dispatch) => {
+        // @TODO: Check if resetting localstorage is applicable.
         lsHelpers.reset ({
           skipUser: true
         });
-        const state = getState ();
-        // Create dummy issue entity.
-        dispatch (
-          batchActions ([
-            entitiesActions.setEntities ({
-              issues: {
-                [state.appState.dummyIssueId]: {
-                  messages: []
-                }
-              }
-            }),
-            chatViewActions.setActiveIssueId (null),
-            actionCreators.setInternalIssueId (null),
-            chatViewActions.updateIssueState (ISSUE_STATE.PRE_CHAT),
-            chatViewActions.setChatViewFooter (ACTIVE_FOOTER.BLOCKED)
-          ])
-        );
-        dispatch (chatViewActions.startPreChatFeature ());
+
+        // Create pre-issue
+        dispatch (chatViewActions.createPreIssue ());
       };
     };
 
@@ -852,7 +834,8 @@ define ("actions/appState",
                   chatViewActions.setActiveIssueId (activeIssueId),
                   // @TODO: Set internal issue id to the long issue id
                   // of the issue, e.g. test_issue_123456.
-                  actionCreators.setInternalIssueId (activeIssueId)
+                  actionCreators.setInternalIssueId (activeIssueId),
+                  chatViewActions.updateIssueState (ISSUE_STATE.ACTIVE)
                 ])
               );
               chatViewActions.startPollingForMessages ();

@@ -34,7 +34,7 @@ define ("constants/routes",
 
     const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
 
-    const postIssue = (domain) => `${BASE}${domain}/issues`;
+    const postPreIssue = (domain) => `${BASE}${domain}/pre-issues`;
 
     const postCSAT = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/csat`;
 
@@ -62,7 +62,7 @@ define ("constants/routes",
       getFaq,
       putFaqFeedback,
       getFaqSuggestions,
-      postIssue,
+      postPreIssue,
       postCSAT,
       postProfile,
       putMessagesSeen,

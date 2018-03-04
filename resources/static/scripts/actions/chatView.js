@@ -662,6 +662,78 @@ define ("actions/chatView",
     };
 
     /**
+     * Create pre-issue on backend.
+     */
+    const createPreIssue = () => {
+      return (dispatch, getState) => {
+        const {
+          appState: {
+            domain,
+            tags,
+            cif,
+            metadata
+          }
+        } = getState ();
+
+        dispatch (disableReplyBox ());
+
+        // Prepare XHR data
+        const meta = {
+          device_info: metadata
+        };
+
+        if (tags) {
+          meta.custom_meta = {
+            "hs-tags": tags
+          };
+        }
+
+        const xhrData = {
+          meta: JSON.stringify (meta)
+        };
+
+        // If CIF is set and contains at least one field, add it to XHR data
+        if (cif && Object.keys (cif).length) {
+          xhrData.custom_fields = JSON.stringify (cif);
+        }
+
+        // @TODO: Check how are we going to send name with create-pre-issue XHR.
+        // Discussion still going on with backend.
+
+        xhr ({
+          route: routes.postPreIssue (domain),
+          data: xhrHelpers.getPreparedXhrData (xhrData),
+          headers: xhrHelpers.getCommonHeaders (),
+          method: "POST",
+          onSuccess: (response) => {
+            const normalizedData = normalize (response, entitySchema.issue);
+            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+            dispatch (entitiesActions.setEntities (processedEntities));
+
+            const newIssueId = response.id;
+            dispatch (
+              batchActions ([
+                setActiveIssueId (newIssueId),
+                actionCreators.setInternalIssueId (response.internal_id),
+                // @TODO: Double check how are we going to maintain issue and pre-issue states.
+                updateIssueState (ISSUE_STATE.ACTIVE),
+                setChatViewFooter (ACTIVE_FOOTER.REPLY)
+              ])
+            );
+            startPollingForMessages ();
+
+            // Track the issue created event.
+            // @TODO: Confirm if issue created event has to be tracked from Web Chat.
+            analyticsHelpers.track (EVENT.ISSUE_CREATED);
+          },
+          onEnd: () => {
+            dispatch (enableReplyBox ());
+          }
+        });
+      };
+    };
+
+    /**
      * Fetch data & creates issue on occurance of corresponding event.
      */
     const fetchDataForIssueCreation = () => {
@@ -1620,6 +1692,7 @@ define ("actions/chatView",
     };
 
     return {
+      createPreIssue,
       udpateReplyText,
       submitReply,
       startPollingForMessages,
