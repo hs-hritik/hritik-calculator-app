@@ -18,7 +18,7 @@ define ("reducers/appState",
     const {ISSUE_STATE, PRE_CHAT_STATE, DEFAULT_RESET_TIMEOUT} = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
-      wmEnabled: false,
+      wcEnabled: false,
       minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
       activeIssueId: "",
@@ -119,7 +119,7 @@ define ("reducers/appState",
           const greentingFeatureEnabled = config.hasOwnProperty ("greeting_enabled") ?
                                           config.greeting_enabled : true;
           return update (state, {
-            wmEnabled: {$set: config.wm_widget_enabled},
+            wcEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
               greeting: {
                 $set: greentingFeatureEnabled

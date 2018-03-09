@@ -168,7 +168,7 @@ define ("actions/appState",
     const initialize = () => {
       const {
         appState: {
-          wmEnabled: wcEnabled
+          wcEnabled
         }
       } = store.getState ();
 
@@ -487,7 +487,7 @@ define ("actions/appState",
             const {
               appState: {
                 featuresEnabled,
-                wmEnabled: widgetEnabled
+                wcEnabled
               },
               ui: {
                 uiConfig,
@@ -527,7 +527,7 @@ define ("actions/appState",
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig ());
 
-            if (widgetEnabled) {
+            if (wcEnabled) {
               // A side-effect of getting the web chat config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
@@ -599,12 +599,17 @@ define ("actions/appState",
      * @returns {Object} - the config object for client
      */
     const getClientWmConfig = () => {
-      const {appState} = store.getState ();
+      const {
+        appState: {
+          browserIsMobile,
+          wcEnabled
+        }
+      } = store.getState ();
       const hideWidget = commonHelpers.isWidgetHiddenOutOfBusinessHours ();
 
       return {
-        widgetEnabled: appState.wmEnabled && !hideWidget,
-        browserIsMobile: appState.browserIsMobile,
+        widgetEnabled: wcEnabled && !hideWidget,
+        browserIsMobile: browserIsMobile,
         cssConfig: getLauncherCssConfig ()
       };
     };
