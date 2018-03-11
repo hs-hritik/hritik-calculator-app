@@ -37,7 +37,8 @@ define ("components/replyBox",
         }).isRequired,
         issueIsCreated: PropTypes.bool.isRequired,
         onFooterFocus: PropTypes.func,
-        onFooterBlur: PropTypes.func
+        onFooterBlur: PropTypes.func,
+        replyBoxHeading: PropTypes.string
       },
 
       render () {
@@ -45,7 +46,8 @@ define ("components/replyBox",
           text,
           disabled,
           onFooterFocus,
-          onFooterBlur
+          onFooterBlur,
+          replyBoxHeading
         } = this.props;
 
         // @TODO :- Do not use style of different component here!
@@ -55,9 +57,19 @@ define ("components/replyBox",
             "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
           }
         );
+        let replyBoxHeadingEl = null;
+
+        if (replyBoxHeading) {
+          replyBoxHeadingEl = (
+            <strong className="hs-chat-footer__heading hs-chat-footer__reply-heading">
+              {replyBoxHeading}
+            </strong>
+          );
+        }
 
         return (
           <div className={replyBoxClasses}>
+            {replyBoxHeadingEl}
             <div className="hs-chat-footer__field">
               <TextareaAutosize value={this.props.value}
                                 className="hs-chat-footer__text-area"

@@ -30,6 +30,8 @@
     }
 
     &__button {
+      min-width: 100px;
+      padding: gutter(8 16);
       margin: gutter(0 16);
       color: $form-accent-color;
       border-color: $form-accent-color;
@@ -96,7 +98,22 @@
     }
 
     &__csat-footer {
-      padding: gutter(20 52);
+      padding: gutter(4 52);
+    }
+
+    &__heading {
+      display: flex;
+      justify-content: center;
+      margin-bottom: gutter(8);
+      text-align: center;
+    }
+
+    &__reply-heading {
+      margin-bottom: gutter(16);
+    }
+
+    &__heading-text {
+      flex-basis: 80%;
     }
 
     /// form invalid modifier is used to disable elements

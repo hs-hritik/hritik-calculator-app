@@ -36,7 +36,6 @@ define ("components/messageList",
         )).isRequired,
         showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
-        onStartCsatSurveyClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired
@@ -86,7 +85,6 @@ define ("components/messageList",
                        text={this.props.text}
                        onImageLoad={this._throttledScrollBottom}
                        onRetryAttachmentClick={this.props.onRetryAttachmentClick}
-                       onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
         });

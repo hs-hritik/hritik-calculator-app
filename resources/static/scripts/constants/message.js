@@ -13,7 +13,9 @@ define ("constants/message",
       FAQ: "Faq",
       CSAT: "Csat",
       END_CHAT: "EndChat",
-      ATTACHMENT: "Attachment"
+      ATTACHMENT: "Attachment",
+      ACCEPTED: "Confirmation Accepted",
+      REJECTED: "Confirmation Rejected"
     };
 
     // Typing timeout (in milliseconds) for different system generated message.

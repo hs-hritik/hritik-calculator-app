@@ -7,20 +7,17 @@
 define ("components/containers/csatView",
   [
     "components/csatView",
-    "actions/csatView",
-    "actions/appState"
-
+    "actions/csatView"
   ],
-  function (CsatView, csatViewActions, appStateActions) {
+  function (CsatView, csatViewActions) {
     "use strict";
 
     const mapStateToProps = (state) => {
-      const {rating, review, completed} = state.csatView;
+      const {rating, review} = state.csatView;
 
       return {
         rating,
         review,
-        completed,
         text: state.ui.text
       };
     };
@@ -35,11 +32,7 @@ define ("components/containers/csatView",
         },
         onUpdateCsatReview: (review) => {
           dispatch (csatViewActions.updateCsatReview (review));
-        },
-        onCloseConversation: () => {
-          dispatch (appStateActions.closeConversation ());
         }
-
       };
     };
 

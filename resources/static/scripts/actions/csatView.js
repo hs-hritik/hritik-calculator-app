@@ -7,6 +7,8 @@
 define ("actions/csatView",
   [
     "store",
+    "actions/actionCreators",
+    "actions/chatView",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
@@ -15,8 +17,8 @@ define ("actions/csatView",
     "helpers/xhr",
     "helpers/analytics"
   ],
-  function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants, xhr,
-    xhrHelpers, analyticsHelpers) {
+  function (store, actionCreator, chatViewActions, ACTION_TYPES,
+    routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
@@ -26,14 +28,12 @@ define ("actions/csatView",
      * @returns {Function} - action
      */
     const submitCsat = (skipReviewComments = false) => {
-      return (dipatch, getState) => {
+      return (dispatch, getState) => {
         const {appState, csatView} = getState ();
 
         if (!csatView.rating) {
           return;
         }
-
-        dipatch (markCsatCompleted ());
 
         const xhrData = {
           "identifier": appState.identifier,
@@ -50,7 +50,15 @@ define ("actions/csatView",
           route: routes.postCSAT (appState.domain, appState.activeIssueId),
           data: xhrData,
           headers: xhrHelpers.getCommonHeaders (),
-          method: "POST"
+          method: "POST",
+          onEnd: () => {
+            // a] Set active view to chat view
+            dispatch (actionCreator.updateActiveView (ACTIVE_VIEW.CHAT));
+            // b] Set csat step as completed
+            dispatch (actionCreator.setCsatCompleted ());
+            // c] Set footer to start new conversation footer
+            dispatch (chatViewActions.showPostIssueResolutionFooter ());
+          }
         });
 
         // Track CSAT submitted event here (we don't have to wait for the CSAT
@@ -97,16 +105,6 @@ define ("actions/csatView",
       return {
         type: ACTION_TYPES.UPDATE_CSAT_REVIEW,
         review
-      };
-    };
-
-    /**
-     * Mark csat completed.
-     * @returns {Object} - action
-     */
-    const markCsatCompleted = () => {
-      return {
-        type: ACTION_TYPES.MARK_CSAT_COMPLETED
       };
     };
 

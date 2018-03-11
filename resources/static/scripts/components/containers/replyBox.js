@@ -8,21 +8,31 @@ define ("components/containers/replyBox",
   [
     "components/replyBox",
     "actions/chatView",
-    "actions/appState"
+    "actions/appState",
+    "constants/chatView"
   ],
-  function (ReplyBox, chatViewActions, appStateActions) {
+  function (ReplyBox, chatViewActions, appStateActions, chatViewConstants) {
     "use strict";
 
+    const {ACTIVE_FOOTER} = chatViewConstants;
+
     const mapStateToProps = (state) => {
-      const {value, disabled} = state.chatView.replyBox;
+      const {chatView: chatViewState, appState, ui} = state;
+      const {value, disabled} = chatViewState.replyBox;
+      let replyBoxHeading = null;
+
+      if (chatViewState.activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+        replyBoxHeading = ui.text.chatViewIssueRejectionQuestion;
+      }
 
       return {
         value,
         disabled,
-        widgetIsOpened: !state.appState.minimized,
-        text: state.ui.text,
-        issueIsCreated: !!state.appState.activeIssueId,
-        browserIsMobile: state.appState.browserIsMobile
+        widgetIsOpened: !appState.minimized,
+        text: ui.text,
+        issueIsCreated: !!appState.activeIssueId,
+        browserIsMobile: appState.browserIsMobile,
+        replyBoxHeading
       };
     };
 

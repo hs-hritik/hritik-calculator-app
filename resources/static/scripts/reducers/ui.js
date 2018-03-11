@@ -33,10 +33,15 @@ define ("reducers/ui",
     const INITIAL_STATE = {
       text: {
         chatViewHeader: "Chat with us",
+        chatViewConversationResolutionQuestion: "Did we answer all your questions?",
+        chatViewStartNewConversation: "Start a new conversation",
+        chatViewAcceptedTheSolution: "Accepted the solution",
+        chatViewRejectedTheSolution: "Did not accept the solution",
+        chatViewIssueRejectionQuestion: "What else can we help you with?",
         greetingMsg: "Hi, how can we help you?",
         faqSuggestionsAdditionalHelpMsg: "Do you still want to talk to an agent?",
-        faqSuggestionsAdditionalHelpRequiredBtn: "Yes",  // Also used for msg
-        faqSuggestionsAdditionalHelpNotRequiredBtn: "No",  // Also used for msg
+        labelYes: "Yes",
+        labelNo: "No",
         problemSolvedByFaqSuggestionsMsg: "Glad we could help you!",
         faqSuggestionsMsgTitleSingle: "See if this article helps",
         faqSuggestionsMsgTitleMultpile: "See if these articles help",

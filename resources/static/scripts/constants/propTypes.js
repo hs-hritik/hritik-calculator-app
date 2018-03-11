@@ -28,7 +28,16 @@ define ("constants/propTypes",
       )
     };
 
+    const INFO_BOT_FIELD_PROPS = PropTypes.shape ({
+      title: PropTypes.string.isRequired,
+      value: PropTypes.shape ({
+        value: PropTypes.string.isRequired,
+        errorMsg: PropTypes.string
+      }).isRequired
+    });
+
     return {
-      MESSAGE
+      MESSAGE,
+      INFO_BOT_FIELD_PROPS
     };
   });
