@@ -6,10 +6,13 @@
 
 define ("helpers/entity",
   [
+    "constants/message",
     "gunpowder/utils/object"
   ],
-  function (objUtils) {
+  function (messageConstants, objUtils) {
     "use strict";
+
+    const {TYPE: MESSAGE_TYPES} = messageConstants;
 
     /**
      * Return processed message entities.
@@ -20,7 +23,9 @@ define ("helpers/entity",
       const processedMessages = {};
 
       objUtils.forEachKey (messages, (id, msg) => {
-        processedMessages [id] = {
+        const {type: messageType} = msg;
+
+        const msgObj = {
           id: msg.id,
           type: msg.type,
           body: msg.body,
@@ -30,6 +35,24 @@ define ("helpers/entity",
           isCustomerMsg: (msg.origin !== "admin"),
           attachments: getProcessedAttachments (msg)
         };
+
+        if (msg.chatbot_info) {
+          msgObj.chatBotInfo = msg.chatbot_info;
+        }
+
+        // If message has faq data, process it
+        // FAQ data will be part of bot message
+        if (messageType === MESSAGE_TYPES.FAQ_WITH_OPTIONS_INPUT) {
+          msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
+            return {
+              id: faq.data.publish_id,
+              title: faq.title,
+              language: faq.data.language
+            };
+          });
+
+          processedMessages [id] = msgObj;
+        }
       });
 
       return processedMessages;
