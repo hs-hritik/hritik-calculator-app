@@ -18,7 +18,7 @@ define ("components/message",
     attachmentsHelpers, dateUtils, classes, objUtils) {
     "use strict";
 
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+    const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
     const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -98,9 +98,14 @@ define ("components/message",
 
         switch (type) {
           case MESSAGE_TYPE.TEXT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_EMAIL_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
             return this._renderTextMessage ();
 
-          case MESSAGE_TYPE.FAQ:
+          case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
             return this._renderFaqMessage ();
 
           case MESSAGE_TYPE.CSAT:
