@@ -265,7 +265,11 @@ define ("reducers/ui",
             greetingMsg: {$set: config.greeting},
             chatViewHeader: {$set: config.appearance.widget_title},
             csatViewHeader: {$set: config.appearance.widget_title},
-            csatBotRequestMsg: {$set: config.csat_bot.req_msg}
+            csatBotRequestMsg: {$set: config.csat_bot.req_msg},
+            chatViewConversationResolutionQuestion: {
+              // @TODO - Confirm the key after BE integration
+              $set: config.resolution_question
+            }
           };
           const businessHoursEnabled = config.business_hours_enabled;
 

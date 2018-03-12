@@ -127,9 +127,9 @@ define ("reducers/appState",
           return update (state, {
             wcEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
-              greeting: {
-                $set: greentingFeatureEnabled
-              },
+              greeting: {$set: greentingFeatureEnabled},
+              // @TODO - Confirm the key after BE integration
+              resolutionQuestion: {$set: config.resolution_question_enabled},
               answerBot: {$set: config.answer_bot_enabled},
               infoBot: {$set: config.user_info_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
