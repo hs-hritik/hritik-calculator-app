@@ -20,6 +20,20 @@ define ("constants/chatView",
       SOLUTION_REJECTED: "SOLUTION_REJECTED"
     };
 
+    /**
+     * Input types are used to render footer
+     * Depending on the type, the footer components will be rendered,
+     * validations will be added etc.
+     */
+    // @TODO - Rename INPUT_TYPES to USER_INPUT_TYPES
+    const INPUT_TYPES = {
+      PLAIN_TEXT: "PLAIN_TEXT",
+      EMAIL: "EMAIL",
+      NUMERIC: "NUMERIC",
+      DATE: "DATE",
+      PILL_SELECT: "PILL_SELECT"
+    };
+
     const INFO_BOT_FIELDS = {
       NAME: "name",
       EMAIL: "email"
@@ -34,6 +48,7 @@ define ("constants/chatView",
       ACTIVE_FOOTER,
       INFO_BOT_FIELDS,
       MESSAGES_POLLING_TIMEOUT,
-      MESSAGES_FORCE_POLLING_TIMEOUT
+      MESSAGES_FORCE_POLLING_TIMEOUT,
+      INPUT_TYPES
     };
   });

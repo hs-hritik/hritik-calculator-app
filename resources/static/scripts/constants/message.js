@@ -27,6 +27,11 @@ define ("constants/message",
       BOT_ENDED: "bot_ended"
     };
 
+    const NON_RENDERABLE_MESSAGE_TYPES = [
+      TYPE.BOT_STARTED,
+      TYPE.BOT_ENDED
+    ];
+
     // Typing timeout (in milliseconds) for different system generated message.
     const TYPING_TIMEOUT = {
       FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
@@ -53,6 +58,7 @@ define ("constants/message",
       TIMEOUT,
       TYPING_TIMEOUT,
       ORIGIN,
-      STATE
+      STATE,
+      NON_RENDERABLE_MESSAGE_TYPES
     };
   });

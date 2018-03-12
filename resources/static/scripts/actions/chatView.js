@@ -55,7 +55,8 @@ define ("actions/chatView",
             ACTIVE_FOOTER,
             MESSAGES_POLLING_TIMEOUT,
             MESSAGES_FORCE_POLLING_TIMEOUT,
-            INFO_BOT_FIELDS
+            INFO_BOT_FIELDS,
+            INPUT_TYPES
           } = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
@@ -290,6 +291,73 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set input data
+     * @param {Object} input - processed input object
+     * @returns {Object} - Action
+     */
+    const setUserInputData = (input) => {
+      return {
+        type: ACTION_TYPES.SET_USER_INPUT_DATA,
+        input
+      };
+    };
+
+    /**
+     * Handles message input
+     * Parse the input data for message and save it in store
+     * Set the footer depending on input type
+     * @param {Object} message - message object
+     */
+    const handleMessageInput = (message) => {
+      const {input} = message;
+
+      if (!input) {
+        return;
+      }
+
+      const processedUserInput = chatViewHelpers.getProcessedUserInput ({
+        messageType: message.type,
+        input
+      });
+
+      store.dispatch (
+        batchActions ([
+          setUserInputData (processedUserInput),
+          setChatViewFooter (ACTIVE_FOOTER.REPLY),
+          toggleSystemTyping (false)
+        ])
+      );
+    };
+
+    /**
+     * Handle non renderable message
+     * Non renderable messages are not rendered on the UI but
+     * used to take certain actions depending on type.
+     * @param {String} messageType - type of message
+     */
+    const handleNonRenderableMessage = (messageType) => {
+      if (messageType === INPUT_TYPES.BOT_STARTED) {
+        store.dispatch (toggleSystemTyping (true));
+      } else if (messageType === INPUT_TYPES.BOT_ENDED) {
+        store.dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+      }
+    };
+
+    /**
+     * Handle latest message for bot input and take actions
+     * @param {Object} latestMessage - latest message in message list
+     */
+    const handleLatestMessage = (latestMessage) => {
+      const {type} = latestMessage;
+
+      if (chatViewHelpers.isNonRenderableMessage (type)) {
+        handleNonRenderableMessage (type);
+      } else {
+        handleMessageInput (latestMessage);
+      }
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -335,6 +403,10 @@ define ("actions/chatView",
               const processedEntities = entityHelpers.getProcessedEntities (
                 normalizedData.entities
               );
+
+              // @TODO - Revisit this logic after api change
+              const latestMessage = messages [messages.length - 1];
+              handleLatestMessage (latestMessage);
 
               dispatch (batchActions ([
                 entitiesActions.setEntities (processedEntities),

@@ -12,14 +12,31 @@ define ("reducers/chatView",
   function (CHAT_VIEW_CONSTANTS, ACTION_TYPES) {
     "use strict";
 
-    const update = React.addons.update,
-          {ACTIVE_FOOTER, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS;
+    const update = React.addons.update;
+    const {
+      ACTIVE_FOOTER,
+      INFO_BOT_FIELDS,
+      INPUT_TYPES
+    } = CHAT_VIEW_CONSTANTS;
+
+    /**
+     * Returns default user input config object to be set in store
+     * @returns {Object} - input config object
+     */
+    const _getDefaultUserInputConfig = () => {
+      return {
+        value: "",
+        type: INPUT_TYPES.PLAIN_TEXT,
+        disabled: false,
+        required: true,
+        label: "",
+        skipLabel: "",
+        placeholder: ""
+      };
+    };
 
     const INITIAL_STATE = {
-      replyBox: {
-        value: "",
-        disabled: false
-      },
+      userInput: _getDefaultUserInputConfig (),
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
       systemTyping: false,
@@ -68,7 +85,7 @@ define ("reducers/chatView",
             };
           }
           if (action.data.replyText) {
-            updateObj.replyBox = {
+            updateObj.userInput = {
               value: {$set: action.data.replyText}
             };
           }
@@ -85,7 +102,7 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           return update (state, {
-            replyBox: {
+            userInput: {
               value: {$set: action.value}
             }
           });
@@ -96,20 +113,28 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
+          let userInputUpdateObj = {};
+
+          if (action.footer === ACTIVE_FOOTER.REPLY &&
+              state.activeFooter !== ACTIVE_FOOTER.REPLY) {
+            userInputUpdateObj = _getDefaultUserInputConfig ();
+          }
+
           return update (state, {
-            activeFooter: {$set: action.footer}
+            activeFooter: {$set: action.footer},
+            userInput: {$merge: userInputUpdateObj}
           });
 
         case ACTION_TYPES.DISABLE_REPLY_BOX:
           return update (state, {
-            replyBox: {
+            userInput: {
               disabled: {$set: true}
             }
           });
 
         case ACTION_TYPES.ENABLE_REPLY_BOX:
           return update (state, {
-            replyBox: {
+            userInput: {
               disabled: {$set: false}
             }
           });
@@ -215,6 +240,11 @@ define ("reducers/chatView",
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
           return update (state, {
             readFaqList: {$push: [action.faqId]}
+          });
+
+        case ACTION_TYPES.SET_USER_INPUT_DATA:
+          return update (state, {
+            userInput: {$merge: action.input}
           });
 
         case ACTION_TYPES.RESET:

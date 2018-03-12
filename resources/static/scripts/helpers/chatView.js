@@ -7,13 +7,93 @@
 define ("helpers/chatView",
   [
     "constants/message",
+    "constants/chatView",
     "gunpowder/utils/uuid"
   ],
-  function (MESSAGE_CONSTANTS, uuidGenerator) {
+  function (MESSAGE_CONSTANTS, chatViewConstants, uuidGenerator) {
     "use strict";
 
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+    const {
+      TYPE: MESSAGE_TYPE,
+      NON_RENDERABLE_MESSAGE_TYPES
+    } = MESSAGE_CONSTANTS;
     const MSG_ID_PREFIX = "message_";
+    const {INPUT_TYPES} = chatViewConstants;
+
+    /**
+     * Return an input type
+     * @param {String} messageType - message type
+     * @returns {String} - input type
+     */
+    const getUserInputType = (messageType) => {
+      switch (messageType) {
+        case MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT:
+        case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
+          return INPUT_TYPES.PLAIN_TEXT;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_EMAIL_INPUT:
+          return INPUT_TYPES.EMAIL;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
+          return INPUT_TYPES.NUMERIC;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
+          return INPUT_TYPES.DATE;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
+        case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
+          return INPUT_TYPES.PILL_SELECT;
+      }
+    };
+
+    /**
+     * Return processed input
+     * @param {Object} config
+     * @param {String} config.messageType - type of message
+     * @param {Object} config.input - message input
+     * @returns {Object} - processed input object
+     */
+    const getProcessedUserInput = (config) => {
+      const {
+        messageType,
+        input: {
+          required,
+          placeholder,
+          label,
+          skip_label: skipLabel,
+          options
+        }
+      } = config;
+      const userInputType = getUserInputType (messageType);
+
+      const processedInput = {
+        type: userInputType,
+        required,
+        label,
+        skipLabel,
+        placeholder
+      };
+
+      if (userInputType === INPUT_TYPES.PILL_SELECT) {
+        processedInput.options = options.map ((option) => {
+          return {
+            label: option.title,
+            value: option.data.option_id
+          };
+        });
+      }
+
+      return processedInput;
+    };
+
+    /**
+     * Predicate to return whether message is non-renderable
+     * @param {String} messageType - type of message
+     * @returns {Boolean} - whether message is non-renderable
+     */
+    const isNonRenderableMessage = (messageType) => {
+      return (NON_RENDERABLE_MESSAGE_TYPES.indexOf (messageType) !== -1);
+    };
 
     /**
      * Create custom text message.
@@ -131,6 +211,8 @@ define ("helpers/chatView",
     };
 
     return {
-      createMessage
+      createMessage,
+      getProcessedUserInput,
+      isNonRenderableMessage
     };
   });
