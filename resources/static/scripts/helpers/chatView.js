@@ -43,6 +43,9 @@ define ("helpers/chatView",
         case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
           return INPUT_TYPES.PILL_SELECT;
+
+        default:
+          return INPUT_TYPES.DEFAULT_INPUT;
       }
     };
 

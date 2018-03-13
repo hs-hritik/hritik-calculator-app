@@ -9,17 +9,18 @@ define ("components/chatViewFooter",
     "components/starRating",
     "components/containers/replyBox",
     "constants/chatView",
-    "constants/propTypes",
     "constants/keyCodes",
     "gunpowder/utils/classes"
   ],
-  function (StarRating, ReplyBoxContainer, CHAT_VIEW_CONSTANTS, PROP_TYPES,
-    KEY_CODES, classes) {
+  function (StarRating, ReplyBoxContainer, CHAT_VIEW_CONSTANTS, KEY_CODES, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
-    const {INFO_BOT_FIELD_PROPS} = PROP_TYPES;
+    const {
+      ACTIVE_FOOTER,
+      INPUT_TYPES,
+      HTML_INPUT_TYPES
+    } = CHAT_VIEW_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -29,9 +30,8 @@ define ("components/chatViewFooter",
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
         onFaqSuggestionFeedback: PropTypes.func.isRequired,
-        infoBotField: INFO_BOT_FIELD_PROPS,
-        onSubmitInfoBotField: PropTypes.func.isRequired,
-        onValueChangeInfoBotField: PropTypes.func.isRequired,
+        onSubmitInputField: PropTypes.func.isRequired,
+        onValueChangeInputField: PropTypes.func.isRequired,
         onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
@@ -46,7 +46,17 @@ define ("components/chatViewFooter",
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
-        onFooterBlur: PropTypes.func
+        onFooterBlur: PropTypes.func,
+        userInput: PropTypes.shape ({
+          value: PropTypes.string.isRequired,
+          disabled: PropTypes.bool,
+          type: PropTypes.string.isRequired,
+          label: PropTypes.string,
+          required: PropTypes.bool,
+          skipLabel: PropTypes.string,
+          placeholder: PropTypes.string,
+          errorMsg: PropTypes.string
+        })
       },
 
       render () {
@@ -73,10 +83,19 @@ define ("components/chatViewFooter",
        * Render the active footer component
        */
       _renderFooterComponent () {
+        const {type} = this.props.userInput;
+
         switch (this.props.activeFooter) {
           case ACTIVE_FOOTER.REPLY:
+            if (type === INPUT_TYPES.DEFAULT_INPUT) {
+              return this._renderReplyBox ();
+            } else if (type === INPUT_TYPES.PILL_SELECT) {
+              return this._renderPillOptionsFooter ();
+            }
+            return this._renderUserInput ();
+
           case ACTIVE_FOOTER.SOLUTION_REJECTED:
-            return <ReplyBoxContainer />;
+            return this._renderReplyBox ();
 
           case ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK:
             return this._renderFaqSuggestionsFeedback ();
@@ -99,6 +118,109 @@ define ("components/chatViewFooter",
           default:
             return null;
         }
+      },
+
+      /**
+       * Render reply box component
+       */
+      _renderReplyBox () {
+        const {
+          disabled,
+          value,
+          errorMsg
+        } = this.props.userInput;
+        const footerClasses = classes (
+          "hs-chat-footer", {
+            "hs-chat-footer--form-error": errorMsg,
+            "hs-chat-footer--form-invalid": disabled || !value.trim ()
+          }
+        );
+
+        return (
+          <div className={footerClasses}>
+            <ReplyBoxContainer />
+          </div>
+        );
+      },
+
+      /**
+       * Render user input
+       */
+      _renderUserInput () {
+        const {
+          userInput: {
+            value,
+            type,
+            placeholder,
+            errorMsg,
+            label,
+            disabled
+          },
+          onFooterFocus,
+          onFooterBlur,
+          onSubmitInputField
+        } = this.props;
+        const footerClasses = classes (
+          "hs-chat-footer", {
+            "hs-chat-footer--form-error": errorMsg,
+            "hs-chat-footer--form-invalid": disabled || !value.trim ()
+          }
+        );
+        const ionClasses = errorMsg ? "ion-alert-circled" : "ion-send";
+        let errorMsgEl = null;
+        let labelEl = null;
+
+        if (errorMsg) {
+          errorMsgEl = (
+            <div className="hs-chat-footer__field">
+              <div className="hs-chat-footer__title">
+               {errorMsg}
+              </div>
+            </div>
+          );
+        }
+
+        if (label) {
+          labelEl = (
+            <div className="hs-chat-footer__field">
+              <div className="hs-chat-footer__title">
+               {label}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className={footerClasses}>
+            {labelEl}
+            <div className="hs-chat-footer__field">
+              <input className="hs-chat-footer__text-field"
+                     type={this._getHtmlInputType (type)}
+                     dir="auto"
+                     value={value}
+                     placeholder={placeholder}
+                     onChange={this._onInputFieldValueChange}
+                     onKeyUp={this._onInputFieldKeyUp}
+                     onFocus={onFooterFocus}
+                     onBlur={onFooterBlur}
+                     autoFocus />
+              <a className="hs-chat-footer__submit">
+                <i className={ionClasses} onClick={onSubmitInputField} />
+              </a>
+            </div>
+            {errorMsgEl}
+          </div>
+        );
+      },
+
+      /**
+       * Render pill options footer
+       */
+      _renderPillOptionsFooter () {
+        // @TODO - Render pill options layout
+        return (
+          <div className="hs-chat-footer__pill-options" />
+        );
       },
 
       /**
@@ -181,57 +303,9 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Render info bot footer.
-       */
-      _renderInfoBotFooter () {
-        const {
-          infoBotField: field,
-          onFooterFocus,
-          onFooterBlur
-        } = this.props;
-        const hasError = !!this.props.infoBotField.value.errorMsg;
-
-        const footerClasses = classes (
-          "hs-chat-footer", {
-            "hs-chat-footer--form-error": field.value.errorMsg,
-            "hs-chat-footer--form-invalid": !field.value.value.trim ()
-          }
-        );
-
-        const ionClasses = classes ({
-          "ion-alert-circled": hasError,
-          "ion-send": !hasError
-        });
-
-        return (
-          <div className={footerClasses}>
-            <div className="hs-chat-footer__field">
-              <div className="hs-chat-footer__title">
-               {field.title}
-              </div>
-            </div>
-            <div className="hs-chat-footer__field">
-              <input className="hs-chat-footer__text-field"
-                     type="text"
-                     dir="auto"
-                     value={field.value.value}
-                     placeholder={field.placeholder}
-                     onChange={this._onInfoBotFieldValueChange}
-                     onKeyUp={this._onInfoBotFieldKeyUp}
-                     onFocus={onFooterFocus}
-                     onBlur={onFooterBlur}
-                     autoFocus />
-              <a className="hs-chat-footer__submit">
-                <i className={ionClasses} onClick={this._onClickSubmitInfoBotField} />
-              </a>
-            </div>
-          </div>
-        );
-      },
-
-      /**
        * Render FAQ suggestions feedback footer.
        */
+      // @TODO - Change the rendering to show pill select
       _renderFaqSuggestionsFeedback () {
         const {labelYes, labelNo} = this.props.text;
 
@@ -270,30 +344,32 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Change handler for info bot field.
+       * Change handler for input field.
        * @param {Object} event
        */
-      _onInfoBotFieldValueChange (ev) {
-        this.props.onValueChangeInfoBotField (ev.target.value);
+      _onInputFieldValueChange (ev) {
+        this.props.onValueChangeInputField (ev.target.value);
       },
 
       /**
-       * Key up handler for info bot field.
+       * Key up handler for input field.
        * @param {Object} event
        */
-      _onInfoBotFieldKeyUp (ev) {
+      _onInputFieldKeyUp (ev) {
         if (ev.keyCode === KEY_CODES.ESCAPE) {
           ev.target.blur ();
         } else if (ev.keyCode === KEY_CODES.ENTER) {
-          this.props.onSubmitInfoBotField ();
+          this.props.onSubmitInputField ();
         }
       },
 
       /**
-       * Click handler for submit info bot field.
+       * Return html input type for given input footer
+       * @param {String} type - type of input footer
+       * @returns {String} - html input type
        */
-      _onClickSubmitInfoBotField () {
-        this.props.onSubmitInfoBotField ();
+      _getHtmlInputType (type) {
+        return HTML_INPUT_TYPES [type] || HTML_INPUT_TYPES.PLAIN_TEXT;
       }
     });
   }

@@ -86,7 +86,7 @@ define ("actions/chatView",
      * @param {String} value - new reply value.
      * @returns {Object} - action
      */
-    const udpateReplyText = (value) => {
+    const updateReplyText = (value) => {
       return {
         type: ACTION_TYPES.UPDATE_REPLY_TEXT,
         value
@@ -593,9 +593,10 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState (),
               {appState} = state,
-              {replyBox} = state.chatView;
+              {userInput} = state.chatView,
+              trimmedValue = userInput.value.trim ();
 
-        if (replyBox.disabled || !replyBox.value.trim ()) {
+        if (userInput.disabled || !trimmedValue) {
           return;
         }
 
@@ -606,11 +607,11 @@ define ("actions/chatView",
               type: MESSAGE_TYPE.TEXT,
               issueId: appState.activeIssueId,
               messageConfig: {
-                body: replyBox.value.trim (),
+                body: trimmedValue,
                 isCustomerMsg: true
               },
               onAddMessage: () => {
-                dispatch (udpateReplyText (""));
+                dispatch (updateReplyText (""));
               }
             })
           );
@@ -621,7 +622,7 @@ define ("actions/chatView",
         // TODO: Check for issue state (PRE_CHAT) instead of activeIssueId.
         if (!appState.activeIssueId) {
           // set initial user msg
-          dispatch (createInitialUserMessage (replyBox.value));
+          dispatch (createInitialUserMessage (userInput.value));
 
           // Track the conversation started event.
           analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
@@ -630,11 +631,12 @@ define ("actions/chatView",
 
         dispatch (disableReplyBox ());
 
+        // @TODO - change the route depending on pre-issue or issue state
         postUserMessage ({
           domain: appState.domain,
           activeIssueId: appState.activeIssueId,
           identifier: appState.identifier,
-          msgBody: replyBox.value,
+          msgBody: userInput.value,
           msgType: MESSAGE_TYPE.TEXT,
           onSuccess: (response, processedEntities) => {
             // Set resolution question step as incomplete if the user has added
@@ -647,7 +649,7 @@ define ("actions/chatView",
               ]);
               startPollingForMessages ();
             }
-            dispatch (udpateReplyText (""));
+            dispatch (updateReplyText (""));
             dispatch (entitiesActions.setEntities (processedEntities));
             dispatch (addMessages (appState.activeIssueId, [response.id]));
             audioHelpers.playSend ();
@@ -1204,7 +1206,7 @@ define ("actions/chatView",
                 batchActions ([
                   setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
                   setEndUserFirstMessageId (msg.id),
-                  udpateReplyText (""),
+                  updateReplyText (""),
                   actionCreators.setConversationId (uuidGenerator ())
                 ])
               );
@@ -1343,6 +1345,7 @@ define ("actions/chatView",
      * @param {String|Object} value
      * @returns {Object} - Action
      */
+    // @TODO - PRE_CHAT_CLEANUP
     const updateInfoBotFieldValue = ({value, errorMsg}) => {
       return {
         type: ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE,
@@ -1357,6 +1360,7 @@ define ("actions/chatView",
      * Action to change the current info bot field.
      * @returns {Object} - Action
      */
+    // @TODO - PRE_CHAT_CLEANUP
     const changeInfoBotCurrentField = () => {
       return {
         type: ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD
@@ -1416,6 +1420,7 @@ define ("actions/chatView",
      * Action to ask details of info bot field.
      * @returns {Object} - Action
      */
+    // @TODO - PRE_CHAT_CLEANUP
     const askInfoBotField = () => {
       return (dispatch, getState) => {
         const state = getState ();
@@ -1455,6 +1460,7 @@ define ("actions/chatView",
      * change the current info bot field.
      * @returns {Object} - Action
      */
+    // @TODO - PRE_CHAT_CLEANUP
     const submitInfoBotField = () => {
       return (dispatch, getState) => {
         const state = getState (),
@@ -1879,7 +1885,7 @@ define ("actions/chatView",
 
     return {
       createPreIssue,
-      udpateReplyText,
+      updateReplyText,
       submitReply,
       startPollingForMessages,
       stopPollingForMessages,
@@ -1903,6 +1909,7 @@ define ("actions/chatView",
       createAttachmentMessage,
       showPostIssueResolutionFooter,
       acceptResolutionQuestion,
-      rejectResolutionQuestion
+      rejectResolutionQuestion,
+      setUserInputData
     };
   });

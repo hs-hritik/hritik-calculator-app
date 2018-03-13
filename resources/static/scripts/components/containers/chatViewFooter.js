@@ -21,7 +21,7 @@ define ("components/containers/chatViewFooter",
     const mapStateToProps = (state) => {
       const {
         chatView: {
-          infoBot
+          userInput
         },
         csatView: {
           rating
@@ -31,9 +31,9 @@ define ("components/containers/chatViewFooter",
       return {
         rating,
         activeFooter: state.chatView.activeFooter,
-        infoBotField: infoBot.data [infoBot.currentField],
         text: state.ui.text,
-        footerIsActive: state.appState.footerIsActive
+        footerIsActive: state.appState.footerIsActive,
+        userInput
       };
     };
 
@@ -46,14 +46,15 @@ define ("components/containers/chatViewFooter",
             dispatch (chatViewActions.rejectFaqSuggestions ());
           }
         },
-        onValueChangeInfoBotField: (value) => {
-          dispatch (chatViewActions.updateInfoBotFieldValue ({
+        onValueChangeInputField: (value) => {
+          dispatch (chatViewActions.setUserInputData ({
             value,
+            error: false,
             errorMsg: ""
           }));
         },
-        onSubmitInfoBotField: () => {
-          dispatch (chatViewActions.submitInfoBotField ());
+        onSubmitInputField: () => {
+          dispatch (chatViewActions.submitReply ());
         },
         onStarClick: (updatedRating) => {
           dispatch (csatViewActions.updateCsatRating (updatedRating));

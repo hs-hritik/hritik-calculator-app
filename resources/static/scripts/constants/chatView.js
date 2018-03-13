@@ -27,11 +27,22 @@ define ("constants/chatView",
      */
     // @TODO - Rename INPUT_TYPES to USER_INPUT_TYPES
     const INPUT_TYPES = {
+      // Default input type is used to render reply box component
+      DEFAULT_INPUT: "DEFAULT_INPUT",
+      // Rest of the input types below are bot input types, used to render bot
+      // input in footer.
       PLAIN_TEXT: "PLAIN_TEXT",
       EMAIL: "EMAIL",
       NUMERIC: "NUMERIC",
       DATE: "DATE",
       PILL_SELECT: "PILL_SELECT"
+    };
+
+    const HTML_INPUT_TYPES = {
+      EMAIL: "email",
+      NUMERIC: "number",
+      DATE: "date",
+      PLAIN_TEXT: "text"
     };
 
     const INFO_BOT_FIELDS = {
@@ -49,6 +60,7 @@ define ("constants/chatView",
       INFO_BOT_FIELDS,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT,
-      INPUT_TYPES
+      INPUT_TYPES,
+      HTML_INPUT_TYPES
     };
   });

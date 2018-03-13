@@ -26,12 +26,13 @@ define ("reducers/chatView",
     const _getDefaultUserInputConfig = () => {
       return {
         value: "",
-        type: INPUT_TYPES.PLAIN_TEXT,
+        type: INPUT_TYPES.DEFAULT_INPUT,
         disabled: false,
         required: true,
         label: "",
         skipLabel: "",
-        placeholder: ""
+        placeholder: "",
+        errorMsg: ""
       };
     };
 
