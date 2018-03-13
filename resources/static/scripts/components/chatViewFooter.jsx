@@ -18,7 +18,7 @@ define ("components/chatViewFooter",
     const PropTypes = React.PropTypes;
     const {
       ACTIVE_FOOTER,
-      INPUT_TYPES,
+      USER_INPUT_TYPES,
       HTML_INPUT_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
@@ -87,9 +87,9 @@ define ("components/chatViewFooter",
 
         switch (this.props.activeFooter) {
           case ACTIVE_FOOTER.REPLY:
-            if (type === INPUT_TYPES.DEFAULT_INPUT) {
+            if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
               return this._renderReplyBox ();
-            } else if (type === INPUT_TYPES.PILL_SELECT) {
+            } else if (type === USER_INPUT_TYPES.PILL_SELECT) {
               return this._renderPillOptionsFooter ();
             }
             return this._renderUserInput ();

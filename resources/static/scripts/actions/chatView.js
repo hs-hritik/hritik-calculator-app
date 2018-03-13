@@ -55,8 +55,7 @@ define ("actions/chatView",
             ACTIVE_FOOTER,
             MESSAGES_POLLING_TIMEOUT,
             MESSAGES_FORCE_POLLING_TIMEOUT,
-            INFO_BOT_FIELDS,
-            INPUT_TYPES
+            INFO_BOT_FIELDS
           } = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
@@ -336,9 +335,9 @@ define ("actions/chatView",
      * @param {String} messageType - type of message
      */
     const handleNonRenderableMessage = (messageType) => {
-      if (messageType === INPUT_TYPES.BOT_STARTED) {
+      if (messageType === MESSAGE_TYPE.BOT_STARTED) {
         store.dispatch (toggleSystemTyping (true));
-      } else if (messageType === INPUT_TYPES.BOT_ENDED) {
+      } else if (messageType === MESSAGE_TYPE.BOT_ENDED) {
         store.dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
       }
     };

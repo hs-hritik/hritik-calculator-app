@@ -16,7 +16,7 @@ define ("reducers/chatView",
     const {
       ACTIVE_FOOTER,
       INFO_BOT_FIELDS,
-      INPUT_TYPES
+      USER_INPUT_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
     /**
@@ -26,7 +26,7 @@ define ("reducers/chatView",
     const _getDefaultUserInputConfig = () => {
       return {
         value: "",
-        type: INPUT_TYPES.DEFAULT_INPUT,
+        type: USER_INPUT_TYPES.DEFAULT_INPUT,
         disabled: false,
         required: true,
         label: "",

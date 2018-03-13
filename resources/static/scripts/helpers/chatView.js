@@ -18,7 +18,7 @@ define ("helpers/chatView",
       NON_RENDERABLE_MESSAGE_TYPES
     } = MESSAGE_CONSTANTS;
     const MSG_ID_PREFIX = "message_";
-    const {INPUT_TYPES} = chatViewConstants;
+    const {USER_INPUT_TYPES} = chatViewConstants;
 
     /**
      * Return an input type
@@ -29,23 +29,23 @@ define ("helpers/chatView",
       switch (messageType) {
         case MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT:
         case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
-          return INPUT_TYPES.PLAIN_TEXT;
+          return USER_INPUT_TYPES.PLAIN_TEXT;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_EMAIL_INPUT:
-          return INPUT_TYPES.EMAIL;
+          return USER_INPUT_TYPES.EMAIL;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
-          return INPUT_TYPES.NUMERIC;
+          return USER_INPUT_TYPES.NUMERIC;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
-          return INPUT_TYPES.DATE;
+          return USER_INPUT_TYPES.DATE;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
-          return INPUT_TYPES.PILL_SELECT;
+          return USER_INPUT_TYPES.PILL_SELECT;
 
         default:
-          return INPUT_TYPES.DEFAULT_INPUT;
+          return USER_INPUT_TYPES.DEFAULT_INPUT;
       }
     };
 
@@ -77,7 +77,7 @@ define ("helpers/chatView",
         placeholder
       };
 
-      if (userInputType === INPUT_TYPES.PILL_SELECT) {
+      if (userInputType === USER_INPUT_TYPES.PILL_SELECT) {
         processedInput.options = options.map ((option) => {
           return {
             label: option.title,
