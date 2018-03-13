@@ -44,6 +44,7 @@ define ("components/replyBox",
       render () {
         const {
           text,
+          value,
           disabled,
           onFooterFocus,
           onFooterBlur,
@@ -54,7 +55,7 @@ define ("components/replyBox",
         // Create a separate style sheet for this component
         const replyBoxClasses = classes (
           "hs-chat-footer", {
-            "hs-chat-footer--form-invalid": disabled || !this.props.value.trim ()
+            "hs-chat-footer--form-invalid": disabled || !value.trim ()
           }
         );
         let replyBoxHeadingEl = null;

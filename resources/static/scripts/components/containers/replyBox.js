@@ -18,9 +18,14 @@ define ("components/containers/replyBox",
 
     const mapStateToProps = (state) => {
       const {chatView: chatViewState, appState, ui} = state;
-      const {value, disabled} = chatViewState.replyBox;
+      const {value, disabled} = chatViewState.userInput;
       let replyBoxHeading = null;
 
+      // We are treating passing heading to replyBox as rare case, currently only
+      // applicable for question when resolution rejected by user.
+      // We have different layout for displaying a. heading b. input c. error
+      // In almost every case we will use above layout
+      // More info :- Check chatViewFooter component
       if (chatViewState.activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
         replyBoxHeading = ui.text.chatViewIssueRejectionQuestion;
       }
