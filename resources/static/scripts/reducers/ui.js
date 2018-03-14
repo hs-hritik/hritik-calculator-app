@@ -75,7 +75,10 @@ define ("reducers/ui",
         businessHoursOfflineMessage: "",
         dndInfoText: "Add files or drag here",
         businessHoursAttachmentsSizeExceedMsg: "Total size of attachments exceed 25MB",
-        businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5"
+        businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5",
+        emailValidationError: "Enter a valid email address",
+        numberValidationError: "Enter a valid number",
+        dateValidationError: "Enter a valid date in DD/MM/YYYY format"
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

@@ -7,9 +7,10 @@
 define ("reducers/chatView",
   [
     "constants/chatView",
-    "constants/actionTypes"
+    "constants/actionTypes",
+    "gunpowder/utils/object"
   ],
-  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES) {
+  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -77,6 +78,7 @@ define ("reducers/chatView",
     };
 
     return (state = INITIAL_STATE, action) => {
+      let userInputUpdateObj = {};
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           const updateObj = {};
@@ -114,8 +116,6 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
-          let userInputUpdateObj = {};
-
           if (action.footer === ACTIVE_FOOTER.REPLY &&
               state.activeFooter !== ACTIVE_FOOTER.REPLY) {
             userInputUpdateObj = _getDefaultUserInputConfig ();
@@ -244,6 +244,15 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_USER_INPUT_DATA:
+          userInputUpdateObj = objUtils.shallowMerge (
+            _getDefaultUserInputConfig (),
+            action.input
+          );
+          return update (state, {
+            userInput: {$set: userInputUpdateObj}
+          });
+
+        case ACTION_TYPES.UPDATE_USER_INPUT_DATA:
           return update (state, {
             userInput: {$merge: action.input}
           });

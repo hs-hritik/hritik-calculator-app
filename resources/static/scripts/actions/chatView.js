@@ -290,13 +290,30 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to set input data
+     * Action to set user input data
+     * This action will set a default user input object and merge given input.
+     * Use this action after bot to bot transitions.
      * @param {Object} input - processed input object
      * @returns {Object} - Action
      */
     const setUserInputData = (input) => {
       return {
         type: ACTION_TYPES.SET_USER_INPUT_DATA,
+        input
+      };
+    };
+
+    /**
+     * Action to update user input data
+     * This action will just update existing user input object in store.
+     * Use this action to update user input during bot interaction or set errors
+     * or partially update data of user input.
+     * @param {Object} input - processed input object
+     * @returns {Object} - Action
+     */
+    const updateUserInputData = (input) => {
+      return {
+        type: ACTION_TYPES.UPDATE_USER_INPUT_DATA,
         input
       };
     };
@@ -590,12 +607,29 @@ define ("actions/chatView",
      */
     const submitReply = () => {
       return (dispatch, getState) => {
-        const state = getState (),
-              {appState} = state,
-              {userInput} = state.chatView,
-              trimmedValue = userInput.value.trim ();
+        const state = getState ();
+        const {
+          appState,
+          chatView: {
+            userInput
+          },
+          ui: {
+            text
+          }
+        } = state;
+        const trimmedValue = userInput.value.trim ();
 
         if (userInput.disabled || !trimmedValue) {
+          return;
+        }
+
+        const validationConfig = chatViewHelpers.getUserInputValidationConfig (
+          userInput,
+          text
+        );
+
+        if (validationConfig.errorMsg) {
+          dispatch (updateUserInputData (validationConfig));
           return;
         }
 
@@ -1909,6 +1943,7 @@ define ("actions/chatView",
       showPostIssueResolutionFooter,
       acceptResolutionQuestion,
       rejectResolutionQuestion,
-      setUserInputData
+      setUserInputData,
+      updateUserInputData
     };
   });
