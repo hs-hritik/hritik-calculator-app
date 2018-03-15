@@ -319,6 +319,18 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set user selected option
+     * @param {Object} option - selected option
+     * @returns {Object} - Action
+     */
+    const setUserSelectedOption = (option) => {
+      return {
+        type: ACTION_TYPES.SET_USER_SELECTED_OPTION,
+        option
+      };
+    };
+
+    /**
      * Handles message input
      * Parse the input data for message and save it in store
      * Set the footer depending on input type
@@ -544,6 +556,10 @@ define ("actions/chatView",
         onEnd
       } = config;
 
+      // @TODO - Do following things
+      // a. Change the route depending on pre-issue or issue state
+      // b. Add xhr data for bot message if applicable
+      // c. Remove 'identifier' and use xhr helpers to get user identifiers
       xhr ({
         route: routes.postUserReply (domain, activeIssueId),
         data: {
@@ -567,7 +583,6 @@ define ("actions/chatView",
         onEnd
       });
     };
-
 
     /**
      * Action to disable reply box.
@@ -664,7 +679,9 @@ define ("actions/chatView",
 
         dispatch (disableReplyBox ());
 
-        // @TODO - change the route depending on pre-issue or issue state
+        // @TODO -
+        // a. Remove identifier
+        // b. Pass userInput
         postUserMessage ({
           domain: appState.domain,
           activeIssueId: appState.activeIssueId,
@@ -1944,6 +1961,7 @@ define ("actions/chatView",
       acceptResolutionQuestion,
       rejectResolutionQuestion,
       setUserInputData,
-      updateUserInputData
+      updateUserInputData,
+      setUserSelectedOption
     };
   });

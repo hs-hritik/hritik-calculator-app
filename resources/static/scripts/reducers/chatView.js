@@ -30,8 +30,11 @@ define ("reducers/chatView",
         type: USER_INPUT_TYPES.DEFAULT_INPUT,
         disabled: false,
         required: true,
+        options: null,
+        selectedOption: null,
         label: "",
         skipLabel: "",
+        skipped: false,
         placeholder: "",
         errorMsg: ""
       };
@@ -255,6 +258,13 @@ define ("reducers/chatView",
         case ACTION_TYPES.UPDATE_USER_INPUT_DATA:
           return update (state, {
             userInput: {$merge: action.input}
+          });
+
+        case ACTION_TYPES.SET_USER_SELECTED_OPTION:
+          return update (state, {
+            userInput: {
+              selectedOption: {$set: action.option}
+            }
           });
 
         case ACTION_TYPES.RESET:

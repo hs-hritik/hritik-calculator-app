@@ -10,9 +10,11 @@ define ("components/chatViewFooter",
     "components/containers/replyBox",
     "constants/chatView",
     "constants/keyCodes",
+    "constants/propTypes",
     "gunpowder/utils/classes"
   ],
-  function (StarRating, ReplyBoxContainer, CHAT_VIEW_CONSTANTS, KEY_CODES, classes) {
+  function (StarRating, ReplyBoxContainer, CHAT_VIEW_CONSTANTS, KEY_CODES,
+    customPropTypes, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -21,6 +23,7 @@ define ("components/chatViewFooter",
       USER_INPUT_TYPES,
       HTML_INPUT_TYPES
     } = CHAT_VIEW_CONSTANTS;
+    const {OPTION_PROP_TYPE} = customPropTypes;
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -48,22 +51,28 @@ define ("components/chatViewFooter",
         onFooterFocus: PropTypes.func,
         onFooterBlur: PropTypes.func,
         userInput: PropTypes.shape ({
-          value: PropTypes.string.isRequired,
-          disabled: PropTypes.bool,
           type: PropTypes.string.isRequired,
+          value: PropTypes.string,
+          options: PropTypes.arrayOf (OPTION_PROP_TYPE),
+          disabled: PropTypes.bool,
           label: PropTypes.string,
           required: PropTypes.bool,
           skipLabel: PropTypes.string,
           placeholder: PropTypes.string,
           errorMsg: PropTypes.string
-        })
+        }),
+        onPillOptionSelect: PropTypes.func,
+        onSkipUserInput: PropTypes.func
       },
 
       render () {
         const {
           footerIsActive,
           browserIsMobile,
-          allowFullScreen
+          allowFullScreen,
+          userInput: {
+            skipLabel
+          }
         } = this.props;
 
         const footerClasses = classes ("hs-footer", {
@@ -72,9 +81,28 @@ define ("components/chatViewFooter",
           "hs-footer--full-screen": allowFullScreen
         });
 
+        let skipBtnEl = null;
+
+        // @TODO - Add styles once UI is rendered
+        // a. Create a new BEM block for footer wrapper (column layout)
+        // b. Footer wrapper will contain two items
+        //    1. 'skip' button (optional)
+        //    2. footer component (reply box || pill select || user input)
+        if (skipLabel) {
+          skipBtnEl = (
+            <button className="hs-footer-wrapper__skip-btn"
+                    onClick={this._onSkipUserInputClick}>
+              {skipLabel}
+            </button>
+          );
+        }
+
         return (
-          <div className={footerClasses}>
-            {this._renderFooterComponent ()}
+          <div className="hs-footer-wrapper">
+            {skipBtnEl}
+            <div className={footerClasses}>
+              {this._renderFooterComponent ()}
+            </div>
           </div>
         );
       },
@@ -217,9 +245,32 @@ define ("components/chatViewFooter",
        * Render pill options footer
        */
       _renderPillOptionsFooter () {
-        // @TODO - Render pill options layout
+        const {
+          userInput: {
+            options
+          }
+        } = this.props;
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-chat-footer__button"
+        );
+        const pillOptionsEl = options.map ((option) => {
+          return (
+            <button onClick={this._onPillOptionClick.bind (this, option)}
+                    className={btnClasses}>
+              {option.label}
+            </button>
+          );
+        });
+
+        // @TODO - Add styles once UI is rendered
         return (
-          <div className="hs-chat-footer__pill-options" />
+          <div className="chat-view-footer">
+            <div className="hs-chat-footer__pill-options">
+              {pillOptionsEl}
+            </div>
+          </div>
         );
       },
 
@@ -361,6 +412,21 @@ define ("components/chatViewFooter",
         } else if (ev.keyCode === KEY_CODES.ENTER) {
           this.props.onSubmitInputField ();
         }
+      },
+
+      /**
+       * Click handler for pill options (buttons)
+       * @param {String} option - selected option
+       */
+      _onPillOptionClick (option) {
+        this.props.onPillOptionSelect (option);
+      },
+
+      /**
+       * Click handler for skip input button
+       */
+      _onSkipUserInputClick () {
+        this.props.onSkipUserInput ();
       },
 
       /**

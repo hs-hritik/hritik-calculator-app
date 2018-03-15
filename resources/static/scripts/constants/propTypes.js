@@ -28,6 +28,11 @@ define ("constants/propTypes",
       )
     };
 
+    const OPTION_PROP_TYPE = PropTypes.shape ({
+      label: PropTypes.string,
+      value: PropTypes.string
+    });
+
     const INFO_BOT_FIELD_PROPS = PropTypes.shape ({
       title: PropTypes.string.isRequired,
       value: PropTypes.shape ({
@@ -38,6 +43,7 @@ define ("constants/propTypes",
 
     return {
       MESSAGE,
-      INFO_BOT_FIELD_PROPS
+      INFO_BOT_FIELD_PROPS,
+      OPTION_PROP_TYPE
     };
   });

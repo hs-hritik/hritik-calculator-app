@@ -47,7 +47,7 @@ define ("components/containers/chatViewFooter",
           }
         },
         onValueChangeInputField: (value) => {
-          dispatch (chatViewActions.setUserInputData ({
+          dispatch (chatViewActions.updateUserInputData ({
             value,
             error: false,
             errorMsg: ""
@@ -75,6 +75,16 @@ define ("components/containers/chatViewFooter",
         onStartNewConversation: () => {
           dispatch (appStateActions.reset ());
           appStateActions.startConversation ();
+        },
+        onPillOptionSelect: (option) => {
+          dispatch (chatViewActions.setUserSelectedOption (option));
+          dispatch (chatViewActions.submitReply ());
+        },
+        onSkipUserInput: () => {
+          dispatch (chatViewActions.updateUserInputData ({
+            skipped: true
+          }));
+          dispatch (chatViewActions.submitReply ());
         }
       };
     };
