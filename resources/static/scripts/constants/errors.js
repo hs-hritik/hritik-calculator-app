@@ -15,8 +15,20 @@ define ("constants/errors",
       ABORTED: 4
     };
 
+    const RESPONSE_STATUS_CODE = {
+      NO_AUTH_TOKEN: 401,
+      INVALID_USER_AUTH_TOKEN: 403
+    };
+
+    const TYPE = {
+      NO_AUTH_TOKEN: "NO_AUTH_TOKEN",
+      INVALID_USER_AUTH_TOKEN: "INVALID_USER_AUTH_TOKEN"
+    };
+
     return {
-      FILE_UPLOAD_ERRORS
+      FILE_UPLOAD_ERRORS,
+      RESPONSE_STATUS_CODE,
+      TYPE
     };
   }
 );

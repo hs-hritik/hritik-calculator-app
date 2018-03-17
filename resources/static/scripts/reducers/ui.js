@@ -8,9 +8,10 @@ define ("reducers/ui",
   [
     "constants/actionTypes",
     "constants/uiConfig",
+    "constants/errors",
     "helpers/ui"
   ],
-  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, uiHelpers) {
+  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, errorConstants, uiHelpers) {
     "use strict";
 
     const update = React.addons.update;
@@ -29,6 +30,13 @@ define ("reducers/ui",
       ACCENT_COLOR_SETS,
       SHADES
     } = UI_CONFIG_CONSTANTS;
+
+    const {
+      TYPE: {
+        NO_AUTH_TOKEN: NO_AUTH_ERROR,
+        INVALID_USER_AUTH_TOKEN: INVALID_AUTH_ERROR
+      }
+    } = errorConstants;
 
     const INITIAL_STATE = {
       text: {
@@ -78,7 +86,19 @@ define ("reducers/ui",
         businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5",
         emailValidationError: "Enter a valid email address",
         numberValidationError: "Enter a valid number",
-        dateValidationError: "Enter a valid date in DD/MM/YYYY format"
+        dateValidationError: "Enter a valid date in DD/MM/YYYY format",
+        errorMessage: {
+          [NO_AUTH_ERROR]: {
+            title: "Authentication Failed",
+            subtitle: "Unable to reach support"
+            // @TODO: Confirm if a CTA is needed.
+          },
+          [INVALID_AUTH_ERROR]: {
+            title: "Authentication Failed",
+            subtitle: "Unable to reach support"
+            // @TODO: Confirm if a CTA is needed.
+          }
+        }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

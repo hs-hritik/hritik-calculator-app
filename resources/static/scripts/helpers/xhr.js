@@ -6,11 +6,24 @@
 
 define ("helpers/xhr",
   [
+    "constants/actionTypes",
+    "constants/errors",
     "gunpowder/utils/object",
     "store"
   ],
-  function (objUtils, store) {
+  function (actionTypes, errorConstants, objUtils, store) {
     "use strict";
+
+    const {
+      TYPE: {
+        NO_AUTH_TOKEN: NO_AUTH_ERROR,
+        INVALID_USER_AUTH_TOKEN: INVALID_AUTH_ERROR
+      },
+      RESPONSE_STATUS_CODE: {
+        NO_AUTH_TOKEN: NO_AUTH_RESPONSE,
+        INVALID_USER_AUTH_TOKEN: INVALID_AUTH_RESPONSE
+      }
+    } = errorConstants;
 
     /**
      * Return common headers which are to be passed to each xhr request.
@@ -79,8 +92,55 @@ define ("helpers/xhr",
       return commonXhrData;
     };
 
+    /**
+     * Handle user authentication failures. All Web Chat APIs are going to be
+     * validated for user authentication. This is the common handler that sets
+     * appropriate error object (with type and message) in the state.
+     * @param {Object} response - The response object sent by the API, with status.
+     */
+    const handleAuthFailure = (response) => {
+      if (!(response && response.status)) {
+        return;
+      }
+
+      const {
+        ui: {
+          text: {
+            errorMessage
+          }
+        }
+      } = store.getState ();
+
+      let errorObj = {};
+
+      switch (response.status) {
+        case NO_AUTH_RESPONSE:
+          errorObj = {
+            type: NO_AUTH_ERROR,
+            message: errorMessage [NO_AUTH_ERROR]
+          };
+          break;
+
+        case INVALID_AUTH_RESPONSE:
+          errorObj = {
+            type: INVALID_AUTH_ERROR,
+            message: errorMessage [INVALID_AUTH_ERROR]
+          };
+          break;
+      }
+
+      // Set the error object in the state, if an error is handled.
+      if (Object.keys (errorObj).length > 0) {
+        store.dispatch ({
+          type: actionTypes.ADD_ERROR,
+          errorObj
+        });
+      }
+    };
+
     return {
       getCommonHeaders,
-      getPreparedXhrData
+      getPreparedXhrData,
+      handleAuthFailure
     };
   });

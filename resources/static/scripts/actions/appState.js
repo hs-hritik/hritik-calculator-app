@@ -565,6 +565,9 @@ define ("actions/appState",
                 analyticsHelpers.track (EVENT.WIDGET_LOAD);
               }
             }
+          },
+          onFailure: (response) => {
+            xhrHelpers.handleAuthFailure (response);
           }
         });
       };
@@ -581,14 +584,8 @@ define ("actions/appState",
         route: routes.getWmConfig (domain, platformId),
         headers: xhrHelpers.getCommonHeaders (),
         data: xhrHelpers.getPreparedXhrData (),
-        onSuccess: (response) => {
-          if (callbacks.onSuccess) {
-            callbacks.onSuccess (response);
-          }
-        },
-        onFailure: () => {
-          // @TODO: Handle failure.
-        }
+        onSuccess: callbacks.onSuccess,
+        onFailure: callbacks.onFailure
       });
     };
 
