@@ -13,10 +13,12 @@ define ("reducers/root",
     "reducers/faqView",
     "reducers/csatView",
     "reducers/businessHoursView",
+    "reducers/errors",
     "constants/actionTypes"
   ],
   function (uiReducer, appStateReducer, entitiesReducer, chatViewReducer,
-    faqViewReducer, csatViewReducer, businessHoursViewReducer, ACTION_TYPES) {
+    faqViewReducer, csatViewReducer, businessHoursViewReducer,
+    errorsReducer, ACTION_TYPES) {
     "use strict";
 
     const enableBatching = (reducer) => {
@@ -40,7 +42,8 @@ define ("reducers/root",
       chatView: chatViewReducer,
       faqView: faqViewReducer,
       csatView: csatViewReducer,
-      businessHoursViewState: businessHoursViewReducer
+      businessHoursViewState: businessHoursViewReducer,
+      errors: errorsReducer
     }));
   }
 );
