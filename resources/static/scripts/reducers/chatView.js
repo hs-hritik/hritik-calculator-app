@@ -8,9 +8,10 @@ define ("reducers/chatView",
   [
     "constants/chatView",
     "constants/actionTypes",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "gunpowder/utils/array"
   ],
-  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils) {
+  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils, arrayUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -48,6 +49,12 @@ define ("reducers/chatView",
       agentTyping: false,
       endUserFirstMsgId: "",
       unreadCount: 0,
+      messageList: [],
+      messageCursor: {
+        preissues: {},
+        issues: {}
+      },
+      issueCursor: 0,
       infoBot: {
         fieldsRequired: ["name", "email"],
         currentField: "",
@@ -80,8 +87,20 @@ define ("reducers/chatView",
       readFaqList: []
     };
 
+    /**
+     * Returns the index of message for given message id
+     * @param {Array} list - list of messages
+     * @param {String} id - message id
+     * @returns {Number} - index of matched message
+     */
+    const _getMessageIndex = (list, id) => {
+      return arrayUtils.findIndexByKey (list, id, "id");
+    };
+
     return (state = INITIAL_STATE, action) => {
       let userInputUpdateObj = {};
+      let index = null;
+
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           const updateObj = {};
@@ -115,7 +134,7 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
           return update (state, {
-            activeIssueMsgCursor: {$set: action.msgCursor}
+            messageCursor: {$merge: action.msgCursor}
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
@@ -265,6 +284,41 @@ define ("reducers/chatView",
             userInput: {
               selectedOption: {$set: action.option}
             }
+          });
+
+        case ACTION_TYPES.SET_MESSAGES:
+          return update (state, {
+            messageList: {$set: action.messages}
+          });
+
+        case ACTION_TYPES.ADD_MESSAGES:
+          return update (state, {
+            messageList: {$push: [action.messages]}
+          });
+
+        case ACTION_TYPES.REMOVE_MESSAGE:
+          index = _getMessageIndex (state.messageList, action.messageId);
+          return update (state, {
+            messageList: {$splice: [[index, 1]]}
+          });
+
+        case ACTION_TYPES.SET_ATTACHMENT_ERROR:
+          index = _getMessageIndex (state.messageList, action.messageId);
+          return update (state, {
+            messages: {
+              [index]: {
+                states: {
+                  uploadInProgress: {$set: false},
+                  error: {$set: true},
+                  errorCode: {$set: action.errorCode}
+                }
+              }
+            }
+          });
+
+        case ACTION_TYPES.SET_ISSUE_CURSOR:
+          return update (state, {
+            issueCursor: {$set: action.cursor}
           });
 
         case ACTION_TYPES.RESET:

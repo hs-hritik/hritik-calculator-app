@@ -19,8 +19,14 @@ define ("constants/routes",
 
     const getIssues = (domain) => `${BASE}${domain}/issues`;
 
-    const postUserReply = (domain, issueId) =>
-                           `${BASE}${domain}/issues/${issueId}/messages/user`;
+    // @TODO - a. Clean up unwanted routes b. Create one function for post user reply
+    const postUserReplyForPreIssue = (domain, preIssueId) =>
+      `${BASE}${domain}/preissues/${preIssueId}/messages`;
+
+    const postUserReplyForIssue = (domain, issueId) =>
+      `${BASE}${domain}/issues/${issueId}/messages`;
+
+    const getIssuesAndMessages = (domain) => `${BASE}${domain}/messages`;
 
     const getMessages = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/messages`;
 
@@ -59,7 +65,6 @@ define ("constants/routes",
       getWmConfig,
       getCss,
       getIssues,
-      postUserReply,
       getMessages,
       getFaq,
       putFaqFeedback,
@@ -70,6 +75,9 @@ define ("constants/routes",
       putMessagesSeen,
       getWsConfig,
       webSocket,
-      postAnalyticsEvent
+      postAnalyticsEvent,
+      postUserReplyForPreIssue,
+      postUserReplyForIssue,
+      getIssuesAndMessages
     };
   });

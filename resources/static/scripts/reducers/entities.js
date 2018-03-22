@@ -3,7 +3,7 @@
  * @author Manish Garg <manish@helpshift.com>
  * @created June 1, 2017
  */
-
+// @TODO - NORMALIZATION_CLEAN_UP
 define ("reducers/entities",
   ["constants/actionTypes"],
   function (ACTION_TYPES) {

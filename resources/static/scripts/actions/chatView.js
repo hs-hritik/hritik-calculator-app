@@ -45,7 +45,7 @@ define ("actions/chatView",
     analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
-    const {normalize, denormalize} = normalizr,
+    const {normalize} = normalizr,
           MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
           {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
           MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
@@ -55,13 +55,15 @@ define ("actions/chatView",
             ACTIVE_FOOTER,
             MESSAGES_POLLING_TIMEOUT,
             MESSAGES_FORCE_POLLING_TIMEOUT,
-            INFO_BOT_FIELDS
+            INFO_BOT_FIELDS,
+            USER_INPUT_TYPES
           } = CHAT_VIEW_CONSTANTS,
           {Input} = schema;
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
     const {
       ISSUE_STATE,
+      ISSUE_TYPE,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES
     } = APP_STATE_CONSTANTS;
@@ -93,37 +95,42 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to add messages to an issue.
+     * Action to add messages in message list.
      * This action will push given messages to the issue's messages array.
-     * @param {String} issueId - issue id
-     * @param {Array} msgIds - array of message ids
+     * @param {Object} config - config
+     * @param {Array} config.messages - array of response messages
+     * @param {Boolean} [config.process] - whether to process messages
      * @returns {Object} - action
      */
-    const addMessages = (issueId, msgIds) => {
+    const addMessages = (config) => {
+      const {messages, process = true} = config;
+      let processedMessages = messages;
+
+      if (process) {
+        processedMessages = entityHelpers.getProcessedMessages (messages);
+      }
+
       return {
         type: ACTION_TYPES.ADD_MESSAGES,
-        issueId,
-        msgIds
+        messages: processedMessages
       };
     };
 
     /**
-     * Action to set messages to an issue.
+     * Action to set messages in message list.
      * This action will replace the current messages array with the
      * given messages array. If you want to push messages to an issue,
      * use addMessages action.
-     * @param {String} issueId - issue id
-     * @param {Array} msgIds - array of message ids
+     * @param {Array} messages - array of message
      * @returns {Object} - action
      */
-    const setMessages = (issueId, msgIds) => {
+    // @TODO - This might not be used after pre-chat clean up!
+    const setMessages = (messages) => {
       return {
         type: ACTION_TYPES.SET_MESSAGES,
-        issueId,
-        msgIds
+        messages
       };
     };
-
 
     /**
      * To be called at specified intervals to poll for new messages.
@@ -267,11 +274,9 @@ define ("actions/chatView",
      * @param {Boolean} config.isCsatSubmitted - csat rating submitted
      */
     const handlePostChatFeatureSteps = (config) => {
-      const {isCsatSubmitted} = config;
       const {dispatch} = store;
-      const {entities, appState: {activeIssueId}} = store.getState ();
-      const issue = denormalize (activeIssueId, entitySchema.issue, entities);
-      const lastMessageType = issue.messages [issue.messages.length - 1].type;
+      const {isCsatSubmitted} = config;
+      const lastMessageType = getLatestMessage ().type;
       const actionsToDispatch = [];
 
       // If type of last message in message list is either accepted or rejected by user,
@@ -386,84 +391,125 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set issue cursor
+     * Issue cursor is used to keep track of issues fetched at given time
+     * @param {Number} cursor - issue cursor (unix timestamp)
+     * @returns {Object} - Action
+     */
+    const setIssueCursor = (cursor) => {
+      return {
+        type: ACTION_TYPES.SET_ISSUE_CURSOR,
+        cursor
+      };
+    };
+
+    /**
+     * Returns active issue and list of messages
+     * @param {Array} issues - list of issues
+     * @returns {Object} - config of active issue and messages
+     */
+    const getActiveIssueAndMessages = (issues) => {
+      const currentIssue = issues [0];
+      const currentIssueMessages = (currentIssue && currentIssue.messages) || [];
+      let previousIssue = null;
+      let previousIssueMessages = [];
+
+      // If current issue type is 'issue', find pre issue from issues list
+      // and save it in previous
+      if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
+        previousIssue = arrayUtils.find (issues, (issue) => {
+          return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
+                  issue.id === currentIssue.preissue_id);
+        });
+        previousIssueMessages = (previousIssue && previousIssue.messages) || previousIssueMessages;
+      }
+
+      return {
+        activeIssue: currentIssue,
+        messages: previousIssueMessages.concat (currentIssueMessages)
+      };
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
      * If polling is enabled, call itself when the xhr ends.
      */
     const fetchMessages = () => {
-      const state = store.getState (),
-            {dispatch} = store,
-            {appState} = state;
+      const {dispatch} = store;
+      const {
+        appState: {
+          domain
+        },
+        chatView: {
+          messageCursor,
+          issueCursor
+        }
+      } = store.getState ();
 
+      // @TODO - Confirm with backend, do we need to send both cursors?
       const xhrData = {
-        "identifier": appState.identifier,
-        "new-timestamp": Date.now ()
+        mc: messageCursor
       };
 
-      if (state.chatView.activeIssueMsgCursor) {
-        xhrData ["messages-cursor"] = state.chatView.activeIssueMsgCursor;
+      if (issueCursor) {
+        xhrData.since = issueCursor;
       }
 
       lastFetchStartTime = Date.now ();
       lastFetchCompleted = false;
 
       fetchMessagesXhr = xhr ({
-        route: routes.getMessages (appState.domain, appState.activeIssueId),
-        data: xhrData,
+        route: routes.getIssuesAndMessages (domain),
+        data: xhrHelpers.getPreparedXhrData (xhrData),
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           // @NOTE - This is to make sure that onEnd is called even if
           // any code in onSuccess results in an Exception.
           try {
-            const latestState = store.getState ();
             const {
-              messages,
-              issue_state_data: {
+              issues = []
+            } = response;
+
+            const {
+              activeIssue,
+              messages
+            } = getActiveIssueAndMessages (issues);
+
+            // Validation to check latest issue exists
+            if (!activeIssue) {
+              return;
+            }
+
+            dispatch (setIssueCursor (response.timestamp));
+
+            const {
+              id: issueId,
+              type: issueType,
+              state_data: {
                 state: issueState
               },
               csat_received: isCsatSubmitted,
-              messages_cursor: messageCursor
-            } = response;
+              created_at: latestMessageCursor
+            } = activeIssue;
 
-            if (messages.length) {
-              const normalizedData = normalize (response, entitySchema.messages);
-              const processedEntities = entityHelpers.getProcessedEntities (
-                normalizedData.entities
+            const messagesLength = messages.length;
+            if (messagesLength) {
+              handleLatestMessage (messages [messagesLength - 1]);
+              dispatch (
+                batchActions ([
+                  addMessages ({
+                    messages: messages
+                  }),
+                  setActiveIssueMsgCursor ({
+                    [issueType]: {
+                      [issueId]: latestMessageCursor
+                    }
+                  })
+                ])
               );
-
-              // @TODO - Revisit this logic after api change
-              const latestMessage = messages [messages.length - 1];
-              handleLatestMessage (latestMessage);
-
-              dispatch (batchActions ([
-                entitiesActions.setEntities (processedEntities),
-                addMessages (appState.activeIssueId, normalizedData.result.messages),
-                setActiveIssueMsgCursor (messageCursor)
-              ]));
-
-              let unreadCount = latestState.chatView.unreadCount;
-              // Calculate unread count for agent messages only
-              messages.forEach ((msg) => {
-                if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
-                    msg.state !== MESSAGES_STATE.READ) {
-                  unreadCount++;
-                }
-              });
-
-              // If the chat view is active, and the messenger is not in minimized state,
-              // that means the user has seen the messages.
-              if (!latestState.appState.minimized &&
-                ACTIVE_VIEW.CHAT === latestState.appState.activeView) {
-                dispatch (markMessagesSeen ());
-              } else {
-                dispatch (setUnreadCount (unreadCount));
-                postSdkMessage.updateUnreadCount (unreadCount);
-              }
-
-              if (state.chatView.activeIssueMsgCursor && unreadCount) {
-                audioHelpers.playReceive ();
-              }
+              handleUnreadMessages ();
             }
 
             // If issue is resolved or rejected, stop polling and ask user for feedback.
@@ -487,6 +533,51 @@ define ("actions/chatView",
           lastFetchCompleted = true;
         }
       });
+    };
+
+    /**
+     * Handle unread messages
+     * Calculate unread (agent) message count by checking each message
+     * If the widget is minimized, post message to parent with unread count which
+     * will show unread notification on widget
+     */
+    const handleUnreadMessages = () => {
+      const {dispatch, getState} = store;
+      const {state} = getState ();
+      const {
+        appState: {
+          minimized,
+          activeView
+        },
+        chatView: {
+          unreadCount,
+          messageList: messages
+        }
+      } = state;
+      let finalUnreadCount = unreadCount;
+
+      // Calculate unread count for agent messages only
+      messages.forEach ((msg) => {
+        if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
+            msg.state !== MESSAGES_STATE.READ) {
+          finalUnreadCount++;
+        }
+      });
+
+      // If the chat view is active, and the messenger is not in minimized state,
+      // that means the user has seen the messages.
+      if (!minimized && ACTIVE_VIEW.CHAT === activeView) {
+        dispatch (markMessagesSeen ());
+      } else {
+        dispatch (setUnreadCount (finalUnreadCount));
+        postSdkMessage.updateUnreadCount (finalUnreadCount);
+      }
+
+      // @TODO - Confirm why earlier code used activeIssueMsgCursor
+      // if (activeIssueMsgCursor && finalUnreadCount) {
+      if (finalUnreadCount) {
+        audioHelpers.playReceive ();
+      }
     };
 
     /**
@@ -537,44 +628,66 @@ define ("actions/chatView",
     /**
      * Fire xhr to post message as a user.
      * @param {Object} config - data required for xhr
-     * @param {String} config.domain - domain
-     * @param {String} config.activeIssueId - active issue id
-     * @param {String} config.identifier - user identifier
      * @param {String} config.msgBody - message body
      * @param {String} config.msgType - message type
      * @param {Function} config.onSuccess - success callback
      * @param {Function} config.onEnd - end callback
      */
     const postUserMessage = (config) => {
+      const {dispatch, getState} = store;
+      const {state} = getState ();
       const {
-        domain,
-        activeIssueId,
-        identifier,
+        chatView: {
+          userInput
+        },
+        appState: {
+          domain,
+          activeIssueId,
+          issueState
+        }
+      } = state;
+      const {
         msgBody,
         msgType,
         onSuccess,
         onEnd
       } = config;
+      let xhrData = {};
 
-      // @TODO - Do following things
-      // a. Change the route depending on pre-issue or issue state
-      // b. Add xhr data for bot message if applicable
-      // c. Remove 'identifier' and use xhr helpers to get user identifiers
-      xhr ({
-        route: routes.postUserReply (domain, activeIssueId),
-        data: {
-          identifier,
+      if (userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT) {
+        // @TODO - Change request params after apis are changed.
+        // Currently the request params for issue remains same, only pre-issue
+        // params are different.
+        xhrData = {
           "message-body": msgBody,
           "message-type": msgType
-        },
+        };
+      } else {
+        const latestMessage = getLatestMessage ();
+        xhrData = chatViewHelpers.getPreparedMessageData ({
+          input: userInput,
+          messageType: latestMessage.type
+        });
+      }
+
+      const route = (issueState === ISSUE_STATE.PRE_CHAT) ?
+        routes.postUserReplyForIssue (domain, activeIssueId) :
+        routes.postUserReplyForPreIssue (domain, activeIssueId);
+
+      xhr ({
+        route,
+        data: xhrHelpers.getPreparedXhrData (xhrData),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
-          const normalizedData = normalize (response, entitySchema.message);
-          const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
+          dispatch (
+            addMessages ({
+              messages: [response]
+            })
+          );
 
           if (onSuccess) {
-            onSuccess (response, processedEntities);
+            onSuccess (response);
           }
         },
         onFailure: () => {
@@ -624,7 +737,10 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const state = getState ();
         const {
-          appState,
+          appState: {
+            activeIssueId,
+            issueState
+          },
           chatView: {
             userInput
           },
@@ -649,11 +765,11 @@ define ("actions/chatView",
         }
 
         // If current issue state is rejected, don't fire xhr to send messages to backend.
-        if (appState.issueState === ISSUE_STATE.REJECTED) {
+        if (issueState === ISSUE_STATE.REJECTED) {
           dispatch (
             createMessage ({
               type: MESSAGE_TYPE.TEXT,
-              issueId: appState.activeIssueId,
+              issueId: activeIssueId,
               messageConfig: {
                 body: trimmedValue,
                 isCustomerMsg: true
@@ -666,42 +782,18 @@ define ("actions/chatView",
           return;
         }
 
-        // If there is no active issue, create user message and add it in dummy issue.
-        // TODO: Check for issue state (PRE_CHAT) instead of activeIssueId.
-        if (!appState.activeIssueId) {
-          // set initial user msg
-          dispatch (createInitialUserMessage (userInput.value));
-
-          // Track the conversation started event.
-          analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
-          return;
-        }
+        // @TODO - Find a place to track conversation started event
+        // Track the conversation started event.
+        // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
 
         dispatch (disableReplyBox ());
 
-        // @TODO -
-        // a. Remove identifier
-        // b. Pass userInput
         postUserMessage ({
-          domain: appState.domain,
-          activeIssueId: appState.activeIssueId,
-          identifier: appState.identifier,
           msgBody: userInput.value,
           msgType: MESSAGE_TYPE.TEXT,
-          onSuccess: (response, processedEntities) => {
-            // Set resolution question step as incomplete if the user has added
-            // a message after the issue is resolved. Also start polling for new messages.
-            if (appState.issueState === ISSUE_STATE.RESOLVED) {
-              batchActions ([
-                dispatch (actionCreators.setResolutionQuestionCompleted (false)),
-                dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY)),
-                dispatch (updateIssueState (ISSUE_STATE.ACTIVE))
-              ]);
-              startPollingForMessages ();
-            }
+          onSuccess: () => {
+            handleIssueReopen (issueState);
             dispatch (updateReplyText (""));
-            dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (addMessages (appState.activeIssueId, [response.id]));
             audioHelpers.playSend ();
           },
           onEnd: () => {
@@ -716,6 +808,38 @@ define ("actions/chatView",
         // is tracked as soon as it's added.
         analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
+    };
+
+    /**
+     * Handle issue reopen case when user sends a message after issue is resolved
+     * @param {String} issueState - state of issue
+     */
+    const handleIssueReopen = (issueState) => {
+      const {dispatch} = store;
+      // Set resolution question step as incomplete if the user has added
+      // a message after the issue is resolved. Also start polling for new messages.
+      if (issueState === ISSUE_STATE.RESOLVED) {
+        dispatch (
+          batchActions ([
+            actionCreators.setResolutionQuestionCompleted (false),
+            setChatViewFooter (ACTIVE_FOOTER.REPLY),
+            updateIssueState (ISSUE_STATE.ACTIVE)
+          ])
+        );
+        startPollingForMessages ();
+      }
+    };
+
+    /**
+     * Return latest message object from message list
+     */
+    const getLatestMessage = () => {
+      const {
+        chatView: {
+          messageList
+        }
+      } = store.getState ();
+      return messageList [messageList.length - 1];
     };
 
     /**
@@ -803,6 +927,7 @@ define ("actions/chatView",
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: (response) => {
+            // @TODO - NORMALIZATION_CLEAN_UP
             const normalizedData = normalize (response, entitySchema.issue);
             const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
             dispatch (entitiesActions.setEntities (processedEntities));
@@ -861,7 +986,15 @@ define ("actions/chatView",
             domain,
             tags,
             cif,
-            metadata
+            metadata,
+            featuresEnabled: {
+              greeting: greetingFeatureEnabled
+            }
+          },
+          ui: {
+            text: {
+              greetingMsg
+            }
           }
         } = getState ();
 
@@ -887,6 +1020,10 @@ define ("actions/chatView",
           xhrData.custom_fields = JSON.stringify (cif);
         }
 
+        if (greetingFeatureEnabled) {
+          xhrData.greeting = greetingMsg;
+        }
+
         // @TODO: Check how are we going to send name with create-pre-issue XHR.
         // Discussion still going on with backend.
 
@@ -896,13 +1033,12 @@ define ("actions/chatView",
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.issue);
-            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
-            dispatch (entitiesActions.setEntities (processedEntities));
-
             const newIssueId = response.id;
             dispatch (
               batchActions ([
+                addMessages ({
+                  messages: response.messages
+                }),
                 setActiveIssueId (newIssueId),
                 actionCreators.setInternalIssueId (response.internal_id),
                 // @TODO: Double check how are we going to maintain issue and pre-issue states.
@@ -1095,11 +1231,9 @@ define ("actions/chatView",
      * @returns {Object} - Action
      */
     const createMessage = (config) => {
-      return (dispatch, getState) => {
-        const {appState} = getState ();
+      return (dispatch) => {
         const {
           type: messageType,
-          issueId = appState.dummyIssueId,
           typingTimer = false,
           playAudio = false,
           messageConfig,
@@ -1107,16 +1241,13 @@ define ("actions/chatView",
         } = config;
         const msg = chatViewHelpers.createMessage (messageType, messageConfig);
 
-        // As this message is created on frontend,
-        // it is already in normalized and processed format.
-        // So, directly udpating the entities in the store.
+        // As this message is created on frontend, it is already in processed format.
+        // So, directly add message in message list.
         const actionsToDispatch = [
-          entitiesActions.setEntities ({
-            messages: {
-              [msg.id]: msg
-            }
-          }),
-          addMessages (issueId, [msg.id])
+          addMessages ({
+            messages: [msg],
+            process: false
+          })
         ];
 
         if (typingTimer) {
@@ -1153,16 +1284,12 @@ define ("actions/chatView",
 
     /**
      * Action to remove message
-     * @param {Object} config - config required to remove message
-     * @param {String} config.issueId - issue id
-     * @param {String} config.messageId - message id
+     * @param {String} messageId - message id to remove from message list
      * @returns {Object} - Action
      */
-    const removeMessage = (config) => {
-      const {issueId, messageId} = config;
+    const removeMessage = (messageId) => {
       return {
         type: ACTION_TYPES.REMOVE_MESSAGE,
-        issueId,
         messageId
       };
     };
@@ -1768,40 +1895,16 @@ define ("actions/chatView",
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            // 1] Parse the response and create msg object
-            // 2] Dispatch following actions
-            //   a] Remove the message id
-            //    - Remove attachment dummy message id from message and issue
-            //      entities and local storage
-            //   b] Set message entity with parsed msg object
-            //   - Store the message in entity store under 'messages'
-            //     (check entity reducer)
-            //   - This action is also intercepted by lsMiddleware and it
-            //   stores the message id in localStorage under 'messages'
-            //   c] Add message
-            //   - Store the message id in entity store under 'issue->messages'
-            //     (check entity reducer)
-            //   - lsMiddleware will save message id in localStorage
-            //     under 'issues->messages'
-
-            const newMsgId = response.id;
-            const normalizedData = normalize (response, entitySchema.message);
-            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
-            const msg = processedEntities.messages [newMsgId];
-
-            const actionsToDispatch = [
-              removeMessage ({
-                issueId: activeIssueId,
-                messageId: attachmentMsgId
-              }),
-              entitiesActions.setEntities ({
-                messages: {
-                  [msg.id]: msg
-                }
-              }),
-              addMessages (activeIssueId, [msg.id])
-            ];
-            dispatch (batchActions (actionsToDispatch));
+            // Remove the FE (dummy) attachment message from message list
+            // Add new backend message in message list
+            dispatch (
+              batchActions ([
+                removeMessage (attachmentMsgId),
+                addMessages ({
+                  messages: [response]
+                })
+              ])
+            );
             audioHelpers.playSend ();
           },
           onFailure: (response) => {
@@ -1815,7 +1918,9 @@ define ("actions/chatView",
 
     /**
      * Create attachment message
-     * @param {Object} - File object
+     * @param {Object} file - File object
+     * @param {String} [attachmentMsgId] - Attachment message id, will be present
+     * in case of retry failed attachment
      * @returns {Function} - Action
      */
     const createAttachmentMessage = (file, attachmentMsgId) => {
@@ -1891,12 +1996,9 @@ define ("actions/chatView",
      */
     const acceptResolutionQuestion = () => {
       return (dispatch, getState) => {
-        const {appState, ui} = getState ();
+        const {ui} = getState ();
 
         postUserMessage ({
-          domain: appState.domain,
-          activeIssueId: appState.activeIssueId,
-          identifier: appState.identifier,
           msgBody: ui.text.chatViewAcceptedTheSolution,
           msgType: MESSAGE_TYPE.ACCEPTED,
           onSuccess: () => {
@@ -1913,12 +2015,9 @@ define ("actions/chatView",
      */
     const rejectResolutionQuestion = () => {
       return (dispatch, getState) => {
-        const {appState, ui} = getState ();
+        const {ui} = getState ();
 
         postUserMessage ({
-          domain: appState.domain,
-          activeIssueId: appState.activeIssueId,
-          identifier: appState.identifier,
           msgBody: ui.text.chatViewRejectedTheSolution,
           msgType: MESSAGE_TYPE.REJECTED,
           onSuccess: () => {

@@ -16,6 +16,11 @@ define ("constants/appState",
       RESOLVED_BY_FAQ_SUGGESTIONS: "resolved_by_faq_suggestions"
     };
 
+    const ISSUE_TYPE = {
+      ISSUE: "issue",
+      PRE_ISSUE: "preissue"
+    };
+
     const PRE_CHAT_STATE = {
       greeting: {
         INITIAL: "initial",
@@ -62,6 +67,7 @@ define ("constants/appState",
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
       MAX_RESET_TIMEOUT,
-      TRIGGER
+      TRIGGER,
+      ISSUE_TYPE
     };
   });

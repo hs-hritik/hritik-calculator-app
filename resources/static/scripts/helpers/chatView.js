@@ -24,6 +24,10 @@ define ("helpers/chatView",
     const {USER_INPUT_TYPES} = chatViewConstants;
     const {Input} = schema;
 
+    /* eslint-disable max-len */
+    const EMAIL_REG_EX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]+(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]+\.[\p{L}\p{M}\p{N}\p{S}A-Z]{2,4}/i;
+    /* eslint-enable eslint-enable */
+
     /**
      * Return an input type
      * @param {String} messageType - message type
@@ -238,7 +242,7 @@ define ("helpers/chatView",
         case USER_INPUT_TYPES.EMAIL:
           validations.push ({
             fn: (val) => {
-              return validationsUtil.email (val);
+              return EMAIL_REG_EX.test (val);
             },
             errorMsg: text.emailValidationError
           });
@@ -297,10 +301,50 @@ define ("helpers/chatView",
       };
     };
 
+    /**
+     * Return prepared message data for xhr
+     * @param {Object} config - config object
+     * @param {Object} config.input - user input object
+     * @param {String} config.messageType - message type
+     */
+    const getPreparedMessageData = (config) => {
+      const {
+        input: {
+          value,
+          skipped,
+          skipLabel,
+          chatBotInfo,
+          selectedOption
+        },
+        messageType
+      } = config;
+
+      // @TODO - Send appropriate response message types and not messageType
+      const requestData = {
+        body: value,
+        type: messageType,
+        chatbot_info: chatBotInfo
+      };
+
+      if (skipped) {
+        requestData.body = skipLabel;
+        requestData.skipped = skipped;
+      }
+
+      if (selectedOption && selectedOption.value) {
+        requestData.option_data = {
+          option_id: selectedOption.value
+        };
+      }
+
+      return requestData;
+    };
+
     return {
       createMessage,
       getProcessedUserInput,
       isNonRenderableMessage,
-      getUserInputValidationConfig
+      getUserInputValidationConfig,
+      getPreparedMessageData
     };
   });
