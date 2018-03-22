@@ -12,15 +12,15 @@ define ("reducers/faqView",
     const update = React.addons.update;
 
     const INITIAL_STATE = {
-      activeFaqId: "",
+      activeFaq: null,
       loading: false
     };
 
     return (state = INITIAL_STATE, action) => {
       switch (action.type) {
-        case ACTION_TYPES.SET_ACTIVE_FAQ_ID:
+        case ACTION_TYPES.SET_ACTIVE_FAQ:
           return update (state, {
-            activeFaqId: {$set: action.faqId}
+            activeFaq: {$set: action.faq}
           });
 
         case ACTION_TYPES.RESET:

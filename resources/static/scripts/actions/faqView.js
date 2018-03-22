@@ -7,7 +7,6 @@
 define ("actions/faqView",
   [
     "store",
-    "normalizr",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
@@ -17,27 +16,23 @@ define ("actions/faqView",
     "helpers/entity",
     "helpers/xhr",
     "helpers/analytics",
-    "actions/actionCreators",
-    "actions/entities"
+    "actions/actionCreators"
   ],
-  function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
-    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
-    entitiesActions) {
+  function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
+    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators) {
     "use strict";
-
-    const {normalize} = normalizr;
 
     const {EVENT} = analyticsConstants;
 
     /**
-     * Action to set the active FAQ id in the FAQ View store
-     * @param {String} faqId
-     * @returns {Object} - the action object
+     * Action to set the active FAQ in the FAQ View store
+     * @param {Object} faq - faq object
+     * @returns {Object} - Action
      */
-    const setActiveFaqId = (faqId) => {
+    const setActiveFaq = (faq) => {
       return {
-        type: ACTION_TYPES.SET_ACTIVE_FAQ_ID,
-        faqId
+        type: ACTION_TYPES.SET_ACTIVE_FAQ,
+        faq
       };
     };
 
@@ -49,19 +44,19 @@ define ("actions/faqView",
     const getFaq = (faqId) => {
       return (dispatch, getState) => {
         const state = getState ();
-        const appState = state.appState;
+        const {
+          appState: {
+            domain
+          }
+        } = state;
 
         xhr ({
-          route: routes.getFaq (appState.domain, faqId),
+          route: routes.getFaq (domain, faqId),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.faq);
-            const processedEntities = entityHelpers.getProcessedEntities (
-              normalizedData.entities
-            );
+            const faq = entityHelpers.getProcessedFaq (response);
 
-            dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (setActiveFaqId (faqId));
+            dispatch (setActiveFaq (faq));
             dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
 
             // Track FAQ read (same as fetched from backend) event here.
