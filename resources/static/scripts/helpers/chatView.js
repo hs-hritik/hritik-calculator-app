@@ -18,7 +18,8 @@ define ("helpers/chatView",
 
     const {
       TYPE: MESSAGE_TYPE,
-      NON_RENDERABLE_MESSAGE_TYPES
+      NON_RENDERABLE_MESSAGE_TYPES,
+      REQUEST_TYPES: USER_RESPONSE_MESSAGE_TYPES
     } = MESSAGE_CONSTANTS;
     const MSG_ID_PREFIX = "message_";
     const {USER_INPUT_TYPES} = chatViewConstants;
@@ -95,6 +96,36 @@ define ("helpers/chatView",
       }
 
       return processedInput;
+    };
+
+    /**
+     * Return user response message type
+     * @param {String} msgType - message type
+     * @returns {String} - Type of request message
+     */
+    const getUserResponseMessageType = (msgType) => {
+      switch (msgType) {
+        case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_TEXT_INPUT;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_EMAIL_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_EMAIL_INPUT;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_NUMERIC_INPUT;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_OPTION_INPUT;
+
+        case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_FAQ_LIST_WITH_OPTION_INPUT;
+
+        case MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT:
+          return USER_RESPONSE_MESSAGE_TYPES.RESP_EMPTY_MSG_WITH_TEXT_INPUT;
+      }
     };
 
     /**
@@ -319,10 +350,9 @@ define ("helpers/chatView",
         messageType
       } = config;
 
-      // @TODO - Send appropriate response message types and not messageType
       const requestData = {
         body: value,
-        type: messageType,
+        type: getUserResponseMessageType (messageType),
         chatbot_info: chatBotInfo
       };
 

@@ -16,15 +16,25 @@ define ("constants/message",
       ATTACHMENT: "Attachment",
       ACCEPTED: "Confirmation Accepted",
       REJECTED: "Confirmation Rejected",
-      TEXT_MSG_WITH_TEXT_INPUT: "txt_msg_with_txt_input",
-      TEXT_MSG_WITH_EMAIL_INPUT: "txt_msg_with_email_input",
-      TEXT_MSG_WITH_NUMERIC_INPUT: "txt_msg_with_numeric_input",
-      TEXT_MSG_WITH_DATE_TIME_INPUT: "txt_msg_with_dt_input",
-      TEXT_MSG_WITH_OPTION_INPUT: "txt_msg_with_option_input",
-      FAQ_LIST_WITH_OPTION_INPUT: "faq_list_msg_with_option_input",
-      EMPTY_MSG_WITH_TEXT_INPUT: "empty_msg_with_txt_input",
+      TEXT_MSG_WITH_TEXT_INPUT: "Text Message with Text Input",
+      TEXT_MSG_WITH_EMAIL_INPUT: "Text Message with Email Input",
+      TEXT_MSG_WITH_NUMERIC_INPUT: "Text Message with Numeric Input",
+      TEXT_MSG_WITH_DATE_TIME_INPUT: "Text Message with Datetime Input",
+      TEXT_MSG_WITH_OPTION_INPUT: "Text Message with Option Input",
+      FAQ_LIST_WITH_OPTION_INPUT: "FAQ List with Options Input",
+      EMPTY_MSG_WITH_TEXT_INPUT: "Empty Message with Text Input",
       BOT_STARTED: "bot_started",
       BOT_ENDED: "bot_ended"
+    };
+
+    const USER_RESPONSE_TYPES = {
+      RESP_TEXT_MSG_WITH_TEXT_INPUT: "Text Input Response",
+      RESP_TEXT_MSG_WITH_EMAIL_INPUT: "Email Input Response",
+      RESP_TEXT_MSG_WITH_NUMERIC_INPUT: "Numeric Input Response",
+      RESP_TEXT_MSG_WITH_DATE_TIME_INPUT: "Datetime Input Response",
+      RESP_TEXT_MSG_WITH_OPTION_INPUT: "Option Input Response",
+      RESP_FAQ_LIST_WITH_OPTION_INPUT: "FAQ Options Response",
+      RESP_EMPTY_MSG_WITH_TEXT_INPUT: "Empty Response"
     };
 
     const NON_RENDERABLE_MESSAGE_TYPES = [
@@ -59,6 +69,7 @@ define ("constants/message",
       TYPING_TIMEOUT,
       ORIGIN,
       STATE,
-      NON_RENDERABLE_MESSAGE_TYPES
+      NON_RENDERABLE_MESSAGE_TYPES,
+      USER_RESPONSE_TYPES
     };
   });
