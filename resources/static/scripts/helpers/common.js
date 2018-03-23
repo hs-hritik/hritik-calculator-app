@@ -9,10 +9,11 @@ define ("helpers/common",
   [
     "store",
     "gunpowder/utils/object",
+    "gunpowder/utils/uuid",
     "constants/message",
     "constants/businessHoursView"
   ],
-  function (store, objectUtils, messageConstants, bhConstants) {
+  function (store, objectUtils, getUuid, messageConstants, bhConstants) {
     "use strict";
 
     const {
@@ -99,10 +100,22 @@ define ("helpers/common",
       return [];
     };
 
+    /**
+     * Get anonymous user id string, in the following format.
+     * "hsft_anon_<timestamp>_<15 random alphanumeric characters>"
+     * @returns {string}
+     */
+    const getAnonUserId = () => {
+      return "hsft_anon_" +
+        Date.now () + "_" +
+        getUuid ().replace (/-/g, "").substring (0, 15);
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
       getEndUserFirstMessage,
-      getSuggestedFaqs
+      getSuggestedFaqs,
+      getAnonUserId
     };
   });

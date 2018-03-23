@@ -43,7 +43,7 @@ define ("actions/appState",
     UI_CONFIG_CONSTANTS, analyticsConstants, ACTIVE_VIEW, normalizr, entitySchema,
     entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
     proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils,
-    uuidGenerator, arrayUtils, store, entitiesActions, chatViewActions, uiActions,
+    getUuid, arrayUtils, store, entitiesActions, chatViewActions, uiActions,
     batchActions, actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
@@ -89,7 +89,7 @@ define ("actions/appState",
         // Create a new device id if one doesn't exist already.
         // Set it in the local storage.
         if (!dId) {
-          dId = uuidGenerator ();
+          dId = getUuid ();
         }
 
         // Set the device id in the state.
@@ -118,9 +118,7 @@ define ("actions/appState",
      */
     const setAnonUserId = () => {
       return () => {
-        // @TODO: Replace uuid with the special anon user id format.
-        // @TODO: Also, update the function name to something like `generateUuid`.
-        const anonUserId = uuidGenerator ();
+        const anonUserId = commonHelpers.getAnonUserId ();
         dispatchAndSetAnonUserId (anonUserId);
       };
     };
