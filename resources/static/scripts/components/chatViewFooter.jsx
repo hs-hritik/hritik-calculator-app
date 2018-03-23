@@ -169,6 +169,10 @@ define ("components/chatViewFooter",
 
       /**
        * Render user input
+       * User input layout renders following things
+       *  a. Label
+       *  b. Input component (input [type = text or email] | replyBox)
+       *  c. Error
        */
       _renderUserInput () {
         const {
@@ -193,6 +197,31 @@ define ("components/chatViewFooter",
         const ionClasses = errorMsg ? "ion-alert-circled" : "ion-send";
         let errorMsgEl = null;
         let labelEl = null;
+        let inputComponentEl = null;
+
+        // We need to render reply box for input component for input type plain text as
+        // a. User can enter long (multi line) text. (reply box supports multi line text)
+        // b. Rendering normal input type 'text' will clip the text once it goes
+        //    beyond available width
+        // c. There can be label for input type plain text (this layout supports label)
+        if (type === USER_INPUT_TYPES.PLAIN_TEXT) {
+          inputComponentEl = (
+            <ReplyBoxContainer />
+          );
+        } else {
+          inputComponentEl = (
+            <input className="hs-chat-footer__text-field"
+                   type={this._getHtmlInputType (type)}
+                   dir="auto"
+                   value={value}
+                   placeholder={placeholder}
+                   onChange={this._onInputFieldValueChange}
+                   onKeyUp={this._onInputFieldKeyUp}
+                   onFocus={onFooterFocus}
+                   onBlur={onFooterBlur}
+                   autoFocus />
+          );
+        }
 
         if (errorMsg) {
           errorMsgEl = (
@@ -218,16 +247,7 @@ define ("components/chatViewFooter",
           <div className={footerClasses}>
             {labelEl}
             <div className="hs-chat-footer__field">
-              <input className="hs-chat-footer__text-field"
-                     type={this._getHtmlInputType (type)}
-                     dir="auto"
-                     value={value}
-                     placeholder={placeholder}
-                     onChange={this._onInputFieldValueChange}
-                     onKeyUp={this._onInputFieldKeyUp}
-                     onFocus={onFooterFocus}
-                     onBlur={onFooterBlur}
-                     autoFocus />
+              {inputComponentEl}
               <a className="hs-chat-footer__submit">
                 <i className={ionClasses} onClick={onSubmitInputField} />
               </a>
