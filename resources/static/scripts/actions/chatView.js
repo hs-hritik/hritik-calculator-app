@@ -339,27 +339,64 @@ define ("actions/chatView",
      * Handles message input
      * Parse the input data for message and save it in store
      * Set the footer depending on input type
+     * Handle initial user message if set in config
      * @param {Object} message - message object
      */
     const handleMessageInput = (message) => {
-      const {input} = message;
+      const {input, type} = message;
 
+      // For messages other than bot, input wont be present
       if (!input) {
         return;
       }
 
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          sdkConfigOptions: {
+            initialUserMessage
+          }
+        }
+      } = getState ();
       const processedUserInput = chatViewHelpers.getProcessedUserInput ({
-        messageType: message.type,
+        messageType: type,
         input
       });
 
-      store.dispatch (
-        batchActions ([
+      // Mandatory actions which will be preformed for every bot step
+      dispatch (
+        batchActions (
+          // Hide system typing indicator
+          toggleSystemTyping (false),
+          // Set processed user input and save it in store
           setUserInputData (processedUserInput),
-          setChatViewFooter (ACTIVE_FOOTER.REPLY),
-          toggleSystemTyping (false)
-        ])
+          // Set footer type as reply because this is bot step, we accept some user input
+          setChatViewFooter (ACTIVE_FOOTER.REPLY)
+        )
       );
+
+      // Optional actions like submiting user reply if first user message is set
+      // through api
+      const actionsToDispatch = [];
+      // If message type is accept first user message (EMPTY_MSG_WITH_TEXT_INPUT)
+      // and initialUserMessage is set through api, do not wait for user input
+      // Directly send the message as bot response
+      if (type === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
+        actionsToDispatch.push (
+          disableReplyBox (),
+          postUserMessage ({
+            messageType: type,
+            messageBody: initialUserMessage,
+            onEnd: () => {
+              dispatch (enableReplyBox ());
+            }
+          })
+        );
+      }
+
+      if (actionsToDispatch.length) {
+        dispatch (batchActions (actionsToDispatch));
+      }
     };
 
     /**

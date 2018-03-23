@@ -27,7 +27,7 @@ define ("extras/api",
     actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers) {
     "use strict";
 
-    const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -133,29 +133,12 @@ define ("extras/api",
      *    call - user action, api, etc.
      */
     const handleInitialUserMsg = ({message, trigger}) => {
-      const state = store.getState ();
-      const {appState} = state;
-
-      // If issue state is not pre chat, don't save initial message in store
-      // and dont create initial user message
-      if (appState.issueState !== ISSUE_STATE.PRE_CHAT) {
-        return;
-      }
-
       // Set initial user message in store
       store.dispatch (appStateActions.setInitialUserMsg (message));
 
-      const currentPreChatFeature = appState.preChatFeatureOrder [appState.preChatFeatureIndex];
-      // Create initial user message if :-
-      // a] current prechat feature is "initialUserMessage"
-      // b] prechat feature "initialUserMessage" is enabled (currently always enabled)
-      // c] state of "initialUserMessage" is INITIAL
-      if ((currentPreChatFeature === "initialUserMessage") &&
-          (appState.featuresEnabled.initialUserMessage) &&
-          (appState.preChatFeatureState [currentPreChatFeature] ===
-           PRE_CHAT_STATE.initialUserMessage.INITIAL)) {
-        store.dispatch (chatViewActions.createInitialUserMessage (message));
-      }
+      // @TODO - Find a place to call get parent info, as createInitialUserMessage
+      // was internally calling the same.
+      // @TODO - Verify if this is the right place to track conversation start event
 
       // Track the conversation started event.
       // Pass trigger as "API" because this is the handler function for
