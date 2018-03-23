@@ -39,8 +39,6 @@ define ("components/message",
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
           timeAgoJustNow: PropTypes.string.isRequired,
-          faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
-          faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
@@ -177,18 +175,18 @@ define ("components/message",
        * Render FAQ suggestions message.
        */
       _renderFaqMessage () {
-        if (!this.props.message.suggestedFaqs.length) {
+        const {
+          body,
+          suggestedFaqs
+        } = this.props.message;
+
+        if (!suggestedFaqs.length) {
           return null;
         }
 
-        const {text} = this.props;
-        const msgTitle = (this.props.message.suggestedFaqs.length === 1) ?
-                         text.faqSuggestionsMsgTitleSingle :
-                         text.faqSuggestionsMsgTitleMultpile;
-
         return (
           <div className="hs-message__item">
-            {msgTitle}
+            {body}
             <div className="hs-message__suggested-faqs">
               {this._renderFaqs ()}
             </div>
@@ -200,14 +198,19 @@ define ("components/message",
        * Render an faq, which is a part of the faq message.
        */
       _renderFaqs () {
-        const {suggestedFaqs} = this.props.message;
+        const {
+          onSuggestedFaqClick,
+          message: {
+            suggestedFaqs
+          }
+        } = this.props;
 
         return suggestedFaqs.map ((faq) => {
           return (
             <span key={faq.id}
                   className="hs-message__suggested-faq"
                   dir="auto"
-                  onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
+                  onClick={onSuggestedFaqClick.bind (this, faq.id)}>
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
             </span>

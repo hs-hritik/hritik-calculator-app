@@ -45,22 +45,29 @@ define ("actions/chatView",
     analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
-    const {normalize} = normalizr,
-          MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE,
-          {TYPING_TIMEOUT} = MESSAGE_CONSTANTS,
-          MESSAGES_TIMEOUT = MESSAGE_CONSTANTS.TIMEOUT,
-          MESSAGES_ORIGIN = MESSAGE_CONSTANTS.ORIGIN,
-          MESSAGES_STATE = MESSAGE_CONSTANTS.STATE,
-          {
-            ACTIVE_FOOTER,
-            MESSAGES_POLLING_TIMEOUT,
-            MESSAGES_FORCE_POLLING_TIMEOUT,
-            INFO_BOT_FIELDS,
-            USER_INPUT_TYPES
-          } = CHAT_VIEW_CONSTANTS,
-          {Input} = schema;
+    const {normalize} = normalizr;
+
+    const {
+      TYPE: MESSAGE_TYPE,
+      TYPING_TIMEOUT,
+      TIMEOUT: MESSAGES_TIMEOUT,
+      ORIGIN: MESSAGES_ORIGIN,
+      STATE: MESSAGES_STATE,
+      BODY: MESSAGE_BODY
+    } = MESSAGE_CONSTANTS;
+
+    const {
+      ACTIVE_FOOTER,
+      MESSAGES_POLLING_TIMEOUT,
+      MESSAGES_FORCE_POLLING_TIMEOUT,
+      INFO_BOT_FIELDS,
+      USER_INPUT_TYPES
+    } = CHAT_VIEW_CONSTANTS;
+
+    const {Input} = schema;
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
+
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
@@ -624,15 +631,18 @@ define ("actions/chatView",
     const showPostIssueResolutionFooter = () => {
       return (dispatch, getState) => {
         const {
-          postChatFeatures: {
-            resolutionQuestionCompleted,
-            csatCompleted
+          appState: {
+            postChatFeatures: {
+              resolutionQuestionCompleted,
+              csatCompleted
+            },
+            featuresEnabled: {
+              resolutionQuestion: resolutionQuestionEnabled,
+              csatBot: csatBotEnabled
+            }
           },
-          featuresEnabled: {
-            resolutionQuestion: resolutionQuestionEnabled,
-            csatBot: csatBotEnabled
-          }
-        } = getState ().appState;
+          ui
+        } = getState ();
 
         if (resolutionQuestionEnabled && !resolutionQuestionCompleted) {
           dispatch (setChatViewFooter (
@@ -645,7 +655,15 @@ define ("actions/chatView",
             event: EVENT.CSAT_REQUESTED
           });
         } else {
-          dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+          dispatch (
+            batchActions ([
+              createMessage ({
+                type: MESSAGE_TYPE.END_CHAT,
+                body: ui.text.conversationEndNote
+              }),
+              setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION)
+            ])
+          );
         }
       };
     };
@@ -1154,78 +1172,6 @@ define ("actions/chatView",
         id: activeIssueId
       };
     };
-
-    /**
-     * Action to reject FAQ suggestions.
-     * @returns {Object} - action
-     */
-    const rejectFaqSuggestions = () => {
-      return (dispatch, getState) => {
-        const state = getState ();
-
-        dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.TEXT,
-            messageConfig: {
-              body: state.ui.text.labelYes,
-              isCustomerMsg: true
-            }
-          })
-        );
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-        dispatch (startNextPreChatFeature ());
-
-        // Track issue deflection failure event here.
-        analyticsHelpers.track (EVENT.ISSUE_DEFLECTION, {
-          deflected: false
-        });
-      };
-    };
-
-    /**
-     * Action to accept FAQ suggestions.
-     * @returns {Object} - Action
-     */
-    const acceptFaqSuggestions = () => {
-      return (dispatch, getState) => {
-        const state = getState ();
-
-        dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.TEXT,
-            messageConfig: {
-              body: state.ui.text.labelNo,
-              isCustomerMsg: true
-            }
-          })
-        );
-
-        dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.TEXT,
-            typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_PROBLEM_SOLVED,
-            playAudio: true,
-            messageConfig: {
-              body: state.ui.text.problemSolvedByFaqSuggestionsMsg,
-              isCustomerMsg: false
-            }
-          })
-        );
-
-        dispatch (
-          batchActions ([
-            updateIssueState (ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS),
-            setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION)
-          ])
-        );
-
-        // Track issue deflection successful event here.
-        analyticsHelpers.track (EVENT.ISSUE_DEFLECTION, {
-          deflected: true
-        });
-      };
-    };
-
 
     /**
      * Action to update issue state.
@@ -2032,11 +1978,9 @@ define ("actions/chatView",
      * @returns {Function} - Action
      */
     const acceptResolutionQuestion = () => {
-      return (dispatch, getState) => {
-        const {ui} = getState ();
-
+      return (dispatch) => {
         postUserMessage ({
-          msgBody: ui.text.chatViewAcceptedTheSolution,
+          msgBody: MESSAGE_BODY.SOLUTION_ACCEPTED,
           msgType: MESSAGE_TYPE.ACCEPTED,
           onSuccess: () => {
             dispatch (actionCreators.setResolutionQuestionCompleted (true));
@@ -2051,11 +1995,9 @@ define ("actions/chatView",
      * @returns {Function} - Action
      */
     const rejectResolutionQuestion = () => {
-      return (dispatch, getState) => {
-        const {ui} = getState ();
-
+      return (dispatch) => {
         postUserMessage ({
-          msgBody: ui.text.chatViewRejectedTheSolution,
+          msgBody: MESSAGE_BODY.SOLUTION_REJECTED,
           msgType: MESSAGE_TYPE.REJECTED,
           onSuccess: () => {
             dispatch (
@@ -2080,8 +2022,6 @@ define ("actions/chatView",
       setMessages,
       setActiveIssueId,
       setChatViewFooter,
-      rejectFaqSuggestions,
-      acceptFaqSuggestions,
       startPreChatFeature,
       updateInfoBotFieldValue,
       submitInfoBotField,

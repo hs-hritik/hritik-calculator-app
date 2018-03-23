@@ -39,13 +39,6 @@ define ("components/containers/chatViewFooter",
 
     const mapDispatchToProps = (dispatch) => {
       return {
-        onFaqSuggestionFeedback: (feedbackHelpful) => {
-          if (feedbackHelpful) {
-            dispatch (chatViewActions.acceptFaqSuggestions ());
-          } else {
-            dispatch (chatViewActions.rejectFaqSuggestions ());
-          }
-        },
         onValueChangeInputField: (value) => {
           dispatch (chatViewActions.updateUserInputData ({
             value,

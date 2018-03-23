@@ -42,6 +42,15 @@ define ("constants/message",
       TYPE.BOT_ENDED
     ];
 
+    /**
+     * Message body which will be sent in api but not visible on UI
+     * Only visible on the dashboard
+     */
+    const BODY = {
+      SOLUTION_ACCEPTED: "Accepted the solution",
+      SOLUTION_REJECTED: "Did not accept the solution"
+    };
+
     // Typing timeout (in milliseconds) for different system generated message.
     const TYPING_TIMEOUT = {
       FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
@@ -69,6 +78,7 @@ define ("constants/message",
       TYPING_TIMEOUT,
       ORIGIN,
       STATE,
+      BODY,
       NON_RENDERABLE_MESSAGE_TYPES,
       USER_RESPONSE_TYPES
     };

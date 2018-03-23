@@ -32,7 +32,6 @@ define ("components/chatViewFooter",
         rating: PropTypes.number,
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
-        onFaqSuggestionFeedback: PropTypes.func.isRequired,
         onSubmitInputField: PropTypes.func.isRequired,
         onValueChangeInputField: PropTypes.func.isRequired,
         onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
@@ -40,8 +39,8 @@ define ("components/chatViewFooter",
         onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          labelYes: PropTypes.string.isRequired,
-          labelNo: PropTypes.string.isRequired,
+          resolutionQuestionAccept: PropTypes.string.isRequired,
+          resolutionQuestionReject: PropTypes.string.isRequired,
           closeConversationBtn: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           chatViewConversationResolutionQuestion: PropTypes.string.isRequired,
@@ -124,9 +123,6 @@ define ("components/chatViewFooter",
 
           case ACTIVE_FOOTER.SOLUTION_REJECTED:
             return this._renderReplyBox ();
-
-          case ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK:
-            return this._renderFaqSuggestionsFeedback ();
 
           case ACTIVE_FOOTER.INFO_BOT:
             return this._renderInfoBotFooter ();
@@ -307,6 +303,11 @@ define ("components/chatViewFooter",
        * Render conversation resolution footer
        */
       _renderConversationResolutionFooter () {
+        const {
+          text,
+          onAcceptResolutionQuestionClick,
+          onRejectResolutionQuestionClick
+        } = this.props;
         const btnClasses = classes (
           "hs-button",
           "hs-button--hollow",
@@ -316,16 +317,16 @@ define ("components/chatViewFooter",
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__heading" >
-              <strong>{this.props.text.chatViewConversationResolutionQuestion}</strong>
+              <strong>{text.chatViewConversationResolutionQuestion}</strong>
             </div>
             <div className="hs-chat-footer__buttons-wrapper">
               <button className={btnClasses}
-                      onClick={this.props.onRejectResolutionQuestionClick}>
-                {this.props.text.labelNo}
+                      onClick={onRejectResolutionQuestionClick}>
+                {text.resolutionQuestionReject}
               </button>
               <button className={btnClasses}
-                      onClick={this.props.onAcceptResolutionQuestionClick}>
-                {this.props.text.labelYes}
+                      onClick={onAcceptResolutionQuestionClick}>
+                {text.resolutionQuestionAccept}
               </button>
             </div>
           </div>
@@ -351,47 +352,6 @@ define ("components/chatViewFooter",
             </div>
           </div>
         );
-      },
-
-      /**
-       * Render FAQ suggestions feedback footer.
-       */
-      // @TODO - Change the rendering to show pill select
-      _renderFaqSuggestionsFeedback () {
-        const {labelYes, labelNo} = this.props.text;
-
-        const btnClasses = classes (
-          "hs-button",
-          "hs-button--hollow",
-          "hs-chat-footer__button"
-        );
-
-        // If user does not need additional help (clicking on no), pass true indicating that
-        // faq suggestions were helpful.
-        // If user needs additional help (clicking on yes), pass false indicating that
-        // faq suggestions were not helpful.
-        return (
-          <div className="hs-chat-footer">
-            <div className="hs-chat-footer__buttons-wrapper">
-              <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, true)}
-                      className={btnClasses}>
-                {labelNo}
-              </button>
-              <button onClick={this._onFaqSuggestionsFeedbackClick.bind (this, false)}
-                      className={btnClasses}>
-                {labelYes}
-              </button>
-            </div>
-          </div>
-        );
-      },
-
-      /**
-       * Click handler for faq suggestions feedback
-       * @param {String} feedback - "yes" or "no"
-       */
-      _onFaqSuggestionsFeedbackClick (feedback) {
-        this.props.onFaqSuggestionFeedback (feedback);
       },
 
       /**
