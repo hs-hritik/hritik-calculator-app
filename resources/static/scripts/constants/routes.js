@@ -9,7 +9,9 @@ define ("constants/routes",
     "use strict";
 
     const WEB_SDK_API_ROOT = "{{ENV_API_ROOT}}";
-    const BASE = `${WEB_SDK_API_ROOT}/websdk/v1/`;
+    // @TODO: Add the API version in request header. This is a fallback URL that
+    // uses the latest version (v2) of the web chat APIs.
+    const BASE = `${WEB_SDK_API_ROOT}/websdk/`;
 
     const getWmConfig = (domain, platformId) => `${BASE}${domain}/platforms/${platformId}/config`;
 

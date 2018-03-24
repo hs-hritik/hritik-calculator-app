@@ -70,9 +70,10 @@ define ("helpers/xhr",
       } = store.getState ().appState;
 
       const commonXhrData = {
-        did: deviceId,
-        uid: userId ? userId : anonUserIdentifier,
-        platform_id: platformId
+        "did": deviceId,
+        "uid": userId || anonUserIdentifier,
+        // @TODO: Change this to `platform_id` once the backend is ready.
+        "platform-id": platformId
       };
 
       if (userEmail) {
