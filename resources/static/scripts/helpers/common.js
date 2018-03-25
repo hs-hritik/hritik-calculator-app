@@ -111,11 +111,18 @@ define ("helpers/common",
         getUuid ().replace (/-/g, "").substring (0, 15);
     };
 
+    /**
+     * Determine whether an active preIssue or issue exists in the system.
+     * @returns {boolean} - true, if an active preIssue/issue exists.
+     */
+    const doesActiveIssueExist = () => store.getState ().appState.issueExists;
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
       getEndUserFirstMessage,
       getSuggestedFaqs,
-      getAnonUserId
+      getAnonUserId,
+      doesActiveIssueExist
     };
   });

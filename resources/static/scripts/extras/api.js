@@ -88,7 +88,16 @@ define ("extras/api",
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
-      const {appState, chatView} = store.getState ();
+      const {
+        appState: {
+          activeView,
+          conversationStarted,
+          issueState
+        },
+        chatView: {
+          unreadCount
+        }
+      } = store.getState ();
 
       if (!minimized) {
         if (!app.isMounted ()) {
@@ -97,15 +106,20 @@ define ("extras/api",
 
         // If unreadCount isn't zero and active view is chat view,
         // dispatch action to mark messages seen.
-        if (chatView.unreadCount !== 0 && ACTIVE_VIEW.CHAT === appState.activeView) {
+        if (unreadCount !== 0 && ACTIVE_VIEW.CHAT === activeView) {
           store.dispatch (chatViewActions.markMessagesSeen ());
+        }
+
+        // Start the conversation when the widget is opened.
+        if (!conversationStarted) {
+          store.dispatch (appStateActions.startConversation ());
         }
 
         // Track the widget open event
         analyticsHelpers.track (EVENT.WIDGET_OPEN, {
           trigger
         });
-      } else if (isIssueClosed (appState.issueState)) {
+      } else if (isIssueClosed (issueState)) {
         // @TODO : Change this default rating submission after confirming with product
         handleCsatRatingSubmission ();
       }

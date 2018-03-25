@@ -67,8 +67,6 @@ define ("actions/appState",
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
-    let returningUser = false;
-
     const isCssVarSupported = (window.CSS && window.CSS.supports &&
                                window.CSS.supports ("--fake-var", 0));
 
@@ -134,17 +132,8 @@ define ("actions/appState",
       if (!currentAnonUserId) {
         store.dispatch (setAnonUserIdValue (anonUserId));
         lsHelpers.setAnonUserId (anonUserId);
-
-        // @TODO: Double check this with the updated business logic.
-        // If we are saving a new identifier, that means it's a new user.
-        returningUser = false;
       } else {
         store.dispatch (setAnonUserIdValue (currentAnonUserId));
-
-        // @TODO: Double check this with the updated business logic.
-        // If we are using the already saved identifier,
-        // that means it's a returning user.
-        returningUser = true;
       }
     };
 
@@ -173,12 +162,11 @@ define ("actions/appState",
      */
     const startConversation = () => {
       store.dispatch (setConversationStarted ());
-      if (returningUser) {
-        // If it's a returning user, that means there could be an
-        // ongoing conversation.
-        handleOngoingConversation ();
-      } else {
-        // If it's a new user, start a new conversation.
+
+      // If an active issue or preIssue exists, the poller would have started
+      // already with the success callback of setIssueState via get config.
+      // If an active issue or preIssue does not exist, start a new conversation.
+      if (!commonHelpers.doesActiveIssueExist ()) {
         store.dispatch (startNewConversation ());
       }
     };
@@ -221,7 +209,9 @@ define ("actions/appState",
      * Handle ongoing conversation.
      * @TODO: This function will need clean up with the chat bots changes.
      */
+    /* eslint-disable no-unused-vars */
     const handleOngoingConversation = () => {
+    /* eslint-enable no-unused-vars */
       const issueState = lsHelpers.getIssueState ();
       switch (issueState) {
         case ISSUE_STATE.PRE_CHAT:
