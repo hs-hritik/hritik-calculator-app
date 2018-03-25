@@ -9,9 +9,12 @@ define ("reducers/ui",
     "constants/actionTypes",
     "constants/uiConfig",
     "constants/errors",
-    "helpers/ui"
+    "constants/localization",
+    "helpers/ui",
+    "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, errorConstants, uiHelpers) {
+  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, errorConstants, localizationConstants,
+    uiHelpers, objUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -39,6 +42,7 @@ define ("reducers/ui",
     } = errorConstants;
 
     const INITIAL_STATE = {
+      // @TODO: Remove after integrating it with backend
       text: {
         chatViewHeader: "Chat with us",
         chatViewConversationResolutionQuestion: "Did we answer all your questions?",
@@ -114,6 +118,23 @@ define ("reducers/ui",
         return obj;
       }, {}),
       developerUiConfig: null
+    };
+
+    /**
+     * Return update object to update text strings in state
+     * @param {Object} xhrTextStrings - map of strings recieved from XHR
+     * @returns {Object} - update object to set values in the store
+     */
+    const getUiTextUpdateObj = (xhrTextStrings) => {
+      const updateObj = {};
+      const {UI_STRING_KEYS} = localizationConstants;
+
+      objUtils.forEachKey (xhrTextStrings, (xhrKey, uiString) => {
+        const stateKey = UI_STRING_KEYS [xhrKey];
+        updateObj [stateKey] = {$set: uiString};
+      });
+
+      return updateObj;
     };
 
     /**
@@ -325,6 +346,11 @@ define ("reducers/ui",
         case ACTION_TYPES.SET_UI_CONFIG:
           return update (state, {
             uiConfig: getSetUiConfigUpdateObj (state.uiConfig, action.uiConfig)
+          });
+
+        case ACTION_TYPES.SET_UI_TEXT:
+          return update (state, {
+            text: getUiTextUpdateObj (action.text)
           });
 
         case ACTION_TYPES.UPDATE_UI_CONFIG:

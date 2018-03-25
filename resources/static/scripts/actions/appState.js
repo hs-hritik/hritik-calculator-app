@@ -508,7 +508,8 @@ define ("actions/appState",
               batchActions ([
                 // Set the config values to the store
                 setWmConfigValues (response),
-                actionCreators.setMobileInfo (browserUtils.isMobile ())
+                actionCreators.setMobileInfo (browserUtils.isMobile ()),
+                setUiTextValues (response)
               ])
             );
 
@@ -625,6 +626,16 @@ define ("actions/appState",
     const setWmConfigValues = (config) => ({
       type: ACTION_TYPES.SET_WM_CONFIG,
       config
+    });
+
+    /**
+     * Action to set UI strings in the store
+     * @param {Object} config
+     * @returns {Object} - action
+     */
+    const setUiTextValues = (config) => ({
+      type: ACTION_TYPES.SET_UI_TEXT,
+      text: config.translations
     });
 
     /**
