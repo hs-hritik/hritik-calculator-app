@@ -461,20 +461,66 @@ define ("actions/appState",
     };
 
     /**
-     * Set view according to business hours
-     * For in business hours, show chat view
-     * For out of business hours, show out of business hours view
+     * Set UI configuration in the state using the configuration set in the admin
+     * dashboard and by the custom configuration passed with helpshiftConfig.
+     * @param {Object} helpshiftConfig - The global client config object
      */
-    const setViewAccordingToBusinessHours = () => {
-      const {appState} = store.getState ();
+    const setUiConfig = (helpshiftConfig) => {
+      const {
+        ui: {
+          uiConfig,
+          developerUiConfig
+        }
+      } = store.getState ();
+
+      let finalUiConfig;
+
+      // If ui config is passed in helpshift config options, use that
+      // Else use previously set developer config
+      // Else create a ui config having base color set from dashboard
+      if (dataTypeUtils.isObject (helpshiftConfig.uiConfig) &&
+          Object.keys (helpshiftConfig.uiConfig).length) {
+        finalUiConfig = helpshiftConfig.uiConfig;
+      } else if (developerUiConfig) {
+        finalUiConfig = developerUiConfig;
+      } else {
+        const baseData = BASE_COLOR.split (".");
+        // name of base set
+        const baseSet = baseData [0];
+        // value of base set
+        const baseValue = baseData [1];
+
+        finalUiConfig = {
+          [baseSet]: {
+            [baseValue]: uiConfig [BASE_COLOR].value
+          }
+        };
+      }
+      store.dispatch (uiActions.setUiConfig (finalUiConfig));
+      store.dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
+    };
+
+    /**
+     * Initialize conversation - either enable the chat view or the out of
+     * business hours view.
+     */
+    const initializeConversation = () => {
+      const {
+        appState: {
+          conversationStarted
+        }
+      } = store.getState ();
+
       // If business hours is enabled and it's out of business hours currently,
       // show out of business hours view
-      // Else if conversation is not started, show the chat view
       if (commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (
           actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
         );
-      } else if (!appState.conversationStarted) {
+      } else if (!conversationStarted) {
+        // The active view is set to chat view by default. If we are not handling
+        // the out of business hours case, we need to start the conversation on the
+        // chat view.
         // @TODO - revisit start conversation after conversation data is moved to backend
         startConversation ();
       }
@@ -487,6 +533,7 @@ define ("actions/appState",
      * appearance, etc.
      * @param {Object} options
      * @param {string} options.trigger - The source that triggered setting the config
+     * @param {Object} options.helpshiftConfig - The global client config object
      */
     const setWmConfig = ({trigger, helpshiftConfig}) => {
       return (dispatch, getState) => {
@@ -507,48 +554,16 @@ define ("actions/appState",
               appState: {
                 featuresEnabled,
                 wcEnabled
-              },
-              ui: {
-                uiConfig,
-                developerUiConfig
               }
             } = store.getState ();
-
-            let finalUiConfig;
-            // If ui config is passed in helpshift config options, use that
-            // Else use previously set developer config
-            // Else create a ui config having base color set from dashboard
-            if (dataTypeUtils.isObject (helpshiftConfig.uiConfig) &&
-                Object.keys (helpshiftConfig.uiConfig).length) {
-              finalUiConfig = helpshiftConfig.uiConfig;
-            } else if (developerUiConfig) {
-              finalUiConfig = developerUiConfig;
-            } else {
-              const baseData = BASE_COLOR.split (".");
-              // name of base set
-              const baseSet = baseData [0];
-              // value of base set
-              const baseValue = baseData [1];
-
-              finalUiConfig = {
-                [baseSet]: {
-                  [baseValue]: uiConfig [BASE_COLOR].value
-                }
-              };
-            }
-            dispatch (uiActions.setUiConfig (finalUiConfig));
-            dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
-
-            setViewAccordingToBusinessHours ();
-
-            if (featuresEnabled.audioNotifications) {
-              audioHelpers.init ();
-            }
 
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig ());
 
             if (wcEnabled) {
+              // Set the ui configuration flags in the state.
+              setUiConfig (helpshiftConfig);
+
               // A side-effect of getting the web chat config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
@@ -557,10 +572,18 @@ define ("actions/appState",
               // Apply styles to page
               applyPageStyles ();
 
+              // Initialize conversation by either going to the out of business
+              // hours view or by handling the chat view conversation.
+              initializeConversation ();
+
               // If the widget is enabled, track the widget load event
               // Do not track this event if the config was set via the reset flow.
               if (trigger !== TRIGGER.RESET) {
                 analyticsHelpers.track (EVENT.WIDGET_LOAD);
+              }
+
+              if (featuresEnabled.audioNotifications) {
+                audioHelpers.init ();
               }
             }
           },
