@@ -22,9 +22,10 @@ define ("reducers/appState",
       wcEnabled: false,
       minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
-      activeIssueId: "",
-      internalIssueId: "",
-      dummyIssueId: "DUMMY_ISSUE",
+      platformId: "",
+      domain: "",
+
+      // Profile related data
       deviceId: "",
       // User id values
       // 1. anonUserIdentifier (created for anon user / default profile)
@@ -37,11 +38,15 @@ define ("reducers/appState",
       userEmail: "",
       userHash: "",
       userProfileId: "",
-      platformId: "",
-      domain: "",
+
+      // Issue related data
       // Whether an issue (active/resolved) exists for this profile
       issueExists: false,
       issueState: ISSUE_STATE.PRE_CHAT,
+      activeIssueId: "",
+      internalIssueId: "",
+      dummyIssueId: "DUMMY_ISSUE",
+
       featuresEnabled: {
         greeting: true,
         initialUserMessage: true,

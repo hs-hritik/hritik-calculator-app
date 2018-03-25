@@ -13,9 +13,6 @@ define ("actions/appState",
     "constants/uiConfig",
     "constants/analytics",
     "constants/activeView",
-    "normalizr",
-    "helpers/entitySchema",
-    "helpers/entity",
     "helpers/xhr",
     "helpers/localStorage",
     "helpers/prepareProcessXhrData",
@@ -29,7 +26,6 @@ define ("actions/appState",
     "gunpowder/utils/uuid",
     "gunpowder/utils/array",
     "store",
-    "actions/entities",
     "actions/chatView",
     "actions/ui",
     "actions/batch",
@@ -40,14 +36,13 @@ define ("actions/appState",
     "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
-    UI_CONFIG_CONSTANTS, analyticsConstants, ACTIVE_VIEW, normalizr, entitySchema,
-    entityHelpers, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
+    UI_CONFIG_CONSTANTS, analyticsConstants, ACTIVE_VIEW,
+    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
     proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils,
-    getUuid, arrayUtils, store, entitiesActions, chatViewActions, uiActions,
+    getUuid, arrayUtils, store, chatViewActions, uiActions,
     batchActions, actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
-    const {normalize} = normalizr;
     const {
       ISSUE_STATE,
       DEFAULT_RESET_TIMEOUT,
@@ -151,31 +146,6 @@ define ("actions/appState",
         // that means it's a returning user.
         returningUser = true;
       }
-    };
-
-    /**
-     * Initialize Web Chat by setting issue details to the state. This function
-     * is triggered by the client once it's done processing the config via the
-     * CMD_INITIALIZE event.
-     *
-     * After Web Chat gets the configuration from the backend, it needs to
-     * determine whether an active issue exists for the profile so that it can
-     * either start polling for messages (if issue exists) or wait for the
-     * web chat widget to open, in which case a pre-issue gets created.
-     * This function is to set issue details in the state.
-     */
-    const initialize = () => {
-      const {
-        appState: {
-          wcEnabled
-        }
-      } = store.getState ();
-
-      if (!wcEnabled || commonHelpers.isOutOfBusinessHours ()) {
-        return;
-      }
-
-      store.dispatch (setIssueState ());
     };
 
     /**
@@ -505,24 +475,26 @@ define ("actions/appState",
      * business hours view.
      */
     const initializeConversation = () => {
-      const {
-        appState: {
-          conversationStarted
-        }
-      } = store.getState ();
-
       // If business hours is enabled and it's out of business hours currently,
       // show out of business hours view
       if (commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (
           actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
         );
-      } else if (!conversationStarted) {
+      } else {
         // The active view is set to chat view by default. If we are not handling
         // the out of business hours case, we need to start the conversation on the
-        // chat view.
-        // @TODO - revisit start conversation after conversation data is moved to backend
-        startConversation ();
+        // chat view. If an issue exists in the system, start the poller. Otherwise
+        // it's a no-op.
+        const {
+          appState: {
+            issueExists
+          }
+        } = store.getState ();
+
+        if (issueExists) {
+          chatViewActions.startPollingForMessages ();
+        }
       }
     };
 
@@ -808,36 +780,6 @@ define ("actions/appState",
     };
 
     /**
-     * Find active issue in the given issues object,
-     * and return the active issue id.
-     * If there is no active issue, return null.
-     * @param {Object} issues - issues entity.
-     * @returns {string|null} - active issue id or null
-     */
-    const _getActiveIssueId = (issues) => {
-      // @TODO: Update it depending on how are we going to handle pre-issues.
-      let activeIssueId = null;
-
-      objUtils.forEachKey (issues, (id, issue) => {
-        if (_isIssueInProgress (issue.state_data.state)) {
-          activeIssueId = id;
-        }
-      });
-
-      return activeIssueId;
-    };
-
-    /**
-     * Returns true if the issue is in progress.
-     * Any issue that is not "resolved" or "rejected" is considered in progress.
-     * @param {String} state - issue state.
-     * @returns {Boolean} - true, if the issue is in progress.
-     */
-    const _isIssueInProgress = (state) => {
-      return (state !== "resolved" && state !== "rejected");
-    };
-
-    /**
      * Action to start new conversation.
      * Reset the previous localstorage data (if any).
      * Creates pre-issue on the backend.
@@ -853,71 +795,6 @@ define ("actions/appState",
         // Create pre-issue
         dispatch (chatViewActions.createPreIssue ());
       };
-    };
-
-    /**
-     * Action to set issue state in the state. Gets all the issues first via the
-     * GET issues API and then sets the issue details from its response.
-     * @returns {Object} - action
-     */
-    const setIssueState = () => {
-      return (dispatch) => {
-        getIssues ({
-          onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.issues);
-            const processedEntities = entityHelpers.getProcessedEntities (
-              normalizedData.entities
-            );
-
-            dispatch (entitiesActions.setEntities (processedEntities));
-
-            const activeIssueId = _getActiveIssueId (processedEntities.issues);
-
-            // @TODO: Handle active pre-issue as well.
-            if (activeIssueId) {
-              dispatch (
-                batchActions ([
-                  chatViewActions.setActiveIssueId (activeIssueId),
-                  // @TODO: Set internal issue id to the long issue id
-                  // of the issue, e.g. test_issue_123456.
-                  actionCreators.setInternalIssueId (activeIssueId),
-                  chatViewActions.updateIssueState (ISSUE_STATE.ACTIVE)
-                ])
-              );
-              chatViewActions.startPollingForMessages ();
-            } else {
-              dispatch (
-                batchActions ([
-                  chatViewActions.setActiveIssueId (null),
-                  actionCreators.setInternalIssueId (null)
-                ])
-              );
-            }
-          },
-          onFailure: () => {
-            // @TODO: Handler failure.
-          }
-        });
-      };
-    };
-
-    /**
-     * Call the `GET issues` API to get the list of issue for the given profile.
-     * The response may contain issue or pre-issue objects.
-     * @param {object} config
-     * @param {function} config.onSuccess
-     * @param {function} config.onFailure
-     */
-    const getIssues = ({onSuccess, onFailure}) => {
-      const {appState} = store.getState ();
-
-      xhr ({
-        route: routes.getIssues (appState.domain),
-        data: xhrHelpers.getPreparedXhrData (),
-        headers: xhrHelpers.getCommonHeaders (),
-        onSuccess,
-        onFailure
-      });
     };
 
     /**
@@ -1068,7 +945,6 @@ define ("actions/appState",
       setAnonUserId,
       setClientConfig,
       setWmConfig,
-      initialize,
       toggleMinimized,
       reset,
       setInitialUserMsg,

@@ -172,9 +172,6 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_CONFIG:
           setConfig (data);
           break;
-        case EVENT_TYPES.CMD_INITIALIZE:
-          appStateActions.initialize ();
-          break;
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
           handleMessengerToggle (data);
           break;

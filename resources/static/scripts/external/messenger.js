@@ -53,7 +53,6 @@
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
-    CMD_INITIALIZE: "cmd-initialize",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
@@ -552,17 +551,6 @@
     };
 
     doc.body.appendChild (launcherIframe);
-
-    // Once the backend config is fetched by the app, the relevant config values
-    // are sent to the client to process it (what this fn does). After this, the
-    // Web Chat flow should continue. This command is to let Web Chat know that it
-    // should carry on with the execution. Web Chat internally calls the `initialize`
-    // function to do so.
-    // Aside - Another option to achieve this is to call Web Chat's `initialize`
-    // function on success of the get config XHR. We are not doing it in order to
-    // keep the two events (1. success of config XHR and 2. initializing Web Chat)
-    // independent.
-    _postMessage (EVENT_TYPES.CMD_INITIALIZE);
   };
 
   /**
