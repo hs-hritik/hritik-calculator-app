@@ -184,6 +184,9 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
           store.dispatch (actionCreators.setGreetingMsg (data.message));
           break;
+        case EVENT_TYPES.CMD_SET_LANGUAGE:
+          store.dispatch (actionCreators.setLanguage (data.language));
+          break;
         case EVENT_TYPES.CMD_SET_CIF:
           store.dispatch (actionCreators.setCif (data.cifData));
           break;

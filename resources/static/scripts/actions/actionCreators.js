@@ -70,6 +70,16 @@ define ("actions/actionCreators",
     });
 
     /**
+     * Return the action to set the developer language
+     * @param {string} language - the language to be set
+     * @returns {Object} - the action object
+     */
+    const setLanguage = (language) => ({
+      type: ACTION_TYPES.SET_LANGUAGE,
+      language
+    });
+
+    /**
      * Return the action to set CIF
      * @param {Object} cif - the CIF object to set
      * @returns {Object} - the action object
@@ -204,6 +214,7 @@ define ("actions/actionCreators",
       setMobileInfo,
       reset,
       setGreetingMsg,
+      setLanguage,
       setCif,
       setTags,
       setPreChatFeatureIndex,

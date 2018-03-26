@@ -57,6 +57,7 @@
     CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
     CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
+    CMD_SET_LANGUAGE: "cmd-set-language",
     CMD_SET_CIF: "cmd-set-cif",
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
@@ -845,6 +846,16 @@
   };
 
   /**
+   * JS API to set language
+   * @param {String} language - language ISO Code
+   */
+  const setLanguage = (language) => {
+    if (language && typeof language === "string") {
+      _postMessage (EVENT_TYPES.CMD_SET_LANGUAGE, {language});
+    }
+  };
+
+  /**
    * Returns boolean if event name is supported
    * @param {String} eventName - name of event
    * @returns {Boolean} - whether event name is supported
@@ -985,6 +996,7 @@
     reset,
     setInitialUserMessage,
     setGreetingMessage,
+    setLanguage,
     addEventListener,
     removeEventListener,
     setCustomIssueFields,

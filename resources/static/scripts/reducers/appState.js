@@ -24,6 +24,8 @@ define ("reducers/appState",
       activeView: ACTIVE_VIEW.CHAT,
       platformId: "",
       domain: "",
+      // preferred language set by the developer
+      developerSetLanguage: "",
 
       // Profile related data
       deviceId: "",
@@ -142,6 +144,11 @@ define ("reducers/appState",
               audioNotifications: {$set: config.audio_notifications_enabled}
             },
             issueExists: {$set: config.issue_exists}
+          });
+
+        case ACTION_TYPES.SET_LANGUAGE:
+          return update (state, {
+            developerSetLanguage: {$set: action.language}
           });
 
         case ACTION_TYPES.SET_DEVICE_ID:
