@@ -407,30 +407,28 @@ define ("actions/chatView",
     };
 
     /**
-     * Handle non renderable message
-     * Non renderable messages are not rendered on the UI but
-     * used to take certain actions depending on type.
-     * @param {String} messageType - type of message
-     */
-    const handleNonRenderableMessage = (messageType) => {
-      if (messageType === MESSAGE_TYPE.BOT_STARTED) {
-        store.dispatch (toggleSystemTyping (true));
-      } else if (messageType === MESSAGE_TYPE.BOT_ENDED) {
-        store.dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
-      }
-    };
-
-    /**
-     * Handle latest message for bot input and take actions
+     * Handle latest message for bot actions and bot input and take actions
      * @param {Object} latestMessage - latest message in message list
      */
     const handleLatestMessage = (latestMessage) => {
+      // @TODO - Read latest message from store
+      const {dispatch} = store;
       const {type} = latestMessage;
 
-      if (chatViewHelpers.isNonRenderableMessage (type)) {
-        handleNonRenderableMessage (type);
-      } else {
-        handleMessageInput (latestMessage);
+      switch (type) {
+        case MESSAGE_TYPE.BOT_STARTED:
+          dispatch (toggleSystemTyping (true));
+          break;
+
+        case MESSAGE_TYPE.BOT_ENDED:
+          // @TODO - Finalize the api key with backend.
+          if (!latestMessage.has_next_bot) {
+            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+          }
+          break;
+
+        default:
+          handleMessageInput (latestMessage);
       }
     };
 

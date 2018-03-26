@@ -37,9 +37,16 @@ define ("constants/message",
       RESP_EMPTY_MSG_WITH_TEXT_INPUT: "Empty Response"
     };
 
-    const NON_RENDERABLE_MESSAGE_TYPES = [
-      TYPE.BOT_STARTED,
-      TYPE.BOT_ENDED
+    const RENDERABLE_MESSAGE_TYPES = [
+      TYPE.TEXT,
+      TYPE.END_CHAT,
+      TYPE.ATTACHMENT,
+      TYPE.TEXT_MSG_WITH_TEXT_INPUT,
+      TYPE.TEXT_MSG_WITH_EMAIL_INPUT,
+      TYPE.TEXT_MSG_WITH_NUMERIC_INPUT,
+      TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT,
+      TYPE.TEXT_MSG_WITH_OPTION_INPUT,
+      TYPE.FAQ_LIST_WITH_OPTION_INPUT
     ];
 
     /**
@@ -79,7 +86,7 @@ define ("constants/message",
       ORIGIN,
       STATE,
       BODY,
-      NON_RENDERABLE_MESSAGE_TYPES,
+      RENDERABLE_MESSAGE_TYPES,
       USER_RESPONSE_TYPES
     };
   });

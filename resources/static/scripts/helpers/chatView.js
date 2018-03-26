@@ -19,7 +19,7 @@ define ("helpers/chatView",
 
     const {
       TYPE: MESSAGE_TYPE,
-      NON_RENDERABLE_MESSAGE_TYPES,
+      RENDERABLE_MESSAGE_TYPES,
       REQUEST_TYPES: USER_RESPONSE_MESSAGE_TYPES
     } = MESSAGE_CONSTANTS;
     const MSG_ID_PREFIX = "message_";
@@ -126,12 +126,12 @@ define ("helpers/chatView",
     };
 
     /**
-     * Predicate to return whether message is non-renderable
+     * Predicate to return whether message is renderable
      * @param {String} messageType - type of message
      * @returns {Boolean} - whether message is non-renderable
      */
-    const isNonRenderableMessage = (messageType) => {
-      return (NON_RENDERABLE_MESSAGE_TYPES.indexOf (messageType) !== -1);
+    const isRenderableMessage = (messageType) => {
+      return (RENDERABLE_MESSAGE_TYPES.indexOf (messageType) !== -1);
     };
 
     /**
@@ -370,7 +370,7 @@ define ("helpers/chatView",
     return {
       createMessage,
       getProcessedUserInput,
-      isNonRenderableMessage,
+      isRenderableMessage,
       getUserInputValidationConfig,
       getPreparedMessageData
     };

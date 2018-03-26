@@ -7,23 +7,15 @@
 define ("components/messageList",
   [
     "components/message",
-    "constants/propTypes",
-    "constants/message",
     "components/commons/branding",
+    "helpers/chatView",
+    "constants/propTypes",
     "gunpowder/utils/throttle"
   ],
-  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, Branding, throttle) {
+  function (Message, Branding, chatViewHelpers, PROP_TYPES, throttle) {
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
-
-    const MESSAGE_TYPES_TO_RENDER = (() => {
-      const keys = Object.keys (MESSAGE_TYPE);
-      return keys.map ((key) => {
-        return MESSAGE_TYPE [key];
-      });
-    }) ();
 
     // Scroll throttle time in ms
     const SCROLL_THROTTLE_TIMER = 250;
@@ -60,12 +52,8 @@ define ("components/messageList",
         const {messages} = this.props;
 
         return messages.map ((message, index) => {
-          // @TODO: Added temp fix until we add loading spinner.
-          if (!message) {
-            return null;
-          }
           // Avoid rendering of unnecessary message types.
-          if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
+          if (!chatViewHelpers.isRenderableMessage (message.type)) {
             return null;
           }
 
