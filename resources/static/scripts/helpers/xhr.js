@@ -14,6 +14,8 @@ define ("helpers/xhr",
   function (actionTypes, errorConstants, objUtils, store) {
     "use strict";
 
+    const API_VERSION_HEADER = "application/vnd+hsapi-v2+json";
+
     const {
       TYPE: {
         NO_AUTH_TOKEN: NO_AUTH_ERROR,
@@ -32,7 +34,8 @@ define ("helpers/xhr",
     const getCommonHeaders = () => {
       const {platformId} = store.getState ().appState;
       return {
-        authorization: "Basic " + btoa (platformId + ":")
+        authorization: "Basic " + btoa (platformId + ":"),
+        Accept: API_VERSION_HEADER
       };
     };
 
