@@ -294,7 +294,7 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.ADD_MESSAGES:
           return update (state, {
-            messageList: {$push: [action.messages]}
+            messageList: {$push: action.messages}
           });
 
         case ACTION_TYPES.REMOVE_MESSAGE:
