@@ -102,12 +102,12 @@ define ("helpers/common",
 
     /**
      * Get anonymous user id string, in the following format.
-     * "hsft_anon_<timestamp>_<15 random alphanumeric characters>"
+     * "hsft_anon_<timestamp>-<15 random alphanumeric characters>"
      * @returns {string}
      */
     const getAnonUserId = () => {
       return "hsft_anon_" +
-        Date.now () + "_" +
+        Date.now () + "-" +
         getUuid ().replace (/-/g, "").substring (0, 15);
     };
 
