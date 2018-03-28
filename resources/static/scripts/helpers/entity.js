@@ -6,10 +6,9 @@
 
 define ("helpers/entity",
   [
-    "constants/message",
-    "gunpowder/utils/object"
+    "constants/message"
   ],
-  function (messageConstants, objUtils) {
+  function (messageConstants) {
     "use strict";
 
     const {TYPE: MESSAGE_TYPES} = messageConstants;
@@ -20,9 +19,7 @@ define ("helpers/entity",
      * @returns {Object} - processed message entitiy
      */
     const getProcessedMessages = (messages) => {
-      const processedMessages = {};
-
-      objUtils.forEachKey (messages, (id, msg) => {
+      return messages.map ((msg) => {
         const {type: messageType} = msg;
 
         const msgObj = {
@@ -51,12 +48,10 @@ define ("helpers/entity",
               language: faq.data.language
             };
           });
-
-          processedMessages [id] = msgObj;
         }
-      });
 
-      return processedMessages;
+        return msgObj;
+      });
     };
 
     /**
