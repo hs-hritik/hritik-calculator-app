@@ -82,6 +82,8 @@ define ("actions/chatView",
 
     const {EVENT} = analyticsConstants;
 
+    const PROCESS = true;
+
     let systemTypingTimerId = null,
         pollingEnabled = false,
         fetchMessagesXhr = null,
@@ -277,12 +279,14 @@ define ("actions/chatView",
     /**
      * Handles post chat feature steps
      * Marks post chat steps as completed depending on the config
-     * @param {Object} config - config required to handle post chat features
-     * @param {Boolean} config.isCsatSubmitted - csat rating submitted
      */
-    const handlePostChatFeatureSteps = (config) => {
-      const {dispatch} = store;
-      const {isCsatSubmitted} = config;
+    const handlePostChatFeatureSteps = () => {
+      const {dispatch, getState} = store;
+      const {
+        chatView: {
+          isCsatSubmitted
+        }
+      } = getState ();
       const lastMessageType = getLatestMessage ().type;
       const actionsToDispatch = [];
 
@@ -446,6 +450,17 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set csat rating submitted
+     * @param {Boolean} submitted - is csat rating submitted
+     */
+    const setCsatSubmitted = (submitted) => {
+      return {
+        type: ACTION_TYPES.SET_CSAT_SUBMITTED,
+        submitted
+      };
+    };
+
+    /**
      * Returns active issue and list of messages
      * @param {Array} issues - list of issues
      * @returns {Object} - config of active issue and messages
@@ -470,6 +485,45 @@ define ("actions/chatView",
         activeIssue: currentIssue,
         messages: previousIssueMessages.concat (currentIssueMessages)
       };
+    };
+
+    /**
+     * Handle issue state
+     * If issue state is not active, stop the poller and issue type is
+     * a. 'issue' then handle post chat features
+     * b. 'preissue' then show start new conversation footer
+     */
+    const handleIssueState = () => {
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          issueType,
+          issueState
+        }
+      } = getState ();
+
+      // Do not handle active state as we will wait for user input/bot steps
+      if (issueState === ISSUE_STATE.ACTIVE) {
+        return;
+      }
+
+      stopPollingForMessages ();
+
+      if (issueState === ISSUE_STATE.RESOLVED) {
+        // If issue type is 'issue'
+        // a. handle post chat features
+        // b. show post issue resolution footer (resolution question | csat |
+        //    start new conversation)
+        // Else if issue type is 'preissue'
+        // a. show start new conversation footer
+        if (issueType === ISSUE_TYPE.ISSUE) {
+          handlePostChatFeatureSteps ();
+          dispatch (showPostIssueResolutionFooter ());
+        } else if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          // Show start new conversation footer
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+        }
+      }
     };
 
     /**
@@ -524,8 +578,6 @@ define ("actions/chatView",
               return;
             }
 
-            dispatch (setIssueCursor (response.timestamp));
-
             const {
               id: issueId,
               type: issueType,
@@ -535,6 +587,15 @@ define ("actions/chatView",
               csat_received: isCsatSubmitted,
               created_at: latestMessageCursor
             } = activeIssue;
+
+            dispatch (
+              batchActions ([
+                setIssueCursor (response.timestamp),
+                setCsatSubmitted (isCsatSubmitted),
+                updateIssueState (issueState, PROCESS),
+                updateIssueType (issueType)
+              ])
+            );
 
             const messagesLength = messages.length;
             if (messagesLength) {
@@ -553,17 +614,7 @@ define ("actions/chatView",
               );
               handleUnreadMessages ();
             }
-
-            // If issue is resolved or rejected, stop polling and ask user for feedback.
-            if (issueState === ISSUE_STATE.RESOLVED || issueState === ISSUE_STATE.REJECTED) {
-              dispatch (updateIssueState (issueState));
-              stopPollingForMessages ();
-
-              if (issueState === ISSUE_STATE.RESOLVED) {
-                handlePostChatFeatureSteps ({isCsatSubmitted});
-                dispatch (showPostIssueResolutionFooter ());
-              }
-            }
+            handleIssueState ();
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
           }
@@ -1181,10 +1232,28 @@ define ("actions/chatView",
      * @param {String} state - new state.
      * @returns {Object} - action
      */
-    const updateIssueState = (state) => {
+    const updateIssueState = (state, process) => {
+      let processedState = state;
+
+      if (process) {
+        processedState = chatViewHelpers.getProcessedIssueState (state);
+      }
+
       return {
         type: ACTION_TYPES.UPDATE_ISSUE_STATE,
-        state
+        state: processedState
+      };
+    };
+
+    /**
+     * Action to update issue type.
+     * @param {String} issueType - new type.
+     * @returns {Object} - action
+     */
+    const updateIssueType = (issueType) => {
+      return {
+        type: ACTION_TYPES.UPDATE_ISSUE_TYPE,
+        issueType
       };
     };
 

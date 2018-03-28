@@ -8,13 +8,14 @@ define ("helpers/chatView",
   [
     "constants/message",
     "constants/chatView",
+    "constants/appState",
     "helpers/common",
     "gunpowder/utils/uuid",
     "gunpowder/utils/schema",
     "gunpowder/utils/validation"
   ],
-  function (MESSAGE_CONSTANTS, chatViewConstants, commonHelpers, uuidGenerator,
-    schema, validationsUtil) {
+  function (MESSAGE_CONSTANTS, chatViewConstants, appStateConstants, commonHelpers,
+    uuidGenerator, schema, validationsUtil) {
     "use strict";
 
     const {
@@ -22,6 +23,10 @@ define ("helpers/chatView",
       RENDERABLE_MESSAGE_TYPES,
       REQUEST_TYPES: USER_RESPONSE_MESSAGE_TYPES
     } = MESSAGE_CONSTANTS;
+    const {
+      ISSUE_STATE,
+      XHR_ISSUE_STATE
+    } = appStateConstants;
     const MSG_ID_PREFIX = "message_";
     const {USER_INPUT_TYPES} = chatViewConstants;
     const {Input} = schema;
@@ -367,11 +372,31 @@ define ("helpers/chatView",
       return requestData;
     };
 
+    /**
+     * Return processed issue state for given xhr response state
+     * @param {String} xhrIssueState - xhr issue state
+     */
+    const getProcessedIssueState = (xhrIssueState) => {
+      switch (xhrIssueState) {
+        case XHR_ISSUE_STATE.ISSUE.RESOLVED:
+        case XHR_ISSUE_STATE.PRE_ISSUE.RESOLVED:
+          return ISSUE_STATE.RESOLVED;
+
+        case XHR_ISSUE_STATE.ISSUE.REJECTED:
+        case XHR_ISSUE_STATE.PRE_ISSUE.REJECTED:
+          return ISSUE_STATE.REJECTED;
+
+        default:
+          return ISSUE_STATE.ACTIVE;
+      }
+    };
+
     return {
       createMessage,
       getProcessedUserInput,
       isRenderableMessage,
       getUserInputValidationConfig,
-      getPreparedMessageData
+      getPreparedMessageData,
+      getProcessedIssueState
     };
   });

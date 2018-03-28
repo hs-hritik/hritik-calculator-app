@@ -55,6 +55,7 @@ define ("reducers/chatView",
         issues: {}
       },
       issueCursor: 0,
+      isCsatSubmitted: false,
       infoBot: {
         fieldsRequired: ["name", "email"],
         currentField: "",
@@ -319,6 +320,11 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_ISSUE_CURSOR:
           return update (state, {
             issueCursor: {$set: action.cursor}
+          });
+
+        case ACTION_TYPES.SET_CSAT_SUBMITTED:
+          return update (state, {
+            isCsatSubmitted: {$set: action.submitted}
           });
 
         case ACTION_TYPES.RESET:

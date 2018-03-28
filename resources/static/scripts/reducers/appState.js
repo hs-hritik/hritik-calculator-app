@@ -16,7 +16,12 @@ define ("reducers/appState",
     "use strict";
 
     const update = React.addons.update;
-    const {ISSUE_STATE, PRE_CHAT_STATE, DEFAULT_RESET_TIMEOUT} = APP_STATE_CONSTANTS;
+    const {
+      ISSUE_STATE,
+      ISSUE_TYPE,
+      PRE_CHAT_STATE,
+      DEFAULT_RESET_TIMEOUT
+    } = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
       wcEnabled: false,
@@ -44,7 +49,11 @@ define ("reducers/appState",
       // Issue related data
       // Whether an issue (active/resolved) exists for this profile
       issueExists: false,
-      issueState: ISSUE_STATE.PRE_CHAT,
+      // Type of issue can either be a. issue b. preissue
+      issueType: ISSUE_TYPE.PRE_ISSUE,
+      // Issue state can be either a. active b. resolved c. rejected
+      // It's applicable for both issue types (issue and preissue)
+      issueState: ISSUE_STATE.ACTIVE,
       activeIssueId: "",
       internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
@@ -229,6 +238,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_PRE_CHAT_FEATURE_INDEX:
           return update (state, {
             preChatFeatureIndex: {$set: action.preChatFeatureIndex}
+          });
+
+        case ACTION_TYPES.UPDATE_ISSUE_TYPE:
+          return update (state, {
+            issueType: {$set: action.issueType}
           });
 
         case ACTION_TYPES.UPDATE_ISSUE_STATE:

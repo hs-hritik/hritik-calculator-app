@@ -9,16 +9,25 @@ define ("constants/appState",
     "use strict";
 
     const ISSUE_STATE = {
-      PRE_CHAT: "preChat",
       ACTIVE: "active",
       RESOLVED: "resolved",
-      REJECTED: "rejected",
-      RESOLVED_BY_FAQ_SUGGESTIONS: "resolved_by_faq_suggestions"
+      REJECTED: "rejected"
     };
 
     const ISSUE_TYPE = {
       ISSUE: "issue",
       PRE_ISSUE: "preissue"
+    };
+
+    const XHR_ISSUE_STATE = {
+      PRE_ISSUE: {
+        RESOLVED: "Resolved",
+        REJECTED: "Rejected"
+      },
+      ISSUE: {
+        RESOLVED: "Agent Resolved",
+        REJECTED: "Agent Rejected"
+      }
     };
 
     const PRE_CHAT_STATE = {
@@ -76,6 +85,7 @@ define ("constants/appState",
       PRE_ISSUE_RESET_TIMEOUT,
       TRIGGER,
       ISSUE_TYPE,
-      ISSUE_STATE_RESET
+      ISSUE_STATE_RESET,
+      XHR_ISSUE_STATE
     };
   });
