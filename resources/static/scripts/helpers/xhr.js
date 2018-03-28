@@ -9,9 +9,10 @@ define ("helpers/xhr",
     "constants/actionTypes",
     "constants/errors",
     "gunpowder/utils/object",
+    "utils/browser",
     "store"
   ],
-  function (actionTypes, errorConstants, objUtils, store) {
+  function (actionTypes, errorConstants, objUtils, browserUtils, store) {
     "use strict";
 
     const API_VERSION_HEADER = "application/vnd+hsapi-v2+json";
@@ -32,11 +33,19 @@ define ("helpers/xhr",
      * @returns {Object} - header key-value pairs.
      */
     const getCommonHeaders = () => {
-      const {platformId} = store.getState ().appState;
-      return {
+      const {platformId, developerSetLanguage} = store.getState ().appState;
+      const language = browserUtils.getLanguage ();
+
+      const headers = {
         authorization: "Basic " + btoa (platformId + ":"),
         Accept: API_VERSION_HEADER
       };
+
+      if (developerSetLanguage) {
+        headers ["Accept-Language"] = `${developerSetLanguage};q=1,${language};q=0.9`;
+      }
+
+      return headers;
     };
 
     /**

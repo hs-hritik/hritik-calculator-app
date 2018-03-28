@@ -164,6 +164,7 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_CLIENT_CONFIG:
           return update (state, {
             platformId: {$set: action.config.platformId},
+            developerSetLanguage: {$set: action.config.language},
             domain: {$set: action.config.domain},
             userId: {$set: action.config.userId},
             userName: {$set: action.config.userName},
