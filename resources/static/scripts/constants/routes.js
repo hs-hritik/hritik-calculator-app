@@ -11,18 +11,16 @@ define ("constants/routes",
     const WEB_SDK_API_ROOT = "{{ENV_API_ROOT}}";
     const BASE = `${WEB_SDK_API_ROOT}/websdk/`;
 
+    // @TODO - Clean up unwanted routes
     const getWmConfig = (domain, platformId) => `${BASE}${domain}/platforms/${platformId}/config`;
 
     const getCss = () => "/css/style.css";
 
     const getIssues = (domain) => `${BASE}${domain}/issues`;
 
-    // @TODO - a. Clean up unwanted routes b. Create one function for post user reply
-    const postUserReplyForPreIssue = (domain, preIssueId) =>
-      `${BASE}${domain}/preissues/${preIssueId}/messages`;
-
-    const postUserReplyForIssue = (domain, issueId) =>
-      `${BASE}${domain}/issues/${issueId}/messages`;
+    const postUserReply = (domain, issueId, issueType) => {
+      return `${BASE}${domain}/${issueType}/${issueId}/messages`;
+    };
 
     const getIssuesAndMessages = (domain) => `${BASE}${domain}/messages`;
 
@@ -77,8 +75,7 @@ define ("constants/routes",
       getWsConfig,
       webSocket,
       postAnalyticsEvent,
-      postUserReplyForPreIssue,
-      postUserReplyForIssue,
+      postUserReply,
       getIssuesAndMessages
     };
   });

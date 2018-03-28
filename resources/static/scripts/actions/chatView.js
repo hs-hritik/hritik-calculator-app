@@ -723,12 +723,11 @@ define ("actions/chatView",
         });
       }
 
-      const route = (issueState === ISSUE_STATE.PRE_CHAT) ?
-        routes.postUserReplyForIssue (domain, activeIssueId) :
-        routes.postUserReplyForPreIssue (domain, activeIssueId);
+      const issueType = (issueState === ISSUE_STATE.PRE_CHAT) ? ISSUE_TYPE.PRE_ISSUE :
+                         ISSUE_TYPE.ISSUE;
 
       xhr ({
-        route,
+        route: routes.postUserReply (domain, activeIssueId, issueType),
         data: xhrHelpers.getPreparedXhrData (xhrData),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
@@ -1873,7 +1872,7 @@ define ("actions/chatView",
         const {file, attachmentMsgId} = config;
 
         upload ({
-          route: routes.postUserReply (domain, activeIssueId),
+          route: routes.postUserReply (domain, activeIssueId, ISSUE_TYPE.ISSUE),
           formData: {
             "identifier": identifier,
             "issue-id": appState.activeIssueId,
