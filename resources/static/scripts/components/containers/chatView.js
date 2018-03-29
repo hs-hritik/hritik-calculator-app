@@ -6,27 +6,36 @@
 
 define ("components/containers/chatView",
   [
-    "normalizr",
     "components/chatView",
     "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView"
   ],
-  function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions) {
+  function (ChatView, entitySchema, chatViewActions, faqViewActions) {
     "use strict";
 
-    const {denormalize} = normalizr;
-
     const mapStateToProps = (state) => {
-      const issueId = state.appState.activeIssueId || state.appState.dummyIssueId;
-      const issue = denormalize (issueId, entitySchema.issue, state.entities);
-      const messages = issue ? issue.messages : [];
+      const {
+        appState: {
+          featuresEnabled: {
+            agentNickname
+          }
+        },
+        chatView: {
+          messageList: messages,
+          systemTyping,
+          agentTyping
+        },
+        ui: {
+          text
+        }
+      } = state;
 
       return {
         messages,
-        isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
-        showAgentNickname: state.appState.featuresEnabled.agentNickname,
-        text: state.ui.text,
+        isTyping: systemTyping || agentTyping,
+        showAgentNickname: agentNickname,
+        text: text,
         issueIsCreated: !!state.appState.activeIssueId
       };
     };
