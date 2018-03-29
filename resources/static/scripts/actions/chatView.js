@@ -376,14 +376,14 @@ define ("actions/chatView",
 
       // Mandatory actions which will be preformed for every bot step
       dispatch (
-        batchActions (
+        batchActions ([
           // Hide system typing indicator
           toggleSystemTyping (false),
           // Set processed user input and save it in store
           setUserInputData (processedUserInput),
           // Set footer type as reply because this is bot step, we accept some user input
           setChatViewFooter (ACTIVE_FOOTER.REPLY)
-        )
+        ])
       );
 
       // Optional actions like submiting user reply if first user message is set
