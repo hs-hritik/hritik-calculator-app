@@ -380,6 +380,19 @@ define ("helpers/chatView",
     };
 
     /**
+     * Return pluralize issue type
+     * The issue type we save in our store is singular example :- 'issue' or 'preissue'
+     * The above mentioned issue type is received in backend response
+     * But for api calls and saving message cursors we require plural value :- 'issues'
+     * or 'preissues' as we need to send back this info to backend
+     * @param {String} issueType
+     * @returns {String} - pluralized issue type string
+     */
+    const getPluralizedIssueType = (issueType) => {
+      return issueType + "s";
+    };
+
+    /**
      * Return processed issue state for given xhr response state
      * @param {String} xhrIssueState - xhr issue state
      */
@@ -402,6 +415,7 @@ define ("helpers/chatView",
       createMessage,
       getProcessedUserInput,
       isRenderableMessage,
+      getPluralizedIssueType,
       getUserInputValidationConfig,
       getPreparedMessageData,
       getProcessedIssueState

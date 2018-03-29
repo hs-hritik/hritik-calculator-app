@@ -546,7 +546,7 @@ define ("actions/chatView",
 
       // @TODO - Confirm with backend, do we need to send both cursors?
       const xhrData = {
-        mc: messageCursor
+        mc: JSON.stringify (messageCursor)
       };
 
       if (issueCursor) {
@@ -559,6 +559,7 @@ define ("actions/chatView",
       fetchMessagesXhr = xhr ({
         route: routes.getIssuesAndMessages (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
+        method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           // @NOTE - This is to make sure that onEnd is called even if
@@ -590,6 +591,7 @@ define ("actions/chatView",
 
             dispatch (
               batchActions ([
+                setActiveIssueId (issueId),
                 setIssueCursor (response.timestamp),
                 setCsatSubmitted (isCsatSubmitted),
                 updateIssueState (issueState, PROCESS),
@@ -600,13 +602,15 @@ define ("actions/chatView",
             const messagesLength = messages.length;
             if (messagesLength) {
               handleLatestMessage (messages [messagesLength - 1]);
+
+              const pluralIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
               dispatch (
                 batchActions ([
                   addMessages ({
                     messages: messages
                   }),
                   setActiveIssueMsgCursor ({
-                    [issueType]: {
+                    [pluralIssueType]: {
                       [issueId]: latestMessageCursor
                     }
                   })
@@ -739,7 +743,6 @@ define ("actions/chatView",
      */
     const postUserMessage = (config) => {
       const {dispatch, getState} = store;
-      const {state} = getState ();
       const {
         chatView: {
           userInput
@@ -747,15 +750,16 @@ define ("actions/chatView",
         appState: {
           domain,
           activeIssueId,
-          issueState
+          issueType
         }
-      } = state;
+      } = getState ();
       const {
         msgBody,
         msgType,
         onSuccess,
         onEnd
       } = config;
+      const xhrIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
       let xhrData = {};
 
       if (userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT) {
@@ -770,15 +774,12 @@ define ("actions/chatView",
         const latestMessage = getLatestMessage ();
         xhrData = chatViewHelpers.getPreparedMessageData ({
           input: userInput,
-          messageType: latestMessage.type
+          message: latestMessage
         });
       }
 
-      const issueType = (issueState === ISSUE_STATE.PRE_CHAT) ? ISSUE_TYPE.PRE_ISSUE :
-                         ISSUE_TYPE.ISSUE;
-
       xhr ({
-        route: routes.postUserReply (domain, activeIssueId, issueType),
+        route: routes.postUserReply (domain, activeIssueId, xhrIssueType),
         data: xhrHelpers.getPreparedXhrData (xhrData),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
