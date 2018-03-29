@@ -69,9 +69,10 @@ define ("helpers/xhr",
      * })
      *
      * @param {Object} customXhrData
+     * @param {Boolean} skipPlatformId - whether to skip plaform id
      * @returns {Object}
      */
-    const getPreparedXhrData = (customXhrData) => {
+    const getPreparedXhrData = (customXhrData, skipPlatformId) => {
       const {
         deviceId,
         userId,
@@ -83,9 +84,7 @@ define ("helpers/xhr",
       } = store.getState ().appState;
 
       const commonXhrData = {
-        "did": deviceId,
-        // @TODO: Change this to `platform_id` once the backend is ready.
-        "platform-id": platformId
+        did: deviceId
       };
 
       // Set `uid` to the xhr data according to the following rules.
@@ -96,6 +95,11 @@ define ("helpers/xhr",
         commonXhrData.uid = anonUserIdentifier;
       } else if (userId) {
         commonXhrData.uid = userId;
+      }
+
+      if (!skipPlatformId) {
+        // @TODO: Change this to appropriate key once the backend is ready.
+        commonXhrData.platform_id = platformId;
       }
 
       // Handle fullPrivacy mode and HMAC

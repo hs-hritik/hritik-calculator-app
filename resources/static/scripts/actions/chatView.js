@@ -83,6 +83,7 @@ define ("actions/chatView",
     const {EVENT} = analyticsConstants;
 
     const PROCESS = true;
+    const SKIP_PLATFORM_ID = true;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -780,7 +781,7 @@ define ("actions/chatView",
 
       xhr ({
         route: routes.postUserReply (domain, activeIssueId, xhrIssueType),
-        data: xhrHelpers.getPreparedXhrData (xhrData),
+        data: xhrHelpers.getPreparedXhrData (xhrData, SKIP_PLATFORM_ID),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
