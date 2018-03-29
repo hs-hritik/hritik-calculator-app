@@ -94,6 +94,8 @@ define ("components/message",
       _renderMessage () {
         const {type} = this.props.message;
 
+        // @NOTE - All bot messages (except faqs) and user response messages
+        // are rendered as text messages
         switch (type) {
           case MESSAGE_TYPE.TEXT:
           case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
@@ -101,6 +103,13 @@ define ("components/message",
           case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
           case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
           case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_TEXT_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_EMAIL_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_NUMERIC_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT:
+          case MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT:
+          case MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT:
             return this._renderTextMessage ();
 
           case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:

@@ -20,8 +20,7 @@ define ("helpers/chatView",
 
     const {
       TYPE: MESSAGE_TYPE,
-      RENDERABLE_MESSAGE_TYPES,
-      USER_RESPONSE_TYPES: USER_RESPONSE_MESSAGE_TYPES
+      RENDERABLE_MESSAGE_TYPES
     } = MESSAGE_CONSTANTS;
     const {
       ISSUE_STATE,
@@ -108,25 +107,28 @@ define ("helpers/chatView",
     const getUserResponseMessageType = (msgType) => {
       switch (msgType) {
         case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_TEXT_INPUT;
+          return MESSAGE_TYPE.RESP_TEXT_MSG_WITH_TEXT_INPUT;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_EMAIL_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_EMAIL_INPUT;
+          return MESSAGE_TYPE.RESP_TEXT_MSG_WITH_EMAIL_INPUT;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_NUMERIC_INPUT;
+          return MESSAGE_TYPE.RESP_TEXT_MSG_WITH_NUMERIC_INPUT;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT;
+          return MESSAGE_TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT;
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_TEXT_MSG_WITH_OPTION_INPUT;
+          return MESSAGE_TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT;
 
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_FAQ_LIST_WITH_OPTION_INPUT;
+          return MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT;
 
         case MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT:
-          return USER_RESPONSE_MESSAGE_TYPES.RESP_EMPTY_MSG_WITH_TEXT_INPUT;
+          return MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT;
+
+        default:
+          return MESSAGE_TYPE.TEXT;
       }
     };
 
@@ -338,7 +340,7 @@ define ("helpers/chatView",
      * Return prepared message data for xhr
      * @param {Object} config - config object
      * @param {Object} config.input - user input object
-     * @param {String} config.messageType - message type
+     * @param {String} config.message - message object
      */
     const getPreparedMessageData = (config) => {
       const {
@@ -346,17 +348,22 @@ define ("helpers/chatView",
           value,
           skipped,
           skipLabel,
-          chatBotInfo,
           selectedOption
         },
-        messageType
+        message: {
+          type: messageType,
+          chatBotInfo
+        }
       } = config;
 
       const requestData = {
         body: value,
-        type: getUserResponseMessageType (messageType),
-        chatbot_info: chatBotInfo
+        type: getUserResponseMessageType (messageType)
       };
+
+      if (chatBotInfo) {
+        requestData.chatbot_info = JSON.stringify (chatBotInfo);
+      }
 
       if (skipped) {
         requestData.body = skipLabel;
