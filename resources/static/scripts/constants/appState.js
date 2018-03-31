@@ -55,10 +55,16 @@ define ("constants/appState",
     const DEFAULT_RESET_TIMEOUT = 43200000;      // 12 hours
     const MIN_RESET_TIMEOUT = 0;
     const MAX_RESET_TIMEOUT = 168; // In hours. 1 week.
+    const PRE_ISSUE_RESET_TIMEOUT = 86400000; // 24 hours
 
     const TRIGGER = {
       RESET: "RESET"
     };
+
+    // @TODO: Move this to the XHR_ISSUE_STATE object, getting introduced with
+    // one of the next commits.
+    // The state of an issue on backend. 5 denotes the rejected state.
+    const ISSUE_STATE_RESET = 5;
 
     return {
       ISSUE_STATE,
@@ -67,7 +73,9 @@ define ("constants/appState",
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
       MAX_RESET_TIMEOUT,
+      PRE_ISSUE_RESET_TIMEOUT,
       TRIGGER,
-      ISSUE_TYPE
+      ISSUE_TYPE,
+      ISSUE_STATE_RESET
     };
   });

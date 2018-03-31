@@ -42,6 +42,8 @@ define ("constants/routes",
 
     const postPreIssue = (domain) => `${BASE}${domain}/pre-issues`;
 
+    const putResetPreIssue = (domain, issueId) => `${BASE}${domain}/preissues/${issueId}`;
+
     const postCSAT = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/csat`;
 
     const postProfile = (domain) => `${BASE}${domain}/profiles`;
@@ -68,6 +70,7 @@ define ("constants/routes",
       putFaqFeedback,
       getFaqSuggestions,
       postPreIssue,
+      putResetPreIssue,
       postCSAT,
       postProfile,
       putMessagesSeen,

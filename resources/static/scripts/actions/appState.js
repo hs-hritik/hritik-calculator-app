@@ -48,9 +48,11 @@ define ("actions/appState",
       DEFAULT_RESET_TIMEOUT,
       MIN_RESET_TIMEOUT,
       MAX_RESET_TIMEOUT,
+      PRE_ISSUE_RESET_TIMEOUT,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
-      TRIGGER
+      TRIGGER,
+      ISSUE_STATE_RESET
     } = APP_STATE_CONSTANTS;
 
     const {
@@ -941,6 +943,57 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Check if preIssue reset is applicable and if so, handle it.
+     * PreIssue should be reset if
+     *  the issue type is `preIssue` and
+     *  its state is `active` i.e. it's not resolved
+     *  the time elapsed since the last activity is > 24h
+     * If so
+     *  set `appState.conversationStarted` to `false` so that a new conversation
+     *  may start
+     *  call an API to reset the preIssue - this should not block the end user
+     *  from starting a new conversation
+     */
+    const handlePreIssueReset = () => {
+      return (dispatch, getState) => {
+        // @TODO: Check if activeIssueId is being set with poller response.
+        const {
+          appState: {
+            domain,
+            issueState,
+            activeIssueId
+          }
+        } = getState ();
+
+        // @TODO: Check how last activity time is set. It's set with the
+        // ADD_MESSAGES action but that might get deprecated.
+        const lastActivityTime = lsHelpers.getLastActivityTime ();
+        const inactivityDuration = Date.now () - lastActivityTime;
+
+        // @TODO: Use issueType once the relevant commit is merged.
+        // issueType === "preIssue"
+        if (
+          issueState === ISSUE_STATE.ACTIVE &&
+          inactivityDuration > PRE_ISSUE_RESET_TIMEOUT
+        ) {
+          dispatch (setConversationEnded ());
+
+          // @TODO: Check with the backend if they must receive the preIssue reset
+          // request from Web Chat before they create a new preIssue with the
+          // subsequent create preIssue call.
+          xhr ({
+            route: routes.putResetPreIssue (domain, activeIssueId),
+            data: xhrHelpers.getPreparedXhrData ({
+              state: ISSUE_STATE_RESET
+            }),
+            method: "PUT",
+            headers: xhrHelpers.getCommonHeaders ()
+          });
+        }
+      };
+    };
+
     return {
       setDeviceId,
       setAnonUserId,
@@ -958,6 +1011,7 @@ define ("actions/appState",
       executeProactiveChatRules,
       updateStyles,
       setFooterActive,
-      setFooterInactive
+      setFooterInactive,
+      handlePreIssueReset
     };
   });
