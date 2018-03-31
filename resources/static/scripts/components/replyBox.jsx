@@ -38,7 +38,8 @@ define ("components/replyBox",
         issueIsCreated: PropTypes.bool.isRequired,
         onFooterFocus: PropTypes.func,
         onFooterBlur: PropTypes.func,
-        replyBoxHeading: PropTypes.string
+        replyBoxHeading: PropTypes.string,
+        fullPrivacyEnabled: PropTypes.bool
       },
 
       render () {
@@ -96,9 +97,15 @@ define ("components/replyBox",
        * Render reply box action
        */
       _renderReplyBoxAction () {
-        if (this.props.value || !this.props.issueIsCreated) {
+        // End user attachments are disabled in full privacy mode.
+        if (
+          this.props.value ||
+          !this.props.issueIsCreated ||
+          this.props.fullPrivacyEnabled
+        ) {
           return this._renderSendButton ();
         }
+
         return this._renderAttachmentButton ();
       },
 

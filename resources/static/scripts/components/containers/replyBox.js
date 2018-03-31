@@ -17,8 +17,25 @@ define ("components/containers/replyBox",
     const {ACTIVE_FOOTER} = chatViewConstants;
 
     const mapStateToProps = (state) => {
-      const {chatView: chatViewState, appState, ui} = state;
-      const {value, disabled} = chatViewState.userInput;
+      const {
+        chatView: {
+          userInput: {
+            value,
+            disabled
+          },
+          activeFooter
+        },
+        appState: {
+          minimized,
+          activeIssueId,
+          browserIsMobile,
+          fullPrivacyEnabled
+        },
+        ui: {
+          text
+        }
+      } = state;
+
       let replyBoxHeading = null;
 
       // We are treating passing heading to replyBox as rare case, currently only
@@ -26,18 +43,19 @@ define ("components/containers/replyBox",
       // We have different layout for displaying a. heading b. input c. error
       // In almost every case we will use above layout
       // More info :- Check chatViewFooter component
-      if (chatViewState.activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
-        replyBoxHeading = ui.text.chatViewIssueRejectionQuestion;
+      if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+        replyBoxHeading = text.chatViewIssueRejectionQuestion;
       }
 
       return {
         value,
         disabled,
-        widgetIsOpened: !appState.minimized,
-        text: ui.text,
-        issueIsCreated: !!appState.activeIssueId,
-        browserIsMobile: appState.browserIsMobile,
-        replyBoxHeading
+        widgetIsOpened: !minimized,
+        text,
+        issueIsCreated: !!activeIssueId,
+        browserIsMobile,
+        replyBoxHeading,
+        fullPrivacyEnabled
       };
     };
 

@@ -55,7 +55,7 @@ define ("helpers/xhr",
      * 1. Device ID (did)
      * 2. User identifier (uid)
      * 3. Email (email)
-     * 4. User hash (hash)
+     * 4. User hash (user_auth_token)
      * 5. Platform ID (platform_id)
      *
      * This function has to be used as following.
@@ -78,22 +78,42 @@ define ("helpers/xhr",
         anonUserIdentifier,
         userEmail,
         userHash,
-        platformId
+        platformId,
+        fullPrivacyEnabled
       } = store.getState ().appState;
 
       const commonXhrData = {
         "did": deviceId,
-        "uid": userId || anonUserIdentifier,
         // @TODO: Change this to `platform_id` once the backend is ready.
         "platform-id": platformId
       };
 
-      if (userEmail) {
-        commonXhrData.email = userEmail;
+      // Set `uid` to the xhr data according to the following rules.
+      // If none of userId and email is passed, set `uid` with `anonUserIdentifier`.
+      // If userId is passed (irrespective of if email is passed), set `uid` with `userId`.
+      // If userId is not passed and email is passed, don't send `uid`.
+      if (!userId && !userEmail) {
+        commonXhrData.uid = anonUserIdentifier;
+      } else if (userId) {
+        commonXhrData.uid = userId;
       }
 
-      if (userHash) {
-        commonXhrData.hash = userHash;
+      // Handle fullPrivacy mode and HMAC
+      // If fullPrivacy is not enabled, send all (userId, userEmail, userHash) the values.
+      // If fullPrivacy is enabled then
+      //    If email is not set and userId and userHash are set, send userId and
+      //    userHash.
+      //    If email is set, do not send userHash
+      if (!fullPrivacyEnabled) {
+        if (userEmail) {
+          commonXhrData.email = userEmail;
+        }
+
+        if (userHash) {
+          commonXhrData.user_auth_token = userHash;
+        }
+      } else if (!userEmail && userId && userHash) {
+        commonXhrData.user_auth_token = userHash;
       }
 
       // Merge custom and common XHR data objects if the passed custom data is

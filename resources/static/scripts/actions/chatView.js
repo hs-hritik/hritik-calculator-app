@@ -1044,7 +1044,8 @@ define ("actions/chatView",
             metadata,
             featuresEnabled: {
               greeting: greetingFeatureEnabled
-            }
+            },
+            fullPrivacyEnabled
           },
           ui: {
             text: {
@@ -1079,8 +1080,13 @@ define ("actions/chatView",
           xhrData.greeting = greetingMsg;
         }
 
+        if (fullPrivacyEnabled) {
+          xhrData.fp_status = true;
+        }
+
         // @TODO: Check how are we going to send name with create-pre-issue XHR.
-        // Discussion still going on with backend.
+        // Discussion still going on with backend. Do not send the name value if
+        // fullPrivacy is enabled.
 
         xhr ({
           route: routes.postPreIssue (domain),
