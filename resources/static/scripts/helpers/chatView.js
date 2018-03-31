@@ -8,12 +8,13 @@ define ("helpers/chatView",
   [
     "constants/message",
     "constants/chatView",
+    "helpers/common",
     "gunpowder/utils/uuid",
     "gunpowder/utils/schema",
     "gunpowder/utils/validation"
   ],
-  function (MESSAGE_CONSTANTS, chatViewConstants, uuidGenerator, schema,
-    validationsUtil) {
+  function (MESSAGE_CONSTANTS, chatViewConstants, commonHelpers, uuidGenerator,
+    schema, validationsUtil) {
     "use strict";
 
     const {
@@ -24,10 +25,6 @@ define ("helpers/chatView",
     const MSG_ID_PREFIX = "message_";
     const {USER_INPUT_TYPES} = chatViewConstants;
     const {Input} = schema;
-
-    /* eslint-disable max-len */
-    const EMAIL_REG_EX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]+(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]+\.[\p{L}\p{M}\p{N}\p{S}A-Z]{2,4}/i;
-    /* eslint-enable eslint-enable */
 
     /**
      * Return an input type
@@ -273,7 +270,7 @@ define ("helpers/chatView",
         case USER_INPUT_TYPES.EMAIL:
           validations.push ({
             fn: (val) => {
-              return EMAIL_REG_EX.test (val);
+              return !!val && commonHelpers.isEmailValid (val.trim ());
             },
             errorMsg: text.emailValidationError
           });

@@ -394,11 +394,36 @@ define ("actions/appState",
      * @returns {Object} - action
      */
     const setClientConfig = (config) => {
+      const {
+        tags,
+        resetTimeout,
+        userId,
+        userEmail
+      } = config;
+
+      const {
+        isUserIdValid,
+        isEmailValid
+      } = commonHelpers;
+
       // Filter string values and convert to lower case
-      config.tags = getProcessedTags (config.tags);
+      config.tags = getProcessedTags (tags);
 
       // Get the resetTimeout value to be set in the state
-      config.resetTimeout = getProcessedResetTimeout (config.resetTimeout);
+      config.resetTimeout = getProcessedResetTimeout (resetTimeout);
+
+      // If userId is passed, validate it.
+      // If userEmail is passed, validate it.
+      // If either of the two is passed and is invalid, drop both the values.
+      if (
+        (userId && !isUserIdValid (userId)) ||
+        (userEmail && !isEmailValid (userEmail))
+      ) {
+        delete config.userId;
+        delete config.userEmail;
+        // @TODO: Check with product if we need to throw an error for the client
+        // developer to know about this.
+      }
 
       return {
         type: ACTION_TYPES.SET_CLIENT_CONFIG,

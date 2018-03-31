@@ -16,6 +16,13 @@ define ("helpers/common",
   function (store, objectUtils, getUuid, messageConstants, bhConstants) {
     "use strict";
 
+    /* eslint-disable max-len */
+    const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]{1,246}\.[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
+    /* eslint-enable max-len */
+
+    // 1 non space char + 1 to 748 any char + 1 non space char
+    const USER_ID_REGEX = /^[^\s].{1,748}[^\s]$/;
+
     const {
       TYPE: MESSAGE_TYPE
     } = messageConstants;
@@ -117,12 +124,36 @@ define ("helpers/common",
      */
     const doesActiveIssueExist = () => store.getState ().appState.issueExists;
 
+    /**
+     * Validate email.
+     * Ideally this should be a part of `gunpowder`, but it already has an email
+     * validation fn and its email regex doesn't match exactly with what BE and
+     * mobile SDKs use. In web chat, we are going to have the same email regex
+     * as elsewhere.
+     * TODO: Consider updating `gunpowder's` email regex.
+     * @param {string} value - email to validate.
+     * @returns {boolean} - true if the email is valid.
+     */
+    const isEmailValid = (value) => EMAIL_REGEX.test (value);
+
+    /**
+     * Validate userId (passed with `helpshiftConfig`).
+     * A valid userId
+     * should be <= 750 characters
+     * should not contain leading or trailing spaces
+     * @param {string} value - userId to validate.
+     * @returns {boolean} - true if the userId is valid.
+     */
+    const isUserIdValid = (value) => USER_ID_REGEX.test (value);
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
       getEndUserFirstMessage,
       getSuggestedFaqs,
       getAnonUserId,
-      doesActiveIssueExist
+      doesActiveIssueExist,
+      isEmailValid,
+      isUserIdValid
     };
   });
