@@ -90,7 +90,8 @@ define ("reducers/appState",
       postChatFeatures: {
         resolutionQuestionCompleted: false,
         csatCompleted: false
-      }
+      },
+      fullPrivacyEnabled: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -162,21 +163,37 @@ define ("reducers/appState",
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:
+          const {
+            config: {
+              platformId,
+              language,
+              domain,
+              userId,
+              userName,
+              userEmail,
+              userHash,
+              resetTimeout,
+              tags,
+              fullPrivacy
+            }
+          } = action;
+
           return update (state, {
-            platformId: {$set: action.config.platformId},
-            developerSetLanguage: {$set: action.config.language},
-            domain: {$set: action.config.domain},
-            userId: {$set: action.config.userId},
-            userName: {$set: action.config.userName},
-            userEmail: {$set: action.config.userEmail},
-            userHash: {$set: action.config.userHash},
-            resetTimeout: {$set: action.config.resetTimeout},
-            tags: {$set: action.config.tags},
+            platformId: {$set: platformId || ""},
+            developerSetLanguage: {$set: language || ""},
+            domain: {$set: domain || ""},
+            userId: {$set: userId || ""},
+            userName: {$set: userName || ""},
+            userEmail: {$set: userEmail || ""},
+            userHash: {$set: userHash || ""},
+            resetTimeout: {$set: resetTimeout || DEFAULT_RESET_TIMEOUT},
+            tags: {$set: tags || []},
+            fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {
               fullScreen: {
                 $set: objUtils.getIn (
                   action, ["config", "widgetOptions", "fullScreen"]
-                )
+                ) || false
               }
             }
           });
@@ -340,6 +357,11 @@ define ("reducers/appState",
           // Retain the cif values set through the api
           return update (INITIAL_STATE, {
             cif: {$set: state.cif}
+          });
+
+        case ACTION_TYPES.SET_FULL_PRIVACY:
+          return update (state, {
+            fullPrivacyEnabled: {$set: action.enabled}
           });
 
         default:

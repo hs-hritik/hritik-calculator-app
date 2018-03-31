@@ -62,7 +62,8 @@
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
-    CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config"
+    CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
+    CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy"
   };
 
   const SUPPORTED_EVENTS = {
@@ -987,6 +988,15 @@
     });
   };
 
+  /**
+   * JS API to enable/disable full privacy mode.
+   */
+  const setFullPrivacy = (enabled = false) => {
+    _postMessage (EVENT_TYPES.CMD_SET_FULL_PRIVACY, {
+      enabled
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -1002,7 +1012,8 @@
     setCustomIssueFields,
     replaceCustomIssueFields,
     setProactiveChatRules,
-    updateUiConfig
+    updateUiConfig,
+    setFullPrivacy
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

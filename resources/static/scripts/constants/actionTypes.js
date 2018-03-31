@@ -82,6 +82,7 @@ define ("constants/actionTypes",
       ADD_ERROR: "ADD_ERROR",
       REMOVE_ERROR: "REMOVE_ERROR",
       RESET_ERRORS: "RESET_ERRORS",
-      SET_ISSUE_CURSOR: "SET_ISSUE_CURSOR"
+      SET_ISSUE_CURSOR: "SET_ISSUE_CURSOR",
+      SET_FULL_PRIVACY: "SET_FULL_PRIVACY"
     };
   });

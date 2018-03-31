@@ -207,6 +207,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Return the action to set the fullPrivacy flag in the state
+     * @param {boolean} enabled
+     * @returns {Object}
+     */
+    const setFullPrivacy = (enabled) => {
+      return {
+        type: ACTION_TYPES.SET_FULL_PRIVACY,
+        enabled
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -225,6 +237,7 @@ define ("actions/actionCreators",
       setInternalIssueId,
       setInfoBotRequestedTimestamp,
       setResolutionQuestionCompleted,
-      setCsatCompleted
+      setCsatCompleted,
+      setFullPrivacy
     };
   });

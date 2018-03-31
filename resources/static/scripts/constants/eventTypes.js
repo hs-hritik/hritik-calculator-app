@@ -28,6 +28,7 @@ define ("constants/eventTypes",
       CMD_REPLACE_CIF: "cmd-replace-cif",
       CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
       CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
-      CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config"
+      CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
+      CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy"
     };
   });
