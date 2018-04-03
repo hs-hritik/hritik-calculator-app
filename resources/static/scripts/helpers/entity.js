@@ -43,7 +43,7 @@ define ("helpers/entity",
         if (messageType === MESSAGE_TYPES.FAQ_LIST_WITH_OPTION_INPUT) {
           msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
             return {
-              id: faq.data.publish_id,
+              id: faq.data.id,
               title: faq.title,
               language: faq.data.language
             };
