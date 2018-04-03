@@ -293,8 +293,13 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.ADD_MESSAGES:
+          const msgIdsAdded = state.messageList.map ((msg) => msg.id);
+          const msgsToAdd = action.messages.filter ((msg) => {
+            return msgIdsAdded.indexOf (msg.id) === -1;
+          });
+
           return update (state, {
-            messageList: {$push: action.messages}
+            messageList: {$push: msgsToAdd}
           });
 
         case ACTION_TYPES.REMOVE_MESSAGE:
@@ -306,7 +311,7 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_ATTACHMENT_ERROR:
           index = _getMessageIndex (state.messageList, action.messageId);
           return update (state, {
-            messages: {
+            messageList: {
               [index]: {
                 states: {
                   uploadInProgress: {$set: false},
