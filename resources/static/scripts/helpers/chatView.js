@@ -371,9 +371,10 @@ define ("helpers/chatView",
       }
 
       if (selectedOption && selectedOption.value) {
-        requestData.option_data = {
+        requestData.body = selectedOption.label;
+        requestData.option_data = JSON.stringify ({
           option_id: selectedOption.value
-        };
+        });
       }
 
       return requestData;
