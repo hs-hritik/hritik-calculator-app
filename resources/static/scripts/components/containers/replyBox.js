@@ -8,13 +8,10 @@ define ("components/containers/replyBox",
   [
     "components/replyBox",
     "actions/chatView",
-    "actions/appState",
-    "constants/chatView"
+    "actions/appState"
   ],
-  function (ReplyBox, chatViewActions, appStateActions, chatViewConstants) {
+  function (ReplyBox, chatViewActions, appStateActions) {
     "use strict";
-
-    const {ACTIVE_FOOTER} = chatViewConstants;
 
     const mapStateToProps = (state) => {
       const {
@@ -22,30 +19,17 @@ define ("components/containers/replyBox",
           userInput: {
             value,
             disabled
-          },
-          activeFooter
+          }
         },
         appState: {
           minimized,
           activeIssueId,
-          browserIsMobile,
-          fullPrivacyEnabled
+          browserIsMobile
         },
         ui: {
           text
         }
       } = state;
-
-      let replyBoxHeading = null;
-
-      // We are treating passing heading to replyBox as rare case, currently only
-      // applicable for question when resolution rejected by user.
-      // We have different layout for displaying a. heading b. input c. error
-      // In almost every case we will use above layout
-      // More info :- Check chatViewFooter component
-      if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
-        replyBoxHeading = text.chatViewIssueRejectionQuestion;
-      }
 
       return {
         value,
@@ -53,9 +37,7 @@ define ("components/containers/replyBox",
         widgetIsOpened: !minimized,
         text,
         issueIsCreated: !!activeIssueId,
-        browserIsMobile,
-        replyBoxHeading,
-        fullPrivacyEnabled
+        browserIsMobile
       };
     };
 
@@ -66,9 +48,6 @@ define ("components/containers/replyBox",
         },
         onSubmitReply: () => {
           dispatch (chatViewActions.submitReply ());
-        },
-        onFilesChange: (files) => {
-          dispatch (chatViewActions.createAttachmentMessages (files));
         },
         onFooterFocus: () => {
           dispatch (appStateActions.setFooterActive ());

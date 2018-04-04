@@ -8,12 +8,13 @@ define ("components/chatViewFooter",
   [
     "components/starRating",
     "components/containers/replyBox",
+    "components/commons/fileInput",
     "constants/chatView",
     "constants/keyCodes",
     "constants/propTypes",
     "gunpowder/utils/classes"
   ],
-  function (StarRating, ReplyBoxContainer, CHAT_VIEW_CONSTANTS, KEY_CODES,
+  function (StarRating, ReplyBoxContainer, FileInput, CHAT_VIEW_CONSTANTS, KEY_CODES,
     customPropTypes, classes) {
     "use strict";
 
@@ -32,7 +33,7 @@ define ("components/chatViewFooter",
         rating: PropTypes.number,
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
-        onSubmitInputField: PropTypes.func.isRequired,
+        onSubmitReply: PropTypes.func.isRequired,
         onValueChangeInputField: PropTypes.func.isRequired,
         onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
@@ -44,6 +45,7 @@ define ("components/chatViewFooter",
           closeConversationBtn: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           chatViewConversationResolutionQuestion: PropTypes.string.isRequired,
+          chatViewIssueRejectionQuestion: PropTypes.string.isRequired,
           chatViewStartNewConversation: PropTypes.string.isRequired
         }).isRequired,
         footerIsActive: PropTypes.bool,
@@ -61,7 +63,10 @@ define ("components/chatViewFooter",
           errorMsg: PropTypes.string
         }),
         onPillOptionSelect: PropTypes.func,
-        onSkipUserInput: PropTypes.func
+        onSkipUserInput: PropTypes.func,
+        onFilesChange: PropTypes.func,
+        issueIsCreated: PropTypes.bool,
+        fullPrivacyEnabled: PropTypes.bool
       },
 
       render () {
@@ -110,13 +115,16 @@ define ("components/chatViewFooter",
        * Render the active footer component
        */
       _renderFooterComponent () {
-        const {type} = this.props.userInput;
+        const {
+          userInput: {
+            type
+          },
+          activeFooter
+        } = this.props;
 
-        switch (this.props.activeFooter) {
+        switch (activeFooter) {
           case ACTIVE_FOOTER.REPLY:
-            if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
-              return this._renderReplyBox ();
-            } else if (type === USER_INPUT_TYPES.PILL_SELECT) {
+            if (type === USER_INPUT_TYPES.PILL_SELECT) {
               return this._renderPillOptionsFooter ();
             }
             return this._renderUserInput ();
@@ -162,7 +170,7 @@ define ("components/chatViewFooter",
 
         return (
           <div className={footerClasses}>
-            <ReplyBoxContainer />
+            <ReplyBoxContainer className="hs-chat-footer__text-area" />
           </div>
         );
       },
@@ -181,12 +189,10 @@ define ("components/chatViewFooter",
             type,
             placeholder,
             errorMsg,
-            label,
             disabled
           },
           onFooterFocus,
-          onFooterBlur,
-          onSubmitInputField
+          onFooterBlur
         } = this.props;
         const footerClasses = classes (
           "hs-chat-footer", {
@@ -194,19 +200,18 @@ define ("components/chatViewFooter",
             "hs-chat-footer--form-invalid": disabled || !value.trim ()
           }
         );
-        const ionClasses = errorMsg ? "ion-alert-circled" : "ion-send";
         let errorMsgEl = null;
-        let labelEl = null;
         let inputComponentEl = null;
 
-        // We need to render reply box for input component for input type plain text as
+        // We need to render reply box for input component for input type plain text
+        // and default input (when user is on issue state) as
         // a. User can enter long (multi line) text. (reply box supports multi line text)
         // b. Rendering normal input type 'text' will clip the text once it goes
         //    beyond available width
         // c. There can be label for input type plain text (this layout supports label)
-        if (type === USER_INPUT_TYPES.PLAIN_TEXT) {
+        if (type === USER_INPUT_TYPES.PLAIN_TEXT || type === USER_INPUT_TYPES.DEFAULT_INPUT) {
           inputComponentEl = (
-            <ReplyBoxContainer />
+            <ReplyBoxContainer className="hs-chat-footer__text-area" />
           );
         } else {
           inputComponentEl = (
@@ -233,27 +238,49 @@ define ("components/chatViewFooter",
           );
         }
 
-        if (label) {
-          labelEl = (
-            <div className="hs-chat-footer__field">
-              <div className="hs-chat-footer__title">
-               {label}
-              </div>
-            </div>
-          );
-        }
-
         return (
           <div className={footerClasses}>
-            {labelEl}
+            {this._renderFooterLabelComponent ()}
             <div className="hs-chat-footer__field">
               {inputComponentEl}
-              <a className="hs-chat-footer__submit">
-                <i className={ionClasses} onClick={onSubmitInputField} />
-              </a>
+              {this._renderFooterAction ()}
             </div>
             {errorMsgEl}
           </div>
+        );
+      },
+
+      /**
+       * Render reply box action
+       */
+      _renderFooterAction () {
+        if (this.props.userInput.value || !this.props.issueIsCreated ||
+            this.props.fullPrivacyEnabled) {
+          return this._renderSendButton ();
+        }
+        return this._renderAttachmentButton ();
+      },
+
+      /**
+       * Render send button
+       */
+      _renderSendButton () {
+        return (
+          <a className="hs-chat-footer__submit" onClick={this.props.onSubmitReply}>
+            <i className="ion-send" />
+          </a>
+        );
+      },
+
+      /**
+       * Render attachment button
+       */
+      _renderAttachmentButton () {
+        return (
+          <FileInput onChange={this.props.onFilesChange}
+                     noPadding
+                     labelClasses="hs-chat-footer__attachment-icon"
+                     iconClasses="ion-attachment" />
         );
       },
 
@@ -375,6 +402,45 @@ define ("components/chatViewFooter",
       },
 
       /**
+       * Render footer label component
+       */
+      _renderFooterLabelComponent () {
+        const {
+          userInput: {
+            label
+          },
+          activeFooter,
+          text: {
+            chatViewIssueRejectionQuestion
+          }
+        } = this.props;
+        let headingEl = null;
+        let labelEl = null;
+
+        if (label) {
+          labelEl = (
+            <div className="hs-chat-footer__field">
+              <div className="hs-chat-footer__title">
+               {label}
+              </div>
+            </div>
+          );
+        }
+
+        // Heading for user input is a rare case, currently its only used for
+        // displaying question when resolution is rejected by the user.
+        if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+          headingEl = (
+            <strong className="hs-chat-footer__heading hs-chat-footer__reply-heading">
+              {chatViewIssueRejectionQuestion}
+            </strong>
+          );
+        }
+
+        return [headingEl, labelEl];
+      },
+
+      /**
        * Change handler for input field.
        * @param {Object} event
        */
@@ -390,7 +456,7 @@ define ("components/chatViewFooter",
         if (ev.keyCode === KEY_CODES.ESCAPE) {
           ev.target.blur ();
         } else if (ev.keyCode === KEY_CODES.ENTER) {
-          this.props.onSubmitInputField ();
+          this.props.onSubmitReply ();
         }
       },
 

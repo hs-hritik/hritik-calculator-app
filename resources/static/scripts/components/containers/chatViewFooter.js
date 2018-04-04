@@ -12,28 +12,42 @@ define ("components/containers/chatViewFooter",
     "actions/appState",
     "actions/csatView",
     "constants/activeView",
-    "constants/chatView"
+    "constants/appState"
   ],
   function (ChatViewFooter, chatViewActions, actionCreators, appStateActions,
-    csatViewActions, ACTIVE_VIEW) {
+    csatViewActions, ACTIVE_VIEW, appStateConstants) {
     "use strict";
+
+    const {ISSUE_TYPE} = appStateConstants;
 
     const mapStateToProps = (state) => {
       const {
+        appState: {
+          activeIssueId,
+          issueType,
+          footerIsActive,
+          fullPrivacyEnabled
+        },
         chatView: {
-          userInput
+          userInput,
+          activeFooter
         },
         csatView: {
           rating
+        },
+        ui: {
+          text
         }
       } = state;
 
       return {
         rating,
-        activeFooter: state.chatView.activeFooter,
-        text: state.ui.text,
-        footerIsActive: state.appState.footerIsActive,
-        userInput
+        activeFooter: activeFooter,
+        issueIsCreated: !!activeIssueId && issueType !== ISSUE_TYPE.PRE_ISSUE,
+        text: text,
+        footerIsActive: footerIsActive,
+        userInput,
+        fullPrivacyEnabled
       };
     };
 
@@ -45,9 +59,6 @@ define ("components/containers/chatViewFooter",
             error: false,
             errorMsg: ""
           }));
-        },
-        onSubmitInputField: () => {
-          dispatch (chatViewActions.submitReply ());
         },
         onStarClick: (updatedRating) => {
           dispatch (csatViewActions.updateCsatRating (updatedRating));
@@ -78,6 +89,12 @@ define ("components/containers/chatViewFooter",
             skipped: true
           }));
           dispatch (chatViewActions.submitReply ());
+        },
+        onSubmitReply: () => {
+          dispatch (chatViewActions.submitReply ());
+        },
+        onFilesChange: (files) => {
+          dispatch (chatViewActions.createAttachmentMessages (files));
         }
       };
     };
