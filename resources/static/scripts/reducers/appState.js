@@ -148,7 +148,7 @@ define ("reducers/appState",
               // @TODO - Confirm the key after BE integration
               resolutionQuestion: {$set: config.resolution_question_enabled},
               answerBot: {$set: config.answer_bot_enabled},
-              infoBot: {$set: config.user_info_bot_enabled},
+              infoBot: {$set: config.identity_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
               audioNotifications: {$set: config.audio_notifications_enabled}

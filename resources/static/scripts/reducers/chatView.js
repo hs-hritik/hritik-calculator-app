@@ -182,10 +182,10 @@ define ("reducers/chatView",
           return update (state, {
             infoBot: {
               fieldsRequired: {
-                $set: action.config.user_info_bot.fields
+                $set: action.config.identity_bot.fields
               },
               currentField: {
-                $set: action.config.user_info_bot.fields [0] || ""
+                $set: action.config.identity_bot.fields [0] || ""
               }
             }
           });
