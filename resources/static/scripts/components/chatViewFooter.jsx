@@ -101,6 +101,9 @@ define ("components/chatViewFooter",
           );
         }
 
+        // @TODO - Currently do not render skip button for unification release
+        skipBtnEl = null;
+
         return (
           <div className="hs-footer-wrapper">
             {skipBtnEl}
