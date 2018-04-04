@@ -60,8 +60,7 @@ define ("actions/chatView",
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT,
-      INFO_BOT_FIELDS,
-      USER_INPUT_TYPES
+      INFO_BOT_FIELDS
     } = CHAT_VIEW_CONSTANTS;
 
     const {Input} = schema;
@@ -348,6 +347,17 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to reset user input
+     * This will reset label, errors, placeholders etc of user input
+     * @returns {Object} - Action
+     */
+    const resetUserInput = () => {
+      return {
+        type: ACTION_TYPES.RESET_USER_INPUT_DATA
+      };
+    };
+
+    /**
      * Handles message input
      * Parse the input data for message and save it in store
      * Set the footer depending on input type
@@ -355,14 +365,23 @@ define ("actions/chatView",
      * @param {Object} message - message object
      */
     const handleMessageInput = (message) => {
-      const {input, type} = message;
+      const {input} = message;
+      const {dispatch} = store;
 
       // For messages other than bot, input wont be present
       if (!input) {
+        // @TODO - Fix reset for bot transitions
+        dispatch (
+          batchActions ([
+            resetUserInput (),
+            setChatViewFooter (ACTIVE_FOOTER.REPLY)
+          ])
+        );
         return;
       }
 
-      const {dispatch, getState} = store;
+      const {getState} = store;
+      const {type} = message;
       const {
         appState: {
           sdkConfigOptions: {
@@ -416,6 +435,8 @@ define ("actions/chatView",
      * @param {Object} latestMessage - latest message in message list
      */
     const handleLatestMessage = (latestMessage) => {
+      // @TODO - If the bot control messages are not present in same poller, we
+      // need to handle that case as footer is dependant on it.
       // @TODO - Read latest message from store
       const {dispatch} = store;
       const {type} = latestMessage;
@@ -426,10 +447,12 @@ define ("actions/chatView",
           break;
 
         case MESSAGE_TYPE.BOT_ENDED:
+          const actionsToDispatch = [resetUserInput ()];
           // @TODO - Finalize the api key with backend.
           if (!latestMessage.has_next_bot) {
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+            actionsToDispatch.push (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           }
+          dispatch (batchActions (actionsToDispatch));
           break;
 
         default:
@@ -466,7 +489,7 @@ define ("actions/chatView",
      * @param {Array} issues - list of issues
      * @returns {Object} - config of active issue and messages
      */
-    const getActiveIssueAndMessages = (issues) => {
+    const getCurrentIssueAndMessages = (issues) => {
       const currentIssue = issues [0];
       const currentIssueMessages = (currentIssue && currentIssue.messages) || [];
       let previousIssue = null;
@@ -477,13 +500,13 @@ define ("actions/chatView",
       if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
         previousIssue = arrayUtils.find (issues, (issue) => {
           return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
-                  issue.id === currentIssue.preissue_id);
+                  issue.internal_id === currentIssue.preissue_id);
         });
         previousIssueMessages = (previousIssue && previousIssue.messages) || previousIssueMessages;
       }
 
       return {
-        activeIssue: currentIssue,
+        currentIssue,
         messages: previousIssueMessages.concat (currentIssueMessages)
       };
     };
@@ -571,12 +594,13 @@ define ("actions/chatView",
             } = response;
 
             const {
-              activeIssue,
+              currentIssue,
               messages
-            } = getActiveIssueAndMessages (issues);
+            } = getCurrentIssueAndMessages (issues);
+
 
             // Validation to check latest issue exists
-            if (!activeIssue) {
+            if (!currentIssue) {
               return;
             }
 
@@ -588,7 +612,7 @@ define ("actions/chatView",
               },
               csat_received: isCsatSubmitted,
               created_at: latestMessageCursor
-            } = activeIssue;
+            } = currentIssue;
 
             dispatch (
               batchActions ([
@@ -641,7 +665,6 @@ define ("actions/chatView",
      */
     const handleUnreadMessages = () => {
       const {dispatch, getState} = store;
-      const {state} = getState ();
       const {
         appState: {
           minimized,
@@ -651,7 +674,7 @@ define ("actions/chatView",
           unreadCount,
           messageList: messages
         }
-      } = state;
+      } = getState ();
       let finalUnreadCount = unreadCount;
 
       // Calculate unread count for agent messages only
@@ -763,7 +786,7 @@ define ("actions/chatView",
       const xhrIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
       let xhrData = {};
 
-      if (userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT) {
+      if (issueType === ISSUE_TYPE.ISSUE) {
         // @TODO - Change request params after apis are changed.
         // Currently the request params for issue remains same, only pre-issue
         // params are different.
@@ -855,7 +878,7 @@ define ("actions/chatView",
         } = state;
         const trimmedValue = userInput.value.trim ();
 
-        if (userInput.disabled || !trimmedValue) {
+        if (!userInput.selectedOption && (userInput.disabled || !trimmedValue)) {
           return;
         }
 

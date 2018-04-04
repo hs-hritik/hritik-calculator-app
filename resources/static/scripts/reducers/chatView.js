@@ -275,6 +275,11 @@ define ("reducers/chatView",
             userInput: {$set: userInputUpdateObj}
           });
 
+        case ACTION_TYPES.RESET_USER_INPUT_DATA:
+          return update (state, {
+            userInput: {$set: _getDefaultUserInputConfig ()}
+          });
+
         case ACTION_TYPES.UPDATE_USER_INPUT_DATA:
           return update (state, {
             userInput: {$merge: action.input}
