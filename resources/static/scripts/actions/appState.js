@@ -163,12 +163,20 @@ define ("actions/appState",
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
-      store.dispatch (setConversationStarted ());
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          issueExists
+        }
+      } = getState ();
 
-      // If an active issue or preIssue exists, the poller would have started
-      // already with the success callback of setIssueState via get config.
-      // If an active issue or preIssue does not exist, start a new conversation.
-      if (!commonHelpers.doesActiveIssueExist ()) {
+      dispatch (setConversationStarted ());
+
+      // If an any issue exists, the poller would have started already with the
+      // success callback of setIssueState via get config.
+      // Only for new user, start a new conversation. Rest of the cases will be
+      // handled on click of 'start new conversation' button which will call reset.
+      if (!issueExists) {
         store.dispatch (startNewConversation ());
       }
     };
@@ -488,30 +496,50 @@ define ("actions/appState",
     };
 
     /**
+     * Action to set webchat is live
+     * @returns {Object} - Action
+     */
+    const setWebChatIsLive = () => {
+      return {
+        type: ACTION_TYPES.SET_WEB_CHAT_IS_LIVE
+      };
+    };
+
+    /**
      * Initialize conversation - either enable the chat view or the out of
      * business hours view.
      */
     const initializeConversation = () => {
+      const {dispatch, getState} = store;
       // If business hours is enabled and it's out of business hours currently,
       // show out of business hours view
       if (commonHelpers.isOutOfBusinessHours ()) {
-        store.dispatch (
+        dispatch (
           actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
         );
       } else {
         // The active view is set to chat view by default. If we are not handling
         // the out of business hours case, we need to start the conversation on the
-        // chat view. If an issue exists in the system, start the poller. Otherwise
-        // it's a no-op.
+        // chat view.
         const {
           appState: {
-            issueExists
+            issueExists,
+            webChatIsLive
           }
-        } = store.getState ();
+        } = getState ();
 
-        if (issueExists) {
+        // If atleast one issue exists on backend and app is not live (first page load)
+        // then start the poller. (poller will check for issue state)
+        // Else if the appLive then start a new conversation
+        // This control flow will be invoked when user clicks on 'start new
+        // conversation', reset is called, config will be fetched and app will be live
+        if (issueExists && !webChatIsLive) {
           chatViewActions.startPollingForMessages ();
+        } else if (webChatIsLive) {
+          dispatch (startNewConversation ());
         }
+
+        dispatch (setWebChatIsLive ());
       }
     };
 
@@ -1028,6 +1056,7 @@ define ("actions/appState",
       reset,
       setInitialUserMsg,
       startConversation,
+      startNewConversation,
       closeConversation,
       replaceCif,
       setMetadata,

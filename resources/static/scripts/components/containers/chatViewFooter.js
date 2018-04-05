@@ -77,8 +77,11 @@ define ("components/containers/chatViewFooter",
           dispatch (chatViewActions.rejectResolutionQuestion ());
         },
         onStartNewConversation: () => {
+          // We need to just call reset as it will clear all the store data and
+          // call getConfig. Once getConfig is called, it will initialize the
+          // conversation and will take care of creating new preIssue.
+          // Ref :- App state actions -> initializeConversation
           dispatch (appStateActions.reset ());
-          appStateActions.startConversation ();
         },
         onPillOptionSelect: (option) => {
           dispatch (chatViewActions.setUserSelectedOption (option));

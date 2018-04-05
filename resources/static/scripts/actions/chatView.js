@@ -551,6 +551,15 @@ define ("actions/chatView",
     };
 
     /**
+     * Predicate to return whether issue is active
+     * @param {String} issueState - state of issue
+     */
+    const isIssueActive = (issueState) => {
+      return (chatViewHelpers.getProcessedIssueState (issueState) ===
+              ISSUE_STATE.ACTIVE);
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -613,6 +622,10 @@ define ("actions/chatView",
               csat_received: isCsatSubmitted,
               created_at: latestMessageCursor
             } = currentIssue;
+
+            if (!isIssueActive (issueState)) {
+              stopPollingForMessages ();
+            }
 
             dispatch (
               batchActions ([

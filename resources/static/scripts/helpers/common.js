@@ -119,12 +119,6 @@ define ("helpers/common",
     };
 
     /**
-     * Determine whether an active preIssue or issue exists in the system.
-     * @returns {boolean} - true, if an active preIssue/issue exists.
-     */
-    const doesActiveIssueExist = () => store.getState ().appState.issueExists;
-
-    /**
      * Validate email.
      * Ideally this should be a part of `gunpowder`, but it already has an email
      * validation fn and its email regex doesn't match exactly with what BE and
@@ -152,7 +146,6 @@ define ("helpers/common",
       getEndUserFirstMessage,
       getSuggestedFaqs,
       getAnonUserId,
-      doesActiveIssueExist,
       isEmailValid,
       isUserIdValid
     };

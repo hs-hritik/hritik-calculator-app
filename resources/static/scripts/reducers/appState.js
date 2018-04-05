@@ -46,8 +46,7 @@ define ("reducers/appState",
       userHash: "",
       userProfileId: "",
 
-      // Issue related data
-      // Whether an issue (active/resolved) exists for this profile
+      // Backend flag to represent if any issue exists
       issueExists: false,
       // Type of issue can either be a. issue b. preissue
       issueType: ISSUE_TYPE.PRE_ISSUE,
@@ -58,6 +57,12 @@ define ("reducers/appState",
       internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
 
+      // Used to start a new conversation when user clicks on start new conversation
+      // The value is not set to default on 'reset', rather retained throughout the
+      // application.
+      // Only on page refresh, the value will be false and when we initialize the
+      // conversation, we set it to true.
+      webChatIsLive: false,
       featuresEnabled: {
         greeting: true,
         initialUserMessage: true,
@@ -154,6 +159,11 @@ define ("reducers/appState",
               audioNotifications: {$set: config.audio_notifications_enabled}
             },
             issueExists: {$set: config.issue_exists}
+          });
+
+        case ACTION_TYPES.SET_WEB_CHAT_IS_LIVE:
+          return update (state, {
+            webChatIsLive: {$set: true}
           });
 
         case ACTION_TYPES.SET_LANGUAGE:
@@ -369,8 +379,10 @@ define ("reducers/appState",
 
         case ACTION_TYPES.RESET:
           // Retain the cif values set through the api
+          // and webChatIsLive flag
           return update (INITIAL_STATE, {
-            cif: {$set: state.cif}
+            cif: {$set: state.cif},
+            webChatIsLive: {$set: state.webChatIsLive}
           });
 
         case ACTION_TYPES.SET_FULL_PRIVACY:
