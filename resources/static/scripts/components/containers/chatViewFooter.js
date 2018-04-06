@@ -12,13 +12,11 @@ define ("components/containers/chatViewFooter",
     "actions/appState",
     "actions/csatView",
     "constants/activeView",
-    "constants/appState"
+    "helpers/common"
   ],
   function (ChatViewFooter, chatViewActions, actionCreators, appStateActions,
-    csatViewActions, ACTIVE_VIEW, appStateConstants) {
+    csatViewActions, ACTIVE_VIEW, commonHelpers) {
     "use strict";
-
-    const {ISSUE_TYPE} = appStateConstants;
 
     const mapStateToProps = (state) => {
       const {
@@ -43,7 +41,10 @@ define ("components/containers/chatViewFooter",
       return {
         rating,
         activeFooter: activeFooter,
-        issueIsCreated: !!activeIssueId && issueType !== ISSUE_TYPE.PRE_ISSUE,
+        issueIsCreated: commonHelpers.isIssueCreated ({
+          activeIssueId,
+          issueType
+        }),
         text: text,
         footerIsActive: footerIsActive,
         userInput,

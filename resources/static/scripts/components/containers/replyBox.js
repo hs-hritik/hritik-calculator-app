@@ -8,9 +8,10 @@ define ("components/containers/replyBox",
   [
     "components/replyBox",
     "actions/chatView",
-    "actions/appState"
+    "actions/appState",
+    "helpers/common"
   ],
-  function (ReplyBox, chatViewActions, appStateActions) {
+  function (ReplyBox, chatViewActions, appStateActions, commonHelpers) {
     "use strict";
 
     const mapStateToProps = (state) => {
@@ -24,7 +25,8 @@ define ("components/containers/replyBox",
         appState: {
           minimized,
           activeIssueId,
-          browserIsMobile
+          browserIsMobile,
+          issueType
         },
         ui: {
           text
@@ -36,7 +38,10 @@ define ("components/containers/replyBox",
         disabled,
         widgetIsOpened: !minimized,
         text,
-        issueIsCreated: !!activeIssueId,
+        issueIsCreated: commonHelpers.isIssueCreated ({
+          activeIssueId,
+          issueType
+        }),
         browserIsMobile
       };
     };

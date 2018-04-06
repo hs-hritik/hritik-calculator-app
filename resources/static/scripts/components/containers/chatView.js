@@ -9,9 +9,10 @@ define ("components/containers/chatView",
     "components/chatView",
     "helpers/entitySchema",
     "actions/chatView",
-    "actions/faqView"
+    "actions/faqView",
+    "helpers/common"
   ],
-  function (ChatView, entitySchema, chatViewActions, faqViewActions) {
+  function (ChatView, entitySchema, chatViewActions, faqViewActions, commonHelpers) {
     "use strict";
 
     const mapStateToProps = (state) => {
@@ -19,7 +20,9 @@ define ("components/containers/chatView",
         appState: {
           featuresEnabled: {
             agentNickname
-          }
+          },
+          activeIssueId,
+          issueType
         },
         chatView: {
           messageList: messages,
@@ -37,7 +40,10 @@ define ("components/containers/chatView",
         isTyping: systemTyping || agentTyping,
         showAgentNickname: agentNickname,
         text: text,
-        issueIsCreated: !!state.appState.activeIssueId,
+        issueIsCreated: commonHelpers.isIssueCreated ({
+          activeIssueId,
+          issueType
+        }),
         userInput
       };
     };

@@ -11,10 +11,14 @@ define ("helpers/common",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
     "constants/message",
-    "constants/businessHoursView"
+    "constants/businessHoursView",
+    "constants/appState"
   ],
-  function (store, objectUtils, getUuid, messageConstants, bhConstants) {
+  function (store, objectUtils, getUuid, messageConstants, bhConstants,
+    appStateConstants) {
     "use strict";
+
+    const {ISSUE_TYPE} = appStateConstants;
 
     /* eslint-disable max-len */
     const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]{1,246}\.[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
@@ -140,6 +144,16 @@ define ("helpers/common",
      */
     const isUserIdValid = (value) => USER_ID_REGEX.test (value);
 
+    /**
+     * Predicate to return whether issue is created and not preIssue
+     * @param {Object} config
+     * @returns {Boolean} - whether issue is created
+     */
+    const isIssueCreated = (config) => {
+      const {activeIssueId, issueType} = config;
+      return !!activeIssueId && issueType !== ISSUE_TYPE.PRE_ISSUE;
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -147,6 +161,7 @@ define ("helpers/common",
       getSuggestedFaqs,
       getAnonUserId,
       isEmailValid,
-      isUserIdValid
+      isUserIdValid,
+      isIssueCreated
     };
   });
