@@ -599,14 +599,14 @@ define ("actions/chatView",
           // any code in onSuccess results in an Exception.
           try {
             const {
-              issues = []
+              issues = [],
+              timestamp
             } = response;
 
             const {
               currentIssue,
               messages
             } = getCurrentIssueAndMessages (issues);
-
 
             // Validation to check latest issue exists
             if (!currentIssue) {
@@ -619,8 +619,7 @@ define ("actions/chatView",
               state_data: {
                 state: issueState
               },
-              csat_received: isCsatSubmitted,
-              created_at: latestMessageCursor
+              csat_received: isCsatSubmitted
             } = currentIssue;
 
             if (!isIssueActive (issueState)) {
@@ -630,7 +629,7 @@ define ("actions/chatView",
             dispatch (
               batchActions ([
                 setActiveIssueId (issueId),
-                setIssueCursor (response.timestamp),
+                setIssueCursor (timestamp),
                 setCsatSubmitted (isCsatSubmitted),
                 updateIssueState (issueState, PROCESS),
                 updateIssueType (issueType)
@@ -649,7 +648,7 @@ define ("actions/chatView",
                   }),
                   setActiveIssueMsgCursor ({
                     [pluralIssueType]: {
-                      [issueId]: latestMessageCursor
+                      [issueId]: timestamp
                     }
                   })
                 ])
