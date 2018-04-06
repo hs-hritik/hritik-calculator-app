@@ -21,12 +21,13 @@ define ("constants/appState",
 
     const XHR_ISSUE_STATE = {
       PRE_ISSUE: {
-        RESOLVED: "Resolved",
-        REJECTED: "Rejected"
+        RESOLVED: "resolved",
+        REJECTED: "rejected",
+        ISSUE_CREATED: "issue-created"
       },
       ISSUE: {
-        RESOLVED: "Agent Resolved",
-        REJECTED: "Agent Rejected"
+        RESOLVED: "resolved",
+        REJECTED: "rejected"
       }
     };
 

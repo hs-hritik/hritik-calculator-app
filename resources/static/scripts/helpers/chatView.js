@@ -401,6 +401,7 @@ define ("helpers/chatView",
       switch (xhrIssueState) {
         case XHR_ISSUE_STATE.ISSUE.RESOLVED:
         case XHR_ISSUE_STATE.PRE_ISSUE.RESOLVED:
+        case XHR_ISSUE_STATE.PRE_ISSUE.ISSUE_CREATED:
           return ISSUE_STATE.RESOLVED;
 
         case XHR_ISSUE_STATE.ISSUE.REJECTED:
