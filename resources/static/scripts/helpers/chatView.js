@@ -352,12 +352,14 @@ define ("helpers/chatView",
         },
         message: {
           type: messageType,
+          id: messageId,
           chatBotInfo
         }
       } = config;
 
       const requestData = {
         body: value,
+        refers: messageId,
         type: getUserResponseMessageType (messageType)
       };
 
