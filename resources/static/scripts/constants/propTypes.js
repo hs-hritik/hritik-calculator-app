@@ -10,7 +10,7 @@ define ("constants/propTypes",
 
     const PropTypes = React.PropTypes;
 
-    const MESSAGE = {
+    const MESSAGE_PROP_TYPE = PropTypes.shape ({
       id: PropTypes.string.isRequired,
       type: PropTypes.string.isRequired,
       body: PropTypes.string,
@@ -26,7 +26,7 @@ define ("constants/propTypes",
           title: PropTypes.string.isRequired
         })
       )
-    };
+    }).isRequired;
 
     const OPTION_PROP_TYPE = PropTypes.shape ({
       label: PropTypes.string,
@@ -41,9 +41,21 @@ define ("constants/propTypes",
       }).isRequired
     });
 
+    const USER_INPUT_PROP_TYPE = PropTypes.shape ({
+      type: PropTypes.string.isRequired,
+      value: PropTypes.string,
+      options: PropTypes.arrayOf (OPTION_PROP_TYPE),
+      disabled: PropTypes.bool,
+      label: PropTypes.string,
+      required: PropTypes.bool,
+      skipLabel: PropTypes.string,
+      placeholder: PropTypes.string,
+      errorMsg: PropTypes.string
+    });
+
     return {
-      MESSAGE,
+      MESSAGE_PROP_TYPE,
       INFO_BOT_FIELD_PROPS,
-      OPTION_PROP_TYPE
+      USER_INPUT_PROP_TYPE
     };
   });

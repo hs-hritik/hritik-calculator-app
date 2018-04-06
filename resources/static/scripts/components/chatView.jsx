@@ -8,22 +8,24 @@ define ("components/chatView",
   [
     "components/messageList",
     "components/containers/chatViewFooter",
-    "constants/propTypes",
-    "gunpowder/utils/classes",
     "components/commons/viewHeader",
-    "components/commons/dndWrapper"
+    "components/commons/dndWrapper",
+    "constants/propTypes"
   ],
-  function (MessageList, ChatViewFooterContainer, PROP_TYPES, classes, ViewHeader, DnDWrapper) {
+  function (MessageList, ChatViewFooterContainer, ViewHeader, DnDWrapper,
+    customPropTypes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+    const {
+      MESSAGE_PROP_TYPE,
+      USER_INPUT_PROP_TYPE
+    } = customPropTypes;
 
     return React.createClass ({
       displayName: "ChatView",
       propTypes: {
-        messages: PropTypes.arrayOf (PropTypes.shape (
-          PROP_TYPES.MESSAGE
-        )).isRequired,
+        messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,
         onSuggestedFaqClick: PropTypes.func,
         showAgentNickname: PropTypes.bool,
         isTyping: PropTypes.bool,
@@ -31,7 +33,9 @@ define ("components/chatView",
         onMinimizeConversation: PropTypes.func,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
+        userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
+        onPillOptionSelect: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -47,7 +51,8 @@ define ("components/chatView",
           onMinimizeConversation,
           text,
           issueIsCreated,
-          viewStyles
+          viewStyles,
+          userInput
         } = this.props;
 
         return (
@@ -63,8 +68,10 @@ define ("components/chatView",
                              isTyping={this.props.isTyping}
                              showAgentNickname={this.props.showAgentNickname}
                              text={this.props.text}
+                             onPillOptionSelect={this.props.onPillOptionSelect}
                              onRetryAttachmentClick={this.props.onRetryAttachmentClick}
-                             onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+                             onSuggestedFaqClick={this.props.onSuggestedFaqClick}
+                             userInput={userInput} />
               </div>
               <ChatViewFooterContainer />
             </DnDWrapper>

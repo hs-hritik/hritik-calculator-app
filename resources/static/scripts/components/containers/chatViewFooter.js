@@ -83,10 +83,6 @@ define ("components/containers/chatViewFooter",
           // Ref :- App state actions -> initializeConversation
           dispatch (appStateActions.reset ());
         },
-        onPillOptionSelect: (option) => {
-          dispatch (chatViewActions.setUserSelectedOption (option));
-          dispatch (chatViewActions.submitReply ());
-        },
         onSkipUserInput: () => {
           dispatch (chatViewActions.updateUserInputData ({
             skipped: true

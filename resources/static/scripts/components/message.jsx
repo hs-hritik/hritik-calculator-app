@@ -14,8 +14,8 @@ define ("components/message",
     "gunpowder/utils/classes",
     "gunpowder/utils/object"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, ERROR_CONSTANTS,
-    attachmentsHelpers, dateUtils, classes, objUtils) {
+  function (customPropTypes, MESSAGE_CONSTANTS, ERROR_CONSTANTS, attachmentsHelpers,
+    dateUtils, classes, objUtils) {
     "use strict";
 
     const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
@@ -30,7 +30,7 @@ define ("components/message",
     return React.createClass ({
       displayName: "Message",
       propTypes: {
-        message: PropTypes.shape (PROP_TYPES.MESSAGE).isRequired,
+        message: customPropTypes.MESSAGE_PROP_TYPE,
         showAgentNickname: PropTypes.bool,
         isLastMessage: PropTypes.bool,
         isLastMessageInGroup: PropTypes.bool,

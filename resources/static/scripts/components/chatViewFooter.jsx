@@ -24,7 +24,9 @@ define ("components/chatViewFooter",
       USER_INPUT_TYPES,
       HTML_INPUT_TYPES
     } = CHAT_VIEW_CONSTANTS;
-    const {OPTION_PROP_TYPE} = customPropTypes;
+    const {
+      USER_INPUT_PROP_TYPE
+    } = customPropTypes;
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -51,18 +53,7 @@ define ("components/chatViewFooter",
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
         onFooterBlur: PropTypes.func,
-        userInput: PropTypes.shape ({
-          type: PropTypes.string.isRequired,
-          value: PropTypes.string,
-          options: PropTypes.arrayOf (OPTION_PROP_TYPE),
-          disabled: PropTypes.bool,
-          label: PropTypes.string,
-          required: PropTypes.bool,
-          skipLabel: PropTypes.string,
-          placeholder: PropTypes.string,
-          errorMsg: PropTypes.string
-        }),
-        onPillOptionSelect: PropTypes.func,
+        userInput: USER_INPUT_PROP_TYPE,
         onSkipUserInput: PropTypes.func,
         onFilesChange: PropTypes.func,
         issueIsCreated: PropTypes.bool,
@@ -75,9 +66,15 @@ define ("components/chatViewFooter",
           browserIsMobile,
           allowFullScreen,
           userInput: {
-            skipLabel
+            skipLabel,
+            type,
+            required
           }
         } = this.props;
+
+        if (type === USER_INPUT_TYPES.PILL_SELECT) {
+          return null;
+        }
 
         const footerClasses = classes ("hs-footer", {
           "hs-footer--active" : footerIsActive,
@@ -92,7 +89,7 @@ define ("components/chatViewFooter",
         // b. Footer wrapper will contain two items
         //    1. 'skip' button (optional)
         //    2. footer component (reply box || pill select || user input)
-        if (skipLabel) {
+        if (skipLabel && !required) {
           skipBtnEl = (
             <button className="hs-footer-wrapper__skip-btn"
                     onClick={this._onSkipUserInputClick}>
@@ -100,9 +97,6 @@ define ("components/chatViewFooter",
             </button>
           );
         }
-
-        // @TODO - Currently do not render skip button for unification release
-        skipBtnEl = null;
 
         return (
           <div className="hs-footer-wrapper">
@@ -119,21 +113,13 @@ define ("components/chatViewFooter",
        */
       _renderFooterComponent () {
         const {
-          userInput: {
-            type
-          },
           activeFooter
         } = this.props;
 
         switch (activeFooter) {
           case ACTIVE_FOOTER.REPLY:
-            if (type === USER_INPUT_TYPES.PILL_SELECT) {
-              return this._renderPillOptionsFooter ();
-            }
-            return this._renderUserInput ();
-
           case ACTIVE_FOOTER.SOLUTION_REJECTED:
-            return this._renderReplyBox ();
+            return this._renderUserInput ();
 
           case ACTIVE_FOOTER.INFO_BOT:
             return this._renderInfoBotFooter ();
@@ -288,39 +274,6 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Render pill options footer
-       */
-      _renderPillOptionsFooter () {
-        const {
-          userInput: {
-            options
-          }
-        } = this.props;
-        const btnClasses = classes (
-          "hs-button",
-          "hs-button--hollow",
-          "hs-chat-footer__button"
-        );
-        const pillOptionsEl = options.map ((option) => {
-          return (
-            <button onClick={this._onPillOptionClick.bind (this, option)}
-                    className={btnClasses}>
-              {option.label}
-            </button>
-          );
-        });
-
-        // @TODO - Add styles once UI is rendered
-        return (
-          <div className="chat-view-footer">
-            <div className="hs-chat-footer__pill-options">
-              {pillOptionsEl}
-            </div>
-          </div>
-        );
-      },
-
-      /**
        * Render blocked footer
        */
       _renderBlockedFooter () {
@@ -461,14 +414,6 @@ define ("components/chatViewFooter",
         } else if (ev.keyCode === KEY_CODES.ENTER) {
           this.props.onSubmitReply ();
         }
-      },
-
-      /**
-       * Click handler for pill options (buttons)
-       * @param {String} option - selected option
-       */
-      _onPillOptionClick (option) {
-        this.props.onPillOptionSelect (option);
       },
 
       /**

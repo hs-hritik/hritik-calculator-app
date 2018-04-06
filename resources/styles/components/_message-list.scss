@@ -14,15 +14,21 @@
 
   $timestamp-color: color(text, light);
 
+  $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
+
   $agent-message-bg-color: var(--hs-agent-message-bg-color);
   $agent-message-border-color: var(--hs-agent-message-border-color);
   $agent-message-primary-text-color: var(--hs-agent-message-primary-text-color);
+
+  $form-accent-color: var(--hs-form-accent-color);
+  $form-accent-color-light: var(--hs-form-accent-color-light);
 
   .hs-message-list {
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;
-    padding: gutter(0 20);
+    justify-content: flex-end;
+    padding: gutter(0 20 8);
 
     &__date-separator {
       margin: gutter(4 0);
@@ -62,6 +68,28 @@
 
     &__typing-anim-3 {
       animation-delay: .150s;
+    }
+
+    &__pills-container {
+      display: flex;
+      align-items: flex-end;
+      flex-direction: column;
+    }
+
+    &__pill-heading {
+      margin-bottom: gutter(8);
+      font-weight: font-weight(medium);
+      color: $chat-widget-secondary-text-color;
+      opacity: .8;
+    }
+
+    &__pill-option {
+      min-width: 100px;
+      padding: gutter(8 16);
+      margin: gutter(4 0);
+      color: $form-accent-color;
+      border-color: $form-accent-color;
+      border-radius: 16px;
     }
   }
 }

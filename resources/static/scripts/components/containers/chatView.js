@@ -24,7 +24,8 @@ define ("components/containers/chatView",
         chatView: {
           messageList: messages,
           systemTyping,
-          agentTyping
+          agentTyping,
+          userInput
         },
         ui: {
           text
@@ -36,7 +37,8 @@ define ("components/containers/chatView",
         isTyping: systemTyping || agentTyping,
         showAgentNickname: agentNickname,
         text: text,
-        issueIsCreated: !!state.appState.activeIssueId
+        issueIsCreated: !!state.appState.activeIssueId,
+        userInput
       };
     };
 
@@ -52,6 +54,10 @@ define ("components/containers/chatView",
           dispatch (
             chatViewActions.createAttachmentMessage (message.file, message.id)
           );
+        },
+        onPillOptionSelect: (option) => {
+          dispatch (chatViewActions.setUserSelectedOption (option));
+          dispatch (chatViewActions.submitReply ());
         }
       };
     };
