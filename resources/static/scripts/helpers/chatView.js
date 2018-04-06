@@ -267,7 +267,8 @@ define ("helpers/chatView",
       const {value, type, required} = userInput;
       const validations = [];
 
-      if (required) {
+      // Skip required validation for input type pill select
+      if (required && type !== USER_INPUT_TYPES.PILL_SELECT) {
         validations.push ("required");
       }
 
