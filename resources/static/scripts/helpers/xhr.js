@@ -98,8 +98,7 @@ define ("helpers/xhr",
       }
 
       if (!skipPlatformId) {
-        // @TODO: Change this to appropriate key once the backend is ready.
-        commonXhrData.platform_id = platformId;
+        commonXhrData ["platform-id"] = platformId;
       }
 
       // Handle fullPrivacy mode and HMAC
