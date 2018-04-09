@@ -29,26 +29,33 @@ define ("actions/csatView",
      */
     const submitCsat = (skipReviewComments = false) => {
       return (dispatch, getState) => {
-        const {appState, csatView} = getState ();
+        const {
+          appState: {
+            domain,
+            activeIssueId
+          },
+          csatView: {
+            rating,
+            review
+          }
+        } = getState ();
 
-        if (!csatView.rating) {
+        if (!rating) {
           return;
         }
 
         const xhrData = {
-          "identifier": appState.identifier,
-          "platform-id": appState.platformId,
-          "rating": csatView.rating
+          rating
         };
 
-        const csatReview = csatView.review.trim ();
+        const csatReview = review.trim ();
         if (csatReview && !skipReviewComments) {
           xhrData.comment = csatReview;
         }
 
         xhr ({
-          route: routes.postCSAT (appState.domain, appState.activeIssueId),
-          data: xhrData,
+          route: routes.postCSAT (domain, activeIssueId),
+          data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onEnd: () => {
