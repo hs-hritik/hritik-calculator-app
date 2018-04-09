@@ -1130,7 +1130,8 @@ define ("actions/chatView",
             featuresEnabled: {
               greeting: greetingFeatureEnabled
             },
-            fullPrivacyEnabled
+            fullPrivacyEnabled,
+            developerSetLanguage
           },
           ui: {
             text: {
@@ -1167,6 +1168,12 @@ define ("actions/chatView",
 
         if (fullPrivacyEnabled) {
           xhrData.fp_status = true;
+        }
+
+        xhrData.device_language = browserUtils.getLanguage ();
+
+        if (developerSetLanguage) {
+          xhrData.developer_set_language = developerSetLanguage;
         }
 
         // @TODO: Check how are we going to send name with create-pre-issue XHR.
