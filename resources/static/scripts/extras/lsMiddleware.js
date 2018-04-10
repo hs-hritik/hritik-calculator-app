@@ -52,7 +52,13 @@ define ("extras/lsMiddleware",
           lsHelpers.setEntities ("ISSUES", {
             [action.issueId]: state.entities.issues [action.issueId]
           });
-          throttledSetLastActivityTime ();
+
+          const hasUserMessage = action.messages.some ((m) => m.isCustomerMsg);
+          const conversationHasStarted = state.appState.conversationStarted;
+
+          if (hasUserMessage && conversationHasStarted) {
+            throttledSetLastActivityTime ();
+          }
           break;
 
         case ACTION_TYPES.REMOVE_MESSAGE:
