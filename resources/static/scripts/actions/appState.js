@@ -274,6 +274,26 @@ define ("actions/appState",
     };
 
     /**
+     * Rehydrate the state with localstorage data, if applicable.
+     * Although we get the state data from backend for continuing the conversation,
+     * there are some values that are web chat client specific and need to be
+     * added back to the state. For example - which FAQs have been read by the
+     * user so far.
+     */
+    const rehydrateState = () => {
+      const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
+            readFaqList = lsHelpers.getReadFaqList ();
+
+      store.dispatch ({
+        type: ACTION_TYPES.REHYDRATE,
+        data: {
+          suggestedFaqReadTracked,
+          readFaqList
+        }
+      });
+    };
+
+    /**
      * Get saved data from localstorage,
      * and call action to update the current state.
      */
@@ -587,6 +607,9 @@ define ("actions/appState",
 
               // Apply styles to page
               applyPageStyles ();
+
+              // Rehydrate the state with localstorage data if applicable
+              rehydrateState ();
 
               // Initialize conversation by either going to the out of business
               // hours view or by handling the chat view conversation.

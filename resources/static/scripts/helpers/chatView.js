@@ -6,6 +6,7 @@
 
 define ("helpers/chatView",
   [
+    "store",
     "constants/message",
     "constants/chatView",
     "constants/appState",
@@ -14,8 +15,8 @@ define ("helpers/chatView",
     "gunpowder/utils/schema",
     "gunpowder/utils/validation"
   ],
-  function (MESSAGE_CONSTANTS, chatViewConstants, appStateConstants, commonHelpers,
-    uuidGenerator, schema, validationsUtil) {
+  function (store, MESSAGE_CONSTANTS, chatViewConstants, appStateConstants,
+    commonHelpers, uuidGenerator, schema, validationsUtil) {
     "use strict";
 
     const {
@@ -358,11 +359,23 @@ define ("helpers/chatView",
         }
       } = config;
 
+      const responseMessageType = getUserResponseMessageType (messageType);
+
       const requestData = {
         body: value,
         refers: messageId,
-        type: getUserResponseMessageType (messageType)
+        type: responseMessageType
       };
+
+      if (responseMessageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
+        // If this response is to the answer bot step, web chat sends which
+        // FAQs were read so far by the end user to the backend. Backend would
+        // then pass that information to data plat.
+        const readFaqs = store.getState ().chatView.readFaqList;
+        if (readFaqs.length) {
+          requestData.read_faqs = JSON.stringify (readFaqs);
+        }
+      }
 
       if (chatBotInfo) {
         requestData.chatbot_info = JSON.stringify (chatBotInfo);
