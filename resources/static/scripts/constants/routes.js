@@ -61,6 +61,8 @@ define ("constants/routes",
 
     const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs/suggestion_read`;
 
+    const putMigrateProfile = (domain) => `${BASE}${domain}/profiles`;
+
     return {
       getWmConfig,
       getCss,
@@ -79,6 +81,7 @@ define ("constants/routes",
       postAnalyticsEvent,
       postUserReply,
       getIssuesAndMessages,
-      postSuggestedFaqRead
+      postSuggestedFaqRead,
+      putMigrateProfile
     };
   });

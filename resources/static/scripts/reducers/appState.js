@@ -166,6 +166,11 @@ define ("reducers/appState",
             webChatIsLive: {$set: true}
           });
 
+        case ACTION_TYPES.SET_ISSUE_EXISTS:
+          return update (state, {
+            issueExists: {$set: action.issueExists}
+          });
+
         case ACTION_TYPES.SET_LANGUAGE:
           return update (state, {
             developerSetLanguage: {$set: action.language}

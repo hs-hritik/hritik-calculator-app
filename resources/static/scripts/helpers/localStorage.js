@@ -17,6 +17,7 @@ define ("helpers/localStorage",
       USER_ID: "ui",
       DEVICE_ID: "di",
       ANON_USER_ID: "aui",
+      IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
       USER_PROFILE_ID: "upi",
@@ -38,6 +39,18 @@ define ("helpers/localStorage",
     const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
+
+    // The keys which are required after the unification release.
+    const VALID_KEYS = [
+      "USER_ID",
+      "DEVICE_ID",
+      "ANON_USER_ID",
+      "LAST_ACTIVITY_TIME",
+      "SITE_ACTIVITY_START_TIME",
+      "PROACTIVE_CHAT_HAS_TRIGGERED",
+      "SUGGESTED_FAQ_READ_TRACKED",
+      "READ_FAQ_LIST"
+    ];
 
     const {ATTACHMENT} = MESSAGE_CONSTANTS.TYPE;
 
@@ -76,6 +89,12 @@ define ("helpers/localStorage",
     const setUserId = (userId) => {
       lsUtils.setItem (KEYS.USER_ID, userId);
     };
+
+    /**
+     * Get identifier
+     * @returns {String} - identifier
+     */
+    const getIdentifier = () => lsUtils.getItem (KEYS.IDENTIFIER);
 
     /**
      * Remove userId
@@ -288,6 +307,17 @@ define ("helpers/localStorage",
     };
 
     /**
+     * Delete all the local storage fields which were being used before unification.
+     */
+    const clearOldStorage = () => {
+      objUtils.forEachKey (KEYS, (key, value) => {
+        if (VALID_KEYS.indexOf (key) === -1) {
+          lsUtils.removeItem (value);
+        }
+      });
+    };
+
+    /**
      * Removes message from entities
      * @param {String} issueId - current issue id
      * @param {String} messageId - message id to remove
@@ -464,6 +494,8 @@ define ("helpers/localStorage",
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
       setReadFaqList,
-      getReadFaqList
+      getReadFaqList,
+      getIdentifier,
+      clearOldStorage
     };
   });

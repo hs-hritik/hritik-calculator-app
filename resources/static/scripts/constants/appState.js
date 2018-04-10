@@ -8,6 +8,17 @@ define ("constants/appState",
   function () {
     "use strict";
 
+    /**
+     * The issue states before unification.
+     */
+    const OLD_ISSUE_STATE = {
+      PRE_CHAT: "preChat",
+      ACTIVE: "active",
+      RESOLVED: "resolved",
+      REJECTED: "rejected",
+      RESOLVED_BY_FAQ_SUGGESTIONS: "resolved_by_faq_suggestions"
+    };
+
     const ISSUE_STATE = {
       ACTIVE: "active",
       RESOLVED: "resolved",
@@ -87,6 +98,7 @@ define ("constants/appState",
       TRIGGER,
       ISSUE_TYPE,
       ISSUE_STATE_RESET,
-      XHR_ISSUE_STATE
+      XHR_ISSUE_STATE,
+      OLD_ISSUE_STATE
     };
   });

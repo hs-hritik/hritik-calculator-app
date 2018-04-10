@@ -52,7 +52,8 @@ define ("actions/appState",
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
       TRIGGER,
-      ISSUE_STATE_RESET
+      ISSUE_STATE_RESET,
+      OLD_ISSUE_STATE
     } = APP_STATE_CONSTANTS;
 
     const {
@@ -156,6 +157,17 @@ define ("actions/appState",
     const setConversationEnded = () => {
       return {
         type: ACTION_TYPES.SET_CONVERSATION_ENDED
+      };
+    };
+
+    /**
+     * Action to set issue exists flag
+     * @returns {Object} - Action
+     */
+    const setIssueExists = (issueExists) => {
+      return {
+        type: ACTION_TYPES.SET_ISSUE_EXISTS,
+        issueExists
       };
     };
 
@@ -524,6 +536,147 @@ define ("actions/appState",
     };
 
     /**
+     * Find the initial user message in the dummy issue in local storage.
+     * We are not saving the initial user message separately. The initial user message
+     * would be available in the local storage. Loop through the message list saved
+     * in the local storage (via issue and message entities), and get the first user message.
+     * @returns {String} - initial user message body
+     */
+    const _getInitialUserMsgFromLs = () => {
+      const issueEntities = lsHelpers.getEntities ("ISSUES"),
+            messageEntities = lsHelpers.getEntities ("MESSAGES"),
+            {dummyIssueId} = store.getState ().appState;
+
+      if (!issueEntities || !messageEntities) {
+        return "";
+      }
+
+      const {messages: msgIds} = issueEntities [dummyIssueId];
+
+      for (let idx = 0; idx < msgIds.length; idx++) {
+        const msg = messageEntities [msgIds [idx]];
+
+        if (msg.isCustomerMsg) {
+          return msg.body;
+        }
+      }
+
+      return "";
+    };
+
+    /**
+     * Fire an XHR to migrate the user profile
+     * @param {string} identifier - profile identifier which has to be migrated
+     * @param {Function} done - done callback
+     */
+    const _migrateProfile = (identifier, done) => {
+      const {dispatch, getState} = store;
+      const {domain} = getState ().appState;
+
+      xhr ({
+        route: routes.putMigrateProfile (domain),
+        method: "PUT",
+        headers: xhrHelpers.getCommonHeaders (),
+        data: xhrHelpers.getPreparedXhrData ({
+          identifier
+        }, true),
+        onSuccess: (response) => {
+          // We will get response.success = true or false if the migration succeeds or fails.
+          // In both the case, we will clear old local storage and continue.
+          // If migration was successful
+          if (response.success) {
+            dispatch (setIssueExists (true));
+          }
+        },
+        onEnd: () => {
+          lsHelpers.clearOldStorage ();
+          done ();
+        }
+      });
+    };
+
+    /**
+     * Migrate the issue if required.
+     * @param {Function} done - done callback
+     */
+    const handleMigration = (done) => {
+      // Previously, we were generating a unique `identifier` when the web chat loads.
+      // Now, this `identifier` is not used anymore (we use device id and user id).
+      // If an `identifier` doesn't exist in local storage, that means the web chat is
+      // loading first time in that browser. We don't have to consider migration in this case.
+      // If an `identifier` exists in the local storage, we will
+      // proceed with further migration steps.
+      const identifier = lsHelpers.getIdentifier ();
+
+      if (!identifier) {
+        done ();
+        return;
+      }
+
+      // If the last activity was done before the reset timeout, clear all the previous
+      // local storage data (including `identifier`), and start a fresh chat.
+      // Clearing `identifier` also means that the migration won't be consider from now onwards.
+      const lastActivityTime = lsHelpers.getLastActivityTime (),
+            {resetTimeout} = store.getState ().appState;
+
+      if (lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) {
+        lsHelpers.clearOldStorage ();
+        done ();
+        return;
+      }
+      /**
+       * If there is an ongoing chat in the last 12 hours (default reset timeout),
+       * the issue can be in 3 possible states.
+       *
+       * (i) PRE_CHAT -
+       *
+       *   (a) If the user has already submitted the first message,
+       *       save it in the state and continue.
+       *       After the pre-issue is created via normal flow, we will start polling
+       *       for messages. While polling, first message would be of type
+       *       EMPTY_MSG_WITH_TEXT_INPUT, which is a special message type for
+       *       getting intial user message. When we receive this message type, we check
+       *       if the intial user message exists in the state.
+       *       If the intial user message already exists in the state, we don't wait for
+       *       the user input, we directly send the initial user message to the backend.
+       *   (b) If the user hasn't already entered the first message, clear the old
+       *       local storage data and continue
+       *
+       *   Note: If the user has already entered details for other pre-chat features,
+       *         he/she has to enter the details again.
+       *         We are not migrating any other pre-chat features.
+       *
+       * (ii) ACTIVE -
+       *      Fire an XHR to migrate the profile.
+       *
+       * (iii) RESOLVED or REJECTED or RESOLVED_BY_FAQ_SUGGESTIONS -
+       *       Clear the old local storage fields and continue.
+       *
+       * In all the 3 states, we would be clearing the old local storage fields
+       */
+
+      const issueState = lsHelpers.getIssueState ();
+
+      if (issueState === OLD_ISSUE_STATE.ACTIVE) {
+        // Fire XHR to migrate the issue
+        _migrateProfile (identifier, done);
+      } else {
+        if (issueState === OLD_ISSUE_STATE.PRE_CHAT) {
+          const preChatFeatureState = lsHelpers.getPreChatFeatureState ();
+          const initialUserMessageFeatureState = preChatFeatureState.initialUserMessage;
+          if (initialUserMessageFeatureState === PRE_CHAT_STATE.initialUserMessage.COMPLETED) {
+            const initialUserMsg = _getInitialUserMsgFromLs ();
+            store.dispatch (setInitialUserMsg (initialUserMsg));
+          }
+        }
+
+        // PRE_CHAT or RESOLVED or REJECTED or RESOLVED_BY_FAQ_SUGGESTIONS
+        lsHelpers.clearOldStorage ();
+        done ();
+      }
+    };
+
+    /**
      * Initialize conversation - either enable the chat view or the out of
      * business hours view.
      */
@@ -611,9 +764,11 @@ define ("actions/appState",
               // Rehydrate the state with localstorage data if applicable
               rehydrateState ();
 
-              // Initialize conversation by either going to the out of business
-              // hours view or by handling the chat view conversation.
-              initializeConversation ();
+              handleMigration (() => {
+                // Initialize conversation by either going to the out of business
+                // hours view or by handling the chat view conversation.
+                initializeConversation ();
+              });
 
               // If the widget is enabled, track the widget load event
               // Do not track this event if the config was set via the reset flow.
