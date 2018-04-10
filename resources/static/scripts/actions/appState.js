@@ -553,9 +553,9 @@ define ("actions/appState",
     const setWmConfig = ({trigger, helpshiftConfig}) => {
       return (dispatch, getState) => {
         const state = getState ();
-        const {domain, platformId} = state.appState;
+        const {domain} = state.appState;
 
-        getWmConfig (domain, platformId, {
+        getWmConfig (domain, {
           onSuccess: (response) => {
             dispatch (
               batchActions ([
@@ -613,12 +613,11 @@ define ("actions/appState",
     /**
      * Get web chat config via the HS API.
      * @param {string} domain
-     * @param {string} platformId
      * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
      */
-    const getWmConfig = (domain, platformId, callbacks) => {
+    const getWmConfig = (domain, callbacks) => {
       xhr ({
-        route: routes.getWmConfig (domain, platformId),
+        route: routes.getWmConfig (domain),
         headers: xhrHelpers.getCommonHeaders (),
         data: xhrHelpers.getPreparedXhrData (),
         onSuccess: callbacks.onSuccess,

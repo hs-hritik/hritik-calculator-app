@@ -12,7 +12,7 @@ define ("constants/routes",
     const BASE = `${WEB_SDK_API_ROOT}/websdk/`;
 
     // @TODO - Clean up unwanted routes
-    const getWmConfig = (domain, platformId) => `${BASE}${domain}/platforms/${platformId}/config`;
+    const getWmConfig = (domain) => `${BASE}${domain}/config`;
 
     const getCss = () => "/css/style.css";
 
