@@ -112,7 +112,7 @@ define ("extras/api",
 
         // When the end user opens the widget, check if preIssue reset
         // is applicable and if so, handle it.
-        store.dispatch (appStateActions.handlePreIssueReset ());
+        // store.dispatch (appStateActions.handlePreIssueReset ());
 
         // Start the conversation when the widget is opened.
         if (!conversationStarted) {
