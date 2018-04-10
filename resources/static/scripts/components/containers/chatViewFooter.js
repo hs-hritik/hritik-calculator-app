@@ -83,6 +83,7 @@ define ("components/containers/chatViewFooter",
           // conversation and will take care of creating new preIssue.
           // Ref :- App state actions -> initializeConversation
           dispatch (appStateActions.reset ());
+          dispatch (actionCreators.toggleLoading (true));
         },
         onSkipUserInput: () => {
           dispatch (chatViewActions.updateUserInputData ({

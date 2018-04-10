@@ -1,0 +1,29 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2018, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for info view component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group view
+///
+
+@include component(info-view) {
+
+  $loader-color: color(primary);
+
+  .hs-info-view {
+    display: flex;
+    align-items: center;
+    flex: 1 0 auto;
+    flex-direction: column;
+    justify-content: center;
+
+    &__loader {
+      font-size: icon-size(xxx-large);
+      color: $loader-color;
+    }
+  }
+}

@@ -206,6 +206,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to toggle loader
+     * @param {Boolean} - loading
+     * @returns {Object} - Action
+     */
+    const toggleLoading = (loading) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_LOADING,
+        loading
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -224,6 +236,7 @@ define ("actions/actionCreators",
       setInfoBotRequestedTimestamp,
       setResolutionQuestionCompleted,
       setCsatCompleted,
-      setFullPrivacy
+      setFullPrivacy,
+      toggleLoading
     };
   });

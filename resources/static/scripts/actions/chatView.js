@@ -608,11 +608,6 @@ define ("actions/chatView",
               messages
             } = getCurrentIssueAndMessages (issues);
 
-            // Validation to check latest issue exists
-            if (!currentIssue) {
-              return;
-            }
-
             const {
               id: issueId,
               type: issueType,
@@ -628,6 +623,7 @@ define ("actions/chatView",
 
             dispatch (
               batchActions ([
+                actionCreators.toggleLoading (false),
                 setActiveIssueId (issueId),
                 setIssueCursor (timestamp),
                 setCsatSubmitted (isCsatSubmitted),

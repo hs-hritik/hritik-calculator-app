@@ -22,7 +22,8 @@ define ("components/containers/chatView",
             agentNickname
           },
           activeIssueId,
-          issueType
+          issueType,
+          loading
         },
         chatView: {
           messageList: messages,
@@ -44,7 +45,8 @@ define ("components/containers/chatView",
           activeIssueId,
           issueType
         }),
-        userInput
+        userInput,
+        loading
       };
     };
 

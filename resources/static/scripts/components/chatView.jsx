@@ -8,12 +8,13 @@ define ("components/chatView",
   [
     "components/messageList",
     "components/containers/chatViewFooter",
+    "components/containers/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
     "constants/propTypes"
   ],
-  function (MessageList, ChatViewFooterContainer, ViewHeader, DnDWrapper,
-    customPropTypes) {
+  function (MessageList, ChatViewFooterContainer, InfoViewContainer, ViewHeader,
+    DnDWrapper, customPropTypes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -42,7 +43,8 @@ define ("components/chatView",
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        loading: PropTypes.bool
       },
 
       render () {
@@ -50,9 +52,7 @@ define ("components/chatView",
           browserIsMobile,
           onMinimizeConversation,
           text,
-          issueIsCreated,
-          viewStyles,
-          userInput
+          viewStyles
         } = this.props;
 
         return (
@@ -60,22 +60,50 @@ define ("components/chatView",
             <ViewHeader title={text.chatViewHeader}
                         showCloseBtn={browserIsMobile}
                         onCloseBtnClick={onMinimizeConversation} />
-            <DnDWrapper onDrop={this._onFilesDrop}
-                        dragInfoText={text.dndInfoText}
-                        enabled={issueIsCreated} >
+            {this._renderViewContents ()}
+          </div>
+        );
+      },
+
+      /**
+       * Render view contents
+       */
+      _renderViewContents () {
+        const {
+          messages,
+          isTyping,
+          showAgentNickname,
+          text,
+          onPillOptionSelect,
+          onRetryAttachmentClick,
+          onSuggestedFaqClick,
+          userInput,
+          issueIsCreated,
+          loading
+        } = this.props;
+
+        if (loading) {
+          return (
+            <InfoViewContainer />
+          );
+        }
+
+        return (
+          <DnDWrapper onDrop={this._onFilesDrop}
+                      dragInfoText={text.dndInfoText}
+                      enabled={issueIsCreated} >
               <div className="hs-view__content">
-                <MessageList messages={this.props.messages}
-                             isTyping={this.props.isTyping}
-                             showAgentNickname={this.props.showAgentNickname}
-                             text={this.props.text}
-                             onPillOptionSelect={this.props.onPillOptionSelect}
-                             onRetryAttachmentClick={this.props.onRetryAttachmentClick}
-                             onSuggestedFaqClick={this.props.onSuggestedFaqClick}
+                <MessageList messages={messages}
+                             isTyping={isTyping}
+                             showAgentNickname={showAgentNickname}
+                             text={text}
+                             onPillOptionSelect={onPillOptionSelect}
+                             onRetryAttachmentClick={onRetryAttachmentClick}
+                             onSuggestedFaqClick={onSuggestedFaqClick}
                              userInput={userInput} />
               </div>
               <ChatViewFooterContainer />
             </DnDWrapper>
-          </div>
         );
       },
 
