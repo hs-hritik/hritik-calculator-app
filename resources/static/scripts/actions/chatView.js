@@ -350,11 +350,13 @@ define ("actions/chatView",
     /**
      * Action to reset user input
      * This will reset label, errors, placeholders etc of user input
+     * @param {Object} config - config of user values to retain
      * @returns {Object} - Action
      */
-    const resetUserInput = () => {
+    const resetUserInput = (config = {}) => {
       return {
-        type: ACTION_TYPES.RESET_USER_INPUT_DATA
+        type: ACTION_TYPES.RESET_USER_INPUT_DATA,
+        config
       };
     };
 
@@ -371,13 +373,8 @@ define ("actions/chatView",
 
       // For messages other than bot, input wont be present
       if (!input) {
-        // @TODO - Fix reset for bot transitions
-        dispatch (
-          batchActions ([
-            resetUserInput (),
-            setChatViewFooter (ACTIVE_FOOTER.REPLY)
-          ])
-        );
+        // For normal message, reset user input and retain reply typed by user
+        dispatch (resetUserInput ({value: true}));
         return;
       }
 
@@ -398,8 +395,6 @@ define ("actions/chatView",
       // Mandatory actions which will be preformed for every bot step
       dispatch (
         batchActions ([
-          // Hide system typing indicator
-          toggleSystemTyping (false),
           // Set processed user input and save it in store
           setUserInputData (processedUserInput),
           // Set footer type as reply because this is bot step, we accept some user input
@@ -409,25 +404,14 @@ define ("actions/chatView",
 
       // Optional actions like submiting user reply if first user message is set
       // through api
-      const actionsToDispatch = [];
       // If message type is accept first user message (EMPTY_MSG_WITH_TEXT_INPUT)
       // and initialUserMessage is set through api, do not wait for user input
       // Directly send the message as bot response
       if (type === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
-        actionsToDispatch.push (
-          disableReplyBox (),
-          postUserMessage ({
-            messageType: type,
-            messageBody: initialUserMessage,
-            onEnd: () => {
-              dispatch (enableReplyBox ());
-            }
-          })
-        );
-      }
-
-      if (actionsToDispatch.length) {
-        dispatch (batchActions (actionsToDispatch));
+        postUserMessage ({
+          messageType: type,
+          messageBody: initialUserMessage
+        });
       }
     };
 
@@ -438,9 +422,11 @@ define ("actions/chatView",
     const handleLatestMessage = (latestMessage) => {
       // @TODO - If the bot control messages are not present in same poller, we
       // need to handle that case as footer is dependant on it.
-      // @TODO - Read latest message from store
       const {dispatch} = store;
-      const {type} = latestMessage;
+      const {
+        type,
+        has_next_bot: hasNextBot
+      } = latestMessage;
 
       switch (type) {
         case MESSAGE_TYPE.BOT_STARTED:
@@ -449,8 +435,7 @@ define ("actions/chatView",
 
         case MESSAGE_TYPE.BOT_ENDED:
           const actionsToDispatch = [resetUserInput ()];
-          // @TODO - Finalize the api key with backend.
-          if (!latestMessage.has_next_bot) {
+          if (!hasNextBot) {
             actionsToDispatch.push (setChatViewFooter (ACTIVE_FOOTER.REPLY));
           }
           dispatch (batchActions (actionsToDispatch));
@@ -591,7 +576,8 @@ define ("actions/chatView",
       const {dispatch} = store;
       const {
         appState: {
-          domain
+          domain,
+          issueType: previousIssueType
         },
         chatView: {
           messageCursor,
@@ -599,7 +585,6 @@ define ("actions/chatView",
         }
       } = store.getState ();
 
-      // @TODO - Confirm with backend, do we need to send both cursors?
       const xhrData = {
         mc: JSON.stringify (messageCursor)
       };
@@ -641,6 +626,16 @@ define ("actions/chatView",
 
             if (!isIssueActive (issueState)) {
               stopPollingForMessages ();
+            }
+
+            // Hide TAI if
+            // a] poller's issue type is preIssue
+            //  OR
+            // b] preIssue is converted to issue
+            if (issueType === ISSUE_TYPE.PRE_ISSUE ||
+                (previousIssueType === ISSUE_TYPE.PRE_ISSUE &&
+                 issueType === ISSUE_TYPE.ISSUE)) {
+              dispatch (toggleSystemTyping (false));
             }
 
             dispatch (
@@ -812,9 +807,12 @@ define ("actions/chatView",
         onEnd
       } = config;
       const xhrIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
+      const actionsToDispatch = [disableReplyBox ()];
+      const isIssue = issueType === ISSUE_TYPE.ISSUE;
+      const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
       let xhrData = {};
 
-      if (issueType === ISSUE_TYPE.ISSUE) {
+      if (isIssue) {
         // @TODO - Change request params after apis are changed.
         // Currently the request params for issue remains same, only pre-issue
         // params are different.
@@ -823,12 +821,14 @@ define ("actions/chatView",
           "message-type": msgType
         };
       } else {
-        const latestMessage = getLatestMessage ();
+        actionsToDispatch.push (toggleSystemTyping (true));
         xhrData = chatViewHelpers.getPreparedMessageData ({
           input: userInput,
-          message: latestMessage
+          message: getLatestMessage ()
         });
       }
+
+      dispatch (batchActions (actionsToDispatch));
 
       xhr ({
         route: routes.postUserReply (domain, activeIssueId, xhrIssueType),
@@ -847,9 +847,27 @@ define ("actions/chatView",
           }
         },
         onFailure: () => {
-          // @TODO: Handler failure.
+          // Hide typing indicator and enable replyBox if submit user reply on
+          // preIssue fails
+          if (isPreIssue) {
+            dispatch (batchActions ([
+              enableReplyBox (),
+              toggleSystemTyping (false)
+            ]));
+          }
         },
-        onEnd
+        onEnd: () => {
+          // Only enable reply box in case of issue
+          // In case of preIssue, keep showing TAI until we get next response
+          // from poller.
+          if (isIssue) {
+            dispatch (enableReplyBox ());
+          }
+
+          if (onEnd) {
+            onEnd ();
+          }
+        }
       });
     };
 
@@ -939,6 +957,9 @@ define ("actions/chatView",
         }
 
         dispatch (disableReplyBox ());
+        // @TODO - Find a place to track conversation started event
+        // Track the conversation started event.
+        // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
 
         postUserMessage ({
           msgBody: trimmedValue,
@@ -947,9 +968,6 @@ define ("actions/chatView",
             handleIssueReopen (issueState);
             dispatch (updateReplyText (""));
             audioHelpers.playSend ();
-          },
-          onEnd: () => {
-            dispatch (enableReplyBox ());
           }
         });
       };
@@ -1193,7 +1211,6 @@ define ("actions/chatView",
               batchActions ([
                 setActiveIssueId (newIssueId),
                 actionCreators.setInternalIssueId (response.internal_id),
-                // @TODO: Double check how are we going to maintain issue and pre-issue states.
                 updateIssueState (ISSUE_STATE.ACTIVE),
                 setChatViewFooter (ACTIVE_FOOTER.REPLY)
               ])

@@ -66,11 +66,12 @@ define ("components/chatViewFooter",
           browserIsMobile,
           allowFullScreen,
           userInput: {
-            type
+            type,
+            disabled
           }
         } = this.props;
 
-        if (type === USER_INPUT_TYPES.PILL_SELECT) {
+        if (type === USER_INPUT_TYPES.PILL_SELECT || disabled) {
           return null;
         }
 

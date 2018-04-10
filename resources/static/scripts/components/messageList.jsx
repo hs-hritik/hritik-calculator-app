@@ -111,11 +111,12 @@ define ("components/messageList",
           userInput: {
             type,
             options,
-            label
+            label,
+            disabled
           }
         } = this.props;
 
-        if (type !== USER_INPUT_TYPES.PILL_SELECT) {
+        if (type !== USER_INPUT_TYPES.PILL_SELECT || disabled) {
           return null;
         }
 
