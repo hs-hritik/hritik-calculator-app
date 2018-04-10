@@ -8,13 +8,13 @@
 define ("helpers/common",
   [
     "store",
-    "gunpowder/utils/object",
+    "gunpowder/utils/array",
     "gunpowder/utils/uuid",
     "constants/message",
     "constants/businessHoursView",
     "constants/appState"
   ],
-  function (store, objectUtils, getUuid, messageConstants, bhConstants,
+  function (store, arrayUtils, getUuid, messageConstants, bhConstants,
     appStateConstants) {
     "use strict";
 
@@ -154,6 +154,25 @@ define ("helpers/common",
       return !!activeIssueId && issueType !== ISSUE_TYPE.PRE_ISSUE;
     };
 
+    /**
+     * Get the message id of the backend bot step message that returns the FAQ
+     * suggestion with the Answer Bot.
+     * @returns {string}
+     */
+    const getFaqSuggestionMessageId = () => {
+      const faqMessage = arrayUtils.findObjectByKey (
+        store.getState ().chatView.messageList,
+        MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT,
+        "type"
+      );
+
+      if (faqMessage) {
+        return faqMessage.id;
+      }
+
+      return "";
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -162,6 +181,7 @@ define ("helpers/common",
       getAnonUserId,
       isEmailValid,
       isUserIdValid,
-      isIssueCreated
+      isIssueCreated,
+      getFaqSuggestionMessageId
     };
   });

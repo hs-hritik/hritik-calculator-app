@@ -228,14 +228,12 @@ define ("helpers/analytics",
         }
       } = store.getState ();
 
-      // @TODO: Pass message_id of FAQ suggestions message. Check with backend about
-      // the meaning of this. Is this the bot step message that returns suggested
-      // FAQ id list?
       // @TODO: Backend doesn't send publish id with the GET faq API. Get the
       // publish_id in order to send it with this xhr.
       const xhrData = {
         preissue_id: activeIssueId,
-        faq_publish_id: faqId
+        faq_publish_id: faqId,
+        message_id: commonHelpers.getFaqSuggestionMessageId ()
       };
 
       xhr ({
