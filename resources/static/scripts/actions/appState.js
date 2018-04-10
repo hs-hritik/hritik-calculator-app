@@ -288,7 +288,6 @@ define ("actions/appState",
             replyText = lsHelpers.getReplyText (),
             endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId (),
             suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
-            conversationId = lsHelpers.getConversationId (),
             readFaqList = lsHelpers.getReadFaqList (),
             infoBotRequestedTimestamp = lsHelpers.getInfoBotRequestedTimestamp ();
 
@@ -321,7 +320,6 @@ define ("actions/appState",
             userProfileId,
             endUserFirstMsgId,
             suggestedFaqReadTracked,
-            conversationId,
             readFaqList,
             infoBotRequestedTimestamp
           }

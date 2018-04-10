@@ -46,7 +46,10 @@ define ("actions/faqView",
         const state = getState ();
         const {
           appState: {
-            domain
+            domain,
+            analytics: {
+              suggestedFaqReadTracked
+            }
           }
         } = state;
 
@@ -59,10 +62,12 @@ define ("actions/faqView",
             dispatch (setActiveFaq (faq));
             dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
 
-            // Track FAQ read (same as fetched from backend) event here.
-            analyticsHelpers.track (EVENT.FAQ_READ, {
-              faqId
-            });
+            // Track suggested FAQ read event if it hasn't been tracked already.
+            if (!suggestedFaqReadTracked) {
+              analyticsHelpers.track (EVENT.SUGGESTED_FAQ_READ, {
+                faqId
+              });
+            }
 
             // For issue deflection events, we need to send a list of FAQ IDs
             // in the order they were read.

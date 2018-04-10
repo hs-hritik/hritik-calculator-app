@@ -32,9 +32,7 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      CONVERSATION_ID: "ci",
-      READ_FAQ_LIST: "rfl",
-      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt"
+      READ_FAQ_LIST: "rfl"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
@@ -413,20 +411,6 @@ define ("helpers/localStorage",
     const getSuggestedFaqReadTracked = () => lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
 
     /**
-     * Set the conversation ID (created when the end user posts the first message)
-     * @param {string} cid - The conversation ID
-     */
-    const setConversationId = (cid) => {
-      lsUtils.setItem (KEYS.CONVERSATION_ID, cid);
-    };
-
-    /**
-     * Get the conversation ID.
-     * @returns {string}
-     */
-    const getConversationId = () => lsUtils.getItem (KEYS.CONVERSATION_ID);
-
-    /**
      * Set the read FAQ list.
      * @param {array} faqList
      */
@@ -439,20 +423,6 @@ define ("helpers/localStorage",
      * @returns {string}
      */
     const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
-
-    /**
-     * Set the timestamp when the info bot gets requested
-     * @param {number} ts
-     */
-    const setInfoBotRequestedTimestamp = (ts) => {
-      lsUtils.setItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP, ts);
-    };
-
-    /**
-     * Get the timestamp when the info bot gets requested
-     * @returns {number}
-     */
-    const getInfoBotRequestedTimestamp = () => lsUtils.getItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP);
 
     return {
       getUserId,
@@ -493,11 +463,7 @@ define ("helpers/localStorage",
       getProactiveChatHasTriggered,
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
-      setConversationId,
-      getConversationId,
       setReadFaqList,
-      getReadFaqList,
-      setInfoBotRequestedTimestamp,
-      getInfoBotRequestedTimestamp
+      getReadFaqList
     };
   });

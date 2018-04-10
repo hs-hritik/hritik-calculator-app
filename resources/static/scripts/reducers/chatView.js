@@ -84,7 +84,6 @@ define ("reducers/chatView",
           }
         }
       },
-      conversationId: "",
       readFaqList: []
     };
 
@@ -117,9 +116,6 @@ define ("reducers/chatView",
           }
           if (action.data.endUserFirstMsgId) {
             updateObj.endUserFirstMsgId = {$set: action.data.endUserFirstMsgId};
-          }
-          if (action.data.conversationId) {
-            updateObj.conversationId = {$set: action.data.conversationId};
           }
           if (action.data.readFaqList) {
             updateObj.readFaqList = {$set: action.data.readFaqList};
@@ -254,11 +250,6 @@ define ("reducers/chatView",
             infoBot: {
               data: infoBotChangeObj
             }
-          });
-
-        case ACTION_TYPES.SET_CONVERSATION_ID:
-          return update (state, {
-            conversationId: {$set: action.cid}
           });
 
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:

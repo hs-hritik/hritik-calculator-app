@@ -38,7 +38,7 @@ define ("constants/routes",
 
     const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
 
-    const postPreIssue = (domain) => `${BASE}${domain}/pre-issues`;
+    const postPreIssue = (domain) => `${BASE}${domain}/preissues`;
 
     const putResetPreIssue = (domain, issueId) => `${BASE}${domain}/preissues/${issueId}`;
 
@@ -59,6 +59,8 @@ define ("constants/routes",
 
     const postAnalyticsEvent = (domain) => `${WEB_SDK_API_ROOT}/events/v1/${domain}/websdk/`;
 
+    const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs/suggestion_read`;
+
     return {
       getWmConfig,
       getCss,
@@ -76,6 +78,7 @@ define ("constants/routes",
       webSocket,
       postAnalyticsEvent,
       postUserReply,
-      getIssuesAndMessages
+      getIssuesAndMessages,
+      postSuggestedFaqRead
     };
   });

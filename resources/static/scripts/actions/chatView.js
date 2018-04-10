@@ -922,10 +922,6 @@ define ("actions/chatView",
           return;
         }
 
-        // @TODO - Find a place to track conversation started event
-        // Track the conversation started event.
-        // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
-
         dispatch (disableReplyBox ());
 
         postUserMessage ({
@@ -940,13 +936,6 @@ define ("actions/chatView",
             dispatch (enableReplyBox ());
           }
         });
-
-        // Track message added event.
-        // @TODO: Check if this needs to be tracked when the add message XHR
-        // succeeds. That should not be the case so as to be aligned to the
-        // end user's first message event (conversation started) tracking, which
-        // is tracked as soon as it's added.
-        analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
     };
 
@@ -1102,9 +1091,6 @@ define ("actions/chatView",
               ])
             );
             startPollingForMessages ();
-
-            // Track the issue created event.
-            analyticsHelpers.track (EVENT.ISSUE_CREATED);
           },
           onFailure: () => {
             // @TODO: Handler failure.
@@ -1203,7 +1189,7 @@ define ("actions/chatView",
 
             // Track the issue created event.
             // @TODO: Confirm if issue created event has to be tracked from Web Chat.
-            analyticsHelpers.track (EVENT.ISSUE_CREATED);
+            // analyticsHelpers.track (EVENT.ISSUE_CREATED);
           },
           onEnd: () => {
             dispatch (enableReplyBox ());
@@ -1474,16 +1460,11 @@ define ("actions/chatView",
             },
             playAudio: true,
             onAddMessage: (msg) => {
-              // Along with other actions, set a random Conversation ID in the
-              // store. Conversation IDs are generated every time the end user
-              // posts the first message (manually or set via API), and sent
-              // with the payload of every subsequent analytics event.
               dispatch (
                 batchActions ([
                   setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
                   setEndUserFirstMessageId (msg.id),
-                  updateReplyText (""),
-                  actionCreators.setConversationId (uuidGenerator ())
+                  updateReplyText ("")
                 ])
               );
               // Get parent data & create issue
@@ -1547,12 +1528,6 @@ define ("actions/chatView",
                     })
                   );
                 }
-
-                // Track answer bot result event with the returned FAQ IDs
-                analyticsHelpers.track (EVENT.ANS_BOT_RESULT, {
-                  query: endUserFirstMsg.body,
-                  faqIds: faqs.map ((faq) => faq.id)
-                });
               },
               onFailure: () => {
                 dispatch (toggleSystemTyping (false));
@@ -1561,11 +1536,6 @@ define ("actions/chatView",
                 dispatch (startNextPreChatFeature ());
               }
             }));
-
-            // Track answer bot requested event here.
-            analyticsHelpers.track (EVENT.ANS_BOT_REQUESTED, {
-              query: endUserFirstMsg.body
-            });
             break;
 
           case ANSWER_BOT_STATE.FAQS_FETCHED:
@@ -1669,9 +1639,6 @@ define ("actions/chatView",
                     updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
                   );
                   dispatch (askInfoBotField ());
-
-                  // Track info bot requested (started) event here.
-                  analyticsHelpers.track (EVENT.INFO_BOT_REQUESTED);
                 }
               })
             );
@@ -1783,9 +1750,6 @@ define ("actions/chatView",
           value: updatedFieldVal.value,
           errorMsg: ""
         }));
-
-        // Track info bot value (name, email, etc) captured event here.
-        analyticsHelpers.track (EVENT.INFO_BOT_FIELD_CAPTURED);
 
         dispatch (changeInfoBotCurrentField ());
 
@@ -2065,13 +2029,6 @@ define ("actions/chatView",
             })
           );
         }
-
-        // Track message added event.
-        // @TODO: Check if this needs to be tracked when the add message XHR
-        // succeeds. That should not be the case so as to be aligned to the
-        // end user's first message event (conversation started) tracking, which
-        // is tracked as soon as it's added.
-        analyticsHelpers.track (EVENT.MESSAGE_ADDED);
       };
     };
 

@@ -133,23 +133,13 @@ define ("extras/api",
      * Handle intial user message
      * @param {Object} [config]
      * @param {string} [config.message] - Initial user message.
-     * @param {string} [config.trigger] - Source that triggered the function
-     *    call - user action, api, etc.
      */
-    const handleInitialUserMsg = ({message, trigger}) => {
+    const handleInitialUserMsg = ({message}) => {
       // Set initial user message in store
       store.dispatch (appStateActions.setInitialUserMsg (message));
 
       // @TODO - Find a place to call get parent info, as createInitialUserMessage
       // was internally calling the same.
-      // @TODO - Verify if this is the right place to track conversation start event
-
-      // Track the conversation started event.
-      // Pass trigger as "API" because this is the handler function for
-      // the setInitialUserMessage API.
-      analyticsHelpers.track (EVENT.CONVERSATION_STARTED, {
-        trigger
-      });
     };
 
     /**

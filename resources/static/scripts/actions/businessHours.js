@@ -230,6 +230,8 @@ define ("actions/businessHours",
      * Action to save business hours contact form details
      */
     const submitBusinessHoursContactForm = () => {
+      // @TODO: Check with dataplat if issue_created should be tracked
+      // for out of business hours form.
       return (dispatch, getState) => {
         const state = getState ();
         const {businessHoursViewState} = state;
