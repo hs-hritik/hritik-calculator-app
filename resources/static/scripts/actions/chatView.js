@@ -921,7 +921,7 @@ define ("actions/chatView",
         dispatch (disableReplyBox ());
 
         postUserMessage ({
-          msgBody: userInput.value,
+          msgBody: trimmedValue,
           msgType: MESSAGE_TYPE.TEXT,
           onSuccess: () => {
             handleIssueReopen (issueState);
