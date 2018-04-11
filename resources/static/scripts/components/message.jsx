@@ -38,7 +38,6 @@ define ("components/message",
         onRetryAttachmentClick: PropTypes.func,
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
-          timeAgoJustNow: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
@@ -493,10 +492,6 @@ define ("components/message",
        * Get time ago.
        */
       _getTimeAgo () {
-        if (!this.props.isLastMessage) {
-          return null;
-        }
-
         const {
           message: {
             type: messageType,
@@ -516,20 +511,7 @@ define ("components/message",
           return text.attachmentUploadingStatus;
         }
 
-        const timeAgoMs = Date.now () - createdTs;
-        let timeAgoStr;
-
-        // If the message came in the last one minute, show "just now".
-        if (timeAgoMs < 60000) {
-          timeAgoStr = text.timeAgoJustNow;
-        } else {
-          timeAgoStr = dateUtils.humanizeDuration (timeAgoMs, {
-            shortForm: true,
-            maxUnits: 1
-          });
-        }
-
-        return timeAgoStr;
+        return dateUtils.format (createdTs, "{hh}:{MM} {a}");
       },
 
       /**
