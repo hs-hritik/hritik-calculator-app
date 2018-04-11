@@ -21,6 +21,7 @@ define ("actions/chatView",
     "gunpowder/utils/schema",
     "gunpowder/utils/object",
     "gunpowder/utils/uuid",
+    "gunpowder/utils/date",
     "actions/entities",
     "actions/batch",
     "actions/actionCreators",
@@ -39,9 +40,9 @@ define ("actions/chatView",
   ],
   function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
     ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
-    analyticsConstants, xhr, arrayUtils, schema, objUtils, uuidGenerator, entitiesActions,
-    batchActions, actionCreators, entitySchema, entityHelpers, chatViewHelpers,
-    xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
+    analyticsConstants, xhr, arrayUtils, schema, objUtils, uuidGenerator, dateUtils,
+    entitiesActions, batchActions, actionCreators, entitySchema, entityHelpers,
+    chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
     analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
@@ -486,14 +487,19 @@ define ("actions/chatView",
 
     /**
      * Returns active issue and list of messages
-     * @param {Array} issues - list of issues
+     * @param {Object} config - config for creating active issue and  message list
+     * @param {Object} config.issues - issues list
+     * @param {Object} config.issueCursor - cursor of latest issue
      * @returns {Object} - config of active issue and messages
      */
-    const getCurrentIssueAndMessages = (issues) => {
+    const getCurrentIssueAndMessages = (config) => {
+      const {issues, issueCursor} = config;
       const currentIssue = issues [0];
       const currentIssueMessages = (currentIssue && currentIssue.messages) || [];
       let previousIssue = null;
       let previousIssueMessages = [];
+      let issueCreationDate = currentIssue.created_at;
+      let messages = [];
 
       // If current issue type is 'issue', find pre issue from issues list
       // and save it in previous
@@ -502,12 +508,28 @@ define ("actions/chatView",
           return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
                   issue.internal_id === currentIssue.preissue_id);
         });
-        previousIssueMessages = (previousIssue && previousIssue.messages) || previousIssueMessages;
+        if (previousIssue) {
+          issueCreationDate = previousIssue.created_at;
+          previousIssueMessages = previousIssue.messages || previousIssueMessages;
+        }
+      }
+
+      messages = previousIssueMessages.concat (currentIssueMessages);
+
+      // For the first fetch of issues list, add conversation start date message
+      // at the start of message list. (This is a system info message)
+      if (!issueCursor) {
+        const conversationStartDateMessage = chatViewHelpers.createMessage (
+          MESSAGE_TYPE.SYSTEM_INFO, {
+            body: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
+          }
+        );
+        messages = [conversationStartDateMessage].concat (messages);
       }
 
       return {
         currentIssue,
-        messages: previousIssueMessages.concat (currentIssueMessages)
+        messages
       };
     };
 
@@ -606,7 +628,7 @@ define ("actions/chatView",
             const {
               currentIssue,
               messages
-            } = getCurrentIssueAndMessages (issues);
+            } = getCurrentIssueAndMessages ({issues, issueCursor});
 
             const {
               id: issueId,
@@ -639,9 +661,7 @@ define ("actions/chatView",
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
               dispatch (
                 batchActions ([
-                  addMessages ({
-                    messages: messages
-                  }),
+                  addMessages ({messages}),
                   setActiveIssueMsgCursor ({
                     [pluralIssueType]: {
                       [issueId]: timestamp
@@ -1171,9 +1191,6 @@ define ("actions/chatView",
             const newIssueId = response.id;
             dispatch (
               batchActions ([
-                addMessages ({
-                  messages: response.messages
-                }),
                 setActiveIssueId (newIssueId),
                 actionCreators.setInternalIssueId (response.internal_id),
                 // @TODO: Double check how are we going to maintain issue and pre-issue states.

@@ -231,6 +231,23 @@ define ("helpers/chatView",
     };
 
     /**
+     * Create system info message
+     * @param {Object} config - options for system info message
+     * @returns {Object} - system info message object
+     */
+    const createSystemInfoMessage = (config) => {
+      return {
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
+        type: MESSAGE_TYPE.SYSTEM_INFO,
+        isCustomerMsg: false,
+        isSystemMsg: true,
+        createdTs: Date.now (),
+        body: config.body,
+        processed: true
+      };
+    };
+
+    /**
      * Create message of given type.
      * @param {String} type - Message type.
      * @param {Object} options - Message options.
@@ -251,6 +268,9 @@ define ("helpers/chatView",
 
         case MESSAGE_TYPE.ATTACHMENT:
           return createAttachmentMessage (options);
+
+        case MESSAGE_TYPE.SYSTEM_INFO:
+          return createSystemInfoMessage (options);
 
         default:
           return null;

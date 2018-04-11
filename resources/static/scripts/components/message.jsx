@@ -64,8 +64,8 @@ define ("components/message",
       render () {
         const {isCustomerMsg, type, states} = this.props.message;
 
-        if (type === MESSAGE_TYPE.END_CHAT) {
-          return this._renderEndChatMessage ();
+        if (type === MESSAGE_TYPE.SYSTEM_INFO) {
+          return this._renderSystemInfoMessage ();
         }
 
         const msgClasses = classes (
@@ -418,13 +418,12 @@ define ("components/message",
       },
 
       /**
-       * Render end chat message.
+       * Render system info message.
        */
-      _renderEndChatMessage () {
-        // @TODO: Show agent nickname when we get the assignee from the backend.
+      _renderSystemInfoMessage () {
         return (
-          <div className="hs-message hs-message--end-chat">
-            Chat Ended
+          <div className="hs-message hs-message--system-info">
+            {this.props.message.body}
           </div>
         );
       },
@@ -503,11 +502,9 @@ define ("components/message",
 
         // If the message is of type attachment and it's uploading at the moment,
         // show `Uploading..` and return.
-        if (
-          messageType === MESSAGE_TYPE.ATTACHMENT &&
-          messageStates &&
-          messageStates.uploadInProgress
-        ) {
+        if (messageType === MESSAGE_TYPE.ATTACHMENT &&
+            messageStates &&
+            messageStates.uploadInProgress) {
           return text.attachmentUploadingStatus;
         }
 

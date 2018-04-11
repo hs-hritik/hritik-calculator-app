@@ -20,6 +20,11 @@ define ("helpers/entity",
      */
     const getProcessedMessages = (messages) => {
       return messages.map ((msg) => {
+
+        if (msg.processed) {
+          return msg;
+        }
+
         const {type: messageType} = msg;
 
         const msgObj = {
