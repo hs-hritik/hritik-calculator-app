@@ -48,10 +48,18 @@
       align-items: center;
     }
 
-    &__title {
+    &__title,
+    &__error-text {
       flex: 1 1 auto;
       font-size: font-size(body, small);
+    }
+
+    &__title {
       color: $form-primary-text-color;
+    }
+
+    &__error-text {
+      color: $form-error;
     }
 
     &__text-field {
@@ -126,7 +134,6 @@
 
     /// form error modifier is used to show form error on elements
     &--form-error {
-      .hs-chat-footer__title,
       .hs-chat-footer__submit {
         color: $form-error;
       }

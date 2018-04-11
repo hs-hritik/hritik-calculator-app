@@ -57,7 +57,6 @@ define ("components/containers/chatViewFooter",
         onValueChangeInputField: (value) => {
           dispatch (chatViewActions.updateUserInputData ({
             value,
-            error: false,
             errorMsg: ""
           }));
         },

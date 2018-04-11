@@ -66,9 +66,7 @@ define ("components/chatViewFooter",
           browserIsMobile,
           allowFullScreen,
           userInput: {
-            skipLabel,
-            type,
-            required
+            type
           }
         } = this.props;
 
@@ -82,28 +80,9 @@ define ("components/chatViewFooter",
           "hs-footer--full-screen": allowFullScreen
         });
 
-        let skipBtnEl = null;
-
-        // @TODO - Add styles once UI is rendered
-        // a. Create a new BEM block for footer wrapper (column layout)
-        // b. Footer wrapper will contain two items
-        //    1. 'skip' button (optional)
-        //    2. footer component (reply box || pill select || user input)
-        if (skipLabel && !required) {
-          skipBtnEl = (
-            <button className="hs-footer-wrapper__skip-btn"
-                    onClick={this._onSkipUserInputClick}>
-              {skipLabel}
-            </button>
-          );
-        }
-
         return (
-          <div className="hs-footer-wrapper">
-            {skipBtnEl}
-            <div className={footerClasses}>
-              {this._renderFooterComponent ()}
-            </div>
+          <div className={footerClasses}>
+            {this._renderFooterComponent ()}
           </div>
         );
       },
@@ -220,7 +199,7 @@ define ("components/chatViewFooter",
         if (errorMsg) {
           errorMsgEl = (
             <div className="hs-chat-footer__field">
-              <div className="hs-chat-footer__title">
+              <div className="hs-chat-footer__error-text">
                {errorMsg}
               </div>
             </div>
@@ -230,7 +209,7 @@ define ("components/chatViewFooter",
         return (
           <div className={footerClasses}>
             {this._renderFooterLabelComponent ()}
-            <div className="hs-chat-footer__field">
+            <div key="input" className="hs-chat-footer__field">
               {inputComponentEl}
               {this._renderFooterAction ()}
             </div>
@@ -254,9 +233,17 @@ define ("components/chatViewFooter",
        * Render send button
        */
       _renderSendButton () {
+        const {
+          userInput: {
+            errorMsg
+          },
+          onSubmitReply
+        } = this.props;
+        const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
+
         return (
-          <a className="hs-chat-footer__submit" onClick={this.props.onSubmitReply}>
-            <i className="ion-send" />
+          <a className="hs-chat-footer__submit" onClick={onSubmitReply}>
+            <i className={iconClasses} />
           </a>
         );
       },
@@ -375,7 +362,7 @@ define ("components/chatViewFooter",
 
         if (label) {
           labelEl = (
-            <div className="hs-chat-footer__field">
+            <div key="label" className="hs-chat-footer__field">
               <div className="hs-chat-footer__title">
                {label}
               </div>
@@ -387,7 +374,7 @@ define ("components/chatViewFooter",
         // displaying question when resolution is rejected by the user.
         if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
           headingEl = (
-            <strong className="hs-chat-footer__heading hs-chat-footer__reply-heading">
+            <strong key="heading" className="hs-chat-footer__heading hs-chat-footer__reply-heading">
               {chatViewIssueRejectionQuestion}
             </strong>
           );
