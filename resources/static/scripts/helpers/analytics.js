@@ -103,7 +103,8 @@ define ("helpers/analytics",
     const _getDefaultPayload = () => {
       const {
         appState: {
-          deviceId
+          deviceId,
+          developerSetLanguage
         }
       } = store.getState ();
 
@@ -114,6 +115,10 @@ define ("helpers/analytics",
         [PAYLOAD_EVENT.TIMESTAMP]: Date.now (), // Timestamp of when the event is tracked
         [PAYLOAD_EVENT.LANGUAGE]: _lang
       };
+
+      if (developerSetLanguage) {
+        payload [PAYLOAD_EVENT.DEV_SET_LANGUAGE] = developerSetLanguage;
+      }
 
       return xhrHelpers.getPreparedXhrData (payload);
     };
