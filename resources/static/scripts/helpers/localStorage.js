@@ -318,29 +318,6 @@ define ("helpers/localStorage",
     };
 
     /**
-     * Removes message from entities
-     * @param {String} issueId - current issue id
-     * @param {String} messageId - message id to remove
-     */
-    const removeMessage = (issueId, messageId) => {
-      // Remove message id from 'issues->messages' entity
-      const issueEntities = getEntities ("ISSUES");
-      const filteredMessages = issueEntities [issueId].messages.filter ((message) => {
-        return message !== messageId;
-      });
-      const newIssueEntities = objUtils.setIn (
-        issueEntities, filteredMessages, [issueId, "messages"]
-      );
-
-      lsUtils.setItem (KEYS.ENTITIES_ISSUES, newIssueEntities);
-
-      // Remove message from 'message' entity
-      const messagesEntities = getEntities ("MESSAGES");
-      delete messagesEntities [messageId];
-      lsUtils.setItem (KEYS.ENTITIES_MESSAGES, messagesEntities);
-    };
-
-    /**
      * Removes dummy messages from local storage
      * a] Remove dummy message data from 'messages' entity
      * b] Remove dummy message id from 'issue->messages'
@@ -485,7 +462,6 @@ define ("helpers/localStorage",
       getReplyText,
       setEndUserFirstMsgId,
       getEndUserFirstMsgId,
-      removeMessage,
       removeDummyMessages,
       setSiteActivityStartTime,
       getSiteActivityStartTime,

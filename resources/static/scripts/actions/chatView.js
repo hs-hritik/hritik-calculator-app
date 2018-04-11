@@ -1939,18 +1939,21 @@ define ("actions/chatView",
      */
     const uploadAttachment = (config) => {
       return (dispatch, getState) => {
-        const state = getState ();
-        const {appState} = state;
-        const {domain, activeIssueId, identifier} = appState;
+        const {
+          appState: {
+            domain,
+            activeIssueId
+          }
+        } = getState ();
         const {file, attachmentMsgId} = config;
+        const pluralIssueType = chatViewHelpers.getPluralizedIssueType (ISSUE_TYPE.ISSUE);
 
         upload ({
-          route: routes.postUserReply (domain, activeIssueId, ISSUE_TYPE.ISSUE),
-          formData: {
-            "identifier": identifier,
-            "issue-id": appState.activeIssueId,
+          route: routes.postUserReply (domain, activeIssueId, pluralIssueType),
+          formData: xhrHelpers.getPreparedXhrData ({
+            "issue-id": activeIssueId,
             "message-type": MESSAGE_TYPE.ATTACHMENT
-          },
+          }, SKIP_PLATFORM_ID),
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
