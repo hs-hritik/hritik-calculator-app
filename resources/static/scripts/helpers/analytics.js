@@ -237,7 +237,7 @@ define ("helpers/analytics",
       // publish_id in order to send it with this xhr.
       const xhrData = {
         preissue_id: activeIssueId,
-        faq_publish_id: faqId,
+        faq_id: faqId,
         message_id: commonHelpers.getFaqSuggestionMessageId ()
       };
 
