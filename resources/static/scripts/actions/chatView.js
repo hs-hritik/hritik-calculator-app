@@ -547,6 +547,9 @@ define ("actions/chatView",
         appState: {
           issueType,
           issueState
+        },
+        ui: {
+          text
         }
       } = getState ();
 
@@ -554,8 +557,6 @@ define ("actions/chatView",
       if (issueState === ISSUE_STATE.ACTIVE) {
         return;
       }
-
-      stopPollingForMessages ();
 
       if (issueState === ISSUE_STATE.RESOLVED) {
         // If issue type is 'issue'
@@ -568,8 +569,17 @@ define ("actions/chatView",
           handlePostChatFeatureSteps ();
           dispatch (showPostIssueResolutionFooter ());
         } else if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          // If preIssue is resolved i.e. user has accepted faq suggestions, then
+          // provide an option to start new conversation
           // Show start new conversation footer
           dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+          // Show system info message - This conversation has ended.
+          dispatch (createMessage ({
+            type: MESSAGE_TYPE.SYSTEM_INFO,
+            messageConfig: {
+              body: text.conversationEndNote
+            }
+          }));
         }
       }
     };
@@ -722,7 +732,7 @@ define ("actions/chatView",
       // Calculate unread count for agent messages only
       messages.forEach ((msg) => {
         if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
-            msg.state !== MESSAGES_STATE.READ) {
+          msg.state !== MESSAGES_STATE.READ) {
           finalUnreadCount++;
         }
       });
@@ -760,7 +770,9 @@ define ("actions/chatView",
               csatBot: csatBotEnabled
             }
           },
-          ui
+          ui: {
+            text
+          }
         } = getState ();
 
         if (resolutionQuestionEnabled && !resolutionQuestionCompleted) {
@@ -774,15 +786,15 @@ define ("actions/chatView",
             event: EVENT.CSAT_REQUESTED
           });
         } else {
-          dispatch (
-            batchActions ([
-              createMessage ({
-                type: MESSAGE_TYPE.END_CHAT,
-                body: ui.text.conversationEndNote
-              }),
-              setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION)
-            ])
-          );
+          // Show start new conversation footer
+          dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+          // Show system info message - This conversation has ended.
+          dispatch (createMessage ({
+            type: MESSAGE_TYPE.SYSTEM_INFO,
+            messageConfig: {
+              body: text.conversationEndNote
+            }
+          }));
         }
       };
     };
