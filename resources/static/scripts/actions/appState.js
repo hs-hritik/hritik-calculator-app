@@ -175,22 +175,23 @@ define ("actions/appState",
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
-      const {dispatch, getState} = store;
-      const {
-        appState: {
-          issueExists
+      return (dispatch, getState) => {
+        const {
+          appState: {
+            issueExists
+          }
+        } = getState ();
+
+        dispatch (setConversationStarted ());
+
+        // If an issue exists, the poller would have started already with the
+        // success callback of setIssueState via get config.
+        // Only for new user, start a new conversation. Rest of the cases will be
+        // handled on click of 'start new conversation' button which will call reset.
+        if (!issueExists) {
+          store.dispatch (startNewConversation ());
         }
-      } = getState ();
-
-      dispatch (setConversationStarted ());
-
-      // If an any issue exists, the poller would have started already with the
-      // success callback of setIssueState via get config.
-      // Only for new user, start a new conversation. Rest of the cases will be
-      // handled on click of 'start new conversation' button which will call reset.
-      if (!issueExists) {
-        store.dispatch (startNewConversation ());
-      }
+      };
     };
 
     /**
