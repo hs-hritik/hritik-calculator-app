@@ -71,6 +71,10 @@
         background-color: $user-message-bg-color;
         border: 1px solid $user-message-border-color;
       }
+
+      .hs-message__details {
+        justify-content: flex-end;
+      }
     }
 
     &__suggested-faqs {
@@ -102,20 +106,9 @@
 
     &__details {
       display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      color: $chat-widget-secondary-text-color;
-    }
-
-    &__agent-nickname {
-      margin-right: gutter(8);
-      font-weight: font-weight(medium);
-    }
-
-    &__time-ago {
-      margin-left: gutter(8);
       font-size: font-size(body, small);
       letter-spacing: -.5px;
+      color: $chat-widget-secondary-text-color;
       opacity: .8;
     }
 

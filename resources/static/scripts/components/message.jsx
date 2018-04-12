@@ -25,6 +25,8 @@ define ("components/message",
 
     const IMAGE_MSG_MAX_HEIGHT = 170;
 
+    const AGENT_NAME_SEPARATOR = ", ";
+
     const PropTypes = React.PropTypes;
 
     return React.createClass ({
@@ -454,19 +456,17 @@ define ("components/message",
        * Render agent name and message timestamp.
        */
       _renderMessageDetails () {
-        // Don't render message details for end chat message.
-        if (this.props.message.type === MESSAGE_TYPE.END_CHAT) {
-          return null;
+        const agentName = this._getAgentNickname ();
+        const time = this._getHumanReadableTime ();
+        let details = time;
+
+        if (agentName) {
+          details = agentName + AGENT_NAME_SEPARATOR + time;
         }
 
         return (
           <div className="hs-message__details">
-            <div className="hs-message__agent-nickname">
-              {this._getAgentNickname ()}
-            </div>
-            <div className="hs-message__time-ago">
-              {this._getTimeAgo ()}
-            </div>
+            {details}
           </div>
         );
       },
@@ -488,9 +488,9 @@ define ("components/message",
       },
 
       /**
-       * Get time ago.
+       * Get human readable time
        */
-      _getTimeAgo () {
+      _getHumanReadableTime () {
         const {
           message: {
             type: messageType,
