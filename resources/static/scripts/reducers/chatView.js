@@ -174,18 +174,6 @@ define ("reducers/chatView",
             unreadCount: {$set: action.count}
           });
 
-        case ACTION_TYPES.SET_WM_CONFIG:
-          return update (state, {
-            infoBot: {
-              fieldsRequired: {
-                $set: action.config.identity_bot.fields
-              },
-              currentField: {
-                $set: action.config.identity_bot.fields [0] || ""
-              }
-            }
-          });
-
         case ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE:
           const {value, errorMsg} = action.value,
                 valueUpdateObj = {};
