@@ -43,7 +43,7 @@
 
     &__item {
       position: relative;
-      flex: 0 0 auto;
+      display: inline-block;
       padding: gutter(8 12);
       overflow: hidden;
       color: $agent-message-primary-text-color;
@@ -128,6 +128,7 @@
     }
 
     &__attachment {
+      display: block;
       cursor: pointer;
     }
 
@@ -176,6 +177,7 @@
       margin: gutter(28 0);
       color: $chat-widget-secondary-text-color;
       text-align: center;
+      opacity: .5;
 
       &::before,
       &::after {

@@ -137,7 +137,11 @@ define ("components/messageList",
 
         return (
           <div className="hs-message-list__pills-container">
-            <strong className="hs-message-list__pill-heading">{label}</strong>
+            <small>
+              <strong className="hs-message-list__pill-heading">
+                {label}
+              </strong>
+            </small>
             {pillOptionsEl}
           </div>
         );
