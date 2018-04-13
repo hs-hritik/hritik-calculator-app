@@ -24,6 +24,8 @@ define ("helpers/analytics",
     browserUtils, actionCreators) {
     "use strict";
 
+    const SKIP_PLATFORM_ID = true;
+
     const {
       ISSUE_STATE
     } = appStateConstants;
@@ -224,7 +226,7 @@ define ("helpers/analytics",
       const {
         appState: {
           domain,
-          activeIssueId
+          internalIssueId
         },
         faqView: {
           activeFaq: {
@@ -236,7 +238,7 @@ define ("helpers/analytics",
       // @TODO: Backend doesn't send publish id with the GET faq API. Get the
       // publish_id in order to send it with this xhr.
       const xhrData = {
-        preissue_id: activeIssueId,
+        preissue_id: internalIssueId,
         faq_id: faqId,
         message_id: commonHelpers.getFaqSuggestionMessageId ()
       };
@@ -244,7 +246,7 @@ define ("helpers/analytics",
       xhr ({
         route: routes.postSuggestedFaqRead (domain),
         headers: xhrHelpers.getCommonHeaders (),
-        data: xhrHelpers.getPreparedXhrData (xhrData),
+        data: xhrHelpers.getPreparedXhrData (xhrData, SKIP_PLATFORM_ID),
         method: "POST",
         onSuccess: () => {
           // Store the fact that the SUGGESTED_FAQ_READ event has been tracked once

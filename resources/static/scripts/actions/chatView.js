@@ -617,6 +617,7 @@ define ("actions/chatView",
 
             const {
               id: issueId,
+              internal_id: internalIssueId,
               type: issueType,
               state_data: {
                 state: issueState
@@ -642,6 +643,7 @@ define ("actions/chatView",
               batchActions ([
                 actionCreators.toggleLoading (false),
                 setActiveIssueId (issueId),
+                actionCreators.setInternalIssueId (internalIssueId),
                 setIssueCursor (timestamp),
                 setCsatSubmitted (isCsatSubmitted),
                 updateIssueState (issueState, PROCESS),

@@ -69,7 +69,7 @@ define ("helpers/xhr",
      * })
      *
      * @param {Object} customXhrData
-     * @param {Boolean} skipPlatformId - whether to skip plaform id
+     * @param {Boolean} skipPlatformId - whether to skip adding platform-id
      * @returns {Object}
      */
     const getPreparedXhrData = (customXhrData, skipPlatformId) => {
