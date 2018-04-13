@@ -198,15 +198,16 @@ define ("helpers/analytics",
     /**
      * Track the issue created event. This event is tracked only when the issue
      * creation succeeds.
+     * @param {string} [config.issueId] - issueId of the created issue
      */
-    const _trackIssueCreated = () => {
+    const _trackIssueCreated = (config = {}) => {
       // @TODO: Send the long issue ID (with `d.id`) when the API starts sending
       // it with the create issue API response.
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
           d: {
-            id: _internalIssueId || _getInternalIssueId ()
+            id: config.issueId
           },
           t: PAYLOAD_EVENT.ISSUE_CREATED
         }])
@@ -306,7 +307,7 @@ define ("helpers/analytics",
             _trackWidgetOpen (config);
             break;
           case EVENT.ISSUE_CREATED:
-            _trackIssueCreated ();
+            _trackIssueCreated (config);
             break;
           case EVENT.SUGGESTED_FAQ_READ:
             _trackSuggestedFaqRead ();

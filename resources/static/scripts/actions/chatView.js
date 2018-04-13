@@ -72,7 +72,8 @@ define ("actions/chatView",
       ISSUE_STATE,
       ISSUE_TYPE,
       PRE_CHAT_STATE,
-      PRE_CHAT_FEATURES
+      PRE_CHAT_FEATURES,
+      XHR_ISSUE_STATE
     } = APP_STATE_CONSTANTS;
 
     const GREETING_STATE = PRE_CHAT_STATE.greeting,
@@ -510,6 +511,22 @@ define ("actions/chatView",
           }
         );
         messages = [conversationStartDateMessage].concat (messages);
+      }
+
+      // When a preIssue gets converted to an issue, track issue_created event.
+      // When the preIssue gets converted to an issue, the preIssue object's status
+      // becomes "issue-created". We want to track this event when an issue gets
+      // created during conversation and not when the page is loaded and all the
+      // issue objects (preIssue and issue) are fetched. We identify this if the
+      // issueCursor value is not 0 (the default value).
+      if (
+        issueCursor &&
+        previousIssue &&
+        previousIssue.state_data.state === XHR_ISSUE_STATE.PRE_ISSUE.ISSUE_CREATED
+      ) {
+        analyticsHelpers.track (EVENT.ISSUE_CREATED, {
+          issueId: currentIssue.internal_id
+        });
       }
 
       return {
