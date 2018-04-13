@@ -46,8 +46,9 @@ define ("constants/routes",
 
     const postProfile = (domain) => `${BASE}${domain}/profiles`;
 
-    const putMessagesSeen = (domain, issueId) =>
-                             `${BASE}${domain}/issues/${issueId}/messages-seen`;
+    const putMessages = (domain, issueId, issueType) => {
+      return `${BASE}${domain}/${issueType}/${issueId}/messages`;
+    };
 
     // Route to fetch web socket related config
     const getWsConfig = (domain) => `${BASE}${domain}/ws-config`;
@@ -75,7 +76,7 @@ define ("constants/routes",
       putResetPreIssue,
       postCSAT,
       postProfile,
-      putMessagesSeen,
+      putMessages,
       getWsConfig,
       webSocket,
       postAnalyticsEvent,

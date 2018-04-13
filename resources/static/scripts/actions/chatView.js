@@ -52,7 +52,6 @@ define ("actions/chatView",
       TYPE: MESSAGE_TYPE,
       TYPING_TIMEOUT,
       TIMEOUT: MESSAGES_TIMEOUT,
-      ORIGIN: MESSAGES_ORIGIN,
       STATE: MESSAGES_STATE,
       BODY: MESSAGE_BODY
     } = MESSAGE_CONSTANTS;
@@ -243,18 +242,28 @@ define ("actions/chatView",
      */
     const markMessagesSeen = () => {
       return (dispatch, getState) => {
-        const {appState, chatView} = getState ();
+        const {
+          appState: {
+            domain,
+            activeIssueId,
+            issueType
+          },
+          chatView: {
+            unreadCount
+          }
+        } = getState ();
+        const pluralIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
 
-        if (chatView.unreadCount !== 0) {
+        if (unreadCount !== 0) {
           dispatch (setUnreadCount (0));
           postSdkMessage.updateUnreadCount (0);
         }
 
         xhr ({
-          route: routes.putMessagesSeen (appState.domain, appState.activeIssueId),
-          data: {
-            identifier: appState.identifier
-          },
+          route: routes.putMessages (domain, activeIssueId, pluralIssueType),
+          data: xhrHelpers.getPreparedXhrData ({
+            md_state: "read"
+          }, SKIP_PLATFORM_ID),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
         });
@@ -475,11 +484,15 @@ define ("actions/chatView",
      * Returns active issue and list of messages
      * @param {Object} config - config for creating active issue and  message list
      * @param {Object} config.issues - issues list
-     * @param {Object} config.issueCursor - cursor of latest issue
      * @returns {Object} - config of active issue and messages
      */
     const getCurrentIssueAndMessages = (config) => {
-      const {issues, issueCursor} = config;
+      const {
+        chatView: {
+          issueCursor
+        }
+      } = store.getState ();
+      const {issues} = config;
       const currentIssue = issues [0];
       const currentIssueMessages = (currentIssue && currentIssue.messages) || [];
       let previousIssue = null;
@@ -536,6 +549,29 @@ define ("actions/chatView",
     };
 
     /**
+     * Handle chat end
+     * a] Show start new conversation footer
+     * b] Add chat ended message in message list
+     */
+    const handleChatEnd = () => {
+      const {dispatch, getState} = store;
+      const {
+        ui: {
+          text
+        }
+      } = getState ();
+      // Show start new conversation footer
+      dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+      // Show system info message - This conversation has ended.
+      dispatch (createMessage ({
+        type: MESSAGE_TYPE.SYSTEM_INFO,
+        messageConfig: {
+          body: text.conversationEndNote
+        }
+      }));
+    };
+
+    /**
      * Handle issue state
      * If issue state is not active, stop the poller and issue type is
      * a. 'issue' then handle post chat features
@@ -548,8 +584,8 @@ define ("actions/chatView",
           issueType,
           issueState
         },
-        ui: {
-          text
+        chatView: {
+          issueCursor
         }
       } = getState ();
 
@@ -563,24 +599,20 @@ define ("actions/chatView",
         // a. handle post chat features
         // b. show post issue resolution footer (resolution question | csat |
         //    start new conversation)
-        // Else if issue type is 'preissue'
-        // a. show start new conversation footer
+        // Else if issue type is 'preissue' then handle end chat
         if (issueType === ISSUE_TYPE.ISSUE) {
           handlePostChatFeatureSteps ();
           dispatch (showPostIssueResolutionFooter ());
         } else if (issueType === ISSUE_TYPE.PRE_ISSUE) {
           // If preIssue is resolved i.e. user has accepted faq suggestions, then
           // provide an option to start new conversation
-          // Show start new conversation footer
-          dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
-          // Show system info message - This conversation has ended.
-          dispatch (createMessage ({
-            type: MESSAGE_TYPE.SYSTEM_INFO,
-            messageConfig: {
-              body: text.conversationEndNote
-            }
-          }));
+          handleChatEnd ();
         }
+      } else if (issueState === ISSUE_STATE.REJECTED && !issueCursor) {
+        // a] Issue cursor is not present i.e. its first poll (page refresh)
+        // AND
+        // b] Issue state is 'rejected' then handle end chat
+        handleChatEnd ();
       }
     };
 
@@ -640,12 +672,12 @@ define ("actions/chatView",
             const {
               currentIssue,
               messages
-            } = getCurrentIssueAndMessages ({issues, issueCursor});
+            } = getCurrentIssueAndMessages ({issues});
 
             const {
               id: issueId,
               internal_id: internalIssueId,
-              type: issueType,
+              type: currentIssueType,
               state_data: {
                 state: issueState
               },
@@ -656,25 +688,19 @@ define ("actions/chatView",
               stopPollingForMessages ();
             }
 
-            // Hide TAI if
-            // a] poller's issue type is preIssue
-            //  OR
-            // b] preIssue is converted to issue
-            if (issueType === ISSUE_TYPE.PRE_ISSUE ||
-                (previousIssueType === ISSUE_TYPE.PRE_ISSUE &&
-                 issueType === ISSUE_TYPE.ISSUE)) {
-              dispatch (toggleSystemTyping (false));
-            }
+            handleTAI ({
+              currentIssueType,
+              previousIssueType
+            });
 
             dispatch (
               batchActions ([
                 actionCreators.toggleLoading (false),
                 setActiveIssueId (issueId),
                 actionCreators.setInternalIssueId (internalIssueId),
-                setIssueCursor (timestamp),
                 setCsatSubmitted (isCsatSubmitted),
                 updateIssueState (issueState, PROCESS),
-                updateIssueType (issueType)
+                updateIssueType (currentIssueType)
               ])
             );
 
@@ -682,7 +708,7 @@ define ("actions/chatView",
             if (messagesLength) {
               handleLatestMessage (messages [messagesLength - 1]);
 
-              const pluralIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
+              const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
               dispatch (
                 batchActions ([
                   addMessages ({messages}),
@@ -696,6 +722,8 @@ define ("actions/chatView",
               handleUnreadMessages ();
             }
             handleIssueState ();
+
+            dispatch (setIssueCursor (timestamp));
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
           }
@@ -707,6 +735,27 @@ define ("actions/chatView",
           lastFetchCompleted = true;
         }
       });
+    };
+
+    /**
+     * Handle typing indicator behaviour
+     * @param {Object} config
+     * @param {String} config.currentIssueType - current issue type
+     * @param {String} config.previousIssueType - previous issue type
+     */
+    const handleTAI = (config) => {
+      const {dispatch} = store;
+      const {currentIssueType, previousIssueType} = config;
+      const currentIssueIsPreIssue = currentIssueType === ISSUE_TYPE.PRE_ISSUE;
+      const preIssueConvertedToIssue = (previousIssueType === ISSUE_TYPE.PRE_ISSUE &&
+                                        currentIssueType === ISSUE_TYPE.ISSUE);
+      // Hide TAI if
+      // a] poller's current issue type is preIssue
+      //  OR
+      // b] preIssue is converted to issue
+      if (currentIssueIsPreIssue || preIssueConvertedToIssue) {
+        dispatch (toggleSystemTyping (false));
+      }
     };
 
     /**
@@ -724,15 +773,24 @@ define ("actions/chatView",
         },
         chatView: {
           unreadCount,
-          messageList: messages
+          messageList: messages,
+          issueCursor
         }
       } = getState ();
       let finalUnreadCount = unreadCount;
 
       // Calculate unread count for agent messages only
       messages.forEach ((msg) => {
-        if (msg.origin === MESSAGES_ORIGIN.ADMIN &&
-          msg.state !== MESSAGES_STATE.READ) {
+        const {
+          type,
+          state,
+          isCustomerMsg
+        } = msg;
+
+        if (!isCustomerMsg &&
+            state !== MESSAGES_STATE.READ &&
+            type !== MESSAGE_TYPE.SYSTEM_INFO &&
+            chatViewHelpers.isRenderableMessage (type)) {
           finalUnreadCount++;
         }
       });
@@ -746,9 +804,8 @@ define ("actions/chatView",
         postSdkMessage.updateUnreadCount (finalUnreadCount);
       }
 
-      // @TODO - Confirm why earlier code used activeIssueMsgCursor
-      // if (activeIssueMsgCursor && finalUnreadCount) {
-      if (finalUnreadCount) {
+      // Do not play sound on page load even if there are unread messages
+      if (issueCursor && finalUnreadCount) {
         audioHelpers.playReceive ();
       }
     };
@@ -769,9 +826,6 @@ define ("actions/chatView",
               resolutionQuestion: resolutionQuestionEnabled,
               csatBot: csatBotEnabled
             }
-          },
-          ui: {
-            text
           }
         } = getState ();
 
@@ -786,15 +840,7 @@ define ("actions/chatView",
             event: EVENT.CSAT_REQUESTED
           });
         } else {
-          // Show start new conversation footer
-          dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
-          // Show system info message - This conversation has ended.
-          dispatch (createMessage ({
-            type: MESSAGE_TYPE.SYSTEM_INFO,
-            messageConfig: {
-              body: text.conversationEndNote
-            }
-          }));
+          handleChatEnd ();
         }
       };
     };

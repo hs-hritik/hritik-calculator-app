@@ -393,7 +393,8 @@ define ("reducers/appState",
           // and webChatIsLive flag
           return update (INITIAL_STATE, {
             cif: {$set: state.cif},
-            webChatIsLive: {$set: state.webChatIsLive}
+            webChatIsLive: {$set: state.webChatIsLive},
+            minimized: {$set: state.minimized}
           });
 
         case ACTION_TYPES.SET_FULL_PRIVACY:
