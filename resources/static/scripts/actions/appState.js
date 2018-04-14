@@ -49,6 +49,7 @@ define ("actions/appState",
       MIN_RESET_TIMEOUT,
       MAX_RESET_TIMEOUT,
       PRE_ISSUE_RESET_TIMEOUT,
+      ANON_USER_RESET_TIMEOUT,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
       TRIGGER,
@@ -437,7 +438,8 @@ define ("actions/appState",
         tags,
         resetTimeout,
         userId,
-        userEmail
+        userEmail,
+        clearAnonymousUserOnLogin
       } = config;
 
       const {
@@ -464,10 +466,53 @@ define ("actions/appState",
         // developer to know about this.
       }
 
+      // The following action (SET_CLIENT_CONFIG) sets the userId passed by the
+      // developer in the state and localstorage. Before setting it in localstorage
+      // we need to determine if we should handle the user login change.
+      handleAnonUserReset (config.userId, clearAnonymousUserOnLogin);
+
       return {
         type: ACTION_TYPES.SET_CLIENT_CONFIG,
         config
       };
+    };
+
+    /**
+     * Clean anon user id if applicable.
+     * The user id passed with `helpshiftConfig` compared with the previous
+     * user id determines whether the end user logged in or logged out.
+     * Based on the client's config value of clearAnonymousUserOnLogin, reset the
+     * anon user id.
+     * Also, clear the anonymous user id after 7 days of inactivity.
+     * @param {string} userId - The userId value passed with `helpshiftConfig`.
+     * @param {boolean} clearAnonymousUserOnLogin
+     */
+    const handleAnonUserReset = (userId, clearAnonymousUserOnLogin) => {
+      // Clear anon user id after 7 days of inactivity
+      const lastActivityTime = lsHelpers.getLastActivityTime ();
+      const inactivityDuration = Date.now () - lastActivityTime;
+
+      if (lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
+        lsHelpers.removeAnonUserId ();
+      }
+
+      // Clear anon user if a user logs in and clearAnonymousUserOnLogin flag is true
+      if (
+        !commonHelpers.isUserIdValid (userId) ||
+        !clearAnonymousUserOnLogin
+      ) {
+        return;
+      }
+
+      const previousUserId = lsHelpers.getUserId ();
+
+      if (userId !== previousUserId) {
+        // If previousUserId is not present,
+        // anon user -> a user logged in
+        // If previousUserId is present,
+        // A user was logged in -> they logged out -> a new user logged in.
+        lsHelpers.removeAnonUserId ();
+      }
     };
 
     /**

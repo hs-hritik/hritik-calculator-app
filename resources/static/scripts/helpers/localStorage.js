@@ -130,6 +130,11 @@ define ("helpers/localStorage",
     };
 
     /**
+     * Remove anon user id
+     */
+    const removeAnonUserId = () => lsUtils.removeItem (KEYS.ANON_USER_ID);
+
+    /**
      * Returns the entities saved in localstorage.
      * @param {String} entityType
      * @returns {Object} - entities
@@ -439,6 +444,7 @@ define ("helpers/localStorage",
       setDeviceId,
       getAnonUserId,
       setAnonUserId,
+      removeAnonUserId,
       getEntities,
       setEntities,
       reset,
