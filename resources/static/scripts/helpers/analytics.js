@@ -63,14 +63,14 @@ define ("helpers/analytics",
      */
     const _doesIssueExist = () => {
       const {
-        businessHoursViewState: bhState
+        businessHoursViewState: bhState,
+        appState: {
+          issueState,
+          internalIssueId
+        }
       } = store.getState ();
 
       const outOfBusinessHours = commonHelpers.isOutOfBusinessHours ();
-
-      // Read the issue state from localstorage to get this information on page
-      // reloads before the state is re-hydrated.
-      const issueState = lsHelpers.getIssueState ();
 
       // An issue exists
       // If it's out of business hours and
@@ -79,13 +79,14 @@ define ("helpers/analytics",
       // Or
       // If it's in business hours and
       //    there's an active issue
+      //    there's an active issue id in the system, which will be passed to the event.
       if (outOfBusinessHours) {
         return (
           bhState.offlineBehaviour === OFFLINE_BEHAVIOUR.CONTACT_FORM &&
           bhState.contactFormSubmitted
         );
       } else {
-        return issueState === ISSUE_STATE.ACTIVE;
+        return issueState === ISSUE_STATE.ACTIVE && !!internalIssueId;
       }
     };
 
@@ -201,8 +202,6 @@ define ("helpers/analytics",
      * @param {string} [config.issueId] - issueId of the created issue
      */
     const _trackIssueCreated = (config = {}) => {
-      // @TODO: Send the long issue ID (with `d.id`) when the API starts sending
-      // it with the create issue API response.
       const eventPayload = {
         e: JSON.stringify ([{
           ts: Date.now (),
