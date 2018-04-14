@@ -88,10 +88,14 @@ define ("helpers/xhr",
       };
 
       // Set `uid` to the xhr data according to the following rules.
-      // If none of userId and email is passed, set `uid` with `anonUserIdentifier`.
-      // If userId is passed (irrespective of if email is passed), set `uid` with `userId`.
+      // If none of userId and email is passed, set `uid` to `anonUserIdentifier`.
+      // If userId is passed (irrespective of if email is passed), set `uid` to `userId`.
       // If userId is not passed and email is passed, don't send `uid`.
-      if (!userId && !userEmail) {
+      // If email is the only identifier in fullPrivacy mode, set `uid` to `anonUserIdentifier`.
+      if (
+        (!userId && !userEmail) ||
+        (!userId && userEmail && fullPrivacyEnabled)
+      ) {
         commonXhrData.uid = anonUserIdentifier;
       } else if (userId) {
         commonXhrData.uid = userId;
