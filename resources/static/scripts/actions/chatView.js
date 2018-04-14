@@ -1228,7 +1228,9 @@ define ("actions/chatView",
               greeting: greetingFeatureEnabled
             },
             fullPrivacyEnabled,
-            developerSetLanguage
+            developerSetLanguage,
+            userName,
+            userId
           },
           ui: {
             text: {
@@ -1265,6 +1267,9 @@ define ("actions/chatView",
 
         if (fullPrivacyEnabled) {
           xhrData.fp_status = true;
+        } else if (userName) {
+          // Set name if fullPrivacy mode is off
+          xhrData.name = userName;
         }
 
         xhrData.device_language = browserUtils.getLanguage ();
@@ -1273,9 +1278,10 @@ define ("actions/chatView",
           xhrData.developer_set_language = developerSetLanguage;
         }
 
-        // @TODO: Check how are we going to send name with create-pre-issue XHR.
-        // Discussion still going on with backend. Do not send the name value if
-        // fullPrivacy is enabled.
+        // Passing user_id is a temporary backend requirement.
+        if (userId) {
+          xhrData.user_id = userId;
+        }
 
         xhr ({
           route: routes.postPreIssue (domain),
