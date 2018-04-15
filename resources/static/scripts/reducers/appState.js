@@ -43,7 +43,7 @@ define ("reducers/appState",
       userId: "",
       userName: "",
       userEmail: "",
-      userHash: "",
+      userAuthToken: "",
       userProfileId: "",
 
       // Backend flag to represent if any issue exists
@@ -196,7 +196,7 @@ define ("reducers/appState",
               userId,
               userName,
               userEmail,
-              userHash,
+              userAuthToken,
               tags,
               fullPrivacy
             }
@@ -209,7 +209,7 @@ define ("reducers/appState",
             userId: {$set: userId || ""},
             userName: {$set: userName || ""},
             userEmail: {$set: userEmail || ""},
-            userHash: {$set: userHash || ""},
+            userAuthToken: {$set: userAuthToken || ""},
             tags: {$set: tags || []},
             fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {

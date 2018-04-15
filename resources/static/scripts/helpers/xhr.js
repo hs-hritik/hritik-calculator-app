@@ -78,7 +78,7 @@ define ("helpers/xhr",
         userId,
         anonUserIdentifier,
         userEmail,
-        userHash,
+        userAuthToken,
         platformId,
         fullPrivacyEnabled
       } = store.getState ().appState;
@@ -106,21 +106,21 @@ define ("helpers/xhr",
       }
 
       // Handle fullPrivacy mode and HMAC
-      // If fullPrivacy is not enabled, send all (userId, userEmail, userHash) the values.
+      // If fullPrivacy is not enabled, send all (userId, userEmail, userAuthToken) the values.
       // If fullPrivacy is enabled then
-      //    If email is not set and userId and userHash are set, send userId and
-      //    userHash.
-      //    If email is set, do not send userHash
+      //    If email is not set and userId and userAuthToken are set, send userId and
+      //    userAuthToken.
+      //    If email is set, do not send userAuthToken
       if (!fullPrivacyEnabled) {
         if (userEmail) {
           commonXhrData.email = userEmail;
         }
 
-        if (userHash) {
-          commonXhrData.user_auth_token = userHash;
+        if (userAuthToken) {
+          commonXhrData.user_auth_token = userAuthToken;
         }
-      } else if (!userEmail && userId && userHash) {
-        commonXhrData.user_auth_token = userHash;
+      } else if (!userEmail && userId && userAuthToken) {
+        commonXhrData.user_auth_token = userAuthToken;
       }
 
       // Merge custom and common XHR data objects if the passed custom data is
