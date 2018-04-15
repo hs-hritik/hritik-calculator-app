@@ -24,9 +24,6 @@ define ("helpers/common",
     const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]{1,246}\.[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
     /* eslint-enable max-len */
 
-    // 1 non space char + 1 to 748 any char + 1 non space char
-    const USER_ID_REGEX = /^[^\s].{1,748}[^\s]$/;
-
     const {
       TYPE: MESSAGE_TYPE
     } = messageConstants;
@@ -142,7 +139,9 @@ define ("helpers/common",
      * @param {string} value - userId to validate.
      * @returns {boolean} - true if the userId is valid.
      */
-    const isUserIdValid = (value) => USER_ID_REGEX.test (value);
+    const isUserIdValid = (value) => {
+      return !!(value && value.length <= 750 && value === value.trim ());
+    };
 
     /**
      * Predicate to return whether issue is created and not preIssue
