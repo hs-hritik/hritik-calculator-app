@@ -166,12 +166,6 @@ define ("extras/api",
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
           handleMessengerToggle (data);
           break;
-        case EVENT_TYPES.CMD_RESET:
-          // If the reset API is called manually, reset proactive chat data as well.
-          store.dispatch (appStateActions.reset ({
-            resetProactiveChat: true
-          }));
-          break;
         case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
           handleInitialUserMsg (data);
           break;

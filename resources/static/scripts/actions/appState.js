@@ -45,9 +45,6 @@ define ("actions/appState",
 
     const {
       ISSUE_STATE,
-      DEFAULT_RESET_TIMEOUT,
-      MIN_RESET_TIMEOUT,
-      MAX_RESET_TIMEOUT,
       PRE_ISSUE_RESET_TIMEOUT,
       ANON_USER_RESET_TIMEOUT,
       PRE_CHAT_STATE,
@@ -382,33 +379,6 @@ define ("actions/appState",
     };
 
     /**
-     * Return resetTimeout value to be set in the state by converting the
-     * passed value, in hours, to milliseconds.
-     * @param {number} - Reset timeout passed with client config (in hours)
-     * @returns {number} - Reset timeout value to be set in the state
-     */
-    const getProcessedResetTimeout = function (timeout) {
-      if (typeof timeout === "number") {
-        let effectiveTimeout = timeout;
-
-        // If the passed value is less than the minimum possible value or greater
-        // than the maximum possible value of reset timeout, then set it to the
-        // min or max value, respectively.
-        if (timeout < MIN_RESET_TIMEOUT) {
-          effectiveTimeout = MIN_RESET_TIMEOUT;
-        } else if (timeout > MAX_RESET_TIMEOUT) {
-          effectiveTimeout = MAX_RESET_TIMEOUT;
-        }
-
-        // x hours = x * 60 * 60 * 1000 milliseconds
-        return effectiveTimeout * 3600000;
-      }
-
-      // If an invalid timeout is passed, return the default reset timeout
-      return DEFAULT_RESET_TIMEOUT;
-    };
-
-    /**
      * Action to set device id.
      * @param {String} id - device id
      * @returns {Object}
@@ -436,7 +406,6 @@ define ("actions/appState",
     const setClientConfig = (config) => {
       const {
         tags,
-        resetTimeout,
         userId,
         userEmail,
         clearAnonymousUserOnLogin
@@ -449,9 +418,6 @@ define ("actions/appState",
 
       // Filter string values and convert to lower case
       config.tags = getProcessedTags (tags);
-
-      // Get the resetTimeout value to be set in the state
-      config.resetTimeout = getProcessedResetTimeout (resetTimeout);
 
       // If userId is passed, validate it.
       // If userEmail is passed, validate it.

@@ -197,7 +197,6 @@ define ("reducers/appState",
               userName,
               userEmail,
               userHash,
-              resetTimeout,
               tags,
               fullPrivacy
             }
@@ -211,7 +210,6 @@ define ("reducers/appState",
             userName: {$set: userName || ""},
             userEmail: {$set: userEmail || ""},
             userHash: {$set: userHash || ""},
-            resetTimeout: {$set: resetTimeout || DEFAULT_RESET_TIMEOUT},
             tags: {$set: tags || []},
             fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {

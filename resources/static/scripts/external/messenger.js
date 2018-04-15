@@ -54,7 +54,6 @@
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
-    CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
     CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
     CMD_SET_LANGUAGE: "cmd-set-language",
@@ -815,13 +814,6 @@
   };
 
   /**
-   * JS API to reset the conversation
-   */
-  const reset = () => {
-    _postMessage (EVENT_TYPES.CMD_RESET);
-  };
-
-  /**
    * JS API to set initial end user message
    * @param {String} message - initial user message
    */
@@ -1003,7 +995,6 @@
     init,
     open,
     close,
-    reset,
     setInitialUserMessage,
     setGreetingMessage,
     setLanguage,
