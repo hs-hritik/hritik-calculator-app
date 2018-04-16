@@ -94,6 +94,7 @@ define ("components/message",
        */
       _renderMessage () {
         const {type} = this.props.message;
+        let messageItemEl = null;
 
         // @NOTE - All bot messages (except faqs) and user response messages
         // are rendered as text messages
@@ -111,20 +112,31 @@ define ("components/message",
           case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT:
           case MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT:
           case MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT:
-            return this._renderTextMessage ();
+            messageItemEl = this._renderTextMessage ();
+            break;
 
           case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
-            return this._renderFaqMessage ();
+            messageItemEl = this._renderFaqMessage ();
+            break;
 
           case MESSAGE_TYPE.CSAT:
-            return this._renderCsatMessage ();
+            messageItemEl = this._renderCsatMessage ();
+            break;
 
           case MESSAGE_TYPE.ATTACHMENT:
-            return this._renderAttachmentMessage ();
-
-          default:
-            return null;
+            messageItemEl = this._renderAttachmentMessage ();
+            break;
         }
+
+        if (messageItemEl) {
+          return (
+            <div className="hs-message__item-wrapper">
+              {messageItemEl}
+            </div>
+          );
+        }
+
+        return null;
       },
 
       /**

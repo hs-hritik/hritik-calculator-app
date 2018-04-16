@@ -41,9 +41,12 @@
     max-width: $max-width;
     margin-top: gutter(6);
 
+    &__item-wrapper {
+      display: flex;
+    }
+
     &__item {
       position: relative;
-      display: inline-block;
       padding: gutter(8 12);
       overflow: hidden;
       color: $agent-message-primary-text-color;
@@ -65,6 +68,10 @@
 
     &--right {
       align-self: flex-end;
+
+      .hs-message__item-wrapper {
+        justify-content: flex-end;
+      }
 
       .hs-message__item {
         color: $user-message-primary-text-color;
@@ -128,7 +135,6 @@
     }
 
     &__attachment {
-      display: block;
       cursor: pointer;
     }
 
