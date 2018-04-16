@@ -115,112 +115,89 @@ define ("actions/businessHours",
 
     /**
      * Create issue for out of business hour
-     * @param {Function} dispatch - dispatch
-     * @param {Object} state - state
+     * @returns {Function} - Action
      */
-    const createIssue = (config) => {
-      const {id, platformId, message, inBusinessHours, tags, cif, domain,
-             onSuccess, onFailure, onEnd, attachments} = config;
-
-      const {appState} = store.getState ();
-      const {metadata} = appState;
-
-      const xhrData = {
-        "identifier": id,
-        "platform-id": platformId,
-        "message-body": message,
-        "in_business_hours": inBusinessHours,
-        "language": browserUtils.getLanguage ()
-      };
-
-      const meta = {
-        device_info: metadata
-      };
-
-      if (tags) {
-        meta.custom_meta = {
-          "hs-tags": tags
-        };
-      }
-      xhrData.meta = JSON.stringify (meta);
-
-      // If cif is set and contains atleast one field, add to xhr data
-      if (cif && Object.keys (cif).length) {
-        xhrData.custom_fields = JSON.stringify (cif);
-      }
-
-      upload ({
-        route: routes.postIssue (domain),
-        files: attachments,
-        formData: xhrData,
-        headers: xhrHelpers.getCommonHeaders (),
-        onSuccess,
-        onFailure,
-        onEnd
-      });
-    };
-
-    /**
-     * This action gets called asynchronously from api.js, when parent data
-     * required for issue creation is available.
-     */
-    const registerUserAndCreateIssue = () => {
+    const createIssueOutOfBusinessHours = () => {
       return (dispatch, getState) => {
-        const state = getState ();
-        const {businessHoursViewState, appState} = state;
-        const {contactFormDetails} = businessHoursViewState;
-
-        chatViewActions.registerUserProfile ({
-          identifier: appState.identifier,
-          name: contactFormDetails.name.value.value,
-          email: contactFormDetails.email.value.value
-        },
-        appState.domain, {
-          onSuccess: (response) => {
-            // @TODO :- Create a util for firing xhrs.
-            // Move registerUserProfile from chatViewActions to util
-            // Remove createIssue method from here and from chat view actions
-            const profileId = response ["profile-id"];
-            const {tags, cif} = appState;
-            const message = contactFormDetails.message.value.value;
-            let attachments = null;
-
-            if (contactFormDetails.attachmentsMeta.featureIsEnabled &&
-                contactFormDetails.attachments.length) {
-              attachments = contactFormDetails.attachments.map (({file}) => file);
-            }
-
-            dispatch (actionCreators.setUserProfileId (profileId));
-            createIssue ({
-              id: response.identifier,
-              platformId: appState.platformId,
-              domain: appState.domain,
-              message,
-              inBusinessHours: businessHoursViewState.inBusinessHours,
-              tags,
-              cif,
+        const {
+          appState: {
+            domain,
+            metadata,
+            tags,
+            cif,
+            fullPrivacyEnabled,
+            developerSetLanguage
+          },
+          businessHoursViewState: {
+            contactFormDetails: {
+              attachmentsMeta,
               attachments,
-              onSuccess: () => {
-                dispatch (setBusinessHoursFormSubmitted ());
-              },
-              onFailure: (failureResponse) => {
-                const responseAttachments = objectUtils.getIn (
-                  failureResponse,
-                  ["responseData", "data", "attachments"]
-                );
-                if (responseAttachments && responseAttachments.length) {
-                  const attachmentsWithError = getAttachmentsErrorActions (
-                    responseAttachments
-                  );
-                  if (attachmentsWithError.length) {
-                    dispatch (batchActions (attachmentsWithError));
-                  }
-                }
-              },
-              onEnd: () => {
-                dispatch (enableBusinessHoursContactForm ());
+              message
+            },
+            inBusinessHours
+          }
+        } = getState ();
+        const messageValue = message.value.value;
+        let attachmentFiles = null;
+
+        if (attachmentsMeta.featureIsEnabled && attachments.length) {
+          attachmentFiles = attachments.map (({file}) => file);
+        }
+
+        const xhrData = {
+          "message-body": messageValue,
+          "in_business_hours": inBusinessHours,
+          "device_language": browserUtils.getLanguage ()
+        };
+
+        const meta = {
+          device_info: metadata
+        };
+
+        if (tags) {
+          meta.custom_meta = {
+            "hs-tags": tags
+          };
+        }
+        xhrData.meta = JSON.stringify (meta);
+
+        // If cif is set and contains atleast one field, add to xhr data
+        if (cif && Object.keys (cif).length) {
+          xhrData.custom_fields = JSON.stringify (cif);
+        }
+
+        if (fullPrivacyEnabled) {
+          xhrData.fp_status = true;
+        }
+
+        if (developerSetLanguage) {
+          xhrData.developer_set_language = developerSetLanguage;
+        }
+
+        upload ({
+          route: routes.postIssue (domain),
+          files: attachmentFiles,
+          formData: xhrHelpers.getPreparedXhrData (xhrData),
+          headers: xhrHelpers.getCommonHeaders (),
+          onSuccess: () => {
+            dispatch (setBusinessHoursFormSubmitted ());
+          },
+          onFailure: (failureResponse) => {
+            const responseAttachments = objectUtils.getIn (
+              failureResponse,
+              ["responseData", "data", "attachments"]
+            );
+            if (responseAttachments && responseAttachments.length) {
+              const attachmentsWithError = getAttachmentsErrorActions (
+                responseAttachments
+              );
+              if (attachmentsWithError.length) {
+                dispatch (batchActions (attachmentsWithError));
               }
-            });
+            }
+          },
+          onEnd: () => {
+            dispatch (enableBusinessHoursContactForm ());
           }
         });
       };
@@ -304,7 +281,7 @@ define ("actions/businessHours",
     return {
       setBusinessHoursContactFormDetails,
       submitBusinessHoursContactForm,
-      registerUserAndCreateIssue,
+      createIssueOutOfBusinessHours,
       addAttachments,
       removeAttachment
     };

@@ -152,7 +152,7 @@ define ("extras/api",
       ];
 
       if (commonHelpers.isOutOfBusinessHours ()) {
-        store.dispatch (businessHoursActions.registerUserAndCreateIssue ());
+        store.dispatch (businessHoursActions.createIssueOutOfBusinessHours ());
       } else if (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) {
         store.dispatch (chatViewActions.startNextPreChatFeature ());
       }

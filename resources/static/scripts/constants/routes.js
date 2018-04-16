@@ -18,6 +18,8 @@ define ("constants/routes",
 
     const getIssues = (domain) => `${BASE}${domain}/issues`;
 
+    const postIssue = (domain) => `${BASE}${domain}/issues`;
+
     const postUserReply = (domain, issueId, issueType) => {
       return `${BASE}${domain}/${issueType}/${issueId}/messages`;
     };
@@ -83,6 +85,7 @@ define ("constants/routes",
       postUserReply,
       getIssuesAndMessages,
       postSuggestedFaqRead,
-      putMigrateProfile
+      putMigrateProfile,
+      postIssue
     };
   });
