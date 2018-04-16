@@ -27,7 +27,7 @@ define ("extras/api",
     actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers) {
     "use strict";
 
-    const {ISSUE_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
+    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -137,24 +137,16 @@ define ("extras/api",
     const handleInitialUserMsg = ({message}) => {
       // Set initial user message in store
       store.dispatch (appStateActions.setInitialUserMsg (message));
-
-      // @TODO - Find a place to call get parent info, as createInitialUserMessage
-      // was internally calling the same.
     };
 
     /**
      * Dispatches appropriate action depending on the current chat view
      */
     const handleIssueCreation = () => {
-      const {appState} = store.getState ();
-      const currentPreChatFeature = appState.preChatFeatureOrder [
-        appState.preChatFeatureIndex
-      ];
-
       if (commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (businessHoursActions.createIssueOutOfBusinessHours ());
-      } else if (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) {
-        store.dispatch (chatViewActions.startNextPreChatFeature ());
+      } else {
+        store.dispatch (chatViewActions.createPreIssue ());
       }
     };
 

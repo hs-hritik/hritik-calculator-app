@@ -187,7 +187,7 @@ define ("actions/appState",
         // Only for new user, start a new conversation. Rest of the cases will be
         // handled on click of 'start new conversation' button which will call reset.
         if (!issueExists) {
-          store.dispatch (startNewConversation ());
+          startNewConversation ();
         }
       };
     };
@@ -719,7 +719,7 @@ define ("actions/appState",
         if (issueExists && !webChatIsLive) {
           chatViewActions.startPollingForMessages ();
         } else if (webChatIsLive) {
-          dispatch (startNewConversation ());
+          startNewConversation ();
         }
 
         dispatch (setWebChatIsLive ());
@@ -1029,15 +1029,12 @@ define ("actions/appState",
      * @returns {Function} - action.
      */
     const startNewConversation = () => {
-      return (dispatch) => {
-        // @TODO: Check if resetting localstorage is applicable.
-        lsHelpers.reset ({
-          skipUser: true
-        });
-
-        // Create pre-issue
-        dispatch (chatViewActions.createPreIssue ());
-      };
+      // We are not directly creating preIssue over here as we need meta data
+      // from parent page for issue creation.
+      // After the fetch is successful, the control flow will go to api js where
+      // we set meta data in store and handle issue creation.
+      // Ref :- api.js -> handleApis -> handleIssueCreation
+      postSdkMessage.getParentInfo ();
     };
 
     /**
