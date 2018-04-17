@@ -13,6 +13,7 @@
 @include component(info-view) {
 
   $loader-color: color(primary);
+  $subtitle-color: color(text, light);
 
   .hs-info-view {
     display: flex;
@@ -24,6 +25,19 @@
     &__loader {
       font-size: icon-size(xxx-large);
       color: $loader-color;
+    }
+
+    &__title,
+    &__subtitle {
+      margin-bottom: gutter(8);
+    }
+
+    &__title {
+      font-weight: font-weight(medium);
+    }
+
+    &__subtitle {
+      color: $subtitle-color;
     }
   }
 }
