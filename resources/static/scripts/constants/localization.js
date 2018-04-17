@@ -51,7 +51,9 @@ define ("constants/localization",
       "business_hours_atch_limit_msg": "businessHoursAttachmentsLimitExceedMsg",
       "email_validation_error": "emailValidationError",
       // @TODO: Confirm retry btn key
-      "retry_btn": "retryBtn"
+      "retry_btn": "retryBtn",
+      // @TODO: Confirm key
+      "no_internet_connection": "noInternetConnection"
     };
 
     return {

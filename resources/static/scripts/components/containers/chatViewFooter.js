@@ -24,7 +24,8 @@ define ("components/containers/chatViewFooter",
           activeIssueId,
           issueType,
           footerIsActive,
-          fullPrivacyEnabled
+          fullPrivacyEnabled,
+          online
         },
         chatView: {
           userInput,
@@ -38,6 +39,14 @@ define ("components/containers/chatViewFooter",
         }
       } = state;
 
+      let failureConfig;
+
+      if (!online) {
+        failureConfig = {
+          message: text.noInternetConnection
+        };
+      }
+
       return {
         rating,
         activeFooter: activeFooter,
@@ -48,7 +57,8 @@ define ("components/containers/chatViewFooter",
         text: text,
         footerIsActive: footerIsActive,
         userInput,
-        fullPrivacyEnabled
+        fullPrivacyEnabled,
+        failureConfig
       };
     };
 

@@ -218,6 +218,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to toggle online status
+     * @param {Boolean} online
+     * @returns {Object} - Action
+     */
+    const toggleOnlineStatus = (online) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_ONLINE_STATUS,
+        online
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -237,6 +249,7 @@ define ("actions/actionCreators",
       setResolutionQuestionCompleted,
       setCsatCompleted,
       setFullPrivacy,
-      toggleLoading
+      toggleLoading,
+      toggleOnlineStatus
     };
   });

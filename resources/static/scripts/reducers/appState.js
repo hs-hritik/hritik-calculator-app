@@ -106,7 +106,8 @@ define ("reducers/appState",
         csatCompleted: false
       },
       fullPrivacyEnabled: false,
-      loading: true
+      loading: true,
+      online: true
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -398,6 +399,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_FULL_PRIVACY:
           return update (state, {
             fullPrivacyEnabled: {$set: action.enabled}
+          });
+
+        case ACTION_TYPES.TOGGLE_ONLINE_STATUS:
+          return update (state, {
+            online: {$set: action.online}
           });
 
         default:

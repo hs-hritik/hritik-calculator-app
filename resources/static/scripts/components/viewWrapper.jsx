@@ -27,7 +27,8 @@ define ("components/viewWrapper",
         allowFullScreen: PropTypes.bool,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        onToggleOnlineStatus: PropTypes.func.isRequired
       },
 
       render () {
@@ -68,6 +69,24 @@ define ("components/viewWrapper",
        */
       _onMinimizeConversation () {
         postSdkMessage.toggleMessenger (true);
+      },
+
+      _onOnline () {
+        this.props.onToggleOnlineStatus (true);
+      },
+
+      _onOffline () {
+        this.props.onToggleOnlineStatus (false);
+      },
+
+      componentDidMount () {
+        window.addEventListener ("online", this._onOnline);
+        window.addEventListener ("offline", this._onOffline);
+      },
+
+      componentWillUnmount () {
+        window.removeEventListener ("online", this._onOnline);
+        window.removeEventListener ("offline", this._onOffline);
       }
     });
   }
