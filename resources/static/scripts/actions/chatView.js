@@ -712,10 +712,15 @@ define ("actions/chatView",
             if (messagesLength) {
               handleLatestMessage (messages [messagesLength - 1]);
 
+              const processedMessages = entityHelpers.getProcessedMessages (messages);
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
+
               dispatch (
                 batchActions ([
-                  addMessages ({messages}),
+                  addMessages ({
+                    messages: processedMessages,
+                    process: false
+                  }),
                   setActiveIssueMsgCursor ({
                     [pluralIssueType]: {
                       [issueId]: timestamp
@@ -723,7 +728,9 @@ define ("actions/chatView",
                   })
                 ])
               );
-              handleUnreadMessages ();
+              handleUnreadMessages ({
+                messages: processedMessages
+              });
             }
             handleIssueState ();
 
@@ -767,8 +774,10 @@ define ("actions/chatView",
      * Calculate unread (agent) message count by checking each message
      * If the widget is minimized, post message to parent with unread count which
      * will show unread notification on widget
+     * @param {Object} config
+     * @param {Array} config.messages - processed poller messages
      */
-    const handleUnreadMessages = () => {
+    const handleUnreadMessages = (config) => {
       const {dispatch, getState} = store;
       const {
         appState: {
@@ -777,10 +786,10 @@ define ("actions/chatView",
         },
         chatView: {
           unreadCount,
-          messageList: messages,
           issueCursor
         }
       } = getState ();
+      const {messages} = config;
       let finalUnreadCount = unreadCount;
 
       // Calculate unread count for agent messages only
