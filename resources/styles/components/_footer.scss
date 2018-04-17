@@ -64,5 +64,10 @@
     &--full-screen {
       border-radius: 0;
     }
+
+    &--failure {
+      background-color: inherit;
+      border-top: 0;
+    }
   }
 }

@@ -18,6 +18,7 @@
   $form-accent-color: var(--hs-form-accent-color);
   $form-accent-color-light: var(--hs-form-accent-color-light);
   $form-error: var(--hs-form-error);
+  $loader-color: color(primary);
 
   .hs-chat-footer {
     min-height: 52px;
@@ -137,6 +138,19 @@
       .hs-chat-footer__submit {
         color: $form-error;
       }
+    }
+
+    &__icon {
+      font-size: icon-size(large);
+      color: $loader-color;
+    }
+
+    &__icon-error {
+      color: $form-error;
+    }
+
+    &__field-item {
+      margin-left: gutter(6);
     }
   }
 }

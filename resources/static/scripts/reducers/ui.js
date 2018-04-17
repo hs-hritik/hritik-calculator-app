@@ -87,6 +87,7 @@ define ("reducers/ui",
         emailValidationError: "Enter a valid email address",
         numberValidationError: "Enter a valid number",
         dateValidationError: "Enter a valid date in DD/MM/YYYY format",
+        retryBtn: "RETRY",
         errorMessage: {
           [NO_AUTH_ERROR]: {
             title: "Authentication Failed",

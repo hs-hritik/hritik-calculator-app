@@ -35,6 +35,29 @@ define ("components/chatViewFooter",
         rating: PropTypes.number,
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
+        /**
+         * If any failure has to be displayed on the chat view footer.
+         * It can be Network failure or any other failure.
+         */
+        failureConfig: PropTypes.shape ({
+          /**
+           * The string representing the failure.
+           */
+          message: PropTypes.string.isRequired,
+          /**
+           * Whether to show the loading icon or not.
+           * If not, an error icon would be shown.
+           */
+          isLoading: PropTypes.bool,
+          /**
+           * Whether to render the retry btn or not
+           */
+          allowRetry: PropTypes.bool
+        }),
+        /**
+         * On click handler for retry btn
+         */
+        onRetryBtnClick: PropTypes.func,
         onSubmitReply: PropTypes.func.isRequired,
         onValueChangeInputField: PropTypes.func.isRequired,
         onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
@@ -48,7 +71,8 @@ define ("components/chatViewFooter",
           csatBotRequestMsg: PropTypes.string.isRequired,
           chatViewConversationResolutionQuestion: PropTypes.string.isRequired,
           chatViewIssueRejectionQuestion: PropTypes.string.isRequired,
-          chatViewStartNewConversation: PropTypes.string.isRequired
+          chatViewStartNewConversation: PropTypes.string.isRequired,
+          retryBtn: PropTypes.string.isRequired
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -68,7 +92,8 @@ define ("components/chatViewFooter",
           userInput: {
             type,
             disabled
-          }
+          },
+          failureConfig
         } = this.props;
 
         if (type === USER_INPUT_TYPES.PILL_SELECT || disabled) {
@@ -78,7 +103,8 @@ define ("components/chatViewFooter",
         const footerClasses = classes ("hs-footer", {
           "hs-footer--active" : footerIsActive,
           "hs-footer--mobile": browserIsMobile,
-          "hs-footer--full-screen": allowFullScreen
+          "hs-footer--full-screen": allowFullScreen,
+          "hs-footer--failure": failureConfig
         });
 
         return (
@@ -92,6 +118,10 @@ define ("components/chatViewFooter",
        * Render the active footer component
        */
       _renderFooterComponent () {
+        if (this.props.failureConfig) {
+          return this._renderFailure ();
+        }
+
         const {
           activeFooter
         } = this.props;
@@ -119,6 +149,41 @@ define ("components/chatViewFooter",
           default:
             return null;
         }
+      },
+
+      _renderFailure () {
+        const {isLoading, message} = this.props.failureConfig;
+
+        const iconClasses = classes ("hs-chat-footer__icon", {
+          "ion-alert-circled hs-chat-footer__icon-error": !isLoading,
+          "ion-load-b ion--spinning": isLoading
+        });
+
+        return (
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__field">
+              <i className={iconClasses} />
+              <span className="hs-chat-footer__field-item">
+                {message}
+              </span>
+              {this._renderRetryBtn ()}
+            </div>
+          </div>
+        );
+      },
+
+      _renderRetryBtn () {
+        if (!this.props.failureConfig.allowRetry) {
+          return null;
+        }
+
+        const {retryBtn} = this.props.text;
+
+        return (
+          <a onClick={this.props.onRetryBtnClick} className="hs-chat-footer__field-item">
+            {retryBtn}
+          </a>
+        );
       },
 
       /**

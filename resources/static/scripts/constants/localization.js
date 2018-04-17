@@ -49,7 +49,9 @@ define ("constants/localization",
       "dnd_info_text": "dndInfoText",
       "business_hours_atch_size_msg": "businessHoursAttachmentsSizeExceedMsg",
       "business_hours_atch_limit_msg": "businessHoursAttachmentsLimitExceedMsg",
-      "email_validation_error": "emailValidationError"
+      "email_validation_error": "emailValidationError",
+      // @TODO: Confirm retry btn key
+      "retry_btn": "retryBtn"
     };
 
     return {
