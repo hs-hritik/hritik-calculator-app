@@ -669,6 +669,10 @@ define ("actions/chatView",
               timestamp
             } = response;
 
+            if (!issues.length) {
+              return;
+            }
+
             const {
               currentIssue,
               messages
