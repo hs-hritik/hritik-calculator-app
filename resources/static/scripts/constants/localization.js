@@ -53,7 +53,8 @@ define ("constants/localization",
       // @TODO: Confirm retry btn key
       "retry_btn": "retryBtn",
       // @TODO: Confirm key
-      "no_internet_connection": "noInternetConnection"
+      "no_internet_connection": "noInternetConnection",
+      "unknown_error_reconnecting":"unknownErrorReconnecting"
     };
 
     return {

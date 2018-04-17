@@ -55,6 +55,7 @@ define ("reducers/chatView",
         issues: {}
       },
       issueCursor: 0,
+      pollerFailureCount: 0,
       isCsatSubmitted: false,
       infoBot: {
         fieldsRequired: ["name", "email"],
@@ -319,6 +320,12 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_CSAT_SUBMITTED:
           return update (state, {
             isCsatSubmitted: {$set: action.submitted}
+          });
+
+
+        case ACTION_TYPES.SET_POLLER_FAILURE_COUNT:
+          return update (state, {
+            pollerFailureCount: {$set: action.count}
           });
 
         case ACTION_TYPES.RESET:

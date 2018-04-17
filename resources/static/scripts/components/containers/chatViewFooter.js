@@ -12,11 +12,14 @@ define ("components/containers/chatViewFooter",
     "actions/appState",
     "actions/csatView",
     "constants/activeView",
+    "constants/chatView",
     "helpers/common"
   ],
   function (ChatViewFooter, chatViewActions, actionCreators, appStateActions,
-    csatViewActions, ACTIVE_VIEW, commonHelpers) {
+    csatViewActions, ACTIVE_VIEW, chatViewConstants, commonHelpers) {
     "use strict";
+
+    const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
 
     const mapStateToProps = (state) => {
       const {
@@ -29,7 +32,8 @@ define ("components/containers/chatViewFooter",
         },
         chatView: {
           userInput,
-          activeFooter
+          activeFooter,
+          pollerFailureCount
         },
         csatView: {
           rating
@@ -44,6 +48,12 @@ define ("components/containers/chatViewFooter",
       if (!online) {
         failureConfig = {
           message: text.noInternetConnection
+        };
+      } else if (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED) {
+        failureConfig = {
+          message: text.unknownErrorReconnecting,
+          // @TODO: Confirm whether to show loading icon from design
+          isLoading: true
         };
       }
 

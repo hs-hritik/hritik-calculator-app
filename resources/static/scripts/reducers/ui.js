@@ -89,6 +89,7 @@ define ("reducers/ui",
         dateValidationError: "Enter a valid date in DD/MM/YYYY format",
         retryBtn: "RETRY",
         noInternetConnection: "No internet connection",
+        unknownErrorReconnecting: "Something went wrong. Reconnecting...",
         errorMessage: {
           [NO_AUTH_ERROR]: {
             title: "Authentication Failed",

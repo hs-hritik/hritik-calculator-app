@@ -54,12 +54,16 @@ define ("constants/chatView",
     // 6500 seems too low according to new conditions
     const MESSAGES_FORCE_POLLING_TIMEOUT = 6500;
 
+    // The number of failures after which we assume that there is some problem with the poller.
+    const MAX_POLLER_FAILURES_ALLOWED = 2;
+
     return {
       ACTIVE_FOOTER,
       INFO_BOT_FIELDS,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT,
       USER_INPUT_TYPES,
-      HTML_INPUT_TYPES
+      HTML_INPUT_TYPES,
+      MAX_POLLER_FAILURES_ALLOWED
     };
   });

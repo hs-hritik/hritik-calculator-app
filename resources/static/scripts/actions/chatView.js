@@ -90,7 +90,8 @@ define ("actions/chatView",
         fetchMessagesXhr = null,
         fetchMessagesTimer = null,
         lastFetchStartTime = null,
-        lastFetchCompleted = false;
+        lastFetchCompleted = false,
+        lastPollerCallSucceeded = false;
 
     /**
      * Action to update reply text.
@@ -626,6 +627,18 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set poller failure count
+     * @param {Boolean} count - Poller failure count
+     * @returns {Object} - Action
+     */
+    const setPollerFailureCount = (count) => {
+      return {
+        type: ACTION_TYPES.SET_POLLER_FAILURE_COUNT,
+        count
+      };
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -640,7 +653,8 @@ define ("actions/chatView",
         },
         chatView: {
           messageCursor,
-          issueCursor
+          issueCursor,
+          pollerFailureCount: prevPollerFailureCount
         }
       } = store.getState ();
 
@@ -664,6 +678,7 @@ define ("actions/chatView",
           // @NOTE - This is to make sure that onEnd is called even if
           // any code in onSuccess results in an Exception.
           try {
+            lastPollerCallSucceeded = true;
             const {
               issues = [],
               timestamp
@@ -743,7 +758,10 @@ define ("actions/chatView",
           // @TODO: Handler failure.
         },
         onEnd: () => {
+          const newPollerFailureCount = lastPollerCallSucceeded ? 0 : (prevPollerFailureCount + 1);
+          dispatch (setPollerFailureCount (newPollerFailureCount));
           lastFetchCompleted = true;
+          lastPollerCallSucceeded = false;
         }
       });
     };
