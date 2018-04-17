@@ -926,6 +926,15 @@ define ("actions/chatView",
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
+          // We do not want to batch following actions as we have to explicitly
+          // enable reply box first and then add messages.
+          // This is to allow reply box to take height first and then message list
+          // updation will scroll the messages to bottom.
+          // In case of preIssue, we do not want to enable reply box as it will be
+          // enabled according to next bot step.
+          if (isIssue) {
+            dispatch (enableReplyBox ());
+          }
           dispatch (
             addMessages ({
               messages: [response]
@@ -937,27 +946,24 @@ define ("actions/chatView",
           }
         },
         onFailure: () => {
-          // Hide typing indicator and enable replyBox if submit user reply on
-          // preIssue fails
+          // If user reply on
+          // 1. preIssue fails
+          //    a. Hide typing indicator
+          //    b. Enable replyBox
+          // This enables text and pill options input in case of failure
+          // OR
+          // 2. issue fails
+          //    a. Enable reply box
           if (isPreIssue) {
             dispatch (batchActions ([
               enableReplyBox (),
               toggleSystemTyping (false)
             ]));
-          }
-        },
-        onEnd: () => {
-          // Only enable reply box in case of issue
-          // In case of preIssue, keep showing TAI until we get next response
-          // from poller.
-          if (isIssue) {
+          } else if (isIssue) {
             dispatch (enableReplyBox ());
           }
-
-          if (onEnd) {
-            onEnd ();
-          }
-        }
+        },
+        onEnd
       });
     };
 
