@@ -13,9 +13,9 @@
       "resolved": "https://registry.npmjs.org/@gulp-sourcemaps/map-sources/-/map-sources-1.0.0.tgz"
     },
     "@helpshiftdev/gunpowder": {
-      "version": "1.0.13",
-      "from": "@helpshiftdev/gunpowder@>=1.0.13 <1.1.0",
-      "resolved": "https://registry.npmjs.org/@helpshiftdev/gunpowder/-/gunpowder-1.0.13.tgz"
+      "version": "1.0.19",
+      "from": "@helpshiftdev/gunpowder@>=1.0.19 <1.1.0",
+      "resolved": "https://registry.npmjs.org/@helpshiftdev/gunpowder/-/gunpowder-1.0.19.tgz"
     },
     "abbrev": {
       "version": "1.1.1",
