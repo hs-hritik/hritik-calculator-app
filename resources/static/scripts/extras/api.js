@@ -20,14 +20,21 @@ define ("extras/api",
     "actions/ui",
     "components/app",
     "helpers/analytics",
-    "helpers/common"
+    "helpers/common",
+    "helpers/localStorage"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers) {
+    actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers,
+    lsHelpers) {
     "use strict";
 
-    const {ISSUE_STATE} = APP_STATE_CONSTANTS;
+    const {
+      ISSUE_STATE,
+      ISSUE_TYPE,
+      PRE_ISSUE_RESET_TIMEOUT
+    } = APP_STATE_CONSTANTS;
+
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -36,6 +43,35 @@ define ("extras/api",
     const SKIP_REVIEW_COMMENTS = true;
 
     const {EVENT} = analyticsConstants;
+
+    /**
+     * Check if preIssue reset is applicable.
+     * PreIssue should reset if
+     *  the issue type is `preIssue` and
+     *  its state is `active` i.e. it's not resolved
+     *  the time elapsed since the last activity is > 24h
+     * @returns {boolean}
+     */
+    const _shouldPreIssueReset = () => {
+      const {
+        appState: {
+          activeIssueId,
+          issueType,
+          issueState
+        }
+      } = store.getState ();
+
+      const lastActivityTime = lsHelpers.getLastActivityTime ();
+      const inactivityDuration = Date.now () - lastActivityTime;
+
+      return (
+        !!lastActivityTime &&
+        !!activeIssueId &&
+        issueType === ISSUE_TYPE.PRE_ISSUE &&
+        issueState === ISSUE_STATE.ACTIVE &&
+        inactivityDuration > PRE_ISSUE_RESET_TIMEOUT
+      );
+    };
 
     /**
      * Set the initial data to the app state.
@@ -111,11 +147,11 @@ define ("extras/api",
         }
 
         // When the end user opens the widget, check if preIssue reset
-        // is applicable and if so, handle it.
-        // store.dispatch (appStateActions.handlePreIssueReset ());
-
-        // Start the conversation when the widget is opened.
-        if (!conversationStarted) {
+        // is applicable and if so, handle it. Else, start a conversation, if it
+        // hasn't started yet.
+        if (_shouldPreIssueReset ()) {
+          store.dispatch (appStateActions.resetPreIssue ());
+        } else if (!conversationStarted) {
           store.dispatch (appStateActions.startConversation ());
         }
 
@@ -146,6 +182,7 @@ define ("extras/api",
       if (commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (businessHoursActions.createIssueOutOfBusinessHours ());
       } else {
+        store.dispatch (appStateActions.setConversationStarted ());
         store.dispatch (chatViewActions.createPreIssue ());
       }
     };

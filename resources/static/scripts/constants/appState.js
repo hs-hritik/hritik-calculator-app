@@ -83,8 +83,7 @@ define ("constants/appState",
 
     // @TODO: Move this to the XHR_ISSUE_STATE object, getting introduced with
     // one of the next commits.
-    // The state of an issue on backend. 5 denotes the rejected state.
-    const ISSUE_STATE_RESET = 5;
+    const ISSUE_STATE_RESET = "Rejected";
 
     return {
       ISSUE_STATE,

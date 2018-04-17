@@ -43,9 +43,10 @@ define ("actions/appState",
     batchActions, actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
+    const SKIP_PLATFORM_ID = true;
+
     const {
       ISSUE_STATE,
-      PRE_ISSUE_RESET_TIMEOUT,
       ANON_USER_RESET_TIMEOUT,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
@@ -1024,8 +1025,7 @@ define ("actions/appState",
 
     /**
      * Action to start new conversation.
-     * Reset the previous localstorage data (if any).
-     * Creates pre-issue on the backend.
+     * Creates preIssue (or issue, for out of business hours) on the backend
      * @returns {Function} - action.
      */
     const startNewConversation = () => {
@@ -1181,53 +1181,32 @@ define ("actions/appState",
     };
 
     /**
-     * Check if preIssue reset is applicable and if so, handle it.
-     * PreIssue should be reset if
-     *  the issue type is `preIssue` and
-     *  its state is `active` i.e. it's not resolved
-     *  the time elapsed since the last activity is > 24h
-     * If so
-     *  set `appState.conversationStarted` to `false` so that a new conversation
-     *  may start
-     *  call an API to reset the preIssue - this should not block the end user
-     *  from starting a new conversation
+     * Reset preIssue by calling an API to reset the preIssue. On successful reset
+     * reset the app's state, which in turn restarts the flow.
      */
-    const handlePreIssueReset = () => {
+    const resetPreIssue = () => {
       return (dispatch, getState) => {
-        // @TODO: Check if activeIssueId is being set with poller response.
         const {
           appState: {
             domain,
-            issueState,
             activeIssueId
           }
         } = getState ();
 
-        // @TODO: Check how last activity time is set. It's set with the
-        // ADD_MESSAGES action but that might get deprecated.
-        const lastActivityTime = lsHelpers.getLastActivityTime ();
-        const inactivityDuration = Date.now () - lastActivityTime;
-
-        // @TODO: Use issueType once the relevant commit is merged.
-        // issueType === "preIssue"
-        if (
-          issueState === ISSUE_STATE.ACTIVE &&
-          inactivityDuration > PRE_ISSUE_RESET_TIMEOUT
-        ) {
-          dispatch (setConversationEnded ());
-
-          // @TODO: Check with the backend if they must receive the preIssue reset
-          // request from Web Chat before they create a new preIssue with the
-          // subsequent create preIssue call.
-          xhr ({
-            route: routes.putResetPreIssue (domain, activeIssueId),
-            data: xhrHelpers.getPreparedXhrData ({
-              state: ISSUE_STATE_RESET
-            }),
-            method: "PUT",
-            headers: xhrHelpers.getCommonHeaders ()
-          });
-        }
+        dispatch (actionCreators.toggleLoading (true));
+        xhr ({
+          route: routes.putResetPreIssue (domain, activeIssueId),
+          data: xhrHelpers.getPreparedXhrData ({
+            state: ISSUE_STATE_RESET
+          }, SKIP_PLATFORM_ID),
+          method: "PUT",
+          headers: xhrHelpers.getCommonHeaders (),
+          onEnd: () => {
+            // In both the cases (success and failure), we'll start with a new
+            // conversation for the end user.
+            dispatch (reset ());
+          }
+        });
       };
     };
 
@@ -1250,6 +1229,7 @@ define ("actions/appState",
       updateStyles,
       setFooterActive,
       setFooterInactive,
-      handlePreIssueReset
+      resetPreIssue,
+      setConversationStarted
     };
   });
