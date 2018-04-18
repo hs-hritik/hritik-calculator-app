@@ -90,6 +90,7 @@ define ("reducers/ui",
         retryBtn: "RETRY",
         noInternetConnection: "No internet connection",
         unknownErrorReconnecting: "Something went wrong. Reconnecting...",
+        networkError: "Network Error",
         errorMessage: {
           [NO_AUTH_ERROR]: {
             title: "Authentication Failed",

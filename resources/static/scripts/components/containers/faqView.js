@@ -16,21 +16,29 @@ define ("components/containers/faqView",
     const mapStateToProps = (state) => {
       const {
         faqView: {
-          activeFaq
+          activeFaq,
+          loading,
+          errorMsg
         },
         ui: {
           text
         }
       } = state;
 
+      let title, body;
       // @TODO - Find a way to read faqs for given language
       // Currently reading only english faqs
-      const {title, body} = activeFaq.translations.en;
+      if (activeFaq && activeFaq.translations) {
+        title = activeFaq.translations.en.title;
+        body = activeFaq.translations.en.body;
+      }
 
       return {
         title,
         body,
-        text
+        text,
+        loading,
+        errorMsg
       };
     };
 

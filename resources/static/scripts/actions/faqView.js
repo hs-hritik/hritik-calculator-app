@@ -16,10 +16,12 @@ define ("actions/faqView",
     "helpers/entity",
     "helpers/xhr",
     "helpers/analytics",
-    "actions/actionCreators"
+    "actions/actionCreators",
+    "actions/batch"
   ],
   function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
-    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators) {
+    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
+    batchActions) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
@@ -37,6 +39,30 @@ define ("actions/faqView",
     };
 
     /**
+     * Action to toggle FAQ loading.
+     * @param {Boolean} loading
+     * @returns {Object} - Action
+     */
+    const toggleFaqLoading = (loading) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_FAQ_LOADING,
+        loading
+      };
+    };
+
+    /**
+     * Action to set FAQ error message.
+     * @param {Boolean} errorMsg
+     * @returns {Object} - Action
+     */
+    const setFaqErrorMsg = (errorMsg) => {
+      return {
+        type: ACTION_TYPES.SET_FAQ_ERROR_MESSAGE,
+        errorMsg
+      };
+    };
+
+    /**
      * Action to get FAQ details for a given faq-id.
      * @param {String} faqId - FAQ id
      * @returns {Object} - action
@@ -50,17 +76,28 @@ define ("actions/faqView",
             analytics: {
               suggestedFaqReadTracked
             }
+          },
+          ui: {
+            text: {
+              networkError
+            }
           }
         } = state;
+
+        dispatch (
+          batchActions ([
+            toggleFaqLoading (true),
+            setFaqErrorMsg (""),
+            actionCreators.updateActiveView (ACTIVE_VIEW.FAQ)
+          ])
+        );
 
         xhr ({
           route: routes.getFaq (domain, faqId),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
             const faq = entityHelpers.getProcessedFaq (response);
-
             dispatch (setActiveFaq (faq));
-            dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
 
             // Track suggested FAQ read event if it hasn't been tracked already.
             if (!suggestedFaqReadTracked) {
@@ -75,6 +112,10 @@ define ("actions/faqView",
           },
           onFailure: () => {
             // @TODO: Handle failure.
+            dispatch (setFaqErrorMsg (networkError));
+          },
+          onEnd: () => {
+            dispatch (toggleFaqLoading (false));
           }
         });
       };
