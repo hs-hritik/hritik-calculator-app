@@ -96,7 +96,7 @@ define ("components/chatViewFooter",
           failureConfig
         } = this.props;
 
-        if (type === USER_INPUT_TYPES.PILL_SELECT || disabled) {
+        if (!failureConfig && (type === USER_INPUT_TYPES.PILL_SELECT || disabled)) {
           return null;
         }
 

@@ -44,7 +44,11 @@ define ("components/chatView",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        loading: PropTypes.bool
+        loading: PropTypes.bool,
+        /**
+         * If chat view footer has any failure
+         */
+        hasFailure: PropTypes.bool
       },
 
       render () {
@@ -100,6 +104,7 @@ define ("components/chatView",
                              onPillOptionSelect={onPillOptionSelect}
                              onRetryAttachmentClick={onRetryAttachmentClick}
                              onSuggestedFaqClick={onSuggestedFaqClick}
+                             hasFailure={this.props.hasFailure}
                              userInput={userInput} />
               </div>
               <ChatViewFooterContainer />

@@ -10,10 +10,14 @@ define ("components/containers/chatView",
     "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView",
-    "helpers/common"
+    "helpers/common",
+    "constants/chatView"
   ],
-  function (ChatView, entitySchema, chatViewActions, faqViewActions, commonHelpers) {
+  function (ChatView, entitySchema, chatViewActions, faqViewActions, commonHelpers,
+    chatViewConstants) {
     "use strict";
+
+    const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
 
     const mapStateToProps = (state) => {
       const {
@@ -23,18 +27,22 @@ define ("components/containers/chatView",
           },
           activeIssueId,
           issueType,
-          loading
+          loading,
+          online
         },
         chatView: {
           messageList: messages,
           systemTyping,
           agentTyping,
-          userInput
+          userInput,
+          pollerFailureCount
         },
         ui: {
           text
         }
       } = state;
+
+      const hasFailure = !online || (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED);
 
       return {
         messages,
@@ -46,7 +54,8 @@ define ("components/containers/chatView",
           issueType
         }),
         userInput,
-        loading
+        loading,
+        hasFailure
       };
     };
 

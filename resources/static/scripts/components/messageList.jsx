@@ -37,7 +37,11 @@ define ("components/messageList",
         isTyping: PropTypes.bool,
         text: PropTypes.object.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
-        onPillOptionSelect: PropTypes.func.isRequired
+        onPillOptionSelect: PropTypes.func.isRequired,
+        /**
+         * If chat view footer has any failure
+         */
+        hasFailure: PropTypes.bool
       },
 
       render () {
@@ -113,10 +117,15 @@ define ("components/messageList",
             options,
             label,
             disabled
-          }
+          },
+          hasFailure
         } = this.props;
 
-        if (type !== USER_INPUT_TYPES.PILL_SELECT || disabled) {
+        // @TODO: Re-consider the approach to render the ChatViewFooterContainer
+        // here directly, and render the pill select options inside the chat view footer.
+        // This will avoid passing the props like userInput, hasFailure to the
+        // MessageList component.
+        if (hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled) {
           return null;
         }
 
