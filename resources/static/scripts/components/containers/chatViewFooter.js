@@ -81,7 +81,9 @@ define ("components/containers/chatViewFooter",
           // call getConfig. Once getConfig is called, it will initialize the
           // conversation and will take care of creating new preIssue.
           // Ref :- App state actions -> initializeConversation
-          dispatch (appStateActions.reset ());
+          dispatch (appStateActions.reset ({
+            skipUser: true
+          }));
           dispatch (actionCreators.toggleLoading (true));
         },
         onSkipUserInput: () => {
