@@ -13,11 +13,12 @@ define ("components/containers/csatView",
     "use strict";
 
     const mapStateToProps = (state) => {
-      const {rating, review} = state.csatView;
+      const {rating, review, csatSaveInProgress} = state.csatView;
 
       return {
         rating,
         review,
+        csatSaveInProgress,
         text: state.ui.text
       };
     };

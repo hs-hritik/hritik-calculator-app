@@ -9,6 +9,7 @@ define ("actions/csatView",
     "store",
     "actions/actionCreators",
     "actions/chatView",
+    "actions/batch",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
@@ -17,11 +18,23 @@ define ("actions/csatView",
     "helpers/xhr",
     "helpers/analytics"
   ],
-  function (store, actionCreator, chatViewActions, ACTION_TYPES,
+  function (store, actionCreator, chatViewActions, batchActions, ACTION_TYPES,
     routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
+
+    /**
+     * Action to set csat save in progress
+     * @param {Boolean} progress
+     * @returns {Object} - Action
+     */
+    const setCsatSaveInProgress = (progress) => {
+      return {
+        type: ACTION_TYPES.SET_CSAT_SAVE_IN_PROGRESS,
+        progress
+      };
+    };
 
     /**
      * Action to submit csat rating and review.
@@ -53,17 +66,21 @@ define ("actions/csatView",
           xhrData.comment = csatReview;
         }
 
+        dispatch (setCsatSaveInProgress (true));
+
         xhr ({
           route: routes.postCSAT (domain, activeIssueId),
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onEnd: () => {
-            // a] Set active view to chat view
-            dispatch (actionCreator.updateActiveView (ACTIVE_VIEW.CHAT));
-            // b] Set csat step as completed
-            dispatch (actionCreator.setCsatCompleted ());
-            // c] Set footer to start new conversation footer
+            dispatch (
+              batchActions ([
+                actionCreator.updateActiveView (ACTIVE_VIEW.CHAT),
+                actionCreator.setCsatCompleted (),
+                setCsatSaveInProgress (false)
+              ])
+            );
             dispatch (chatViewActions.showPostIssueResolutionFooter ());
           }
         });

@@ -37,7 +37,8 @@ define ("components/csatView",
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        csatSaveInProgress: PropTypes.bool
       },
 
       render () {
@@ -63,7 +64,7 @@ define ("components/csatView",
        * Render csat body.
        */
       _renderCsatBody () {
-        const {text, rating, review} = this.props;
+        const {text, rating, review, csatSaveInProgress} = this.props;
 
         return (
           <div className="hs-csat__form">
@@ -74,6 +75,7 @@ define ("components/csatView",
             </div>
             <div className="hs-csat__form-item">
               <StarRating name="csat"
+                          editing={!csatSaveInProgress}
                           value={rating}
                           onStarClick={this._onStarClick} />
             </div>
@@ -83,6 +85,7 @@ define ("components/csatView",
               </small>
               <textarea value={review}
                         dir="auto"
+                        disabled={csatSaveInProgress}
                         className="hs-csat__input"
                         onChange={this._onCsatReviewChange}
                         placeholder={text.csatBotReviewPlaceholder} />
@@ -99,13 +102,14 @@ define ("components/csatView",
           text,
           rating,
           browserIsMobile,
-          allowFullScreen
+          allowFullScreen,
+          csatSaveInProgress
         } = this.props;
         const btnClasses = classes (
           "hs-button",
           "hs-footer__btn"
         );
-        const btnDisabled = (rating === 0);
+        const btnDisabled = (rating === 0) || csatSaveInProgress;
         const footerClasses = classes ("hs-footer",
           "hs-footer--center-items", {
             "hs-footer--mobile": browserIsMobile,

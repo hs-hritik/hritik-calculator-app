@@ -53,6 +53,10 @@
         background-color: $form-bg-color;
         border-color: $form-accent-color;
       }
+
+      &[disabled] {
+        opacity: .4;
+      }
     }
   }
 }

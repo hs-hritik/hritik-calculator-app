@@ -13,7 +13,8 @@ define ("reducers/csatView",
 
     const INITIAL_STATE = {
       rating: 0,
-      review: ""
+      review: "",
+      csatSaveInProgress: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -26,6 +27,11 @@ define ("reducers/csatView",
         case ACTION_TYPES.UPDATE_CSAT_REVIEW:
           return update (state, {
             review: {$set: action.review}
+          });
+
+        case ACTION_TYPES.SET_CSAT_SAVE_IN_PROGRESS:
+          return update (state, {
+            csatSaveInProgress: {$set: action.progress}
           });
 
         case ACTION_TYPES.RESET:
