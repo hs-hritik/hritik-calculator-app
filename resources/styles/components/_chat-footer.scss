@@ -21,6 +21,9 @@
   $loader-color: color(primary);
 
   .hs-chat-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     min-height: 52px;
     padding: gutter(12);
 
