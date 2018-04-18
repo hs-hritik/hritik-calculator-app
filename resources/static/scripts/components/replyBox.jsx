@@ -31,22 +31,21 @@ define ("components/replyBox",
         onChangeReplyBoxValue: PropTypes.func.isRequired,
         onSubmitReply: PropTypes.func.isRequired,
         browserIsMobile: PropTypes.bool.isRequired,
-        text: PropTypes.shape ({
-          replyBtnPlaceholder: PropTypes.string.isRequired
-        }).isRequired,
         onFooterFocus: PropTypes.func,
-        onFooterBlur: PropTypes.func
+        onFooterBlur: PropTypes.func,
+        placeholder: PropTypes.string
       },
 
       render () {
         const {
-          text,
           value,
           disabled,
           onFooterFocus,
           onFooterBlur,
-          className
+          className,
+          placeholder
         } = this.props;
+
         return (
           <TextareaAutosize value={value}
                             className={className}
@@ -57,7 +56,7 @@ define ("components/replyBox",
                             minRows={TEXT_AREA_MIN_ROWS}
                             maxRows={TEXT_AREA_MAX_ROWS}
                             onHeightChange={this._onReplyBoxHeightChange}
-                            placeholder={text.replyBtnPlaceholder}
+                            placeholder={placeholder}
                             disabled={disabled}
                             autoFocus
                             ref={this._saveTextAreaRef}

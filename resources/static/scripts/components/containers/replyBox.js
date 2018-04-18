@@ -19,7 +19,8 @@ define ("components/containers/replyBox",
         chatView: {
           userInput: {
             value,
-            disabled
+            disabled,
+            placeholder: userInputPlaceholder
           }
         },
         appState: {
@@ -36,6 +37,7 @@ define ("components/containers/replyBox",
       return {
         value,
         disabled,
+        placeholder: userInputPlaceholder || text.replyBtnPlaceholder,
         widgetIsOpened: !minimized,
         text,
         issueIsCreated: commonHelpers.isIssueCreated ({
