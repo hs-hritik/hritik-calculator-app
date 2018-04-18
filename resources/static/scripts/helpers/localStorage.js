@@ -420,7 +420,7 @@ define ("helpers/localStorage",
      * Get whether the suggested FAQ read event has been tracked or not
      * @returns {boolean}
      */
-    const getSuggestedFaqReadTracked = () => lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
+    const getSuggestedFaqReadTracked = () => !!lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
 
     /**
      * Set the read FAQ list.

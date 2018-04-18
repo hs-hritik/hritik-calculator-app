@@ -62,7 +62,7 @@ define ("constants/routes",
 
     const postAnalyticsEvent = (domain) => `${WEB_SDK_API_ROOT}/events/v1/${domain}/websdk/`;
 
-    const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs/suggestion_read`;
+    const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs_suggestion_read`;
 
     const putMigrateProfile = (domain) => `${BASE}${domain}/profiles`;
 
