@@ -2124,7 +2124,8 @@ define ("actions/chatView",
         const {
           appState: {
             domain,
-            activeIssueId
+            activeIssueId,
+            issueState
           }
         } = getState ();
         const {file, attachmentMsgId} = config;
@@ -2141,6 +2142,7 @@ define ("actions/chatView",
           onSuccess: (response) => {
             // Remove the FE (dummy) attachment message from message list
             // Add new backend message in message list
+            handleIssueReopen (issueState);
             dispatch (
               batchActions ([
                 removeMessage (attachmentMsgId),
