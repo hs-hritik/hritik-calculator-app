@@ -35,6 +35,8 @@ define ("components/message",
         message: customPropTypes.MESSAGE_PROP_TYPE,
         showAgentNickname: PropTypes.bool,
         isLastMessage: PropTypes.bool,
+        // @NOTE - isLastMessageInGroup will be used for message grouping in future, so
+        // keeping this prop as it is.
         isLastMessageInGroup: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
@@ -491,8 +493,7 @@ define ("components/message",
 
         if (!showAgentNickname ||
             message.isCustomerMsg ||
-            message.isSystemMsg ||
-            !this.props.isLastMessageInGroup) {
+            message.isSystemMsg) {
           return null;
         }
 
