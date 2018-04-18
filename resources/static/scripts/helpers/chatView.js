@@ -38,7 +38,6 @@ define ("helpers/chatView",
      */
     const getUserInputType = (messageType) => {
       switch (messageType) {
-        case MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT:
         case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
           return USER_INPUT_TYPES.PLAIN_TEXT;
 
@@ -55,6 +54,8 @@ define ("helpers/chatView",
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
           return USER_INPUT_TYPES.PILL_SELECT;
 
+        // For message type = 'EMPTY_MSG_WITH_TEXT_INPUT' i.e. first user message
+        // the user input type is default input
         default:
           return USER_INPUT_TYPES.DEFAULT_INPUT;
       }

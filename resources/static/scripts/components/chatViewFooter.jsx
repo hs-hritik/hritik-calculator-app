@@ -243,7 +243,7 @@ define ("components/chatViewFooter",
         // b. Rendering normal input type 'text' will clip the text once it goes
         //    beyond available width
         // c. There can be label for input type plain text (this layout supports label)
-        if (type === USER_INPUT_TYPES.PLAIN_TEXT || type === USER_INPUT_TYPES.DEFAULT_INPUT) {
+        if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
           inputComponentEl = (
             <ReplyBoxContainer className="hs-chat-footer__text-area" />
           );
