@@ -142,7 +142,9 @@ define ("components/messageList",
                 {label}
               </strong>
             </small>
-            {pillOptionsEl}
+            <div className="hs-message-list__pill-options">
+              {pillOptionsEl}
+            </div>
           </div>
         );
       },
