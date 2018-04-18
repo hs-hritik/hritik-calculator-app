@@ -759,13 +759,13 @@ define ("actions/appState",
               }
             } = store.getState ();
 
+            // Set the ui configuration flags in the state.
+            setUiConfig (helpshiftConfig);
+
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig ());
 
             if (wcEnabled) {
-              // Set the ui configuration flags in the state.
-              setUiConfig (helpshiftConfig);
-
               // A side-effect of getting the web chat config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.

@@ -227,7 +227,7 @@ define ("extras/api",
         case EVENT_TYPES.CMD_UPDATE_UI_CONFIG:
           store.dispatch (uiActions.updateUiConfig (data.uiConfig));
           store.dispatch (uiActions.setDeveloperUiConfig (data.uiConfig));
-          store.dispatch (appStateActions.updateStyles ());
+          appStateActions.updateStyles ();
           break;
         case EVENT_TYPES.CMD_SET_FULL_PRIVACY:
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
