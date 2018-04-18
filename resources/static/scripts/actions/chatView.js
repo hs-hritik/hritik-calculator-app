@@ -91,7 +91,8 @@ define ("actions/chatView",
         fetchMessagesTimer = null,
         lastFetchStartTime = null,
         lastFetchCompleted = false,
-        lastPollerCallSucceeded = false;
+        lastPollerCallSucceeded = false,
+        agentActivitySubscribed = false;
 
     /**
      * Action to update reply text.
@@ -172,15 +173,26 @@ define ("actions/chatView",
     };
 
     /**
-     * Start polling for messages.
+     * Handle agent live updates
      */
-    const startPollingForMessages = () => {
-      pollingEnabled = true;
-      lastFetchCompleted = true;
+    const handleAgentLiveUpdates = () => {
+      const {
+        appState: {
+          issueType
+        }
+      } = store.getState ();
 
-      fetchMessages ();
-
-      fetchMessagesTimer = window.setInterval (_restartFetchMessages, MESSAGES_POLLING_TIMEOUT);
+      // Do not open websocket connection if
+      // a] Polling is disabled i.e. when conversation is over, user is on post
+      //    chat features like resolution question, csat etc
+      // b] Agent typing activity is already subscribed
+      // c] Current issue type is preIssue as agent wont be able to see it on
+      //    dashboard
+      if (!pollingEnabled ||
+          agentActivitySubscribed ||
+          issueType === ISSUE_TYPE.PRE_ISSUE) {
+        return;
+      }
 
       liveUpdatesHelpers.openWsConnection ();
       // Since the ws connection is asynchronous, this call to subscribe
@@ -188,6 +200,18 @@ define ("actions/chatView",
       // will take place when the web socket connection is completed.
       liveUpdatesHelpers.subscribeAgentActivityTopic ();
       liveUpdatesHelpers.attachAgentActivityListener ();
+
+      agentActivitySubscribed = true;
+    };
+
+    /**
+     * Start polling for messages.
+     */
+    const startPollingForMessages = () => {
+      pollingEnabled = true;
+      lastFetchCompleted = true;
+      fetchMessages ();
+      fetchMessagesTimer = window.setInterval (_restartFetchMessages, MESSAGES_POLLING_TIMEOUT);
     };
 
     /**
@@ -210,6 +234,8 @@ define ("actions/chatView",
 
       liveUpdatesHelpers.unsubscribeAgentActivityTopic ();
       liveUpdatesHelpers.detachAgentActivityListener ();
+
+      agentActivitySubscribed = false;
     };
 
     /**
@@ -722,6 +748,8 @@ define ("actions/chatView",
                 updateIssueType (currentIssueType)
               ])
             );
+
+            handleAgentLiveUpdates ();
 
             const messagesLength = messages.length;
             if (messagesLength) {
