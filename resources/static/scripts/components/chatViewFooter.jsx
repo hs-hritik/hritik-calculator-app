@@ -81,7 +81,8 @@ define ("components/chatViewFooter",
         onSkipUserInput: PropTypes.func,
         onFilesChange: PropTypes.func,
         issueIsCreated: PropTypes.bool,
-        fullPrivacyEnabled: PropTypes.bool
+        fullPrivacyEnabled: PropTypes.bool,
+        onCloseConversation: PropTypes.func.isRequired
       },
 
       render () {
@@ -141,6 +142,9 @@ define ("components/chatViewFooter",
 
           case ACTIVE_FOOTER.INFO_BOT:
             return this._renderInfoBotFooter ();
+
+          case ACTIVE_FOOTER.CLOSED:
+            return this._renderCloseConversationFooter ();
 
           case ACTIVE_FOOTER.BLOCKED:
             return this._renderBlockedFooter ();
@@ -331,6 +335,32 @@ define ("components/chatViewFooter",
                      noPadding
                      labelClasses="hs-chat-footer__attachment-icon"
                      iconClasses="ion-attachment" />
+        );
+      },
+
+      /**
+       * Render close button footer
+       */
+      _renderCloseConversationFooter () {
+        const {
+          onCloseConversation,
+          text: {
+            closeConversationBtn
+          }
+        } = this.props;
+        const btnClasses = classes (
+          "hs-button",
+          "hs-footer__btn"
+        );
+
+        return (
+          <div className="hs-chat-footer">
+            <div className="hs-chat-footer__buttons-wrapper">
+              <button className={btnClasses} onClick={onCloseConversation}>
+                {closeConversationBtn}
+              </button>
+            </div>
+          </div>
         );
       },
 

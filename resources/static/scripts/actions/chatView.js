@@ -580,18 +580,32 @@ define ("actions/chatView",
 
     /**
      * Handle chat end
-     * a] Show start new conversation footer
+     * a] Either show start new conversation footer or close conversation footer
      * b] Add chat ended message in message list
      */
     const handleChatEnd = () => {
       const {dispatch, getState} = store;
       const {
+        appState: {
+          sdkConfigOptions: {
+            initialUserMessage
+          }
+        },
         ui: {
           text
         }
       } = getState ();
-      // Show start new conversation footer
-      dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+
+      // If initial user message is set through api, show close conversation footer
+      // Else show start new conversation footer
+      if (initialUserMessage) {
+        // Show closed conversation footer
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
+      } else {
+        // Show start new conversation footer
+        dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
+      }
+
       // Show system info message - This conversation has ended.
       dispatch (createMessage ({
         type: MESSAGE_TYPE.SYSTEM_INFO,
@@ -623,6 +637,10 @@ define ("actions/chatView",
       if (issueState === ISSUE_STATE.ACTIVE) {
         return;
       }
+
+      // We get agent typing indicator from websocket, but issue is resolved by
+      // poller. The TAI keeps showing for few seconds which is pre-defined behaviour.
+      dispatch (actionCreators.toggleAgentTyping (false));
 
       if (issueState === ISSUE_STATE.RESOLVED) {
         // If issue type is 'issue'
@@ -665,6 +683,39 @@ define ("actions/chatView",
         type: ACTION_TYPES.SET_POLLER_FAILURE_COUNT,
         count
       };
+    };
+
+    /**
+     * Handle initial user message
+     * If first user message is set through api and issue is not active then
+     * create new preIssue
+     * @param {Object} config
+     * @param {Number} config.issueCursor - issue cursor
+     * @returns {Boolean} - whether create preIssue is called
+     */
+    const handleInitialUserMessage = (config) => {
+      let preIssueActionTriggered = false;
+      // Return if poller has run more than once
+      // We need to handle initial user message only on page refresh
+      if (config.issueCursor) {
+        return preIssueActionTriggered;
+      }
+
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          sdkConfigOptions: {
+            initialUserMessage
+          }
+        }
+      } = getState ();
+
+      if (initialUserMessage) {
+        dispatch (createPreIssue ());
+        preIssueActionTriggered = true;
+      }
+
+      return preIssueActionTriggered;
     };
 
     /**
@@ -734,6 +785,14 @@ define ("actions/chatView",
 
             if (!isIssueActive (issueState)) {
               stopPollingForMessages ();
+
+              const preIssueActionTriggered = handleInitialUserMessage ({
+                issueCursor
+              });
+
+              if (preIssueActionTriggered) {
+                return;
+              }
             }
 
             handleTAI ({
