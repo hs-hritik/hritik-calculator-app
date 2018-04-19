@@ -93,10 +93,18 @@ define ("components/chatViewFooter",
             type,
             disabled
           },
-          failureConfig
+          failureConfig,
+          issueIsCreated
         } = this.props;
 
-        if (!failureConfig && (type === USER_INPUT_TYPES.PILL_SELECT || disabled)) {
+        // Hide footer only if
+        // a] There is no failure AND 1. user input type is pill select OR
+        //                             2. user input is disabled
+        //    AND
+        // b] issue is not created i.e. current issue type is preIssue
+        if (!failureConfig &&
+            (type === USER_INPUT_TYPES.PILL_SELECT || disabled) &&
+            !issueIsCreated) {
           return null;
         }
 

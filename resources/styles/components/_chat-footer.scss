@@ -96,6 +96,10 @@
         border: 0;
         box-shadow: none;
       }
+
+      &[disabled] {
+        opacity: .4;
+      }
     }
 
     &__attachment-icon,
