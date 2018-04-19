@@ -9,13 +9,9 @@ define ("constants/localization",
     "use strict";
 
     const UI_STRING_KEYS = {
-      // @TODO: Backend keys are not finalised for these strings.
-      // They'll fallback to strings in appState.text.
-      "resolution_question_accept": "resolutionQuestionAccept",
-      "resolution_question_reject": "resolutionQuestionReject",
-      "problem_solved_by_faq_suggestions_msg": "problemSolvedByFaqSuggestionsMsg",
-      "faq_view_header": "faqViewHeader",
-      "info_bot_request_msg": "infoBotRequestMsg",
+      "resolution_accept": "resolutionQuestionAccept",
+      "resolution_reject": "resolutionQuestionReject",
+      "back": "faqViewHeader",
       "appearance.widget_title":  "chatViewHeader",
       "resolution_question": "chatViewConversationResolutionQuestion",
       "start_new_conversation": "chatViewStartNewConversation",
@@ -49,13 +45,12 @@ define ("constants/localization",
       "dnd_info_text": "dndInfoText",
       "business_hours_atch_size_msg": "businessHoursAttachmentsSizeExceedMsg",
       "business_hours_atch_limit_msg": "businessHoursAttachmentsLimitExceedMsg",
-      "email_validation_error": "emailValidationError",
-      // @TODO: Confirm retry btn key
-      "retry_btn": "retryBtn",
-      // @TODO: Confirm key
-      "no_internet_connection": "noInternetConnection",
-      "unknown_error_reconnecting":"unknownErrorReconnecting",
-      "network_error": "networkError"
+      "email_error": "emailValidationError",
+      "retry_button": "retryBtn",
+      "network_error": "networkError",
+      "internet_error": "noInternetConnection",
+      "connecting_text": "connectingText",
+      "system_error": "unknownErrorReconnecting"
     };
 
     return {
