@@ -75,10 +75,7 @@ define ("components/containers/chatViewFooter",
     const mapDispatchToProps = (dispatch) => {
       return {
         onValueChangeInputField: (value) => {
-          dispatch (chatViewActions.updateUserInputData ({
-            value,
-            errorMsg: ""
-          }));
+          dispatch (chatViewActions.updateReplyText (value));
         },
         onStarClick: (updatedRating) => {
           dispatch (csatViewActions.updateCsatRating (updatedRating));

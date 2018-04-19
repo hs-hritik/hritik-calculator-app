@@ -126,7 +126,8 @@ define ("reducers/chatView",
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           return update (state, {
             userInput: {
-              value: {$set: action.value}
+              value: {$set: action.value},
+              errorMsg: {$set: ""}
             }
           });
 

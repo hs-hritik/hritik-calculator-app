@@ -445,9 +445,12 @@ define ("actions/chatView",
       // and initialUserMessage is set through api, do not wait for user input
       // Directly send the message as bot response
       if (type === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
+        dispatch (
+          updateReplyText (initialUserMessage)
+        );
         postUserMessage ({
-          messageType: type,
-          messageBody: initialUserMessage
+          msgType: type,
+          msgBody: initialUserMessage
         });
       }
     };
@@ -753,8 +756,6 @@ define ("actions/chatView",
 
             const messagesLength = messages.length;
             if (messagesLength) {
-              handleLatestMessage (messages [messagesLength - 1]);
-
               const processedMessages = entityHelpers.getProcessedMessages (messages);
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
@@ -771,6 +772,7 @@ define ("actions/chatView",
                   })
                 ])
               );
+              handleLatestMessage (messages [messagesLength - 1]);
               handleUnreadMessages ({
                 messages: processedMessages
               });
@@ -982,9 +984,12 @@ define ("actions/chatView",
             dispatch (enableReplyBox ());
           }
           dispatch (
-            addMessages ({
-              messages: [response]
-            })
+            batchActions ([
+              addMessages ({
+                messages: [response]
+              }),
+              updateReplyText ("")
+            ])
           );
 
           if (onSuccess) {
