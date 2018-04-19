@@ -47,45 +47,11 @@ define ("extras/lsMiddleware",
 
         case ACTION_TYPES.ADD_MESSAGES:
         case ACTION_TYPES.SET_MESSAGES:
-          // If the action type is ADD_MESSAGES or SET_MESSAGES,
-          // save the issues entities in ls.
-          lsHelpers.setEntities ("ISSUES", {
-            [action.issueId]: state.entities.issues [action.issueId]
-          });
-
           const hasUserMessage = action.messages.some ((m) => m.isCustomerMsg);
           const conversationHasStarted = state.appState.conversationStarted;
 
           if (hasUserMessage && conversationHasStarted) {
             throttledSetLastActivityTime ();
-          }
-          break;
-
-        case ACTION_TYPES.SET_ENTITIES:
-          // If the action type is SET_ENTITIES, save the issues
-          // and messages entities in localstorage.
-          // Not saving the authors entities because the system
-          // generated messages don't have the author key.
-
-          // If there are any issues entities, save it in ls.
-          if (action.entities.issues) {
-            lsHelpers.setEntities ("ISSUES", action.entities.issues);
-          }
-
-          // If there are messages entities, save only system
-          // generated messages in localstorage.
-          if (action.entities.messages) {
-            const messages = action.entities.messages;
-            const systemMessages = {};
-
-            objUtils.forEachKey (messages, (id, msg) => {
-              if (msg.isSystemMsg) {
-                systemMessages [id] = msg;
-              }
-            });
-            if (Object.keys (systemMessages).length) {
-              lsHelpers.setEntities ("MESSAGES", systemMessages);
-            }
           }
           break;
 
@@ -97,36 +63,12 @@ define ("extras/lsMiddleware",
           lsHelpers.setInternalIssueId (action.id);
           break;
 
-        case ACTION_TYPES.UPDATE_ISSUE_STATE:
-          lsHelpers.setIssueState (action.state);
-          break;
-
-        case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
-          lsHelpers.setPreChatFeatureIndex (state.appState.preChatFeatureIndex);
-          break;
-
-        case ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE:
-          lsHelpers.setPreChatFeatureState (state.appState.preChatFeatureState);
-          break;
-
-        case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
-          lsHelpers.setInfoBotCurrentField (state.chatView.infoBot.currentField);
-          break;
-
-        case ACTION_TYPES.UPDATE_ACTIVE_VIEW:
-          throttledSetLastActivityTime ();
-          break;
-
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           throttledSetReplyText (action.value);
           break;
 
         case ACTION_TYPES.SET_USER_PROFILE_ID:
           lsHelpers.setUserProfileId (action.profileId);
-          break;
-
-        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID:
-          lsHelpers.setEndUserFirstMsgId (action.id);
           break;
 
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
@@ -148,10 +90,6 @@ define ("extras/lsMiddleware",
           // new FAQ ID by pushing it to the existing FAQ list, we can simply
           // set the local storage with that list.
           lsHelpers.setReadFaqList (state.chatView.readFaqList);
-          break;
-
-        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
-          lsHelpers.setInfoBotRequestedTimestamp (action.ts);
           break;
 
         case ACTION_TYPES.SET_DEVICE_ID:
