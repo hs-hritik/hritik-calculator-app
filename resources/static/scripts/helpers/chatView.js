@@ -390,11 +390,11 @@ define ("helpers/chatView",
 
       if (responseMessageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
         // If this response is to the answer bot step, web chat sends which
-        // FAQs were read so far by the end user to the backend. Backend would
-        // then pass that information to data plat.
+        // FAQs were read (max 10) so far by the end user to the backend. Backend
+        // would then pass that information to data plat.
         const readFaqs = store.getState ().chatView.readFaqList;
         if (readFaqs.length) {
-          requestData.read_faqs = JSON.stringify (readFaqs);
+          requestData.read_faqs = JSON.stringify (readFaqs.slice (0, 10));
         }
       }
 

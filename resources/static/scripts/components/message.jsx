@@ -230,11 +230,12 @@ define ("components/message",
         } = this.props;
 
         return suggestedFaqs.map ((faq) => {
+          const {id, language} = faq;
           return (
             <span key={faq.id}
                   className="hs-message__suggested-faq"
                   dir="auto"
-                  onClick={onSuggestedFaqClick.bind (this, faq.id)}>
+                  onClick={onSuggestedFaqClick.bind (this, id, language)}>
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
             </span>

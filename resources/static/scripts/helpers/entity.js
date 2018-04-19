@@ -86,12 +86,14 @@ define ("helpers/entity",
     /**
      * Return processed faq entity.
      * @param {Object} faq - unprocessed faq entitiy
+     * @param {string} language
      * @returns {Object} - processed faq entitiy
      */
-    const getProcessedFaq = (faq) => {
+    const getProcessedFaq = (faq, language) => {
       return {
         id: faq.id,
-        translations: faq.translations
+        translations: faq.translations,
+        language
       };
     };
 
