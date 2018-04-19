@@ -33,7 +33,9 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      READ_FAQ_LIST: "rfl"
+      READ_FAQ_LIST: "rfl",
+      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt",
+      CONVERSATION_ID: "ci"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
