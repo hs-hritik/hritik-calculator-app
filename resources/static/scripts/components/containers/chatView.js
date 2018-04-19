@@ -63,8 +63,8 @@ define ("components/containers/chatView",
 
     const mapDispatchToProps = (dispatch) => {
       return {
-        onSuggestedFaqClick: (faqId) => {
-          dispatch (faqViewActions.getFaq (faqId));
+        onSuggestedFaqClick: (faqId, language) => {
+          dispatch (faqViewActions.getFaq (faqId, language));
         },
         onFilesDrop: (files) => {
           dispatch (chatViewActions.createAttachmentMessages (files));

@@ -26,11 +26,14 @@ define ("components/containers/faqView",
       } = state;
 
       let title, body;
-      // @TODO - Find a way to read faqs for given language
-      // Currently reading only english faqs
-      if (activeFaq && activeFaq.translations) {
-        title = activeFaq.translations.en.title;
-        body = activeFaq.translations.en.body;
+
+      if (activeFaq && activeFaq.translations && activeFaq.language) {
+        const faq = activeFaq.translations [activeFaq.language];
+
+        if (faq) {
+          title = faq.title;
+          body = faq.body;
+        }
       }
 
       return {

@@ -64,10 +64,11 @@ define ("actions/faqView",
 
     /**
      * Action to get FAQ details for a given faq-id.
-     * @param {String} faqId - FAQ id
+     * @param {string} faqId - FAQ id
+     * @param {string} language - The language the FAQ body should render in
      * @returns {Object} - action
      */
-    const getFaq = (faqId) => {
+    const getFaq = (faqId, language) => {
       return (dispatch, getState) => {
         const state = getState ();
         const {
@@ -96,7 +97,7 @@ define ("actions/faqView",
           route: routes.getFaq (domain, faqId),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            const faq = entityHelpers.getProcessedFaq (response);
+            const faq = entityHelpers.getProcessedFaq (response, language);
             dispatch (setActiveFaq (faq));
 
             // Track suggested FAQ read event if it hasn't been tracked already.
