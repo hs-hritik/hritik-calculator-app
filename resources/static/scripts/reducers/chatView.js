@@ -21,6 +21,13 @@ define ("reducers/chatView",
       USER_INPUT_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
+    const INITIAL_ERROR_STATE = {
+      type: "",
+      title: "",
+      subtitle: "",
+      cta: ""
+    };
+
     /**
      * Returns default user input config object to be set in store
      * @returns {Object} - input config object
@@ -85,7 +92,11 @@ define ("reducers/chatView",
           }
         }
       },
-      readFaqList: []
+      readFaqList: [],
+      loading: true,
+      // This represents the error in the whole chat view
+      // @TODO: Move the error handling to the error reducer.
+      error: INITIAL_ERROR_STATE
     };
 
     /**
@@ -327,6 +338,21 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_POLLER_FAILURE_COUNT:
           return update (state, {
             pollerFailureCount: {$set: action.count}
+          });
+
+        case ACTION_TYPES.TOGGLE_CHAT_VIEW_LOADING:
+          return update (state, {
+            loading: {$set: action.loading}
+          });
+
+        case ACTION_TYPES.SET_CHAT_VIEW_ERROR:
+          return update (state, {
+            error: {$set: action.error}
+          });
+
+        case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
+          return update (state, {
+            error: {$set: INITIAL_ERROR_STATE}
           });
 
         case ACTION_TYPES.RESET:

@@ -22,7 +22,8 @@ define ("constants/errors",
 
     const TYPE = {
       NO_AUTH_TOKEN: "NO_AUTH_TOKEN",
-      INVALID_USER_AUTH_TOKEN: "INVALID_USER_AUTH_TOKEN"
+      INVALID_USER_AUTH_TOKEN: "INVALID_USER_AUTH_TOKEN",
+      PRE_ISSUE_FAILURE: "PRE_ISSUE_FAILURE"
     };
 
     return {

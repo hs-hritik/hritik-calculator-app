@@ -211,9 +211,9 @@ define ("actions/actionCreators",
      * @param {Boolean} - loading
      * @returns {Object} - Action
      */
-    const toggleLoading = (loading) => {
+    const toggleChatViewLoading = (loading) => {
       return {
-        type: ACTION_TYPES.TOGGLE_LOADING,
+        type: ACTION_TYPES.TOGGLE_CHAT_VIEW_LOADING,
         loading
       };
     };
@@ -249,7 +249,7 @@ define ("actions/actionCreators",
       setResolutionQuestionCompleted,
       setCsatCompleted,
       setFullPrivacy,
-      toggleLoading,
+      toggleChatViewLoading,
       toggleOnlineStatus
     };
   });

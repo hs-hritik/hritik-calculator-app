@@ -14,6 +14,8 @@ define ("reducers/faqView",
     const INITIAL_STATE = {
       activeFaq: null,
       loading: false,
+      // @TODO: Move the error handling to error reducer with proper format,
+      // which would have error type, title, subtitle and cta.
       errorMsg: ""
     };
 

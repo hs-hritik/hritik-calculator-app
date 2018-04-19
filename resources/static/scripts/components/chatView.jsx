@@ -8,12 +8,12 @@ define ("components/chatView",
   [
     "components/messageList",
     "components/containers/chatViewFooter",
-    "components/containers/infoView",
+    "components/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
     "constants/propTypes"
   ],
-  function (MessageList, ChatViewFooterContainer, InfoViewContainer, ViewHeader,
+  function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes) {
     "use strict";
 
@@ -48,7 +48,16 @@ define ("components/chatView",
         /**
          * If chat view footer has any failure
          */
-        hasFailure: PropTypes.bool
+        hasFailure: PropTypes.bool,
+        error: PropTypes.shape ({
+          // Error title
+          title: PropTypes.string.isRequired,
+          // Error subtitle
+          subtitle: PropTypes.string,
+          // Call to action text for the error. eg. Retry
+          cta: PropTypes.string
+        }),
+        errorActionHandler: PropTypes.func
       },
 
       render () {
@@ -83,12 +92,18 @@ define ("components/chatView",
           onSuggestedFaqClick,
           userInput,
           issueIsCreated,
-          loading
+          loading,
+          error,
+          errorActionHandler
         } = this.props;
 
-        if (loading) {
+        if (loading || (error && error.title)) {
           return (
-            <InfoViewContainer />
+            <InfoView loading={loading}
+                      title={error.title}
+                      subtitle={error.subtitle}
+                      actionBtnText={error.cta}
+                      onActionBtnClick={errorActionHandler} />
           );
         }
 

@@ -65,7 +65,7 @@ define ("actions/chatView",
 
     const {Input} = schema;
 
-    const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
+    const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
 
     const {
       ISSUE_STATE,
@@ -743,7 +743,9 @@ define ("actions/chatView",
 
             dispatch (
               batchActions ([
-                actionCreators.toggleLoading (false),
+                // We stop loading after the first response from poller because
+                // we want to show loader until we get the first message from the backend
+                actionCreators.toggleChatViewLoading (false),
                 setActiveIssueId (issueId),
                 actionCreators.setInternalIssueId (internalIssueId),
                 setCsatSubmitted (isCsatSubmitted),
@@ -1284,6 +1286,32 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set chat view error.
+     * @param {Object} error
+     * @param {String} error.type - Error type - For example, pre issue failure
+     * @param {String} error.title
+     * @param {String} [error.subtitle]
+     * @param {String} [error.cta] - Call to action text
+     * @returns {Object} - action
+     */
+    const setChatViewError = (error) => {
+      return {
+        type: ACTION_TYPES.SET_CHAT_VIEW_ERROR,
+        error
+      };
+    };
+
+    /**
+     * Action to reset chat view error.
+     * @returns {Object} - action
+     */
+    const resetChatViewError = () => {
+      return {
+        type: ACTION_TYPES.RESET_CHAT_VIEW_ERROR
+      };
+    };
+
+    /**
      * Create pre-issue on backend.
      */
     const createPreIssue = () => {
@@ -1304,7 +1332,9 @@ define ("actions/chatView",
           },
           ui: {
             text: {
-              greetingMsg
+              greetingMsg,
+              networkError,
+              retryBtn
             }
           }
         } = getState ();
@@ -1353,6 +1383,8 @@ define ("actions/chatView",
           xhrData.user_id = userId;
         }
 
+        dispatch (actionCreators.toggleChatViewLoading (true));
+
         xhr ({
           route: routes.postPreIssue (domain),
           data: xhrHelpers.getPreparedXhrData (xhrData),
@@ -1369,15 +1401,43 @@ define ("actions/chatView",
               ])
             );
             startPollingForMessages ();
+            dispatch (resetChatViewError ());
 
             // Track the issue created event.
             // @TODO: Confirm if issue created event has to be tracked from Web Chat.
             // analyticsHelpers.track (EVENT.ISSUE_CREATED);
           },
+          onFailure: () => {
+            dispatch (batchActions ([
+              setChatViewError ({
+                type: ERROR_TYPES.PRE_ISSUE_FAILURE,
+                title: networkError,
+                cta: retryBtn
+              }),
+              actionCreators.toggleChatViewLoading (false)
+            ]));
+          },
           onEnd: () => {
             dispatch (enableReplyBox ());
           }
         });
+      };
+    };
+
+    /**
+     * Action to handle error.
+     * @TODO: Move the error handling to separate error actions file.
+     * @returns {Function} - action
+     */
+    const handleErrorAction = () => {
+      return (dispatch, getState) => {
+        const {type: errorType} = getState ().chatView.error;
+
+        switch (errorType) {
+          case ERROR_TYPES.PRE_ISSUE_FAILURE:
+            dispatch (createPreIssue ());
+            break;
+        }
       };
     };
 
@@ -2299,6 +2359,7 @@ define ("actions/chatView",
       rejectResolutionQuestion,
       setUserInputData,
       updateUserInputData,
-      setUserSelectedOption
+      setUserSelectedOption,
+      handleErrorAction
     };
   });

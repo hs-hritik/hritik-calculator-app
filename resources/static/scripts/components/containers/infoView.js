@@ -11,9 +11,11 @@ define ("components/containers/infoView",
   function (InfoView) {
     "use strict";
 
+    // Note: This is not being used anywhere right now.
+    // It will be used when we will move the errors to one generic place.
     const mapStateToProps = (state) => {
       const {
-        appState: {
+        chatView: {
           loading
         }
       } = state;

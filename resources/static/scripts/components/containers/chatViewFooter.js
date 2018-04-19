@@ -101,7 +101,7 @@ define ("components/containers/chatViewFooter",
           dispatch (appStateActions.reset ({
             skipUser: true
           }));
-          dispatch (actionCreators.toggleLoading (true));
+          dispatch (actionCreators.toggleChatViewLoading (true));
         },
         onSkipUserInput: () => {
           dispatch (chatViewActions.updateUserInputData ({

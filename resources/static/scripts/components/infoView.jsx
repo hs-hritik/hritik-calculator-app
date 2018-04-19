@@ -29,7 +29,7 @@ define ("components/infoView",
           <div className="hs-info-view">
             {this._renderTitle ()}
             {this._renderSubtitle ()}
-            {this._renderRetryBtn ()}
+            {this._renderActionBtn ()}
             {this._renderLoader ()}
           </div>
         );
@@ -61,9 +61,9 @@ define ("components/infoView",
         );
       },
 
-      _renderRetryBtn () {
-        const {actionBtnText} = this.props;
-        if (!actionBtnText) {
+      _renderActionBtn () {
+        const {actionBtnText, loading} = this.props;
+        if (!actionBtnText || loading) {
           return null;
         }
 

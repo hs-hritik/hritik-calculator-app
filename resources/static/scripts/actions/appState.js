@@ -1193,7 +1193,7 @@ define ("actions/appState",
           }
         } = getState ();
 
-        dispatch (actionCreators.toggleLoading (true));
+        dispatch (actionCreators.toggleChatViewLoading (true));
         xhr ({
           route: routes.putResetPreIssue (domain, activeIssueId),
           data: xhrHelpers.getPreparedXhrData ({

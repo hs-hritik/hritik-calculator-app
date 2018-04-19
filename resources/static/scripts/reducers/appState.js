@@ -106,7 +106,6 @@ define ("reducers/appState",
         csatCompleted: false
       },
       fullPrivacyEnabled: false,
-      loading: true,
       online: true
     };
 
@@ -380,11 +379,6 @@ define ("reducers/appState",
             postChatFeatures: {
               csatCompleted: {$set: true}
             }
-          });
-
-        case ACTION_TYPES.TOGGLE_LOADING:
-          return update (state, {
-            loading: {$set: action.loading}
           });
 
         case ACTION_TYPES.RESET:

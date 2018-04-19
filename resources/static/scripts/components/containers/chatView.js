@@ -27,7 +27,6 @@ define ("components/containers/chatView",
           },
           activeIssueId,
           issueType,
-          loading,
           online
         },
         chatView: {
@@ -35,7 +34,9 @@ define ("components/containers/chatView",
           systemTyping,
           agentTyping,
           userInput,
-          pollerFailureCount
+          pollerFailureCount,
+          loading,
+          error
         },
         ui: {
           text
@@ -55,7 +56,8 @@ define ("components/containers/chatView",
         }),
         userInput,
         loading,
-        hasFailure
+        hasFailure,
+        error
       };
     };
 
@@ -75,6 +77,9 @@ define ("components/containers/chatView",
         onPillOptionSelect: (option) => {
           dispatch (chatViewActions.setUserSelectedOption (option));
           dispatch (chatViewActions.submitReply ());
+        },
+        errorActionHandler: () => {
+          dispatch (chatViewActions.handleErrorAction ());
         }
       };
     };
