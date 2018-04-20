@@ -27,6 +27,7 @@ define ("helpers/analytics",
     const SKIP_PLATFORM_ID = true;
 
     const {
+      ISSUE_TYPE,
       ISSUE_STATE
     } = appStateConstants;
 
@@ -42,20 +43,8 @@ define ("helpers/analytics",
     } = analyticsConstants;
 
     let _route;
-    let _internalIssueId;
     const _isBot = browserUtils.isBot ();
     const _lang = browserUtils.getLanguage ();
-
-    /**
-     * Get the internal issue ID used with the payload of analytics events.
-     * Also, cache the value in a local variable because it remains the same until
-     * the conversation is not reset.
-     */
-    const _getInternalIssueId = () => {
-      const {internalIssueId} = store.getState ().appState;
-      _internalIssueId = internalIssueId;
-      return _internalIssueId;
-    };
 
     /**
      * Determine whether a backend issue exists in the system.
@@ -66,6 +55,7 @@ define ("helpers/analytics",
         businessHoursViewState: bhState,
         appState: {
           issueState,
+          issueType,
           internalIssueId
         }
       } = store.getState ();
@@ -86,7 +76,11 @@ define ("helpers/analytics",
           bhState.contactFormSubmitted
         );
       } else {
-        return issueState === ISSUE_STATE.ACTIVE && !!internalIssueId;
+        return (
+          issueType === ISSUE_TYPE.ISSUE &&
+          issueState === ISSUE_STATE.ACTIVE &&
+          !!internalIssueId
+        );
       }
     };
 
@@ -169,10 +163,14 @@ define ("helpers/analytics",
      *    call or a user action.
      */
     const _trackWidgetOpen = (config = {}) => {
-      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 0 : 1;
+      const {
+        appState: {
+          internalIssueId,
+          issueType
+        }
+      } = store.getState ();
 
-      // Track `c` is an issue exists, `i`, if it doesn't.
-      const issueExists = _doesIssueExist ();
+      const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 0 : 1;
 
       const eventData = {
         ts: Date.now (),
@@ -182,10 +180,15 @@ define ("helpers/analytics",
         }
       };
 
-      if (issueExists) {
-        eventData.d.id = _internalIssueId || _getInternalIssueId ();
+      // If issue exists — send issueId with `id` and type `c` with `t`.
+      // If issue doesn’t exist — send preIssueId with `preissue_id` and type `i` with `t`.
+      if (_doesIssueExist ()) {
+        eventData.d.id = internalIssueId;
         eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITH_ISSUE;
       } else {
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          eventData.d.preissue_id = internalIssueId;
+        }
         eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE;
       }
 
@@ -264,10 +267,16 @@ define ("helpers/analytics",
      * @param {string} config.event - The CSAT event to track
      */
     const _trackCsatEvents = ({event}) => {
+      const {
+        appState: {
+          internalIssueId
+        }
+      } = store.getState ();
+
       const eventData = {
         ts: Date.now (),
         d: {
-          id: _internalIssueId || _getInternalIssueId ()
+          id: internalIssueId
         }
       };
 
