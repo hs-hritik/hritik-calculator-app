@@ -409,7 +409,8 @@ define ("actions/appState",
         tags,
         userId,
         userEmail,
-        clearAnonymousUserOnLogin
+        clearAnonymousUserOnLogin,
+        userName
       } = config;
 
       const {
@@ -431,6 +432,11 @@ define ("actions/appState",
         delete config.userEmail;
         // @TODO: Check with product if we need to throw an error for the client
         // developer to know about this.
+      }
+
+      // User's names are to be truncated if they are more than 255 chars.
+      if (userName) {
+        config.userName = userName.slice (0, 255);
       }
 
       // The following action (SET_CLIENT_CONFIG) sets the userId passed by the
