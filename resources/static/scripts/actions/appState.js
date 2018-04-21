@@ -410,7 +410,8 @@ define ("actions/appState",
         userId,
         userEmail,
         clearAnonymousUserOnLogin,
-        userName
+        userName,
+        language
       } = config;
 
       const {
@@ -437,6 +438,18 @@ define ("actions/appState",
       // User's names are to be truncated if they are more than 255 chars.
       if (userName) {
         config.userName = userName.slice (0, 255);
+      }
+
+      // If developerSetLanguage (config.language) is not set, default it to `en-US`.
+      // If it's set to `browserDefault`, don't set developerSetLanguage so that
+      // browser language is used for localization.
+      // This behavior is so that we don't start localizing strings for apps that
+      // don't want it by default. This would be removed once developers are given
+      // enough time to start using the developer set language option.
+      if (!language) {
+        config.language = "en-US";
+      } else if (language === "browserDefault") {
+        delete config.language;
       }
 
       // The following action (SET_CLIENT_CONFIG) sets the userId passed by the
