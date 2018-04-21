@@ -14,7 +14,10 @@ define ("constants/routes",
     // @TODO - Clean up unwanted routes
     const getWmConfig = (domain) => `${BASE}${domain}/config`;
 
-    const getCss = () => "/css/style.css";
+    // @TODO: This is not an ideal solution. Either make this configurable or
+    // implement an automatic cache busting solution based on a file's content.
+    // Also, update this in html/index.html, messenger.js, and requireConfig.js.
+    const getCss = () => "/css/style.css?v=2";
 
     const getIssues = (domain) => `${BASE}${domain}/issues`;
 
