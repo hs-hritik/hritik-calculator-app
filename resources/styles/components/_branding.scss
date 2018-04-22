@@ -12,7 +12,7 @@
 
   .hs-branding {
     display: block;
-    padding-top: gutter(16);
+    padding: gutter(16 0 8 0);
     color: $chat-widget-secondary-text-color;
     text-align: center;
     opacity: .4;
