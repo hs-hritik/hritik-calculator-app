@@ -739,7 +739,8 @@ define ("actions/chatView",
       } = store.getState ();
 
       const xhrData = {
-        mc: JSON.stringify (messageCursor)
+        "mc": JSON.stringify (messageCursor),
+        "new-timestamp": new Date ().getTime ()
       };
 
       if (issueCursor) {
