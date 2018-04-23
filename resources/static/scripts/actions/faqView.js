@@ -7,7 +7,6 @@
 define ("actions/faqView",
   [
     "store",
-    "normalizr",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
@@ -18,56 +17,95 @@ define ("actions/faqView",
     "helpers/xhr",
     "helpers/analytics",
     "actions/actionCreators",
-    "actions/entities"
+    "actions/batch"
   ],
-  function (store, normalizr, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
+  function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
     xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
-    entitiesActions) {
+    batchActions) {
     "use strict";
-
-    const {normalize} = normalizr;
 
     const {EVENT} = analyticsConstants;
 
     /**
-     * Action to set the active FAQ id in the FAQ View store
-     * @param {String} faqId
-     * @returns {Object} - the action object
+     * Action to set the active FAQ in the FAQ View store
+     * @param {Object} faq - faq object
+     * @returns {Object} - Action
      */
-    const setActiveFaqId = (faqId) => {
+    const setActiveFaq = (faq) => {
       return {
-        type: ACTION_TYPES.SET_ACTIVE_FAQ_ID,
-        faqId
+        type: ACTION_TYPES.SET_ACTIVE_FAQ,
+        faq
+      };
+    };
+
+    /**
+     * Action to toggle FAQ loading.
+     * @param {Boolean} loading
+     * @returns {Object} - Action
+     */
+    const toggleFaqLoading = (loading) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_FAQ_LOADING,
+        loading
+      };
+    };
+
+    /**
+     * Action to set FAQ error message.
+     * @param {Boolean} errorMsg
+     * @returns {Object} - Action
+     */
+    const setFaqErrorMsg = (errorMsg) => {
+      return {
+        type: ACTION_TYPES.SET_FAQ_ERROR_MESSAGE,
+        errorMsg
       };
     };
 
     /**
      * Action to get FAQ details for a given faq-id.
-     * @param {String} faqId - FAQ id
+     * @param {string} faqId - FAQ id
+     * @param {string} language - The language the FAQ body should render in
      * @returns {Object} - action
      */
-    const getFaq = (faqId) => {
+    const getFaq = (faqId, language) => {
       return (dispatch, getState) => {
         const state = getState ();
-        const appState = state.appState;
+        const {
+          appState: {
+            domain,
+            analytics: {
+              suggestedFaqReadTracked
+            }
+          },
+          ui: {
+            text: {
+              networkError
+            }
+          }
+        } = state;
+
+        dispatch (
+          batchActions ([
+            toggleFaqLoading (true),
+            setFaqErrorMsg (""),
+            actionCreators.updateActiveView (ACTIVE_VIEW.FAQ)
+          ])
+        );
 
         xhr ({
-          route: routes.getFaq (appState.domain, faqId),
+          route: routes.getFaq (domain, faqId),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.faq);
-            const processedEntities = entityHelpers.getProcessedEntities (
-              normalizedData.entities
-            );
+            const faq = entityHelpers.getProcessedFaq (response, language);
+            dispatch (setActiveFaq (faq));
 
-            dispatch (entitiesActions.setEntities (processedEntities));
-            dispatch (setActiveFaqId (faqId));
-            dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.FAQ));
-
-            // Track FAQ read (same as fetched from backend) event here.
-            analyticsHelpers.track (EVENT.FAQ_READ, {
-              faqId
-            });
+            // Track suggested FAQ read event if it hasn't been tracked already.
+            if (!suggestedFaqReadTracked) {
+              analyticsHelpers.track (EVENT.SUGGESTED_FAQ_READ, {
+                faqId
+              });
+            }
 
             // For issue deflection events, we need to send a list of FAQ IDs
             // in the order they were read.
@@ -75,6 +113,10 @@ define ("actions/faqView",
           },
           onFailure: () => {
             // @TODO: Handle failure.
+            dispatch (setFaqErrorMsg (networkError));
+          },
+          onEnd: () => {
+            dispatch (toggleFaqLoading (false));
           }
         });
       };

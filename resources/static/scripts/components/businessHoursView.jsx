@@ -75,7 +75,8 @@ define ("components/businessHoursView",
         submitInProgress: PropTypes.bool.isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        fullPrivacyEnabled: PropTypes.bool
       },
       render () {
         const {
@@ -84,10 +85,12 @@ define ("components/businessHoursView",
           onMinimizeConversation,
           onFilesChange,
           contactFormDetails,
-          viewStyles
+          viewStyles,
+          fullPrivacyEnabled
         } = this.props;
 
         const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
+        const attachmentIsEnabled = featureIsEnabled && !fullPrivacyEnabled;
 
         return (
           <div className="hs-view" style={viewStyles}>
@@ -97,7 +100,7 @@ define ("components/businessHoursView",
               <div className="hs-view__content">
                 <DnDWrapper dragInfoText={text.dndInfoText}
                             onDrop={onFilesChange}
-                            enabled={featureIsEnabled} >
+                            enabled={attachmentIsEnabled} >
                   {this._renderContactForm ()}
                   {this._renderOfflineMessage ()}
                   {this._renderFooter ()}
@@ -299,10 +302,11 @@ define ("components/businessHoursView",
             attachmentsMeta: {
               featureIsEnabled
             }
-          }
+          },
+          fullPrivacyEnabled
         } = this.props;
 
-        if (!featureIsEnabled) {
+        if (!featureIsEnabled || fullPrivacyEnabled) {
           return null;
         }
 

@@ -41,9 +41,12 @@
     max-width: $max-width;
     margin-top: gutter(6);
 
+    &__item-wrapper {
+      display: flex;
+    }
+
     &__item {
       position: relative;
-      flex: 0 0 auto;
       padding: gutter(8 12);
       overflow: hidden;
       color: $agent-message-primary-text-color;
@@ -66,10 +69,18 @@
     &--right {
       align-self: flex-end;
 
+      .hs-message__item-wrapper {
+        justify-content: flex-end;
+      }
+
       .hs-message__item {
         color: $user-message-primary-text-color;
         background-color: $user-message-bg-color;
         border: 1px solid $user-message-border-color;
+      }
+
+      .hs-message__details {
+        justify-content: flex-end;
       }
     }
 
@@ -102,20 +113,9 @@
 
     &__details {
       display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      color: $chat-widget-secondary-text-color;
-    }
-
-    &__agent-nickname {
-      margin-right: gutter(8);
-      font-weight: font-weight(medium);
-    }
-
-    &__time-ago {
-      margin-left: gutter(8);
       font-size: font-size(body, small);
       letter-spacing: -.5px;
+      color: $chat-widget-secondary-text-color;
       opacity: .8;
     }
 
@@ -175,7 +175,7 @@
       opacity: 0;
     }
 
-    &--end-chat {
+    &--system-info {
       display: flex;
       align-items: center;
       align-self: stretch;
@@ -183,6 +183,7 @@
       margin: gutter(28 0);
       color: $chat-widget-secondary-text-color;
       text-align: center;
+      opacity: .5;
 
       &::before,
       &::after {

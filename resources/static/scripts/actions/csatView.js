@@ -7,6 +7,9 @@
 define ("actions/csatView",
   [
     "store",
+    "actions/actionCreators",
+    "actions/chatView",
+    "actions/batch",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
@@ -15,42 +18,71 @@ define ("actions/csatView",
     "helpers/xhr",
     "helpers/analytics"
   ],
-  function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants, xhr,
-    xhrHelpers, analyticsHelpers) {
+  function (store, actionCreator, chatViewActions, batchActions, ACTION_TYPES,
+    routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
+
+    /**
+     * Action to set csat save in progress
+     * @param {Boolean} progress
+     * @returns {Object} - Action
+     */
+    const setCsatSaveInProgress = (progress) => {
+      return {
+        type: ACTION_TYPES.SET_CSAT_SAVE_IN_PROGRESS,
+        progress
+      };
+    };
 
     /**
      * Action to submit csat rating and review.
      * @returns {Function} - action
      */
     const submitCsat = (skipReviewComments = false) => {
-      return (dipatch, getState) => {
-        const {appState, csatView} = getState ();
+      return (dispatch, getState) => {
+        const {
+          appState: {
+            domain,
+            activeIssueId
+          },
+          csatView: {
+            rating,
+            review
+          }
+        } = getState ();
 
-        if (!csatView.rating) {
+        if (!rating) {
           return;
         }
 
-        dipatch (markCsatCompleted ());
-
         const xhrData = {
-          "identifier": appState.identifier,
-          "platform-id": appState.platformId,
-          "rating": csatView.rating
+          rating
         };
 
-        const csatReview = csatView.review.trim ();
+        const csatReview = review.trim ();
         if (csatReview && !skipReviewComments) {
           xhrData.comment = csatReview;
         }
 
+        dispatch (setCsatSaveInProgress (true));
+
         xhr ({
-          route: routes.postCSAT (appState.domain, appState.activeIssueId),
-          data: xhrData,
+          route: routes.postCSAT (domain, activeIssueId),
+          data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
-          method: "POST"
+          method: "POST",
+          onEnd: () => {
+            dispatch (
+              batchActions ([
+                actionCreator.updateActiveView (ACTIVE_VIEW.CHAT),
+                actionCreator.setCsatCompleted (),
+                setCsatSaveInProgress (false)
+              ])
+            );
+            dispatch (chatViewActions.showPostIssueResolutionFooter ());
+          }
         });
 
         // Track CSAT submitted event here (we don't have to wait for the CSAT
@@ -97,16 +129,6 @@ define ("actions/csatView",
       return {
         type: ACTION_TYPES.UPDATE_CSAT_REVIEW,
         review
-      };
-    };
-
-    /**
-     * Mark csat completed.
-     * @returns {Object} - action
-     */
-    const markCsatCompleted = () => {
-      return {
-        type: ACTION_TYPES.MARK_CSAT_COMPLETED
       };
     };
 

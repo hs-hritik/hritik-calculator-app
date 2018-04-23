@@ -122,28 +122,40 @@ define ("reducers/businessHoursView",
 
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
-          const businessHoursEnabled = action.config.business_hours_enabled;
+          const {
+            config: {
+              business_hours_enabled: businessHoursEnabled,
+              in_business_hours: inBusinessHours,
+              business_hours: {
+                offline_behavior: offlineBehaviour,
+                cf_fields: contactFormFields,
+                attachments_enabled: attachmentEnabled
+              }
+            }
+          } = action;
+
           const updateObject = {
             businessHoursEnabled: {$set: businessHoursEnabled},
-            inBusinessHours: {$set: action.config.in_business_hours}
+            inBusinessHours: {$set: inBusinessHours}
           };
 
           if (businessHoursEnabled) {
-            const businessHours = action.config.business_hours;
-            updateObject.offlineBehaviour = {$set: businessHours.offline_behavior};
+            updateObject.offlineBehaviour = {$set: offlineBehaviour};
 
             updateObject.contactFormDetails = {
               name: {
-                enabled: {$set: businessHours.cf_fields.name}
+                enabled: {$set: contactFormFields.name}
               },
               email: {
-                enabled: {$set: businessHours.cf_fields.email}
+                enabled: {$set: contactFormFields.email}
               },
               message: {
-                enabled: {$set: businessHours.cf_fields.message}
+                enabled: {$set: contactFormFields.message}
               },
               attachmentsMeta: {
-                featureIsEnabled: {$set: businessHours.attachments_enabled}
+                featureIsEnabled: {
+                  $set: attachmentEnabled
+                }
               }
             };
           }

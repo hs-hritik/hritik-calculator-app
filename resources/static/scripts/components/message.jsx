@@ -14,34 +14,34 @@ define ("components/message",
     "gunpowder/utils/classes",
     "gunpowder/utils/object"
   ],
-  function (PROP_TYPES, MESSAGE_CONSTANTS, ERROR_CONSTANTS,
-    attachmentsHelpers, dateUtils, classes, objUtils) {
+  function (customPropTypes, MESSAGE_CONSTANTS, ERROR_CONSTANTS, attachmentsHelpers,
+    dateUtils, classes, objUtils) {
     "use strict";
 
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
+    const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
     const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
 
     const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
     const IMAGE_MSG_MAX_HEIGHT = 170;
 
+    const AGENT_NAME_SEPARATOR = ", ";
+
     const PropTypes = React.PropTypes;
 
     return React.createClass ({
       displayName: "Message",
       propTypes: {
-        message: PropTypes.shape (PROP_TYPES.MESSAGE).isRequired,
+        message: customPropTypes.MESSAGE_PROP_TYPE,
         showAgentNickname: PropTypes.bool,
         isLastMessage: PropTypes.bool,
+        // @NOTE - isLastMessageInGroup will be used for message grouping in future, so
+        // keeping this prop as it is.
         isLastMessageInGroup: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
-        onStartCsatSurveyClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
-          timeAgoJustNow: PropTypes.string.isRequired,
-          faqSuggestionsMsgTitleSingle: PropTypes.string.isRequired,
-          faqSuggestionsMsgTitleMultpile: PropTypes.string.isRequired,
           csatBotRequestMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
@@ -68,8 +68,8 @@ define ("components/message",
       render () {
         const {isCustomerMsg, type, states} = this.props.message;
 
-        if (type === MESSAGE_TYPE.END_CHAT) {
-          return this._renderEndChatMessage ();
+        if (type === MESSAGE_TYPE.SYSTEM_INFO) {
+          return this._renderSystemInfoMessage ();
         }
 
         const msgClasses = classes (
@@ -96,23 +96,49 @@ define ("components/message",
        */
       _renderMessage () {
         const {type} = this.props.message;
+        let messageItemEl = null;
 
+        // @NOTE - All bot messages (except faqs) and user response messages
+        // are rendered as text messages
         switch (type) {
           case MESSAGE_TYPE.TEXT:
-            return this._renderTextMessage ();
+          case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_EMAIL_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_NUMERIC_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT:
+          case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_TEXT_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_EMAIL_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_NUMERIC_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT:
+          case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT:
+          case MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT:
+          case MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT:
+            messageItemEl = this._renderTextMessage ();
+            break;
 
-          case MESSAGE_TYPE.FAQ:
-            return this._renderFaqMessage ();
+          case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
+            messageItemEl = this._renderFaqMessage ();
+            break;
 
           case MESSAGE_TYPE.CSAT:
-            return this._renderCsatMessage ();
+            messageItemEl = this._renderCsatMessage ();
+            break;
 
           case MESSAGE_TYPE.ATTACHMENT:
-            return this._renderAttachmentMessage ();
-
-          default:
-            return null;
+            messageItemEl = this._renderAttachmentMessage ();
+            break;
         }
+
+        if (messageItemEl) {
+          return (
+            <div className="hs-message__item-wrapper">
+              {messageItemEl}
+            </div>
+          );
+        }
+
+        return null;
       },
 
       /**
@@ -173,18 +199,18 @@ define ("components/message",
        * Render FAQ suggestions message.
        */
       _renderFaqMessage () {
-        if (!this.props.message.suggestedFaqs.length) {
+        const {
+          body,
+          suggestedFaqs
+        } = this.props.message;
+
+        if (!suggestedFaqs.length) {
           return null;
         }
 
-        const {text} = this.props;
-        const msgTitle = (this.props.message.suggestedFaqs.length === 1) ?
-                         text.faqSuggestionsMsgTitleSingle :
-                         text.faqSuggestionsMsgTitleMultpile;
-
         return (
           <div className="hs-message__item">
-            {msgTitle}
+            {body}
             <div className="hs-message__suggested-faqs">
               {this._renderFaqs ()}
             </div>
@@ -196,14 +222,20 @@ define ("components/message",
        * Render an faq, which is a part of the faq message.
        */
       _renderFaqs () {
-        const {suggestedFaqs} = this.props.message;
+        const {
+          onSuggestedFaqClick,
+          message: {
+            suggestedFaqs
+          }
+        } = this.props;
 
         return suggestedFaqs.map ((faq) => {
+          const {id, language} = faq;
           return (
             <span key={faq.id}
                   className="hs-message__suggested-faq"
                   dir="auto"
-                  onClick={this.props.onSuggestedFaqClick.bind (this, faq.id)}>
+                  onClick={onSuggestedFaqClick.bind (this, id, language)}>
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
             </span>
@@ -403,13 +435,12 @@ define ("components/message",
       },
 
       /**
-       * Render end chat message.
+       * Render system info message.
        */
-      _renderEndChatMessage () {
-        // @TODO: Show agent nickname when we get the assignee from the backend.
+      _renderSystemInfoMessage () {
         return (
-          <div className="hs-message hs-message--end-chat">
-            Chat Ended
+          <div className="hs-message hs-message--system-info">
+            {this.props.message.body}
           </div>
         );
       },
@@ -440,19 +471,17 @@ define ("components/message",
        * Render agent name and message timestamp.
        */
       _renderMessageDetails () {
-        // Don't render message details for end chat message.
-        if (this.props.message.type === MESSAGE_TYPE.END_CHAT) {
-          return null;
+        const agentName = this._getAgentNickname ();
+        const time = this._getHumanReadableTime ();
+        let details = time;
+
+        if (agentName) {
+          details = agentName + AGENT_NAME_SEPARATOR + time;
         }
 
         return (
           <div className="hs-message__details">
-            <div className="hs-message__agent-nickname">
-              {this._getAgentNickname ()}
-            </div>
-            <div className="hs-message__time-ago">
-              {this._getTimeAgo ()}
-            </div>
+            {details}
           </div>
         );
       },
@@ -465,8 +494,7 @@ define ("components/message",
 
         if (!showAgentNickname ||
             message.isCustomerMsg ||
-            message.isSystemMsg ||
-            !this.props.isLastMessageInGroup) {
+            message.isSystemMsg) {
           return null;
         }
 
@@ -474,13 +502,9 @@ define ("components/message",
       },
 
       /**
-       * Get time ago.
+       * Get human readable time
        */
-      _getTimeAgo () {
-        if (!this.props.isLastMessage) {
-          return null;
-        }
-
+      _getHumanReadableTime () {
         const {
           message: {
             type: messageType,
@@ -492,28 +516,13 @@ define ("components/message",
 
         // If the message is of type attachment and it's uploading at the moment,
         // show `Uploading..` and return.
-        if (
-          messageType === MESSAGE_TYPE.ATTACHMENT &&
-          messageStates &&
-          messageStates.uploadInProgress
-        ) {
+        if (messageType === MESSAGE_TYPE.ATTACHMENT &&
+            messageStates &&
+            messageStates.uploadInProgress) {
           return text.attachmentUploadingStatus;
         }
 
-        const timeAgoMs = Date.now () - createdTs;
-        let timeAgoStr;
-
-        // If the message came in the last one minute, show "just now".
-        if (timeAgoMs < 60000) {
-          timeAgoStr = text.timeAgoJustNow;
-        } else {
-          timeAgoStr = dateUtils.humanizeDuration (timeAgoMs, {
-            shortForm: true,
-            maxUnits: 1
-          });
-        }
-
-        return timeAgoStr;
+        return dateUtils.format (createdTs, "{hh}:{MM} {a}");
       },
 
       /**

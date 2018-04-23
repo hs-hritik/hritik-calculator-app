@@ -8,12 +8,21 @@
 define ("helpers/common",
   [
     "store",
-    "gunpowder/utils/object",
+    "gunpowder/utils/array",
+    "gunpowder/utils/uuid",
     "constants/message",
-    "constants/businessHoursView"
+    "constants/businessHoursView",
+    "constants/appState"
   ],
-  function (store, objectUtils, messageConstants, bhConstants) {
+  function (store, arrayUtils, getUuid, messageConstants, bhConstants,
+    appStateConstants) {
     "use strict";
+
+    const {ISSUE_TYPE} = appStateConstants;
+
+    /* eslint-disable max-len */
+    const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]{1,246}\.[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
+    /* eslint-enable max-len */
 
     const {
       TYPE: MESSAGE_TYPE
@@ -99,10 +108,79 @@ define ("helpers/common",
       return [];
     };
 
+    /**
+     * Get anonymous user id string, in the following format.
+     * "hsft_anon_<timestamp>-<15 random alphanumeric characters>"
+     * @returns {string}
+     */
+    const getAnonUserId = () => {
+      return "hsft_anon_" +
+        Date.now () + "-" +
+        getUuid ().replace (/-/g, "").substring (0, 15);
+    };
+
+    /**
+     * Validate email.
+     * Ideally this should be a part of `gunpowder`, but it already has an email
+     * validation fn and its email regex doesn't match exactly with what BE and
+     * mobile SDKs use. In web chat, we are going to have the same email regex
+     * as elsewhere.
+     * TODO: Consider updating `gunpowder's` email regex.
+     * @param {string} value - email to validate.
+     * @returns {boolean} - true if the email is valid.
+     */
+    const isEmailValid = (value) => EMAIL_REGEX.test (value);
+
+    /**
+     * Validate userId (passed with `helpshiftConfig`).
+     * A valid userId
+     * should be <= 750 characters
+     * should not contain leading or trailing spaces
+     * @param {string} value - userId to validate.
+     * @returns {boolean} - true if the userId is valid.
+     */
+    const isUserIdValid = (value) => {
+      return !!(value && value.length <= 750 && value === value.trim ());
+    };
+
+    /**
+     * Predicate to return whether issue is created and not preIssue
+     * @param {Object} config
+     * @returns {Boolean} - whether issue is created
+     */
+    const isIssueCreated = (config) => {
+      const {activeIssueId, issueType} = config;
+      return !!activeIssueId && issueType !== ISSUE_TYPE.PRE_ISSUE;
+    };
+
+    /**
+     * Get the message id of the backend bot step message that returns the FAQ
+     * suggestion with the Answer Bot.
+     * @returns {string}
+     */
+    const getFaqSuggestionMessageId = () => {
+      const faqMessage = arrayUtils.findObjectByKey (
+        store.getState ().chatView.messageList,
+        MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT,
+        "type"
+      );
+
+      if (faqMessage) {
+        return faqMessage.id;
+      }
+
+      return "";
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
       getEndUserFirstMessage,
-      getSuggestedFaqs
+      getSuggestedFaqs,
+      getAnonUserId,
+      isEmailValid,
+      isUserIdValid,
+      isIssueCreated,
+      getFaqSuggestionMessageId
     };
   });

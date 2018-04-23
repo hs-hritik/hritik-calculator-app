@@ -9,35 +9,68 @@ define ("reducers/appState",
     "constants/actionTypes",
     "constants/activeView",
     "constants/appState",
+    "helpers/localStorage",
     "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, lsHelpers, objUtils) {
     "use strict";
 
     const update = React.addons.update;
-    const {ISSUE_STATE, PRE_CHAT_STATE, DEFAULT_RESET_TIMEOUT} = APP_STATE_CONSTANTS;
+    const {
+      ISSUE_STATE,
+      ISSUE_TYPE,
+      PRE_CHAT_STATE,
+      DEFAULT_RESET_TIMEOUT
+    } = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
-      wmEnabled: false,
+      wcEnabled: false,
       minimized: true,
       activeView: ACTIVE_VIEW.CHAT,
+      platformId: "",
+      domain: "",
+      // preferred language set by the developer
+      developerSetLanguage: "",
+
+      // Profile related data
+      deviceId: "",
+      // User id values
+      // 1. anonUserIdentifier (created for anon user / default profile)
+      // 2. userId (passed with helpshiftConfig)
+      anonUserIdentifier: "",
+      // @TODO: Identifier will go away. Also, remove the switch case that sets it.
+      identifier: "",
+      userId: "",
+      userName: "",
+      userEmail: "",
+      userAuthToken: "",
+      userProfileId: "",
+
+      // Backend flag to represent if any issue exists
+      issueExists: false,
+      // Type of issue can either be a. issue b. preissue
+      issueType: ISSUE_TYPE.PRE_ISSUE,
+      // Issue state can be either a. active b. resolved c. rejected
+      // It's applicable for both issue types (issue and preissue)
+      issueState: ISSUE_STATE.ACTIVE,
       activeIssueId: "",
       internalIssueId: "",
       dummyIssueId: "DUMMY_ISSUE",
-      // identifier is the uuid (Universally unique identifier)
-      identifier: "",
-      userProfileId: "",
-      userId: "",
-      platformId: "",
-      domain: "",
-      issueState: ISSUE_STATE.PRE_CHAT,
+
+      // Used to start a new conversation when user clicks on start new conversation
+      // The value is not set to default on 'reset', rather retained throughout the
+      // application.
+      // Only on page refresh, the value will be false and when we initialize the
+      // conversation, we set it to true.
+      webChatIsLive: false,
       featuresEnabled: {
         greeting: true,
         initialUserMessage: true,
         answerBot: false,
         infoBot: false,
         csatBot: false,
-        agentNickname: false
+        agentNickname: false,
+        resolutionQuestion: true
       },
       preChatFeatureOrder: ["greeting", "initialUserMessage", "answerBot", "infoBot"],
       preChatFeatureIndex: 0,
@@ -67,7 +100,13 @@ define ("reducers/appState",
         suggestedFaqReadTracked: false,
         infoBotRequestedTimestamp: Date.now ()
       },
-      footerIsActive: false
+      footerIsActive: false,
+      postChatFeatures: {
+        resolutionQuestionCompleted: false,
+        csatCompleted: false
+      },
+      fullPrivacyEnabled: false,
+      online: true
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -109,41 +148,80 @@ define ("reducers/appState",
           const greentingFeatureEnabled = config.hasOwnProperty ("greeting_enabled") ?
                                           config.greeting_enabled : true;
           return update (state, {
-            wmEnabled: {$set: config.wm_widget_enabled},
+            wcEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
-              greeting: {
-                $set: greentingFeatureEnabled
-              },
+              greeting: {$set: greentingFeatureEnabled},
+              // @TODO - Confirm the key after BE integration
+              resolutionQuestion: {$set: config.resolution_question_enabled},
               answerBot: {$set: config.answer_bot_enabled},
-              infoBot: {$set: config.user_info_bot_enabled},
+              infoBot: {$set: config.identity_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
               audioNotifications: {$set: config.audio_notifications_enabled}
-            }
+            },
+            issueExists: {$set: config.issue_exists}
           });
 
-        case ACTION_TYPES.SET_IDENTIFIER:
+        case ACTION_TYPES.SET_WEB_CHAT_IS_LIVE:
           return update (state, {
-            identifier: {$set: action.id}
+            webChatIsLive: {$set: true}
+          });
+
+        case ACTION_TYPES.SET_ISSUE_EXISTS:
+          return update (state, {
+            issueExists: {$set: action.issueExists}
+          });
+
+        case ACTION_TYPES.SET_LANGUAGE:
+          return update (state, {
+            developerSetLanguage: {$set: action.language}
+          });
+
+        case ACTION_TYPES.SET_DEVICE_ID:
+          return update (state, {
+            deviceId: {$set: action.id}
+          });
+
+        case ACTION_TYPES.SET_ANON_USER_ID:
+          return update (state, {
+            anonUserIdentifier: {$set: action.id}
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:
+          const {
+            config: {
+              platformId,
+              language,
+              domain,
+              userId,
+              userName,
+              userEmail,
+              userAuthToken,
+              tags,
+              fullPrivacy
+            }
+          } = action;
+
           return update (state, {
-            platformId: {$set: action.config.platformId},
-            domain: {$set: action.config.domain},
-            userId: {$set: action.config.userId},
-            resetTimeout: {$set: action.config.resetTimeout},
-            tags: {$set: action.config.tags},
+            platformId: {$set: platformId || ""},
+            developerSetLanguage: {$set: language || ""},
+            domain: {$set: domain || ""},
+            userId: {$set: userId || ""},
+            userName: {$set: userName || ""},
+            userEmail: {$set: userEmail || ""},
+            userAuthToken: {$set: userAuthToken || ""},
+            tags: {$set: tags || []},
+            fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {
               fullScreen: {
                 $set: objUtils.getIn (
                   action, ["config", "widgetOptions", "fullScreen"]
-                )
+                ) || false
               }
             }
           });
 
-        case ACTION_TYPES.SET_ACTIVE_ISSUE:
+        case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
           return update (state, {
             activeIssueId: {$set: action.id}
           });
@@ -174,6 +252,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_PRE_CHAT_FEATURE_INDEX:
           return update (state, {
             preChatFeatureIndex: {$set: action.preChatFeatureIndex}
+          });
+
+        case ACTION_TYPES.UPDATE_ISSUE_TYPE:
+          return update (state, {
+            issueType: {$set: action.issueType}
           });
 
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
@@ -214,7 +297,11 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_CONVERSATION_ENDED:
           return update (state, {
-            conversationStarted: {$set: false}
+            conversationStarted: {$set: false},
+            postChatFeatures: {
+              resolutionQuestionCompleted: {$set: false},
+              csatCompleted: {$set: false}
+            }
           });
 
         case ACTION_TYPES.SET_CIF:
@@ -280,10 +367,37 @@ define ("reducers/appState",
             footerIsActive: {$set: false}
           });
 
+        case ACTION_TYPES.SET_RESOLUTION_QUESTION_COMPLETED:
+          return update (state, {
+            postChatFeatures: {
+              resolutionQuestionCompleted: {$set: action.completed}
+            }
+          });
+
+        case ACTION_TYPES.SET_CSAT_COMPLETED:
+          return update (state, {
+            postChatFeatures: {
+              csatCompleted: {$set: true}
+            }
+          });
+
         case ACTION_TYPES.RESET:
-          // Retain the cif values set throught api
+          // Retain the cif values set through the api
+          // and webChatIsLive flag
           return update (INITIAL_STATE, {
-            cif: {$set: state.cif}
+            cif: {$set: state.cif},
+            webChatIsLive: {$set: state.webChatIsLive},
+            minimized: {$set: state.minimized}
+          });
+
+        case ACTION_TYPES.SET_FULL_PRIVACY:
+          return update (state, {
+            fullPrivacyEnabled: {$set: action.enabled}
+          });
+
+        case ACTION_TYPES.TOGGLE_ONLINE_STATUS:
+          return update (state, {
+            online: {$set: action.online}
           });
 
         default:

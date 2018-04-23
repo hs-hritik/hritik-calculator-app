@@ -61,8 +61,13 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
    * @returns {String} - agent activity topic name
    */
   const getAgentActivityTopic = () => {
-    const {activeIssueId, userProfileId} = store.getState ().appState;
-    return `${userProfileId}.agent_type_act.issue.${activeIssueId}`;
+    const {
+      appState: {
+        internalIssueId
+      }
+    } = store.getState ();
+
+    return `agent_type_act.issue.${internalIssueId}`;
   };
 
   /**

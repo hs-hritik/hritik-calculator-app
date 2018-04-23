@@ -12,9 +12,7 @@ define ("actions/appState",
     "constants/chatView",
     "constants/uiConfig",
     "constants/analytics",
-    "normalizr",
-    "helpers/entitySchema",
-    "helpers/entity",
+    "constants/activeView",
     "helpers/xhr",
     "helpers/localStorage",
     "helpers/prepareProcessXhrData",
@@ -28,7 +26,6 @@ define ("actions/appState",
     "gunpowder/utils/uuid",
     "gunpowder/utils/array",
     "store",
-    "actions/entities",
     "actions/chatView",
     "actions/ui",
     "actions/batch",
@@ -39,24 +36,24 @@ define ("actions/appState",
     "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
-    UI_CONFIG_CONSTANTS, analyticsConstants, normalizr, entitySchema, entityHelpers,
+    UI_CONFIG_CONSTANTS, analyticsConstants, ACTIVE_VIEW,
     xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
-    proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils, uuidGenerator,
-    arrayUtils, store, entitiesActions, chatViewActions, uiActions, batchActions,
-    actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
+    proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils,
+    getUuid, arrayUtils, store, chatViewActions, uiActions,
+    batchActions, actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
-    const {normalize} = normalizr;
+    const SKIP_PLATFORM_ID = true;
+
     const {
       ISSUE_STATE,
-      DEFAULT_RESET_TIMEOUT,
-      MIN_RESET_TIMEOUT,
-      MAX_RESET_TIMEOUT,
+      ANON_USER_RESET_TIMEOUT,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
-      TRIGGER
+      TRIGGER,
+      ISSUE_STATE_RESET,
+      OLD_ISSUE_STATE
     } = APP_STATE_CONSTANTS;
-    const {ACTIVE_FOOTER} = CHAT_VIEW_CONSTANTS;
 
     const {
       FLATTENED_UI_CONFIG: {
@@ -71,94 +68,74 @@ define ("actions/appState",
     const {EVENT} = analyticsConstants;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
-    // Constant indicating whether to skip checking a value in localstorage or not
-    const SKIP_LS_CHECK = true;
-
-    let returningUser = false;
 
     const isCssVarSupported = (window.CSS && window.CSS.supports &&
                                window.CSS.supports ("--fake-var", 0));
 
     /**
-     * Set the identifier in the state to identify the user (or the chat session).
-     * The creation of a new identifier depends on the userId passed here.
-     * If the current userId is different than the one stored in the
-     * localstorage, we create a new identifier and update the value.
-     * For details about implementation see -
-     * https://helpshift.atlassian.net/wiki/display/FRON/Possible+Solution+for+Identity+Problem
-     * @param {String} userId
+     * Set the Device id value in the state/localstorage via an action.
+     * If a value is present in the localstorage, keep using the same
+     * value.
      */
-    const setIdentifier = (userId) => {
+    const setDeviceId = () => {
       return () => {
-        const prevUserId = lsHelpers.getUserId ();
-        // identifier is the uuid (Universally unique identifier)
-        const identifier = uuidGenerator ();
+        let dId = lsHelpers.getDeviceId ();
 
-        const lastActivityTime = lsHelpers.getLastActivityTime (),
-              {resetTimeout} = store.getState ().appState;
-
-        // If the last activity was done before reset timeout,
-        // use the new identifier.
-        if (lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) {
-          lsHelpers.setUserId (userId);
-          dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
-          return;
+        // Create a new device id if one doesn't exist already.
+        // Set it in the local storage.
+        if (!dId) {
+          dId = getUuid ();
         }
 
-        if (isUserIdValid (prevUserId)) {
-          if (!isUserIdValid (userId)) {
-            // User A -> null
-            // If an identifier does not exist, set one in state and localstorage.
-            dispatchAndSetIdentifier (identifier);
-          } else if (userId !== prevUserId) {
-            // User A -> User B
-            // Set the userId in localstorage.
-            // Set the identifier in state and localstorage.
-            lsHelpers.setUserId (userId);
-            dispatchAndSetIdentifier (identifier, SKIP_LS_CHECK);
-          } else {
-            // User A -> User A
-            // User id - No action.
-            // Set the identifier in state
-            dispatchAndSetIdentifier (identifier);
-          }
-        } else if (isUserIdValid (userId)) {
-          // null -> User A
-          // Set the userId in localstorage.
-          // If an identifier does not exist, set one in state and localstorage.
-          lsHelpers.setUserId (userId);
-          dispatchAndSetIdentifier (identifier);
-        } else {
-          // null -> null
-          // There would be no userId in localstorage, no action.
-          // If an identifier does not exist, set one in state and localstorage.
-          dispatchAndSetIdentifier (identifier);
-        }
+        // Set the device id in the state.
+        store.dispatch (setDeviceIdValue (dId));
       };
     };
 
     /**
-     * Auxiliary function to dispatch and set the identifier to app state and
-     * localstorage respectively if identifier isn't present in localstorage.
-     * @param {String} identifier - identifier
-     * @param {Boolean} skipLsCheck - True if the localStorage doesn't need
-     * to be checked if identifier exists.
+     * Set user identifier for anon user in state and localstorage.
+     *
+     * A user is identified by one the following two identifiers -
+     * 1. userId
+     *    - passed with the helpshiftConfig object
+     *    - denotes a "logged in user"
+     *    - is stored in localstorage (persisted across page reloads)
+     * 2. anonUserIdentifier
+     *    - created for anonymous (non-logged-in) user
+     *    - is associated with the "default profile"
+     *    - has a special format (hsft_anon_<timestamp>_<15 random characters>)
+     *    - is stored in localstorage (persisted across page reloads)
+     *
+     * Web Chat communicates with backend with either of the two values (with the
+     * `uid` key with APIs).
+     * `userId` always means the value passed with helpshiftConfig. This value
+     * gets set in the state and the localstorage with the SET_CLIENT_CONFIG action.
      */
-    const dispatchAndSetIdentifier = (identifier, skipLsCheck) => {
-      if (skipLsCheck || !lsHelpers.getIdentifier ()) {
-        store.dispatch (setIdentifierValue (identifier));
-        lsHelpers.setIdentifier (identifier);
-        // If we are saving a new identifier, that means it's a new user.
-        returningUser = false;
+    const setAnonUserId = () => {
+      return () => {
+        const anonUserId = commonHelpers.getAnonUserId ();
+        dispatchAndSetAnonUserId (anonUserId);
+      };
+    };
+
+    /**
+     * Dispatch and set the anon user id in the app state and localstorage respectively.
+     * Checks localstorage if an anon user id already exists.
+     * If it does, it gets the value from the ls and sets it in the
+     * state while not affecting ls at all.
+     * If it does not exist, it sets a new value (`anonUserId`) in state
+     * and localstorage.
+     *
+     * @param {string} anonUserId - Identifier for the anon user.
+     */
+    const dispatchAndSetAnonUserId = (anonUserId) => {
+      const currentAnonUserId = lsHelpers.getAnonUserId ();
+
+      if (!currentAnonUserId) {
+        store.dispatch (setAnonUserIdValue (anonUserId));
+        lsHelpers.setAnonUserId (anonUserId);
       } else {
-        // If a new identifier is not set in the state and ls, set the identifier
-        // stored in the localstorage to the sate because the initial state
-        // does not have an identifier.
-        const currentIdentifier = lsHelpers.getIdentifier ();
-        store.dispatch (setIdentifierValue (currentIdentifier));
-        // If we are using the already saved identifier,
-        // that means it's a returning user.
-        returningUser = true;
+        store.dispatch (setAnonUserIdValue (currentAnonUserId));
       }
     };
 
@@ -183,18 +160,37 @@ define ("actions/appState",
     };
 
     /**
+     * Action to set issue exists flag
+     * @returns {Object} - Action
+     */
+    const setIssueExists = (issueExists) => {
+      return {
+        type: ACTION_TYPES.SET_ISSUE_EXISTS,
+        issueExists
+      };
+    };
+
+    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
-      store.dispatch (setConversationStarted ());
-      if (returningUser) {
-        // If it's a returning user, that means there could be an
-        // ongoing conversation.
-        handleOngoingConversation ();
-      } else {
-        // If it's a new user, start a new conversation.
-        store.dispatch (startNewConversation ());
-      }
+      return (dispatch, getState) => {
+        const {
+          appState: {
+            issueExists
+          }
+        } = getState ();
+
+        dispatch (setConversationStarted ());
+
+        // If an issue exists, the poller would have started already with the
+        // success callback of setIssueState via get config.
+        // Only for new user, start a new conversation. Rest of the cases will be
+        // handled on click of 'start new conversation' button which will call reset.
+        if (!issueExists) {
+          startNewConversation ();
+        }
+      };
     };
 
     /**
@@ -233,8 +229,11 @@ define ("actions/appState",
 
     /**
      * Handle ongoing conversation.
+     * @TODO: This function will need clean up with the chat bots changes.
      */
+    /* eslint-disable no-unused-vars */
     const handleOngoingConversation = () => {
+    /* eslint-enable no-unused-vars */
       const issueState = lsHelpers.getIssueState ();
       switch (issueState) {
         case ISSUE_STATE.PRE_CHAT:
@@ -242,6 +241,7 @@ define ("actions/appState",
           store.dispatch (chatViewActions.startPreChatFeature ());
           break;
 
+        case ISSUE_STATE.RESOLVED:
         case ISSUE_STATE.ACTIVE:
           const activeIssueId = lsHelpers.getActiveIssueId ();
           const internalIssueId = lsHelpers.getInternalIssueId ();
@@ -254,7 +254,7 @@ define ("actions/appState",
           // and start polling for new messages.
           if (activeIssueId) {
             cleanUpAndRehydrate ();
-            store.dispatch (chatViewActions.setActiveIssue (activeIssueId));
+            store.dispatch (chatViewActions.setActiveIssueId (activeIssueId));
             chatViewActions.startPollingForMessages ();
           } else {
             // Ideally, this shouldn't be the case because we are first setting the
@@ -264,7 +264,6 @@ define ("actions/appState",
           }
           break;
 
-        case ISSUE_STATE.RESOLVED:
         case ISSUE_STATE.REJECTED:
         case ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS:
           // For post chat state, start new conversation.
@@ -287,6 +286,26 @@ define ("actions/appState",
     };
 
     /**
+     * Rehydrate the state with localstorage data, if applicable.
+     * Although we get the state data from backend for continuing the conversation,
+     * there are some values that are web chat client specific and need to be
+     * added back to the state. For example - which FAQs have been read by the
+     * user so far.
+     */
+    const rehydrateState = () => {
+      const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
+            readFaqList = lsHelpers.getReadFaqList ();
+
+      store.dispatch ({
+        type: ACTION_TYPES.REHYDRATE,
+        data: {
+          suggestedFaqReadTracked,
+          readFaqList
+        }
+      });
+    };
+
+    /**
      * Get saved data from localstorage,
      * and call action to update the current state.
      */
@@ -301,7 +320,6 @@ define ("actions/appState",
             replyText = lsHelpers.getReplyText (),
             endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId (),
             suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
-            conversationId = lsHelpers.getConversationId (),
             readFaqList = lsHelpers.getReadFaqList (),
             infoBotRequestedTimestamp = lsHelpers.getInfoBotRequestedTimestamp ();
 
@@ -334,20 +352,12 @@ define ("actions/appState",
             userProfileId,
             endUserFirstMsgId,
             suggestedFaqReadTracked,
-            conversationId,
             readFaqList,
             infoBotRequestedTimestamp
           }
         });
       }
     };
-
-    /**
-     * Return true if the passed user id valid.
-     * @param {String} userId
-     * @returns {Boolean}
-     */
-    const isUserIdValid = (userId) => typeof userId === "string" && userId !== "";
 
     /**
      * Return tags array containing string values converted to lowercase
@@ -370,39 +380,22 @@ define ("actions/appState",
     };
 
     /**
-     * Return resetTimeout value to be set in the state by converting the
-     * passed value, in hours, to milliseconds.
-     * @param {number} - Reset timeout passed with client config (in hours)
-     * @returns {number} - Reset timeout value to be set in the state
+     * Action to set device id.
+     * @param {String} id - device id
+     * @returns {Object}
      */
-    const getProcessedResetTimeout = function (timeout) {
-      if (typeof timeout === "number") {
-        let effectiveTimeout = timeout;
-
-        // If the passed value is less than the minimum possible value or greater
-        // than the maximum possible value of reset timeout, then set it to the
-        // min or max value, respectively.
-        if (timeout < MIN_RESET_TIMEOUT) {
-          effectiveTimeout = MIN_RESET_TIMEOUT;
-        } else if (timeout > MAX_RESET_TIMEOUT) {
-          effectiveTimeout = MAX_RESET_TIMEOUT;
-        }
-
-        // x hours = x * 60 * 60 * 1000 milliseconds
-        return effectiveTimeout * 3600000;
-      }
-
-      // If an invalid timeout is passed, return the default reset timeout
-      return DEFAULT_RESET_TIMEOUT;
-    };
+    const setDeviceIdValue = (id) => ({
+      type: ACTION_TYPES.SET_DEVICE_ID,
+      id
+    });
 
     /**
-     * Action to set identifier.
-     * @param {String} id - identifier
-     * @returns {Object} - action
+     * Action to set anon user id.
+     * @param {string} id - anon user id
+     * @returns {Object}
      */
-    const setIdentifierValue = (id) => ({
-      type: ACTION_TYPES.SET_IDENTIFIER,
+    const setAnonUserIdValue = (id) => ({
+      type: ACTION_TYPES.SET_ANON_USER_ID,
       id
     });
 
@@ -412,16 +405,100 @@ define ("actions/appState",
      * @returns {Object} - action
      */
     const setClientConfig = (config) => {
-      // Filter string values and convert to lower case
-      config.tags = getProcessedTags (config.tags);
+      const {
+        tags,
+        userId,
+        userEmail,
+        clearAnonymousUserOnLogin,
+        userName,
+        language
+      } = config;
 
-      // Get the resetTimeout value to be set in the state
-      config.resetTimeout = getProcessedResetTimeout (config.resetTimeout);
+      const {
+        isUserIdValid,
+        isEmailValid
+      } = commonHelpers;
+
+      // Filter string values and convert to lower case
+      config.tags = getProcessedTags (tags);
+
+      // If userId is passed, validate it.
+      // If userEmail is passed, validate it.
+      // If either of the two is passed and is invalid, drop both the values.
+      if (
+        (userId && !isUserIdValid (userId)) ||
+        (userEmail && !isEmailValid (userEmail))
+      ) {
+        delete config.userId;
+        delete config.userEmail;
+        // @TODO: Check with product if we need to throw an error for the client
+        // developer to know about this.
+      }
+
+      // User's names are to be truncated if they are more than 255 chars.
+      if (userName) {
+        config.userName = userName.slice (0, 255);
+      }
+
+      // If developerSetLanguage (config.language) is not set, default it to `en-US`.
+      // If it's set to `browserDefault`, don't set developerSetLanguage so that
+      // browser language is used for localization.
+      // This behavior is so that we don't start localizing strings for apps that
+      // don't want it by default. This would be removed once developers are given
+      // enough time to start using the developer set language option.
+      if (!language) {
+        config.language = "en-US";
+      } else if (language === "browserDefault") {
+        delete config.language;
+      }
+
+      // The following action (SET_CLIENT_CONFIG) sets the userId passed by the
+      // developer in the state and localstorage. Before setting it in localstorage
+      // we need to determine if we should handle the user login change.
+      handleAnonUserReset (config.userId, clearAnonymousUserOnLogin);
 
       return {
         type: ACTION_TYPES.SET_CLIENT_CONFIG,
         config
       };
+    };
+
+    /**
+     * Clean anon user id if applicable.
+     * The user id passed with `helpshiftConfig` compared with the previous
+     * user id determines whether the end user logged in or logged out.
+     * Based on the client's config value of clearAnonymousUserOnLogin, reset the
+     * anon user id.
+     * Also, clear the anonymous user id after 7 days of inactivity.
+     * @param {string} userId - The userId value passed with `helpshiftConfig`.
+     * @param {boolean} clearAnonymousUserOnLogin
+     */
+    const handleAnonUserReset = (userId, clearAnonymousUserOnLogin) => {
+      // Clear anon user id after 7 days of inactivity
+      const lastActivityTime = lsHelpers.getLastActivityTime ();
+      const inactivityDuration = Date.now () - lastActivityTime;
+
+      if (lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
+        lsHelpers.removeAnonUserId ();
+      }
+
+      // Clear anon user if a user logs in and clearAnonymousUserOnLogin flag is true
+      if (
+        !commonHelpers.isUserIdValid (userId) ||
+        !clearAnonymousUserOnLogin
+      ) {
+        return;
+      }
+
+      const previousUserId = lsHelpers.getUserId ();
+
+      if (userId !== previousUserId) {
+        // If previousUserId is not present,
+        // anon user -> a user logged in
+        // If previousUserId is present,
+        // A user was logged in -> they logged out -> a new user logged in.
+        lsHelpers.removeAnonUserId ();
+      }
     };
 
     /**
@@ -441,72 +518,273 @@ define ("actions/appState",
     };
 
     /**
+     * Set UI configuration in the state using the configuration set in the admin
+     * dashboard and by the custom configuration passed with helpshiftConfig.
+     * @param {Object} helpshiftConfig - The global client config object
+     */
+    const setUiConfig = (helpshiftConfig) => {
+      const {
+        ui: {
+          uiConfig,
+          developerUiConfig
+        }
+      } = store.getState ();
+
+      let finalUiConfig;
+
+      // If ui config is passed in helpshift config options, use that
+      // Else use previously set developer config
+      // Else create a ui config having base color set from dashboard
+      if (dataTypeUtils.isObject (helpshiftConfig.uiConfig) &&
+          Object.keys (helpshiftConfig.uiConfig).length) {
+        finalUiConfig = helpshiftConfig.uiConfig;
+      } else if (developerUiConfig) {
+        finalUiConfig = developerUiConfig;
+      } else {
+        const baseData = BASE_COLOR.split (".");
+        // name of base set
+        const baseSet = baseData [0];
+        // value of base set
+        const baseValue = baseData [1];
+
+        finalUiConfig = {
+          [baseSet]: {
+            [baseValue]: uiConfig [BASE_COLOR].value
+          }
+        };
+      }
+      store.dispatch (uiActions.setUiConfig (finalUiConfig));
+      store.dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
+    };
+
+    /**
+     * Action to set webchat is live
+     * @returns {Object} - Action
+     */
+    const setWebChatIsLive = () => {
+      return {
+        type: ACTION_TYPES.SET_WEB_CHAT_IS_LIVE
+      };
+    };
+
+    /**
+     * Find the initial user message in the dummy issue in local storage.
+     * We are not saving the initial user message separately. The initial user message
+     * would be available in the local storage. Loop through the message list saved
+     * in the local storage (via issue and message entities), and get the first user message.
+     * @returns {String} - initial user message body
+     */
+    const _getInitialUserMsgFromLs = () => {
+      const issueEntities = lsHelpers.getEntities ("ISSUES"),
+            messageEntities = lsHelpers.getEntities ("MESSAGES"),
+            {dummyIssueId} = store.getState ().appState;
+
+      if (!issueEntities || !messageEntities) {
+        return "";
+      }
+
+      const {messages: msgIds} = issueEntities [dummyIssueId];
+
+      for (let idx = 0; idx < msgIds.length; idx++) {
+        const msg = messageEntities [msgIds [idx]];
+
+        if (msg.isCustomerMsg) {
+          return msg.body;
+        }
+      }
+
+      return "";
+    };
+
+    /**
+     * Fire an XHR to migrate the user profile
+     * @param {string} identifier - profile identifier which has to be migrated
+     * @param {Function} done - done callback
+     */
+    const _migrateProfile = (identifier, done) => {
+      const {dispatch, getState} = store;
+      const {domain} = getState ().appState;
+
+      xhr ({
+        route: routes.putMigrateProfile (domain),
+        method: "PUT",
+        headers: xhrHelpers.getCommonHeaders (),
+        data: xhrHelpers.getPreparedXhrData ({
+          identifier
+        }, true),
+        onSuccess: (response) => {
+          // We will get response.success = true or false if the migration succeeds or fails.
+          // In both the case, we will clear old local storage and continue.
+          // If migration was successful
+          if (response.success) {
+            dispatch (setIssueExists (true));
+          }
+        },
+        onEnd: () => {
+          lsHelpers.clearOldStorage ();
+          done ();
+        }
+      });
+    };
+
+    /**
+     * Migrate the issue if required.
+     * @param {Function} done - done callback
+     */
+    const handleMigration = (done) => {
+      // Previously, we were generating a unique `identifier` when the web chat loads.
+      // Now, this `identifier` is not used anymore (we use device id and user id).
+      // If an `identifier` doesn't exist in local storage, that means the web chat is
+      // loading first time in that browser. We don't have to consider migration in this case.
+      // If an `identifier` exists in the local storage, we will
+      // proceed with further migration steps.
+      const identifier = lsHelpers.getIdentifier ();
+
+      if (!identifier) {
+        done ();
+        return;
+      }
+
+      // If the last activity was done before the reset timeout, clear all the previous
+      // local storage data (including `identifier`), and start a fresh chat.
+      // Clearing `identifier` also means that the migration won't be consider from now onwards.
+      const lastActivityTime = lsHelpers.getLastActivityTime (),
+            {resetTimeout} = store.getState ().appState;
+
+      if (lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) {
+        lsHelpers.clearOldStorage ();
+        done ();
+        return;
+      }
+      /**
+       * If there is an ongoing chat in the last 12 hours (default reset timeout),
+       * the issue can be in 3 possible states.
+       *
+       * (i) PRE_CHAT -
+       *
+       *   (a) If the user has already submitted the first message,
+       *       save it in the state and continue.
+       *       After the pre-issue is created via normal flow, we will start polling
+       *       for messages. While polling, first message would be of type
+       *       EMPTY_MSG_WITH_TEXT_INPUT, which is a special message type for
+       *       getting intial user message. When we receive this message type, we check
+       *       if the intial user message exists in the state.
+       *       If the intial user message already exists in the state, we don't wait for
+       *       the user input, we directly send the initial user message to the backend.
+       *   (b) If the user hasn't already entered the first message, clear the old
+       *       local storage data and continue
+       *
+       *   Note: If the user has already entered details for other pre-chat features,
+       *         he/she has to enter the details again.
+       *         We are not migrating any other pre-chat features.
+       *
+       * (ii) ACTIVE -
+       *      Fire an XHR to migrate the profile.
+       *
+       * (iii) RESOLVED or REJECTED or RESOLVED_BY_FAQ_SUGGESTIONS -
+       *       Clear the old local storage fields and continue.
+       *
+       * In all the 3 states, we would be clearing the old local storage fields
+       */
+
+      const issueState = lsHelpers.getIssueState ();
+
+      if (issueState === OLD_ISSUE_STATE.ACTIVE) {
+        // Fire XHR to migrate the issue
+        _migrateProfile (identifier, done);
+      } else {
+        if (issueState === OLD_ISSUE_STATE.PRE_CHAT) {
+          const preChatFeatureState = lsHelpers.getPreChatFeatureState ();
+          const initialUserMessageFeatureState = preChatFeatureState.initialUserMessage;
+          if (initialUserMessageFeatureState === PRE_CHAT_STATE.initialUserMessage.COMPLETED) {
+            const initialUserMsg = _getInitialUserMsgFromLs ();
+            store.dispatch (setInitialUserMsg (initialUserMsg));
+          }
+        }
+
+        // PRE_CHAT or RESOLVED or REJECTED or RESOLVED_BY_FAQ_SUGGESTIONS
+        lsHelpers.clearOldStorage ();
+        done ();
+      }
+    };
+
+    /**
+     * Initialize conversation - either enable the chat view or the out of
+     * business hours view.
+     */
+    const initializeConversation = () => {
+      const {dispatch, getState} = store;
+      // If business hours is enabled and it's out of business hours currently,
+      // show out of business hours view
+      if (commonHelpers.isOutOfBusinessHours ()) {
+        dispatch (
+          actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
+        );
+      } else {
+        // The active view is set to chat view by default. If we are not handling
+        // the out of business hours case, we need to start the conversation on the
+        // chat view.
+        const {
+          appState: {
+            issueExists,
+            webChatIsLive
+          }
+        } = getState ();
+
+        // If atleast one issue exists on backend and app is not live (first page load)
+        // then start the poller. (poller will check for issue state)
+        // Else if the appLive then start a new conversation
+        // This control flow will be invoked when user clicks on 'start new
+        // conversation', reset is called, config will be fetched and app will be live
+        if (issueExists && !webChatIsLive) {
+          chatViewActions.startPollingForMessages ();
+        } else if (webChatIsLive) {
+          startNewConversation ();
+        }
+
+        dispatch (setWebChatIsLive ());
+      }
+    };
+
+    /**
      * Action to set the web chat configuration set by the Helpshift admin
      * and set it to the store. Post message to the client with the config.
-     * This configuration contains settings like if wm is enabled, appearance,
-     * answer bot, etc.
+     * This configuration contains settings like if web chat is enabled,
+     * appearance, etc.
      * @param {Object} options
      * @param {string} options.trigger - The source that triggered setting the config
+     * @param {Object} options.helpshiftConfig - The global client config object
      */
     const setWmConfig = ({trigger, helpshiftConfig}) => {
       return (dispatch, getState) => {
         const state = getState ();
-        const {domain, platformId} = state.appState;
+        const {domain} = state.appState;
 
-        getWmConfig (domain, platformId, {
+        getWmConfig (domain, {
           onSuccess: (response) => {
             dispatch (
               batchActions ([
                 // Set the config values to the store
                 setWmConfigValues (response),
-                actionCreators.setMobileInfo (browserUtils.isMobile ())
+                actionCreators.setMobileInfo (browserUtils.isMobile ()),
+                setUiTextValues (response)
               ])
             );
 
             const {
               appState: {
                 featuresEnabled,
-                wmEnabled: widgetEnabled
-              },
-              ui: {
-                uiConfig,
-                developerUiConfig
+                wcEnabled
               }
             } = store.getState ();
 
-            let finalUiConfig;
-            // If ui config is passed in helpshift config options, use that
-            // Else use previously set developer config
-            // Else create a ui config having base color set from dashboard
-            if (dataTypeUtils.isObject (helpshiftConfig.uiConfig) &&
-                Object.keys (helpshiftConfig.uiConfig).length) {
-              finalUiConfig = helpshiftConfig.uiConfig;
-            } else if (developerUiConfig) {
-              finalUiConfig = developerUiConfig;
-            } else {
-              const baseData = BASE_COLOR.split (".");
-              // name of base set
-              const baseSet = baseData [0];
-              // value of base set
-              const baseValue = baseData [1];
-
-              finalUiConfig = {
-                [baseSet]: {
-                  [baseValue]: uiConfig [BASE_COLOR].value
-                }
-              };
-            }
-            dispatch (uiActions.setUiConfig (finalUiConfig));
-            dispatch (uiActions.setDeveloperUiConfig (finalUiConfig));
-
-            if (featuresEnabled.audioNotifications) {
-              audioHelpers.init ();
-            }
+            // Set the ui configuration flags in the state.
+            setUiConfig (helpshiftConfig);
 
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig ());
 
-            if (widgetEnabled) {
+            if (wcEnabled) {
               // A side-effect of getting the web chat config would be to
               // add the stylesheet with the primary color (and any other
               // configurable CSS value) to the document head.
@@ -515,12 +793,28 @@ define ("actions/appState",
               // Apply styles to page
               applyPageStyles ();
 
+              // Rehydrate the state with localstorage data if applicable
+              rehydrateState ();
+
+              handleMigration (() => {
+                // Initialize conversation by either going to the out of business
+                // hours view or by handling the chat view conversation.
+                initializeConversation ();
+              });
+
               // If the widget is enabled, track the widget load event
               // Do not track this event if the config was set via the reset flow.
               if (trigger !== TRIGGER.RESET) {
                 analyticsHelpers.track (EVENT.WIDGET_LOAD);
               }
+
+              if (featuresEnabled.audioNotifications) {
+                audioHelpers.init ();
+              }
             }
+          },
+          onFailure: (response) => {
+            xhrHelpers.handleAuthFailure (response);
           }
         });
       };
@@ -528,22 +822,16 @@ define ("actions/appState",
 
     /**
      * Get web chat config via the HS API.
-     * @param {String} domain
-     * @param {String} platformId
+     * @param {string} domain
      * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
      */
-    const getWmConfig = (domain, platformId, callbacks) => {
+    const getWmConfig = (domain, callbacks) => {
       xhr ({
-        route: routes.getWmConfig (domain, platformId),
+        route: routes.getWmConfig (domain),
         headers: xhrHelpers.getCommonHeaders (),
-        onSuccess: (response) => {
-          if (callbacks.onSuccess) {
-            callbacks.onSuccess (response);
-          }
-        },
-        onFailure: () => {
-          // @TODO: Handle failure.
-        }
+        data: xhrHelpers.getPreparedXhrData (),
+        onSuccess: callbacks.onSuccess,
+        onFailure: callbacks.onFailure
       });
     };
 
@@ -577,12 +865,17 @@ define ("actions/appState",
      * @returns {Object} - the config object for client
      */
     const getClientWmConfig = () => {
-      const {appState} = store.getState ();
+      const {
+        appState: {
+          browserIsMobile,
+          wcEnabled
+        }
+      } = store.getState ();
       const hideWidget = commonHelpers.isWidgetHiddenOutOfBusinessHours ();
 
       return {
-        widgetEnabled: appState.wmEnabled && !hideWidget,
-        browserIsMobile: appState.browserIsMobile,
+        widgetEnabled: wcEnabled && !hideWidget,
+        browserIsMobile: browserIsMobile,
         cssConfig: getLauncherCssConfig ()
       };
     };
@@ -595,6 +888,16 @@ define ("actions/appState",
     const setWmConfigValues = (config) => ({
       type: ACTION_TYPES.SET_WM_CONFIG,
       config
+    });
+
+    /**
+     * Action to set UI strings in the store
+     * @param {Object} config
+     * @returns {Object} - action
+     */
+    const setUiTextValues = (config) => ({
+      type: ACTION_TYPES.SET_UI_TEXT,
+      text: config.translations
     });
 
     /**
@@ -740,110 +1043,17 @@ define ("actions/appState",
     };
 
     /**
-     * Find active issue in the given issues object,
-     * and return the active issue id.
-     * If there is no active issue, return null.
-     * @param {Object} issues - issues entity.
-     * @returns {String|null} - active issue id or null
-     */
-    const _getActiveIssueId = (issues) => {
-      let activeIssueId = null;
-
-      objUtils.forEachKey (issues, (id, issue) => {
-        if (_isIssueInProgress (issue.state_data.state)) {
-          activeIssueId = id;
-        }
-      });
-
-      return activeIssueId;
-    };
-
-    /**
-     * Returns true if the issue is in progress.
-     * Any issue that is not "resolved" or "rejected" is considered in progress.
-     * @param {String} state - issue state.
-     * @returns {Boolean} - true, if the issue is in progress.
-     */
-    const _isIssueInProgress = (state) => {
-      return (state !== "resolved" && state !== "rejected");
-    };
-
-    /**
      * Action to start new conversation.
-     * Reset the previous localstorage data (if any).
-     * Creates dummy issue entity.
-     * The initial conversation on the web sdk would not be part of an
-     * issue created on the server. So, we need to create a dummy issue
-     * on frontend and add messages to it.
+     * Creates preIssue (or issue, for out of business hours) on the backend
      * @returns {Function} - action.
      */
     const startNewConversation = () => {
-      return (dispatch, getState) => {
-        lsHelpers.reset ({
-          skipUser: true
-        });
-        const state = getState ();
-        // Create dummy issue entity.
-        dispatch (
-          batchActions ([
-            entitiesActions.setEntities ({
-              issues: {
-                [state.appState.dummyIssueId]: {
-                  messages: []
-                }
-              }
-            }),
-            chatViewActions.setActiveIssue (null),
-            actionCreators.setInternalIssueId (null),
-            chatViewActions.updateIssueState (ISSUE_STATE.PRE_CHAT),
-            chatViewActions.setChatViewFooter (ACTIVE_FOOTER.BLOCKED)
-          ])
-        );
-        dispatch (chatViewActions.startPreChatFeature ());
-      };
-    };
-
-    /**
-     * Action to get user issues.
-     * @param {Object} user - user object. Contains id, name and email.
-     * @returns {Object} - action
-     */
-    // @TODO: Remove the getIssues function if not required.
-    // Temporarily disabling no-unused-vars to avoid eslint error.
-    /* eslint-disable no-unused-vars */
-    const getIssues = (identifier) => {
-    /* eslint-enable no-unused-vars */
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-        xhr ({
-          route: routes.getMyIssues (appState.domain),
-          data: {
-            "identifier": identifier,
-            "platform-id": appState.platformId
-          },
-          headers: xhrHelpers.getCommonHeaders (),
-          onSuccess: (response) => {
-            const normalizedData = normalize (response, entitySchema.issues);
-            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
-
-            dispatch (entitiesActions.setEntities (processedEntities));
-
-            const activeIssueId = _getActiveIssueId (processedEntities.issues);
-
-            if (activeIssueId) {
-              // Active issue workflow
-              dispatch (chatViewActions.setActiveIssue (activeIssueId));
-              chatViewActions.startPollingForMessages ();
-            } else {
-              dispatch (startNewConversation ());
-            }
-          },
-          onFailure: () => {
-            // @TODO: Handler failure.
-          }
-        });
-      };
+      // We are not directly creating preIssue over here as we need meta data
+      // from parent page for issue creation.
+      // After the fetch is successful, the control flow will go to api js where
+      // we set meta data in store and handle issue creation.
+      // Ref :- api.js -> handleApis -> handleIssueCreation
+      postSdkMessage.getParentInfo ();
     };
 
     /**
@@ -989,14 +1199,48 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Reset preIssue by calling an API to reset the preIssue. On successful reset
+     * reset the app's state, which in turn restarts the flow.
+     */
+    const resetPreIssue = () => {
+      return (dispatch, getState) => {
+        const {
+          appState: {
+            domain,
+            activeIssueId
+          }
+        } = getState ();
+
+        dispatch (actionCreators.toggleChatViewLoading (true));
+        xhr ({
+          route: routes.putResetPreIssue (domain, activeIssueId),
+          data: xhrHelpers.getPreparedXhrData ({
+            state: ISSUE_STATE_RESET
+          }, SKIP_PLATFORM_ID),
+          method: "PUT",
+          headers: xhrHelpers.getCommonHeaders (),
+          onEnd: () => {
+            // In both the cases (success and failure), we'll start with a new
+            // conversation for the end user.
+            dispatch (reset ({
+              skipUser: true
+            }));
+          }
+        });
+      };
+    };
+
     return {
-      setIdentifier,
+      setDeviceId,
+      setAnonUserId,
       setClientConfig,
       setWmConfig,
       toggleMinimized,
       reset,
       setInitialUserMsg,
       startConversation,
+      startNewConversation,
       closeConversation,
       replaceCif,
       setMetadata,
@@ -1005,6 +1249,8 @@ define ("actions/appState",
       executeProactiveChatRules,
       updateStyles,
       setFooterActive,
-      setFooterInactive
+      setFooterInactive,
+      resetPreIssue,
+      setConversationStarted
     };
   });

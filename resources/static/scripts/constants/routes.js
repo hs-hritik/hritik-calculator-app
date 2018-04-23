@@ -9,16 +9,25 @@ define ("constants/routes",
     "use strict";
 
     const WEB_SDK_API_ROOT = "{{ENV_API_ROOT}}";
-    const BASE = `${WEB_SDK_API_ROOT}/websdk/v1/`;
+    const BASE = `${WEB_SDK_API_ROOT}/websdk/`;
 
-    const getWmConfig = (domain, platformId) => `${BASE}${domain}/platforms/${platformId}/config`;
+    // @TODO - Clean up unwanted routes
+    const getWmConfig = (domain) => `${BASE}${domain}/config`;
 
-    const getCss = () => "/css/style.css";
+    // @TODO: This is not an ideal solution. Either make this configurable or
+    // implement an automatic cache busting solution based on a file's content.
+    // Also, update this in html/index.html, messenger.js, and requireConfig.js.
+    const getCss = () => "/css/style.css?v=2";
 
-    const getMyIssues = (domain) => `${BASE}${domain}/my-issues`;
+    const getIssues = (domain) => `${BASE}${domain}/issues`;
 
-    const postUserReply = (domain, issueId) =>
-                           `${BASE}${domain}/issues/${issueId}/messages/user`;
+    const postIssue = (domain) => `${BASE}${domain}/issues`;
+
+    const postUserReply = (domain, issueId, issueType) => {
+      return `${BASE}${domain}/${issueType}/${issueId}/messages`;
+    };
+
+    const getIssuesAndMessages = (domain) => `${BASE}${domain}/messages`;
 
     const getMessages = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/messages`;
 
@@ -34,14 +43,17 @@ define ("constants/routes",
 
     const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
 
-    const postIssue = (domain) => `${BASE}${domain}/issues`;
+    const postPreIssue = (domain) => `${BASE}${domain}/preissues`;
+
+    const putResetPreIssue = (domain, issueId) => `${BASE}${domain}/preissues/${issueId}`;
 
     const postCSAT = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/csat`;
 
     const postProfile = (domain) => `${BASE}${domain}/profiles`;
 
-    const putMessagesSeen = (domain, issueId) =>
-                             `${BASE}${domain}/issues/${issueId}/messages-seen`;
+    const putMessages = (domain, issueId, issueType) => {
+      return `${BASE}${domain}/${issueType}/${issueId}/messages`;
+    };
 
     // Route to fetch web socket related config
     const getWsConfig = (domain) => `${BASE}${domain}/ws-config`;
@@ -53,21 +65,30 @@ define ("constants/routes",
 
     const postAnalyticsEvent = (domain) => `${WEB_SDK_API_ROOT}/events/v1/${domain}/websdk/`;
 
+    const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs_suggestion_read`;
+
+    const putMigrateProfile = (domain) => `${BASE}${domain}/profiles`;
+
     return {
       getWmConfig,
       getCss,
-      getMyIssues,
-      postUserReply,
+      getIssues,
       getMessages,
       getFaq,
       putFaqFeedback,
       getFaqSuggestions,
-      postIssue,
+      postPreIssue,
+      putResetPreIssue,
       postCSAT,
       postProfile,
-      putMessagesSeen,
+      putMessages,
       getWsConfig,
       webSocket,
-      postAnalyticsEvent
+      postAnalyticsEvent,
+      postUserReply,
+      getIssuesAndMessages,
+      postSuggestedFaqRead,
+      putMigrateProfile,
+      postIssue
     };
   });
