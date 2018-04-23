@@ -8,34 +8,53 @@ define ("components/containers/replyBox",
   [
     "components/replyBox",
     "actions/chatView",
-    "actions/appState"
+    "actions/appState",
+    "helpers/common"
   ],
-  function (ReplyBox, chatViewActions, appStateActions) {
+  function (ReplyBox, chatViewActions, appStateActions, commonHelpers) {
     "use strict";
 
     const mapStateToProps = (state) => {
-      const {value, disabled} = state.chatView.replyBox;
+      const {
+        chatView: {
+          userInput: {
+            value,
+            disabled,
+            placeholder: userInputPlaceholder
+          }
+        },
+        appState: {
+          minimized,
+          activeIssueId,
+          browserIsMobile,
+          issueType
+        },
+        ui: {
+          text
+        }
+      } = state;
 
       return {
         value,
         disabled,
-        widgetIsOpened: !state.appState.minimized,
-        text: state.ui.text,
-        issueIsCreated: !!state.appState.activeIssueId,
-        browserIsMobile: state.appState.browserIsMobile
+        placeholder: userInputPlaceholder || text.replyBtnPlaceholder,
+        widgetIsOpened: !minimized,
+        text,
+        issueIsCreated: commonHelpers.isIssueCreated ({
+          activeIssueId,
+          issueType
+        }),
+        browserIsMobile
       };
     };
 
     const mapDispatchToProps = (dispatch) => {
       return {
         onChangeReplyBoxValue: (value) => {
-          dispatch (chatViewActions.udpateReplyText (value));
+          dispatch (chatViewActions.updateReplyText (value));
         },
         onSubmitReply: () => {
           dispatch (chatViewActions.submitReply ());
-        },
-        onFilesChange: (files) => {
-          dispatch (chatViewActions.createAttachmentMessages (files));
         },
         onFooterFocus: () => {
           dispatch (appStateActions.setFooterActive ());

@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/";
+        PATH = "/html/index.html?v=2";
 
   const WEB_SDK_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
   const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
@@ -53,16 +53,16 @@
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
-    CMD_INITIALISE: "cmd-initialise",
     CMD_SET_CONFIG: "cmd-set-config",
-    CMD_RESET: "cmd-reset",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
     CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
+    CMD_SET_LANGUAGE: "cmd-set-language",
     CMD_SET_CIF: "cmd-set-cif",
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_PARENT_PAGE_INFO: "cmd-set-parent-page-info",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
-    CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config"
+    CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
+    CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy"
   };
 
   const SUPPORTED_EVENTS = {
@@ -126,8 +126,8 @@
     "border-radius": "8px",
     "z-index": "9999999",
     "overflow":"hidden",
-    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)",
-    "display": "none"
+    "transform": "translate3d(0,0,0)",
+    "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
 
   const MESSENGER_IFRAME_MOBILE_STYLES = {
@@ -142,8 +142,7 @@
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999",
-    "display": "none"
+    "z-index": "9999999"
   };
 
   const MESSENGER_IFRAME_FULL_SCREEN_STYLES = {
@@ -158,8 +157,7 @@
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999",
-    "display": "none"
+    "z-index": "9999999"
   };
 
   const UNREAD_COUNT_STYLES = {
@@ -519,7 +517,8 @@
   };
 
   /**
-   * Process web messenger config to update the behavior of the widget.
+   * Process web chat config to update the behavior of the widget.
+   * Also, let Web Chat know that it can proceed with its flow.
    * @param {Object} - the config object
    */
   const processWmConfig = (config) => {
@@ -754,12 +753,12 @@
 
       switch (type) {
         case EVENT_TYPES.SDK_JS_LOADED:
-          // Before web messenger APIs can be called by the client, following
+          // Before the Web Chat APIs can be called by the client, following
           // events should occur (in the given order).
           //
-          // SDK_JS_LOADED: Represents the execution completion of the web sdk
+          // SDK_JS_LOADED: Represents the execution completion of the Web Chat
           // entry point (webSdk.js).
-          // SDK_CONFIG_LOADED: Represents the loading of web messenger
+          // SDK_CONFIG_LOADED: Represents the loading of the web chat BE
           // config, which along with other settings, determines whether
           // the widget should load or not.
 
@@ -786,7 +785,6 @@
           break;
 
         case EVENT_TYPES.SDK_RESET:
-          close ();
           setConfig ({
             clientConfig: win.helpshiftConfig,
             trigger: TRIGGER.RESET
@@ -840,13 +838,6 @@
   };
 
   /**
-   * JS API to reset the conversation
-   */
-  const reset = () => {
-    _postMessage (EVENT_TYPES.CMD_RESET);
-  };
-
-  /**
    * JS API to set initial end user message
    * @param {String} message - initial user message
    */
@@ -868,6 +859,16 @@
     // message should be a non-empty string
     if (message && typeof message === "string") {
       _postMessage (EVENT_TYPES.CMD_SET_GREETING_MESSAGE, {message});
+    }
+  };
+
+  /**
+   * JS API to set language
+   * @param {String} language - language ISO Code
+   */
+  const setLanguage = (language) => {
+    if (language && typeof language === "string") {
+      _postMessage (EVENT_TYPES.CMD_SET_LANGUAGE, {language});
     }
   };
 
@@ -1003,21 +1004,31 @@
     });
   };
 
+  /**
+   * JS API to enable/disable full privacy mode.
+   */
+  const setFullPrivacy = (enabled = false) => {
+    _postMessage (EVENT_TYPES.CMD_SET_FULL_PRIVACY, {
+      enabled
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
     init,
     open,
     close,
-    reset,
     setInitialUserMessage,
     setGreetingMessage,
+    setLanguage,
     addEventListener,
     removeEventListener,
     setCustomIssueFields,
     replaceCustomIssueFields,
     setProactiveChatRules,
-    updateUiConfig
+    updateUiConfig,
+    setFullPrivacy
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

@@ -19,14 +19,22 @@ define ("extras/api",
     "actions/csatView",
     "actions/ui",
     "components/app",
-    "helpers/analytics"
+    "helpers/analytics",
+    "helpers/common",
+    "helpers/localStorage"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, uiActions, app, analyticsHelpers) {
+    actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers,
+    lsHelpers) {
     "use strict";
 
-    const {ISSUE_STATE, PRE_CHAT_STATE, PRE_CHAT_FEATURES} = APP_STATE_CONSTANTS;
+    const {
+      ISSUE_STATE,
+      ISSUE_TYPE,
+      PRE_ISSUE_RESET_TIMEOUT
+    } = APP_STATE_CONSTANTS;
+
     const ISSUE_CLOSED_STATES = [
       ISSUE_STATE.RESOLVED,
       ISSUE_STATE.REJECTED,
@@ -37,6 +45,35 @@ define ("extras/api",
     const {EVENT} = analyticsConstants;
 
     /**
+     * Check if preIssue reset is applicable.
+     * PreIssue should reset if
+     *  the issue type is `preIssue` and
+     *  its state is `active` i.e. it's not resolved
+     *  the time elapsed since the last activity is > 24h
+     * @returns {boolean}
+     */
+    const _shouldPreIssueReset = () => {
+      const {
+        appState: {
+          activeIssueId,
+          issueType,
+          issueState
+        }
+      } = store.getState ();
+
+      const lastActivityTime = lsHelpers.getLastActivityTime ();
+      const inactivityDuration = Date.now () - lastActivityTime;
+
+      return (
+        !!lastActivityTime &&
+        !!activeIssueId &&
+        issueType === ISSUE_TYPE.PRE_ISSUE &&
+        issueState === ISSUE_STATE.ACTIVE &&
+        inactivityDuration > PRE_ISSUE_RESET_TIMEOUT
+      );
+    };
+
+    /**
      * Set the initial data to the app state.
      * @param {Object} data
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
@@ -44,7 +81,8 @@ define ("extras/api",
      */
     const setConfig = (data) => {
       store.dispatch (appStateActions.setClientConfig (data.clientConfig));
-      store.dispatch (appStateActions.setIdentifier (data.clientConfig.userId));
+      store.dispatch (appStateActions.setDeviceId ());
+      store.dispatch (appStateActions.setAnonUserId (data.clientConfig.userId));
       store.dispatch (appStateActions.setWmConfig ({
         trigger: data.trigger,
         helpshiftConfig: data.clientConfig
@@ -86,41 +124,44 @@ define ("extras/api",
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
-      const {appState, chatView, businessHoursViewState} = store.getState ();
+      const {
+        appState: {
+          activeView,
+          conversationStarted,
+          issueState
+        },
+        chatView: {
+          unreadCount
+        }
+      } = store.getState ();
 
       if (!minimized) {
         if (!app.isMounted ()) {
           app.init ();
         }
 
-        // If business hours is enabled and it's out of business hours currently,
-        // show business hours view
-        // Else if conversation is not started, show the conversation view
-        if (businessHoursViewState.businessHoursEnabled &&
-            !businessHoursViewState.inBusinessHours) {
-          store.dispatch (
-            actionCreators.updateActiveView (ACTIVE_VIEW.BUSINESS_HOURS)
-          );
-        } else if (!appState.conversationStarted) {
-          appStateActions.startConversation ();
-        }
-
         // If unreadCount isn't zero and active view is chat view,
         // dispatch action to mark messages seen.
-        if (chatView.unreadCount !== 0 && ACTIVE_VIEW.CHAT === appState.activeView) {
+        if (unreadCount !== 0 && ACTIVE_VIEW.CHAT === activeView) {
           store.dispatch (chatViewActions.markMessagesSeen ());
+        }
+
+        // When the end user opens the widget, check if preIssue reset
+        // is applicable and if so, handle it. Else, start a conversation, if it
+        // hasn't started yet.
+        if (_shouldPreIssueReset ()) {
+          store.dispatch (appStateActions.resetPreIssue ());
+        } else if (!conversationStarted) {
+          store.dispatch (appStateActions.startConversation ());
         }
 
         // Track the widget open event
         analyticsHelpers.track (EVENT.WIDGET_OPEN, {
           trigger
         });
-      } else if (isIssueClosed (appState.issueState)) {
+      } else if (isIssueClosed (issueState)) {
+        // @TODO : Change this default rating submission after confirming with product
         handleCsatRatingSubmission ();
-        // If minimized is true, and issue state is closed, reset the conversation.
-        store.dispatch (appStateActions.reset ({
-          skipUser: true
-        }));
       }
     };
 
@@ -128,57 +169,21 @@ define ("extras/api",
      * Handle intial user message
      * @param {Object} [config]
      * @param {string} [config.message] - Initial user message.
-     * @param {string} [config.trigger] - Source that triggered the function
-     *    call - user action, api, etc.
      */
-    const handleInitialUserMsg = ({message, trigger}) => {
-      const state = store.getState ();
-      const {appState} = state;
-
-      // If issue state is not pre chat, don't save initial message in store
-      // and dont create initial user message
-      if (appState.issueState !== ISSUE_STATE.PRE_CHAT) {
-        return;
-      }
-
+    const handleInitialUserMsg = ({message}) => {
       // Set initial user message in store
       store.dispatch (appStateActions.setInitialUserMsg (message));
-
-      const currentPreChatFeature = appState.preChatFeatureOrder [appState.preChatFeatureIndex];
-      // Create initial user message if :-
-      // a] current prechat feature is "initialUserMessage"
-      // b] prechat feature "initialUserMessage" is enabled (currently always enabled)
-      // c] state of "initialUserMessage" is INITIAL
-      if ((currentPreChatFeature === "initialUserMessage") &&
-          (appState.featuresEnabled.initialUserMessage) &&
-          (appState.preChatFeatureState [currentPreChatFeature] ===
-           PRE_CHAT_STATE.initialUserMessage.INITIAL)) {
-        store.dispatch (chatViewActions.createInitialUserMessage (message));
-      }
-
-      // Track the conversation started event.
-      // Pass trigger as "API" because this is the handler function for
-      // the setInitialUserMessage API.
-      analyticsHelpers.track (EVENT.CONVERSATION_STARTED, {
-        trigger
-      });
     };
 
     /**
      * Dispatches appropriate action depending on the current chat view
      */
     const handleIssueCreation = () => {
-      const {businessHoursViewState, appState} = store.getState ();
-      const currentPreChatFeature = appState.preChatFeatureOrder [
-        appState.preChatFeatureIndex
-      ];
-
-      // @TODO: Move this condition to helpers as it is required often
-      if (businessHoursViewState.businessHoursEnabled &&
-        !businessHoursViewState.inBusinessHours) {
-        store.dispatch (businessHoursActions.registerUserAndCreateIssue ());
-      } else if (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) {
-        store.dispatch (chatViewActions.startNextPreChatFeature ());
+      if (commonHelpers.isOutOfBusinessHours ()) {
+        store.dispatch (businessHoursActions.createIssueOutOfBusinessHours ());
+      } else {
+        store.dispatch (appStateActions.setConversationStarted ());
+        store.dispatch (chatViewActions.createPreIssue ());
       }
     };
 
@@ -187,23 +192,17 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_CONFIG:
           setConfig (data);
           break;
-        case EVENT_TYPES.CMD_INITIALISE:
-          app.init (data);
-          break;
         case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
           handleMessengerToggle (data);
-          break;
-        case EVENT_TYPES.CMD_RESET:
-          // If the reset API is called manually, reset proactive chat data as well.
-          store.dispatch (appStateActions.reset ({
-            resetProactiveChat: true
-          }));
           break;
         case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
           handleInitialUserMsg (data);
           break;
         case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
           store.dispatch (actionCreators.setGreetingMsg (data.message));
+          break;
+        case EVENT_TYPES.CMD_SET_LANGUAGE:
+          store.dispatch (actionCreators.setLanguage (data.language));
           break;
         case EVENT_TYPES.CMD_SET_CIF:
           store.dispatch (actionCreators.setCif (data.cifData));
@@ -228,7 +227,11 @@ define ("extras/api",
         case EVENT_TYPES.CMD_UPDATE_UI_CONFIG:
           store.dispatch (uiActions.updateUiConfig (data.uiConfig));
           store.dispatch (uiActions.setDeveloperUiConfig (data.uiConfig));
-          store.dispatch (appStateActions.updateStyles ());
+          appStateActions.updateStyles ();
+          break;
+        case EVENT_TYPES.CMD_SET_FULL_PRIVACY:
+          store.dispatch (actionCreators.setFullPrivacy (data.enabled));
+          break;
       }
     };
 

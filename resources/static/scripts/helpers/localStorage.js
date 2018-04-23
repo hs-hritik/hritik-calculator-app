@@ -15,6 +15,8 @@ define ("helpers/localStorage",
 
     const KEYS = {
       USER_ID: "ui",
+      DEVICE_ID: "di",
+      ANON_USER_ID: "aui",
       IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
@@ -31,15 +33,50 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      CONVERSATION_ID: "ci",
       READ_FAQ_LIST: "rfl",
-      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt"
+      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt",
+      CONVERSATION_ID: "ci"
     };
 
-    const USER_KEYS = ["USER_ID", "IDENTIFIER", "USER_PROFILE_ID"];
+    const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
+    const DEVICE_ID_KEY = "DEVICE_ID";
+
+    // The keys which are required after the unification release.
+    const VALID_KEYS = [
+      "USER_ID",
+      "DEVICE_ID",
+      "ANON_USER_ID",
+      "LAST_ACTIVITY_TIME",
+      "SITE_ACTIVITY_START_TIME",
+      "PROACTIVE_CHAT_HAS_TRIGGERED",
+      "SUGGESTED_FAQ_READ_TRACKED",
+      "READ_FAQ_LIST"
+    ];
 
     const {ATTACHMENT} = MESSAGE_CONSTANTS.TYPE;
+
+    /**
+     * A helper function to check if a localstorage key should be
+     * cleared. It depends on the `options` object passed with the
+     * `reset` call and, of course, the key.
+     * The DEVICE_ID key should never be reset. We use DEVICE_ID to
+     * identify a browser (the device). Its value should remain the
+     * same irrespective of who (the user) is using it.
+     *
+     * @param {string} key
+     * @param {Object} [options]
+     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
+     *                  By default, user related data will be reset.
+     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
+     *                  related data. By default, they won't be reset.
+     * @returns {boolean}
+     */
+    const _shouldKeyReset = (key, options) => {
+      return !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
+             !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1)) &&
+             !(key === DEVICE_ID_KEY);
+    };
 
     /**
      * Get userId
@@ -56,24 +93,48 @@ define ("helpers/localStorage",
     };
 
     /**
-     * Remove userId
-     */
-    const removeUserId = () => lsUtils.removeItem (KEYS.USER_ID);
-
-    /**
      * Get identifier
      * @returns {String} - identifier
      */
     const getIdentifier = () => lsUtils.getItem (KEYS.IDENTIFIER);
 
     /**
-     * Set identifier passed to the lsUtils
-     * @param {String} - userId
+     * Remove userId
      */
-    const setIdentifier = (identifier) => {
-      lsUtils.removeItem (KEYS.USER_PROFILE_ID);
-      lsUtils.setItem (KEYS.IDENTIFIER, identifier);
+    const removeUserId = () => lsUtils.removeItem (KEYS.USER_ID);
+
+    /**
+     * Get the device id
+     * @returns {string}
+     */
+    const getDeviceId = () => lsUtils.getItem (KEYS.DEVICE_ID);
+
+    /**
+     * Set the device id passed to the lsUtils
+     * @param {string} - id
+     */
+    const setDeviceId = (id) => {
+      lsUtils.setItem (KEYS.DEVICE_ID, id);
     };
+
+    /**
+     * Get anon user id
+     * @returns {string}
+     */
+    const getAnonUserId = () => lsUtils.getItem (KEYS.ANON_USER_ID);
+
+    /**
+     * Set anon user id
+     * @param {string} - id
+     */
+    const setAnonUserId = (id) => {
+      lsUtils.setItem (KEYS.ANON_USER_ID, id);
+    };
+
+    /**
+     * Remove anon user id
+     */
+    const removeAnonUserId = () => lsUtils.removeItem (KEYS.ANON_USER_ID);
 
     /**
      * Returns the entities saved in localstorage.
@@ -246,36 +307,21 @@ define ("helpers/localStorage",
      */
     const reset = (options = {}) => {
       objUtils.forEachKey (KEYS, (key) => {
-        if (
-          !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
-          !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1))
-        ) {
+        if (_shouldKeyReset (key, options)) {
           lsUtils.removeItem (KEYS [key]);
         }
       });
     };
 
     /**
-     * Removes message from entities
-     * @param {String} issueId - current issue id
-     * @param {String} messageId - message id to remove
+     * Delete all the local storage fields which were being used before unification.
      */
-    const removeMessage = (issueId, messageId) => {
-      // Remove message id from 'issues->messages' entity
-      const issueEntities = getEntities ("ISSUES");
-      const filteredMessages = issueEntities [issueId].messages.filter ((message) => {
-        return message !== messageId;
+    const clearOldStorage = () => {
+      objUtils.forEachKey (KEYS, (key, value) => {
+        if (VALID_KEYS.indexOf (key) === -1) {
+          lsUtils.removeItem (value);
+        }
       });
-      const newIssueEntities = objUtils.setIn (
-        issueEntities, filteredMessages, [issueId, "messages"]
-      );
-
-      lsUtils.setItem (KEYS.ENTITIES_ISSUES, newIssueEntities);
-
-      // Remove message from 'message' entity
-      const messagesEntities = getEntities ("MESSAGES");
-      delete messagesEntities [messageId];
-      lsUtils.setItem (KEYS.ENTITIES_MESSAGES, messagesEntities);
     };
 
     /**
@@ -376,21 +422,7 @@ define ("helpers/localStorage",
      * Get whether the suggested FAQ read event has been tracked or not
      * @returns {boolean}
      */
-    const getSuggestedFaqReadTracked = () => lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
-
-    /**
-     * Set the conversation ID (created when the end user posts the first message)
-     * @param {string} cid - The conversation ID
-     */
-    const setConversationId = (cid) => {
-      lsUtils.setItem (KEYS.CONVERSATION_ID, cid);
-    };
-
-    /**
-     * Get the conversation ID.
-     * @returns {string}
-     */
-    const getConversationId = () => lsUtils.getItem (KEYS.CONVERSATION_ID);
+    const getSuggestedFaqReadTracked = () => !!lsUtils.getItem (KEYS.SUGGESTED_FAQ_READ_TRACKED);
 
     /**
      * Set the read FAQ list.
@@ -406,26 +438,15 @@ define ("helpers/localStorage",
      */
     const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
 
-    /**
-     * Set the timestamp when the info bot gets requested
-     * @param {number} ts
-     */
-    const setInfoBotRequestedTimestamp = (ts) => {
-      lsUtils.setItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP, ts);
-    };
-
-    /**
-     * Get the timestamp when the info bot gets requested
-     * @returns {number}
-     */
-    const getInfoBotRequestedTimestamp = () => lsUtils.getItem (KEYS.INFO_BOT_REQUESTED_TIMESTAMP);
-
     return {
       getUserId,
       setUserId,
       removeUserId,
-      getIdentifier,
-      setIdentifier,
+      getDeviceId,
+      setDeviceId,
+      getAnonUserId,
+      setAnonUserId,
+      removeAnonUserId,
       getEntities,
       setEntities,
       reset,
@@ -449,7 +470,6 @@ define ("helpers/localStorage",
       getReplyText,
       setEndUserFirstMsgId,
       getEndUserFirstMsgId,
-      removeMessage,
       removeDummyMessages,
       setSiteActivityStartTime,
       getSiteActivityStartTime,
@@ -457,11 +477,9 @@ define ("helpers/localStorage",
       getProactiveChatHasTriggered,
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
-      setConversationId,
-      getConversationId,
       setReadFaqList,
       getReadFaqList,
-      setInfoBotRequestedTimestamp,
-      getInfoBotRequestedTimestamp
+      getIdentifier,
+      clearOldStorage
     };
   });

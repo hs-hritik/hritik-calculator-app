@@ -1,0 +1,164 @@
+Branches:
+feature/unification-1
+
+Changelog:
+Fix review comment for poller timestamp commit
+Don't dispatch poller failure count action on each request
+Fix padding of branding
+Add timestamp param in poller api to avoid request cache on IE
+Don't reset user while resetting pre-issue
+Add a version query param to all the resources
+Default developerSetLanguage to `en-US`
+Truncate dev-set names with more than 255 characters
+Update widget open analytics event data
+Add support for more query params for the test page
+Add new behaviour if first user message is set through api
+Hide footer only for preIssue when user enters reply
+Send a maximum of 10 read FAQs with issue deflection event
+Render FAQ body in the language of the FAQ
+Don't save extra fields in local storage
+Handle pre issue failure
+Render footer failure instead of pill select if there is any failure
+Fix working of set initial user message api
+Fix pill options wrapping to take available width
+Show agent nickname for each message
+Fix placeholder text for first user message
+Fix padding for branding logo
+Use default input for first user message
+Fix vertical alignment of chat footer items
+Handle issue reopen when user adds attachment
+Fix agent live updates
+Fix color not getting applied to launcher icon
+Disable ui elements when csat save is in progress
+Change backend mapping keys of UI strings
+Handle FAQ failure
+Handle poller failure
+Add events and actions to handle online status
+Update InfoView component to show errors
+Add failure rendering in chat view footer
+Skip resetting localstorage user keys when starting a new conversation
+Update suggested faq read route
+Reset open preIssue after 24h of inactivity
+Fix message list scroll issue
+Fix unread messages count
+Fix console error if issues are not present in poller
+Fix meta for create preIssue api call
+Remove text transfomation from button scss
+Fix messages width issue
+Bump gunpowder's version
+Fix create issue api for out of business hours
+Rename userHash to userAuthToken
+Fix userId validation logic
+Remove reset timeout and the reset api
+Send name with create preissue if EFP is off
+Send anonUserId if only email is passed with EFP
+Clear anon user id before starting the flow, if applicable
+Integrate unread count api and handle end chat for issue rejection
+Add npm shrinkwrap
+Add node-sass to package.json with a ~4.2.0 version
+Read issue state from state for the widget open event
+Remove issue created state from get processed issue state
+Minor UI fixes according to UX suggestions
+Change layout of agent name and msg timestamp
+Add end chat message when conversation is over.
+Track issue created event
+Add internal issue id to suggested faq read xhr
+Remove setting identity bot to the state
+Return a function from appState.startConversation
+Move web chat's api handler out of try/catch block
+Fix reset user input behaviour and TAI
+Add support to render system info message
+Fix working of attachments
+Show user readable timestamp on each message
+Fix spaces in user input value
+Fix user input label color for error state
+Add new info view component
+Send faq_id instead of faq_publish_id for suggested faq read event
+Send developer set language with analytics events
+Handle migration for unification
+Set last activity time when user sends a message
+Send `message_id` param with faq suggestion read xhr
+Send read faq list with ans bot response for analytics
+Remove platform from the GET config API route
+Skip preissue reset logic
+Update web chat analytics as per new backend contracts
+Add common xhr data in submit csat rating api
+Pass device and developer set language in create preIssue
+Skip validations for user reply using pill select
+Pass refers param in xhr data for user reply on bot message
+Add issue created state to pre issue
+Fix issue is created prop passed from container components
+Render pill options in message list
+Fix message cursor value
+Change platform id key in xhr helpers
+Fix post chat features workflow after issue is resolved
+Add action to reset user input during bot transition
+Do not render skip button
+Revamp footer and reply box component
+Rename User Info bot REST params to Identity bot params
+Filter duplicate message while adding to store
+Fix message body for user reply on faq suggestions
+Fix faq id while processing faqs list
+Remove message handling from entities reducer
+Add support to skip platform id from prepare common xhr data
+Use pluralized issue type for user reply route and message cursor
+Fix typo for batch actions in handle message input
+Add support for render user reply messages
+Change backend mapping of state strings.
+Fix typo for user reponse message in chat view helper
+Fix messages list in chat view container
+Fix add messages handling in chat view reducer
+Fix message processing in entity helpers
+Handle issue states and save issue types in store
+Create one route for post user reply
+Refactor non renderable messages
+Validate userId and userEmail passed with helpshiftConfig
+Handle full privacy mode and setting uid with xhr data
+Add API and helpshiftConfig option for the full privacy flag
+Handle preIssue reset
+Use developerSetLanguage to send Accept-Language header
+Update UI text values from backend
+Create setLanguage API call
+Update the format of anon user id
+Send web chat API version with request header
+Render reply box for input type plain text
+Remove unused ui texts and related unwanted code
+Handle initial user message set through api
+Add user response message types in xhr data
+Remove normalization from faq view
+Remove normalization from chat view
+Start new conversation when web chat is opened
+Cleanup setIssueState logic due to the `issue_exists` flag change
+Refactor the success callback of get config API
+Update API routes for sandbox testing
+Generate and use a special format anon user id
+Handle auth failure for GET config API call
+Add errors reducer to handle app level error messages
+Add support to render pill options and skip button in footer
+Add validation for different input types
+Rename input types to user input type
+Render user input footer in chat view footer
+Pass changed user input to reply box container
+Add rendering support for bot type of messages
+Handle workflow to process input from last bot message
+Add processing logic for bot messages in entity helper
+Integrate resolution question feature config
+Rename wmEnabled to wcEnabled
+Create pre-issue to start a new conversation
+Set issue details in the state after config is processed
+Get config from BE with the new params
+Set anon user id in state and localstorage
+Set device id in the state and localstorage
+Add solution rejected question in footer
+Create chat view footer container component
+Fix issue of business hours view not visible
+Gulp: Add support for webchat and api url configuration
+Fix alignment of csat footer
+Add support to derive post chat feature steps
+Remove background color from the rows on the demo/index page
+Move post chat feature actions to action creator
+Change the reset behaviour
+Add support for start new conversation in csat view
+Add support for start new conversation in chat view
+Add actions, reducer handlers for post chat features
+Fix typo in csat actions

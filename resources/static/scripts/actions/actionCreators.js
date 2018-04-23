@@ -70,6 +70,16 @@ define ("actions/actionCreators",
     });
 
     /**
+     * Return the action to set the developer language
+     * @param {string} language - the language to be set
+     * @returns {Object} - the action object
+     */
+    const setLanguage = (language) => ({
+      type: ACTION_TYPES.SET_LANGUAGE,
+      language
+    });
+
+    /**
      * Return the action to set CIF
      * @param {Object} cif - the CIF object to set
      * @returns {Object} - the action object
@@ -126,19 +136,6 @@ define ("actions/actionCreators",
     };
 
     /**
-     * Return the action to set the conversation ID in the store. Conversation IDs
-     * are used only with analytics event tracking.
-     * @param {string} cid - The conversation ID, a random UUID string
-     * @returns {Object}
-     */
-    const setConversationId = (cid) => {
-      return {
-        type: ACTION_TYPES.SET_CONVERSATION_ID,
-        cid
-      };
-    };
-
-    /**
      * Return the action to update the read FAQs list in the store.
      * @param {string} faqId
      * @returns {Object}
@@ -175,6 +172,64 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to set resolution question as completed
+     * @param {Boolean} completed - whether resolution question is completed
+     * @returns {Object} - Action
+     */
+    const setResolutionQuestionCompleted = (completed) => {
+      return {
+        type: ACTION_TYPES.SET_RESOLUTION_QUESTION_COMPLETED,
+        completed
+      };
+    };
+
+    /**
+     * Action to set csat as completed
+     * @returns {Object} - Action
+     */
+    const setCsatCompleted = () => {
+      return {
+        type: ACTION_TYPES.SET_CSAT_COMPLETED
+      };
+    };
+
+    /**
+     * Return the action to set the fullPrivacy flag in the state
+     * @param {boolean} enabled
+     * @returns {Object}
+     */
+    const setFullPrivacy = (enabled) => {
+      return {
+        type: ACTION_TYPES.SET_FULL_PRIVACY,
+        enabled
+      };
+    };
+
+    /**
+     * Action to toggle loader
+     * @param {Boolean} - loading
+     * @returns {Object} - Action
+     */
+    const toggleChatViewLoading = (loading) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_CHAT_VIEW_LOADING,
+        loading
+      };
+    };
+
+    /**
+     * Action to toggle online status
+     * @param {Boolean} online
+     * @returns {Object} - Action
+     */
+    const toggleOnlineStatus = (online) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_ONLINE_STATUS,
+        online
+      };
+    };
+
     return {
       updateActiveView,
       setUserProfileId,
@@ -182,14 +237,19 @@ define ("actions/actionCreators",
       setMobileInfo,
       reset,
       setGreetingMsg,
+      setLanguage,
       setCif,
       setTags,
       setPreChatFeatureIndex,
       setExecuteGreetingMessage,
       setSuggestedFaqReadTracked,
-      setConversationId,
       updateReadFaqList,
       setInternalIssueId,
-      setInfoBotRequestedTimestamp
+      setInfoBotRequestedTimestamp,
+      setResolutionQuestionCompleted,
+      setCsatCompleted,
+      setFullPrivacy,
+      toggleChatViewLoading,
+      toggleOnlineStatus
     };
   });

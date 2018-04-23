@@ -8,9 +8,13 @@ define ("reducers/ui",
   [
     "constants/actionTypes",
     "constants/uiConfig",
-    "helpers/ui"
+    "constants/errors",
+    "constants/localization",
+    "helpers/ui",
+    "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, uiHelpers) {
+  function (ACTION_TYPES, UI_CONFIG_CONSTANTS, errorConstants, localizationConstants,
+    uiHelpers, objUtils) {
     "use strict";
 
     const update = React.addons.update;
@@ -30,16 +34,25 @@ define ("reducers/ui",
       SHADES
     } = UI_CONFIG_CONSTANTS;
 
+    const {
+      TYPE: {
+        NO_AUTH_TOKEN: NO_AUTH_ERROR,
+        INVALID_USER_AUTH_TOKEN: INVALID_AUTH_ERROR
+      }
+    } = errorConstants;
+
     const INITIAL_STATE = {
+      // @TODO: Remove after integrating it with backend
       text: {
         chatViewHeader: "Chat with us",
+        chatViewConversationResolutionQuestion: "Did we answer all your questions?",
+        chatViewStartNewConversation: "Start a new conversation",
+        chatViewIssueRejectionQuestion: "What else can we help you with?",
         greetingMsg: "Hi, how can we help you?",
         faqSuggestionsAdditionalHelpMsg: "Do you still want to talk to an agent?",
-        faqSuggestionsAdditionalHelpRequiredBtn: "Yes",  // Also used for msg
-        faqSuggestionsAdditionalHelpNotRequiredBtn: "No",  // Also used for msg
-        problemSolvedByFaqSuggestionsMsg: "Glad we could help you!",
-        faqSuggestionsMsgTitleSingle: "See if this article helps",
-        faqSuggestionsMsgTitleMultpile: "See if these articles help",
+        resolutionQuestionAccept: "Yes",
+        resolutionQuestionReject: "No",
+        conversationEndNote: "This conversation has ended.",
         faqViewHeader: "Back",
         closeConversationBtn: "Close",
         replyBtnPlaceholder: "Write your message",
@@ -50,7 +63,6 @@ define ("reducers/ui",
         csatBotReviewTitle: "Additional Feedback",
         csatViewHeader: "Chat with us",
         infoBotRequestMsg: "Before we begin, we need some more information.",
-        timeAgoJustNow: "just now",
         branding: "Powered by Helpshift",
         attachmentUploadingStatus: "Uploading..",
         attachmentRetryError: "Error. Click  to retry.",
@@ -70,7 +82,27 @@ define ("reducers/ui",
         businessHoursOfflineMessage: "",
         dndInfoText: "Add files or drag here",
         businessHoursAttachmentsSizeExceedMsg: "Total size of attachments exceed 25MB",
-        businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5"
+        businessHoursAttachmentsLimitExceedMsg: "Attachment exceeds maximum limit of 5",
+        emailValidationError: "Enter a valid email address",
+        numberValidationError: "Enter a valid number",
+        dateValidationError: "Enter a valid date in DD/MM/YYYY format",
+        retryBtn: "RETRY",
+        noInternetConnection: "No internet connection",
+        unknownErrorReconnecting: "Something went wrong. Reconnecting...",
+        networkError: "Network Error",
+        connectingText: "Connecting...",
+        errorMessage: {
+          [NO_AUTH_ERROR]: {
+            title: "Authentication Failed",
+            subtitle: "Unable to reach support"
+            // @TODO: Confirm if a CTA is needed.
+          },
+          [INVALID_AUTH_ERROR]: {
+            title: "Authentication Failed",
+            subtitle: "Unable to reach support"
+            // @TODO: Confirm if a CTA is needed.
+          }
+        }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)
@@ -89,6 +121,23 @@ define ("reducers/ui",
         return obj;
       }, {}),
       developerUiConfig: null
+    };
+
+    /**
+     * Return update object to update text strings in state
+     * @param {Object} xhrTextStrings - map of strings recieved from XHR
+     * @returns {Object} - update object to set values in the store
+     */
+    const getUiTextUpdateObj = (xhrTextStrings) => {
+      const updateObj = {};
+      const {UI_STRING_KEYS} = localizationConstants;
+
+      objUtils.forEachKey (xhrTextStrings, (xhrKey, uiString) => {
+        const stateKey = UI_STRING_KEYS [xhrKey];
+        updateObj [stateKey] = {$set: uiString};
+      });
+
+      return updateObj;
     };
 
     /**
@@ -260,7 +309,11 @@ define ("reducers/ui",
             greetingMsg: {$set: config.greeting},
             chatViewHeader: {$set: config.appearance.widget_title},
             csatViewHeader: {$set: config.appearance.widget_title},
-            csatBotRequestMsg: {$set: config.csat_bot.req_msg}
+            csatBotRequestMsg: {$set: config.csat_bot.req_msg},
+            chatViewConversationResolutionQuestion: {
+              // @TODO - Confirm the key after BE integration
+              $set: config.resolution_question
+            }
           };
           const businessHoursEnabled = config.business_hours_enabled;
 
@@ -296,6 +349,11 @@ define ("reducers/ui",
         case ACTION_TYPES.SET_UI_CONFIG:
           return update (state, {
             uiConfig: getSetUiConfigUpdateObj (state.uiConfig, action.uiConfig)
+          });
+
+        case ACTION_TYPES.SET_UI_TEXT:
+          return update (state, {
+            text: getUiTextUpdateObj (action.text)
           });
 
         case ACTION_TYPES.UPDATE_UI_CONFIG:

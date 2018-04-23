@@ -7,25 +7,63 @@
 define ("reducers/chatView",
   [
     "constants/chatView",
-    "constants/actionTypes"
+    "constants/actionTypes",
+    "gunpowder/utils/object",
+    "gunpowder/utils/array"
   ],
-  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES) {
+  function (CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils, arrayUtils) {
     "use strict";
 
-    const update = React.addons.update,
-          {ACTIVE_FOOTER, INFO_BOT_FIELDS} = CHAT_VIEW_CONSTANTS;
+    const update = React.addons.update;
+    const {
+      ACTIVE_FOOTER,
+      INFO_BOT_FIELDS,
+      USER_INPUT_TYPES
+    } = CHAT_VIEW_CONSTANTS;
+
+    const INITIAL_ERROR_STATE = {
+      type: "",
+      title: "",
+      subtitle: "",
+      cta: ""
+    };
+
+    /**
+     * Returns default user input config object to be set in store
+     * @returns {Object} - input config object
+     */
+    const _getDefaultUserInputConfig = (config = {}) => {
+      return {
+        value: config.value || "",
+        type: USER_INPUT_TYPES.DEFAULT_INPUT,
+        disabled: false,
+        required: true,
+        options: null,
+        selectedOption: null,
+        label: "",
+        skipLabel: "",
+        skipped: false,
+        placeholder: "",
+        errorMsg: ""
+      };
+    };
 
     const INITIAL_STATE = {
-      replyBox: {
-        value: "",
-        disabled: false
-      },
+      userInput: _getDefaultUserInputConfig (),
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
       endUserFirstMsgId: "",
       unreadCount: 0,
+      messageList: [],
+      messageCursor: {
+        preissues: {},
+        issues: {}
+      },
+      issueCursor: 0,
+      pollerFailureCount: 0,
+      isCsatSubmitted: false,
       infoBot: {
         fieldsRequired: ["name", "email"],
         currentField: "",
@@ -54,11 +92,27 @@ define ("reducers/chatView",
           }
         }
       },
-      conversationId: "",
-      readFaqList: []
+      readFaqList: [],
+      loading: true,
+      // This represents the error in the whole chat view
+      // @TODO: Move the error handling to the error reducer.
+      error: INITIAL_ERROR_STATE
+    };
+
+    /**
+     * Returns the index of message for given message id
+     * @param {Array} list - list of messages
+     * @param {String} id - message id
+     * @returns {Number} - index of matched message
+     */
+    const _getMessageIndex = (list, id) => {
+      return arrayUtils.findIndexByKey (list, id, "id");
     };
 
     return (state = INITIAL_STATE, action) => {
+      let userInputUpdateObj = {};
+      let index = null;
+
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           const updateObj = {};
@@ -68,15 +122,12 @@ define ("reducers/chatView",
             };
           }
           if (action.data.replyText) {
-            updateObj.replyBox = {
+            updateObj.userInput = {
               value: {$set: action.data.replyText}
             };
           }
           if (action.data.endUserFirstMsgId) {
             updateObj.endUserFirstMsgId = {$set: action.data.endUserFirstMsgId};
-          }
-          if (action.data.conversationId) {
-            updateObj.conversationId = {$set: action.data.conversationId};
           }
           if (action.data.readFaqList) {
             updateObj.readFaqList = {$set: action.data.readFaqList};
@@ -85,31 +136,38 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           return update (state, {
-            replyBox: {
-              value: {$set: action.value}
+            userInput: {
+              value: {$set: action.value},
+              errorMsg: {$set: ""}
             }
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
           return update (state, {
-            activeIssueMsgCursor: {$set: action.msgCursor}
+            messageCursor: {$merge: action.msgCursor}
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
+          if (action.footer === ACTIVE_FOOTER.REPLY &&
+              state.activeFooter !== ACTIVE_FOOTER.REPLY) {
+            userInputUpdateObj = _getDefaultUserInputConfig ();
+          }
+
           return update (state, {
-            activeFooter: {$set: action.footer}
+            activeFooter: {$set: action.footer},
+            userInput: {$merge: userInputUpdateObj}
           });
 
         case ACTION_TYPES.DISABLE_REPLY_BOX:
           return update (state, {
-            replyBox: {
+            userInput: {
               disabled: {$set: true}
             }
           });
 
         case ACTION_TYPES.ENABLE_REPLY_BOX:
           return update (state, {
-            replyBox: {
+            userInput: {
               disabled: {$set: false}
             }
           });
@@ -127,18 +185,6 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_UNREAD_COUNT:
           return update (state, {
             unreadCount: {$set: action.count}
-          });
-
-        case ACTION_TYPES.SET_WM_CONFIG:
-          return update (state, {
-            infoBot: {
-              fieldsRequired: {
-                $set: action.config.user_info_bot.fields
-              },
-              currentField: {
-                $set: action.config.user_info_bot.fields [0] || ""
-              }
-            }
           });
 
         case ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE:
@@ -180,6 +226,7 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:
+          // @TODO: Remove this during clean up. This will be unnecessary with chat bots.
           const {userName, userEmail} = action.config,
                 infoBotChangeObj = {};
           if (typeof userName === "string" && userName) {
@@ -206,14 +253,106 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.SET_CONVERSATION_ID:
-          return update (state, {
-            conversationId: {$set: action.cid}
-          });
-
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
           return update (state, {
             readFaqList: {$push: [action.faqId]}
+          });
+
+        case ACTION_TYPES.SET_USER_INPUT_DATA:
+          userInputUpdateObj = objUtils.shallowMerge (
+            _getDefaultUserInputConfig (),
+            action.input
+          );
+          return update (state, {
+            userInput: {$set: userInputUpdateObj}
+          });
+
+        case ACTION_TYPES.RESET_USER_INPUT_DATA:
+          userInputUpdateObj = objUtils.shallowMerge (
+            _getDefaultUserInputConfig (), {
+              value: action.config.value ? state.userInput.value : ""
+            }
+          );
+          return update (state, {
+            userInput: {$set: userInputUpdateObj}
+          });
+
+        case ACTION_TYPES.UPDATE_USER_INPUT_DATA:
+          return update (state, {
+            userInput: {$merge: action.input}
+          });
+
+        case ACTION_TYPES.SET_USER_SELECTED_OPTION:
+          return update (state, {
+            userInput: {
+              selectedOption: {$set: action.option}
+            }
+          });
+
+        case ACTION_TYPES.SET_MESSAGES:
+          return update (state, {
+            messageList: {$set: action.messages}
+          });
+
+        case ACTION_TYPES.ADD_MESSAGES:
+          const msgIdsAdded = state.messageList.map ((msg) => msg.id);
+          const msgsToAdd = action.messages.filter ((msg) => {
+            return msgIdsAdded.indexOf (msg.id) === -1;
+          });
+
+          return update (state, {
+            messageList: {$push: msgsToAdd}
+          });
+
+        case ACTION_TYPES.REMOVE_MESSAGE:
+          index = _getMessageIndex (state.messageList, action.messageId);
+          return update (state, {
+            messageList: {$splice: [[index, 1]]}
+          });
+
+        case ACTION_TYPES.SET_ATTACHMENT_ERROR:
+          index = _getMessageIndex (state.messageList, action.messageId);
+          return update (state, {
+            messageList: {
+              [index]: {
+                states: {
+                  uploadInProgress: {$set: false},
+                  error: {$set: true},
+                  errorCode: {$set: action.errorCode}
+                }
+              }
+            }
+          });
+
+        case ACTION_TYPES.SET_ISSUE_CURSOR:
+          return update (state, {
+            issueCursor: {$set: action.cursor}
+          });
+
+        case ACTION_TYPES.SET_CSAT_SUBMITTED:
+          return update (state, {
+            isCsatSubmitted: {$set: action.submitted}
+          });
+
+
+        case ACTION_TYPES.SET_POLLER_FAILURE_COUNT:
+          return update (state, {
+            pollerFailureCount: {$set: action.count}
+          });
+
+        case ACTION_TYPES.TOGGLE_CHAT_VIEW_LOADING:
+          return update (state, {
+            loading: {$set: action.loading}
+          });
+
+        case ACTION_TYPES.SET_CHAT_VIEW_ERROR:
+          return update (state, {
+            error: {$set: action.error}
+          });
+
+        case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
+          return update (state, {
+            error: {$set: INITIAL_ERROR_STATE}
           });
 
         case ACTION_TYPES.RESET:

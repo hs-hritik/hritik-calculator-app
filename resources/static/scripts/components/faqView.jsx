@@ -9,9 +9,10 @@ define ("components/faqView",
   [
     "gunpowder/utils/classes",
     "components/commons/viewHeader",
-    "components/commons/branding"
+    "components/commons/branding",
+    "components/infoView"
   ],
-  function (classes, ViewHeader, Branding) {
+  function (classes, ViewHeader, Branding, InfoView) {
     "use strict";
 
     const {PropTypes} = React;
@@ -19,8 +20,10 @@ define ("components/faqView",
     return React.createClass ({
       displayName: "FaqView",
       propTypes: {
-        title: PropTypes.string.isRequired,
-        body: PropTypes.string.isRequired,
+        title: PropTypes.string,
+        body: PropTypes.string,
+        loading: PropTypes.bool,
+        errorMsg: PropTypes.string,
         onBackBtnClick: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqViewHeader: PropTypes.string.isRequired
@@ -31,27 +34,41 @@ define ("components/faqView",
       },
 
       render () {
-        const {title, body, text, onBackBtnClick, viewStyles} = this.props;
+        const {text, onBackBtnClick, viewStyles} = this.props;
 
-        /* eslint-disable react/no-danger */
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.faqViewHeader}
                         showBackBtn={true}
                         onBackBtnClick={onBackBtnClick} />
-            <div className="hs-view__content">
-              <div className="hs-faq" dir="auto">
-                <h3 className="hs-faq__title" >{title}</h3>
-                <div className="hs-faq__body"
-                     dangerouslySetInnerHTML={{__html: body}} />
-              </div>
-              <Branding text={text} />
+            {this._renderViewContents ()}
+          </div>
+        );
+      },
+
+      _renderViewContents () {
+        const {title, body, text, loading, errorMsg} = this.props;
+
+        if (loading || errorMsg) {
+          return (
+            <InfoView loading={loading}
+                      title={errorMsg} />
+          );
+        }
+
+        /* eslint-disable react/no-danger */
+        return (
+          <div className="hs-view__content">
+            <div className="hs-faq" dir="auto">
+              <h3 className="hs-faq__title" >{title}</h3>
+              <div className="hs-faq__body"
+                    dangerouslySetInnerHTML={{__html: body}} />
             </div>
+            <Branding text={text} />
           </div>
         );
         /* eslint-enable react/no-danger */
       }
     });
-
   }
 );

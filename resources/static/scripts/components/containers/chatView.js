@@ -6,68 +6,65 @@
 
 define ("components/containers/chatView",
   [
-    "normalizr",
     "components/chatView",
     "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView",
-    "actions/actionCreators",
-    "actions/appState",
-    "actions/csatView",
-    "constants/activeView"
+    "helpers/common",
+    "constants/chatView"
   ],
-  function (normalizr, ChatView, entitySchema, chatViewActions, faqViewActions,
-    actionCreators, appStateActions, csatViewActions, ACTIVE_VIEW) {
+  function (ChatView, entitySchema, chatViewActions, faqViewActions, commonHelpers,
+    chatViewConstants) {
     "use strict";
 
-    const {denormalize} = normalizr;
+    const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
 
     const mapStateToProps = (state) => {
-      const issueId = state.appState.activeIssueId || state.appState.dummyIssueId;
-      const issue = denormalize (issueId, entitySchema.issue, state.entities);
-      const messages = issue ? issue.messages : [];
-      const {infoBot} = state.chatView;
-      const {rating} = state.csatView;
+      const {
+        appState: {
+          featuresEnabled: {
+            agentNickname
+          },
+          activeIssueId,
+          issueType,
+          online
+        },
+        chatView: {
+          messageList: messages,
+          systemTyping,
+          agentTyping,
+          userInput,
+          pollerFailureCount,
+          loading,
+          error
+        },
+        ui: {
+          text
+        }
+      } = state;
+
+      const hasFailure = !online || (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED);
 
       return {
         messages,
-        rating,
-        activeFooter: state.chatView.activeFooter,
-        isTyping: state.chatView.systemTyping || state.chatView.agentTyping,
-        infoBotField: infoBot.data [infoBot.currentField],
-        showAgentNickname: state.appState.featuresEnabled.agentNickname,
-        text: state.ui.text,
-        issueIsCreated: !!state.appState.activeIssueId,
-        footerIsActive: state.appState.footerIsActive
+        isTyping: systemTyping || agentTyping,
+        showAgentNickname: agentNickname,
+        text: text,
+        issueIsCreated: commonHelpers.isIssueCreated ({
+          activeIssueId,
+          issueType
+        }),
+        userInput,
+        loading,
+        hasFailure,
+        error
       };
     };
 
     const mapDispatchToProps = (dispatch) => {
       return {
-        onSuggestedFaqClick: (faqId) => {
-          dispatch (faqViewActions.getFaq (faqId));
-        },
-        onFaqSuggestionFeedback: (feedbackHelpful) => {
-          if (feedbackHelpful) {
-            dispatch (chatViewActions.acceptFaqSuggestions ());
-          } else {
-            dispatch (chatViewActions.rejectFaqSuggestions ());
-          }
-        },
-        onValueChangeInfoBotField: (value) => {
-          dispatch (chatViewActions.updateInfoBotFieldValue ({
-            value,
-            errorMsg: ""
-          }));
-        },
-        onSubmitInfoBotField: () => {
-          dispatch (chatViewActions.submitInfoBotField ());
-        },
-        onCloseConversation: () => {
-          dispatch (appStateActions.closeConversation ());
-        },
-        onStartCsatSurveyClick: () => {
-          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
+        onSuggestedFaqClick: (faqId, language) => {
+          dispatch (faqViewActions.getFaq (faqId, language));
         },
         onFilesDrop: (files) => {
           dispatch (chatViewActions.createAttachmentMessages (files));
@@ -77,15 +74,12 @@ define ("components/containers/chatView",
             chatViewActions.createAttachmentMessage (message.file, message.id)
           );
         },
-        onStarClick: (updatedRating) => {
-          dispatch (csatViewActions.updateCsatRating (updatedRating));
-          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
+        onPillOptionSelect: (option) => {
+          dispatch (chatViewActions.setUserSelectedOption (option));
+          dispatch (chatViewActions.submitReply ());
         },
-        onFooterFocus: () => {
-          dispatch (appStateActions.setFooterActive ());
-        },
-        onFooterBlur: () => {
-          dispatch (appStateActions.setFooterInactive ());
+        errorActionHandler: () => {
+          dispatch (chatViewActions.handleErrorAction ());
         }
       };
     };

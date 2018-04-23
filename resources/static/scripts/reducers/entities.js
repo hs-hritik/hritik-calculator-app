@@ -3,7 +3,7 @@
  * @author Manish Garg <manish@helpshift.com>
  * @created June 1, 2017
  */
-
+// @TODO - NORMALIZATION_CLEAN_UP
 define ("reducers/entities",
   ["constants/actionTypes"],
   function (ACTION_TYPES) {
@@ -37,59 +37,6 @@ define ("reducers/entities",
 
         case ACTION_TYPES.SET_ENTITIES:
           return mergeEntities (state, action.entities);
-
-
-        case ACTION_TYPES.ADD_MESSAGES:
-          // To avoid duplication of message ids, filter the incoming message ids
-          // using the current message ids.
-          const currentMsgIds = state.issues [action.issueId].messages;
-          const msgIdsToAdd = action.msgIds.filter ((msgId) => {
-            return currentMsgIds.indexOf (msgId) === -1;
-          });
-
-          return update (state, {
-            issues: {
-              [action.issueId]: {
-                messages: {$push: msgIdsToAdd}
-              }
-            }
-          });
-
-        case ACTION_TYPES.REMOVE_MESSAGE:
-          const {messages} = state.issues [action.issueId];
-          const filteredMessages = messages.filter ((message) => {
-            return message !== action.messageId;
-          });
-          return update (state, {
-            issues: {
-              [action.issueId]: {
-                messages: {$set: filteredMessages}
-              }
-            }
-          });
-
-        case ACTION_TYPES.SET_MESSAGES:
-          return update (state, {
-            issues: {
-              [action.issueId]: {
-                messages: {$set: action.msgIds}
-              }
-            }
-          });
-
-        case ACTION_TYPES.SET_ATTACHMENT_ERROR:
-          return update (state, {
-            messages: {
-              [action.messageId]: {
-                states: {
-                  uploadInProgress: {$set: false},
-                  // @TODO :- Rename 'error' to 'attachmentHasError'
-                  error: {$set: true},
-                  errorCode: {$set: action.errorCode}
-                }
-              }
-            }
-          });
 
         case ACTION_TYPES.RESET:
           return INITIAL_STATE;

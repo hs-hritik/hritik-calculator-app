@@ -7,39 +7,41 @@
 define ("components/messageList",
   [
     "components/message",
-    "constants/propTypes",
-    "constants/message",
     "components/commons/branding",
-    "gunpowder/utils/throttle"
+    "helpers/chatView",
+    "constants/propTypes",
+    "constants/chatView",
+    "gunpowder/utils/throttle",
+    "gunpowder/utils/classes"
   ],
-  function (Message, PROP_TYPES, MESSAGE_CONSTANTS, Branding, throttle) {
+  function (Message, Branding, chatViewHelpers, customPropTypes, chatViewConstants,
+    throttle, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const MESSAGE_TYPE = MESSAGE_CONSTANTS.TYPE;
-
-    const MESSAGE_TYPES_TO_RENDER = (() => {
-      const keys = Object.keys (MESSAGE_TYPE);
-      return keys.map ((key) => {
-        return MESSAGE_TYPE [key];
-      });
-    }) ();
-
+    const {
+      MESSAGE_PROP_TYPE,
+      USER_INPUT_PROP_TYPE
+    } = customPropTypes;
+    const {USER_INPUT_TYPES} = chatViewConstants;
     // Scroll throttle time in ms
     const SCROLL_THROTTLE_TIMER = 250;
 
     return React.createClass ({
       displayName: "MessageList",
       propTypes: {
-        messages: PropTypes.arrayOf (PropTypes.shape (
-          PROP_TYPES.MESSAGE
-        )).isRequired,
+        messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,
         showAgentNickname: PropTypes.bool,
         onSuggestedFaqClick: PropTypes.func,
-        onStartCsatSurveyClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
-        text: PropTypes.object.isRequired
+        text: PropTypes.object.isRequired,
+        userInput: USER_INPUT_PROP_TYPE,
+        onPillOptionSelect: PropTypes.func.isRequired,
+        /**
+         * If chat view footer has any failure
+         */
+        hasFailure: PropTypes.bool
       },
 
       render () {
@@ -48,7 +50,8 @@ define ("components/messageList",
             <div className="hs-message-list" >
               {this._renderMessages ()}
               {this._renderTypingIndicator ()}
-              <Branding text={this.props.text} />
+              {this._renderPillOptions ()}
+              {this._renderBranding ()}
             </div>
           </div>
         );
@@ -61,12 +64,8 @@ define ("components/messageList",
         const {messages} = this.props;
 
         return messages.map ((message, index) => {
-          // @TODO: Added temp fix until we add loading spinner.
-          if (!message) {
-            return null;
-          }
           // Avoid rendering of unnecessary message types.
-          if (MESSAGE_TYPES_TO_RENDER.indexOf (message.type) === -1) {
+          if (!chatViewHelpers.isRenderableMessage (message.type)) {
             return null;
           }
 
@@ -86,7 +85,6 @@ define ("components/messageList",
                        text={this.props.text}
                        onImageLoad={this._throttledScrollBottom}
                        onRetryAttachmentClick={this.props.onRetryAttachmentClick}
-                       onStartCsatSurveyClick={this.props.onStartCsatSurveyClick}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
         });
@@ -107,6 +105,77 @@ define ("components/messageList",
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-3" />
           </div>
         );
+      },
+
+      /**
+       * Render pill options
+       */
+      _renderPillOptions () {
+        const {
+          userInput: {
+            type,
+            options,
+            label,
+            disabled
+          },
+          hasFailure
+        } = this.props;
+
+        // @TODO: Re-consider the approach to render the ChatViewFooterContainer
+        // here directly, and render the pill select options inside the chat view footer.
+        // This will avoid passing the props like userInput, hasFailure to the
+        // MessageList component.
+        if (hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled) {
+          return null;
+        }
+
+        const btnClasses = classes (
+          "hs-button",
+          "hs-button--hollow",
+          "hs-message-list__pill-option"
+        );
+        const pillOptionsEl = options.map ((option) => {
+          return (
+            <button key={option.value}
+                    onClick={this._onPillOptionClick.bind (this, option)}
+                    className={btnClasses}>
+              {option.label}
+            </button>
+          );
+        });
+
+        return (
+          <div className="hs-message-list__pills-container">
+            <small>
+              <strong className="hs-message-list__pill-heading">
+                {label}
+              </strong>
+            </small>
+            <div className="hs-message-list__pill-options">
+              {pillOptionsEl}
+            </div>
+          </div>
+        );
+      },
+
+      /**
+       * Render branding
+       */
+      _renderBranding () {
+        if (this.props.userInput.type === USER_INPUT_TYPES.PILL_SELECT) {
+          return null;
+        }
+        return (
+          <Branding text={this.props.text} />
+        );
+      },
+
+      /**
+       * Click handler for pill options (buttons)
+       * @param {Object} option - selected option
+       */
+      _onPillOptionClick (option) {
+        this.props.onPillOptionSelect (option);
       },
 
       _scrollWrapperRef: null,

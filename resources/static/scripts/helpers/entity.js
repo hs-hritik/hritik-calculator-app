@@ -6,33 +6,57 @@
 
 define ("helpers/entity",
   [
-    "gunpowder/utils/object"
+    "constants/message"
   ],
-  function (objUtils) {
+  function (messageConstants) {
     "use strict";
 
-    /**
-     * Return processed message entities.
-     * @param {Object} messages - unprocessed message entities.
-     * @returns {Object} - processed message entities.
-     */
-    const getProcessedMessageEntities = (messages) => {
-      const processedMessages = {};
+    const {TYPE: MESSAGE_TYPES} = messageConstants;
 
-      objUtils.forEachKey (messages, (id, msg) => {
-        processedMessages [id] = {
+    /**
+     * Return processed message entitiy
+     * @param {Object} messages - unprocessed message entitiy
+     * @returns {Object} - processed message entitiy
+     */
+    const getProcessedMessages = (messages) => {
+      return messages.map ((msg) => {
+
+        if (msg.processed) {
+          return msg;
+        }
+
+        const {type: messageType} = msg;
+
+        const msgObj = {
           id: msg.id,
           type: msg.type,
           body: msg.body,
           state: msg.state,
+          states: {}, // Applicable only in case of attachments
           createdTs: msg.created_at,
           author: msg.author,
           isCustomerMsg: (msg.origin !== "admin"),
           attachments: getProcessedAttachments (msg)
         };
-      });
 
-      return processedMessages;
+        if (msg.chatbot_info) {
+          msgObj.chatBotInfo = msg.chatbot_info;
+        }
+
+        // If message has faq data, process it
+        // FAQ data will be part of bot message
+        if (messageType === MESSAGE_TYPES.FAQ_LIST_WITH_OPTION_INPUT) {
+          msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
+            return {
+              id: faq.data.id,
+              title: faq.title,
+              language: faq.data.language
+            };
+          });
+        }
+
+        return msgObj;
+      });
     };
 
     /**
@@ -60,61 +84,21 @@ define ("helpers/entity",
     };
 
     /**
-     * Return processed faqs entity.
-     * @param {Object} faqs - unprocessed faqs entitiy.
-     * @returns {Object} - processed faqs entities.
+     * Return processed faq entity.
+     * @param {Object} faq - unprocessed faq entitiy
+     * @param {string} language
+     * @returns {Object} - processed faq entitiy
      */
-    const getProcessedFaqEntities = (faqs) => {
-      const processedFaqs = {};
-
-      objUtils.forEachKey (faqs, (id, faq) => {
-        processedFaqs [id] = {
-          id: faq.id,
-          translations: faq.translations
-        };
-      });
-
-      return processedFaqs;
-    };
-
-    /**
-     * Return processed authors entities.
-     * @param {Object} authors - unprocessed authors entities.
-     * @returns {Object} - processed authors entities.
-     */
-    const getProcessedAuthorEntities = (authors) => {
-      const processedAuthors = {};
-
-      objUtils.forEachKey (authors, (id, author) => {
-        processedAuthors [id] = {
-          id: author.id,
-          name: author.name
-        };
-      });
-
-      return processedAuthors;
-    };
-
-    /**
-     * Return processed entities.
-     * @param {Object} entities - unprocessed entities.
-     * @returns {Object} - processed entities.
-     */
-    const getProcessedEntities = (entities) => {
-      if (entities.messages) {
-        entities.messages = getProcessedMessageEntities (entities.messages);
-      }
-      if (entities.faqs) {
-        entities.faqs = getProcessedFaqEntities (entities.faqs);
-      }
-      if (entities.authors) {
-        entities.authors = getProcessedAuthorEntities (entities.authors);
-      }
-
-      return entities;
+    const getProcessedFaq = (faq, language) => {
+      return {
+        id: faq.id,
+        translations: faq.translations,
+        language
+      };
     };
 
     return {
-      getProcessedEntities
+      getProcessedMessages,
+      getProcessedFaq
     };
   });

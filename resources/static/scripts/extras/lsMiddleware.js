@@ -40,74 +40,27 @@ define ("extras/lsMiddleware",
       const state = store.getState ();
 
       switch (action.type) {
+        case ACTION_TYPES.SET_CLIENT_CONFIG:
+          // This is used to keep track of userId, passed with helpsfhitConfig.
+          lsHelpers.setUserId (action.config.userId);
+          break;
+
         case ACTION_TYPES.ADD_MESSAGES:
         case ACTION_TYPES.SET_MESSAGES:
-          // If the action type is ADD_MESSAGES or SET_MESSAGES,
-          // save the issues entities in ls.
-          lsHelpers.setEntities ("ISSUES", {
-            [action.issueId]: state.entities.issues [action.issueId]
-          });
-          throttledSetLastActivityTime ();
-          break;
+          const hasUserMessage = action.messages.some ((m) => m.isCustomerMsg);
+          const conversationHasStarted = state.appState.conversationStarted;
 
-        case ACTION_TYPES.REMOVE_MESSAGE:
-          lsHelpers.removeMessage (action.issueId, action.messageId);
-          break;
-
-        case ACTION_TYPES.SET_ENTITIES:
-          // If the action type is SET_ENTITIES, save the issues
-          // and messages entities in localstorage.
-          // Not saving the authors entities because the system
-          // generated messages don't have the author key.
-
-          // If there are any issues entities, save it in ls.
-          if (action.entities.issues) {
-            lsHelpers.setEntities ("ISSUES", action.entities.issues);
-          }
-
-          // If there are messages entities, save only system
-          // generated messages in localstorage.
-          if (action.entities.messages) {
-            const messages = action.entities.messages;
-            const systemMessages = {};
-
-            objUtils.forEachKey (messages, (id, msg) => {
-              if (msg.isSystemMsg) {
-                systemMessages [id] = msg;
-              }
-            });
-            if (Object.keys (systemMessages).length) {
-              lsHelpers.setEntities ("MESSAGES", systemMessages);
-            }
+          if (hasUserMessage && conversationHasStarted) {
+            throttledSetLastActivityTime ();
           }
           break;
 
-        case ACTION_TYPES.SET_ACTIVE_ISSUE:
+        case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
           lsHelpers.setActiveIssueId (action.id);
           break;
 
         case ACTION_TYPES.SET_INTERNAL_ISSUE_ID:
           lsHelpers.setInternalIssueId (action.id);
-          break;
-
-        case ACTION_TYPES.UPDATE_ISSUE_STATE:
-          lsHelpers.setIssueState (action.state);
-          break;
-
-        case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
-          lsHelpers.setPreChatFeatureIndex (state.appState.preChatFeatureIndex);
-          break;
-
-        case ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE:
-          lsHelpers.setPreChatFeatureState (state.appState.preChatFeatureState);
-          break;
-
-        case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
-          lsHelpers.setInfoBotCurrentField (state.chatView.infoBot.currentField);
-          break;
-
-        case ACTION_TYPES.UPDATE_ACTIVE_VIEW:
-          throttledSetLastActivityTime ();
           break;
 
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
@@ -116,10 +69,6 @@ define ("extras/lsMiddleware",
 
         case ACTION_TYPES.SET_USER_PROFILE_ID:
           lsHelpers.setUserProfileId (action.profileId);
-          break;
-
-        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID:
-          lsHelpers.setEndUserFirstMsgId (action.id);
           break;
 
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
@@ -136,10 +85,6 @@ define ("extras/lsMiddleware",
           lsHelpers.setSuggestedFaqReadTracked (action.isTracked);
           break;
 
-        case ACTION_TYPES.SET_CONVERSATION_ID:
-          lsHelpers.setConversationId (action.cid);
-          break;
-
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
           // Because the chat view reducer updates the chat view state with the
           // new FAQ ID by pushing it to the existing FAQ list, we can simply
@@ -147,8 +92,11 @@ define ("extras/lsMiddleware",
           lsHelpers.setReadFaqList (state.chatView.readFaqList);
           break;
 
-        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
-          lsHelpers.setInfoBotRequestedTimestamp (action.ts);
+        case ACTION_TYPES.SET_DEVICE_ID:
+          // Set the device id in localstorage only if it doesn't exist already.
+          if (!lsHelpers.getDeviceId ()) {
+            lsHelpers.setDeviceId (action.id);
+          }
           break;
       }
     };

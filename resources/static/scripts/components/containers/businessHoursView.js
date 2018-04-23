@@ -27,7 +27,8 @@ define ("components/containers/businessHoursView",
         offlineBehaviour,
         contactFormDisabled,
         contactFormSubmitted,
-        submitInProgress
+        submitInProgress,
+        fullPrivacyEnabled: state.appState.fullPrivacyEnabled
       };
     };
 

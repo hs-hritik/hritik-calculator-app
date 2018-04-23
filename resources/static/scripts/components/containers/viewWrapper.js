@@ -7,9 +7,10 @@
 define ("components/containers/viewWrapper",
   [
     "components/viewWrapper",
-    "constants/uiConfig"
+    "constants/uiConfig",
+    "actions/actionCreators"
   ],
-  function (ViewWrapper, UI_CONFIG_CONSTANTS) {
+  function (ViewWrapper, UI_CONFIG_CONSTANTS, actionCreators) {
     "use strict";
 
     const {BASE_FONT} = UI_CONFIG_CONSTANTS.FLATTENED_UI_CONFIG;
@@ -25,6 +26,14 @@ define ("components/containers/viewWrapper",
       };
     };
 
-    return ReactRedux.connect (mapStateToProps) (ViewWrapper);
+    const mapDispatchToProps = (dispatch) => {
+      return {
+        onToggleOnlineStatus: (online) => {
+          dispatch (actionCreators.toggleOnlineStatus (online));
+        }
+      };
+    };
+
+    return ReactRedux.connect (mapStateToProps, mapDispatchToProps) (ViewWrapper);
   }
 );

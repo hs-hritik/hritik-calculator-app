@@ -7,28 +7,41 @@
 
 define ("components/containers/faqView",
   [
-    "normalizr",
     "components/faqView",
-    "actions/chatView",
-    "helpers/entitySchema",
-    "constants/activeView"
+    "actions/chatView"
   ],
-  function (normalizr, FaqView, chatViewActions, entitySchema) {
+  function (FaqView, chatViewActions) {
     "use strict";
 
-    const {denormalize} = normalizr;
-
     const mapStateToProps = (state) => {
-      const activeFaqId = state.faqView.activeFaqId;
-      const faq = denormalize (activeFaqId, entitySchema.faq, state.entities);
-      // Right now, we only support English FAQs
-      const faqEn = faq.translations.en;
-      const {title, body} = faqEn;
+      const {
+        faqView: {
+          activeFaq,
+          loading,
+          errorMsg
+        },
+        ui: {
+          text
+        }
+      } = state;
+
+      let title, body;
+
+      if (activeFaq && activeFaq.translations && activeFaq.language) {
+        const faq = activeFaq.translations [activeFaq.language];
+
+        if (faq) {
+          title = faq.title;
+          body = faq.body;
+        }
+      }
 
       return {
         title,
         body,
-        text: state.ui.text
+        text,
+        loading,
+        errorMsg
       };
     };
 
