@@ -740,7 +740,7 @@ define ("actions/chatView",
 
       const xhrData = {
         "mc": JSON.stringify (messageCursor),
-        "new-timestamp": new Date ().getTime ()
+        "new-timestamp": Date.now ()
       };
 
       if (issueCursor) {
