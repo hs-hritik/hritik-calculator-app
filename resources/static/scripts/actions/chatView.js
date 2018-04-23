@@ -851,7 +851,11 @@ define ("actions/chatView",
         },
         onEnd: () => {
           const newPollerFailureCount = lastPollerCallSucceeded ? 0 : (prevPollerFailureCount + 1);
-          dispatch (setPollerFailureCount (newPollerFailureCount));
+
+          if (newPollerFailureCount !== prevPollerFailureCount) {
+            dispatch (setPollerFailureCount (newPollerFailureCount));
+          }
+
           lastFetchCompleted = true;
           lastPollerCallSucceeded = false;
         }
