@@ -1,0 +1,2 @@
+Changelog:
+Fix chrome box shadow issue
