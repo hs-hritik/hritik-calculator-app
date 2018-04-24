@@ -84,6 +84,8 @@ define ("actions/chatView",
 
     const PROCESS = true;
     const SKIP_PLATFORM_ID = true;
+    const SHOW_PRE_ISSUE_FOOTER = true;
+    const HIDE_PRE_ISSUE_FOOTER = !SHOW_PRE_ISSUE_FOOTER;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -176,21 +178,11 @@ define ("actions/chatView",
      * Handle agent live updates
      */
     const handleAgentLiveUpdates = () => {
-      const {
-        appState: {
-          issueType
-        }
-      } = store.getState ();
-
       // Do not open websocket connection if
       // a] Polling is disabled i.e. when conversation is over, user is on post
       //    chat features like resolution question, csat etc
       // b] Agent typing activity is already subscribed
-      // c] Current issue type is preIssue as agent wont be able to see it on
-      //    dashboard
-      if (!pollingEnabled ||
-          agentActivitySubscribed ||
-          issueType === ISSUE_TYPE.PRE_ISSUE) {
+      if (!pollingEnabled || agentActivitySubscribed) {
         return;
       }
 
@@ -408,28 +400,20 @@ define ("actions/chatView",
       const {input} = message;
       const {dispatch} = store;
 
-      // For messages other than bot, input wont be present
+      // If bot message does not contain any input, don't process it and hide
+      // the footer.
+      // This is to handle bot info text messages which do not have input.
       if (!input) {
-        // For normal message, reset user input and retain reply typed by user
-        dispatch (resetUserInput ({value: true}));
+        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
         return;
       }
 
-      const {getState} = store;
       const {type} = message;
-      const {
-        appState: {
-          sdkConfigOptions: {
-            initialUserMessage
-          }
-        }
-      } = getState ();
       const processedUserInput = chatViewHelpers.getProcessedUserInput ({
         messageType: type,
         input
       });
 
-      // Mandatory actions which will be preformed for every bot step
       dispatch (
         batchActions ([
           // Set processed user input and save it in store
@@ -439,20 +423,8 @@ define ("actions/chatView",
         ])
       );
 
-      // Optional actions like submiting user reply if first user message is set
-      // through api
-      // If message type is accept first user message (EMPTY_MSG_WITH_TEXT_INPUT)
-      // and initialUserMessage is set through api, do not wait for user input
-      // Directly send the message as bot response
-      if (type === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
-        dispatch (
-          updateReplyText (initialUserMessage)
-        );
-        postUserMessage ({
-          msgType: type,
-          msgBody: initialUserMessage
-        });
-      }
+      // Once bot input is processed, show the footer
+      handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
     };
 
     /**
@@ -460,8 +432,6 @@ define ("actions/chatView",
      * @param {Object} latestMessage - latest message in message list
      */
     const handleLatestMessage = (latestMessage) => {
-      // @TODO - If the bot control messages are not present in same poller, we
-      // need to handle that case as footer is dependant on it.
       const {dispatch} = store;
       const {
         type,
@@ -470,15 +440,21 @@ define ("actions/chatView",
 
       switch (type) {
         case MESSAGE_TYPE.BOT_STARTED:
-          dispatch (toggleSystemTyping (true));
+          // If the last message in poller is bot start
+          // a] hide the footer
+          handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
           break;
 
         case MESSAGE_TYPE.BOT_ENDED:
-          const actionsToDispatch = [resetUserInput ()];
-          if (!hasNextBot) {
-            actionsToDispatch.push (setChatViewFooter (ACTIVE_FOOTER.REPLY));
+          // If the last message in poller is bot end
+          // a] reset previous user input data and
+          // b] depending on whether next step is bot, hide or show the footer
+          dispatch (resetUserInput ());
+          if (hasNextBot) {
+            handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+          } else {
+            handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
           }
-          dispatch (batchActions (actionsToDispatch));
           break;
 
         default:
@@ -686,14 +662,14 @@ define ("actions/chatView",
     };
 
     /**
-     * Handle initial user message
+     * Handle create preIssue for initial user message
      * If first user message is set through api and issue is not active then
      * create new preIssue
      * @param {Object} config
      * @param {Number} config.issueCursor - issue cursor
      * @returns {Boolean} - whether create preIssue is called
      */
-    const handleInitialUserMessage = (config) => {
+    const handleCreatePreIssueForInitialUserMessage = (config) => {
       let preIssueActionTriggered = false;
       // Return if poller has run more than once
       // We need to handle initial user message only on page refresh
@@ -716,6 +692,34 @@ define ("actions/chatView",
       }
 
       return preIssueActionTriggered;
+    };
+
+    /**
+     * Handle submit initial user message for bot step
+     * @param {String} messageType - Type of message
+     */
+    const handleSubmitInitialUserMessage = (messageType) => {
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          sdkConfigOptions: {
+            initialUserMessage
+          }
+        }
+      } = getState ();
+
+      // If message type is accept first user message (EMPTY_MSG_WITH_TEXT_INPUT)
+      // and initialUserMessage is set through api, do not wait for user input
+      // Directly send the message as bot response
+      if (messageType === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
+        dispatch (
+          updateReplyText (initialUserMessage)
+        );
+        postUserMessage ({
+          msgType: messageType,
+          msgBody: initialUserMessage
+        });
+      }
     };
 
     /**
@@ -783,11 +787,12 @@ define ("actions/chatView",
               },
               csat_received: isCsatSubmitted
             } = currentIssue;
+            const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
 
             if (!isIssueActive (issueState)) {
               stopPollingForMessages ();
 
-              const preIssueActionTriggered = handleInitialUserMessage ({
+              const preIssueActionTriggered = handleCreatePreIssueForInitialUserMessage ({
                 issueCursor
               });
 
@@ -796,7 +801,7 @@ define ("actions/chatView",
               }
             }
 
-            handleTAI ({
+            handlePreIssueToIssueConversion ({
               currentIssueType,
               previousIssueType
             });
@@ -814,12 +819,20 @@ define ("actions/chatView",
               ])
             );
 
-            handleAgentLiveUpdates ();
+            if (!isPreIssue) {
+              handleAgentLiveUpdates ();
+            }
 
             const messagesLength = messages.length;
             if (messagesLength) {
+              const latestMessage = messages [messagesLength - 1];
               const processedMessages = entityHelpers.getProcessedMessages (messages);
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
+
+              // Handle latest message only for preIssue
+              if (isPreIssue) {
+                handleLatestMessage (latestMessage);
+              }
 
               dispatch (
                 batchActions ([
@@ -834,7 +847,19 @@ define ("actions/chatView",
                   })
                 ])
               );
-              handleLatestMessage (messages [messagesLength - 1]);
+
+              if (isPreIssue) {
+                // Post user reply requires the messages to be added and user
+                // input to be set.
+                // This will only send first user message in api call.
+                // Final sequence :-
+                // 1. Handle latest message - show/hide footer
+                // 2. Add messages - Will scroll the messages to bottom
+                // 3. Handle submit first message - Actully fire xhr to post
+                //    user's first message to bot.
+                handleSubmitInitialUserMessage (latestMessage.type);
+              }
+
               handleUnreadMessages ({
                 messages: processedMessages
               });
@@ -863,23 +888,41 @@ define ("actions/chatView",
     };
 
     /**
-     * Handle typing indicator behaviour
+     * Handle TAI and enabling of chat footer
+     * @param {Boolean} showFooter - whether to hide TAI and show footer
+     */
+    const handlePreIssueFooter = (showFooter) => {
+      const {dispatch} = store;
+
+      if (showFooter) {
+        dispatch (batchActions ([
+          enableReplyBox (),
+          toggleSystemTyping (false)
+        ]));
+      } else {
+        dispatch (batchActions ([
+          disableReplyBox (),
+          toggleSystemTyping (true)
+        ]));
+      }
+    };
+
+    /**
+     * Handle conversion of preIssue to issue
      * @param {Object} config
      * @param {String} config.currentIssueType - current issue type
      * @param {String} config.previousIssueType - previous issue type
      */
-    const handleTAI = (config) => {
+    const handlePreIssueToIssueConversion = (config) => {
       const {dispatch} = store;
       const {currentIssueType, previousIssueType} = config;
-      const currentIssueIsPreIssue = currentIssueType === ISSUE_TYPE.PRE_ISSUE;
       const preIssueConvertedToIssue = (previousIssueType === ISSUE_TYPE.PRE_ISSUE &&
                                         currentIssueType === ISSUE_TYPE.ISSUE);
-      // Hide TAI if
-      // a] poller's current issue type is preIssue
-      //  OR
-      // b] preIssue is converted to issue
-      if (currentIssueIsPreIssue || preIssueConvertedToIssue) {
-        dispatch (toggleSystemTyping (false));
+
+      // If preIssue is converted to issue then reset user input and show footer
+      if (preIssueConvertedToIssue) {
+        dispatch (resetUserInput ());
+        handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
       }
     };
 
@@ -1403,8 +1446,6 @@ define ("actions/chatView",
           }
         } = getState ();
 
-        dispatch (disableReplyBox ());
-
         // Prepare XHR data
         const meta = {
           device_info: metadata
@@ -1449,6 +1490,10 @@ define ("actions/chatView",
 
         dispatch (actionCreators.toggleChatViewLoading (true));
 
+        // We need to hide footer while creating preIssue because the default
+        // value of input disabled is false, in store on page refresh.
+        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+
         xhr ({
           route: routes.postPreIssue (domain),
           data: xhrHelpers.getPreparedXhrData (xhrData),
@@ -1480,9 +1525,6 @@ define ("actions/chatView",
               }),
               actionCreators.toggleChatViewLoading (false)
             ]));
-          },
-          onEnd: () => {
-            dispatch (enableReplyBox ());
           }
         });
       };
