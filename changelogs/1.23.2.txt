@@ -1,0 +1,2 @@
+Changelog:
+Fix name and email not getting set for out of business hours issue
