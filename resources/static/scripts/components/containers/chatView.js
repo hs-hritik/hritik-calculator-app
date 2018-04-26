@@ -7,13 +7,12 @@
 define ("components/containers/chatView",
   [
     "components/chatView",
-    "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView",
     "helpers/common",
     "constants/chatView"
   ],
-  function (ChatView, entitySchema, chatViewActions, faqViewActions, commonHelpers,
+  function (ChatView, chatViewActions, faqViewActions, commonHelpers,
     chatViewConstants) {
     "use strict";
 
