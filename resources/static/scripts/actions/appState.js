@@ -1052,8 +1052,13 @@ define ("actions/appState",
       // from parent page for issue creation.
       // After the fetch is successful, the control flow will go to api js where
       // we set meta data in store and handle issue creation.
+      // Note - This is applicable only for chat view. For out of business hours
+      // view, we will load the view first and when user submits the form, we call
+      // get parent page info.
       // Ref :- api.js -> handleApis -> handleIssueCreation
-      postSdkMessage.getParentInfo ();
+      if (!commonHelpers.isOutOfBusinessHours ()) {
+        postSdkMessage.getParentInfo ();
+      }
     };
 
     /**

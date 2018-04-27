@@ -64,9 +64,9 @@ define ("components/starRating",
        * Render star icon
        */
       _renderStar (idx) {
-        const {value} = this.props;
+        const {value, editing} = this.props;
         const {hoverValue} = this.state;
-        const activeStarValue = hoverValue || value;
+        const activeStarValue = (editing && hoverValue) || value;
         const title = (idx === 1) ? "1 star" : `${idx} stars`;
 
         const active = (activeStarValue >= idx);
