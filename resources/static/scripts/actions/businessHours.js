@@ -132,7 +132,9 @@ define ("actions/businessHours",
             contactFormDetails: {
               attachmentsMeta,
               attachments,
-              message
+              message,
+              name,
+              email
             },
             inBusinessHours
           }
@@ -146,6 +148,7 @@ define ("actions/businessHours",
 
         const xhrData = {
           "message-body": messageValue,
+          "email": email.value.value,
           "in_business_hours": inBusinessHours,
           "device_language": browserUtils.getLanguage ()
         };
@@ -160,6 +163,10 @@ define ("actions/businessHours",
           };
         }
         xhrData.meta = JSON.stringify (meta);
+
+        if (name.enabled) {
+          xhrData.name = name.value.value;
+        }
 
         // If cif is set and contains atleast one field, add to xhr data
         if (cif && Object.keys (cif).length) {
