@@ -1,0 +1,7 @@
+Branches:
+feature/unification-fixes
+
+Changelog:
+Fix extra create issue call for non business hours
+Change footer behaviour for preIssue state
+Fix csat star hover issue while csat submit in progress
