@@ -487,7 +487,7 @@ define ("actions/chatView",
       // For the first fetch of issues list, add conversation start date message
       // at the start of message list. (This is a system info message)
       if (!issueCursor) {
-        const conversationStartDateMessage = chatViewHelpers.createMessage (
+        const conversationStartDateMessage = messageHelpers.createMessage (
           MESSAGE_TYPE.SYSTEM_INFO, {
             body: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
           }
@@ -923,7 +923,7 @@ define ("actions/chatView",
         if (!isCustomerMsg &&
             state !== MESSAGES_STATE.READ &&
             type !== MESSAGE_TYPE.SYSTEM_INFO &&
-            chatViewHelpers.isRenderableMessage (type)) {
+            messageHelpers.isRenderableMessage (type)) {
           finalUnreadCount++;
         }
       });
@@ -1032,7 +1032,7 @@ define ("actions/chatView",
         };
       } else {
         actionsToDispatch.push (toggleSystemTyping (true));
-        xhrData = chatViewHelpers.getPreparedMessageData ({
+        xhrData = messageHelpers.getPreparedMessageData ({
           input: userInput,
           message: getLatestMessage ()
         });
@@ -1446,7 +1446,7 @@ define ("actions/chatView",
           messageConfig,
           onAddMessage
         } = config;
-        const msg = chatViewHelpers.createMessage (messageType, messageConfig);
+        const msg = messageHelpers.createMessage (messageType, messageConfig);
 
         // As this message is created on frontend, it is already in processed format.
         // So, directly add message in message list.
