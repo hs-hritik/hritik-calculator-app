@@ -12,7 +12,6 @@ define ("actions/faqView",
     "constants/activeView",
     "constants/analytics",
     "gunpowder/utils/xhr",
-    "helpers/entitySchema",
     "helpers/entity",
     "helpers/xhr",
     "helpers/analytics",
@@ -20,7 +19,7 @@ define ("actions/faqView",
     "actions/batch"
   ],
   function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
-    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
+    xhr, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
     batchActions) {
     "use strict";
 
