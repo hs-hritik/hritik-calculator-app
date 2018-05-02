@@ -1,10 +1,10 @@
 /**
- * Entity related helpers.
+ * Message related helpers.
  * @author Manish Garg <manish@helpshift.com>
  * @created June 14, 2017
  */
 
-define ("helpers/entity",
+define ("helpers/message",
   [
     "constants/message"
   ],

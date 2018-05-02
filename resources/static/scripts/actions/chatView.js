@@ -20,7 +20,7 @@ define ("actions/chatView",
     "gunpowder/utils/date",
     "actions/batch",
     "actions/actionCreators",
-    "helpers/entity",
+    "helpers/message",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/audio",
@@ -34,7 +34,7 @@ define ("actions/chatView",
   ],
   function (store, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS, ACTIVE_VIEW,
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
-    xhr, arrayUtils, dateUtils, batchActions, actionCreators, entityHelpers,
+    xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
     analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
@@ -100,7 +100,7 @@ define ("actions/chatView",
       let processedMessages = messages;
 
       if (process) {
-        processedMessages = entityHelpers.getProcessedMessages (messages);
+        processedMessages = messageHelpers.getProcessedMessages (messages);
       }
 
       return {
@@ -789,7 +789,7 @@ define ("actions/chatView",
             const messagesLength = messages.length;
             if (messagesLength) {
               const latestMessage = messages [messagesLength - 1];
-              const processedMessages = entityHelpers.getProcessedMessages (messages);
+              const processedMessages = messageHelpers.getProcessedMessages (messages);
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
               // Handle latest message only for preIssue
