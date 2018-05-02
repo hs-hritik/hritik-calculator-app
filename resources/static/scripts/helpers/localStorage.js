@@ -6,11 +6,10 @@
 
 define ("helpers/localStorage",
   [
-    "constants/message",
     "gunpowder/utils/localStorage",
     "gunpowder/utils/object"
   ],
-  function (MESSAGE_CONSTANTS, lsUtils, objUtils) {
+  function (lsUtils, objUtils) {
     "use strict";
 
     const KEYS = {
@@ -21,40 +20,19 @@ define ("helpers/localStorage",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
       USER_PROFILE_ID: "upi",
-      ENTITIES_ISSUES: "ei",
-      ENTITIES_MESSAGES: "em",
       ISSUE_STATE: "is",
-      PRE_CHAT_FEATURE_INDEX: "pcfi",
-      PRE_CHAT_FEATURE_STATE: "pcfs",
-      INFO_BOT_CURRENT_FIELD: "ibcf",
-      END_USER_FIRST_MSG_ID: "eufmi",
       LAST_ACTIVITY_TIME: "lat",
       REPLY_TEXT: "rt",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
       READ_FAQ_LIST: "rfl",
-      INFO_BOT_REQUESTED_TIMESTAMP: "ibrt",
       CONVERSATION_ID: "ci"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
-
-    // The keys which are required after the unification release.
-    const VALID_KEYS = [
-      "USER_ID",
-      "DEVICE_ID",
-      "ANON_USER_ID",
-      "LAST_ACTIVITY_TIME",
-      "SITE_ACTIVITY_START_TIME",
-      "PROACTIVE_CHAT_HAS_TRIGGERED",
-      "SUGGESTED_FAQ_READ_TRACKED",
-      "READ_FAQ_LIST"
-    ];
-
-    const {ATTACHMENT} = MESSAGE_CONSTANTS.TYPE;
 
     /**
      * A helper function to check if a localstorage key should be
@@ -137,56 +115,6 @@ define ("helpers/localStorage",
     const removeAnonUserId = () => lsUtils.removeItem (KEYS.ANON_USER_ID);
 
     /**
-     * Returns the entities saved in localstorage.
-     * @param {String} entityType
-     * @returns {Object} - entities
-     */
-    const getEntities = (entityType) => {
-      const entityKey = `ENTITIES_${entityType}`;
-      return lsUtils.getItem (KEYS [entityKey], true);
-    };
-
-    /**
-     * Set the given entities in localstorage.
-     * @param {String} entityType
-     * @param {Object} entities - the entities which have to be saved to localstorage.
-     */
-    const setEntities = (entityType, entities = {}) => {
-      const entityKey = `ENTITIES_${entityType}`;
-      const currentEntities = getEntities (entityType) || {};
-      const newEntities = objUtils.shallowMerge (currentEntities, entities);
-      lsUtils.setItem (KEYS [entityKey], newEntities);
-    };
-
-    /**
-     * Get the active issue id.
-     * @returns {String} - active issue id
-     */
-    const getActiveIssueId = () => lsUtils.getItem (KEYS.ACTIVE_ISSUE_ID);
-
-    /**
-     * Set the active issue id.
-     * @param {String} id - active issue id
-     */
-    const setActiveIssueId = (id) => {
-      lsUtils.setItem (KEYS.ACTIVE_ISSUE_ID, id);
-    };
-
-    /**
-     * Get the internal issue ID.
-     * @returns {string}
-     */
-    const getInternalIssueId = () => lsUtils.getItem (KEYS.INTERNAL_ISSUE_ID);
-
-    /**
-     * Set the internal issue ID.
-     * @param {string} id
-     */
-    const setInternalIssueId = (id) => {
-      lsUtils.setItem (KEYS.INTERNAL_ISSUE_ID, id);
-    };
-
-    /**
      * Get the user profile id.
      * @returns {String} - profile id
      */
@@ -199,62 +127,6 @@ define ("helpers/localStorage",
     const setUserProfileId = (profileId) => {
       lsUtils.setItem (KEYS.USER_PROFILE_ID, profileId);
     };
-
-    /**
-     * Set the issue state.
-     * @param {String} state - issue state
-     */
-    const setIssueState = (state) => {
-      lsUtils.setItem (KEYS.ISSUE_STATE, state);
-    };
-
-    /**
-     * Get the issue state.
-     * @returns {String} - issue state
-     */
-    const getIssueState = () => lsUtils.getItem (KEYS.ISSUE_STATE);
-
-    /**
-     * Set pre chat feature index.
-     * @param {Number} index
-     */
-    const setPreChatFeatureIndex = (index) => {
-      lsUtils.setItem (KEYS.PRE_CHAT_FEATURE_INDEX, index);
-    };
-
-    /**
-     * Get pre chat feature index.
-     * @returns {Number} - index
-     */
-    const getPreChatFeatureIndex = () => lsUtils.getItem (KEYS.PRE_CHAT_FEATURE_INDEX, true);
-
-    /**
-     * Set pre chat feature state.
-     * @param {Object} state - pre chat feature state
-     */
-    const setPreChatFeatureState = (state) => {
-      lsUtils.setItem (KEYS.PRE_CHAT_FEATURE_STATE, state);
-    };
-
-    /**
-     * Get pre chat feature state.
-     * @returns {Object} - pre chat feature state
-     */
-    const getPreChatFeatureState = () => lsUtils.getItem (KEYS.PRE_CHAT_FEATURE_STATE, true);
-
-    /**
-     * Set info bot current field.
-     * @param {String} field
-     */
-    const setInfoBotCurrentField = (field) => {
-      lsUtils.setItem (KEYS.INFO_BOT_CURRENT_FIELD, field);
-    };
-
-    /**
-     * Get info bot current field.
-     * @returns {String} - info bot current field
-     */
-    const getInfoBotCurrentField = () => lsUtils.getItem (KEYS.INFO_BOT_CURRENT_FIELD);
 
     /**
      * Set last activity time to current time.
@@ -270,34 +142,6 @@ define ("helpers/localStorage",
     const getLastActivityTime = () => lsUtils.getItem (KEYS.LAST_ACTIVITY_TIME, true);
 
     /**
-     * Set reply text.
-     * @param {String} value
-     */
-    const setReplyText = (value) => {
-      lsUtils.setItem (KEYS.REPLY_TEXT, value);
-    };
-
-    /**
-     * Get reply text.
-     * @returns {String} - reply text
-     */
-    const getReplyText = () => lsUtils.getItem (KEYS.REPLY_TEXT);
-
-    /**
-     * Set end user first message id.
-     * @param {String} id
-     */
-    const setEndUserFirstMsgId = (id) => {
-      lsUtils.setItem (KEYS.END_USER_FIRST_MSG_ID, id);
-    };
-
-    /**
-     * Get end user first message id.
-     * @returns {String} id
-     */
-    const getEndUserFirstMsgId = () => lsUtils.getItem (KEYS.END_USER_FIRST_MSG_ID);
-
-    /**
      * Clear previously saved state from the localstorage.
      * @param {Object} [options]
      * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
@@ -311,75 +155,6 @@ define ("helpers/localStorage",
           lsUtils.removeItem (KEYS [key]);
         }
       });
-    };
-
-    /**
-     * Delete all the local storage fields which were being used before unification.
-     */
-    const clearOldStorage = () => {
-      objUtils.forEachKey (KEYS, (key, value) => {
-        if (VALID_KEYS.indexOf (key) === -1) {
-          lsUtils.removeItem (value);
-        }
-      });
-    };
-
-    /**
-     * Removes dummy messages from local storage
-     * a] Remove dummy message data from 'messages' entity
-     * b] Remove dummy message id from 'issue->messages'
-     */
-    const removeDummyMessages = () => {
-      const issueId = getActiveIssueId ();
-      const messagesEntities = getEntities ("MESSAGES") || {};
-      const newMessageEntities = {};
-      const dummyMessageIds = [];
-
-      // This function performs two tasks
-      // a] Remove dummy messages from 'message' entity
-      //    - Loop on all the messages from message entity.
-      //    - If there are any dummy messages, group their ids in an array
-      // b] Remove dummy message ids from 'issue->messages'
-      //    - Loop on dummy message ids array and check that message id
-      //      is present in 'issue->message'
-      //    - If present, skip adding in new message entity i.e. remove dummy message ids
-
-      // a] Remove dummy message from 'message' entity
-      objUtils.forEachKey (messagesEntities, (key, messageEntity) => {
-        // For now we are removing message of type attachment only
-        // If required add a type or some other identifier to remove those
-        // messages after page refresh
-        if (messageEntity.type === ATTACHMENT) {
-          dummyMessageIds.push (key);
-        } else {
-          newMessageEntities [key] = messageEntity;
-        }
-      });
-
-      // If dummy messages are not present, then local storage is clean.
-      // No need to further process anything!
-      if (!dummyMessageIds.length) {
-        return;
-      }
-
-      lsUtils.setItem (KEYS.ENTITIES_MESSAGES, newMessageEntities);
-
-      // b] Remove dummy message id from 'issue->message'
-      const issueEntities = getEntities ("ISSUES") || {};
-      const issueMessages = issueEntities [issueId].messages;
-
-      dummyMessageIds.forEach ((dummyIssueId) => {
-        const dummyIssueIndex = issueMessages.indexOf (dummyIssueId);
-        if (dummyIssueIndex !== -1) {
-          issueMessages.splice (dummyIssueIndex, 1);
-        }
-      });
-
-      const newIssueEntities = objUtils.setIn (
-        issueEntities, issueMessages, [issueId, "messages"]
-      );
-
-      lsUtils.setItem (KEYS.ENTITIES_ISSUES, newIssueEntities);
     };
 
     /**
@@ -447,30 +222,11 @@ define ("helpers/localStorage",
       getAnonUserId,
       setAnonUserId,
       removeAnonUserId,
-      getEntities,
-      setEntities,
       reset,
-      getActiveIssueId,
-      setActiveIssueId,
-      getInternalIssueId,
-      setInternalIssueId,
       getUserProfileId,
       setUserProfileId,
-      setIssueState,
-      getIssueState,
-      setPreChatFeatureIndex,
-      getPreChatFeatureIndex,
-      setPreChatFeatureState,
-      getPreChatFeatureState,
-      setInfoBotCurrentField,
-      getInfoBotCurrentField,
       setLastActivityTime,
       getLastActivityTime,
-      setReplyText,
-      getReplyText,
-      setEndUserFirstMsgId,
-      getEndUserFirstMsgId,
-      removeDummyMessages,
       setSiteActivityStartTime,
       getSiteActivityStartTime,
       setProactiveChatHasTriggered,
@@ -479,7 +235,6 @@ define ("helpers/localStorage",
       getSuggestedFaqReadTracked,
       setReadFaqList,
       getReadFaqList,
-      getIdentifier,
-      clearOldStorage
+      getIdentifier
     };
   });

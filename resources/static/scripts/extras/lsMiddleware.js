@@ -8,11 +8,10 @@
 define ("extras/lsMiddleware",
   [
     "constants/actionTypes",
-    "gunpowder/utils/object",
     "gunpowder/utils/throttle",
     "helpers/localStorage"
   ],
-  function (ACTION_TYPES, objUtils, throttle, lsHelpers) {
+  function (ACTION_TYPES, throttle, lsHelpers) {
     "use strict";
 
     // @TODO: Confirm what is the correct timeout for saving the
@@ -25,11 +24,6 @@ define ("extras/lsMiddleware",
         leading: false
       }
     );
-
-    const REPLY_TEXT_THROTTLE_TIME = 3000;           // 3 seconds
-    const throttledSetReplyText = throttle (lsHelpers.setReplyText, REPLY_TEXT_THROTTLE_TIME, {
-      leading: false
-    });
 
     /**
      * Save the required state in localStorage.
@@ -46,25 +40,12 @@ define ("extras/lsMiddleware",
           break;
 
         case ACTION_TYPES.ADD_MESSAGES:
-        case ACTION_TYPES.SET_MESSAGES:
           const hasUserMessage = action.messages.some ((m) => m.isCustomerMsg);
           const conversationHasStarted = state.appState.conversationStarted;
 
           if (hasUserMessage && conversationHasStarted) {
             throttledSetLastActivityTime ();
           }
-          break;
-
-        case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
-          lsHelpers.setActiveIssueId (action.id);
-          break;
-
-        case ACTION_TYPES.SET_INTERNAL_ISSUE_ID:
-          lsHelpers.setInternalIssueId (action.id);
-          break;
-
-        case ACTION_TYPES.UPDATE_REPLY_TEXT:
-          throttledSetReplyText (action.value);
           break;
 
         case ACTION_TYPES.SET_USER_PROFILE_ID:
