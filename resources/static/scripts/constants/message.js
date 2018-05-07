@@ -100,19 +100,6 @@ define ("constants/message",
       SOLUTION_REJECTED: "Did not accept the solution"
     };
 
-    // Typing timeout (in milliseconds) for different system generated message.
-    const TYPING_TIMEOUT = {
-      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 1200,
-      INFO_BOT_REQUEST: 1200,
-      INFO_BOT_FIELD: 1200,
-      FAQ_SUGGESTIONS_PROBLEM_SOLVED: 1200
-    };
-
-    // Timeout (in milliseconds) for different system generated message.
-    const TIMEOUT = {
-      FAQ_SUGGESTIONS_ADDITIONAL_HELP: 600
-    };
-
     const ORIGIN = {
       ADMIN: "admin"
     };
@@ -123,8 +110,6 @@ define ("constants/message",
 
     return {
       TYPE,
-      TIMEOUT,
-      TYPING_TIMEOUT,
       ORIGIN,
       STATE,
       BODY,
