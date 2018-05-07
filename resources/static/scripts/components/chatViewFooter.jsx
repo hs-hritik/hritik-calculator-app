@@ -140,14 +140,8 @@ define ("components/chatViewFooter",
           case ACTIVE_FOOTER.SOLUTION_REJECTED:
             return this._renderUserInput ();
 
-          case ACTIVE_FOOTER.INFO_BOT:
-            return this._renderInfoBotFooter ();
-
           case ACTIVE_FOOTER.CLOSED:
             return this._renderCloseConversationFooter ();
-
-          case ACTIVE_FOOTER.BLOCKED:
-            return this._renderBlockedFooter ();
 
           case ACTIVE_FOOTER.CSAT:
             return this._renderCsatFooter ();
@@ -361,15 +355,6 @@ define ("components/chatViewFooter",
               </button>
             </div>
           </div>
-        );
-      },
-
-      /**
-       * Render blocked footer
-       */
-      _renderBlockedFooter () {
-        return (
-          <div className="hs-chat-footer" />
         );
       },
 
