@@ -16,7 +16,6 @@ define ("helpers/localStorage",
       USER_ID: "ui",
       DEVICE_ID: "di",
       ANON_USER_ID: "aui",
-      IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
       ISSUE_STATE: "is",
@@ -68,12 +67,6 @@ define ("helpers/localStorage",
     const setUserId = (userId) => {
       lsUtils.setItem (KEYS.USER_ID, userId);
     };
-
-    /**
-     * Get identifier
-     * @returns {String} - identifier
-     */
-    const getIdentifier = () => lsUtils.getItem (KEYS.IDENTIFIER);
 
     /**
      * Remove userId
@@ -217,7 +210,6 @@ define ("helpers/localStorage",
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
       setReadFaqList,
-      getReadFaqList,
-      getIdentifier
+      getReadFaqList
     };
   });
