@@ -9,13 +9,14 @@ define ("components/chatViewFooter",
     "components/starRating",
     "components/containers/replyBox",
     "components/commons/fileInput",
+    "components/commons/skipButtonWrapper",
     "constants/chatView",
     "constants/keyCodes",
     "constants/propTypes",
     "gunpowder/utils/classes"
   ],
-  function (StarRating, ReplyBoxContainer, FileInput, CHAT_VIEW_CONSTANTS, KEY_CODES,
-    customPropTypes, classes) {
+  function (StarRating, ReplyBoxContainer, FileInput, SkipButtonWrapper,
+    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -92,21 +93,34 @@ define ("components/chatViewFooter",
           allowFullScreen,
           userInput: {
             type,
-            disabled
+            disabled,
+            required,
+            skipLabel
           },
           failureConfig,
-          issueIsCreated
+          issueIsCreated,
+          onSkipUserInput
         } = this.props;
 
         // Hide footer only if
         // a] There is no failure AND 1. user input type is pill select OR
-        //                             2. user input is disabled
+        //                            2. user input is disabled
         //    AND
         // b] issue is not created i.e. current issue type is preIssue
         if (!failureConfig &&
             (type === USER_INPUT_TYPES.PILL_SELECT || disabled) &&
             !issueIsCreated) {
           return null;
+        }
+
+        let skipBtnWrapperEl = null;
+
+        if (!required) {
+          skipBtnWrapperEl = (
+            <SkipButtonWrapper label={skipLabel}
+                               className="hs-chat-footer__skip-btn-wrapper"
+                               onClick={onSkipUserInput} />
+          );
         }
 
         const footerClasses = classes ("hs-footer", {
@@ -118,6 +132,7 @@ define ("components/chatViewFooter",
 
         return (
           <div className={footerClasses}>
+            {skipBtnWrapperEl}
             {this._renderFooterComponent ()}
           </div>
         );
@@ -157,6 +172,9 @@ define ("components/chatViewFooter",
         }
       },
 
+      /**
+       * Render failure layout
+       */
       _renderFailure () {
         const {isLoading, message} = this.props.failureConfig;
 
@@ -178,6 +196,9 @@ define ("components/chatViewFooter",
         );
       },
 
+      /**
+       * Render failure retry button
+       */
       _renderRetryBtn () {
         if (!this.props.failureConfig.allowRetry) {
           return null;
@@ -490,13 +511,6 @@ define ("components/chatViewFooter",
         } else if (ev.keyCode === KEY_CODES.ENTER) {
           this.props.onSubmitReply ();
         }
-      },
-
-      /**
-       * Click handler for skip input button
-       */
-      _onSkipUserInputClick () {
-        this.props.onSkipUserInput ();
       },
 
       /**

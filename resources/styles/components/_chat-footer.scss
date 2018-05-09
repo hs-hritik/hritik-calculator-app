@@ -12,6 +12,7 @@
 
 @include component(chat-footer) {
 
+  $chat-widget-bg-color: var(--hs-chat-widget-bg-color);
   $form-bg-color: var(--hs-form-bg-color);
   $form-border-color: var(--hs-form-border-color);
   $form-primary-text-color: var(--hs-form-primary-text-color);
@@ -130,6 +131,23 @@
 
     &__heading-text {
       flex-basis: 80%;
+    }
+
+    &__skip-btn-wrapper {
+      position: absolute;
+      top: -55px;
+      right: 16px;
+      display: flex;
+      padding: gutter(12);
+      background-color: $chat-widget-bg-color;
+      border-top-left-radius: 24px;
+    }
+
+    &__skip-btn {
+      align-self: flex-end;
+      min-width: auto;
+      margin: gutter(0);
+      font-size: font-size(body, small);
     }
 
     /// form invalid modifier is used to disable elements
