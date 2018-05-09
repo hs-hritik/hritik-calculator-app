@@ -99,5 +99,11 @@
       border-color: $form-accent-color;
       border-radius: 16px;
     }
+
+    &__skip-btn-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: gutter(4);
+    }
   }
 }

@@ -79,6 +79,12 @@ define ("components/containers/chatView",
         },
         errorActionHandler: () => {
           dispatch (chatViewActions.handleErrorAction ());
+        },
+        onSkipUserInput: () => {
+          dispatch (chatViewActions.updateUserInputData ({
+            skipped: true
+          }));
+          dispatch (chatViewActions.submitReply ());
         }
       };
     };

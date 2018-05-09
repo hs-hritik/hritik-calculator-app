@@ -37,6 +37,7 @@ define ("components/chatView",
         userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onSkipUserInput: PropTypes.func,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -90,6 +91,7 @@ define ("components/chatView",
           onPillOptionSelect,
           onRetryAttachmentClick,
           onSuggestedFaqClick,
+          onSkipUserInput,
           userInput,
           issueIsCreated,
           loading,
@@ -111,19 +113,20 @@ define ("components/chatView",
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}
                       enabled={issueIsCreated} >
-              <div className="hs-view__content">
-                <MessageList messages={messages}
-                             isTyping={isTyping}
-                             showAgentNickname={showAgentNickname}
-                             text={text}
-                             onPillOptionSelect={onPillOptionSelect}
-                             onRetryAttachmentClick={onRetryAttachmentClick}
-                             onSuggestedFaqClick={onSuggestedFaqClick}
-                             hasFailure={this.props.hasFailure}
-                             userInput={userInput} />
-              </div>
-              <ChatViewFooterContainer />
-            </DnDWrapper>
+            <div className="hs-view__content">
+              <MessageList messages={messages}
+                            isTyping={isTyping}
+                            showAgentNickname={showAgentNickname}
+                            text={text}
+                            onSkipUserInput={onSkipUserInput}
+                            onPillOptionSelect={onPillOptionSelect}
+                            onRetryAttachmentClick={onRetryAttachmentClick}
+                            onSuggestedFaqClick={onSuggestedFaqClick}
+                            hasFailure={this.props.hasFailure}
+                            userInput={userInput} />
+            </div>
+            <ChatViewFooterContainer />
+          </DnDWrapper>
         );
       },
 
