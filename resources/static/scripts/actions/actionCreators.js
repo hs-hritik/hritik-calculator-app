@@ -22,16 +22,6 @@ define ("actions/actionCreators",
     });
 
     /**
-     * Return action to set user profile id.
-     * @param {String} profileId - user profile id
-     * @returns {Object} - the action object
-     */
-    const setUserProfileId = (profileId) => ({
-      type: ACTION_TYPES.SET_USER_PROFILE_ID,
-      profileId
-    });
-
-    /**
      * Return action to toggle agent typing
      * @param {Boolean} typing
      * @returns {Object} - the action object
@@ -196,7 +186,6 @@ define ("actions/actionCreators",
 
     return {
       updateActiveView,
-      setUserProfileId,
       toggleAgentTyping,
       setMobileInfo,
       reset,

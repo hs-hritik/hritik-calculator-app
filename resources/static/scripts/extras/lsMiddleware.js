@@ -48,10 +48,6 @@ define ("extras/lsMiddleware",
           }
           break;
 
-        case ACTION_TYPES.SET_USER_PROFILE_ID:
-          lsHelpers.setUserProfileId (action.profileId);
-          break;
-
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
           // Proactive chat actions are to be executed based on the time on page
           // and time on site rules.

@@ -19,7 +19,6 @@ define ("helpers/localStorage",
       IDENTIFIER: "i",
       ACTIVE_ISSUE_ID: "aii",
       INTERNAL_ISSUE_ID: "iii",
-      USER_PROFILE_ID: "upi",
       ISSUE_STATE: "is",
       LAST_ACTIVITY_TIME: "lat",
       REPLY_TEXT: "rt",
@@ -30,7 +29,7 @@ define ("helpers/localStorage",
       CONVERSATION_ID: "ci"
     };
 
-    const USER_KEYS = ["USER_ID", "ANON_USER_ID", "USER_PROFILE_ID"];
+    const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
 
@@ -113,20 +112,6 @@ define ("helpers/localStorage",
      * Remove anon user id
      */
     const removeAnonUserId = () => lsUtils.removeItem (KEYS.ANON_USER_ID);
-
-    /**
-     * Get the user profile id.
-     * @returns {String} - profile id
-     */
-    const getUserProfileId = () => lsUtils.getItem (KEYS.USER_PROFILE_ID);
-
-    /**
-     * Set the user profile id.
-     * @param {String} profileId
-     */
-    const setUserProfileId = (profileId) => {
-      lsUtils.setItem (KEYS.USER_PROFILE_ID, profileId);
-    };
 
     /**
      * Set last activity time to current time.
@@ -223,8 +208,6 @@ define ("helpers/localStorage",
       setAnonUserId,
       removeAnonUserId,
       reset,
-      getUserProfileId,
-      setUserProfileId,
       setLastActivityTime,
       getLastActivityTime,
       setSiteActivityStartTime,

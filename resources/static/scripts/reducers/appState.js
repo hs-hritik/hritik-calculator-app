@@ -39,7 +39,6 @@ define ("reducers/appState",
       userName: "",
       userEmail: "",
       userAuthToken: "",
-      userProfileId: "",
 
       // Backend flag to represent if any issue exists
       issueExists: false,
@@ -204,11 +203,6 @@ define ("reducers/appState",
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           return update (state, {
             issueState: {$set: action.state}
-          });
-
-        case ACTION_TYPES.SET_USER_PROFILE_ID:
-          return update (state, {
-            userProfileId: {$set: action.profileId}
           });
 
         case ACTION_TYPES.SET_MOBILE_INFO:
