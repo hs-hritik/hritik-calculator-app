@@ -16,16 +16,11 @@ define ("helpers/localStorage",
       USER_ID: "ui",
       DEVICE_ID: "di",
       ANON_USER_ID: "aui",
-      ACTIVE_ISSUE_ID: "aii",
-      INTERNAL_ISSUE_ID: "iii",
-      ISSUE_STATE: "is",
       LAST_ACTIVITY_TIME: "lat",
-      REPLY_TEXT: "rt",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      READ_FAQ_LIST: "rfl",
-      CONVERSATION_ID: "ci"
+      READ_FAQ_LIST: "rfl"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
