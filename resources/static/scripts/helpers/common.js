@@ -32,6 +32,15 @@ define ("helpers/common",
       OFFLINE_BEHAVIOUR
     } = bhConstants;
 
+    const DOES_BROWSER_SUPPORT_DATE_INPUT = (() => {
+      const dateInput = document.createElement ("input");
+      dateInput.setAttribute ("type", "date");
+
+      // If browser doesn't support input type="date", the type will be "text"
+      // and below comparison will return false
+      return (dateInput.type === "date");
+    }) ();
+
     /**
      * Determine whether out of business hours logic is applicable based on if
      * the feature is enabled and the current time falls in the out of business
@@ -132,6 +141,89 @@ define ("helpers/common",
     const isEmailValid = (value) => EMAIL_REGEX.test (value);
 
     /**
+     * Predicate to return whether date format is valid
+     * Accepted date formats are
+     * 1. "dd/mm/yyyy" (date input not supported)
+     * 2. "yyyy-mm-dd" (date input supported)
+     * @param {String} dateValue - value of date in string
+     * @returns {Boolean} - date format is valid
+     */
+    const _isDateFormatValid = (dateValue) => {
+      let formatRegEx = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+
+      if (isDateInputSupported ()) {
+        formatRegEx = /^\d{4}-\d{1,2}-\d{1,2}$/;
+      }
+
+      return formatRegEx.test (dateValue);
+    };
+
+    /**
+     * Returns individual date parts config object - day, month and year
+     * @param {String} dateValue - value of date in string
+     * @returns {Object} - object containing date parts
+     */
+    const _getDateParts = (dateValue) => {
+      let parts = "";
+      let day = "";
+      let month = "";
+      let year = "";
+
+      // If input type="date" is supported by the browser then the format will
+      // always be "yyyy-mm-dd", else we are accepting date from user in textfield
+      // in "dd/mm/yyy" format.
+      // Ref :- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
+
+      if (isDateInputSupported ()) {
+        parts = dateValue.split ("-");
+        day = parseInt (parts[2], 10);
+        month = parseInt (parts[1], 10);
+        year = parseInt (parts[0], 10);
+      } else {
+        parts = dateValue.split ("/");
+        day = parseInt (parts[0], 10);
+        month = parseInt (parts[1], 10);
+        year = parseInt (parts[2], 10);
+      }
+
+      return {
+        day,
+        month,
+        year
+      };
+    };
+
+    /**
+     * Predicate to return whether given value is valid date
+     * @param {String} val - date value
+     * @returns {Boolean} - date is valid
+     */
+    const isDateValid = (val) => {
+      const dateFormatIsValid = _isDateFormatValid (val);
+
+      if (!dateFormatIsValid) {
+        return false;
+      }
+
+      const {day, month, year} = _getDateParts (val);
+
+      // Check the ranges of month and year
+      if (year < 1000 || year > 3000 || month === 0 || month > 12) {
+        return false;
+      }
+
+      const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      // Adjust for leap years
+      if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)) {
+        monthLength[1] = 29;
+      }
+
+      // Check the range of the day
+      return (day > 0 && day <= monthLength[month - 1]);
+    };
+
+    /**
      * Validate userId (passed with `helpshiftConfig`).
      * A valid userId
      * should be <= 750 characters
@@ -172,6 +264,16 @@ define ("helpers/common",
       return "";
     };
 
+    /**
+     * Returns whether current browser supports input of type date
+     */
+    // @TODO - Move this function to gunpowder
+    const isDateInputSupported = () => {
+      // In order to avoid creating DOM element each time this function is called,
+      // we are using computed value
+      return DOES_BROWSER_SUPPORT_DATE_INPUT;
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -179,8 +281,10 @@ define ("helpers/common",
       getSuggestedFaqs,
       getAnonUserId,
       isEmailValid,
+      isDateValid,
       isUserIdValid,
       isIssueCreated,
-      getFaqSuggestionMessageId
+      getFaqSuggestionMessageId,
+      isDateInputSupported
     };
   });
