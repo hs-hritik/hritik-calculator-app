@@ -77,10 +77,12 @@ define ("extras/api",
      * Set the initial data to the app state.
      * @param {Object} data
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
+     * @param {Object} data.parentPageInfo - Data (title, body) of the client website
      * @param {string} data.trigger - The source that triggered setting the config
      */
     const setConfig = (data) => {
       store.dispatch (appStateActions.setClientConfig (data.clientConfig));
+      store.dispatch (appStateActions.setMetadata (data.parentPageInfo));
       store.dispatch (appStateActions.setDeviceId ());
       store.dispatch (appStateActions.setAnonUserId (data.clientConfig.userId));
       store.dispatch (appStateActions.setWmConfig ({
@@ -175,18 +177,6 @@ define ("extras/api",
       store.dispatch (appStateActions.setInitialUserMsg (message));
     };
 
-    /**
-     * Dispatches appropriate action depending on the current chat view
-     */
-    const handleIssueCreation = () => {
-      if (commonHelpers.isOutOfBusinessHours ()) {
-        store.dispatch (businessHoursActions.createIssueOutOfBusinessHours ());
-      } else {
-        store.dispatch (appStateActions.setConversationStarted ());
-        store.dispatch (chatViewActions.createPreIssue ());
-      }
-    };
-
     const handleApis = (type, data) => {
       switch (type) {
         case EVENT_TYPES.CMD_SET_CONFIG:
@@ -210,17 +200,7 @@ define ("extras/api",
         case EVENT_TYPES.CMD_REPLACE_CIF:
           store.dispatch (appStateActions.replaceCif (data.cifData));
           break;
-        case EVENT_TYPES.CMD_SET_PARENT_PAGE_INFO:
-          // This is actual effect of event
-          store.dispatch (appStateActions.setMetadata (data));
-          // This is side effect of event.
-          // @TODO: Handle such side effects at more appropriate place.
-          handleIssueCreation ();
-          break;
         case EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES:
-          if (data.parentPageInfo) {
-            store.dispatch (appStateActions.setParentPageInfo (data.parentPageInfo));
-          }
           store.dispatch (appStateActions.setProactiveChatRules (data.proactiveChatRules));
           store.dispatch (appStateActions.executeProactiveChatRules (data));
           break;
