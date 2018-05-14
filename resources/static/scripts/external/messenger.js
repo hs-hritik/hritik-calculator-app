@@ -724,8 +724,12 @@
    * Entry point for rendering iframe on the client page.
    */
   const init = () => {
-    // If required features are not supported by browser, don't load iframes
-    if (!isWebSdkSupported ()) {
+    // If browser features required to run web chat isn't available on this
+    // browser OR
+    // if a web chat iframe already exists on the host web page,
+    // no-op and return.
+    const webChatIframe = doc.getElementById ("hs-web-sdk-iframe");
+    if (!isWebSdkSupported () || webChatIframe) {
       return;
     }
 

@@ -1,0 +1,5 @@
+Branches:
+feature/solo-iframe
+
+Changelog:
+Do not create more than one web chat iframe on the client page
