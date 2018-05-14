@@ -9,7 +9,6 @@ define ("actions/appState",
     "constants/actionTypes",
     "constants/routes",
     "constants/appState",
-    "constants/chatView",
     "constants/uiConfig",
     "constants/analytics",
     "constants/activeView",
@@ -22,37 +21,29 @@ define ("actions/appState",
     "helpers/analytics",
     "helpers/common",
     "gunpowder/utils/xhr",
-    "gunpowder/utils/object",
     "gunpowder/utils/uuid",
-    "gunpowder/utils/array",
     "store",
     "actions/chatView",
     "actions/ui",
     "actions/batch",
     "actions/actionCreators",
-    "utils/postMessage",
     "utils/browser",
     "utils/dataType",
     "extras/postSdkMessage"
   ],
-  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, CHAT_VIEW_CONSTANTS,
-    UI_CONFIG_CONSTANTS, analyticsConstants, ACTIVE_VIEW,
-    xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers, audioHelpers,
-    proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers, xhr, objUtils,
-    getUuid, arrayUtils, store, chatViewActions, uiActions,
-    batchActions, actionCreators, postMessage, browserUtils, dataTypeUtils, postSdkMessage) {
+  function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
+    analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
+    audioHelpers, proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers,
+    xhr, getUuid, store, chatViewActions, uiActions, batchActions, actionCreators,
+    browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
     const SKIP_PLATFORM_ID = true;
 
     const {
-      ISSUE_STATE,
       ANON_USER_RESET_TIMEOUT,
-      PRE_CHAT_STATE,
-      PRE_CHAT_FEATURES,
       TRIGGER,
-      ISSUE_STATE_RESET,
-      OLD_ISSUE_STATE
+      ISSUE_STATE_RESET
     } = APP_STATE_CONSTANTS;
 
     const {
@@ -160,17 +151,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set issue exists flag
-     * @returns {Object} - Action
-     */
-    const setIssueExists = (issueExists) => {
-      return {
-        type: ACTION_TYPES.SET_ISSUE_EXISTS,
-        issueExists
-      };
-    };
-
-    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
@@ -228,64 +208,6 @@ define ("actions/appState",
     };
 
     /**
-     * Handle ongoing conversation.
-     * @TODO: This function will need clean up with the chat bots changes.
-     */
-    /* eslint-disable no-unused-vars */
-    const handleOngoingConversation = () => {
-    /* eslint-enable no-unused-vars */
-      const issueState = lsHelpers.getIssueState ();
-      switch (issueState) {
-        case ISSUE_STATE.PRE_CHAT:
-          cleanUpAndRehydrate ();
-          store.dispatch (chatViewActions.startPreChatFeature ());
-          break;
-
-        case ISSUE_STATE.RESOLVED:
-        case ISSUE_STATE.ACTIVE:
-          const activeIssueId = lsHelpers.getActiveIssueId ();
-          const internalIssueId = lsHelpers.getInternalIssueId ();
-
-          if (internalIssueId) {
-            store.dispatch (actionCreators.setInternalIssueId (internalIssueId));
-          }
-
-          // If there is an active issue id in localstorage, set the activeIssueId in state,
-          // and start polling for new messages.
-          if (activeIssueId) {
-            cleanUpAndRehydrate ();
-            store.dispatch (chatViewActions.setActiveIssueId (activeIssueId));
-            chatViewActions.startPollingForMessages ();
-          } else {
-            // Ideally, this shouldn't be the case because we are first setting the
-            // active issue id, and then we are changing the issue state to active.
-            // But to be on safer side, start new conversation if there is no active issue id.
-            store.dispatch (startNewConversation ());
-          }
-          break;
-
-        case ISSUE_STATE.REJECTED:
-        case ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS:
-          // For post chat state, start new conversation.
-          store.dispatch (startNewConversation ());
-          break;
-
-        default:
-          // If there is no issueState data in ls, start new conversation.
-          store.dispatch (startNewConversation ());
-          break;
-      }
-    };
-
-    /**
-     * Cleans up dummy messages and rehydrate the data from localStorage
-     */
-    const cleanUpAndRehydrate = () => {
-      lsHelpers.removeDummyMessages ();
-      rehydrate ();
-    };
-
-    /**
      * Rehydrate the state with localstorage data, if applicable.
      * Although we get the state data from backend for continuing the conversation,
      * there are some values that are web chat client specific and need to be
@@ -303,60 +225,6 @@ define ("actions/appState",
           readFaqList
         }
       });
-    };
-
-    /**
-     * Get saved data from localstorage,
-     * and call action to update the current state.
-     */
-    const rehydrate = () => {
-      const issues = lsHelpers.getEntities ("ISSUES"),
-            messages = lsHelpers.getEntities ("MESSAGES"),
-            preChatFeatureIndex = lsHelpers.getPreChatFeatureIndex (),
-            preChatFeatureState = lsHelpers.getPreChatFeatureState (),
-            infoBotCurrentField = lsHelpers.getInfoBotCurrentField (),
-            issueState = lsHelpers.getIssueState (),
-            userProfileId = lsHelpers.getUserProfileId (),
-            replyText = lsHelpers.getReplyText (),
-            endUserFirstMsgId = lsHelpers.getEndUserFirstMsgId (),
-            suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
-            readFaqList = lsHelpers.getReadFaqList (),
-            infoBotRequestedTimestamp = lsHelpers.getInfoBotRequestedTimestamp ();
-
-      // Handle greeting message prechat feature for proactive chat
-      // If the current prechat feature is `initial user message` and its state
-      // is not completed, rerun the greeting message prechat feature.
-      const {appState} = store.getState ();
-      const currentPreChatFeature = appState.preChatFeatureOrder [preChatFeatureIndex];
-      const initialUserMessageFeatureState = preChatFeatureState.initialUserMessage;
-
-      const executeGreetingPreChatFeature = (
-        (currentPreChatFeature === PRE_CHAT_FEATURES.INITIAL_USER_MESSAGE) &&
-        (initialUserMessageFeatureState !== PRE_CHAT_STATE.initialUserMessage.COMPLETED)
-      );
-
-      if (issues || messages) {
-        store.dispatch ({
-          type: ACTION_TYPES.REHYDRATE,
-          data: {
-            entities: {
-              issues,
-              messages
-            },
-            preChatFeatureIndex,
-            preChatFeatureState,
-            executeGreetingPreChatFeature,
-            infoBotCurrentField,
-            issueState,
-            replyText,
-            userProfileId,
-            endUserFirstMsgId,
-            suggestedFaqReadTracked,
-            readFaqList,
-            infoBotRequestedTimestamp
-          }
-        });
-      }
     };
 
     /**
@@ -568,147 +436,6 @@ define ("actions/appState",
     };
 
     /**
-     * Find the initial user message in the dummy issue in local storage.
-     * We are not saving the initial user message separately. The initial user message
-     * would be available in the local storage. Loop through the message list saved
-     * in the local storage (via issue and message entities), and get the first user message.
-     * @returns {String} - initial user message body
-     */
-    const _getInitialUserMsgFromLs = () => {
-      const issueEntities = lsHelpers.getEntities ("ISSUES"),
-            messageEntities = lsHelpers.getEntities ("MESSAGES"),
-            {dummyIssueId} = store.getState ().appState;
-
-      if (!issueEntities || !messageEntities) {
-        return "";
-      }
-
-      const {messages: msgIds} = issueEntities [dummyIssueId];
-
-      for (let idx = 0; idx < msgIds.length; idx++) {
-        const msg = messageEntities [msgIds [idx]];
-
-        if (msg.isCustomerMsg) {
-          return msg.body;
-        }
-      }
-
-      return "";
-    };
-
-    /**
-     * Fire an XHR to migrate the user profile
-     * @param {string} identifier - profile identifier which has to be migrated
-     * @param {Function} done - done callback
-     */
-    const _migrateProfile = (identifier, done) => {
-      const {dispatch, getState} = store;
-      const {domain} = getState ().appState;
-
-      xhr ({
-        route: routes.putMigrateProfile (domain),
-        method: "PUT",
-        headers: xhrHelpers.getCommonHeaders (),
-        data: xhrHelpers.getPreparedXhrData ({
-          identifier
-        }, true),
-        onSuccess: (response) => {
-          // We will get response.success = true or false if the migration succeeds or fails.
-          // In both the case, we will clear old local storage and continue.
-          // If migration was successful
-          if (response.success) {
-            dispatch (setIssueExists (true));
-          }
-        },
-        onEnd: () => {
-          lsHelpers.clearOldStorage ();
-          done ();
-        }
-      });
-    };
-
-    /**
-     * Migrate the issue if required.
-     * @param {Function} done - done callback
-     */
-    const handleMigration = (done) => {
-      // Previously, we were generating a unique `identifier` when the web chat loads.
-      // Now, this `identifier` is not used anymore (we use device id and user id).
-      // If an `identifier` doesn't exist in local storage, that means the web chat is
-      // loading first time in that browser. We don't have to consider migration in this case.
-      // If an `identifier` exists in the local storage, we will
-      // proceed with further migration steps.
-      const identifier = lsHelpers.getIdentifier ();
-
-      if (!identifier) {
-        done ();
-        return;
-      }
-
-      // If the last activity was done before the reset timeout, clear all the previous
-      // local storage data (including `identifier`), and start a fresh chat.
-      // Clearing `identifier` also means that the migration won't be consider from now onwards.
-      const lastActivityTime = lsHelpers.getLastActivityTime (),
-            {resetTimeout} = store.getState ().appState;
-
-      if (lastActivityTime && (Date.now () - lastActivityTime) > resetTimeout) {
-        lsHelpers.clearOldStorage ();
-        done ();
-        return;
-      }
-      /**
-       * If there is an ongoing chat in the last 12 hours (default reset timeout),
-       * the issue can be in 3 possible states.
-       *
-       * (i) PRE_CHAT -
-       *
-       *   (a) If the user has already submitted the first message,
-       *       save it in the state and continue.
-       *       After the pre-issue is created via normal flow, we will start polling
-       *       for messages. While polling, first message would be of type
-       *       EMPTY_MSG_WITH_TEXT_INPUT, which is a special message type for
-       *       getting intial user message. When we receive this message type, we check
-       *       if the intial user message exists in the state.
-       *       If the intial user message already exists in the state, we don't wait for
-       *       the user input, we directly send the initial user message to the backend.
-       *   (b) If the user hasn't already entered the first message, clear the old
-       *       local storage data and continue
-       *
-       *   Note: If the user has already entered details for other pre-chat features,
-       *         he/she has to enter the details again.
-       *         We are not migrating any other pre-chat features.
-       *
-       * (ii) ACTIVE -
-       *      Fire an XHR to migrate the profile.
-       *
-       * (iii) RESOLVED or REJECTED or RESOLVED_BY_FAQ_SUGGESTIONS -
-       *       Clear the old local storage fields and continue.
-       *
-       * In all the 3 states, we would be clearing the old local storage fields
-       */
-
-      const issueState = lsHelpers.getIssueState ();
-
-      if (issueState === OLD_ISSUE_STATE.ACTIVE) {
-        // Fire XHR to migrate the issue
-        _migrateProfile (identifier, done);
-      } else {
-        if (issueState === OLD_ISSUE_STATE.PRE_CHAT) {
-          const preChatFeatureState = lsHelpers.getPreChatFeatureState ();
-          const initialUserMessageFeatureState = preChatFeatureState.initialUserMessage;
-          if (initialUserMessageFeatureState === PRE_CHAT_STATE.initialUserMessage.COMPLETED) {
-            const initialUserMsg = _getInitialUserMsgFromLs ();
-            store.dispatch (setInitialUserMsg (initialUserMsg));
-          }
-        }
-
-        // PRE_CHAT or RESOLVED or REJECTED or RESOLVED_BY_FAQ_SUGGESTIONS
-        lsHelpers.clearOldStorage ();
-        done ();
-      }
-    };
-
-    /**
      * Initialize conversation - either enable the chat view or the out of
      * business hours view.
      */
@@ -796,11 +523,9 @@ define ("actions/appState",
               // Rehydrate the state with localstorage data if applicable
               rehydrateState ();
 
-              handleMigration (() => {
-                // Initialize conversation by either going to the out of business
-                // hours view or by handling the chat view conversation.
-                initializeConversation ();
-              });
+              // Initialize conversation by either going to the out of business
+              // hours view or by handling the chat view conversation.
+              initializeConversation ();
 
               // If the widget is enabled, track the widget load event
               // Do not track this event if the config was set via the reset flow.
@@ -1245,7 +970,6 @@ define ("actions/appState",
       reset,
       setInitialUserMsg,
       startConversation,
-      startNewConversation,
       closeConversation,
       replaceCif,
       setMetadata,

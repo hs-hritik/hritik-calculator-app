@@ -22,16 +22,6 @@ define ("actions/actionCreators",
     });
 
     /**
-     * Return action to set user profile id.
-     * @param {String} profileId - user profile id
-     * @returns {Object} - the action object
-     */
-    const setUserProfileId = (profileId) => ({
-      type: ACTION_TYPES.SET_USER_PROFILE_ID,
-      profileId
-    });
-
-    /**
      * Return action to toggle agent typing
      * @param {Boolean} typing
      * @returns {Object} - the action object
@@ -100,30 +90,6 @@ define ("actions/actionCreators",
     });
 
     /**
-     * Return the action to set prechat feature index
-     * @param {number} index - the prechat feature index to set
-     * @returns {Object} - the action object
-     */
-    const setPreChatFeatureIndex = (index) => {
-      return {
-        type: ACTION_TYPES.SET_PRE_CHAT_FEATURE_INDEX,
-        preChatFeatureIndex: index
-      };
-    };
-
-    /**
-     * Return the action to set executeGreetingMessage in app state
-     * @param {boolean} executeGreetingMessagex - set the value to true or false
-     * @returns {Object} - the action object
-     */
-    const setExecuteGreetingMessage = (executeGreetingMessage) => {
-      return {
-        type: ACTION_TYPES.SET_EXECUTE_GREETING_MESSAGE,
-        executeGreetingMessage
-      };
-    };
-
-    /**
      * Return the action to set if the suggested FAQ read event has been tracked.
      * @param {boolean} isTracked
      * @returns {Object}
@@ -157,18 +123,6 @@ define ("actions/actionCreators",
       return {
         type: ACTION_TYPES.SET_INTERNAL_ISSUE_ID,
         id
-      };
-    };
-
-    /**
-     * Return the action to set the timestamp when the info bot gets requested.
-     * @param {string} number
-     * @returns {Object}
-     */
-    const setInfoBotRequestedTimestamp = (ts) => {
-      return {
-        type: ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP,
-        ts
       };
     };
 
@@ -232,7 +186,6 @@ define ("actions/actionCreators",
 
     return {
       updateActiveView,
-      setUserProfileId,
       toggleAgentTyping,
       setMobileInfo,
       reset,
@@ -240,12 +193,9 @@ define ("actions/actionCreators",
       setLanguage,
       setCif,
       setTags,
-      setPreChatFeatureIndex,
-      setExecuteGreetingMessage,
       setSuggestedFaqReadTracked,
       updateReadFaqList,
       setInternalIssueId,
-      setInfoBotRequestedTimestamp,
       setResolutionQuestionCompleted,
       setCsatCompleted,
       setFullPrivacy,

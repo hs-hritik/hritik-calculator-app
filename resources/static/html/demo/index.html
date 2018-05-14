@@ -151,12 +151,6 @@
         window.Helpshift("close");
       });
 
-      // Add click event for reset button
-      var resetBtn = document.querySelector("#resetBtn");
-      resetBtn.addEventListener("click", function () {
-        window.Helpshift("reset");
-      });
-
       // Add click event for apply button
       var applyBtn = document.querySelector("#applyUiConfigBtn");
       applyBtn.addEventListener("click", function () {
@@ -185,10 +179,6 @@
     <div class="row">
       <button class="btn" id="hideBtn">Hide</button>
       <div>Closes the widget.</div>
-    </div>
-    <div class="row">
-      <button class="btn btn--secondary" id="resetBtn">Reset</button>
-      <div>Resets all the data including chat states like FAQs, Answer Bot, and existing conversation.</div>
     </div>
     <div class="row">
       <h4>UI Config</h4>

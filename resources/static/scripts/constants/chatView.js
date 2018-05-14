@@ -11,8 +11,6 @@ define ("constants/chatView",
     const ACTIVE_FOOTER = {
       REPLY: "REPLY",
       FAQ_SUGGESTIONS_FEEDBACK: "FAQ_SUGGESTIONS_FEEDBACK",
-      INFO_BOT: "INFO_BOT",
-      BLOCKED: "BLOCKED",
       CLOSED: "CLOSED",
       CSAT: "CSAT",
       CONVERSATION_RESOLUTION_QUESTION: "CONVERSATION_RESOLUTION_QUESTION",
@@ -44,11 +42,6 @@ define ("constants/chatView",
       PLAIN_TEXT: "text"
     };
 
-    const INFO_BOT_FIELDS = {
-      NAME: "name",
-      EMAIL: "email"
-    };
-
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
     // @TODO - Below time interval's value is open to discussion
     // 6500 seems too low according to new conditions
@@ -59,7 +52,6 @@ define ("constants/chatView",
 
     return {
       ACTIVE_FOOTER,
-      INFO_BOT_FIELDS,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT,
       USER_INPUT_TYPES,

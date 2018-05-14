@@ -8,13 +8,13 @@ define ("components/messageList",
   [
     "components/message",
     "components/commons/branding",
-    "helpers/chatView",
+    "helpers/message",
     "constants/propTypes",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes"
   ],
-  function (Message, Branding, chatViewHelpers, customPropTypes, chatViewConstants,
+  function (Message, Branding, messageHelpers, customPropTypes, chatViewConstants,
     throttle, classes) {
     "use strict";
 
@@ -65,7 +65,7 @@ define ("components/messageList",
 
         return messages.map ((message, index) => {
           // Avoid rendering of unnecessary message types.
-          if (!chatViewHelpers.isRenderableMessage (message.type)) {
+          if (!messageHelpers.isRenderableMessage (message.type)) {
             return null;
           }
 
