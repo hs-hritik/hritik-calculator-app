@@ -1,0 +1,5 @@
+Branches:
+feature/sonarqube-config
+
+Changelog:
+Create sonarqube config file
