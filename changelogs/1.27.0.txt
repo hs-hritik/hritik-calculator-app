@@ -1,0 +1,5 @@
+Branches:
+feature/preissue-parent-page-flow
+
+Changelog:
+Remove get parent page info from create preissue flow
