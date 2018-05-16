@@ -26,14 +26,21 @@ define ("helpers/proactiveChat",
      */
     const _areConditionsValid = (rule) => {
       const {conditions} = rule;
-      const {appState} = store.getState ();
+      const {
+        appState: {
+          metadata: {
+            "page-url": parentPageUrl
+          },
+          tags: pageTags
+        }
+      } = store.getState ();
 
       return conditions.every ((condition) => {
         let valid = true;
 
         if (condition.type === CONDITION.PAGE_URL) {
           const conditionPageUrl = condition.value;
-          const pageUrl = appState.parentPageInfo.url;
+          const pageUrl = parentPageUrl;
 
           switch (condition.operator) {
             case OPERATOR.EQUALS:
@@ -54,7 +61,6 @@ define ("helpers/proactiveChat",
           }
         } else if (condition.type === CONDITION.TAG) {
           const conditionTags = condition.value;
-          const pageTags = appState.tags;
 
           switch (condition.operator) {
             case OPERATOR.EQUALS:
