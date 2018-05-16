@@ -107,13 +107,6 @@ define ("actions/businessHours",
     };
 
     /**
-     * Fetch data & creates issue on occurance of corresponding event.
-     */
-    const fetchDataForIssueCreation = () => {
-      postSdkMessage.getParentInfo ();
-    };
-
-    /**
      * Create issue for out of business hour
      * @returns {Function} - Action
      */
@@ -227,8 +220,7 @@ define ("actions/businessHours",
         }
 
         dispatch (disableBusinessHoursContactForm ());
-        // Get parent data & create issue
-        fetchDataForIssueCreation ();
+        dispatch (createIssueOutOfBusinessHours ());
       };
     };
 
@@ -288,7 +280,6 @@ define ("actions/businessHours",
     return {
       setBusinessHoursContactFormDetails,
       submitBusinessHoursContactForm,
-      createIssueOutOfBusinessHours,
       addAttachments,
       removeAttachment
     };
