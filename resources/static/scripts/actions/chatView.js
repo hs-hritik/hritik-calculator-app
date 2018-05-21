@@ -678,10 +678,8 @@ define ("actions/chatView",
         dispatch (
           updateReplyText (initialUserMessage)
         );
-        postUserMessage ({
-          msgType: messageType,
-          msgBody: initialUserMessage
-        });
+
+        postUserMessage ();
       }
     };
 
@@ -998,7 +996,7 @@ define ("actions/chatView",
      * @param {Function} config.onSuccess - success callback
      * @param {Function} config.onEnd - end callback
      */
-    const postUserMessage = (config) => {
+    const postUserMessage = (config = {}) => {
       const {dispatch, getState} = store;
       const {
         chatView: {
@@ -1020,22 +1018,27 @@ define ("actions/chatView",
       const actionsToDispatch = [disableReplyBox ()];
       const isIssue = issueType === ISSUE_TYPE.ISSUE;
       const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
-      let xhrData = {};
+      let xhrData = null;
 
-      if (isIssue) {
-        // @TODO - Change request params after apis are changed.
-        // Currently the request params for issue remains same, only pre-issue
-        // params are different.
-        xhrData = {
-          "message-body": msgBody,
-          "message-type": msgType
-        };
-      } else {
-        actionsToDispatch.push (toggleSystemTyping (true));
-        xhrData = messageHelpers.getPreparedMessageData ({
-          input: userInput,
-          message: getLatestMessage ()
+      // There are two ways to get prepared message xhr data
+      // a] Config - used when we have to directly add message like user
+      //             accepted/rejected resolution question
+      // b] User input - used when user adds a message through input
+      if (msgType && msgBody) {
+        xhrData = messageHelpers.getPreparedMessageDataFromConfig ({
+          msgType,
+          msgBody
         });
+      } else {
+        xhrData = messageHelpers.getPreparedMessageDataFromUserInput ({
+          input: userInput,
+          latestMessage: getLatestMessage (),
+          isIssue
+        });
+      }
+
+      if (isPreIssue) {
+        actionsToDispatch.push (toggleSystemTyping (true));
       }
 
       dispatch (batchActions (actionsToDispatch));
@@ -1169,8 +1172,6 @@ define ("actions/chatView",
         // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
 
         postUserMessage ({
-          msgBody: trimmedValue,
-          msgType: MESSAGE_TYPE.TEXT,
           onSuccess: () => {
             handleIssueReopen (issueState);
             dispatch (updateReplyText (""));

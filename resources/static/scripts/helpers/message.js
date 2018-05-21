@@ -137,12 +137,33 @@ define ("helpers/message",
     };
 
     /**
-     * Return prepared message data for xhr
-     * @param {Object} config - config object
-     * @param {Object} config.input - user input object
-     * @param {String} config.message - message object
+     * Return prepared message xhr data from config
+     * @param {Object} config
+     * @param {String} config.msgBody - message body
+     * @param {String} config.msgType - message type
+     * @returns {Object} - prepared xhr data
      */
-    const getPreparedMessageData = (config) => {
+    const getPreparedMessageDataFromConfig = (config) => {
+      const {msgType, msgBody} = config;
+
+      // @NOTE - Currently config messages will be added only when issue is created.
+      // So we are not adding a check for preIssue.
+      // Also this will be modified/removed when apis are changes to support
+      // 'body' and 'type'.
+      return {
+        "message-body": msgBody,
+        "message-type": msgType
+      };
+    };
+
+    /**
+     * Return prepared message xhr data from user input
+     * @param {Object} config
+     * @param {Object} config.input - user input
+     * @param {Object} config.latestMessage - latest message
+     * @returns {Object} - prepared xhr data
+     */
+    const getPreparedMessageDataFromUserInput = (config) => {
       const {
         input: {
           value,
@@ -150,20 +171,28 @@ define ("helpers/message",
           skipLabel,
           selectedOption
         },
-        message: {
-          type: messageType,
+        latestMessage: {
+          type: latestMsgType,
           id: messageId,
           chatBotInfo
-        }
+        },
+        isIssue
       } = config;
 
-      const responseMessageType = getUserResponseMessageType (messageType);
+      const responseMessageType = getUserResponseMessageType (latestMsgType);
 
       const requestData = {
-        body: value,
-        refers: messageId,
-        type: responseMessageType
+        refers: messageId
       };
+
+      // @TODO - Change request params after apis are changed.
+      // Ideally we should send same request params ('body' and 'type') for issue
+      // and preIssue.
+      const messageBodyKey = isIssue ? "message-body" : "body";
+      const messageTypeKey = isIssue ? "message-type" : "type";
+
+      requestData [messageBodyKey] = value;
+      requestData [messageTypeKey] = responseMessageType;
 
       if (responseMessageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
         // If this response is to the answer bot step, web chat sends which
@@ -180,12 +209,12 @@ define ("helpers/message",
       }
 
       if (skipped) {
-        requestData.body = skipLabel;
+        requestData [messageBodyKey] = skipLabel;
         requestData.skipped = skipped;
       }
 
       if (selectedOption && selectedOption.value) {
-        requestData.body = selectedOption.label;
+        requestData [messageBodyKey] = selectedOption.label;
         requestData.option_data = JSON.stringify ({
           option_id: selectedOption.value
         });
@@ -285,7 +314,8 @@ define ("helpers/message",
     return {
       getProcessedMessages,
       getProcessedFaq,
-      getPreparedMessageData,
+      getPreparedMessageDataFromConfig,
+      getPreparedMessageDataFromUserInput,
       createMessage,
       isRenderableMessage
     };
