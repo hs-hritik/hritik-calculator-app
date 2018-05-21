@@ -361,13 +361,24 @@ define ("actions/chatView",
      */
     const handleMessageInput = (message) => {
       const {input} = message;
-      const {dispatch} = store;
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          issueType
+        }
+      } = getState ();
 
       // If bot message does not contain any input, don't process it and hide
       // the footer.
       // This is to handle bot info text messages which do not have input.
+      // If issue type is not preIssue and latest messages does not contain
+      // input then reset input data and show default input.
       if (!input) {
-        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        } else {
+          dispatch (resetUserInput ());
+        }
         return;
       }
 
@@ -790,10 +801,7 @@ define ("actions/chatView",
               const processedMessages = messageHelpers.getProcessedMessages (messages);
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
-              // Handle latest message only for preIssue
-              if (isPreIssue) {
-                handleLatestMessage (latestMessage);
-              }
+              handleLatestMessage (latestMessage);
 
               dispatch (
                 batchActions ([
