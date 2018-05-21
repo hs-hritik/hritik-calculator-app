@@ -31,9 +31,10 @@ define ("reducers/chatView",
      * Returns default user input config object to be set in store
      * @returns {Object} - input config object
      */
-    const _getDefaultUserInputConfig = (config = {}) => {
+    const _getDefaultUserInputConfig = () => {
       return {
-        value: config.value || "",
+        value: "",
+        defaultInputValue: "",
         type: USER_INPUT_TYPES.DEFAULT_INPUT,
         disabled: false,
         required: true,
@@ -45,6 +46,15 @@ define ("reducers/chatView",
         placeholder: "",
         errorMsg: ""
       };
+    };
+
+    /**
+     * Predicate to return whether user input type is default input
+     * @param {Object} state - current state
+     * @returns {Boolean} - whether current input type is default input
+     */
+    const isInputTypeDefault = (state) => {
+      return (state.userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT);
     };
 
     const INITIAL_STATE = {
@@ -95,6 +105,10 @@ define ("reducers/chatView",
           return update (state, {
             userInput: {
               value: {$set: action.value},
+              // Save user entered text for input type default input
+              defaultInputValue: {
+                $set: isInputTypeDefault (state) ? action.value : ""
+              },
               errorMsg: {$set: ""}
             }
           });
@@ -161,7 +175,8 @@ define ("reducers/chatView",
         case ACTION_TYPES.RESET_USER_INPUT_DATA:
           userInputUpdateObj = objUtils.shallowMerge (
             _getDefaultUserInputConfig (), {
-              value: action.config.value ? state.userInput.value : ""
+              // Restore default input value when user input is reset
+              value: state.userInput.defaultInputValue
             }
           );
           return update (state, {

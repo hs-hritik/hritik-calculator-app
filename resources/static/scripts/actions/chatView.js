@@ -342,13 +342,11 @@ define ("actions/chatView",
     /**
      * Action to reset user input
      * This will reset label, errors, placeholders etc of user input
-     * @param {Object} config - config of user values to retain
      * @returns {Object} - Action
      */
-    const resetUserInput = (config = {}) => {
+    const resetUserInput = () => {
       return {
-        type: ACTION_TYPES.RESET_USER_INPUT_DATA,
-        config
+        type: ACTION_TYPES.RESET_USER_INPUT_DATA
       };
     };
 
@@ -1175,9 +1173,10 @@ define ("actions/chatView",
         }
 
         dispatch (disableReplyBox ());
-        // @TODO - Find a place to track conversation started event
-        // Track the conversation started event.
-        // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
+
+        updateUserInputData ({
+          value: trimmedValue
+        });
 
         postUserMessage ({
           onSuccess: () => {
