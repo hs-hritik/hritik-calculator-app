@@ -115,15 +115,15 @@ define ("components/chatView",
                       enabled={issueIsCreated} >
             <div className="hs-view__content">
               <MessageList messages={messages}
-                            isTyping={isTyping}
-                            showAgentNickname={showAgentNickname}
-                            text={text}
-                            onSkipUserInput={onSkipUserInput}
-                            onPillOptionSelect={onPillOptionSelect}
-                            onRetryAttachmentClick={onRetryAttachmentClick}
-                            onSuggestedFaqClick={onSuggestedFaqClick}
-                            hasFailure={this.props.hasFailure}
-                            userInput={userInput} />
+                           isTyping={isTyping}
+                           showAgentNickname={showAgentNickname}
+                           text={text}
+                           onSkipUserInput={onSkipUserInput}
+                           onPillOptionSelect={onPillOptionSelect}
+                           onRetryAttachmentClick={onRetryAttachmentClick}
+                           onSuggestedFaqClick={onSuggestedFaqClick}
+                           hasFailure={this.props.hasFailure}
+                           userInput={userInput} />
             </div>
             <ChatViewFooterContainer />
           </DnDWrapper>
