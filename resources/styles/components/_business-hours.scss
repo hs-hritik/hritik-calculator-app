@@ -28,7 +28,7 @@
     flex-direction: column;
     justify-content: space-between;
     padding: gutter(20 20 0 20);
-    overflow-y: scroll;
+    overflow-y: auto;
     // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
     // and Chrome behave.
     // Details –
