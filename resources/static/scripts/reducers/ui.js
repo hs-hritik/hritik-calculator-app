@@ -366,13 +366,6 @@ define ("reducers/ui",
             developerUiConfig: {$set: action.uiConfig}
           });
 
-        case ACTION_TYPES.RESET:
-          // Retain the ui config and developer config set throught api
-          return update (INITIAL_STATE, {
-            uiConfig: {$set: state.uiConfig},
-            developerUiConfig: {$set: state.developerUiConfig}
-          });
-
         default:
           return state;
       }
