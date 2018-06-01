@@ -68,8 +68,8 @@ define ("components/message",
       render () {
         const {isCustomerMsg, type, states} = this.props.message;
 
-        if (type === MESSAGE_TYPE.SYSTEM_INFO) {
-          return this._renderSystemInfoMessage ();
+        if (type === MESSAGE_TYPE.CHAT_SEPARATOR) {
+          return this._renderChatSeparator ();
         }
 
         const msgClasses = classes (
@@ -435,12 +435,31 @@ define ("components/message",
       },
 
       /**
-       * Render system info message.
+       * Render separator message.
        */
-      _renderSystemInfoMessage () {
+      _renderChatSeparator () {
+        const {hr, timestamp, infoText} = this.props.message;
+
+        let hrEl, timestampEl, infoTextEl;
+
+        if (hr) {
+          // horizontal line separating conversations
+          hrEl = (<div className="hs-message__hr" />);
+        }
+
+        if (timestamp) {
+          timestampEl = (<div className="hs-message hs-message--timestamp">{timestamp}</div>);
+        }
+
+        if (infoText) {
+          infoTextEl = (<div className="hs-message hs-message--info-text">{infoText}</div>);
+        }
+
         return (
-          <div className="hs-message hs-message--system-info">
-            {this.props.message.body}
+          <div>
+            {infoTextEl}
+            {hrEl}
+            {timestampEl}
           </div>
         );
       },

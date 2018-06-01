@@ -26,7 +26,6 @@ define ("helpers/message",
      */
     const getProcessedMessages = (messages) => {
       return messages.map ((msg) => {
-
         if (msg.processed) {
           return msg;
         }
@@ -245,18 +244,24 @@ define ("helpers/message",
     };
 
     /**
-     * Create system info message
-     * @param {Object} config - options for system info message
-     * @returns {Object} - system info message object
+     * Create separator message
+     * @param {Object} config - options for separator message
+     * @param {Boolean} config.hr - options for separator message
+     * @param {String} config.timestamp - timestamp string
+     * @param {String} config.infoText - string to show above hr
+     * @returns {Object} - separator message object
      */
-    const createSystemInfoMessage = (config) => {
+    const createSeparatorMessage = (config) => {
       return {
         id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
-        type: MESSAGE_TYPE.SYSTEM_INFO,
+        type: MESSAGE_TYPE.CHAT_SEPARATOR,
         isCustomerMsg: false,
         isSystemMsg: true,
         createdTs: Date.now (),
-        body: config.body,
+        body: "",
+        timestamp: config.timestamp,
+        hr: config.hr,
+        infoText: config.infoText,
         processed: true
       };
     };
@@ -274,8 +279,8 @@ define ("helpers/message",
         case MESSAGE_TYPE.ATTACHMENT:
           return createAttachmentMessage (options);
 
-        case MESSAGE_TYPE.SYSTEM_INFO:
-          return createSystemInfoMessage (options);
+        case MESSAGE_TYPE.CHAT_SEPARATOR:
+          return createSeparatorMessage (options);
 
         default:
           return null;

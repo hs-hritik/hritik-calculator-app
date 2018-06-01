@@ -488,8 +488,9 @@ define ("actions/chatView",
       // at the start of message list. (This is a system info message)
       if (!issueCursor) {
         const conversationStartDateMessage = messageHelpers.createMessage (
-          MESSAGE_TYPE.SYSTEM_INFO, {
-            body: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
+          MESSAGE_TYPE.CHAT_SEPARATOR, {
+            hr: false,
+            timestamp: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
           }
         );
         messages = [conversationStartDateMessage].concat (messages);
@@ -547,9 +548,10 @@ define ("actions/chatView",
 
       // Show system info message - This conversation has ended.
       dispatch (createMessage ({
-        type: MESSAGE_TYPE.SYSTEM_INFO,
+        type: MESSAGE_TYPE.CHAT_SEPARATOR,
         messageConfig: {
-          body: text.conversationEndNote
+          infoText: text.conversationEndNote,
+          hr: true
         }
       }));
     };
@@ -922,7 +924,7 @@ define ("actions/chatView",
 
         if (!isCustomerMsg &&
             state !== MESSAGES_STATE.READ &&
-            type !== MESSAGE_TYPE.SYSTEM_INFO &&
+            type !== MESSAGE_TYPE.CHAT_SEPARATOR &&
             messageHelpers.isRenderableMessage (type)) {
           finalUnreadCount++;
         }
