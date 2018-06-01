@@ -214,29 +214,6 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Render reply box component
-       */
-      _renderReplyBox () {
-        const {
-          disabled,
-          value,
-          errorMsg
-        } = this.props.userInput;
-        const footerClasses = classes (
-          "hs-chat-footer", {
-            "hs-chat-footer--form-error": errorMsg,
-            "hs-chat-footer--form-invalid": disabled || !value.trim ()
-          }
-        );
-
-        return (
-          <div className={footerClasses}>
-            <ReplyBoxContainer className="hs-chat-footer__text-area" />
-          </div>
-        );
-      },
-
-      /**
        * Render user input
        * User input layout renders following things
        *  a. Label
