@@ -489,7 +489,7 @@ define ("actions/chatView",
       if (!issueCursor) {
         const conversationStartDateMessage = messageHelpers.createMessage (
           MESSAGE_TYPE.CHAT_SEPARATOR, {
-            hr: false,
+            hr: true,
             timestamp: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
           }
         );

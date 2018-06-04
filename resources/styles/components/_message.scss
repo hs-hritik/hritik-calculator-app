@@ -190,6 +190,7 @@
     &--timestamp,
     &--info-text {
       max-width: 100%;
+      font-size: font-size(body, small);
       color: $chat-widget-secondary-text-color;
       text-align: center;
       opacity: .5;
