@@ -120,7 +120,10 @@
     "max-height": "540px",
     "min-width": "320px",
     "max-width": "340px",
-    "height": "100%",
+    // Final computed height = 100% (max 540px)
+    //                        - 52px (header height)
+    //                        - 53px (footer height = 52px input height + 1px border)
+    "height": "calc(100% - 52px - 53px)",
     "width": "100%",
     "border": "none",
     "border-radius": "8px",
