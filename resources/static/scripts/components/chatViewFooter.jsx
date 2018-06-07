@@ -119,6 +119,7 @@ define ("components/chatViewFooter",
           skipBtnWrapperEl = (
             <SkipButtonWrapper label={skipLabel}
                                className="hs-chat-footer__skip-btn-wrapper"
+                               disabled={disabled}
                                onClick={onSkipUserInput} />
           );
         }
@@ -256,6 +257,7 @@ define ("components/chatViewFooter",
             <input className="hs-chat-footer__text-field"
                    type={this._getHtmlInputType (type)}
                    dir="auto"
+                   disabled={disabled}
                    value={value}
                    placeholder={placeholder}
                    onChange={this._onInputFieldValueChange}

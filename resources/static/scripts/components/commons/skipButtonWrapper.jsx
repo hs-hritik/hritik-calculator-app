@@ -16,16 +16,33 @@ define ("components/commons/skipButtonWrapper",
     return React.createClass ({
       displayName: "SkipButtonWrapper",
       propTypes: {
+        /**
+         * Class name for skip button wrapper
+         */
         className: PropTypes.string,
+
+        /**
+         * Skip Button Label
+         */
         label: PropTypes.string,
-        onClick: PropTypes.func
+
+        /**
+         * Click handler for skip button
+         */
+        onClick: PropTypes.func,
+
+        /**
+         * Whether skip button is disabled
+         */
+        disabled: PropTypes.bool
       },
 
       render () {
         const {
           className,
           label,
-          onClick
+          onClick,
+          disabled
         } = this.props;
 
         const skipBtnClasses = classes (
@@ -37,7 +54,9 @@ define ("components/commons/skipButtonWrapper",
 
         return (
           <div className={className}>
-            <button className={skipBtnClasses} onClick={onClick}>
+            <button className={skipBtnClasses}
+                    onClick={onClick}
+                    disabled={disabled}>
               {label}
             </button>
           </div>

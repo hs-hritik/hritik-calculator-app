@@ -155,6 +155,7 @@ define ("components/messageList",
           skipBtnWrapperEl = (
             <SkipButtonWrapper label={skipLabel}
                                className="hs-message-list__skip-btn-wrapper"
+                               disabled={disabled}
                                onClick={onSkipUserInput} />
           );
         }
