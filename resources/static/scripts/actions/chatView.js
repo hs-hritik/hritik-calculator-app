@@ -1689,6 +1689,20 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to skip user input
+     * First update the skipped state in user input and then post user message
+     * @returns Function - Action
+     */
+    const skipUserInput = () => {
+      return (dispatch) => {
+        dispatch (updateUserInputData ({
+          skipped: true
+        }));
+        postUserMessage ();
+      };
+    };
+
     return {
       createPreIssue,
       updateReplyText,
@@ -1709,6 +1723,7 @@ define ("actions/chatView",
       setUserInputData,
       updateUserInputData,
       setUserSelectedOption,
-      handleErrorAction
+      handleErrorAction,
+      skipUserInput
     };
   });

@@ -105,10 +105,7 @@ define ("components/containers/chatViewFooter",
           dispatch (actionCreators.toggleChatViewLoading (true));
         },
         onSkipUserInput: () => {
-          dispatch (chatViewActions.updateUserInputData ({
-            skipped: true
-          }));
-          dispatch (chatViewActions.submitReply ());
+          dispatch (chatViewActions.skipUserInput ());
         },
         onSubmitReply: () => {
           dispatch (chatViewActions.submitReply ());
