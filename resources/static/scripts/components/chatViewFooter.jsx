@@ -258,6 +258,7 @@ define ("components/chatViewFooter",
                    dir="auto"
                    disabled={disabled}
                    value={value}
+                   ref={this._saveUserInputRef}
                    placeholder={placeholder}
                    onChange={this._onInputFieldValueChange}
                    onKeyUp={this._onInputFieldKeyUp}
@@ -502,12 +503,42 @@ define ("components/chatViewFooter",
       },
 
       /**
+       * Reference to user input
+       */
+      _userInputRef: null,
+
+      /**
+       * Save user input reference
+       * @param {Object} ref - DOM reference
+       */
+      _saveUserInputRef (ref) {
+        this._userInputRef = ref;
+      },
+
+      /**
        * Return html input type for given input footer
        * @param {String} type - type of input footer
        * @returns {String} - html input type
        */
       _getHtmlInputType (type) {
         return HTML_INPUT_TYPES [type] || HTML_INPUT_TYPES.PLAIN_TEXT;
+      },
+
+      componentDidUpdate (prevProps) {
+        const {
+          userInput: {
+            disabled: prevInputDisabled
+          }
+        } = prevProps;
+        const {
+          userInput: {
+            disabled: currentInputDisabled
+          }
+        } = this.props;
+
+        if (this._userInputRef && prevInputDisabled && !currentInputDisabled) {
+          this._userInputRef.focus ();
+        }
       }
     });
   }
