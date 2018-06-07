@@ -293,10 +293,20 @@ define ("components/chatViewFooter",
        * Render reply box action
        */
       _renderFooterAction () {
-        if (this.props.userInput.value || !this.props.issueIsCreated ||
-            this.props.fullPrivacyEnabled) {
+        const {
+          userInput: {
+            value,
+            type
+          },
+          issueIsCreated,
+          fullPrivacyEnabled
+        } = this.props;
+        const currentStepIsBot = (type !== USER_INPUT_TYPES.DEFAULT_INPUT);
+
+        if (value || !issueIsCreated || fullPrivacyEnabled || currentStepIsBot) {
           return this._renderSendButton ();
         }
+
         return this._renderAttachmentButton ();
       },
 
