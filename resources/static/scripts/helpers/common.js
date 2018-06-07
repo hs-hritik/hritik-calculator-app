@@ -274,6 +274,25 @@ define ("helpers/common",
       return DOES_BROWSER_SUPPORT_DATE_INPUT;
     };
 
+    /**
+     * Returns date object for given date string
+     * @param {String} value - User entered date in either "dd/mm/yyyy" or
+     *                         "yyyy-mm-dd" format
+     * @returns {Date} - Date
+     */
+    const getDateObjectFromString = (value) => {
+      if (!_isDateFormatValid (value)) {
+        return null;
+      }
+
+      const {day, month, year} = _getDateParts (value);
+      /**
+       * MDN :- Month Index is Integer value representing the month, beginning
+       * with 0 for January to 11 for December.
+       */
+      return new Date(year, month - 1, day);
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -285,6 +304,7 @@ define ("helpers/common",
       isUserIdValid,
       isIssueCreated,
       getFaqSuggestionMessageId,
-      isDateInputSupported
+      isDateInputSupported,
+      getDateObjectFromString
     };
   });

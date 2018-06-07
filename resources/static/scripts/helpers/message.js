@@ -8,9 +8,11 @@ define ("helpers/message",
   [
     "store",
     "constants/message",
-    "gunpowder/utils/uuid"
+    "helpers/common",
+    "gunpowder/utils/uuid",
+    "gunpowder/utils/date"
   ],
-  function (store, messageConstants, uuidGenerator) {
+  function (store, messageConstants, commonHelpers, uuidGenerator, dateUtils) {
     "use strict";
 
     const {
@@ -204,16 +206,25 @@ define ("helpers/message",
         }
       }
 
-      if (chatBotInfo) {
+      // In case of bot interrupt, the sequence of messages is
+      // 1] Interrupt message (bot/agent) 2] Bot End.
+      // Bot end contains empty chat bot info. So checking for non empty
+      // chatBotInfo obj.
+      if (chatBotInfo && Object.keys (chatBotInfo).length) {
         requestData.chatbot_info = JSON.stringify (chatBotInfo);
       }
 
       if (skipped) {
         requestData [messageBodyKey] = skipLabel;
         requestData.skipped = skipped;
-      }
-
-      if (selectedOption && selectedOption.value) {
+      } else if (responseMessageType === MESSAGE_TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT) {
+        const date = commonHelpers.getDateObjectFromString (value);
+        requestData [messageBodyKey] = dateUtils.format (date, "{dddd}, {mmmm} {dd}, {yyyy}");
+        // @TODO - Remove commented meta in request after BE fix
+        // requestData.meta = JSON.stringify ({
+        //   dt: date.getTime ()
+        // });
+      } else if (selectedOption && selectedOption.value) {
         requestData [messageBodyKey] = selectedOption.label;
         requestData.option_data = JSON.stringify ({
           option_id: selectedOption.value
