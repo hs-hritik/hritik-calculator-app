@@ -83,10 +83,10 @@ define ("components/containers/chatViewFooter",
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
         },
         onFooterFocus: () => {
-          dispatch (appStateActions.setFooterActive ());
+          dispatch (actionCreators.setFooterActive ());
         },
         onFooterBlur: () => {
-          dispatch (appStateActions.setFooterInactive ());
+          dispatch (actionCreators.setFooterInactive ());
         },
         onAcceptResolutionQuestionClick: () => {
           dispatch (chatViewActions.acceptResolutionQuestion ());

@@ -184,6 +184,26 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to set footer active
+     * @returns {Object} - Action
+     */
+    const setFooterActive = () => {
+      return {
+        type: ACTION_TYPES.SET_FOOTER_ACTIVE
+      };
+    };
+
+    /**
+     * Action to set footer inactive
+     * @returns {Object} - Action
+     */
+    const setFooterInactive = () => {
+      return {
+        type: ACTION_TYPES.SET_FOOTER_INACTIVE
+      };
+    };
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -200,6 +220,8 @@ define ("actions/actionCreators",
       setCsatCompleted,
       setFullPrivacy,
       toggleChatViewLoading,
-      toggleOnlineStatus
+      toggleOnlineStatus,
+      setFooterActive,
+      setFooterInactive
     };
   });

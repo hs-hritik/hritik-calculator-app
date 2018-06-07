@@ -910,26 +910,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set footer active
-     * @returns {Object} - Action
-     */
-    const setFooterActive = () => {
-      return {
-        type: ACTION_TYPES.SET_FOOTER_ACTIVE
-      };
-    };
-
-    /**
-     * Action to set footer inactive
-     * @returns {Object} - Action
-     */
-    const setFooterInactive = () => {
-      return {
-        type: ACTION_TYPES.SET_FOOTER_INACTIVE
-      };
-    };
-
-    /**
      * Reset preIssue by calling an API to reset the preIssue. On successful reset
      * reset the app's state, which in turn restarts the flow.
      */
@@ -977,8 +957,6 @@ define ("actions/appState",
       setProactiveChatRules,
       executeProactiveChatRules,
       updateStyles,
-      setFooterActive,
-      setFooterInactive,
       resetPreIssue,
       setConversationStarted
     };
