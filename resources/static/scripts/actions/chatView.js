@@ -47,6 +47,7 @@ define ("actions/chatView",
 
     const {
       ACTIVE_FOOTER,
+      USER_INPUT_TYPES,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT
     } = CHAT_VIEW_CONSTANTS;
@@ -1021,9 +1022,10 @@ define ("actions/chatView",
         onEnd
       } = config;
       const xhrIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
-      const actionsToDispatch = [disableReplyBox ()];
+      const actionsToDispatch = [disableReplyBox (), actionCreators.setFooterInactive ()];
       const isIssue = issueType === ISSUE_TYPE.ISSUE;
       const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
+      const currentStepIsBot = (userInput.type !== USER_INPUT_TYPES.DEFAULT_INPUT);
       let xhrData = null;
 
       // There are two ways to get prepared message xhr data
@@ -1043,7 +1045,7 @@ define ("actions/chatView",
         });
       }
 
-      if (isPreIssue) {
+      if (isPreIssue || (isIssue && currentStepIsBot)) {
         actionsToDispatch.push (toggleSystemTyping (true));
       }
 
@@ -1061,7 +1063,9 @@ define ("actions/chatView",
           // updation will scroll the messages to bottom.
           // In case of preIssue, we do not want to enable reply box as it will be
           // enabled according to next bot step.
-          if (isIssue) {
+          // In case of issue, we want to enable reply box only if current step is
+          // not bot.
+          if (isIssue && !currentStepIsBot) {
             dispatch (enableReplyBox ());
           }
           dispatch (
@@ -1174,9 +1178,9 @@ define ("actions/chatView",
 
         dispatch (disableReplyBox ());
 
-        updateUserInputData ({
+        dispatch (updateUserInputData ({
           value: trimmedValue
-        });
+        }));
 
         postUserMessage ({
           onSuccess: () => {

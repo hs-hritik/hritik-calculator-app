@@ -101,15 +101,14 @@ define ("components/chatViewFooter",
           issueIsCreated,
           onSkipUserInput
         } = this.props;
+        const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
+        const isPreIssue = !issueIsCreated;
 
-        // Hide footer only if
-        // a] There is no failure AND 1. user input type is pill select OR
-        //                            2. user input is disabled
-        //    AND
-        // b] issue is not created i.e. current issue type is preIssue
-        if (!failureConfig &&
-            (type === USER_INPUT_TYPES.PILL_SELECT || disabled) &&
-            !issueIsCreated) {
+        // Hide footer if
+        // 1] Input is pill select - applicable for both preIssue and issue
+        //    OR
+        // 2] PreIssue and there is no failure and input is disabled
+        if (inputIsPillSelect || (isPreIssue && !failureConfig && disabled)) {
           return null;
         }
 
