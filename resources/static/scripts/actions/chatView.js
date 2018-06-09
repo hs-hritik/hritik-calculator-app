@@ -93,18 +93,26 @@ define ("actions/chatView",
      * @param {Object} config - config
      * @param {Array} config.messages - array of response messages
      * @param {Boolean} [config.process] - whether to process messages
+     * @param {Boolean} [config.prepend] - whether to push messages at the start
      * @returns {Object} - action
      */
     const addMessages = (config) => {
-      const {messages, process = true} = config;
+      const {messages, process = true, prepend = false} = config;
       let processedMessages = messages;
 
       if (process) {
         processedMessages = messageHelpers.getProcessedMessages (messages);
       }
 
+      if (prepend) {
+        return {
+          type: ACTION_TYPES.PREPEND_MESSAGES,
+          messages: processedMessages
+        };
+      }
+
       return {
-        type: ACTION_TYPES.ADD_MESSAGES,
+        type: ACTION_TYPES.APPEND_MESSAGES,
         messages: processedMessages
       };
     };

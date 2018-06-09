@@ -47,6 +47,21 @@ define ("reducers/chatView",
       };
     };
 
+    /**
+     * Return a union of existing messageList and new messages
+     * @param {Array} existingMessageList - Existing list of messages
+     * @param {Array} newMessageList - New messages to be added
+     * @returns {Array} list of unique messages
+     */
+    const _getUniqueMessages = (existingMessageList, newMessageList) => {
+      const msgIdsAdded = existingMessageList.map ((msg) => msg.id);
+      const msgsToAdd = newMessageList.filter ((msg) => {
+        return msgIdsAdded.indexOf (msg.id) === -1;
+      });
+
+      return msgsToAdd;
+    };
+
     const INITIAL_STATE = {
       userInput: _getDefaultUserInputConfig (),
       activeFooter: ACTIVE_FOOTER.REPLY,
@@ -180,14 +195,14 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.ADD_MESSAGES:
-          const msgIdsAdded = state.messageList.map ((msg) => msg.id);
-          const msgsToAdd = action.messages.filter ((msg) => {
-            return msgIdsAdded.indexOf (msg.id) === -1;
+        case ACTION_TYPES.APPEND_MESSAGES:
+          return update (state, {
+            messageList: {$push: _getUniqueMessages (state.messageList, action.messages)}
           });
 
+        case ACTION_TYPES.PREPEND_MESSAGES:
           return update (state, {
-            messageList: {$push: msgsToAdd}
+            messageList: {$unshift: _getUniqueMessages (state.messageList, action.messages)}
           });
 
         case ACTION_TYPES.REMOVE_MESSAGE:
