@@ -728,9 +728,9 @@ define ("actions/chatView",
       lastFetchCompleted = false;
 
       fetchMessagesXhr = xhr ({
-        route: routes.getIssuesAndMessages (domain),
+        route: routes.getConversationUpdates (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
-        method: "POST",
+        method: "GET",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           // @NOTE - This is to make sure that onEnd is called even if
