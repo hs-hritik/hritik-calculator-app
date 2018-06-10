@@ -48,7 +48,8 @@ define ("actions/chatView",
     const {
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
-      MESSAGES_FORCE_POLLING_TIMEOUT
+      MESSAGES_FORCE_POLLING_TIMEOUT,
+      CURSOR_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
     const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
@@ -209,6 +210,7 @@ define ("actions/chatView",
     const setActiveIssueMsgCursor = (msgCursor) => {
       return {
         type: ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR,
+        cursorType: CURSOR_TYPES.FORWARD,
         msgCursor
       };
     };
@@ -482,7 +484,7 @@ define ("actions/chatView",
       if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
         previousIssue = arrayUtils.find (issues, (issue) => {
           return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
-                  issue.internal_id === currentIssue.preissue_id);
+                  issue.preissue_id === currentIssue.preissue_id);
         });
         if (previousIssue) {
           issueCreationDate = previousIssue.created_at;
@@ -516,7 +518,7 @@ define ("actions/chatView",
         previousIssue.state_data.state === XHR_ISSUE_STATE.PRE_ISSUE.ISSUE_CREATED
       ) {
         analyticsHelpers.track (EVENT.ISSUE_CREATED, {
-          issueId: currentIssue.internal_id
+          issueId: currentIssue.issue_id
         });
       }
 
@@ -709,24 +711,32 @@ define ("actions/chatView",
           issueType: previousIssueType
         },
         chatView: {
-          messageCursor,
+          messageCursor: {
+            forward: forwardMessageCursor
+          },
           issueCursor,
           pollerFailureCount: prevPollerFailureCount
         }
       } = store.getState ();
 
-      const xhrData = {
-        "mc": JSON.stringify (messageCursor),
-        "new-timestamp": Date.now ()
-      };
+      const xhrData = {};
+
+      if (forwardMessageCursor.issueId) {
+        if (forwardMessageCursor.issueType === ISSUE_TYPE.PRE_ISSUE) {
+          xhrData.preissue_id = forwardMessageCursor.issueId;
+        } else if (forwardMessageCursor.issueType === ISSUE_TYPE.ISSUE) {
+          xhrData.issue_id = forwardMessageCursor.issueId;
+        }
+      }
 
       if (issueCursor) {
-        xhrData.since = issueCursor;
+        xhrData.cursor = issueCursor;
       }
 
       lastFetchStartTime = Date.now ();
       lastFetchCompleted = false;
 
+      // @TODO: Confirm the keys after discussing with backend
       fetchMessagesXhr = xhr ({
         route: routes.getConversationUpdates (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
@@ -753,7 +763,6 @@ define ("actions/chatView",
 
             const {
               id: issueId,
-              internal_id: internalIssueId,
               type: currentIssueType,
               state_data: {
                 state: issueState
@@ -761,6 +770,8 @@ define ("actions/chatView",
               csat_received: isCsatSubmitted
             } = currentIssue;
             const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
+
+            const internalIssueId = isPreIssue ? currentIssue.preissue_id : currentIssue.issue_id;
 
             if (!isIssueActive (issueState)) {
               stopPollingForMessages ();
@@ -800,7 +811,6 @@ define ("actions/chatView",
             if (messagesLength) {
               const latestMessage = messages [messagesLength - 1];
               const processedMessages = messageHelpers.getProcessedMessages (messages);
-              const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
               // Handle latest message only for preIssue
               if (isPreIssue) {
@@ -814,9 +824,9 @@ define ("actions/chatView",
                     process: false
                   }),
                   setActiveIssueMsgCursor ({
-                    [pluralIssueType]: {
-                      [issueId]: timestamp
-                    }
+                    issueType: currentIssueType,
+                    cursorTs: timestamp,
+                    issueId: internalIssueId
                   })
                 ])
               );
@@ -1331,10 +1341,13 @@ define ("actions/chatView",
           method: "POST",
           onSuccess: (response) => {
             const newIssueId = response.id;
+            const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
+              response.preissue_id : response.issue_id;
+
             dispatch (
               batchActions ([
                 setActiveIssueId (newIssueId),
-                actionCreators.setInternalIssueId (response.internal_id),
+                actionCreators.setInternalIssueId (internalId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
                 setChatViewFooter (ACTIVE_FOOTER.REPLY)
               ])

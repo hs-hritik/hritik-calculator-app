@@ -17,7 +17,8 @@ define ("reducers/chatView",
     const update = React.addons.update;
     const {
       ACTIVE_FOOTER,
-      USER_INPUT_TYPES
+      USER_INPUT_TYPES,
+      CURSOR_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_ERROR_STATE = {
@@ -71,8 +72,16 @@ define ("reducers/chatView",
       unreadCount: 0,
       messageList: [],
       messageCursor: {
-        preissues: {},
-        issues: {}
+        [CURSOR_TYPES.FORWARD]: {
+          cursorTs: "",
+          issueType: "",
+          issueId: ""
+        },
+        [CURSOR_TYPES.BACKWARD]: {
+          cursorTs: "",
+          issueType: "",
+          issueId: ""
+        }
       },
       issueCursor: 0,
       pollerFailureCount: 0,
@@ -116,7 +125,9 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
           return update (state, {
-            messageCursor: {$merge: action.msgCursor}
+            messageCursor: {
+              [action.cursorType]: {$merge: action.msgCursor}
+            }
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:

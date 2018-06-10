@@ -42,6 +42,11 @@ define ("constants/chatView",
       PLAIN_TEXT: "text"
     };
 
+    const CURSOR_TYPES = {
+      FORWARD: "forward",
+      BACKWARD: "backward"
+    };
+
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
     // @TODO - Below time interval's value is open to discussion
     // 6500 seems too low according to new conditions
@@ -56,6 +61,7 @@ define ("constants/chatView",
       MESSAGES_FORCE_POLLING_TIMEOUT,
       USER_INPUT_TYPES,
       HTML_INPUT_TYPES,
+      CURSOR_TYPES,
       MAX_POLLER_FAILURES_ALLOWED
     };
   });
