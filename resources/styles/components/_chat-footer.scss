@@ -101,6 +101,33 @@
       &[disabled] {
         opacity: .4;
       }
+
+      &[type=number] {
+        -moz-appearance: textfield;
+      }
+
+      // Remove the spinner arrows for input type number
+      &[type=number]::-webkit-inner-spin-button,
+      &[type=number]::-webkit-outer-spin-button {
+        margin: 0;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      // Remove spinner arrows for input type date and clear button which appears
+      // once the date is selected
+
+      // @NOTE - Disabling pseudo element lint rule as it gives error for
+      // -webkit-clear-button scss lint recognize -webkit-clear-button as a
+      // pseudo class and not a pseudo element
+      // scss-lint:disable PseudoElement
+      &[type=date]::-webkit-inner-spin-button,
+      &[type=date]::-webkit-clear-button {
+        display: none;
+        -webkit-appearance: none;
+      }
+      // scss-lint:enable PseudoElement
     }
 
     &__attachment-icon,
