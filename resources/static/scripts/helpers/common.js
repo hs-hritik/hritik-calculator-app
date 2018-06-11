@@ -24,6 +24,11 @@ define ("helpers/common",
     const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]{1,246}\.[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
     /* eslint-enable max-len */
 
+    /**
+     * Number regex which allows single '.' in between digits
+     */
+    const NUMBER_WITH_DECIMAL_REG_EX = /^\d*(?:\.\d+)?$/;
+
     const {
       TYPE: MESSAGE_TYPE
     } = messageConstants;
@@ -293,6 +298,16 @@ define ("helpers/common",
       return new Date(year, month - 1, day);
     };
 
+    /**
+     * Validates a number which can contain '.'
+     * @param {String} value - number to validate
+     * @returns {Boolean} - whether number is valid
+     */
+    // @TODO - Move this function to gunpowder
+    const isNumberValid = (value) => {
+      return NUMBER_WITH_DECIMAL_REG_EX.test (value);
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -305,6 +320,7 @@ define ("helpers/common",
       isIssueCreated,
       getFaqSuggestionMessageId,
       isDateInputSupported,
-      getDateObjectFromString
+      getDateObjectFromString,
+      isNumberValid
     };
   });

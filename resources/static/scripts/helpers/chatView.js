@@ -6,16 +6,14 @@
 
 define ("helpers/chatView",
   [
-    "store",
     "constants/message",
     "constants/chatView",
     "constants/appState",
     "helpers/common",
-    "gunpowder/utils/schema",
-    "gunpowder/utils/validation"
+    "gunpowder/utils/schema"
   ],
-  function (store, MESSAGE_CONSTANTS, chatViewConstants, appStateConstants,
-    commonHelpers, schema, validationsUtil) {
+  function (MESSAGE_CONSTANTS, chatViewConstants, appStateConstants,
+    commonHelpers, schema) {
     "use strict";
 
     const {
@@ -128,7 +126,7 @@ define ("helpers/chatView",
 
         case USER_INPUT_TYPES.NUMERIC:
           validations.push ({
-            fn: validationsUtil.number,
+            fn: commonHelpers.isNumberValid,
             errorMsg: text.numberValidationError
           });
           break;
@@ -138,6 +136,7 @@ define ("helpers/chatView",
             fn: commonHelpers.isDateValid,
             errorMsg: text.dateValidationError
           });
+          break;
       }
 
       const input = new Input ({
