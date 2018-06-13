@@ -107,6 +107,7 @@ define ("components/chatView",
           );
         }
 
+        // @TODO: Map JumpToLatest Btn props to state data
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}

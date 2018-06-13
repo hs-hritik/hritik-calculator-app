@@ -1,0 +1,52 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for Jump To Latest button
+// - - - - - - - - - - - - - - -
+
+///
+/// @group conversation
+///
+
+@include component(jump-to-latest) {
+  $arrow-color: color(primary);
+
+  // @TODO: Confirm the colors for UI customization
+  $bg-color: color(text, white);
+  $indicator-color: color(secondary, dark);
+
+  .hs-jump-to-latest {
+    position: absolute;
+    right: 20px;
+    bottom: 80px;
+    display: flex;
+    padding: gutter(5);
+    cursor: pointer;
+    background: $bg-color;
+    border-radius: radius(round);
+    box-shadow: 0 0 1.5px 0 rgba(0, 0, 0, .33);
+
+
+    &__icon {
+      color: $arrow-color;
+      // scss-lint:disable VendorPrefix
+      -ms-transform: rotate(90deg);
+      -webkit-transform: rotate(90deg);
+      // scss-lint:enable VendorPrefix
+      transform: rotate(90deg);
+    }
+
+    &__unread-icon {
+      position: absolute;
+      top: -5px;
+      right: -3px;
+      width: 14px;
+      height: 14px;
+      color: $arrow-color;
+      background: $indicator-color;
+      border-radius: radius(round);
+    }
+  }
+}
