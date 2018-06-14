@@ -1,0 +1,5 @@
+Branches:
+feature/versioning
+
+Changelog:
+Add hs_meta file for maintaining version
