@@ -14,6 +14,7 @@ define ("constants/propTypes",
       id: PropTypes.string.isRequired,
       type: PropTypes.string.isRequired,
       body: PropTypes.string,
+      redacted: PropTypes.bool,
       isCustomerMsg: PropTypes.bool.isRequired,
       createdTs: PropTypes.number.isRequired,
       author: PropTypes.shape ({

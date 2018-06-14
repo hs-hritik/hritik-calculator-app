@@ -145,14 +145,35 @@ define ("components/message",
        * Render text message.
        */
       _renderTextMessage () {
-        /* eslint-disable react/no-danger */
+        let textMessageEl;
+
+        const {
+          message: {
+            redacted,
+            body
+          }
+        } = this.props;
+
+        if (redacted) {
+          // Redaction message is a plain text and needs
+          // to be shown in italics.
+          textMessageEl = (
+            <em>{body}</em>
+          );
+        } else {
+          /* eslint-disable react/no-danger */
+          textMessageEl = (
+            <div dangerouslySetInnerHTML={{__html: body}} />
+          );
+          /* eslint-enable react/no-danger */
+        }
+
         return (
           <div className="hs-message__item" dir="auto">
-            <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
+            {textMessageEl}
             {this._renderAgentAttachments ()}
           </div>
         );
-        /* eslint-enable react/no-danger */
       },
 
       /**

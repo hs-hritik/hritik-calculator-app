@@ -36,6 +36,7 @@ define ("helpers/message",
           id: msg.id,
           type: msg.type,
           body: msg.body,
+          redacted: msg.redacted,
           state: msg.state,
           states: {}, // Applicable only in case of attachments
           createdTs: msg.created_at,
