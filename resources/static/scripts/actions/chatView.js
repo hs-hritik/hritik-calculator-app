@@ -749,7 +749,7 @@ define ("actions/chatView",
             lastPollerCallSucceeded = true;
             const {
               issues = [],
-              timestamp
+              cursor
             } = response;
 
             if (!issues.length) {
@@ -825,7 +825,7 @@ define ("actions/chatView",
                   }),
                   setActiveIssueMsgCursor ({
                     issueType: currentIssueType,
-                    cursorTs: timestamp,
+                    cursorTs: cursor,
                     issueId: internalIssueId
                   })
                 ])
@@ -849,7 +849,7 @@ define ("actions/chatView",
             }
             handleIssueState ();
 
-            dispatch (setIssueCursor (timestamp));
+            dispatch (setIssueCursor (cursor));
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
           }
