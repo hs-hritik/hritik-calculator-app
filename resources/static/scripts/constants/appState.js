@@ -8,6 +8,8 @@ define ("constants/appState",
   function () {
     "use strict";
 
+    // Version of web chat (the SDK, should not be confused with the API version)
+    const WEB_CHAT_VERSION = "1.28.0";
     /**
      * The issue states before unification.
      */
@@ -86,6 +88,7 @@ define ("constants/appState",
     const ISSUE_STATE_RESET = "Rejected";
 
     return {
+      WEB_CHAT_VERSION,
       ISSUE_STATE,
       PRE_CHAT_STATE,
       PRE_CHAT_FEATURES,
