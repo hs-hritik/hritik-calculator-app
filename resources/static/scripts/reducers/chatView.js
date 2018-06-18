@@ -63,6 +63,10 @@ define ("reducers/chatView",
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
+      botState: {
+        botStepInProgress: false,
+        botStepMessage: null
+      },
       unreadCount: 0,
       messageList: [],
       messageCursor: {
@@ -254,6 +258,20 @@ define ("reducers/chatView",
         case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
           return update (state, {
             error: {$set: INITIAL_ERROR_STATE}
+          });
+
+        case ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS:
+          return update (state, {
+            botState: {
+              botStepInProgress: {$set: action.inProgress}
+            }
+          });
+
+        case ACTION_TYPES.SAVE_BOT_STEP_MESSAGE:
+          return update (state, {
+            botState: {
+              botStepMessage: {$set: action.message}
+            }
           });
 
         case ACTION_TYPES.RESET:
