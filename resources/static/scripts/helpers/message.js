@@ -17,54 +17,62 @@ define ("helpers/message",
 
     const {
       TYPE: MESSAGE_TYPE,
-      RENDERABLE_MESSAGE_TYPES
+      RENDERABLE_MESSAGE_TYPES,
+      BOT_MESSAGES,
+      BOT_STEP_MESSAGES
     } = messageConstants;
     const MSG_ID_PREFIX = "message_";
 
     /**
-     * Return processed message entitiy
-     * @param {Object} messages - unprocessed message entitiy
-     * @returns {Object} - processed message entitiy
+     * Return processed message
+     * @param {Object} message - unprocessed message
+     * @returns {Object} - processed message
+     */
+    const getProcessedMessage = (msg) => {
+      if (msg.processed) {
+        return msg;
+      }
+
+      const {type: messageType} = msg;
+
+      const msgObj = {
+        id: msg.id,
+        type: msg.type,
+        body: msg.body,
+        state: msg.state,
+        states: {}, // Applicable only in case of attachments
+        createdTs: msg.created_at,
+        author: msg.author,
+        isCustomerMsg: (msg.origin !== "admin"),
+        attachments: getProcessedAttachments (msg)
+      };
+
+      if (msg.chatbot_info) {
+        msgObj.chatBotInfo = msg.chatbot_info;
+      }
+
+      // If message has faq data, process it
+      // FAQ data will be part of bot message
+      if (messageType === MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT) {
+        msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
+          return {
+            id: faq.data.id,
+            title: faq.title,
+            language: faq.data.language
+          };
+        });
+      }
+
+      return msgObj;
+    };
+
+    /**
+     * Return processed messages
+     * @param {Object} messages - unprocessed messages
+     * @returns {Array} - processed messages
      */
     const getProcessedMessages = (messages) => {
-      return messages.map ((msg) => {
-
-        if (msg.processed) {
-          return msg;
-        }
-
-        const {type: messageType} = msg;
-
-        const msgObj = {
-          id: msg.id,
-          type: msg.type,
-          body: msg.body,
-          state: msg.state,
-          states: {}, // Applicable only in case of attachments
-          createdTs: msg.created_at,
-          author: msg.author,
-          isCustomerMsg: (msg.origin !== "admin"),
-          attachments: getProcessedAttachments (msg)
-        };
-
-        if (msg.chatbot_info) {
-          msgObj.chatBotInfo = msg.chatbot_info;
-        }
-
-        // If message has faq data, process it
-        // FAQ data will be part of bot message
-        if (messageType === MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT) {
-          msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
-            return {
-              id: faq.data.id,
-              title: faq.title,
-              language: faq.data.language
-            };
-          });
-        }
-
-        return msgObj;
-      });
+      return messages.map (getProcessedMessage);
     };
 
     /**
@@ -322,12 +330,33 @@ define ("helpers/message",
       }
     };
 
+    /**
+     * Predicate to return whether message is of type bot
+     * @param {String} msgType - type of message
+     * @returns {Boolean} - whether given message type is bot message
+     */
+    const isBotMessage = (msgType) => {
+      return BOT_MESSAGES.indexOf (msgType) !== -1;
+    };
+
+    /**
+     * Predicate to return whether message is of type bot step
+     * @param {String} msgType - type of message
+     * @returns {Boolean} - whether given message type is bot step
+     */
+    const isBotStepMessage = (msgType) => {
+      return BOT_STEP_MESSAGES.indexOf (msgType) !== -1;
+    };
+
     return {
+      getProcessedMessage,
       getProcessedMessages,
       getProcessedFaq,
       getPreparedMessageDataFromConfig,
       getPreparedMessageDataFromUserInput,
       createMessage,
-      isRenderableMessage
+      isRenderableMessage,
+      isBotMessage,
+      isBotStepMessage
     };
   });
