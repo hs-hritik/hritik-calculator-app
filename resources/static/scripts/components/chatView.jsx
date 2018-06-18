@@ -128,7 +128,8 @@ define ("components/chatView",
                              onSuggestedFaqClick={onSuggestedFaqClick}
                              hasFailure={this.props.hasFailure}
                              userInput={userInput}
-                             onToggleJumpToLatestBtn={this._onToggleJumpToLatestBtn} />
+                             onToggleJumpToLatestBtn={this._onToggleJumpToLatestBtn}
+                             onLoadMore={this._onLoadMore} />
                   <JumpToLatestBtn show={this.state.showJumpToLatestBtn} />
               </div>
               <ChatViewFooterContainer />
@@ -140,6 +141,11 @@ define ("components/chatView",
         this.setState ({
           showJumpToLatestBtn: showBtn
         });
+      },
+
+      _onLoadMore () {
+        // @TODO: Trigger the callback passed from props
+        // for loading more messages
       },
 
       /**

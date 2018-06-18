@@ -31,6 +31,13 @@ define ("components/messageList",
     // to latest button be shown?
     const JUMP_LATEST_BTN_SCROLL_THRESHOLD = 200;
 
+    // Load more throttle time in ms
+    const LOAD_MORE_THROTTLE_TIMER = 1000;
+
+    // At what positiong from the top, should more messages
+    // be loaded?
+    const LOAD_MORE_SCROLL_THRESHOLD = 500;
+
     return React.createClass ({
       displayName: "MessageList",
       propTypes: {
@@ -43,6 +50,7 @@ define ("components/messageList",
         userInput: USER_INPUT_PROP_TYPE,
         onPillOptionSelect: PropTypes.func.isRequired,
         onToggleJumpToLatestBtn: PropTypes.func,
+        onLoadMore: PropTypes.func,
         /**
          * If chat view footer has any failure
          */
@@ -197,6 +205,10 @@ define ("components/messageList",
         } else {
           this.props.onToggleJumpToLatestBtn (false);
         }
+
+        if (scrollTop < LOAD_MORE_SCROLL_THRESHOLD) {
+          this._throttledLoadMore ();
+        }
       },
 
       _scrollWrapperRef: null,
@@ -214,6 +226,12 @@ define ("components/messageList",
        * multiple times
        */
       _throttledScrollBottom: null,
+
+      /**
+       * Prevent multiple calls of load more function when user scrolls
+       * to the top of messages.
+       */
+      _throttledLoadMore: null,
 
       /**
        * Scroll message list to the bottom.
@@ -251,6 +269,9 @@ define ("components/messageList",
         this._throttledScrollBottom = throttle (
           this._scrollToBottom, SCROLL_THROTTLE_TIMER
         );
+
+        this._throttledLoadMore = throttle (this.props.onLoadMore, LOAD_MORE_THROTTLE_TIMER);
+
         this._scrollToBottom ();
       }
     });
