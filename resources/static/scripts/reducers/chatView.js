@@ -111,7 +111,8 @@ define ("reducers/chatView",
               value: {$set: action.value},
               // Save user entered text for input type default input
               defaultInputValue: {
-                $set: isInputTypeDefault (state) ? action.value : ""
+                $set: isInputTypeDefault (state) ? action.value :
+                      state.userInput.defaultInputValue
               },
               errorMsg: {$set: ""}
             }
@@ -172,6 +173,8 @@ define ("reducers/chatView",
             _getDefaultUserInputConfig (),
             action.input
           );
+          // When the default input switches to bot input, save default input value
+          userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
           return update (state, {
             userInput: {$set: userInputUpdateObj}
           });
