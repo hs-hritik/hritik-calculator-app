@@ -47,7 +47,6 @@ define ("actions/chatView",
 
     const {
       ACTIVE_FOOTER,
-      USER_INPUT_TYPES,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT
     } = CHAT_VIEW_CONSTANTS;
@@ -429,9 +428,6 @@ define ("actions/chatView",
             handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
           }
           break;
-
-        default:
-          handleMessageInput (latestMessage);
       }
     };
 
@@ -623,6 +619,62 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to save bot step message
+     * @param {Object} message - message object
+     * @returns {Object} - Action
+     */
+    const saveBotStepMessage = (message) => {
+      return {
+        type: ACTION_TYPES.SAVE_BOT_STEP_MESSAGE,
+        message
+      };
+    };
+
+    /**
+     * Action to set bot step in progress
+     * @param {Boolean} inProgress - whether bot step is in progress
+     * @returns {Object} - Action
+     */
+    const setBotStepInProgress = (inProgress) => {
+      return {
+        type: ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS,
+        inProgress
+      };
+    };
+
+    /**
+     * Function to save latest bot step in store and processes the latest bot input
+     * @param {Array} messages - list of unprocessed messages
+     */
+    const saveLatestBotStepAndProcessBotInput = (messages) => {
+      const {dispatch} = store;
+      const msgsLength = messages.length;
+
+      // Reverse loop on list of messages to see if there is any bot message.
+      // If we find any bot message, we will save that message in store and use
+      // the message input to render footer.
+      for (let i = msgsLength - 1; i >= 0; i--) {
+        const msg = messages [i];
+        const {type} = msg;
+
+        if (messageHelpers.isBotMessage (type)) {
+          dispatch (
+            batchActions ([
+              // Bot step message contains all bot type message except bot control
+              // messages i.e bot_start and bot_end
+              setBotStepInProgress (messageHelpers.isBotStepMessage (type)),
+              saveBotStepMessage (messageHelpers.getProcessedMessage (msg))
+            ])
+          );
+
+          handleMessageInput (msg);
+
+          return;
+        }
+      }
+    };
+
+    /**
      * Action to set poller failure count
      * @param {Boolean} count - Poller failure count
      * @returns {Object} - Action
@@ -801,6 +853,7 @@ define ("actions/chatView",
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
               handleLatestMessage (latestMessage);
+              saveLatestBotStepAndProcessBotInput (messages);
 
               dispatch (
                 batchActions ([
@@ -1007,7 +1060,11 @@ define ("actions/chatView",
       const {dispatch, getState} = store;
       const {
         chatView: {
-          userInput
+          userInput,
+          botState: {
+            botStepInProgress,
+            botStepMessage
+          }
         },
         appState: {
           domain,
@@ -1025,7 +1082,6 @@ define ("actions/chatView",
       const actionsToDispatch = [disableReplyBox (), actionCreators.setFooterInactive ()];
       const isIssue = issueType === ISSUE_TYPE.ISSUE;
       const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
-      const currentStepIsBot = (userInput.type !== USER_INPUT_TYPES.DEFAULT_INPUT);
       let xhrData = null;
 
       // There are two ways to get prepared message xhr data
@@ -1040,12 +1096,12 @@ define ("actions/chatView",
       } else {
         xhrData = messageHelpers.getPreparedMessageDataFromUserInput ({
           input: userInput,
-          latestMessage: getLatestMessage (),
+          latestMessage: botStepInProgress ? botStepMessage : getLatestMessage (),
           isIssue
         });
       }
 
-      if (isPreIssue || (isIssue && currentStepIsBot)) {
+      if (isPreIssue || (isIssue && botStepInProgress)) {
         actionsToDispatch.push (toggleSystemTyping (true));
       }
 
@@ -1065,7 +1121,7 @@ define ("actions/chatView",
           // enabled according to next bot step.
           // In case of issue, we want to enable reply box only if current step is
           // not bot.
-          if (isIssue && !currentStepIsBot) {
+          if (isIssue && !botStepInProgress) {
             dispatch (enableReplyBox ());
           }
           dispatch (
