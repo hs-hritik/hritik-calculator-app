@@ -27,6 +27,10 @@ define ("components/messageList",
     // Scroll throttle time in ms
     const SCROLL_THROTTLE_TIMER = 250;
 
+    // After how much scrolling to the top, will the jump
+    // to latest button be shown?
+    const JUMP_LATEST_BTN_SCROLL_THRESHOLD = 200;
+
     return React.createClass ({
       displayName: "MessageList",
       propTypes: {
@@ -38,6 +42,7 @@ define ("components/messageList",
         text: PropTypes.object.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onToggleJumpToLatestBtn: PropTypes.func,
         /**
          * If chat view footer has any failure
          */
@@ -46,7 +51,9 @@ define ("components/messageList",
 
       render () {
         return (
-          <div ref={this._refCallback} className="hs-view__scroll-wrapper" >
+          <div ref={this._refCallback}
+               className="hs-view__scroll-wrapper"
+               onScroll={this._onScroll}>
             <div className="hs-message-list" >
               {this._renderMessages ()}
               {this._renderTypingIndicator ()}
@@ -176,6 +183,20 @@ define ("components/messageList",
        */
       _onPillOptionClick (option) {
         this.props.onPillOptionSelect (option);
+      },
+
+      _onScroll (ev) {
+        const {
+          scrollHeight,
+          scrollTop,
+          offsetHeight
+        } = ev.target;
+
+        if (scrollTop + offsetHeight + JUMP_LATEST_BTN_SCROLL_THRESHOLD < scrollHeight) {
+          this.props.onToggleJumpToLatestBtn (true);
+        } else {
+          this.props.onToggleJumpToLatestBtn (false);
+        }
       },
 
       _scrollWrapperRef: null,

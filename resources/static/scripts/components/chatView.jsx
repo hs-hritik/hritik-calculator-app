@@ -7,13 +7,14 @@
 define ("components/chatView",
   [
     "components/messageList",
+    "components/jumpToLatestBtn",
     "components/containers/chatViewFooter",
     "components/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
     "constants/propTypes"
   ],
-  function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
+  function (MessageList, JumpToLatestBtn, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes) {
     "use strict";
 
@@ -58,6 +59,12 @@ define ("components/chatView",
           cta: PropTypes.string
         }),
         errorActionHandler: PropTypes.func
+      },
+
+      getInitialState () {
+        return {
+          showJumpToLatestBtn: false
+        };
       },
 
       render () {
@@ -107,7 +114,6 @@ define ("components/chatView",
           );
         }
 
-        // @TODO: Map JumpToLatest Btn props to state data
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}
@@ -121,11 +127,19 @@ define ("components/chatView",
                              onRetryAttachmentClick={onRetryAttachmentClick}
                              onSuggestedFaqClick={onSuggestedFaqClick}
                              hasFailure={this.props.hasFailure}
-                             userInput={userInput} />
+                             userInput={userInput}
+                             onToggleJumpToLatestBtn={this._onToggleJumpToLatestBtn} />
+                  <JumpToLatestBtn show={this.state.showJumpToLatestBtn} />
               </div>
               <ChatViewFooterContainer />
             </DnDWrapper>
         );
+      },
+
+      _onToggleJumpToLatestBtn (showBtn) {
+        this.setState ({
+          showJumpToLatestBtn: showBtn
+        });
       },
 
       /**
