@@ -83,7 +83,8 @@ define ("components/chatViewFooter",
         onFilesChange: PropTypes.func,
         issueIsCreated: PropTypes.bool,
         fullPrivacyEnabled: PropTypes.bool,
-        onCloseConversation: PropTypes.func.isRequired
+        onCloseConversation: PropTypes.func.isRequired,
+        botStepInProgress: PropTypes.bool.isRequired
       },
 
       render () {
@@ -296,15 +297,14 @@ define ("components/chatViewFooter",
       _renderFooterAction () {
         const {
           userInput: {
-            value,
-            type
+            value
           },
           issueIsCreated,
-          fullPrivacyEnabled
+          fullPrivacyEnabled,
+          botStepInProgress
         } = this.props;
-        const currentStepIsBot = (type !== USER_INPUT_TYPES.DEFAULT_INPUT);
 
-        if (value || !issueIsCreated || fullPrivacyEnabled || currentStepIsBot) {
+        if (value || !issueIsCreated || fullPrivacyEnabled || botStepInProgress) {
           return this._renderSendButton ();
         }
 

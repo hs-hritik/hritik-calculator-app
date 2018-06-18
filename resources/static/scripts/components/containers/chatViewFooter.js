@@ -34,7 +34,10 @@ define ("components/containers/chatViewFooter",
         chatView: {
           userInput,
           activeFooter,
-          pollerFailureCount
+          pollerFailureCount,
+          botState: {
+            botStepInProgress
+          }
         },
         csatView: {
           rating
@@ -69,7 +72,8 @@ define ("components/containers/chatViewFooter",
         footerIsActive: footerIsActive,
         userInput,
         fullPrivacyEnabled,
-        failureConfig
+        failureConfig,
+        botStepInProgress
       };
     };
 
