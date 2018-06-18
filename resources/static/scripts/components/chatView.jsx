@@ -11,10 +11,11 @@ define ("components/chatView",
     "components/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
-    "constants/propTypes"
+    "constants/propTypes",
+    "helpers/message"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes) {
+    DnDWrapper, customPropTypes, messageHelpers) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -98,6 +99,7 @@ define ("components/chatView",
           error,
           errorActionHandler
         } = this.props;
+        const dragAndDropEnabled = issueIsCreated && !messageHelpers.isBotMessage ();
 
         if (loading || (error && error.title)) {
           return (
@@ -112,7 +114,7 @@ define ("components/chatView",
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}
-                      enabled={issueIsCreated} >
+                      enabled={dragAndDropEnabled} >
             <div className="hs-view__content">
               <MessageList messages={messages}
                            isTyping={isTyping}
