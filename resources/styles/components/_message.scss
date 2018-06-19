@@ -115,12 +115,20 @@
     // but opacity to border can only be given
     // by rgba() syntax.
     //
-    // @TODO: Confirm the margins
+    // @TODO: Confirm the margins and the relative color
     &__hr {
       height: 1px;
       margin: gutter(16 0);
       background: $chat-widget-secondary-text-color;
       opacity: .2;
+    }
+
+    &__conversation-redacted {
+      padding: gutter(12 0);
+      font-size: font-size(body, small);
+      color: $chat-widget-secondary-text-color;
+      text-align: center;
+      opacity: .5;
     }
 
     &__details {

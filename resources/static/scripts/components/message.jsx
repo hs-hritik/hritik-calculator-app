@@ -43,6 +43,8 @@ define ("components/message",
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
           csatBotRequestMsg: PropTypes.string.isRequired,
+          conversationRedactedMsg: PropTypes.string.isRequired,
+          conversationsRedactedMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
@@ -70,6 +72,8 @@ define ("components/message",
 
         if (type === MESSAGE_TYPE.CHAT_SEPARATOR) {
           return this._renderChatSeparator ();
+        } else if (type === MESSAGE_TYPE.CONVERSATION_REDACTED) {
+          return this._renderConversationRedactionMsg ();
         }
 
         const msgClasses = classes (
@@ -191,6 +195,30 @@ define ("components/message",
         return (
           <div>
             {attachmentsEl}
+          </div>
+        );
+      },
+
+      _renderConversationRedactionMsg () {
+        const {
+          text: {
+            conversationRedactedMsg,
+            conversationsRedactedMsg
+          },
+          message: {
+            redactionCount
+          }
+        } = this.props;
+
+        const body = redactionCount && redactionCount > 1 ?
+          `${redactionCount} ${conversationsRedactedMsg}` : conversationRedactedMsg;
+
+        return (
+          <div>
+            <div className="hs-message__hr" />
+            <div className="hs-message__conversation-redacted">
+              <em>{body}</em>
+            </div>
           </div>
         );
       },

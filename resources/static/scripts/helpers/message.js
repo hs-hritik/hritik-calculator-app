@@ -140,7 +140,7 @@ define ("helpers/message",
      * Return prepared message data for xhr
      * @param {Object} config - config object
      * @param {Object} config.input - user input object
-     * @param {String} config.message - message object
+     * @param {String} config.message - message objectr
      */
     const getPreparedMessageData = (config) => {
       const {
@@ -268,6 +268,25 @@ define ("helpers/message",
     };
 
     /**
+     * Create conversation redacted message
+     * @param {Object} config - options for separator message
+     * @param {Boolean} config.redactionCount - how many conversations were redacted.
+     * @returns {Object} - conversation redacted message
+     */
+    const createRedactionMessage = (config) => {
+      return {
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
+        type: MESSAGE_TYPE.CONVERSATION_REDACTED,
+        isCustomerMsg: false,
+        isSystemMsg: true,
+        createdTs: Date.now (),
+        body: "",
+        redactionCount: config.redactionCount,
+        processed: true
+      };
+    };
+
+    /**
      * Create message of given type.
      * @param {String} type - Message type.
      * @param {Object} options - Message options.
@@ -282,6 +301,9 @@ define ("helpers/message",
 
         case MESSAGE_TYPE.CHAT_SEPARATOR:
           return createSeparatorMessage (options);
+
+        case MESSAGE_TYPE.CONVERSATION_REDACTED:
+          return createRedactionMessage (options);
 
         default:
           return null;

@@ -36,6 +36,7 @@ define ("constants/message",
       ACCEPTED: "Confirmation Accepted",
       REJECTED: "Confirmation Rejected",
       CHAT_SEPARATOR: "ChatSeparator",
+      CONVERSATION_REDACTED: "Conversation Redacted",
       // Non Bot messages - end
 
       // Bot messages - start
@@ -76,6 +77,7 @@ define ("constants/message",
       TYPE.END_CHAT,
       TYPE.ATTACHMENT,
       TYPE.CHAT_SEPARATOR,
+      TYPE.CONVERSATION_REDACTED,
       TYPE.TEXT_MSG_WITH_TEXT_INPUT,
       TYPE.TEXT_MSG_WITH_EMAIL_INPUT,
       TYPE.TEXT_MSG_WITH_NUMERIC_INPUT,

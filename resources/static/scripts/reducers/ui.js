@@ -91,6 +91,8 @@ define ("reducers/ui",
         unknownErrorReconnecting: "Something went wrong. Reconnecting...",
         networkError: "Network Error",
         connectingText: "Connecting...",
+        conversationRedactedMsg: "Conversation Redacted",
+        conversationsRedactedMsg: "Conversations Redacted",
         errorMessage: {
           [NO_AUTH_ERROR]: {
             title: "Authentication Failed",
