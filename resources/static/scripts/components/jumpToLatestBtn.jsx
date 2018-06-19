@@ -13,7 +13,8 @@ define ("components/jumpToLatestBtn",
       displayName: "JumpToLatestBtn",
       propTypes: {
         show: PropTypes.bool,
-        unreadIndicator: PropTypes.bool
+        unreadIndicator: PropTypes.bool,
+        onClick: PropTypes.func
       },
 
       getDefaultProps () {
@@ -31,7 +32,7 @@ define ("components/jumpToLatestBtn",
           (<span className="hs-jump-to-latest__unread-icon" />) : null;
 
         return (
-          <div className="hs-jump-to-latest">
+          <div className="hs-jump-to-latest" onClick={this.props.onClick}>
             <i className="ion-chevron-right hs-jump-to-latest__icon" />
             {unreadIndicatorEl}
           </div>

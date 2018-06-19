@@ -129,12 +129,24 @@ define ("components/chatView",
                              hasFailure={this.props.hasFailure}
                              userInput={userInput}
                              onToggleJumpToLatestBtn={this._onToggleJumpToLatestBtn}
-                             onLoadMore={this._onLoadMore} />
-                  <JumpToLatestBtn show={this.state.showJumpToLatestBtn} />
+                             onLoadMore={this._onLoadMore}
+                             ref={this._setMsgListRef} />
+                  <JumpToLatestBtn show={this.state.showJumpToLatestBtn}
+                                   onClick={this._onJumpBtnClick} />
               </div>
               <ChatViewFooterContainer />
             </DnDWrapper>
         );
+      },
+
+      _msgListRef: null,
+
+      _onJumpBtnClick () {
+        this._msgListRef._animatedScrollToBottom ();
+      },
+
+      _setMsgListRef (ref) {
+        this._msgListRef = ref;
       },
 
       _onToggleJumpToLatestBtn (showBtn) {

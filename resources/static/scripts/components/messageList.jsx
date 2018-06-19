@@ -31,6 +31,12 @@ define ("components/messageList",
     // to latest button be shown?
     const JUMP_LATEST_BTN_SCROLL_THRESHOLD = 200;
 
+    // We are using EaseInQuad function which ensures that scrolling
+    // animation is smooth. Ref: https://gist.github.com/gre/1650294
+    //
+    // This variable is to ensure that it starts off fast.
+    const JUMP_LATEST_BTN_ANIM_FACTOR = 100;
+
     // Load more throttle time in ms
     const LOAD_MORE_THROTTLE_TIMER = 1000;
 
@@ -239,6 +245,26 @@ define ("components/messageList",
       _scrollToBottom () {
         const node = ReactDOM.findDOMNode (this._scrollWrapperRef);
         node.scrollTop = node.scrollHeight;
+      },
+
+      _scrollAnimLoop (node, time = 0) {
+        // To scroll smoothly we are using EaseInQuad easing function.
+        // Ref: https://gist.github.com/gre/1650294
+        node.scrollTop += JUMP_LATEST_BTN_ANIM_FACTOR * time * time;
+
+        if (node.scrollTop + node.offsetHeight < node.scrollHeight) {
+          // Each animation frame corresponds to 16.6 ms = ~0.016s
+          const scrollAnimFunc = this._scrollAnimLoop.bind (this, node, time + 0.016);
+          requestAnimationFrame (scrollAnimFunc);
+        }
+      },
+
+      /**
+       * Scroll message list to the bottom.
+       */
+      _animatedScrollToBottom () {
+        const node = ReactDOM.findDOMNode (this._scrollWrapperRef);
+        this._scrollAnimLoop (node);
       },
 
       /**
