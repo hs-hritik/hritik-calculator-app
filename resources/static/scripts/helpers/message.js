@@ -228,10 +228,9 @@ define ("helpers/message",
       } else if (responseMessageType === MESSAGE_TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT) {
         const date = commonHelpers.getDateObjectFromString (value);
         requestData [messageBodyKey] = dateUtils.format (date, "{dddd}, {mmmm} {dd}, {yyyy}");
-        // @TODO - Remove commented meta in request after BE fix
-        // requestData.meta = JSON.stringify ({
-        //   dt: date.getTime ()
-        // });
+        requestData.meta = JSON.stringify ({
+          dt: date.getTime ()
+        });
       } else if (selectedOption && selectedOption.value) {
         requestData [messageBodyKey] = selectedOption.label;
         requestData.option_data = JSON.stringify ({

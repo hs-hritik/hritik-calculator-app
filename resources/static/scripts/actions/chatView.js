@@ -56,7 +56,8 @@ define ("actions/chatView",
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
-      XHR_ISSUE_STATE
+      XHR_ISSUE_STATE,
+      WEB_CHAT_VERSION
     } = APP_STATE_CONSTANTS;
 
     const {EVENT} = analyticsConstants;
@@ -1345,8 +1346,18 @@ define ("actions/chatView",
           };
         }
 
+        /**
+         * Note :
+         * sm = sdk meta
+         * cb = chat bots
+         * library_version = current webchat version
+         */
         const xhrData = {
-          meta: JSON.stringify (meta)
+          meta: JSON.stringify (meta),
+          sm: JSON.stringify ({
+            cb: true
+          }),
+          library_version: WEB_CHAT_VERSION
         };
 
         // If CIF is set and contains at least one field, add it to XHR data
