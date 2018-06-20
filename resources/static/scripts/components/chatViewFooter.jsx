@@ -13,10 +13,11 @@ define ("components/chatViewFooter",
     "constants/chatView",
     "constants/keyCodes",
     "constants/propTypes",
+    "helpers/common",
     "gunpowder/utils/classes"
   ],
   function (StarRating, ReplyBoxContainer, FileInput, SkipButtonWrapper,
-    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, classes) {
+    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -226,7 +227,6 @@ define ("components/chatViewFooter",
           userInput: {
             value,
             type,
-            placeholder,
             errorMsg,
             disabled
           },
@@ -253,14 +253,17 @@ define ("components/chatViewFooter",
             <ReplyBoxContainer className="hs-chat-footer__text-area" />
           );
         } else {
+          const htmlInputType = this._getHtmlInputType (type);
+          const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
+
           inputComponentEl = (
             <input className="hs-chat-footer__text-field"
-                   type={this._getHtmlInputType (type)}
+                   type={htmlInputType}
                    dir="auto"
                    disabled={disabled}
                    value={value}
                    ref={this._saveUserInputRef}
-                   placeholder={placeholder}
+                   placeholder={inputPlaceholder}
                    onChange={this._onInputFieldValueChange}
                    onKeyUp={this._onInputFieldKeyUp}
                    onFocus={onFooterFocus}
@@ -522,6 +525,30 @@ define ("components/chatViewFooter",
        */
       _getHtmlInputType (type) {
         return HTML_INPUT_TYPES [type] || HTML_INPUT_TYPES.PLAIN_TEXT;
+      },
+
+      /**
+       * Returns input placeholder string
+       * @param {String} htmlInputType - html input type (text, number, string)
+       * @returns {String} - html input placeholder
+       */
+      _getInputPlaceholder (htmlInputType) {
+        const {
+          userInput: {
+            placeholder
+          },
+          text
+        } = this.props;
+        let inputPlaceholder = placeholder;
+
+        // If date input is not supported, do not use placeholder sent by backend.
+        // Use predefined unsupported date input placeholder text.
+        if (htmlInputType === HTML_INPUT_TYPES.DATE &&
+            !commonHelpers.isDateInputSupported ()) {
+          inputPlaceholder = text.unsupportedDateInputPlaceholder;
+        }
+
+        return inputPlaceholder;
       },
 
       componentDidUpdate (prevProps) {
