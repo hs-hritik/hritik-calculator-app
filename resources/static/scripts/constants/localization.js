@@ -8,6 +8,7 @@ define ("constants/localization",
   function () {
     "use strict";
 
+    // @TODO: Add a string for conversation closed.
     const UI_STRING_KEYS = {
       "resolution_accept": "resolutionQuestionAccept",
       "resolution_reject": "resolutionQuestionReject",

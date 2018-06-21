@@ -532,9 +532,14 @@ define ("actions/chatView",
      * Handle chat end
      * a] Either show start new conversation footer or close conversation footer
      * b] Add chat ended message in message list
+     * @param {Object} config - config object
+     * @param {Boolean} config.showConversationClosedMsg - Should conversation
+     *                                                     closed message be rendered.
      */
-    const handleChatEnd = () => {
+    const handleChatEnd = (config) => {
       const {dispatch, getState} = store;
+      const {conversationHasEnded} = config;
+      const conversationClosedMsg = conversationHasEnded ? text.conversationClosed : "";
       const {
         appState: {
           sdkConfigOptions: {
@@ -560,7 +565,7 @@ define ("actions/chatView",
       dispatch (createMessage ({
         type: MESSAGE_TYPE.CHAT_SEPARATOR,
         messageConfig: {
-          infoText: text.conversationEndNote,
+          infoText: conversationClosedMsg,
           hr: true
         }
       }));
@@ -611,7 +616,9 @@ define ("actions/chatView",
         // a] Issue cursor is not present i.e. its first poll (page refresh)
         // AND
         // b] Issue state is 'rejected' then handle end chat
-        handleChatEnd ();
+        handleChatEnd ({
+          conversationHasEnded: true
+        });
       }
     };
 
