@@ -71,10 +71,6 @@ define ("reducers/appState",
         initialUserMessage: ""
       },
       conversationStarted: false,
-      parentPageInfo: {
-        title: "",
-        url: ""
-      },
       proactiveChatRules: [],
       analytics: {
         suggestedFaqReadTracked: false
@@ -254,14 +250,6 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_TAGS:
           return update (state, {
             tags: {$set: action.tags}
-          });
-
-        case ACTION_TYPES.SET_PARENT_PAGE_INFO:
-          return update (state, {
-            parentPageInfo: {
-              title: {$set: action.parentPageInfo.title},
-              url: {$set: action.parentPageInfo.url}
-            }
           });
 
         case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
