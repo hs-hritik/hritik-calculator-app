@@ -89,6 +89,12 @@ define ("components/chatViewFooter",
       },
 
       render () {
+        const {failureConfig} = this.props;
+
+        if (failureConfig) {
+          return this._renderFailure ();
+        }
+
         const {
           footerIsActive,
           browserIsMobile,
@@ -99,7 +105,6 @@ define ("components/chatViewFooter",
             required,
             skipLabel
           },
-          failureConfig,
           issueIsCreated,
           onSkipUserInput
         } = this.props;
@@ -109,8 +114,8 @@ define ("components/chatViewFooter",
         // Hide footer if
         // 1] Input is pill select - applicable for both preIssue and issue
         //    OR
-        // 2] PreIssue and there is no failure and input is disabled
-        if (inputIsPillSelect || (isPreIssue && !failureConfig && disabled)) {
+        // 2] PreIssue and input is disabled
+        if (inputIsPillSelect || (isPreIssue && disabled)) {
           return null;
         }
 
@@ -144,10 +149,6 @@ define ("components/chatViewFooter",
        * Render the active footer component
        */
       _renderFooterComponent () {
-        if (this.props.failureConfig) {
-          return this._renderFailure ();
-        }
-
         const {
           activeFooter
         } = this.props;
