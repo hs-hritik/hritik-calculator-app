@@ -62,6 +62,8 @@ define ("actions/chatView",
 
     const {EVENT} = analyticsConstants;
 
+    const update = React.addons.update;
+
     const PROCESS = true;
     const SKIP_PLATFORM_ID = true;
     const SHOW_PRE_ISSUE_FOOTER = true;
@@ -460,6 +462,142 @@ define ("actions/chatView",
     };
 
     /**
+     * Helper method to create a date separator message
+     * @param {Number} timestamp - Unix timestamp that needs to rendered
+     * @param {Boolean} hr - Boolean to signify if a line is to be rendered or not
+     * @returns {Object} Conversation history object.
+     */
+    const _getIssueDateSeparator = (timestamp, hr = true) => {
+      const conversationStartDateMessage = messageHelpers.createMessage (
+        MESSAGE_TYPE.CHAT_SEPARATOR, {
+          hr,
+          timestamp: dateUtils.format (timestamp, "{dddd}, {mmmm} {dd}, {yyyy}")
+        }
+      );
+
+      return conversationStartDateMessage;
+    };
+
+    /**
+     * Helper method to return index of preissue for an issue
+     * @param {Array} issueList - list of issues
+     * @param {String} preIssueId - Id of the preissue that needs to be found
+     * @returns {Number} Matching issue for preIssue
+     */
+    const _getPreIssueIndex = (issueList, preIssueId) => {
+      for (let i = 0; i < issueList.length; i++) {
+        const issue = issueList[i];
+        if (issue.preissue_id === preIssueId) {
+          return i;
+        }
+      }
+
+      return -1;
+    };
+
+    /**
+     * Create a linear message list from issue list
+     * @param {Object} issues - Issue List
+     * @param {String} lastGroupId - ID of the last pre-issue in the list
+     * @returns {Array} Array of messages
+     */
+    const getLinearMessages = (issues, lastGroupId) => {
+      const finalMessages = [];
+      let previousGroupId = lastGroupId;
+
+      issues.forEach ((issue) => {
+        const currentGroupId = issue.preissue_id;
+
+        // If there has been transition from one issue to another
+        // insert a date separator.
+        if (previousGroupId && currentGroupId !== previousGroupId) {
+          previousGroupId = currentGroupId;
+          finalMessages.push (_getIssueDateSeparator (issue.created_at));
+        }
+        finalMessages.push (...issue.messages);
+      });
+
+      return finalMessages;
+    };
+
+    /**
+     * Function to return a correctly ordered list of issues.
+     *
+     * There's a chance that issues from the backend aren't
+     * in the correct order. We reorder them by searching preissue
+     * for every corresponding issue.
+     *
+     * Basically, it makes sure that the issue list reflects the way
+     * they are to be rendered (Issue-Preissue--Issue-Preissue).
+     *
+     * @param {Array} issueList - List of issues
+     * @returns {Array} Array of issue objects
+     */
+    const getOrderedIssueList = (issueList) => {
+      // @TODO: Check if cloning could be made more efficient
+      const clonedIssueList = issueList.map ((issue) => {
+        return update (issue, {});
+      });
+      const finalIssueList = [];
+
+      for (let i = 0; i < clonedIssueList.length; i++) {
+        const issue = clonedIssueList[i];
+
+        if (issue.processed) {
+          continue;
+        }
+
+        finalIssueList.push (issue);
+        issue.processed = true;
+
+        if (issue.type === ISSUE_TYPE.ISSUE) {
+          // Find preIssue in the list and add it to final list
+          const preIssueIndex = _getPreIssueIndex (clonedIssueList, issue.preissue_id);
+          const preIssue = preIssueIndex !== -1 ? clonedIssueList [preIssueIndex] : null;
+
+          // Check if the issue has already been processed in the preceding step
+          if (preIssue && !preIssue.processed) {
+            preIssue.processed = true;
+            finalIssueList.push (preIssue);
+          }
+        }
+      }
+
+      return finalIssueList;
+    };
+
+    /**
+     * Function to create a linear message list to be rendered
+     * from the list of issues.
+     * @param {Array} issueList - List of issues that have come in XHR response
+     * @param {String} config.lastIssueId - Last issue ID rendered in the message list
+     * @param {Boolean} config.hasOlderMsgs - Flag to determine if there are more messages
+     *                                        left to be rendered.
+     * @returns {Array} List of messages
+     */
+    const createLinearMessageList = (issueList, config) => {
+      const {
+        lastIssueId,
+        hasOlderMsgs
+      } = config;
+
+      const orderedIssues = getOrderedIssueList (issueList);
+      const messageList = getLinearMessages (orderedIssues, lastIssueId);
+
+      // if there are no more messages remaining to be fetched, we should
+      // render the timestamp without a <hr> at the top of list
+      if (hasOlderMsgs === false) {
+        const oldestIssue = issueList [issueList.length - 1];
+
+        messageList.unshift (
+          _getIssueDateSeparator (oldestIssue.created_at, false)
+        );
+      }
+
+      return messageList;
+    };
+
+    /**
      * Returns active issue and list of messages
      * @param {Object} config - config for creating active issue and  message list
      * @param {Object} config.issues - issues list
@@ -471,12 +609,9 @@ define ("actions/chatView",
           issueCursor
         }
       } = store.getState ();
-      const {issues} = config;
+      const {issues, hasOlderMsgs} = config;
       const currentIssue = issues [0];
-      const currentIssueMessages = (currentIssue && currentIssue.messages) || [];
       let previousIssue = null;
-      let previousIssueMessages = [];
-      let issueCreationDate = currentIssue.created_at;
       let messages = [];
 
       // If current issue type is 'issue', find pre issue from issues list
@@ -486,25 +621,12 @@ define ("actions/chatView",
           return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
                   issue.preissue_id === currentIssue.preissue_id);
         });
-        if (previousIssue) {
-          issueCreationDate = previousIssue.created_at;
-          previousIssueMessages = previousIssue.messages || previousIssueMessages;
-        }
       }
 
-      messages = previousIssueMessages.concat (currentIssueMessages);
-
-      // For the first fetch of issues list, add conversation start date message
-      // at the start of message list. (This is a system info message)
-      if (!issueCursor) {
-        const conversationStartDateMessage = messageHelpers.createMessage (
-          MESSAGE_TYPE.CHAT_SEPARATOR, {
-            hr: true,
-            timestamp: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
-          }
-        );
-        messages = [conversationStartDateMessage].concat (messages);
-      }
+      messages = createLinearMessageList (issues, {
+        lastIssueId: null,
+        hasOlderMsgs
+      });
 
       // When a preIssue gets converted to an issue, track issue_created event.
       // When the preIssue gets converted to an issue, the preIssue object's status
