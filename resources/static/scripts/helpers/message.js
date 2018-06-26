@@ -23,6 +23,9 @@ define ("helpers/message",
     } = messageConstants;
     const MSG_ID_PREFIX = "message_";
 
+    const SECONDS = 60;
+    const MILLISECONDS = 1000;
+
     /**
      * Return processed message
      * @param {Object} message - unprocessed message
@@ -229,7 +232,12 @@ define ("helpers/message",
         const date = commonHelpers.getDateObjectFromString (value);
         requestData [messageBodyKey] = dateUtils.format (date, "{dddd}, {mmmm} {dd}, {yyyy}");
         requestData.meta = JSON.stringify ({
-          dt: date.getTime ()
+          dt: date.getTime (),
+          // @Note :- We are multiplying by -1, because getTimezoneOffset method
+          // returns a value in mins from local time to UTC. We need the time
+          // difference from UTC to local time.
+          // Ref :- MDN - Date.getTimezoneOffset
+          tz_offset: date.getTimezoneOffset () * SECONDS * MILLISECONDS * -1
         });
       } else if (selectedOption && selectedOption.value) {
         requestData [messageBodyKey] = selectedOption.label;
