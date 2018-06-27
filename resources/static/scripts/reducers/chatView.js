@@ -83,6 +83,7 @@ define ("reducers/chatView",
           issueId: ""
         }
       },
+      userIsViewingPastMessages: false,
       allMessagesAreLoaded: false,
       issueCursor: 0,
       pollerFailureCount: 0,
@@ -210,6 +211,11 @@ define ("reducers/chatView",
             userInput: {
               selectedOption: {$set: action.option}
             }
+          });
+
+        case ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES:
+          return update (state, {
+            userIsViewingPastMessages: {$set: action.isViewing}
           });
 
         case ACTION_TYPES.APPEND_MESSAGES:

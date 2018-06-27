@@ -1574,6 +1574,18 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set flag when user is viewing past messages in the chat
+     * @param {Boolean} isViewing - Flag to set when user views past messages
+     * @returns {Object} - Action
+     */
+    const setUserIsViewingPastMessages = (isViewing) => {
+      return {
+        type: ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES,
+        isViewing
+      };
+    };
+
+    /**
      * Action to create a message of given type along with
      * optionally showing system typing indicator.
      * Pass the message object related data in the config object,
@@ -1848,6 +1860,7 @@ define ("actions/chatView",
       createAttachmentMessages,
       createAttachmentMessage,
       showPostIssueResolutionFooter,
+      setUserIsViewingPastMessages,
       acceptResolutionQuestion,
       rejectResolutionQuestion,
       setUserInputData,

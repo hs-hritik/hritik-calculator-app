@@ -31,8 +31,10 @@ define ("components/chatView",
         onSuggestedFaqClick: PropTypes.func,
         showAgentNickname: PropTypes.bool,
         isTyping: PropTypes.bool,
+        userIsViewingPastMessages: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
+        onScrollPastExistingConversation: PropTypes.func,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
@@ -129,7 +131,10 @@ define ("components/chatView",
                              onSuggestedFaqClick={onSuggestedFaqClick}
                              hasFailure={this.props.hasFailure}
                              userInput={userInput}
-                             onToggleJumpToLatestBtn={this._onToggleJumpToLatestBtn}
+                             userIsViewingPastMessages={this.props.userIsViewingPastMessages}
+                             onScrollPastExistingConversation={
+                               this._onScrollPastExistingConversation
+                             }
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef} />
                   <JumpToLatestBtn show={this.state.showJumpToLatestBtn}
@@ -150,10 +155,8 @@ define ("components/chatView",
         this._msgListRef = ref;
       },
 
-      _onToggleJumpToLatestBtn (showBtn) {
-        this.setState ({
-          showJumpToLatestBtn: showBtn
-        });
+      _onScrollPastExistingConversation (isViewing) {
+        this.props.onScrollPastExistingConversation (isViewing);
       },
 
       _onLoadMore () {

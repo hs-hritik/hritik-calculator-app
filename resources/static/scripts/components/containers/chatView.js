@@ -36,6 +36,7 @@ define ("components/containers/chatView",
           pollerFailureCount,
           loading,
           error,
+          userIsViewingPastMessages,
           allMessagesAreLoaded
         },
         ui: {
@@ -58,6 +59,7 @@ define ("components/containers/chatView",
         loading,
         hasFailure,
         error,
+        userIsViewingPastMessages,
         allMessagesAreLoaded
       };
     };
@@ -73,6 +75,11 @@ define ("components/containers/chatView",
         onRetryAttachmentClick: (message) => {
           dispatch (
             chatViewActions.createAttachmentMessage (message.file, message.id)
+          );
+        },
+        onScrollPastExistingConversation: (isViewing) => {
+          dispatch (
+            chatViewActions.setUserIsViewingPastMessages (isViewing)
           );
         },
         onPillOptionSelect: (option) => {

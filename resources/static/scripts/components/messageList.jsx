@@ -52,10 +52,11 @@ define ("components/messageList",
         onSuggestedFaqClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
+        userIsViewingPastMessages: PropTypes.bool,
         text: PropTypes.object.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
         onPillOptionSelect: PropTypes.func.isRequired,
-        onToggleJumpToLatestBtn: PropTypes.func,
+        onScrollPastExistingConversation: PropTypes.func,
         onLoadMore: PropTypes.func,
         /**
          * If chat view footer has any failure
@@ -207,9 +208,9 @@ define ("components/messageList",
         } = ev.target;
 
         if (scrollTop + offsetHeight + JUMP_LATEST_BTN_SCROLL_THRESHOLD < scrollHeight) {
-          this.props.onToggleJumpToLatestBtn (true);
+          this.props.onScrollPastExistingConversation (true);
         } else {
-          this.props.onToggleJumpToLatestBtn (false);
+          this.props.onScrollPastExistingConversation (false);
         }
 
         if (scrollTop < LOAD_MORE_SCROLL_THRESHOLD) {
@@ -279,7 +280,11 @@ define ("components/messageList",
           return !!message;
         });
 
-        if ((currentValidMessages.length > previousValidMessages.length)) {
+        // Scrolling to bottom shouldn't happen if the user is amidst scrolling
+        // through message. We prevent that from happening by checking if
+        // user is viewing past messages.
+        if ((currentValidMessages.length > previousValidMessages.length) &&
+          !this.props.userIsViewingPastMessages) {
           this._scrollToBottom ();
         }
       },
