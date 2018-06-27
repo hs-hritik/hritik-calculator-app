@@ -46,6 +46,7 @@ define ("components/chatView",
           fontFamily: PropTypes.string
         }),
         loading: PropTypes.bool,
+        allMessagesAreLoaded: PropTypes.bool,
         /**
          * If chat view footer has any failure
          */

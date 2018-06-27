@@ -83,6 +83,7 @@ define ("reducers/chatView",
           issueId: ""
         }
       },
+      allMessagesAreLoaded: false,
       issueCursor: 0,
       pollerFailureCount: 0,
       isCsatSubmitted: false,
@@ -182,6 +183,11 @@ define ("reducers/chatView",
           );
           return update (state, {
             userInput: {$set: userInputUpdateObj}
+          });
+
+        case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
+          return update (state, {
+            allMessagesAreLoaded: {$set: action.msgsLoaded}
           });
 
         case ACTION_TYPES.RESET_USER_INPUT_DATA:

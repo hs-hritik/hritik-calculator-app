@@ -35,7 +35,8 @@ define ("components/containers/chatView",
           userInput,
           pollerFailureCount,
           loading,
-          error
+          error,
+          allMessagesAreLoaded
         },
         ui: {
           text
@@ -56,7 +57,8 @@ define ("components/containers/chatView",
         userInput,
         loading,
         hasFailure,
-        error
+        error,
+        allMessagesAreLoaded
       };
     };
 
