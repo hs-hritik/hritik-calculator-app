@@ -4,7 +4,7 @@
 # release, deployment, etc tasks.
 
 release:
-  changelog_dir: changelog
+  changelog_dir: changelogs
 
   findreplace:
     - file: package.json
