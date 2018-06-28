@@ -11,11 +11,10 @@ define ("components/chatView",
     "components/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
-    "constants/propTypes",
-    "helpers/message"
+    "constants/propTypes"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes, messageHelpers) {
+    DnDWrapper, customPropTypes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -59,7 +58,8 @@ define ("components/chatView",
           // Call to action text for the error. eg. Retry
           cta: PropTypes.string
         }),
-        errorActionHandler: PropTypes.func
+        errorActionHandler: PropTypes.func,
+        botStepInProgress: PropTypes.bool
       },
 
       render () {
@@ -97,9 +97,10 @@ define ("components/chatView",
           issueIsCreated,
           loading,
           error,
-          errorActionHandler
+          errorActionHandler,
+          botStepInProgress
         } = this.props;
-        const dragAndDropEnabled = issueIsCreated && !messageHelpers.isBotMessage ();
+        const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
         if (loading || (error && error.title)) {
           return (

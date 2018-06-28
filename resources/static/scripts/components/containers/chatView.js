@@ -35,7 +35,10 @@ define ("components/containers/chatView",
           userInput,
           pollerFailureCount,
           loading,
-          error
+          error,
+          botState: {
+            botStepInProgress
+          }
         },
         ui: {
           text
@@ -56,7 +59,8 @@ define ("components/containers/chatView",
         userInput,
         loading,
         hasFailure,
-        error
+        error,
+        botStepInProgress
       };
     };
 
