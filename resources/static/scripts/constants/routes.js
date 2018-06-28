@@ -27,6 +27,8 @@ define ("constants/routes",
 
     const getConversationUpdates = (domain) => `${BASE}${domain}/conversations/updates`;
 
+    const getConversationHistory = (domain) => `${BASE}${domain}/conversations/history`;
+
     const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
 
     const postPreIssue = (domain) => `${BASE}${domain}/preissues`;
@@ -64,6 +66,7 @@ define ("constants/routes",
       postAnalyticsEvent,
       postUserReply,
       getConversationUpdates,
+      getConversationHistory,
       postSuggestedFaqRead,
       postIssue
     };

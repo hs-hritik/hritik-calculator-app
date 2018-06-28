@@ -84,6 +84,9 @@ define ("components/containers/chatView",
             chatViewActions.setUserIsViewingPastMessages (isViewing)
           );
         },
+        onLoadMoreMessages: () => {
+          chatViewActions.loadMoreMessages ();
+        },
         onPillOptionSelect: (option) => {
           dispatch (chatViewActions.setUserSelectedOption (option));
           dispatch (chatViewActions.submitReply ());

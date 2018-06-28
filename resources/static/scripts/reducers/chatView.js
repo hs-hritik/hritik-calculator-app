@@ -127,9 +127,14 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
+          const {cursorType, issueId, issueType, cursorTs} = action.msgCursor;
           return update (state, {
             messageCursor: {
-              [action.cursorType]: {$merge: action.msgCursor}
+              [cursorType]: {
+                issueId: {$set: issueId},
+                issueType: {$set: issueType},
+                cursorTs: {$set: cursorTs}
+              }
             }
           });
 
@@ -230,8 +235,11 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.PREPEND_MESSAGES:
+          const uniqMessages = _getUniqueMessages (state.messageList, action.messages);
+          const newMessageList = uniqMessages.concat (state.messageList);
+
           return update (state, {
-            messageList: {$unshift: _getUniqueMessages (state.messageList, action.messages)}
+            messageList: {$set: newMessageList}
           });
 
         case ACTION_TYPES.REMOVE_MESSAGE:

@@ -206,14 +206,17 @@ define ("actions/chatView",
 
     /**
      * Action to set active issue message cursor.
-     * @param {Number} msgCursor - message cursor (unix timestamp)
+     * @param {Object} msgCursorObj - message cursor object
+     * @param {Number} msgCursorObj.cursorTs - unix timestamp of message's creation time
+     * @param {String} msgCursorObj.issueId - Issue ID
+     * @param {String} msgCursorObj.issueType - Type of issues (PRE_ISSUE/ISSUE)
+     * @param {String} msgCursorObj.cursorType - Type of cursor (FORWARD/BACKWARD)
      * @returns {Object} - action
      */
-    const setActiveIssueMsgCursor = (msgCursor) => {
+    const setActiveIssueMsgCursor = (msgCursorObj) => {
       return {
         type: ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR,
-        cursorType: CURSOR_TYPES.FORWARD,
-        msgCursor
+        msgCursor: msgCursorObj
       };
     };
 
@@ -365,6 +368,18 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set active issue message cursor.
+     * @param {Boolean} msgsLoaded - flag to denote if all messages have been loaded
+     * @returns {Object} - action
+     */
+    const setAllMessagesAreLoaded = (msgsLoaded) => {
+      return {
+        type: ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED,
+        msgsLoaded
+      };
+    };
+
+    /**
      * Handles message input
      * Parse the input data for message and save it in store
      * Set the footer depending on input type
@@ -460,6 +475,20 @@ define ("actions/chatView",
         submitted
       };
     };
+
+    /**
+     * Helper method to get particular issue id of the conversation
+     * @param {Object} issue - issue object
+     * @returns {String} Issue ID
+     */
+    const _getIssueId = (issue) => {
+      if (issue.type === ISSUE_TYPE.PRE_ISSUE) {
+        return issue.preissue_id;
+      }
+
+      return issue.issue_id;
+    };
+
 
     /**
      * Helper method to create a date separator message
@@ -798,6 +827,39 @@ define ("actions/chatView",
       return preIssueActionTriggered;
     };
 
+    const saveMessageCursor = (messageCursorConfig) => {
+      const {dispatch} = store;
+      const {
+        issue,
+        cursorType,
+        cursorTs
+      } = messageCursorConfig;
+
+      if (cursorType === CURSOR_TYPES.FORWARD) {
+        dispatch (
+          setActiveIssueMsgCursor ({
+            cursorType,
+            cursorTs,
+            issueType: issue.type,
+            issueId: _getIssueId (issue)
+          })
+        );
+      } else {
+        const oldestIssueMessages = issue.messages;
+        const oldestTimestamp = oldestIssueMessages [oldestIssueMessages.length - 1].created_at;
+
+        dispatch (
+          setActiveIssueMsgCursor ({
+            cursorType,
+            cursorTs: oldestTimestamp,
+            issueType: issue.type,
+            preissueId: issue.preissue_id,
+            issueId: _getIssueId (issue)
+          })
+        );
+      }
+    };
+
     /**
      * Handle submit initial user message for bot step
      * @param {String} messageType - Type of message
@@ -824,6 +886,98 @@ define ("actions/chatView",
           msgBody: initialUserMessage
         });
       }
+    };
+
+    /**
+     * Show/Hide past conversations loading animation
+     * @param {Boolean} loading - should the conversations loading animation be shown
+     * @returns {Object} action
+     */
+    const toggleConversationsLoader = (loading) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_CONVERSATIONS_LOADER,
+        loading
+      };
+    };
+
+    /**
+     * Fire xhr to load more messages.
+     * @param {Object} config - data required for xhr
+     * @param {Function} config.onSuccess - success callback
+     * @param {Function} config.onEnd - end callback
+     */
+    const loadMoreMessages = () => {
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          domain
+        },
+        chatView: {
+          messageCursor: {
+            [CURSOR_TYPES.BACKWARD]: {
+              cursorTs,
+              issueType,
+              issueId
+            }
+          },
+          pastConversationsLoading
+        }
+      } = getState ();
+
+      // If messages are already being loaded, return.
+      if (pastConversationsLoading) {
+        return;
+      }
+
+      const isIssue = issueType === ISSUE_TYPE.ISSUE;
+      const xhrData = {
+        cursor: cursorTs
+      };
+
+      if (isIssue) {
+        xhrData.issue_id = issueId;
+      } else {
+        xhrData.preissue_id = issueId;
+      }
+
+      dispatch (toggleConversationsLoader (true));
+
+      xhr ({
+        route: routes.getConversationHistory (domain),
+        data: xhrHelpers.getPreparedXhrData (xhrData),
+        method: "GET",
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess: (response) => {
+          const {issues} = response;
+
+          if (!issues.length) {
+            return;
+          }
+
+          const linearMsgs = createLinearMessageList (issues, {
+            lastIssueId: issueId,
+            hasOlderMsgs: response.has_older_messages
+          });
+
+          const oldestIssue = issues [issues.length - 1];
+
+          dispatch (
+            batchActions ([
+              toggleConversationsLoader (false),
+              addMessages ({
+                messages: linearMsgs,
+                prepend: true
+              }),
+              setAllMessagesAreLoaded (!response.has_older_messages)
+            ])
+          );
+
+          saveMessageCursor ({
+            issue: oldestIssue,
+            cursorType: CURSOR_TYPES.BACKWARD
+          });
+        }
+      });
     };
 
     /**
@@ -877,6 +1031,7 @@ define ("actions/chatView",
           try {
             lastPollerCallSucceeded = true;
             const {
+              has_older_messages: hasOlderMsgs,
               issues = [],
               cursor
             } = response;
@@ -888,19 +1043,19 @@ define ("actions/chatView",
             const {
               currentIssue,
               messages
-            } = getCurrentIssueAndMessages ({issues});
+            } = getCurrentIssueAndMessages ({issues, hasOlderMsgs});
 
             const {
-              id: issueId,
+              publish_id: issueId,
               type: currentIssueType,
               state_data: {
                 state: issueState
               },
               csat_received: isCsatSubmitted
             } = currentIssue;
-            const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
 
-            const internalIssueId = isPreIssue ? currentIssue.preissue_id : currentIssue.issue_id;
+            const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
+            const internalIssueId = _getIssueId (currentIssue);
 
             if (!isIssueActive (issueState)) {
               stopPollingForMessages ();
@@ -947,18 +1102,25 @@ define ("actions/chatView",
               }
 
               dispatch (
-                batchActions ([
-                  addMessages ({
-                    messages: processedMessages,
-                    process: false
-                  }),
-                  setActiveIssueMsgCursor ({
-                    issueType: currentIssueType,
-                    cursorTs: cursor,
-                    issueId: internalIssueId
-                  })
-                ])
+                addMessages ({
+                  messages: processedMessages,
+                  process: false
+                })
               );
+
+              saveMessageCursor ({
+                issue: currentIssue,
+                cursorTs: cursor,
+                cursorType: CURSOR_TYPES.FORWARD
+              });
+
+              if (!issueCursor) {
+                const oldestIssue = issues [issues.length - 1];
+                saveMessageCursor ({
+                  issue: oldestIssue,
+                  cursorType: CURSOR_TYPES.BACKWARD
+                });
+              }
 
               if (isPreIssue) {
                 // Post user reply requires the messages to be added and user
@@ -1857,6 +2019,7 @@ define ("actions/chatView",
       updateIssueState,
       markMessagesSeen,
       switchToChatView,
+      loadMoreMessages,
       createAttachmentMessages,
       createAttachmentMessage,
       showPostIssueResolutionFooter,

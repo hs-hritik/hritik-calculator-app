@@ -36,7 +36,7 @@ define ("components/chatView",
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onScrollPastExistingConversation: PropTypes.func,
-        onLoadMore: PropTypes.func,
+        onLoadMoreMessages: PropTypes.func,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
@@ -191,8 +191,9 @@ define ("components/chatView",
       },
 
       _onLoadMore () {
-        // @TODO: Trigger the callback passed from props
-        // for loading more messages
+        if (!this.props.allMessagesAreLoaded) {
+          this.props.onLoadMoreMessages ();
+        }
       },
 
       /**
