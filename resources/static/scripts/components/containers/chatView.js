@@ -37,6 +37,7 @@ define ("components/containers/chatView",
           loading,
           error,
           userIsViewingPastMessages,
+          pastConversationsLoading,
           allMessagesAreLoaded
         },
         ui: {
@@ -60,6 +61,7 @@ define ("components/containers/chatView",
         hasFailure,
         error,
         userIsViewingPastMessages,
+        pastConversationsLoading,
         allMessagesAreLoaded
       };
     };

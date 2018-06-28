@@ -1,0 +1,35 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2018, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the messenger iframe
+// - - - - - - - - - - - - - - -
+
+///
+/// @group chat-view
+///
+
+@include component(chat-view) {
+
+  $loader-color: color(primary);
+  $subtitle-color: color(text, light);
+
+  .hs-chat-view {
+    &__msgs-loader-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: gutter(8);
+      padding-bottom: gutter(8);
+    }
+
+    &__msgs-loader-spinner {
+      display: flex;
+      width: 28px;
+      height: 28px;
+      font-size: icon-size(xxx-large);
+      color: $loader-color;
+    }
+  }
+}

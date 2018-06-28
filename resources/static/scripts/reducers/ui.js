@@ -93,6 +93,7 @@ define ("reducers/ui",
         connectingText: "Connecting...",
         conversationRedactedMsg: "Conversation Redacted",
         conversationsRedactedMsg: "Conversations Redacted",
+        pastConversationsLoadingText: "Loading Messages...",
         errorMessage: {
           [NO_AUTH_ERROR]: {
             title: "Authentication Failed",

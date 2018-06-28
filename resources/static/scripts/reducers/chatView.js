@@ -85,6 +85,7 @@ define ("reducers/chatView",
       },
       userIsViewingPastMessages: false,
       allMessagesAreLoaded: false,
+      pastConversationsLoading: false,
       issueCursor: 0,
       pollerFailureCount: 0,
       isCsatSubmitted: false,
@@ -160,6 +161,11 @@ define ("reducers/chatView",
         case ACTION_TYPES.TOGGLE_SYSTEM_TYPING:
           return update (state, {
             systemTyping: {$set: action.typing}
+          });
+
+        case ACTION_TYPES.TOGGLE_CONVERSATIONS_LOADER:
+          return update (state, {
+            pastConversationsLoading: {$set: action.loading}
           });
 
         case ACTION_TYPES.TOGGLE_AGENT_TYPING:

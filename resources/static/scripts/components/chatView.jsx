@@ -12,10 +12,11 @@ define ("components/chatView",
     "components/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
-    "constants/propTypes"
+    "constants/propTypes",
+    "gunpowder/utils/classes"
   ],
   function (MessageList, JumpToLatestBtn, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes) {
+    DnDWrapper, customPropTypes, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -35,6 +36,7 @@ define ("components/chatView",
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onScrollPastExistingConversation: PropTypes.func,
+        onLoadMore: PropTypes.func,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
@@ -42,12 +44,14 @@ define ("components/chatView",
         onPillOptionSelect: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
-          dndInfoText: PropTypes.string.isRequired
+          dndInfoText: PropTypes.string.isRequired,
+          pastConversationsLoadingText: PropTypes.string.isRequired
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
         loading: PropTypes.bool,
+        pastConversationsLoading: PropTypes.bool,
         allMessagesAreLoaded: PropTypes.bool,
         /**
          * If chat view footer has any failure
@@ -88,6 +92,32 @@ define ("components/chatView",
         );
       },
 
+      _renderLoader () {
+        const {
+          pastConversationsLoading,
+          text: {
+            pastConversationsLoadingText
+          }
+        } = this.props;
+
+        if (!pastConversationsLoading) {
+          return null;
+        }
+
+        const loaderClasses = classes (
+          "ion-load-b",
+          "ion--spinning",
+          "hs-chat-view__msgs-loader-spinner"
+        );
+
+        return (
+          <div className="hs-chat-view__msgs-loader-container">
+            <i className={loaderClasses} />
+            <span>{pastConversationsLoadingText}</span>
+          </div>
+        );
+      },
+
       /**
        * Render view contents
        */
@@ -120,7 +150,8 @@ define ("components/chatView",
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}
-                      enabled={issueIsCreated} >
+                      enabled={issueIsCreated}>
+              {this._renderLoader ()}
               <div className="hs-view__content">
                 <MessageList messages={messages}
                              isTyping={isTyping}
