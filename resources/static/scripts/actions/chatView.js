@@ -606,12 +606,12 @@ define ("actions/chatView",
      */
     const createLinearMessageList = (issueList, config) => {
       const {
-        lastIssueId,
+        lastGroupId,
         hasOlderMsgs
       } = config;
 
       const orderedIssues = getOrderedIssueList (issueList);
-      const messageList = getLinearMessages (orderedIssues, lastIssueId);
+      const messageList = getLinearMessages (orderedIssues, lastGroupId);
 
       // if there are no more messages remaining to be fetched, we should
       // render the timestamp without a <hr> at the top of list
@@ -918,6 +918,7 @@ define ("actions/chatView",
               value: cursorTs,
               meta: {
                 issueType,
+                preIssueId,
                 issueId
               }
             }
@@ -957,7 +958,7 @@ define ("actions/chatView",
           }
 
           const linearMsgs = createLinearMessageList (issues, {
-            lastIssueId: issueId,
+            lastGroupId: preIssueId,
             hasOlderMsgs: response.has_older_messages
           });
 
