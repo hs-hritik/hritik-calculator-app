@@ -656,19 +656,31 @@ define ("actions/chatView",
       // the message input to render footer.
       for (let i = msgsLength - 1; i >= 0; i--) {
         const msg = messages [i];
-        const {type} = msg;
+        const {
+          type
+        } = msg;
 
-        if (messageHelpers.isBotMessage (type)) {
+        // isBotMessage will also handle the case where we get a non bot message
+        // and it's not supported. For non bot message which is not supported, we
+        // will not post bot cancel message.
+        if (messageHelpers.isBotMessage (msg)) {
+          const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported (type);
+          const botStepIsInProgress = botMsgIsNotSupported ||
+                                      messageHelpers.isBotStepMessage (type);
           dispatch (
             batchActions ([
               // Bot step message contains all bot type message except bot control
               // messages i.e bot_start and bot_end
-              setBotStepInProgress (messageHelpers.isBotStepMessage (type)),
+              setBotStepInProgress (botStepIsInProgress),
               saveBotStepMessage (messageHelpers.getProcessedMessage (msg))
             ])
           );
 
           handleMessageInput (msg);
+
+          if (botMsgIsNotSupported) {
+            postUserMessage ();
+          }
 
           return;
         }
@@ -1083,6 +1095,7 @@ define ("actions/chatView",
       const actionsToDispatch = [disableReplyBox (), actionCreators.setFooterInactive ()];
       const isIssue = issueType === ISSUE_TYPE.ISSUE;
       const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
+      const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage ();
       let xhrData = null;
 
       // There are two ways to get prepared message xhr data
@@ -1094,10 +1107,15 @@ define ("actions/chatView",
           msgType,
           msgBody
         });
+      } else if (!messageHelpers.isMessageTypeSupported (latestMessage.type)) {
+        xhrData = messageHelpers.getPreparedMessageDataForUnsupportedBotMessage ({
+          latestMessage,
+          isIssue
+        });
       } else {
         xhrData = messageHelpers.getPreparedMessageDataFromUserInput ({
           input: userInput,
-          latestMessage: botStepInProgress ? botStepMessage : getLatestMessage (),
+          latestMessage,
           isIssue
         });
       }

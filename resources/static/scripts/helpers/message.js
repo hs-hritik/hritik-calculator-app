@@ -18,13 +18,21 @@ define ("helpers/message",
     const {
       TYPE: MESSAGE_TYPE,
       RENDERABLE_MESSAGE_TYPES,
-      BOT_MESSAGES,
-      BOT_STEP_MESSAGES
+      ORIGIN: MESSAGE_ORIGIN,
+      ROLE: MESSAGE_AUTHOR_ROLE,
+      BOT_STEP_MESSAGES,
+      BODY: MESSAGE_BODY,
+      BOT_CANCEL_REASON
     } = messageConstants;
     const MSG_ID_PREFIX = "message_";
 
     const SECONDS = 60;
     const MILLISECONDS = 1000;
+
+    // Create an array of values present in message type
+    const MESSAGE_TYPE_LIST = Object.keys (MESSAGE_TYPE).map ((key) => {
+      return MESSAGE_TYPE [key];
+    });
 
     /**
      * Return processed message
@@ -46,7 +54,7 @@ define ("helpers/message",
         states: {}, // Applicable only in case of attachments
         createdTs: msg.created_at,
         author: msg.author,
-        isCustomerMsg: (msg.origin !== "admin"),
+        isCustomerMsg: (msg.origin !== MESSAGE_ORIGIN.ADMIN),
         attachments: getProcessedAttachments (msg)
       };
 
@@ -174,6 +182,7 @@ define ("helpers/message",
      * @param {Object} config
      * @param {Object} config.input - user input
      * @param {Object} config.latestMessage - latest message
+     * @param {Object} config.isIssue - issue type is issue
      * @returns {Object} - prepared xhr data
      */
     const getPreparedMessageDataFromUserInput = (config) => {
@@ -244,6 +253,38 @@ define ("helpers/message",
         requestData.option_data = JSON.stringify ({
           option_id: selectedOption.value
         });
+      }
+
+      return requestData;
+    };
+
+    /**
+     * Return prepared message xhr data for unsupported bot message
+     * @param {Object} config
+     * @param {Object} config.latestMessage - latest message
+     * @param {Object} config.isIssue - issue type is issue
+     * @returns {Object} - prepared xhr data
+     */
+    const getPreparedMessageDataForUnsupportedBotMessage = (config) => {
+      const {
+        isIssue,
+        latestMessage: {
+          id,
+          chatBotInfo
+        }
+      } = config;
+      const requestData = {};
+
+      const messageBodyKey = isIssue ? "message-body" : "body";
+      const messageTypeKey = isIssue ? "message-type" : "type";
+
+      requestData [messageTypeKey] = MESSAGE_TYPE.BOT_CANCELLED;
+      requestData [messageBodyKey] = MESSAGE_BODY.UNSUPPORTED_INPUT;
+      requestData.chatbot_cancelled_reason = BOT_CANCEL_REASON.UNSUPPORTED_INPUT;
+      requestData.refers = id;
+
+      if (chatBotInfo && Object.keys (chatBotInfo).length) {
+        requestData.chatbot_info = JSON.stringify (chatBotInfo);
       }
 
       return requestData;
@@ -339,11 +380,24 @@ define ("helpers/message",
 
     /**
      * Predicate to return whether message is of type bot
-     * @param {String} msgType - type of message
+     * @param {Object} msg - message
      * @returns {Boolean} - whether given message type is bot message
      */
-    const isBotMessage = (msgType) => {
-      return BOT_MESSAGES.indexOf (msgType) !== -1;
+    const isBotMessage = (msg) => {
+      const {
+        author: {
+          roles
+        }
+      } = msg;
+
+      // We determine bot message using message's author role. So we have
+      // assurity that the given message is a bot message whether we support it
+      // or not.
+      if (!Array.isArray (roles)) {
+        return false;
+      }
+
+      return roles.indexOf (MESSAGE_AUTHOR_ROLE.CHAT_BOTS) !== -1;
     };
 
     /**
@@ -355,15 +409,26 @@ define ("helpers/message",
       return BOT_STEP_MESSAGES.indexOf (msgType) !== -1;
     };
 
+    /**
+     * Predicate to return whether message type is supported
+     * @param {String} msgType - type of message
+     * @returns {Boolean} - whether given message type is supported
+     */
+    const isMessageTypeSupported = (msgType) => {
+      return MESSAGE_TYPE_LIST.indexOf (msgType) !== -1;
+    };
+
     return {
       getProcessedMessage,
       getProcessedMessages,
       getProcessedFaq,
       getPreparedMessageDataFromConfig,
       getPreparedMessageDataFromUserInput,
+      getPreparedMessageDataForUnsupportedBotMessage,
       createMessage,
       isRenderableMessage,
       isBotMessage,
-      isBotStepMessage
+      isBotStepMessage,
+      isMessageTypeSupported
     };
   });

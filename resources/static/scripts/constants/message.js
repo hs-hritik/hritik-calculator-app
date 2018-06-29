@@ -75,9 +75,17 @@ define ("constants/message",
        * Bot control messages - start
        */
       BOT_STARTED: "Bot Started",
-      BOT_ENDED: "Bot Ended"
+      BOT_ENDED: "Bot Ended",
       /**
        * Bot control messages - end
+       */
+
+      /**
+       * Bot misc messages - start
+       */
+      BOT_CANCELLED: "Bot Cancelled"
+      /**
+       * Bot misc messages - end
        */
 
       /**
@@ -132,22 +140,34 @@ define ("constants/message",
     ];
 
     /**
-     * Bot messages
-     * These include all the bot messages :- bot step + bot control messages
-     */
-    const BOT_MESSAGES = BOT_STEP_MESSAGES.concat (TYPE.BOT_STARTED, TYPE.BOT_ENDED);
-
-    /**
      * Message body which will be sent in api but not visible on UI
      * Only visible on the dashboard
      */
     const BODY = {
       SOLUTION_ACCEPTED: "Accepted the solution",
-      SOLUTION_REJECTED: "Did not accept the solution"
+      SOLUTION_REJECTED: "Did not accept the solution",
+      UNSUPPORTED_INPUT: "Unsupported bot input",
+      INTERRUPTED_BY_USER: "chatbot interrupted by user"
+    };
+
+    /**
+     * Message meta to be sent for unsupported bot type
+     */
+    const BOT_CANCEL_REASON = {
+      UNSUPPORTED_INPUT: "unsupported_bot_input",
+      INTERRUPTED_BY_USER: "chatbot_interrupted_by_user"
     };
 
     const ORIGIN = {
       ADMIN: "admin"
+    };
+
+    /**
+     * Role of message author
+     * The role can be "admin", "chatbot", "user" etc
+     */
+    const ROLE = {
+      CHAT_BOTS: "chatbot"
     };
 
     const STATE = {
@@ -157,10 +177,11 @@ define ("constants/message",
     return {
       TYPE,
       ORIGIN,
+      ROLE,
       STATE,
       BODY,
       RENDERABLE_MESSAGE_TYPES,
-      BOT_MESSAGES,
-      BOT_STEP_MESSAGES
+      BOT_STEP_MESSAGES,
+      BOT_CANCEL_REASON
     };
   });
