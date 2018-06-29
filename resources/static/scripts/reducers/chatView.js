@@ -73,14 +73,19 @@ define ("reducers/chatView",
       messageList: [],
       messageCursor: {
         [CURSOR_TYPES.FORWARD]: {
-          cursorTs: "",
-          issueType: "",
-          issueId: ""
+          value: "",
+          meta: {
+            issueType: "",
+            issueId: ""
+          }
         },
         [CURSOR_TYPES.BACKWARD]: {
-          cursorTs: "",
-          issueType: "",
-          issueId: ""
+          value: "",
+          meta: {
+            issueType: "",
+            issueId: "",
+            preIssueId: ""
+          }
         }
       },
       userIsViewingPastMessages: false,
@@ -127,13 +132,23 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
-          const {cursorType, issueId, issueType, cursorTs} = action.msgCursor;
+          const {
+            cursorTs,
+            issueType,
+            issueId,
+            preIssueId,
+            cursorType
+          } = action.msgCursor;
+
           return update (state, {
             messageCursor: {
               [cursorType]: {
-                issueId: {$set: issueId},
-                issueType: {$set: issueType},
-                cursorTs: {$set: cursorTs}
+                value: {$set: cursorTs},
+                meta: {
+                  issueType: {$set: issueType},
+                  issueId: {$set: issueId},
+                  preIssueId: {$set: preIssueId}
+                }
               }
             }
           });

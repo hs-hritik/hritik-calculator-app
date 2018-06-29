@@ -915,9 +915,11 @@ define ("actions/chatView",
         chatView: {
           messageCursor: {
             [CURSOR_TYPES.BACKWARD]: {
-              cursorTs,
-              issueType,
-              issueId
+              value: cursorTs,
+              meta: {
+                issueType,
+                issueId
+              }
             }
           },
           pastConversationsLoading
@@ -1003,12 +1005,18 @@ define ("actions/chatView",
       } = store.getState ();
 
       const xhrData = {};
+      const {
+        meta: {
+          issueId: forwardMsgIssueId,
+          issueType
+        }
+      } = forwardMessageCursor;
 
-      if (forwardMessageCursor.issueId) {
-        if (forwardMessageCursor.issueType === ISSUE_TYPE.PRE_ISSUE) {
-          xhrData.preissue_id = forwardMessageCursor.issueId;
-        } else if (forwardMessageCursor.issueType === ISSUE_TYPE.ISSUE) {
-          xhrData.issue_id = forwardMessageCursor.issueId;
+      if (forwardMsgIssueId) {
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          xhrData.preissue_id = forwardMsgIssueId;
+        } else if (issueType === ISSUE_TYPE.ISSUE) {
+          xhrData.issue_id = forwardMsgIssueId;
         }
       }
 
@@ -1114,8 +1122,11 @@ define ("actions/chatView",
                 cursorType: CURSOR_TYPES.FORWARD
               });
 
+              // Only set the backward cursor when initial issues are being
+              // fetched, not when updates for issues are being recieved.
               if (!issueCursor) {
                 const oldestIssue = issues [issues.length - 1];
+
                 saveMessageCursor ({
                   issue: oldestIssue,
                   cursorType: CURSOR_TYPES.BACKWARD
