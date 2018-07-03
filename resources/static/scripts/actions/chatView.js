@@ -64,8 +64,8 @@ define ("actions/chatView",
 
     const PROCESS = true;
     const SKIP_PLATFORM_ID = true;
-    const SHOW_PRE_ISSUE_FOOTER = true;
-    const HIDE_PRE_ISSUE_FOOTER = !SHOW_PRE_ISSUE_FOOTER;
+    const ENABLE_FOOTER = true;
+    const DISABLE_FOOTER = !ENABLE_FOOTER;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -374,7 +374,7 @@ define ("actions/chatView",
       // input then reset input data and show default input.
       if (!input) {
         if (issueType === ISSUE_TYPE.PRE_ISSUE) {
-          handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+          handleIssueFooterAndTAI (DISABLE_FOOTER);
         } else {
           dispatch (resetUserInput ());
         }
@@ -397,7 +397,7 @@ define ("actions/chatView",
       );
 
       // Once bot input is processed, show the footer
-      handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+      handleIssueFooterAndTAI (ENABLE_FOOTER);
     };
 
     /**
@@ -415,7 +415,7 @@ define ("actions/chatView",
         case MESSAGE_TYPE.BOT_STARTED:
           // If the last message in poller is bot start
           // a] hide the footer
-          handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+          handleIssueFooterAndTAI (DISABLE_FOOTER);
           break;
 
         case MESSAGE_TYPE.BOT_ENDED:
@@ -424,9 +424,9 @@ define ("actions/chatView",
           // b] depending on whether next step is bot, hide or show the footer
           dispatch (resetUserInput ());
           if (hasNextBot) {
-            handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+            handleIssueFooterAndTAI (DISABLE_FOOTER);
           } else {
-            handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+            handleIssueFooterAndTAI (ENABLE_FOOTER);
           }
           break;
       }
@@ -589,6 +589,12 @@ define ("actions/chatView",
       dispatch (actionCreators.toggleAgentTyping (false));
 
       if (issueState === ISSUE_STATE.RESOLVED) {
+        // We have to explicitly enable footer when issue is resolved.
+        // Reason being, for preIssue we wait only for bot step (according to design).
+        // So when issue is deflected i.e user accepts faq suggestion, the footer is
+        // hidden and user will not be able to see 'Start new conversation' button.
+        handleIssueFooterAndTAI (ENABLE_FOOTER);
+
         // If issue type is 'issue'
         // a. handle post chat features
         // b. show post issue resolution footer (resolution question | csat |
@@ -923,12 +929,17 @@ define ("actions/chatView",
 
     /**
      * Handle TAI and enabling of chat footer
-     * @param {Boolean} showFooter - whether to hide TAI and show footer
+     * @param {Boolean} footerIsEnabled - whether to enable the footer
+     * When footer is enabled, TAI will be hidden
+     * When footer is disabled, TAI will be displayed
+     * If footerIsEnabled is passed as false then :
+     * In case of preIssue - footer will hide
+     * In case of issue - footer will be displayed but disabled
      */
-    const handlePreIssueFooter = (showFooter) => {
+    const handleIssueFooterAndTAI = (footerIsEnabled) => {
       const {dispatch} = store;
 
-      if (showFooter) {
+      if (footerIsEnabled) {
         dispatch (batchActions ([
           enableReplyBox (),
           toggleSystemTyping (false)
@@ -956,7 +967,7 @@ define ("actions/chatView",
       // If preIssue is converted to issue then reset user input and show footer
       if (preIssueConvertedToIssue) {
         dispatch (resetUserInput ());
-        handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+        handleIssueFooterAndTAI (ENABLE_FOOTER);
       }
     };
 
@@ -1409,7 +1420,7 @@ define ("actions/chatView",
 
         // We need to hide footer while creating preIssue because the default
         // value of input disabled is false, in store on page refresh.
-        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        handleIssueFooterAndTAI (DISABLE_FOOTER);
 
         xhr ({
           route: routes.postPreIssue (domain),
