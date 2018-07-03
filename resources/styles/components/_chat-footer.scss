@@ -166,7 +166,7 @@
       top: -55px;
       right: 16px;
       display: flex;
-      padding: gutter(12);
+      padding: gutter(12 0 12 12);
       background-color: $chat-widget-bg-color;
       border-top-left-radius: 24px;
     }
