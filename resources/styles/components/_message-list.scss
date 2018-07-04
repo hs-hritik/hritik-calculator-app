@@ -94,6 +94,7 @@
     &__pill-option {
       padding: gutter(8 16);
       margin: gutter(4 0 4 8);
+      font-weight: font-weight(normal);
       color: $form-accent-color;
       word-break: break-all;
       border-color: $form-accent-color;

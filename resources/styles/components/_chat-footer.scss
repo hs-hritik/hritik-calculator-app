@@ -174,8 +174,11 @@
     &__skip-btn {
       align-self: flex-end;
       min-width: auto;
+      padding: gutter(3 12);
       margin: gutter(0);
       font-size: font-size(body, small);
+      font-weight: font-weight(normal);
+      line-height: line-height(h6);
     }
 
     /// form invalid modifier is used to disable elements
