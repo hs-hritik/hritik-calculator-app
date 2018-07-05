@@ -370,12 +370,17 @@ define ("actions/chatView",
       // If bot message does not contain any input, don't process it and hide
       // the footer.
       // This is to handle bot info text messages which do not have input.
-      // If issue type is not preIssue and latest messages does not contain
-      // input then reset input data and show default input.
+      // If the issue type is preIssue, then hide footer and show TAI.
+      // If the issue type is issue, then
+      //   a. explicitly enable the footer
+      //   b. hide TAI
+      //   c. reset user input to default.
+
       if (!input) {
         if (issueType === ISSUE_TYPE.PRE_ISSUE) {
           handleIssueFooterAndTAI (DISABLE_FOOTER);
         } else {
+          handleIssueFooterAndTAI (ENABLE_FOOTER);
           dispatch (resetUserInput ());
         }
         return;
