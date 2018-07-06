@@ -553,6 +553,13 @@ define ("components/chatViewFooter",
       },
 
       componentDidUpdate (prevProps) {
+        const {browserIsMobile} = this.props;
+
+        // If user input ref does not exists or browser is mobile, do not focus
+        if (!this._userInputRef || browserIsMobile) {
+          return;
+        }
+
         const {
           userInput: {
             disabled: prevInputDisabled
@@ -564,7 +571,7 @@ define ("components/chatViewFooter",
           }
         } = this.props;
 
-        if (this._userInputRef && prevInputDisabled && !currentInputDisabled) {
+        if (prevInputDisabled && !currentInputDisabled) {
           this._userInputRef.focus ();
         }
       }
