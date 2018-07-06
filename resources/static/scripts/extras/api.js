@@ -91,12 +91,16 @@ define ("extras/api",
       } = data;
 
       // Set localStorage data to be migrated to web chat's localStorage
-      if (lsDataToMigrate && typeof lsDataToMigrate === "object") {
+      // Set data in the localStorage only if it hasn't happened yet.
+      if (!lsHelpers.getLsMigrated () && (lsDataToMigrate && typeof lsDataToMigrate === "object")) {
         for (const lsKey in lsDataToMigrate) {
           if (lsDataToMigrate.hasOwnProperty (lsKey)) {
             lsUtils.setItem (lsKey, lsDataToMigrate [lsKey]);
           }
         }
+
+        // Set a flag in the localStorage denoting the migration.
+        lsHelpers.setLsMigrated ();
       }
 
       store.dispatch (appStateActions.setClientConfig (clientConfig));
