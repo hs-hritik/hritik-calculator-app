@@ -21,12 +21,13 @@ define ("extras/api",
     "components/app",
     "helpers/analytics",
     "helpers/common",
-    "helpers/localStorage"
+    "helpers/localStorage",
+    "gunpowder/utils/localStorage"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
     actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers,
-    lsHelpers) {
+    lsHelpers, lsUtils) {
     "use strict";
 
     const {
@@ -79,14 +80,31 @@ define ("extras/api",
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
      * @param {Object} data.parentPageInfo - Data (title, body) of the client website
      * @param {string} data.trigger - The source that triggered setting the config
+     * @param {string} data.lsDataToMigrate - localStorage data from the old iframe to be migrated
      */
     const setConfig = (data) => {
-      store.dispatch (appStateActions.setClientConfig (data.clientConfig));
-      store.dispatch (appStateActions.setMetadata (data.parentPageInfo));
+      const {
+        clientConfig,
+        parentPageInfo,
+        trigger,
+        lsDataToMigrate
+      } = data;
+
+      // Set localStorage data to be migrated to web chat's localStorage
+      if (lsDataToMigrate && typeof lsDataToMigrate === "object") {
+        for (const lsKey in lsDataToMigrate) {
+          if (lsDataToMigrate.hasOwnProperty (lsKey)) {
+            lsUtils.setItem (lsKey, lsDataToMigrate [lsKey]);
+          }
+        }
+      }
+
+      store.dispatch (appStateActions.setClientConfig (clientConfig));
+      store.dispatch (appStateActions.setMetadata (parentPageInfo));
       store.dispatch (appStateActions.setDeviceId ());
-      store.dispatch (appStateActions.setAnonUserId (data.clientConfig.userId));
+      store.dispatch (appStateActions.setAnonUserId (clientConfig.userId));
       store.dispatch (appStateActions.setWmConfig ({
-        trigger: data.trigger,
+        trigger: trigger,
         helpshiftConfig: data.clientConfig
       }));
     };

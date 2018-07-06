@@ -50,7 +50,8 @@
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
-    apiEvents: []
+    apiEvents: [],
+    lsDataToMigrate: null
   };
 
   const INIT = "init";
@@ -265,6 +266,14 @@
   };
 
   /**
+   * Util to remove a node from the DOM.
+   * @param {HTMLElement} node - the node to be removed
+   */
+  const _removeNode = (node) => {
+    node.parentNode.removeChild (node);
+  };
+
+  /**
    * Update the icon of the launcher button.
    * @param {String} icon - the icon that needs to be set
    */
@@ -393,7 +402,7 @@
    */
   const destroyWebSdkIframe = () => {
     if (webSdkIframe) {
-      webSdkIframe.parentNode.removeChild (webSdkIframe);
+      _removeNode (webSdkIframe);
       webSdkIframe = null;
     }
   };
@@ -403,8 +412,18 @@
    */
   const destroyLauncherIframe = () => {
     if (launcherIframe) {
-      launcherIframe.parentNode.removeChild (launcherIframe);
+      _removeNode (launcherIframe);
       launcherIframe = null;
+    }
+  };
+
+  /**
+   * Destroy the platform id migrator iframe
+   */
+  const destroyPidMigratorWebChatIframe = () => {
+    if (pidMigratorWebChatIframe) {
+      _removeNode (pidMigratorWebChatIframe);
+      pidMigratorWebChatIframe = null;
     }
   };
 
@@ -794,9 +813,16 @@
           // platform id URL) iframe. This makes sure that the migration data is
           // available when the web chat app execution starts with the SDK_JS_LOADED
           // event.
-          // @TODO: Handle migrated localStorage data
+
+          // First set the localStorage data to be migrated to the state.
+          state.lsDataToMigrate = data;
+
+          // Then create and load the web chat iframe.
           webSdkIframe = createWebSdkIframe ();
           doc.body.appendChild (webSdkIframe);
+
+          // Finally destroy the migrator iframe.
+          destroyPidMigratorWebChatIframe ();
           break;
 
         case EVENT_TYPES.SDK_JS_LOADED:
@@ -809,10 +835,14 @@
           // config, which along with other settings, determines whether
           // the widget should load or not.
 
-          // Pass client config and parent page info to set initial app data
+          // Pass client config and parent page info to set initial app data.
+          // Also, pass the localStorage data to migrate. Passing this with setConfig
+          // in order to avoid another asynchronous postMessage call to the web
+          // chat iframe.
           setConfig ({
             clientConfig: win.helpshiftConfig,
-            parentPageInfo
+            parentPageInfo,
+            lsDataToMigrate: state.lsDataToMigrate
           });
           break;
 
