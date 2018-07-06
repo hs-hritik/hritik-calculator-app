@@ -208,5 +208,16 @@
     &__field-item {
       margin-left: gutter(6);
     }
+
+    &--mobile {
+      .hs-chat-footer__text-field {
+        // @NOTE - If we want to avoid zoom on focus for iOS devices, we need to
+        // set the font size to 16px
+        &[type=number],
+        &[type=date] {
+          font-size: font-size(body, large);
+        }
+      }
+    }
   }
 }

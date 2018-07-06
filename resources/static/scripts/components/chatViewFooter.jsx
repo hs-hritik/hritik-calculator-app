@@ -232,12 +232,14 @@ define ("components/chatViewFooter",
             disabled
           },
           onFooterFocus,
-          onFooterBlur
+          onFooterBlur,
+          browserIsMobile
         } = this.props;
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": errorMsg,
-            "hs-chat-footer--form-invalid": disabled || !value.trim ()
+            "hs-chat-footer--form-invalid": disabled || !value.trim (),
+            "hs-chat-footer--mobile": browserIsMobile
           }
         );
         let errorMsgEl = null;

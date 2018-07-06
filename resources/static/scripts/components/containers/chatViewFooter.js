@@ -29,7 +29,8 @@ define ("components/containers/chatViewFooter",
           issueType,
           footerIsActive,
           fullPrivacyEnabled,
-          online
+          online,
+          browserIsMobile
         },
         chatView: {
           userInput,
@@ -73,7 +74,8 @@ define ("components/containers/chatViewFooter",
         userInput,
         fullPrivacyEnabled,
         failureConfig,
-        botStepInProgress
+        botStepInProgress,
+        browserIsMobile
       };
     };
 
