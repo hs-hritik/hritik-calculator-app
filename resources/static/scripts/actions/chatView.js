@@ -516,7 +516,8 @@ define ("actions/chatView",
     const _getPreIssueIndex = (issueList, preIssueId) => {
       for (let i = 0; i < issueList.length; i++) {
         const issue = issueList[i];
-        if (issue.preissue_id === preIssueId) {
+        if (issue.type === ISSUE_TYPE.PRE_ISSUE &&
+          issue.preissue_id === preIssueId) {
           return i;
         }
       }
@@ -539,11 +540,15 @@ define ("actions/chatView",
 
         // If there has been transition from one issue to another
         // insert a date separator.
+        //
+        // Since issues are received with the latest issue at the top and the
+        // oldest at the last, we create the right rendering order by using unshift
         if (previousGroupId && currentGroupId !== previousGroupId) {
-          previousGroupId = currentGroupId;
-          finalMessages.push (_getIssueDateSeparator (issue.created_at));
+          finalMessages.unshift (_getIssueDateSeparator (issue.created_at));
         }
-        finalMessages.push (...issue.messages);
+
+        previousGroupId = currentGroupId;
+        finalMessages.unshift (...issue.messages);
       });
 
       return finalMessages;
@@ -684,13 +689,12 @@ define ("actions/chatView",
      * a] Either show start new conversation footer or close conversation footer
      * b] Add chat ended message in message list
      * @param {Object} config - config object
-     * @param {Boolean} config.showConversationClosedMsg - Should conversation
+     * @param {Boolean} config.conversationHasEnded - Should conversation
      *                                                     closed message be rendered.
      */
     const handleChatEnd = (config) => {
       const {dispatch, getState} = store;
       const {conversationHasEnded} = config;
-      const conversationClosedMsg = conversationHasEnded ? text.conversationClosed : "";
       const {
         appState: {
           sdkConfigOptions: {
@@ -701,6 +705,7 @@ define ("actions/chatView",
           text
         }
       } = getState ();
+      const conversationClosedMsg = conversationHasEnded ? text.conversationClosed : "";
 
       // If initial user message is set through api, show close conversation footer
       // Else show start new conversation footer
@@ -761,7 +766,9 @@ define ("actions/chatView",
         } else if (issueType === ISSUE_TYPE.PRE_ISSUE) {
           // If preIssue is resolved i.e. user has accepted faq suggestions, then
           // provide an option to start new conversation
-          handleChatEnd ();
+          handleChatEnd ({
+            conversationHasEnded: false
+          });
         }
       } else if (issueState === ISSUE_STATE.REJECTED && !issueCursor) {
         // a] Issue cursor is not present i.e. its first poll (page refresh)
@@ -1128,6 +1135,10 @@ define ("actions/chatView",
               if (!issueCursor) {
                 const oldestIssue = issues [issues.length - 1];
 
+                dispatch (
+                  setAllMessagesAreLoaded (!response.has_older_messages)
+                );
+
                 saveMessageCursor ({
                   issue: oldestIssue,
                   cursorType: CURSOR_TYPES.BACKWARD
@@ -1274,6 +1285,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const {
           appState: {
+            issueState,
             postChatFeatures: {
               resolutionQuestionCompleted,
               csatCompleted
@@ -1296,7 +1308,9 @@ define ("actions/chatView",
             event: EVENT.CSAT_REQUESTED
           });
         } else {
-          handleChatEnd ();
+          handleChatEnd ({
+            conversationHasEnded: issueState === ISSUE_STATE.REJECTED
+          });
         }
       };
     };

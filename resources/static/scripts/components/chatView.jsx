@@ -168,7 +168,7 @@ define ("components/chatView",
                              }
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef} />
-                  <JumpToLatestBtn show={this.state.showJumpToLatestBtn}
+                  <JumpToLatestBtn show={this.props.userIsViewingPastMessages}
                                    onClick={this._onJumpBtnClick} />
               </div>
               <ChatViewFooterContainer />
