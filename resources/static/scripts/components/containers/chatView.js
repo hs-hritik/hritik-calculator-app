@@ -38,6 +38,7 @@ define ("components/containers/chatView",
           error,
           userIsViewingPastMessages,
           pastConversationsLoading,
+          unreadCount,
           allMessagesAreLoaded
         },
         ui: {
@@ -61,6 +62,7 @@ define ("components/containers/chatView",
         hasFailure,
         error,
         userIsViewingPastMessages,
+        unreadCount,
         pastConversationsLoading,
         allMessagesAreLoaded
       };
@@ -79,10 +81,8 @@ define ("components/containers/chatView",
             chatViewActions.createAttachmentMessage (message.file, message.id)
           );
         },
-        onScrollPastExistingConversation: (isViewing) => {
-          dispatch (
-            chatViewActions.setUserIsViewingPastMessages (isViewing)
-          );
+        onScrollPastExistingConversation: (userHasScrolledToPastConvs) => {
+          chatViewActions.handleScrollPastExistingConversation (userHasScrolledToPastConvs);
         },
         onLoadMoreMessages: () => {
           chatViewActions.loadMoreMessages ();

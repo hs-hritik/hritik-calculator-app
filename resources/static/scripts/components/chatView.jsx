@@ -53,6 +53,7 @@ define ("components/chatView",
         loading: PropTypes.bool,
         pastConversationsLoading: PropTypes.bool,
         allMessagesAreLoaded: PropTypes.bool,
+        unreadCount: PropTypes.number,
         /**
          * If chat view footer has any failure
          */
@@ -132,6 +133,7 @@ define ("components/chatView",
           onSuggestedFaqClick,
           onScrollPastExistingConversation,
           userInput,
+          unreadCount,
           issueIsCreated,
           loading,
           hasFailure,
@@ -149,6 +151,8 @@ define ("components/chatView",
                       onActionBtnClick={errorActionHandler} />
           );
         }
+
+        const showUnreadIndicator = unreadCount > 0;
 
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
@@ -172,6 +176,7 @@ define ("components/chatView",
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef} />
                   <JumpToLatestBtn show={userIsViewingPastMessages}
+                                   showUnreadIndicator={showUnreadIndicator}
                                    onClick={this._onJumpBtnClick} />
               </div>
               <ChatViewFooterContainer />

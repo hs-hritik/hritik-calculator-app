@@ -1253,7 +1253,8 @@ define ("actions/chatView",
         },
         chatView: {
           unreadCount,
-          issueCursor
+          issueCursor,
+          userIsViewingPastMessages
         }
       } = getState ();
       const {messages} = config;
@@ -1275,9 +1276,11 @@ define ("actions/chatView",
         }
       });
 
-      // If the chat view is active, and the messenger is not in minimized state,
-      // that means the user has seen the messages.
-      if (!minimized && ACTIVE_VIEW.CHAT === activeView) {
+      // If the chat view is active, the messenger is not in minimized state,
+      // and the user is not viewing past messages that means the user
+      // has seen the messages.
+      if (!minimized && ACTIVE_VIEW.CHAT === activeView &&
+          !userIsViewingPastMessages) {
         dispatch (markMessagesSeen ());
       } else {
         dispatch (setUnreadCount (finalUnreadCount));
@@ -1787,6 +1790,28 @@ define ("actions/chatView",
     };
 
     /**
+     * Handle user scrolling through the chat window
+     * @param {Boolean} userHasScrolledToPastConvs - Flag to set when user
+     *                                               views past messages
+     */
+    const handleScrollPastExistingConversation = (userHasScrolledToPastConvs) => {
+      const {dispatch, getState} = store;
+      const {
+        chatView: {
+          unreadCount
+        }
+      } = getState ();
+
+      dispatch (
+        setUserIsViewingPastMessages (userHasScrolledToPastConvs)
+      );
+
+      if (unreadCount > 0 && userHasScrolledToPastConvs) {
+        dispatch (markMessagesSeen ());
+      }
+    };
+
+    /**
      * Action to create a message of given type along with
      * optionally showing system typing indicator.
      * Pass the message object related data in the config object,
@@ -2057,6 +2082,7 @@ define ("actions/chatView",
       setChatViewFooter,
       updateIssueState,
       markMessagesSeen,
+      handleScrollPastExistingConversation,
       switchToChatView,
       loadMoreMessages,
       createAttachmentMessages,

@@ -13,7 +13,7 @@ define ("components/jumpToLatestBtn",
       displayName: "JumpToLatestBtn",
       propTypes: {
         show: PropTypes.bool,
-        unreadIndicator: PropTypes.bool,
+        showUnreadIndicator: PropTypes.bool,
         onClick: PropTypes.func
       },
 
@@ -24,15 +24,17 @@ define ("components/jumpToLatestBtn",
       },
 
       render () {
-        if (!this.props.show) {
+        const {show, showUnreadIndicator, onClick} = this.props;
+
+        if (!show) {
           return null;
         }
 
-        const unreadIndicatorEl = this.props.unreadIndicator ?
+        const unreadIndicatorEl = showUnreadIndicator ?
           (<span className="hs-jump-to-latest__unread-icon" />) : null;
 
         return (
-          <div className="hs-jump-to-latest" onClick={this.props.onClick}>
+          <div className="hs-jump-to-latest" onClick={onClick}>
             <i className="ion-chevron-right hs-jump-to-latest__icon" />
             {unreadIndicatorEl}
           </div>
