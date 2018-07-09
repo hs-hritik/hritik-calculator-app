@@ -12,15 +12,14 @@ define ("actions/faqView",
     "constants/activeView",
     "constants/analytics",
     "gunpowder/utils/xhr",
-    "helpers/entitySchema",
-    "helpers/entity",
+    "helpers/message",
     "helpers/xhr",
     "helpers/analytics",
     "actions/actionCreators",
     "actions/batch"
   ],
   function (store, ACTION_TYPES, routes, ACTIVE_VIEW, analyticsConstants,
-    xhr, entitySchema, entityHelpers, xhrHelpers, analyticsHelpers, actionCreators,
+    xhr, messageHelpers, xhrHelpers, analyticsHelpers, actionCreators,
     batchActions) {
     "use strict";
 
@@ -97,7 +96,7 @@ define ("actions/faqView",
           route: routes.getFaq (domain, faqId),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            const faq = entityHelpers.getProcessedFaq (response, language);
+            const faq = messageHelpers.getProcessedFaq (response, language);
             dispatch (setActiveFaq (faq));
 
             // Track suggested FAQ read event if it hasn't been tracked already.

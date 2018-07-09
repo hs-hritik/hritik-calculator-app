@@ -8,14 +8,15 @@ define ("components/messageList",
   [
     "components/message",
     "components/commons/branding",
-    "helpers/chatView",
+    "components/commons/skipButtonWrapper",
+    "helpers/message",
     "constants/propTypes",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes"
   ],
-  function (Message, Branding, chatViewHelpers, customPropTypes, chatViewConstants,
-    throttle, classes) {
+  function (Message, Branding, SkipButtonWrapper, messageHelpers, customPropTypes,
+    chatViewConstants, throttle, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -38,6 +39,7 @@ define ("components/messageList",
         text: PropTypes.object.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onSkipUserInput: PropTypes.func,
         /**
          * If chat view footer has any failure
          */
@@ -65,7 +67,7 @@ define ("components/messageList",
 
         return messages.map ((message, index) => {
           // Avoid rendering of unnecessary message types.
-          if (!chatViewHelpers.isRenderableMessage (message.type)) {
+          if (!messageHelpers.isRenderableMessage (message.type)) {
             return null;
           }
 
@@ -116,9 +118,12 @@ define ("components/messageList",
             type,
             options,
             label,
-            disabled
+            disabled,
+            required,
+            skipLabel
           },
-          hasFailure
+          hasFailure,
+          onSkipUserInput
         } = this.props;
 
         // @TODO: Re-consider the approach to render the ChatViewFooterContainer
@@ -144,6 +149,17 @@ define ("components/messageList",
           );
         });
 
+        let skipBtnWrapperEl = null;
+
+        if (!required) {
+          skipBtnWrapperEl = (
+            <SkipButtonWrapper label={skipLabel}
+                               className="hs-message-list__skip-btn-wrapper"
+                               disabled={disabled}
+                               onClick={onSkipUserInput} />
+          );
+        }
+
         return (
           <div className="hs-message-list__pills-container">
             <small>
@@ -154,6 +170,7 @@ define ("components/messageList",
             <div className="hs-message-list__pill-options">
               {pillOptionsEl}
             </div>
+            {skipBtnWrapperEl}
           </div>
         );
       },

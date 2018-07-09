@@ -37,6 +37,7 @@ define ("components/chatView",
         userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onSkipUserInput: PropTypes.func,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
@@ -57,7 +58,8 @@ define ("components/chatView",
           // Call to action text for the error. eg. Retry
           cta: PropTypes.string
         }),
-        errorActionHandler: PropTypes.func
+        errorActionHandler: PropTypes.func,
+        botStepInProgress: PropTypes.bool
       },
 
       render () {
@@ -90,12 +92,15 @@ define ("components/chatView",
           onPillOptionSelect,
           onRetryAttachmentClick,
           onSuggestedFaqClick,
+          onSkipUserInput,
           userInput,
           issueIsCreated,
           loading,
           error,
-          errorActionHandler
+          errorActionHandler,
+          botStepInProgress
         } = this.props;
+        const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
         if (loading || (error && error.title)) {
           return (
@@ -110,20 +115,21 @@ define ("components/chatView",
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}
-                      enabled={issueIsCreated} >
-              <div className="hs-view__content">
-                <MessageList messages={messages}
-                             isTyping={isTyping}
-                             showAgentNickname={showAgentNickname}
-                             text={text}
-                             onPillOptionSelect={onPillOptionSelect}
-                             onRetryAttachmentClick={onRetryAttachmentClick}
-                             onSuggestedFaqClick={onSuggestedFaqClick}
-                             hasFailure={this.props.hasFailure}
-                             userInput={userInput} />
-              </div>
-              <ChatViewFooterContainer />
-            </DnDWrapper>
+                      enabled={dragAndDropEnabled} >
+            <div className="hs-view__content">
+              <MessageList messages={messages}
+                           isTyping={isTyping}
+                           showAgentNickname={showAgentNickname}
+                           text={text}
+                           onSkipUserInput={onSkipUserInput}
+                           onPillOptionSelect={onPillOptionSelect}
+                           onRetryAttachmentClick={onRetryAttachmentClick}
+                           onSuggestedFaqClick={onSuggestedFaqClick}
+                           hasFailure={this.props.hasFailure}
+                           userInput={userInput} />
+            </div>
+            <ChatViewFooterContainer />
+          </DnDWrapper>
         );
       },
 

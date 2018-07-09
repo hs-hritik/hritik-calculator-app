@@ -8,10 +8,10 @@ define ("components/containers/replyBox",
   [
     "components/replyBox",
     "actions/chatView",
-    "actions/appState",
+    "actions/actionCreators",
     "helpers/common"
   ],
-  function (ReplyBox, chatViewActions, appStateActions, commonHelpers) {
+  function (ReplyBox, chatViewActions, actionCreators, commonHelpers) {
     "use strict";
 
     const mapStateToProps = (state) => {
@@ -57,10 +57,10 @@ define ("components/containers/replyBox",
           dispatch (chatViewActions.submitReply ());
         },
         onFooterFocus: () => {
-          dispatch (appStateActions.setFooterActive ());
+          dispatch (actionCreators.setFooterActive ());
         },
         onFooterBlur: () => {
-          dispatch (appStateActions.setFooterInactive ());
+          dispatch (actionCreators.setFooterInactive ());
         }
       };
     };

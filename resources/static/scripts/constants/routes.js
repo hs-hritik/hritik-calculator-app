@@ -11,7 +11,6 @@ define ("constants/routes",
     const WEB_SDK_API_ROOT = "{{ENV_API_ROOT}}";
     const BASE = `${WEB_SDK_API_ROOT}/websdk/`;
 
-    // @TODO - Clean up unwanted routes
     const getWmConfig = (domain) => `${BASE}${domain}/config`;
 
     // @TODO: This is not an ideal solution. Either make this configurable or
@@ -19,8 +18,7 @@ define ("constants/routes",
     // Also, update this in html/index.html, messenger.js, and requireConfig.js.
     const getCss = () => "/css/style.css?v=2";
 
-    const getIssues = (domain) => `${BASE}${domain}/issues`;
-
+    // @NOTE - Used to create issue out of business hours
     const postIssue = (domain) => `${BASE}${domain}/issues`;
 
     const postUserReply = (domain, issueId, issueType) => {
@@ -29,27 +27,13 @@ define ("constants/routes",
 
     const getIssuesAndMessages = (domain) => `${BASE}${domain}/messages`;
 
-    const getMessages = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/messages`;
-
     const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
-
-    const putFaqFeedback = (domain, faqId, isHelpful) => {
-      if (isHelpful) {
-        return `${BASE}${domain}/faqs/${faqId}/helpful`;
-      } else {
-        return `${BASE}${domain}/faqs/${faqId}/unhelpful`;
-      }
-    };
-
-    const getFaqSuggestions = (domain) => `${BASE}${domain}/faqs/suggest`;
 
     const postPreIssue = (domain) => `${BASE}${domain}/preissues`;
 
     const putResetPreIssue = (domain, issueId) => `${BASE}${domain}/preissues/${issueId}`;
 
     const postCSAT = (domain, issueId) => `${BASE}${domain}/issues/${issueId}/csat`;
-
-    const postProfile = (domain) => `${BASE}${domain}/profiles`;
 
     const putMessages = (domain, issueId, issueType) => {
       return `${BASE}${domain}/${issueType}/${issueId}/messages`;
@@ -67,20 +51,13 @@ define ("constants/routes",
 
     const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs_suggestion_read`;
 
-    const putMigrateProfile = (domain) => `${BASE}${domain}/profiles`;
-
     return {
       getWmConfig,
       getCss,
-      getIssues,
-      getMessages,
       getFaq,
-      putFaqFeedback,
-      getFaqSuggestions,
       postPreIssue,
       putResetPreIssue,
       postCSAT,
-      postProfile,
       putMessages,
       getWsConfig,
       webSocket,
@@ -88,7 +65,6 @@ define ("constants/routes",
       postUserReply,
       getIssuesAndMessages,
       postSuggestedFaqRead,
-      putMigrateProfile,
       postIssue
     };
   });
