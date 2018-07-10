@@ -842,7 +842,7 @@
    */
   const setInitialUserMessage = (message) => {
     // message should be non-empty string
-    if (message && (typeof message === "string")) {
+    if (typeof message === "string" && message.trim ()) {
       _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
         message,
         trigger: TRIGGER.API
