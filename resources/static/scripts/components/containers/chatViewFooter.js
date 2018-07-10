@@ -29,12 +29,16 @@ define ("components/containers/chatViewFooter",
           issueType,
           footerIsActive,
           fullPrivacyEnabled,
-          online
+          online,
+          browserIsMobile
         },
         chatView: {
           userInput,
           activeFooter,
-          pollerFailureCount
+          pollerFailureCount,
+          botState: {
+            botStepInProgress
+          }
         },
         csatView: {
           rating
@@ -69,7 +73,9 @@ define ("components/containers/chatViewFooter",
         footerIsActive: footerIsActive,
         userInput,
         fullPrivacyEnabled,
-        failureConfig
+        failureConfig,
+        botStepInProgress,
+        browserIsMobile
       };
     };
 
@@ -83,10 +89,10 @@ define ("components/containers/chatViewFooter",
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
         },
         onFooterFocus: () => {
-          dispatch (appStateActions.setFooterActive ());
+          dispatch (actionCreators.setFooterActive ());
         },
         onFooterBlur: () => {
-          dispatch (appStateActions.setFooterInactive ());
+          dispatch (actionCreators.setFooterInactive ());
         },
         onAcceptResolutionQuestionClick: () => {
           dispatch (chatViewActions.acceptResolutionQuestion ());
@@ -105,10 +111,7 @@ define ("components/containers/chatViewFooter",
           dispatch (actionCreators.toggleChatViewLoading (true));
         },
         onSkipUserInput: () => {
-          dispatch (chatViewActions.updateUserInputData ({
-            skipped: true
-          }));
-          dispatch (chatViewActions.submitReply ());
+          dispatch (chatViewActions.skipUserInput ());
         },
         onSubmitReply: () => {
           dispatch (chatViewActions.submitReply ());

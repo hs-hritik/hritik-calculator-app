@@ -7,7 +7,6 @@
 define ("actions/chatView",
   [
     "store",
-    "normalizr",
     "constants/actionTypes",
     "constants/routes",
     "constants/chatView",
@@ -18,15 +17,10 @@ define ("actions/chatView",
     "constants/analytics",
     "gunpowder/utils/xhr",
     "gunpowder/utils/array",
-    "gunpowder/utils/schema",
-    "gunpowder/utils/object",
-    "gunpowder/utils/uuid",
     "gunpowder/utils/date",
-    "actions/entities",
     "actions/batch",
     "actions/actionCreators",
-    "helpers/entitySchema",
-    "helpers/entity",
+    "helpers/message",
     "helpers/chatView",
     "helpers/xhr",
     "helpers/audio",
@@ -38,20 +32,15 @@ define ("actions/chatView",
     "utils/browser",
     "utils/upload"
   ],
-  function (store, normalizr, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS,
-    ACTIVE_VIEW, MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS,
-    analyticsConstants, xhr, arrayUtils, schema, objUtils, uuidGenerator, dateUtils,
-    entitiesActions, batchActions, actionCreators, entitySchema, entityHelpers,
+  function (store, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS, ACTIVE_VIEW,
+    MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
+    xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
     analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
-    const {normalize} = normalizr;
-
     const {
       TYPE: MESSAGE_TYPE,
-      TYPING_TIMEOUT,
-      TIMEOUT: MESSAGES_TIMEOUT,
       STATE: MESSAGES_STATE,
       BODY: MESSAGE_BODY
     } = MESSAGE_CONSTANTS;
@@ -59,33 +48,24 @@ define ("actions/chatView",
     const {
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
-      MESSAGES_FORCE_POLLING_TIMEOUT,
-      INFO_BOT_FIELDS
+      MESSAGES_FORCE_POLLING_TIMEOUT
     } = CHAT_VIEW_CONSTANTS;
-
-    const {Input} = schema;
 
     const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
 
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
-      PRE_CHAT_STATE,
-      PRE_CHAT_FEATURES,
-      XHR_ISSUE_STATE
+      XHR_ISSUE_STATE,
+      WEB_CHAT_VERSION
     } = APP_STATE_CONSTANTS;
-
-    const GREETING_STATE = PRE_CHAT_STATE.greeting,
-          USER_MESSAGE_STATE = PRE_CHAT_STATE.initialUserMessage,
-          ANSWER_BOT_STATE = PRE_CHAT_STATE.answerBot,
-          INFO_BOT_STATE = PRE_CHAT_STATE.infoBot;
 
     const {EVENT} = analyticsConstants;
 
     const PROCESS = true;
     const SKIP_PLATFORM_ID = true;
-    const SHOW_PRE_ISSUE_FOOTER = true;
-    const HIDE_PRE_ISSUE_FOOTER = !SHOW_PRE_ISSUE_FOOTER;
+    const ENABLE_FOOTER = true;
+    const DISABLE_FOOTER = !ENABLE_FOOTER;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -121,28 +101,12 @@ define ("actions/chatView",
       let processedMessages = messages;
 
       if (process) {
-        processedMessages = entityHelpers.getProcessedMessages (messages);
+        processedMessages = messageHelpers.getProcessedMessages (messages);
       }
 
       return {
         type: ACTION_TYPES.ADD_MESSAGES,
         messages: processedMessages
-      };
-    };
-
-    /**
-     * Action to set messages in message list.
-     * This action will replace the current messages array with the
-     * given messages array. If you want to push messages to an issue,
-     * use addMessages action.
-     * @param {Array} messages - array of message
-     * @returns {Object} - action
-     */
-    // @TODO - This might not be used after pre-chat clean up!
-    const setMessages = (messages) => {
-      return {
-        type: ACTION_TYPES.SET_MESSAGES,
-        messages
       };
     };
 
@@ -379,13 +343,11 @@ define ("actions/chatView",
     /**
      * Action to reset user input
      * This will reset label, errors, placeholders etc of user input
-     * @param {Object} config - config of user values to retain
      * @returns {Object} - Action
      */
-    const resetUserInput = (config = {}) => {
+    const resetUserInput = () => {
       return {
-        type: ACTION_TYPES.RESET_USER_INPUT_DATA,
-        config
+        type: ACTION_TYPES.RESET_USER_INPUT_DATA
       };
     };
 
@@ -398,13 +360,29 @@ define ("actions/chatView",
      */
     const handleMessageInput = (message) => {
       const {input} = message;
-      const {dispatch} = store;
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          issueType
+        }
+      } = getState ();
 
       // If bot message does not contain any input, don't process it and hide
       // the footer.
       // This is to handle bot info text messages which do not have input.
+      // If the issue type is preIssue, then hide footer and show TAI.
+      // If the issue type is issue, then
+      //   a. explicitly enable the footer
+      //   b. hide TAI
+      //   c. reset user input to default.
+
       if (!input) {
-        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          handleIssueFooterAndTAI (DISABLE_FOOTER);
+        } else {
+          handleIssueFooterAndTAI (ENABLE_FOOTER);
+          dispatch (resetUserInput ());
+        }
         return;
       }
 
@@ -424,7 +402,7 @@ define ("actions/chatView",
       );
 
       // Once bot input is processed, show the footer
-      handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+      handleIssueFooterAndTAI (ENABLE_FOOTER);
     };
 
     /**
@@ -442,7 +420,7 @@ define ("actions/chatView",
         case MESSAGE_TYPE.BOT_STARTED:
           // If the last message in poller is bot start
           // a] hide the footer
-          handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+          handleIssueFooterAndTAI (DISABLE_FOOTER);
           break;
 
         case MESSAGE_TYPE.BOT_ENDED:
@@ -451,14 +429,11 @@ define ("actions/chatView",
           // b] depending on whether next step is bot, hide or show the footer
           dispatch (resetUserInput ());
           if (hasNextBot) {
-            handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+            handleIssueFooterAndTAI (DISABLE_FOOTER);
           } else {
-            handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+            handleIssueFooterAndTAI (ENABLE_FOOTER);
           }
           break;
-
-        default:
-          handleMessageInput (latestMessage);
       }
     };
 
@@ -524,7 +499,7 @@ define ("actions/chatView",
       // For the first fetch of issues list, add conversation start date message
       // at the start of message list. (This is a system info message)
       if (!issueCursor) {
-        const conversationStartDateMessage = chatViewHelpers.createMessage (
+        const conversationStartDateMessage = messageHelpers.createMessage (
           MESSAGE_TYPE.SYSTEM_INFO, {
             body: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
           }
@@ -619,6 +594,12 @@ define ("actions/chatView",
       dispatch (actionCreators.toggleAgentTyping (false));
 
       if (issueState === ISSUE_STATE.RESOLVED) {
+        // We have to explicitly enable footer when issue is resolved.
+        // Reason being, for preIssue we wait only for bot step (according to design).
+        // So when issue is deflected i.e user accepts faq suggestion, the footer is
+        // hidden and user will not be able to see 'Start new conversation' button.
+        handleIssueFooterAndTAI (ENABLE_FOOTER);
+
         // If issue type is 'issue'
         // a. handle post chat features
         // b. show post issue resolution footer (resolution question | csat |
@@ -647,6 +628,74 @@ define ("actions/chatView",
     const isIssueActive = (issueState) => {
       return (chatViewHelpers.getProcessedIssueState (issueState) ===
               ISSUE_STATE.ACTIVE);
+    };
+
+    /**
+     * Action to save bot step message
+     * @param {Object} message - message object
+     * @returns {Object} - Action
+     */
+    const saveBotStepMessage = (message) => {
+      return {
+        type: ACTION_TYPES.SAVE_BOT_STEP_MESSAGE,
+        message
+      };
+    };
+
+    /**
+     * Action to set bot step in progress
+     * @param {Boolean} inProgress - whether bot step is in progress
+     * @returns {Object} - Action
+     */
+    const setBotStepInProgress = (inProgress) => {
+      return {
+        type: ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS,
+        inProgress
+      };
+    };
+
+    /**
+     * Function to save latest bot step in store and processes the latest bot input
+     * @param {Array} messages - list of unprocessed messages
+     */
+    const saveLatestBotStepAndProcessBotInput = (messages) => {
+      const {dispatch} = store;
+      const msgsLength = messages.length;
+
+      // Reverse loop on list of messages to see if there is any bot message.
+      // If we find any bot message, we will save that message in store and use
+      // the message input to render footer.
+      for (let i = msgsLength - 1; i >= 0; i--) {
+        const msg = messages [i];
+        const {
+          type
+        } = msg;
+
+        // isBotMessage will also handle the case where we get a non bot message
+        // and it's not supported. For non bot message which is not supported, we
+        // will not post bot cancel message.
+        if (messageHelpers.isBotMessage (msg)) {
+          const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported (type);
+          const botStepIsInProgress = botMsgIsNotSupported ||
+                                      messageHelpers.isBotStepMessage (type);
+          dispatch (
+            batchActions ([
+              // Bot step message contains all bot type message except bot control
+              // messages i.e bot_start and bot_end
+              setBotStepInProgress (botStepIsInProgress),
+              saveBotStepMessage (messageHelpers.getProcessedMessage (msg))
+            ])
+          );
+
+          handleMessageInput (msg);
+
+          if (botMsgIsNotSupported) {
+            postUserMessage ();
+          }
+
+          return;
+        }
+      }
     };
 
     /**
@@ -715,10 +764,8 @@ define ("actions/chatView",
         dispatch (
           updateReplyText (initialUserMessage)
         );
-        postUserMessage ({
-          msgType: messageType,
-          msgBody: initialUserMessage
-        });
+
+        postUserMessage ();
       }
     };
 
@@ -826,13 +873,11 @@ define ("actions/chatView",
             const messagesLength = messages.length;
             if (messagesLength) {
               const latestMessage = messages [messagesLength - 1];
-              const processedMessages = entityHelpers.getProcessedMessages (messages);
+              const processedMessages = messageHelpers.getProcessedMessages (messages);
               const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
-              // Handle latest message only for preIssue
-              if (isPreIssue) {
-                handleLatestMessage (latestMessage);
-              }
+              handleLatestMessage (latestMessage);
+              saveLatestBotStepAndProcessBotInput (messages);
 
               dispatch (
                 batchActions ([
@@ -889,12 +934,17 @@ define ("actions/chatView",
 
     /**
      * Handle TAI and enabling of chat footer
-     * @param {Boolean} showFooter - whether to hide TAI and show footer
+     * @param {Boolean} footerIsEnabled - whether to enable the footer
+     * When footer is enabled, TAI will be hidden
+     * When footer is disabled, TAI will be displayed
+     * If footerIsEnabled is passed as false then :
+     * In case of preIssue - footer will hide
+     * In case of issue - footer will be displayed but disabled
      */
-    const handlePreIssueFooter = (showFooter) => {
+    const handleIssueFooterAndTAI = (footerIsEnabled) => {
       const {dispatch} = store;
 
-      if (showFooter) {
+      if (footerIsEnabled) {
         dispatch (batchActions ([
           enableReplyBox (),
           toggleSystemTyping (false)
@@ -922,7 +972,7 @@ define ("actions/chatView",
       // If preIssue is converted to issue then reset user input and show footer
       if (preIssueConvertedToIssue) {
         dispatch (resetUserInput ());
-        handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+        handleIssueFooterAndTAI (ENABLE_FOOTER);
       }
     };
 
@@ -960,7 +1010,7 @@ define ("actions/chatView",
         if (!isCustomerMsg &&
             state !== MESSAGES_STATE.READ &&
             type !== MESSAGE_TYPE.SYSTEM_INFO &&
-            chatViewHelpers.isRenderableMessage (type)) {
+            messageHelpers.isRenderableMessage (type)) {
           finalUnreadCount++;
         }
       });
@@ -1035,11 +1085,15 @@ define ("actions/chatView",
      * @param {Function} config.onSuccess - success callback
      * @param {Function} config.onEnd - end callback
      */
-    const postUserMessage = (config) => {
+    const postUserMessage = (config = {}) => {
       const {dispatch, getState} = store;
       const {
         chatView: {
-          userInput
+          userInput,
+          botState: {
+            botStepInProgress,
+            botStepMessage
+          }
         },
         appState: {
           domain,
@@ -1054,25 +1108,36 @@ define ("actions/chatView",
         onEnd
       } = config;
       const xhrIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
-      const actionsToDispatch = [disableReplyBox ()];
+      const actionsToDispatch = [disableReplyBox (), actionCreators.setFooterInactive ()];
       const isIssue = issueType === ISSUE_TYPE.ISSUE;
       const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
-      let xhrData = {};
+      const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage ();
+      let xhrData = null;
 
-      if (isIssue) {
-        // @TODO - Change request params after apis are changed.
-        // Currently the request params for issue remains same, only pre-issue
-        // params are different.
-        xhrData = {
-          "message-body": msgBody,
-          "message-type": msgType
-        };
-      } else {
-        actionsToDispatch.push (toggleSystemTyping (true));
-        xhrData = chatViewHelpers.getPreparedMessageData ({
-          input: userInput,
-          message: getLatestMessage ()
+      // There are two ways to get prepared message xhr data
+      // a] Config - used when we have to directly add message like user
+      //             accepted/rejected resolution question
+      // b] User input - used when user adds a message through input
+      if (msgType && msgBody) {
+        xhrData = messageHelpers.getPreparedMessageDataFromConfig ({
+          msgType,
+          msgBody
         });
+      } else if (!messageHelpers.isMessageTypeSupported (latestMessage.type)) {
+        xhrData = messageHelpers.getPreparedMessageDataForUnsupportedBotMessage ({
+          latestMessage,
+          isIssue
+        });
+      } else {
+        xhrData = messageHelpers.getPreparedMessageDataFromUserInput ({
+          input: userInput,
+          latestMessage,
+          isIssue
+        });
+      }
+
+      if (isPreIssue || (isIssue && botStepInProgress)) {
+        actionsToDispatch.push (toggleSystemTyping (true));
       }
 
       dispatch (batchActions (actionsToDispatch));
@@ -1089,7 +1154,9 @@ define ("actions/chatView",
           // updation will scroll the messages to bottom.
           // In case of preIssue, we do not want to enable reply box as it will be
           // enabled according to next bot step.
-          if (isIssue) {
+          // In case of issue, we want to enable reply box only if current step is
+          // not bot.
+          if (isIssue && !botStepInProgress) {
             dispatch (enableReplyBox ());
           }
           dispatch (
@@ -1148,18 +1215,6 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to set end user first message id.
-     * @param {String} id
-     * @returns {Object} - action
-     */
-    const setEndUserFirstMessageId = (id) => {
-      return {
-        type: ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID,
-        id
-      };
-    };
-
-    /**
      * Action to submit reply.
      * @returns {Object} - action
      */
@@ -1213,13 +1268,12 @@ define ("actions/chatView",
         }
 
         dispatch (disableReplyBox ());
-        // @TODO - Find a place to track conversation started event
-        // Track the conversation started event.
-        // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
+
+        dispatch (updateUserInputData ({
+          value: trimmedValue
+        }));
 
         postUserMessage ({
-          msgBody: trimmedValue,
-          msgType: MESSAGE_TYPE.TEXT,
           onSuccess: () => {
             handleIssueReopen (issueState);
             dispatch (updateReplyText (""));
@@ -1259,137 +1313,6 @@ define ("actions/chatView",
         }
       } = store.getState ();
       return messageList [messageList.length - 1];
-    };
-
-    /**
-     * Fire xhr to register user profile.
-     * @param {Object} user - user object. Contains identifier, name and email.
-     * @param {String} domain - domain name.
-     * @param {Object} [callbacks] - optional callbacks
-     */
-    const registerUserProfile = (user, domain, callbacks = {}) => {
-      const {identifier, name, email} = user;
-
-      const xhrData = {
-        identifier: identifier
-      };
-
-      if (name) {
-        xhrData.name = name;
-      }
-      if (email) {
-        xhrData.email = email;
-      }
-
-      xhr ({
-        route: routes.postProfile (domain),
-        method: "POST",
-        data: xhrData,
-        headers: xhrHelpers.getCommonHeaders (),
-        onSuccess: (response) => {
-          if (callbacks.onSuccess) {
-            callbacks.onSuccess (response);
-          }
-        },
-        onFailure: () => {
-          // @TODO: Handler failure.
-        }
-      });
-    };
-
-    const createIssue = () => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const {appState} = state;
-        const {dummyIssueId, userId, tags, cif, metadata} = appState;
-        const endUserFirstMsg = commonHelpers.getEndUserFirstMessage ();
-
-        // @TODO :- Remove this condition after verifying createIssue is not
-        // called before setting first user message
-        // If first end user message is not present, don't do anything
-        if (!(endUserFirstMsg && endUserFirstMsg.body)) {
-          return;
-        }
-
-        dispatch (disableReplyBox ());
-
-        const xhrData = {
-          "identifier": appState.identifier,
-          "platform-id": appState.platformId,
-          "message-body": endUserFirstMsg.body,
-          "language": browserUtils.getLanguage ()
-        };
-
-        if (userId) {
-          xhrData ["user-id"] = userId;
-        }
-
-        const meta = {
-          device_info: metadata
-        };
-
-        if (tags) {
-          meta.custom_meta = {
-            "hs-tags": tags
-          };
-        }
-        xhrData.meta = JSON.stringify (meta);
-
-        // If cif is set and contains atleast one field, add to xhr data
-        if (cif && Object.keys (cif).length) {
-          xhrData.custom_fields = JSON.stringify (cif);
-        }
-
-        xhr ({
-          route: routes.postIssue (appState.domain),
-          data: xhrData,
-          headers: xhrHelpers.getCommonHeaders (),
-          method: "POST",
-          onSuccess: (response) => {
-            // @TODO - NORMALIZATION_CLEAN_UP
-            const normalizedData = normalize (response, entitySchema.issue);
-            const processedEntities = entityHelpers.getProcessedEntities (normalizedData.entities);
-            dispatch (entitiesActions.setEntities (processedEntities));
-
-            const endUserFirstMsgNewId = response.messages [0].id;
-            // @TODO :- Don't directly manage entities from here!
-            // Dispatch an action something like 'ISSUE_CREATED' which will :-
-            // a] Remove dummy messages from entity store and localStorage
-            // b] Replace dummy issue id of first user message with backend id
-            //    in entity store and localStorage
-
-            // Replace frontend created user message with backend message,
-            // and add all dummy issue messages to the active issue.
-            const dummyIssueMsgIds = state.entities.issues [dummyIssueId].messages.slice ();
-            dummyIssueMsgIds.splice (
-              dummyIssueMsgIds.indexOf (endUserFirstMsg.id),
-              1,
-              endUserFirstMsgNewId
-            );
-
-            const newIssueId = response.id;
-            dispatch (
-              batchActions ([
-                setMessages (newIssueId, dummyIssueMsgIds),
-                // Remove messages from dummy issue
-                setMessages (dummyIssueId, []),
-                setActiveIssueId (newIssueId),
-                actionCreators.setInternalIssueId (response.internal_id),
-                setEndUserFirstMessageId (endUserFirstMsgNewId),
-                updateIssueState (ISSUE_STATE.ACTIVE),
-                setChatViewFooter (ACTIVE_FOOTER.REPLY)
-              ])
-            );
-            startPollingForMessages ();
-          },
-          onFailure: () => {
-            // @TODO: Handler failure.
-          },
-          onEnd: () => {
-            dispatch (enableReplyBox ());
-          }
-        });
-      };
     };
 
     /**
@@ -1457,8 +1380,18 @@ define ("actions/chatView",
           };
         }
 
+        /**
+         * Note :
+         * sm = sdk meta
+         * cb = chat bots
+         * library_version = current webchat version
+         */
         const xhrData = {
-          meta: JSON.stringify (meta)
+          meta: JSON.stringify (meta),
+          sm: JSON.stringify ({
+            cb: true
+          }),
+          library_version: WEB_CHAT_VERSION
         };
 
         // If CIF is set and contains at least one field, add it to XHR data
@@ -1492,7 +1425,7 @@ define ("actions/chatView",
 
         // We need to hide footer while creating preIssue because the default
         // value of input disabled is false, in store on page refresh.
-        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        handleIssueFooterAndTAI (DISABLE_FOOTER);
 
         xhr ({
           route: routes.postPreIssue (domain),
@@ -1544,53 +1477,6 @@ define ("actions/chatView",
             dispatch (createPreIssue ());
             break;
         }
-      };
-    };
-
-    /**
-     * Fetch data & creates issue on occurance of corresponding event.
-     */
-    const fetchDataForIssueCreation = () => {
-      postSdkMessage.getParentInfo ();
-    };
-
-    /**
-     * Action to get FAQ suggestions based on the message text.
-     * @param {String} searchText - search text to pass on to the API to get FAQs
-     * @param {Object} [callbacks] - optional callbacks
-     * @returns {Object} - action
-     */
-    const getFaqSuggestions = (searchText, callbacks = {}) => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const appState = state.appState;
-
-        xhr ({
-          route: routes.getFaqSuggestions (appState.domain),
-          data: {
-            "text": searchText,
-            "platform-id": appState.platformId
-          },
-          headers: xhrHelpers.getCommonHeaders (),
-          onSuccess: (response) => {
-            // The response would contain a list of faq objects,
-            // dispatch an action to set it to the store.
-            const faqs = response.suggested_faqs;
-            if (callbacks.onSuccess) {
-              callbacks.onSuccess (faqs);
-            }
-          },
-          onFailure: () => {
-            if (callbacks.onFailure) {
-              callbacks.onFailure ();
-            }
-          },
-          onEnd: () => {
-            if (callbacks.onEnd) {
-              callbacks.onEnd ();
-            }
-          }
-        });
       };
     };
 
@@ -1673,7 +1559,7 @@ define ("actions/chatView",
           messageConfig,
           onAddMessage
         } = config;
-        const msg = chatViewHelpers.createMessage (messageType, messageConfig);
+        const msg = messageHelpers.createMessage (messageType, messageConfig);
 
         // As this message is created on frontend, it is already in processed format.
         // So, directly add message in message list.
@@ -1725,536 +1611,6 @@ define ("actions/chatView",
       return {
         type: ACTION_TYPES.REMOVE_MESSAGE,
         messageId
-      };
-    };
-
-    /**
-     * Action to add greeting message.
-     * @returns {Object} - Action
-     */
-    const addGreetingMessage = () => {
-      return (dispatch, getState) => {
-        const state = getState (),
-              featureState = state.appState.preChatFeatureState.greeting;
-
-        switch (featureState) {
-          case GREETING_STATE.INITIAL:
-            const defaultAgentMsgText = state.ui.text.greetingMsg;
-
-            dispatch (
-              createMessage ({
-                type: MESSAGE_TYPE.TEXT,
-                messageConfig: {
-                  body: defaultAgentMsgText,
-                  isCustomerMsg: false
-                }
-              })
-            );
-            dispatch (startNextPreChatFeature ());
-            break;
-          // @NOTE :- Skipping wait for user reply state as we want to start
-          // next pre-chat feature. We have moved wait to user reply in
-          // initialUserMessage pre-chat feature.
-          // Keeping this case as the localStorage data on some site can still
-          // contain this state.
-          // @TODO :- Remove this case after implementing migrator for localStorage
-          case GREETING_STATE.WAITING_FOR_USER_REPLY:
-          case GREETING_STATE.COMPLETED:
-            dispatch (startNextPreChatFeature ());
-            break;
-        }
-      };
-    };
-
-    /**
-     * Action to start first user message workflow
-     * @returns {Object} - Action
-     */
-    const startInitialUserMsgPreChatFeature = () => {
-      return (dispatch, getState) => {
-        const state = getState (),
-              {appState} = state,
-              {initialUserMessage} = appState.sdkConfigOptions,
-              featureState = appState.preChatFeatureState.initialUserMessage;
-
-        switch (featureState) {
-          case USER_MESSAGE_STATE.INITIAL:
-            // If initial user message is present in store,
-            // create message else wait for user input
-            if (initialUserMessage) {
-              dispatch (createInitialUserMessage (initialUserMessage));
-            } else {
-              dispatch (setChatViewFooter (ACTIVE_FOOTER.REPLY));
-            }
-            break;
-          case USER_MESSAGE_STATE.COMPLETED:
-            startNextPreChatFeature ();
-            break;
-        }
-      };
-    };
-
-    /**
-     * Action to create initial user message
-     * @param {String} messageBody - body of user message
-     */
-    const createInitialUserMessage = (messageBody) => {
-      return function (dispatch) {
-        dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.TEXT,
-            messageConfig: {
-              body: messageBody,
-              isCustomerMsg: true
-            },
-            playAudio: true,
-            onAddMessage: (msg) => {
-              dispatch (
-                batchActions ([
-                  setChatViewFooter (ACTIVE_FOOTER.BLOCKED),
-                  setEndUserFirstMessageId (msg.id),
-                  updateReplyText ("")
-                ])
-              );
-              // Get parent data & create issue
-              fetchDataForIssueCreation ();
-            }
-          })
-        );
-      };
-    };
-
-    /**
-     * Action to update the pre-chat feature state.
-     * @param {String} feature
-     * @param {Object} featureState
-     * @returns {Object} - Action
-     */
-    const updatePreChatFeatureState = (feature, featureState) => {
-      return {
-        type: ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE,
-        feature,
-        featureState
-      };
-    };
-
-    /**
-     * Action to start answer bot workflow (FAQ suggestions).
-     * @returns {Object} - Action
-     */
-    const startAnswerBot = () => {
-      return (dispatch, getState) => {
-        const {appState} = getState (),
-              featureState = appState.preChatFeatureState.answerBot;
-
-        switch (featureState) {
-          case ANSWER_BOT_STATE.INITIAL:
-            const endUserFirstMsg = commonHelpers.getEndUserFirstMessage ();
-
-            dispatch (toggleSystemTyping (true));
-
-            dispatch (getFaqSuggestions (endUserFirstMsg.body, {
-              onSuccess: (faqs) => {
-                // If there are no faq suggestions, move to next pre-chat feature,
-                // otherwise create faq message.
-                dispatch (toggleSystemTyping (false));
-                if (!faqs.length) {
-                  dispatch (startNextPreChatFeature ());
-                } else {
-                  dispatch (
-                    createMessage ({
-                      type: MESSAGE_TYPE.FAQ,
-                      messageConfig: {
-                        faqs
-                      },
-                      playAudio: true,
-                      onAddMessage: () => {
-                        onFaqSuggestionMessageAdd ();
-                        dispatch (
-                          updatePreChatFeatureState ("answerBot", ANSWER_BOT_STATE.FAQS_FETCHED)
-                        );
-                      }
-                    })
-                  );
-                }
-              },
-              onFailure: () => {
-                dispatch (toggleSystemTyping (false));
-                // If there is any error while fetching faq suggestions,
-                // move to next pre chat feature.
-                dispatch (startNextPreChatFeature ());
-              }
-            }));
-            break;
-
-          case ANSWER_BOT_STATE.FAQS_FETCHED:
-            onFaqSuggestionMessageAdd ();
-            break;
-
-          case ANSWER_BOT_STATE.WAITING_FOR_USER_FEEDBACK:
-            store.dispatch (setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK));
-            break;
-
-          case ANSWER_BOT_STATE.COMPLETED:
-            startNextPreChatFeature ();
-            break;
-        }
-      };
-    };
-
-    /**
-     * Callback handler after the faq suggestions message is added.
-     */
-    const onFaqSuggestionMessageAdd = () => {
-      const state = store.getState ();
-      store.dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-
-      window.setTimeout (() => {
-        store.dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.TEXT,
-            messageConfig: {
-              body: state.ui.text.faqSuggestionsAdditionalHelpMsg,
-              isCustomerMsg: false
-            },
-            typingTimer: TYPING_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP,
-            playAudio: true,
-            onAddMessage: () => {
-              store.dispatch (
-                batchActions ([
-                  updatePreChatFeatureState (
-                    "answerBot",
-                    ANSWER_BOT_STATE.WAITING_FOR_USER_FEEDBACK
-                  ),
-                  setChatViewFooter (ACTIVE_FOOTER.FAQ_SUGGESTIONS_FEEDBACK)
-                ])
-              );
-            }
-          })
-        );
-      }, MESSAGES_TIMEOUT.FAQ_SUGGESTIONS_ADDITIONAL_HELP);
-    };
-
-    /**
-     * Action to update info bot field value.
-     * @param {String|Object} value
-     * @returns {Object} - Action
-     */
-    // @TODO - PRE_CHAT_CLEANUP
-    const updateInfoBotFieldValue = ({value, errorMsg}) => {
-      return {
-        type: ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE,
-        value: {
-          value,
-          errorMsg
-        }
-      };
-    };
-
-    /**
-     * Action to change the current info bot field.
-     * @returns {Object} - Action
-     */
-    // @TODO - PRE_CHAT_CLEANUP
-    const changeInfoBotCurrentField = () => {
-      return {
-        type: ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD
-      };
-    };
-
-    /**
-     * Action to start info bot workflow.
-     * @returns {Object} - Action
-     */
-    const startInfoBot = () => {
-      return (dispatch, getState) => {
-        const state = getState (),
-              featureState = state.appState.preChatFeatureState.infoBot;
-
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-
-        switch (featureState) {
-          case INFO_BOT_STATE.INITIAL:
-            dispatch (
-              createMessage ({
-                type: MESSAGE_TYPE.TEXT,
-                messageConfig: {
-                  body: state.ui.text.infoBotRequestMsg,
-                  isCustomerMsg: false
-                },
-                typingTimer: TYPING_TIMEOUT.INFO_BOT_REQUEST,
-                onAddMessage: () => {
-                  dispatch (
-                    updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
-                  );
-                  dispatch (askInfoBotField ());
-                }
-              })
-            );
-            break;
-
-          case INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED:
-            dispatch (askInfoBotField ());
-            break;
-
-          case INFO_BOT_STATE.CURRENT_FIELD_ASKED:
-            dispatch (setChatViewFooter (ACTIVE_FOOTER.INFO_BOT));
-            break;
-
-          case INFO_BOT_STATE.COMPLETED:
-            startNextPreChatFeature ();
-            break;
-        }
-      };
-    };
-
-    /**
-     * Action to ask details of info bot field.
-     * @returns {Object} - Action
-     */
-    // @TODO - PRE_CHAT_CLEANUP
-    const askInfoBotField = () => {
-      return (dispatch, getState) => {
-        const state = getState ();
-        const {infoBot} = state.chatView;
-        const currentField = infoBot.data [infoBot.currentField];
-
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-
-        if (currentField) {
-          dispatch (
-            createMessage ({
-              type: MESSAGE_TYPE.TEXT,
-
-              messageConfig: {
-                body: currentField.msg,
-                isCustomerMsg: false
-              },
-              typingTimer: TYPING_TIMEOUT.INFO_BOT_FIELD,
-              playAudio: true,
-              onAddMessage: () => {
-                dispatch (
-                  batchActions ([
-                    updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_ASKED),
-                    setChatViewFooter (ACTIVE_FOOTER.INFO_BOT)
-                  ])
-                );
-              }
-            })
-         );
-        }
-      };
-    };
-
-    /**
-     * Action to submit info bot field.
-     * Add user message using the user input and
-     * change the current info bot field.
-     * @returns {Object} - Action
-     */
-    // @TODO - PRE_CHAT_CLEANUP
-    const submitInfoBotField = () => {
-      return (dispatch, getState) => {
-        const state = getState (),
-              {infoBot} = state.chatView;
-
-        // Trim white spaces in value
-        const currentFieldVal = infoBot.data [infoBot.currentField].value;
-        const updatedFieldVal = objUtils.shallowMerge ({
-          value: currentFieldVal.value.trim ()
-        },
-        currentFieldVal, {
-          skip: ["value"]
-        });
-
-        // As we are only saving serializable data in the store,
-        // we are not saving the input object inside the store.
-        // On submit of info bot field, create an input object instance to
-        // validate the info field.
-        const errorMsg = new Input (updatedFieldVal).isValid ();
-
-        if (errorMsg) {
-          dispatch (updateInfoBotFieldValue ({
-            errorMsg
-          }));
-          return;
-        }
-
-        dispatch (
-          createMessage ({
-            type: MESSAGE_TYPE.TEXT,
-            playAudio: true,
-            messageConfig: {
-              body: updatedFieldVal.value,
-              isCustomerMsg: true
-            }
-          })
-        );
-
-        // Update field value with new value in store
-        // We want to save trimmed value in store for name, email etc
-        // So that when other actions read the latest value of any field they
-        // have the latest value
-        dispatch (updateInfoBotFieldValue ({
-          value: updatedFieldVal.value,
-          errorMsg: ""
-        }));
-
-        dispatch (changeInfoBotCurrentField ());
-
-        const newState = getState ();
-
-        // If all info bot fields are asked, move to next pre-chat feature,
-        // otherwise ask next info bot field.
-        if (!newState.chatView.infoBot.currentField) {
-          dispatch (setChatViewFooter (ACTIVE_FOOTER.BLOCKED));
-          dispatch (startNextPreChatFeature ());
-        } else {
-          dispatch (
-            updatePreChatFeatureState ("infoBot", INFO_BOT_STATE.CURRENT_FIELD_TO_BE_ASKED)
-          );
-          dispatch (askInfoBotField ());
-        }
-      };
-    };
-
-    /**
-     * Action to increment pre-chat features index.
-     * @returns {Object} - Action
-     */
-    const incrementPreChatFeatureIndex = () => {
-      return {
-        type: ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX
-      };
-    };
-
-    /**
-     * Action to start next pre-chat feature.
-     * Mark current pre chat feature as complete, and start next feature.
-     * @returns {Object} - Action
-     */
-    const startNextPreChatFeature = () => {
-      return (dispatch, getState) => {
-        const {preChatFeatureOrder, preChatFeatureIndex} = getState ().appState;
-        const feature = preChatFeatureOrder [preChatFeatureIndex];
-
-        dispatch (
-          batchActions ([
-            updatePreChatFeatureState (feature, PRE_CHAT_STATE [feature].COMPLETED),
-            incrementPreChatFeatureIndex ()
-          ])
-        );
-        dispatch (startPreChatFeature ());
-      };
-    };
-
-    /**
-     * Action to start current pre chat feature.
-     * If all pre-chat features are completed, create new issue.
-     * @returns {Function} - Action
-     */
-    const startPreChatFeature = () => {
-      return (dispatch, getState) => {
-        const {appState} = getState ();
-        const {
-          preChatFeatureOrder,
-          featuresEnabled,
-          preChatFeatureIndex,
-          executeGreetingMessage,
-          dummyIssueId
-        } = appState;
-
-        // If the preChatFeatureIndex has reached the length of preChatFeatureOrder list,
-        // it means all the pre-chat features are executed and create new issue.
-        if (preChatFeatureIndex >= preChatFeatureOrder.length) {
-          dispatch (registerUserAndCreateIssue ());
-          return;
-        }
-
-        let feature = preChatFeatureOrder [preChatFeatureIndex];
-
-        // Check if we need to execute greeting message pre chat feature. Refer
-        // appState.rehydrate () for explanation of when executing greeting
-        // message is needed.
-        // If so,
-        // set current feature to execute to `greeting`
-        // set the greeting message feature state to initial, so that it executes
-        // set pre chat feature index to greeting message's index i.e. 0
-        // set executeGreetingMessage in the app state to false
-        // clear existing greeting message (or any other message)
-        if (executeGreetingMessage) {
-          feature = PRE_CHAT_FEATURES.GREETING;
-          dispatch (batchActions ([
-            updatePreChatFeatureState (PRE_CHAT_FEATURES.GREETING, GREETING_STATE.INITIAL),
-            actionCreators.setPreChatFeatureIndex (
-              preChatFeatureOrder.indexOf (PRE_CHAT_FEATURES.GREETING)
-            ),
-            actionCreators.setExecuteGreetingMessage (false),
-            setMessages (dummyIssueId, [])
-          ]));
-        }
-
-        if (featuresEnabled [feature]) {
-          // If the feature is enabled, start the feature.
-          dispatch (startFeature (feature));
-        } else {
-          // If the feature is disabled, start the next feature.
-          dispatch (startNextPreChatFeature ());
-        }
-      };
-    };
-
-    /**
-     * Action to register user profile and create new issue.
-     * @returns {Function} - action
-     */
-    const registerUserAndCreateIssue = () => {
-      return (dispatch, getState) => {
-        const state = getState (),
-              infoBotData = state.chatView.infoBot.data,
-              name = infoBotData [INFO_BOT_FIELDS.NAME].value.value,
-              email = infoBotData [INFO_BOT_FIELDS.EMAIL].value.value;
-
-        const user = {
-          identifier: state.appState.identifier
-        };
-
-        if (name) {
-          user.name = name;
-        }
-        if (email) {
-          user.email = email;
-        }
-
-        registerUserProfile (user, state.appState.domain, {
-          onSuccess: (response) => {
-            dispatch (actionCreators.setUserProfileId (response ["profile-id"]));
-            dispatch (createIssue ());
-          }
-        });
-      };
-    };
-
-    /**
-     * Action to start a particular feature.
-     * @returns {Object} - Action
-     */
-    const startFeature = (feature) => {
-      return (dispatch) => {
-        switch (feature) {
-          case "greeting":
-            dispatch (addGreetingMessage ());
-            break;
-          case "initialUserMessage":
-            dispatch (startInitialUserMsgPreChatFeature ());
-            break;
-          case "answerBot":
-            dispatch (startAnswerBot ());
-            break;
-          case "infoBot":
-            dispatch (startInfoBot ());
-            break;
-        }
       };
     };
 
@@ -2438,26 +1794,32 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to skip user input
+     * First update the skipped state in user input and then post user message
+     * @returns Function - Action
+     */
+    const skipUserInput = () => {
+      return (dispatch) => {
+        dispatch (updateUserInputData ({
+          skipped: true
+        }));
+        postUserMessage ();
+      };
+    };
+
     return {
       createPreIssue,
       updateReplyText,
       submitReply,
       startPollingForMessages,
       stopPollingForMessages,
-      getFaqSuggestions,
       addMessages,
-      setMessages,
       setActiveIssueId,
       setChatViewFooter,
-      startPreChatFeature,
-      updateInfoBotFieldValue,
-      submitInfoBotField,
       updateIssueState,
       markMessagesSeen,
       switchToChatView,
-      createInitialUserMessage,
-      registerUserProfile,
-      startNextPreChatFeature,
       createAttachmentMessages,
       createAttachmentMessage,
       showPostIssueResolutionFooter,
@@ -2466,6 +1828,7 @@ define ("actions/chatView",
       setUserInputData,
       updateUserInputData,
       setUserSelectedOption,
-      handleErrorAction
+      handleErrorAction,
+      skipUserInput
     };
   });

@@ -89,15 +89,25 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
+      // @NOTE - In order for flex wrap to work on IE, we need to set explicit
+      // width to the container so that child items get correctly wrapped
+      width: 100%;
     }
 
     &__pill-option {
-      min-width: 100px;
       padding: gutter(8 16);
       margin: gutter(4 0 4 8);
+      font-weight: font-weight(normal);
       color: $form-accent-color;
+      word-break: break-all;
       border-color: $form-accent-color;
       border-radius: 16px;
+    }
+
+    &__skip-btn-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: gutter(4);
     }
   }
 }

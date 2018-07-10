@@ -9,18 +9,15 @@ define ("reducers/appState",
     "constants/actionTypes",
     "constants/activeView",
     "constants/appState",
-    "helpers/localStorage",
     "gunpowder/utils/object"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, lsHelpers, objUtils) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
     "use strict";
 
     const update = React.addons.update;
     const {
       ISSUE_STATE,
-      ISSUE_TYPE,
-      PRE_CHAT_STATE,
-      DEFAULT_RESET_TIMEOUT
+      ISSUE_TYPE
     } = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
@@ -38,13 +35,10 @@ define ("reducers/appState",
       // 1. anonUserIdentifier (created for anon user / default profile)
       // 2. userId (passed with helpshiftConfig)
       anonUserIdentifier: "",
-      // @TODO: Identifier will go away. Also, remove the switch case that sets it.
-      identifier: "",
       userId: "",
       userName: "",
       userEmail: "",
       userAuthToken: "",
-      userProfileId: "",
 
       // Backend flag to represent if any issue exists
       issueExists: false,
@@ -55,7 +49,6 @@ define ("reducers/appState",
       issueState: ISSUE_STATE.ACTIVE,
       activeIssueId: "",
       internalIssueId: "",
-      dummyIssueId: "DUMMY_ISSUE",
 
       // Used to start a new conversation when user clicks on start new conversation
       // The value is not set to default on 'reset', rather retained throughout the
@@ -65,22 +58,10 @@ define ("reducers/appState",
       webChatIsLive: false,
       featuresEnabled: {
         greeting: true,
-        initialUserMessage: true,
-        answerBot: false,
-        infoBot: false,
         csatBot: false,
         agentNickname: false,
         resolutionQuestion: true
       },
-      preChatFeatureOrder: ["greeting", "initialUserMessage", "answerBot", "infoBot"],
-      preChatFeatureIndex: 0,
-      preChatFeatureState: {
-        greeting: PRE_CHAT_STATE.greeting.INITIAL,
-        initialUserMessage: PRE_CHAT_STATE.initialUserMessage.INITIAL,
-        answerBot: PRE_CHAT_STATE.answerBot.INITIAL,
-        infoBot: PRE_CHAT_STATE.infoBot.INITIAL
-      },
-      resetTimeout: DEFAULT_RESET_TIMEOUT,
       browserIsMobile: false,
       tags: [],
       cif: {},
@@ -90,11 +71,9 @@ define ("reducers/appState",
         initialUserMessage: ""
       },
       conversationStarted: false,
-      executeGreetingMessage: false,
       proactiveChatRules: [],
       analytics: {
-        suggestedFaqReadTracked: false,
-        infoBotRequestedTimestamp: Date.now ()
+        suggestedFaqReadTracked: false
       },
       footerIsActive: false,
       postChatFeatures: {
@@ -111,29 +90,9 @@ define ("reducers/appState",
           const updateObj = {};
           updateObj.analytics = {};
 
-          if (action.data.preChatFeatureIndex) {
-            updateObj.preChatFeatureIndex = {$set: action.data.preChatFeatureIndex};
-          }
-          if (action.data.executeGreetingPreChatFeature) {
-            updateObj.executeGreetingMessage = {$set: action.data.executeGreetingPreChatFeature};
-          }
-          if (action.data.preChatFeatureState) {
-            updateObj.preChatFeatureState = {$set: action.data.preChatFeatureState};
-          }
-          if (action.data.issueState) {
-            updateObj.issueState = {$set: action.data.issueState};
-          }
-          if (action.data.userProfileId) {
-            updateObj.userProfileId = {$set: action.data.userProfileId};
-          }
           if (action.data.suggestedFaqReadTracked) {
             updateObj.analytics.suggestedFaqReadTracked = {
               $set: action.data.suggestedFaqReadTracked
-            };
-          }
-          if (action.data.infoBotRequestedTimestamp) {
-            updateObj.analytics.infoBotRequestedTimestamp = {
-              $set: action.data.infoBotRequestedTimestamp
             };
           }
 
@@ -147,10 +106,7 @@ define ("reducers/appState",
             wcEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
               greeting: {$set: greentingFeatureEnabled},
-              // @TODO - Confirm the key after BE integration
               resolutionQuestion: {$set: config.resolution_question_enabled},
-              answerBot: {$set: config.answer_bot_enabled},
-              infoBot: {$set: config.identity_bot_enabled},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
               audioNotifications: {$set: config.audio_notifications_enabled}
@@ -161,11 +117,6 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_WEB_CHAT_IS_LIVE:
           return update (state, {
             webChatIsLive: {$set: true}
-          });
-
-        case ACTION_TYPES.SET_ISSUE_EXISTS:
-          return update (state, {
-            issueExists: {$set: action.issueExists}
           });
 
         case ACTION_TYPES.SET_LANGUAGE:
@@ -240,16 +191,6 @@ define ("reducers/appState",
             minimized: {$set: action.minimized}
           });
 
-        case ACTION_TYPES.INCREMENT_PRE_CHAT_FEATURE_INDEX:
-          return update (state, {
-            preChatFeatureIndex: {$set: state.preChatFeatureIndex + 1}
-          });
-
-        case ACTION_TYPES.SET_PRE_CHAT_FEATURE_INDEX:
-          return update (state, {
-            preChatFeatureIndex: {$set: action.preChatFeatureIndex}
-          });
-
         case ACTION_TYPES.UPDATE_ISSUE_TYPE:
           return update (state, {
             issueType: {$set: action.issueType}
@@ -258,20 +199,6 @@ define ("reducers/appState",
         case ACTION_TYPES.UPDATE_ISSUE_STATE:
           return update (state, {
             issueState: {$set: action.state}
-          });
-
-        case ACTION_TYPES.UPDATE_PRE_CHAT_FEATURE_STATE:
-          return update (state, {
-            preChatFeatureState: {
-              [action.feature]: {
-                $set: action.featureState
-              }
-            }
-          });
-
-        case ACTION_TYPES.SET_USER_PROFILE_ID:
-          return update (state, {
-            userProfileId: {$set: action.profileId}
           });
 
         case ACTION_TYPES.SET_MOBILE_INFO:
@@ -315,11 +242,6 @@ define ("reducers/appState",
             metadata: {$set: action.metadata}
           });
 
-        case ACTION_TYPES.SET_EXECUTE_GREETING_MESSAGE:
-          return update (state, {
-            executeGreetingMessage: {$set: action.executeGreetingMessage}
-          });
-
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
           return update (state, {
             proactiveChatRules: {$set: action.proactiveChatRules}
@@ -334,13 +256,6 @@ define ("reducers/appState",
           return update (state, {
             analytics: {
               suggestedFaqReadTracked: {$set: action.isTracked}
-            }
-          });
-
-        case ACTION_TYPES.SET_INFO_BOT_REQESTED_TIMESTAMP:
-          return update (state, {
-            analytics: {
-              infoBotRequestedTimestamp: {$set: action.ts}
             }
           });
 

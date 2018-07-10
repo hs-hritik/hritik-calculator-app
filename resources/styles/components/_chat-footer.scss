@@ -12,6 +12,7 @@
 
 @include component(chat-footer) {
 
+  $chat-widget-bg-color: var(--hs-chat-widget-bg-color);
   $form-bg-color: var(--hs-form-bg-color);
   $form-border-color: var(--hs-form-border-color);
   $form-primary-text-color: var(--hs-form-primary-text-color);
@@ -100,6 +101,33 @@
       &[disabled] {
         opacity: .4;
       }
+
+      &[type=number] {
+        -moz-appearance: textfield;
+      }
+
+      // Remove the spinner arrows for input type number
+      &[type=number]::-webkit-inner-spin-button,
+      &[type=number]::-webkit-outer-spin-button {
+        margin: 0;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      // Remove spinner arrows for input type date and clear button which appears
+      // once the date is selected
+
+      // @NOTE - Disabling pseudo element lint rule as it gives error for
+      // -webkit-clear-button scss lint recognize -webkit-clear-button as a
+      // pseudo class and not a pseudo element
+      // scss-lint:disable PseudoElement
+      &[type=date]::-webkit-inner-spin-button,
+      &[type=date]::-webkit-clear-button {
+        display: none;
+        -webkit-appearance: none;
+      }
+      // scss-lint:enable PseudoElement
     }
 
     &__attachment-icon,
@@ -110,6 +138,7 @@
     &__submit {
       display: flex;
       align-self: flex-end;
+      margin-left: gutter(12);
       cursor: pointer;
     }
 
@@ -130,6 +159,26 @@
 
     &__heading-text {
       flex-basis: 80%;
+    }
+
+    &__skip-btn-wrapper {
+      position: absolute;
+      top: -49px;
+      right: 16px;
+      display: flex;
+      padding: gutter(12 0 12 12);
+      background-color: $chat-widget-bg-color;
+      border-top-left-radius: 24px;
+    }
+
+    &__skip-btn {
+      align-self: flex-end;
+      min-width: auto;
+      padding: gutter(3 12);
+      margin: gutter(0);
+      font-size: font-size(body, small);
+      font-weight: font-weight(normal);
+      line-height: line-height(h6);
     }
 
     /// form invalid modifier is used to disable elements
@@ -158,6 +207,17 @@
 
     &__field-item {
       margin-left: gutter(6);
+    }
+
+    &--mobile {
+      .hs-chat-footer__text-field {
+        // @NOTE - If we want to avoid zoom on focus for iOS devices, we need to
+        // set the font size to 16px
+        &[type=number],
+        &[type=date] {
+          font-size: font-size(body, large);
+        }
+      }
     }
   }
 }

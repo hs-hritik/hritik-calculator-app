@@ -17,7 +17,6 @@ define ("reducers/chatView",
     const update = React.addons.update;
     const {
       ACTIVE_FOOTER,
-      INFO_BOT_FIELDS,
       USER_INPUT_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
@@ -32,9 +31,10 @@ define ("reducers/chatView",
      * Returns default user input config object to be set in store
      * @returns {Object} - input config object
      */
-    const _getDefaultUserInputConfig = (config = {}) => {
+    const _getDefaultUserInputConfig = () => {
       return {
-        value: config.value || "",
+        value: "",
+        defaultInputValue: "",
         type: USER_INPUT_TYPES.DEFAULT_INPUT,
         disabled: false,
         required: true,
@@ -48,13 +48,25 @@ define ("reducers/chatView",
       };
     };
 
+    /**
+     * Predicate to return whether user input type is default input
+     * @param {Object} state - current state
+     * @returns {Boolean} - whether current input type is default input
+     */
+    const isInputTypeDefault = (state) => {
+      return (state.userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT);
+    };
+
     const INITIAL_STATE = {
       userInput: _getDefaultUserInputConfig (),
       activeFooter: ACTIVE_FOOTER.REPLY,
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
-      endUserFirstMsgId: "",
+      botState: {
+        botStepInProgress: false,
+        botStepMessage: null
+      },
       unreadCount: 0,
       messageList: [],
       messageCursor: {
@@ -64,34 +76,6 @@ define ("reducers/chatView",
       issueCursor: 0,
       pollerFailureCount: 0,
       isCsatSubmitted: false,
-      infoBot: {
-        fieldsRequired: ["name", "email"],
-        currentField: "",
-        data: {
-          [INFO_BOT_FIELDS.NAME]: {
-            title: "Your Name",
-            msg: "What's your name?",
-            placeholder: "Enter your name",
-            value: {
-              value: "",
-              errorMsg: "",
-              validations: ["required"]
-            },
-            prefilled: false
-          },
-          [INFO_BOT_FIELDS.EMAIL]: {
-            title: "Your Email Address",
-            msg: "What's your email?",
-            placeholder: "Enter your email",
-            value: {
-              value: "",
-              errorMsg: "",
-              validations: ["required", "email"]
-            },
-            prefilled: false
-          }
-        }
-      },
       readFaqList: [],
       loading: true,
       // This represents the error in the whole chat view
@@ -116,19 +100,6 @@ define ("reducers/chatView",
       switch (action.type) {
         case ACTION_TYPES.REHYDRATE:
           const updateObj = {};
-          if (action.data.infoBotCurrentField) {
-            updateObj.infoBot = {
-              currentField: {$set: action.data.infoBotCurrentField}
-            };
-          }
-          if (action.data.replyText) {
-            updateObj.userInput = {
-              value: {$set: action.data.replyText}
-            };
-          }
-          if (action.data.endUserFirstMsgId) {
-            updateObj.endUserFirstMsgId = {$set: action.data.endUserFirstMsgId};
-          }
           if (action.data.readFaqList) {
             updateObj.readFaqList = {$set: action.data.readFaqList};
           }
@@ -138,6 +109,11 @@ define ("reducers/chatView",
           return update (state, {
             userInput: {
               value: {$set: action.value},
+              // Save user entered text for input type default input
+              defaultInputValue: {
+                $set: isInputTypeDefault (state) ? action.value :
+                      state.userInput.defaultInputValue
+              },
               errorMsg: {$set: ""}
             }
           });
@@ -187,72 +163,6 @@ define ("reducers/chatView",
             unreadCount: {$set: action.count}
           });
 
-        case ACTION_TYPES.UPDATE_INFO_BOT_FIELD_VALUE:
-          const {value, errorMsg} = action.value,
-                valueUpdateObj = {};
-
-          if (typeof value === "string") {
-            valueUpdateObj.value = {$set: value};
-          }
-
-          if (typeof errorMsg === "string") {
-            valueUpdateObj.errorMsg = {$set: errorMsg};
-          }
-
-          return update (state, {
-            infoBot: {
-              data: {
-                [state.infoBot.currentField]: {
-                  value: valueUpdateObj
-                }
-              }
-            }
-          });
-
-        case ACTION_TYPES.CHANGE_INFO_BOT_CURRENT_FIELD:
-          const {fieldsRequired, currentField} = state.infoBot;
-          const currentFieldIndex = fieldsRequired.indexOf (currentField);
-          const newCurrentField = fieldsRequired [currentFieldIndex + 1] || "";
-
-          return update (state, {
-            infoBot: {
-              currentField: {$set: newCurrentField}
-            }
-          });
-
-        case ACTION_TYPES.SET_END_USER_FIRST_MESSAGE_ID:
-          return update (state, {
-            endUserFirstMsgId: {$set: action.id}
-          });
-
-        case ACTION_TYPES.SET_CLIENT_CONFIG:
-          // @TODO: Remove this during clean up. This will be unnecessary with chat bots.
-          const {userName, userEmail} = action.config,
-                infoBotChangeObj = {};
-          if (typeof userName === "string" && userName) {
-            infoBotChangeObj [INFO_BOT_FIELDS.NAME] = {
-              value: {
-                value: {$set: userName}
-              },
-              prefilled: {$set: true}
-            };
-          }
-
-          if (typeof userEmail === "string" && userEmail) {
-            infoBotChangeObj [INFO_BOT_FIELDS.EMAIL] = {
-              value: {
-                value: {$set: userEmail}
-              },
-              prefilled: {$set: true}
-            };
-          }
-
-          return update (state, {
-            infoBot: {
-              data: infoBotChangeObj
-            }
-          });
-
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
           return update (state, {
             readFaqList: {$push: [action.faqId]}
@@ -263,6 +173,8 @@ define ("reducers/chatView",
             _getDefaultUserInputConfig (),
             action.input
           );
+          // When the default input switches to bot input, save default input value
+          userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
           return update (state, {
             userInput: {$set: userInputUpdateObj}
           });
@@ -270,7 +182,8 @@ define ("reducers/chatView",
         case ACTION_TYPES.RESET_USER_INPUT_DATA:
           userInputUpdateObj = objUtils.shallowMerge (
             _getDefaultUserInputConfig (), {
-              value: action.config.value ? state.userInput.value : ""
+              // Restore default input value when user input is reset
+              value: state.userInput.defaultInputValue
             }
           );
           return update (state, {
@@ -287,11 +200,6 @@ define ("reducers/chatView",
             userInput: {
               selectedOption: {$set: action.option}
             }
-          });
-
-        case ACTION_TYPES.SET_MESSAGES:
-          return update (state, {
-            messageList: {$set: action.messages}
           });
 
         case ACTION_TYPES.ADD_MESSAGES:
@@ -353,6 +261,20 @@ define ("reducers/chatView",
         case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
           return update (state, {
             error: {$set: INITIAL_ERROR_STATE}
+          });
+
+        case ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS:
+          return update (state, {
+            botState: {
+              botStepInProgress: {$set: action.inProgress}
+            }
+          });
+
+        case ACTION_TYPES.SAVE_BOT_STEP_MESSAGE:
+          return update (state, {
+            botState: {
+              botStepMessage: {$set: action.message}
+            }
           });
 
         case ACTION_TYPES.RESET:

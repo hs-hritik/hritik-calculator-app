@@ -1,0 +1,71 @@
+Branches:
+feature/chat-bots-v1
+
+Changelog:
+Fix : Input focus zoom issue on iOS devices
+Fix : Input focus validations for bot input
+Fix : TAI is displayed even after agent interrupts the bot
+Fix : Top alignment of skip button
+Fix : IE issue with flex wrap
+Fix : Apply UX suggestions for skip button
+Fix : Add word break for pill options
+Fix : Reduce right padding of skip button
+Fix : Remove min width from pill options
+Fix : Add left margin to send button
+Fix : Enable footer if preIssue is resolved
+Handle unsupported bot message
+Modify condition to enable dnd wrapper
+Fix changelogs directory name
+Add timezone offset for date input request
+Fix no internet error message not displayed for options select
+Add sdk meta and library version to create preIssue api call
+Use default placeholder for input date if datepicker is not supported
+Fix : Retain the default input text
+Disable drag and drop for bot step
+Change condition to display send button
+Add action to save latest bot state
+Add bot type messages and helper to detect bot type
+Add bot state in chat view reducer
+Add decimal support for input type number
+Remove default styles for input type number and date
+Auto focus on user input after bot reply is sent
+Modify footer action to show send button in case of bot
+Modify footer and TAI behaviour to support bots in issue
+Disable user input and skip button when api is in progress
+Add valid date format in request of prepare message data helper
+Add action to skip user input
+Move action to set footer active/inactive to action creators
+Fix gulp param comment for replace local host task
+Remove unwanted code from chat view footer
+Fix minor indentation in chat view
+Backlog: Make webchat iframe vertically responsive
+Backlog: Fix business hours view's scroll issue
+Backlog: Fix translations getting reset on start new conversation
+Restore user text for default input after bot ends
+Handle latest message for issue
+Modify prepare message xhr data
+Add support for input type date
+Add support for skip button for options input
+Add support for skip button for text input
+Clean up : unused keys from ls helpers
+Cleanup `identifier` related code
+Cleanup `userProfileId` related code
+Move message helper methods from chat view to message helpers
+Rename entity helpers to message helpers
+Clean up : info bot data
+Clean up : unused api routes
+Clean up : message constants
+Clean up : app state constants
+Clean up : action type constants
+Clean up : entities reducer
+Clean up : entities actions
+Clean up : entities schema
+Clean up : normalizer lib
+Clean up : ls middleware and ls helper
+Clean up : app state reducer
+Clean up : app state actions
+Clean up : action creators
+Clean up : chat view reducer
+Clean up : chat view container
+Clean up : chat view actions
+Remove reset button from demo page
