@@ -45,6 +45,18 @@ define ("constants/appState",
     // one of the next commits.
     const ISSUE_STATE_RESET = "Rejected";
 
+    /**
+     * App reset triggers represent ways by which app can be reset
+     * INITIAL = The default value - Used when we reset preIssue
+     * UPDATE_HELPSHIFT_CONFIG_API = Used when update helpshift config is called
+     * START_NEW_CONVERSATION = Used when user clicks on start new conversation
+     */
+    const APP_RESET_TRIGGER = {
+      INITIAL: "INITIAL",
+      UPDATE_HELPSHIFT_CONFIG_API: "UPDATE_HELPSHIFT_CONFIG_API",
+      START_NEW_CONVERSATION: "START_NEW_CONVERSATION"
+    };
+
     return {
       WEB_CHAT_VERSION,
       ISSUE_STATE,
@@ -53,6 +65,7 @@ define ("constants/appState",
       TRIGGER,
       ISSUE_TYPE,
       ISSUE_STATE_RESET,
-      XHR_ISSUE_STATE
+      XHR_ISSUE_STATE,
+      APP_RESET_TRIGGER
     };
   });

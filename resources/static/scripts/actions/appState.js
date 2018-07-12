@@ -43,7 +43,8 @@ define ("actions/appState",
     const {
       ANON_USER_RESET_TIMEOUT,
       TRIGGER,
-      ISSUE_STATE_RESET
+      ISSUE_STATE_RESET,
+      APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
 
     const {
@@ -426,12 +427,14 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set webchat is live
+     * Action to set app reset trigger
+     * @param {String} value - value of reset trigger
      * @returns {Object} - Action
      */
-    const setWebChatIsLive = () => {
+    const setAppResetTrigger = (value) => {
       return {
-        type: ACTION_TYPES.SET_WEB_CHAT_IS_LIVE
+        type: ACTION_TYPES.SET_APP_RESET_TRIGGER,
+        value
       };
     };
 
@@ -454,22 +457,39 @@ define ("actions/appState",
         const {
           appState: {
             issueExists,
-            webChatIsLive
+            appResetTrigger
           }
         } = getState ();
 
-        // If atleast one issue exists on backend and app is not live (first page load)
-        // then start the poller. (poller will check for issue state)
-        // Else if the appLive then start a new conversation
-        // This control flow will be invoked when user clicks on 'start new
-        // conversation', reset is called, config will be fetched and app will be live
-        if (issueExists && !webChatIsLive) {
-          chatViewActions.startPollingForMessages ();
-        } else if (webChatIsLive) {
-          startNewConversation ();
+        // If atleast one issue exists on backend then start the poller.
+        // (poller will check for issue state)
+        // Else start a new conversation by creating new preIssue.
+
+        // App reset trigger is used to determine way by which app has been reset.
+        // We have to handle app reset scenarios differently.
+        // If app is reset using inital value (preIssue reset) or through api,
+        // then we go by normal flow by checking any issue exists.
+        // If app is reset using start new conversation, then we have to
+        // explicitly create a new preIssue.
+        // In future, we can add more reset scenarios below.
+        switch (appResetTrigger) {
+          case APP_RESET_TRIGGER.INITIAL:
+          case APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API:
+            if (issueExists) {
+              chatViewActions.startPollingForMessages ();
+            } else {
+              startNewConversation ();
+            }
+            break;
+
+          case APP_RESET_TRIGGER.START_NEW_CONVERSATION:
+            startNewConversation ();
+            break;
         }
 
-        dispatch (setWebChatIsLive ());
+        // The reset trigger is reset to its default value once appropriate
+        // action is performed.
+        dispatch (setAppResetTrigger (APP_RESET_TRIGGER.INITIAL));
       }
     };
 
@@ -941,6 +961,7 @@ define ("actions/appState",
       executeProactiveChatRules,
       updateStyles,
       resetPreIssue,
-      setConversationStarted
+      setConversationStarted,
+      setAppResetTrigger
     };
   });

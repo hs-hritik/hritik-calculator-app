@@ -61,7 +61,8 @@
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
-    CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy"
+    CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
+    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config"
   };
 
   const SUPPORTED_EVENTS = {
@@ -1006,6 +1007,15 @@
     });
   };
 
+  /**
+   * JS API to update helpshift config
+   * This api will be called by the developers when they get the config data at
+   *  later point after the parent page is loaded.
+   */
+  const updateHelpshiftConfig = () => {
+    _postMessage (EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG);
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -1021,7 +1031,8 @@
     replaceCustomIssueFields,
     setProactiveChatRules,
     updateUiConfig,
-    setFullPrivacy
+    setFullPrivacy,
+    updateHelpshiftConfig
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

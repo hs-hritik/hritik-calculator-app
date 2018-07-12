@@ -17,7 +17,8 @@ define ("reducers/appState",
     const update = React.addons.update;
     const {
       ISSUE_STATE,
-      ISSUE_TYPE
+      ISSUE_TYPE,
+      APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
 
     const INITIAL_STATE = {
@@ -50,12 +51,10 @@ define ("reducers/appState",
       activeIssueId: "",
       internalIssueId: "",
 
-      // Used to start a new conversation when user clicks on start new conversation
-      // The value is not set to default on 'reset', rather retained throughout the
-      // application.
-      // Only on page refresh, the value will be false and when we initialize the
-      // conversation, we set it to true.
-      webChatIsLive: false,
+      // App reset triggers represent ways by which app can be reset i.e. reset
+      // method will be called. The reset method can be called from multiple
+      // places - preIssue reset, api, start new conversation
+      appResetTrigger: APP_RESET_TRIGGER.INITIAL,
       featuresEnabled: {
         greeting: true,
         csatBot: false,
@@ -114,9 +113,9 @@ define ("reducers/appState",
             issueExists: {$set: config.issue_exists}
           });
 
-        case ACTION_TYPES.SET_WEB_CHAT_IS_LIVE:
+        case ACTION_TYPES.SET_APP_RESET_TRIGGER:
           return update (state, {
-            webChatIsLive: {$set: true}
+            appResetTrigger: {$set: action.value}
           });
 
         case ACTION_TYPES.SET_LANGUAGE:
@@ -286,10 +285,10 @@ define ("reducers/appState",
 
         case ACTION_TYPES.RESET:
           // Retain the cif values set through the api
-          // and webChatIsLive flag
+          // and appResetTrigger
           return update (INITIAL_STATE, {
             cif: {$set: state.cif},
-            webChatIsLive: {$set: state.webChatIsLive},
+            appResetTrigger: {$set: state.appResetTrigger},
             minimized: {$set: state.minimized}
           });
 

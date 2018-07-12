@@ -32,7 +32,8 @@ define ("extras/api",
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
-      PRE_ISSUE_RESET_TIMEOUT
+      PRE_ISSUE_RESET_TIMEOUT,
+      APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
 
     const ISSUE_CLOSED_STATES = [
@@ -211,6 +212,12 @@ define ("extras/api",
           break;
         case EVENT_TYPES.CMD_SET_FULL_PRIVACY:
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
+          break;
+        case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
+          store.dispatch (
+            appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API)
+          );
+          store.dispatch (appStateActions.reset ());
           break;
       }
     };
