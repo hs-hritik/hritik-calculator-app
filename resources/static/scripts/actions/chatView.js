@@ -955,7 +955,7 @@ define ("actions/chatView",
       xhr ({
         route: routes.getConversationHistory (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
-        method: "GET",
+        method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           const {issues} = response;
@@ -1039,7 +1039,7 @@ define ("actions/chatView",
       fetchMessagesXhr = xhr ({
         route: routes.getConversationUpdates (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
-        method: "GET",
+        method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
           // @NOTE - This is to make sure that onEnd is called even if
