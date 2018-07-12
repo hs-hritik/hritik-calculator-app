@@ -130,10 +130,13 @@ define ("components/chatView",
           onPillOptionSelect,
           onRetryAttachmentClick,
           onSuggestedFaqClick,
+          onScrollPastExistingConversation,
           userInput,
           issueIsCreated,
           loading,
+          hasFailure,
           error,
+          userIsViewingPastMessages,
           errorActionHandler
         } = this.props;
 
@@ -160,15 +163,15 @@ define ("components/chatView",
                              onPillOptionSelect={onPillOptionSelect}
                              onRetryAttachmentClick={onRetryAttachmentClick}
                              onSuggestedFaqClick={onSuggestedFaqClick}
-                             hasFailure={this.props.hasFailure}
+                             hasFailure={hasFailure}
                              userInput={userInput}
-                             userIsViewingPastMessages={this.props.userIsViewingPastMessages}
+                             userIsViewingPastMessages={userIsViewingPastMessages}
                              onScrollPastExistingConversation={
-                               this._onScrollPastExistingConversation
+                               onScrollPastExistingConversation
                              }
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef} />
-                  <JumpToLatestBtn show={this.props.userIsViewingPastMessages}
+                  <JumpToLatestBtn show={userIsViewingPastMessages}
                                    onClick={this._onJumpBtnClick} />
               </div>
               <ChatViewFooterContainer />
@@ -184,10 +187,6 @@ define ("components/chatView",
 
       _setMsgListRef (ref) {
         this._msgListRef = ref;
-      },
-
-      _onScrollPastExistingConversation (isViewing) {
-        this.props.onScrollPastExistingConversation (isViewing);
       },
 
       _onLoadMore () {

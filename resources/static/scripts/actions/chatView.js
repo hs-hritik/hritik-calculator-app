@@ -478,6 +478,8 @@ define ("actions/chatView",
 
     /**
      * Helper method to get particular issue id of the conversation
+     * @TODO: This should be moved to a helper so that other parts of
+     * code can use it as well.
      * @param {Object} issue - issue object
      * @returns {String} Issue ID
      */
@@ -834,6 +836,14 @@ define ("actions/chatView",
       return preIssueActionTriggered;
     };
 
+    /**
+     * Set the forward/backward message cursors from the issue list
+     * @param {Object} messageCursorConfig
+     * @param {Array} messageCursorConfig.issues - list of issues
+     * @param {String} messageCursorConfig.cursorType - type of cursor (FORWARD/BACKWARD)
+     * @param {Number} messageCursorConfig.cursorTs - unix timestamp of message whose cursor
+     *                                                needs to be set. Only needed FORWARD cursor.
+     */
     const saveMessageCursor = (messageCursorConfig) => {
       const {dispatch} = store;
       const {
@@ -958,7 +968,10 @@ define ("actions/chatView",
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
-          const {issues} = response;
+          const {
+            issues,
+            has_older_messages: hasOlderMsgs
+          } = response;
 
           if (!issues.length) {
             return;
@@ -966,7 +979,7 @@ define ("actions/chatView",
 
           const linearMsgs = createLinearMessageList (issues, {
             lastGroupId: preIssueId,
-            hasOlderMsgs: response.has_older_messages
+            hasOlderMsgs
           });
 
           const oldestIssue = issues [issues.length - 1];
@@ -978,7 +991,7 @@ define ("actions/chatView",
                 messages: linearMsgs,
                 prepend: true
               }),
-              setAllMessagesAreLoaded (!response.has_older_messages)
+              setAllMessagesAreLoaded (!hasOlderMsgs)
             ])
           );
 
@@ -1136,7 +1149,7 @@ define ("actions/chatView",
                 const oldestIssue = issues [issues.length - 1];
 
                 dispatch (
-                  setAllMessagesAreLoaded (!response.has_older_messages)
+                  setAllMessagesAreLoaded (!hasOlderMsgs)
                 );
 
                 saveMessageCursor ({
