@@ -71,8 +71,12 @@
     CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config"
   };
 
+  /**
+   * The name of the events that are exposed to the developers
+   */
   const SUPPORTED_EVENTS = {
-    CHAT_END: "chatEnd"
+    CHAT_END: "chatEnd",
+    NEW_UNREAD_MESSAGES: "newUnreadMessages"
   };
 
   // Errors message strings
@@ -727,6 +731,19 @@
   };
 
   /**
+   * Function to find the event name in the event list and call its handler
+   * @param {String} eventName - Name of the event
+   * @param {Any} eventData - Data for the event
+   */
+  const callApiEventHandler = (eventName, eventData) => {
+    state.apiEvents.forEach ((apiEvent) => {
+      if (apiEvent.eventName === eventName) {
+        apiEvent.eventHandler (eventData);
+      }
+    });
+  };
+
+  /**
    * JS API to initialize messenger.
    * Entry point for rendering iframe on the client page.
    */
@@ -805,6 +822,11 @@
         case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
           renderUnreadCount ();
+
+          // Call the event handle for new unread messages event.
+          callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
+            unreadCount: data.count
+          });
           break;
 
         case EVENT_TYPES.SDK_RESET:
@@ -816,11 +838,8 @@
           break;
 
         case EVENT_TYPES.SDK_EVENT_CHAT_END:
-          state.apiEvents.forEach ((apiEvent) => {
-            if (apiEvent.eventName === SUPPORTED_EVENTS.CHAT_END) {
-              apiEvent.eventHandler ();
-            }
-          });
+          // Call the event handler for chat end event.
+          callApiEventHandler (SUPPORTED_EVENTS.CHAT_END);
           break;
 
         case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
