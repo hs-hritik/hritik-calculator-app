@@ -37,7 +37,11 @@
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
-    apiEvents: []
+    apiEvents: [],
+    webChatVisibility: {
+      launcher: "",
+      widget: ""
+    }
   };
 
   const INIT = "init";
@@ -832,9 +836,20 @@
   };
 
   /**
+   * Predicate to return whether webchat is hidden
+   */
+  const isWebChatHidden = () => {
+    return (state.webChatVisibility.launcher === "none" &&
+            state.webChatVisibility.widget === "none");
+  };
+
+  /**
    * JS API to open/maximize/show the messenger widget
    */
   const open = () => {
+    if (isWebChatHidden ()) {
+      return;
+    }
     toggleWebSdkIframe ({
       minimized: false,
       trigger: TRIGGER.API
@@ -845,9 +860,37 @@
    * JS API to close/minimize/hide the messenger widget
    */
   const close = () => {
+    if (isWebChatHidden ()) {
+      return;
+    }
     toggleWebSdkIframe ({
       minimized: true
     });
+  };
+
+  /**
+   * JS API to hide webchat
+   * This will hide the launcher and widget completely
+   */
+  const hide = () => {
+    // Save current visibility of webchat (launcher + widget) in state
+    // @NOTE - css visibility has nothing to do with this. Although the name is
+    // visibility, we are saving the display property in state.
+    state.webChatVisibility.launcher = launcherBtn.style.display;
+    state.webChatVisibility.widget = webSdkIframe.style.display;
+
+    webSdkIframe.style.display = "none";
+    launcherBtn.style.display = "none";
+  };
+
+  /**
+   * JS API to show webchat
+   * This will restore the visibility of the launcher and widget
+   */
+  const show = () => {
+    // Restore the previous display properties of webchat (launcher + widget)
+    webSdkIframe.style.display = state.webChatVisibility.widget;
+    launcherBtn.style.display = state.webChatVisibility.launcher;
   };
 
   /**
@@ -1045,7 +1088,9 @@
     setProactiveChatRules,
     updateUiConfig,
     setFullPrivacy,
-    updateHelpshiftConfig
+    updateHelpshiftConfig,
+    hide,
+    show
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them
