@@ -42,6 +42,8 @@
 
   const INIT = "init";
   const FORCE_UPDATE_STYLES = true;
+  // Time interval to wait for existence of document's body (in ms)
+  const BODY_WAIT_TIMER = 500;
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
@@ -217,7 +219,7 @@
 
   // Reference for web sdk iframe.
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
-      launcherButton;
+      launcherButton, bodyTimer;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
@@ -714,9 +716,9 @@
       const valueText = value ? " | Value = " + value : "";
       const infoText = " | Info = " + info;
 
-      /* eslint-disable */
+      /* eslint-disable no-console */
       console.error (prefix + setText + valueText + infoText);
-      /* eslint-enable */
+      /* eslint-enable no-console */
     });
   };
 
@@ -725,6 +727,17 @@
    * Entry point for rendering iframe on the client page.
    */
   const init = () => {
+    // Check for existence of document body, if body is not present, wait and
+    // try again in sometime
+    if (!document || !document.body) {
+      bodyTimer = setTimeout (init, BODY_WAIT_TIMER);
+      return;
+    }
+
+    if (bodyTimer) {
+      clearTimeout (bodyTimer);
+    }
+
     // If browser features required to run web chat isn't available on this
     // browser OR
     // if a web chat iframe already exists on the host web page,
