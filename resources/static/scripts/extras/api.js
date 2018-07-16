@@ -11,23 +11,19 @@ define ("extras/api",
     "constants/appState",
     "constants/activeView",
     "constants/analytics",
-    "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
-    "actions/businessHours",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
     "components/app",
     "helpers/analytics",
-    "helpers/common",
     "helpers/localStorage",
     "gunpowder/utils/localStorage"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
-    postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers,
-    lsHelpers, lsUtils) {
+    appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
+    app, analyticsHelpers, lsHelpers, lsUtils) {
     "use strict";
 
     const {
