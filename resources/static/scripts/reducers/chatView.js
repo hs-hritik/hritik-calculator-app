@@ -89,6 +89,7 @@ define ("reducers/chatView",
         }
       },
       userIsViewingPastMessages: false,
+      userIsRedacted: false,
       allMessagesAreLoaded: false,
       pastConversationsLoading: false,
       issueCursor: 0,
@@ -215,6 +216,11 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
           return update (state, {
             allMessagesAreLoaded: {$set: action.msgsLoaded}
+          });
+
+        case ACTION_TYPES.SET_USER_IS_REDACTED:
+          return update (state, {
+            userIsRedacted: {$set: true}
           });
 
         case ACTION_TYPES.RESET_USER_INPUT_DATA:

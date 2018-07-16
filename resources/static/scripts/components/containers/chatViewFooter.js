@@ -34,6 +34,7 @@ define ("components/containers/chatViewFooter",
         chatView: {
           userInput,
           activeFooter,
+          userIsRedacted,
           pollerFailureCount
         },
         csatView: {
@@ -49,6 +50,10 @@ define ("components/containers/chatViewFooter",
       if (!online) {
         failureConfig = {
           message: text.noInternetConnection
+        };
+      } else if (userIsRedacted) {
+        failureConfig = {
+          message: text.userRedactionMessage
         };
       } else if (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED) {
         failureConfig = {

@@ -55,6 +55,9 @@ define ("constants/chatView",
     // The number of failures after which we assume that there is some problem with the poller.
     const MAX_POLLER_FAILURES_ALLOWED = 2;
 
+    const USER_REDACTION_ERR_MSG = "NOT_FOUND";
+    const USER_REDACTION_ERR_STATUS_CODE = 404;
+
     return {
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
@@ -62,6 +65,8 @@ define ("constants/chatView",
       USER_INPUT_TYPES,
       HTML_INPUT_TYPES,
       CURSOR_TYPES,
-      MAX_POLLER_FAILURES_ALLOWED
+      MAX_POLLER_FAILURES_ALLOWED,
+      USER_REDACTION_ERR_MSG,
+      USER_REDACTION_ERR_STATUS_CODE
     };
   });

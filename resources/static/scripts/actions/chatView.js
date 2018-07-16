@@ -49,7 +49,9 @@ define ("actions/chatView",
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT,
-      CURSOR_TYPES
+      CURSOR_TYPES,
+      USER_REDACTION_ERR_MSG,
+      USER_REDACTION_ERR_STATUS_CODE
     } = CHAT_VIEW_CONSTANTS;
 
     const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
@@ -354,6 +356,16 @@ define ("actions/chatView",
       return {
         type: ACTION_TYPES.SET_USER_SELECTED_OPTION,
         option
+      };
+    };
+
+    /**
+     * Action to set user is redacted
+     * @returns {Object} - Action
+     */
+    const setUserIsRedacted = () => {
+      return {
+        type: ACTION_TYPES.SET_USER_IS_REDACTED
       };
     };
 
@@ -1243,8 +1255,12 @@ define ("actions/chatView",
             // @TODO - Ideally, this exception should be logged to server.
           }
         },
-        onFailure: () => {
-          // @TODO: Handler failure.
+        onFailure: (response, statusCode) => {
+          // @TODO: Need to confirm the exact message and key from the backend.
+          if (response.msg === USER_REDACTION_ERR_MSG &&
+            statusCode === USER_REDACTION_ERR_STATUS_CODE) {
+            dispatch (setUserIsRedacted ());
+          }
         },
         onEnd: () => {
           const newPollerFailureCount = lastPollerCallSucceeded ? 0 : (prevPollerFailureCount + 1);
