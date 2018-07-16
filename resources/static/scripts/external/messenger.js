@@ -235,7 +235,8 @@
 
   const parentPageInfo = {
     title: doc.title,
-    url: win.location.href
+    url: win.location.href,
+    origin: win.location.origin
   };
 
   /**

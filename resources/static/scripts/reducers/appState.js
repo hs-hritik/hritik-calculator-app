@@ -85,6 +85,7 @@ define ("reducers/appState",
       tags: [],
       cif: {},
       metadata: {},
+      parentPageInfo: {},
       sdkConfigOptions: {
         fullScreen: false,
         initialUserMessage: ""
@@ -313,6 +314,11 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_METADATA:
           return update (state, {
             metadata: {$set: action.metadata}
+          });
+
+        case ACTION_TYPES.SET_PARENT_PAGE_INFO:
+          return update (state, {
+            parentPageInfo: {$set: action.parentPageInfo}
           });
 
         case ACTION_TYPES.SET_EXECUTE_GREETING_MESSAGE:

@@ -1124,6 +1124,21 @@ define ("actions/appState",
     };
 
     /**
+     * Action to set parent (client) page's data - title, url, and origin
+     * @param {Object} parentPageInfo - Parent page's data
+     * @param {string} [parentPageInfo.title] - Title of the parent page
+     * @param {string} [parentPageInfo.url] - URL of the parent page
+     * @param {string} [parentPageInfo.origin] - Origin of the parent page
+     * @returns {Object} - Action
+     */
+    const setParentPageInfo = (parentPageInfo) => {
+      return {
+        type: ACTION_TYPES.SET_PARENT_PAGE_INFO,
+        parentPageInfo
+      };
+    };
+
+    /**
      * Action to set the proactive chat rules in the state
      * @param {Object} proactiveChatRules
      * @returns {Object} - Action
@@ -1233,6 +1248,7 @@ define ("actions/appState",
       closeConversation,
       replaceCif,
       setMetadata,
+      setParentPageInfo,
       setProactiveChatRules,
       executeProactiveChatRules,
       updateStyles,
