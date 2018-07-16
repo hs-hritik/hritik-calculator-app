@@ -69,7 +69,7 @@ define ("reducers/chatView",
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
-      unreadCount: 0,
+      unreadMessageIds: [],
       messageList: [],
       messageCursor: {
         [CURSOR_TYPES.FORWARD]: {
@@ -193,9 +193,9 @@ define ("reducers/chatView",
             agentTyping: {$set: action.typing}
           });
 
-        case ACTION_TYPES.SET_UNREAD_COUNT:
+        case ACTION_TYPES.SET_UNREAD_MESSAGE_IDS:
           return update (state, {
-            unreadCount: {$set: action.count}
+            unreadMessageIds: {$set: action.messageIds}
           });
 
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:

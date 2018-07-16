@@ -221,14 +221,14 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to set unread messages count.
-     * @param {Number} count - unread count.
+     * Action to set unread message Ids
+     * @param {Array} messageIds - array of message Ids.
      * @returns {Object} - action
      */
-    const setUnreadCount = (count) => {
+    const setUnreadMessageIds = (messageIds) => {
       return {
-        type: ACTION_TYPES.SET_UNREAD_COUNT,
-        count
+        type: ACTION_TYPES.SET_UNREAD_MESSAGE_IDS,
+        messageIds
       };
     };
 
@@ -246,24 +246,27 @@ define ("actions/chatView",
             issueType
           },
           chatView: {
-            unreadCount
+            unreadMessageIds
           }
         } = getState ();
         const pluralIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
 
-        if (unreadCount !== 0) {
-          dispatch (setUnreadCount (0));
-          postSdkMessage.updateUnreadCount (0);
-        }
-
+        // @TODO: message-Ids key is unconfirmed. Get Ack
+        // from the BE team
         xhr ({
           route: routes.putMessages (domain, activeIssueId, pluralIssueType),
           data: xhrHelpers.getPreparedXhrData ({
-            md_state: "read"
+            "md_state": "read",
+            "message-ids": JSON.stringify (unreadMessageIds)
           }, SKIP_PLATFORM_ID),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
         });
+
+        if (unreadMessageIds.length !== 0) {
+          dispatch (setUnreadMessageIds ([]));
+          postSdkMessage.updateUnreadCount (0);
+        }
       };
     };
 
@@ -274,9 +277,9 @@ define ("actions/chatView",
      */
     const switchToChatView = () => {
       return (dispatch, getState) => {
-        const {unreadCount} = getState ().chatView;
+        const {unreadMessageIds, userIsViewingPastMessages} = getState ().chatView;
 
-        if (unreadCount !== 0) {
+        if (unreadMessageIds.length !== 0 && !userIsViewingPastMessages) {
           store.dispatch (markMessagesSeen ());
         }
 
@@ -1311,17 +1314,20 @@ define ("actions/chatView",
           activeView
         },
         chatView: {
-          unreadCount,
+          unreadMessageIds,
           issueCursor,
           userIsViewingPastMessages
         }
       } = getState ();
       const {messages} = config;
-      let finalUnreadCount = unreadCount;
+
+      // Clone the existing list of message ids.
+      const finalUnreadMessageIds = unreadMessageIds.slice (0);
 
       // Calculate unread count for agent messages only
       messages.forEach ((msg) => {
         const {
+          id,
           type,
           state,
           isCustomerMsg
@@ -1331,7 +1337,7 @@ define ("actions/chatView",
             state !== MESSAGES_STATE.READ &&
             type !== MESSAGE_TYPE.CHAT_SEPARATOR &&
             messageHelpers.isRenderableMessage (type)) {
-          finalUnreadCount++;
+          finalUnreadMessageIds.push (id);
         }
       });
 
@@ -1342,12 +1348,12 @@ define ("actions/chatView",
           !userIsViewingPastMessages) {
         dispatch (markMessagesSeen ());
       } else {
-        dispatch (setUnreadCount (finalUnreadCount));
-        postSdkMessage.updateUnreadCount (finalUnreadCount);
+        dispatch (setUnreadMessageIds (finalUnreadMessageIds));
+        postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length);
       }
 
       // Do not play sound on page load even if there are unread messages
-      if (issueCursor && finalUnreadCount) {
+      if (issueCursor && finalUnreadMessageIds.length) {
         audioHelpers.playReceive ();
       }
     };
@@ -1857,7 +1863,7 @@ define ("actions/chatView",
       const {dispatch, getState} = store;
       const {
         chatView: {
-          unreadCount
+          unreadMessageIds
         }
       } = getState ();
 
@@ -1865,7 +1871,7 @@ define ("actions/chatView",
         setUserIsViewingPastMessages (userHasScrolledToPastConvs)
       );
 
-      if (unreadCount > 0 && userHasScrolledToPastConvs) {
+      if (unreadMessageIds.length > 0 && userHasScrolledToPastConvs) {
         dispatch (markMessagesSeen ());
       }
     };

@@ -38,7 +38,7 @@ define ("components/containers/chatView",
           error,
           userIsViewingPastMessages,
           pastConversationsLoading,
-          unreadCount,
+          unreadMessageIds,
           allMessagesAreLoaded
         },
         ui: {
@@ -48,6 +48,8 @@ define ("components/containers/chatView",
 
       const hasFailure = !online || (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED);
 
+      // @TODO: In future, we should pass unreadMessageIds so that individual
+      // message IDs can be marked as read
       return {
         messages,
         isTyping: systemTyping || agentTyping,
@@ -62,7 +64,7 @@ define ("components/containers/chatView",
         hasFailure,
         error,
         userIsViewingPastMessages,
-        unreadCount,
+        unreadCount: unreadMessageIds.length,
         pastConversationsLoading,
         allMessagesAreLoaded
       };
