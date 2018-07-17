@@ -16,10 +16,20 @@ define ("components/containers/viewWrapper",
     const {BASE_FONT} = UI_CONFIG_CONSTANTS.FLATTENED_UI_CONFIG;
 
     const mapStateToProps = (state) => {
+      const {
+        appState: {
+          activeView,
+          sdkConfigOptions: {
+            fullScreen: allowFullScreen,
+            showLauncher: showCloseButton
+          }
+        }
+      } = state;
+
       return {
-        activeView: state.appState.activeView,
-        browserIsMobile: state.appState.browserIsMobile,
-        allowFullScreen: state.appState.sdkConfigOptions.fullScreen,
+        activeView,
+        allowFullScreen,
+        showCloseButton,
         viewStyles: {
           fontFamily: state.ui.uiConfig [BASE_FONT].value
         }

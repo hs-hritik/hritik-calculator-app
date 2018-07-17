@@ -67,6 +67,7 @@ define ("reducers/appState",
       metadata: {},
       sdkConfigOptions: {
         fullScreen: false,
+        showLauncher: true,
         initialUserMessage: ""
       },
       conversationStarted: false,
@@ -300,6 +301,13 @@ define ("reducers/appState",
         case ACTION_TYPES.TOGGLE_ONLINE_STATUS:
           return update (state, {
             online: {$set: action.online}
+          });
+
+        case ACTION_TYPES.SET_LAUNCHER_VISIBILITY:
+          return update (state, {
+            sdkConfigOptions: {
+              showLauncher: {$set: action.launcherIsVisible}
+            }
           });
 
         default:

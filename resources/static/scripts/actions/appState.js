@@ -945,6 +945,18 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set launcher visibility
+     * @param {Boolean} launcherIsVisible - whether launcher is visible
+     * @returns {Object} - Action
+     */
+    const setLauncherIsVisible = (launcherIsVisible) => {
+      return {
+        type: ACTION_TYPES.SET_LAUNCHER_VISIBILITY,
+        launcherIsVisible
+      };
+    };
+
     return {
       setDeviceId,
       setAnonUserId,
@@ -962,6 +974,7 @@ define ("actions/appState",
       updateStyles,
       resetPreIssue,
       setConversationStarted,
-      setAppResetTrigger
+      setAppResetTrigger,
+      setLauncherIsVisible
     };
   });

@@ -82,14 +82,29 @@ define ("extras/api",
      * @param {string} data.trigger - The source that triggered setting the config
      */
     const setConfig = (data) => {
-      store.dispatch (appStateActions.setClientConfig (data.clientConfig));
-      store.dispatch (appStateActions.setMetadata (data.parentPageInfo));
-      store.dispatch (appStateActions.setDeviceId ());
-      store.dispatch (appStateActions.setAnonUserId (data.clientConfig.userId));
-      store.dispatch (appStateActions.setWmConfig ({
-        trigger: data.trigger,
-        helpshiftConfig: data.clientConfig
+      const {dispatch} = store;
+      const {
+        parentPageInfo,
+        clientConfig,
+        trigger
+      } = data;
+      const {
+        userId,
+        widgetOptions
+      } = clientConfig;
+
+      dispatch (appStateActions.setMetadata (parentPageInfo));
+      dispatch (appStateActions.setClientConfig (clientConfig));
+      dispatch (appStateActions.setDeviceId ());
+      dispatch (appStateActions.setAnonUserId (userId));
+      dispatch (appStateActions.setWmConfig ({
+        trigger,
+        helpshiftConfig: clientConfig
       }));
+
+      if (widgetOptions && widgetOptions.hasOwnProperty ("showLauncher")) {
+        dispatch (appStateActions.setLauncherIsVisible (widgetOptions.showLauncher));
+      }
     };
 
     /**
