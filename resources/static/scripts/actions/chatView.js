@@ -681,6 +681,11 @@ define ("actions/chatView",
       const {
         chatView: {
           issueCursor
+        },
+        appState: {
+          featuresEnabled: {
+            conversationHistory
+          }
         }
       } = store.getState ();
       const {issues, hasOlderMsgs} = config;
@@ -697,8 +702,16 @@ define ("actions/chatView",
         });
       }
 
-      messages = createLinearMessageList (issues, {
+      // If conversation history is disabled, we only render the
+      // currentIssue and its pre-issue.
+      let conversationIssues = issues;
+      if (!conversationHistory) {
+        conversationIssues = [currentIssue, previousIssue];
+      }
+
+      messages = createLinearMessageList (conversationIssues, {
         lastIssueId: null,
+        conversationHistory,
         hasOlderMsgs
       });
 

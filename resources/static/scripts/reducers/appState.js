@@ -60,7 +60,8 @@ define ("reducers/appState",
         greeting: true,
         csatBot: false,
         agentNickname: false,
-        resolutionQuestion: true
+        resolutionQuestion: true,
+        conversationHistory: true
       },
       browserIsMobile: false,
       tags: [],
@@ -111,6 +112,7 @@ define ("reducers/appState",
             featuresEnabled: {
               greeting: {$set: greentingFeatureEnabled},
               resolutionQuestion: {$set: config.resolution_question_enabled},
+              conversationHistory: {$set: config.conversation_history_enabled},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
               audioNotifications: {$set: config.audio_notifications_enabled}
