@@ -779,9 +779,6 @@ define ("actions/chatView",
         appState: {
           issueType,
           issueState
-        },
-        chatView: {
-          issueCursor
         }
       } = getState ();
 
@@ -810,10 +807,9 @@ define ("actions/chatView",
             conversationHasEnded: false
           });
         }
-      } else if (issueState === ISSUE_STATE.REJECTED && !issueCursor) {
-        // a] Issue cursor is not present i.e. its first poll (page refresh)
-        // AND
-        // b] Issue state is 'rejected' then handle end chat
+      } else if (issueState === ISSUE_STATE.REJECTED) {
+        // Show "Conversation Closed" message and "Start a new conversation"
+        // button when the issue is rejected
         handleChatEnd ({
           conversationHasEnded: true
         });
