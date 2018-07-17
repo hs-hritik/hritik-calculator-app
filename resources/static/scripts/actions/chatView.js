@@ -921,7 +921,7 @@ define ("actions/chatView",
         );
       } else {
         const oldestIssueMessages = issue.messages;
-        const oldestTimestamp = oldestIssueMessages [oldestIssueMessages.length - 1].created_at;
+        const oldestTimestamp = oldestIssueMessages [0].created_at;
 
         dispatch (
           setActiveIssueMsgCursor ({
