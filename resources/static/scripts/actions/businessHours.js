@@ -13,6 +13,7 @@ define ("actions/businessHours",
     "actions/actionCreators",
     "actions/batch",
     "helpers/xhr",
+    "helpers/prepareProcessXhrData",
     "gunpowder/utils/schema",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
@@ -21,10 +22,12 @@ define ("actions/businessHours",
     "utils/upload"
   ],
   function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr, objectUtils, postSdkMessage, browserUtils, upload) {
+    xhrHelpers, prepareProcessXhrDataHelpers, schema, xhr, objectUtils, postSdkMessage,
+    browserUtils, upload) {
     "use strict";
 
     const {Input} = schema;
+    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     /**
      * Action to set business hours contact form details
@@ -115,7 +118,6 @@ define ("actions/businessHours",
         const {
           appState: {
             domain,
-            metadata,
             tags,
             cif,
             fullPrivacyEnabled,
@@ -147,7 +149,7 @@ define ("actions/businessHours",
         };
 
         const meta = {
-          device_info: metadata
+          device_info: getPreparedDeviceInfo ()
         };
 
         if (tags) {

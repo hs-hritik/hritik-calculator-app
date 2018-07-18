@@ -100,7 +100,6 @@ define ("extras/api",
       }
 
       store.dispatch (appStateActions.setClientConfig (clientConfig));
-      store.dispatch (appStateActions.setMetadata (parentPageInfo));
       store.dispatch (appStateActions.setParentPageInfo (parentPageInfo));
       store.dispatch (appStateActions.setDeviceId ());
       store.dispatch (appStateActions.setAnonUserId (clientConfig.userId));

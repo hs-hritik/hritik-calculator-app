@@ -33,6 +33,7 @@ define ("actions/chatView",
     "helpers/attachments",
     "helpers/analytics",
     "helpers/common",
+    "helpers/prepareProcessXhrData",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
@@ -42,7 +43,8 @@ define ("actions/chatView",
     analyticsConstants, xhr, arrayUtils, schema, objUtils, dateUtils,
     entitiesActions, batchActions, actionCreators, entitySchema, entityHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, commonHelpers, prepareProcessXhrDataHelpers, postSdkMessage,
+    browserUtils, upload) {
     "use strict";
 
     const {normalize} = normalizr;
@@ -63,6 +65,7 @@ define ("actions/chatView",
     } = CHAT_VIEW_CONSTANTS;
 
     const {Input} = schema;
+    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
 
@@ -1427,7 +1430,6 @@ define ("actions/chatView",
             domain,
             tags,
             cif,
-            metadata,
             featuresEnabled: {
               greeting: greetingFeatureEnabled
             },
@@ -1447,7 +1449,7 @@ define ("actions/chatView",
 
         // Prepare XHR data
         const meta = {
-          device_info: metadata
+          device_info: getPreparedDeviceInfo ()
         };
 
         if (tags) {
