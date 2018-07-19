@@ -32,9 +32,10 @@ define ("reducers/chatView",
      * Returns default user input config object to be set in store
      * @returns {Object} - input config object
      */
-    const _getDefaultUserInputConfig = (config = {}) => {
+    const _getDefaultUserInputConfig = () => {
       return {
-        value: config.value || "",
+        value: "",
+        defaultInputValue: "",
         type: USER_INPUT_TYPES.DEFAULT_INPUT,
         disabled: false,
         required: true,
@@ -63,6 +64,15 @@ define ("reducers/chatView",
       return msgsToAdd;
     };
 
+    /**
+     * Predicate to return whether user input type is default input
+     * @param {Object} state - current state
+     * @returns {Boolean} - whether current input type is default input
+     */
+    const isInputTypeDefault = (state) => {
+      return (state.userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT);
+    };
+
     const INITIAL_STATE = {
       userInput: _getDefaultUserInputConfig (),
       activeFooter: ACTIVE_FOOTER.REPLY,
@@ -70,6 +80,10 @@ define ("reducers/chatView",
       systemTyping: false,
       agentTyping: false,
       unreadMessageIds: [],
+      botState: {
+        botStepInProgress: false,
+        botStepMessage: null
+      },
       messageList: [],
       messageCursor: {
         [CURSOR_TYPES.FORWARD]: {
@@ -128,6 +142,11 @@ define ("reducers/chatView",
           return update (state, {
             userInput: {
               value: {$set: action.value},
+              // Save user entered text for input type default input
+              defaultInputValue: {
+                $set: isInputTypeDefault (state) ? action.value :
+                      state.userInput.defaultInputValue
+              },
               errorMsg: {$set: ""}
             }
           });
@@ -209,6 +228,8 @@ define ("reducers/chatView",
             _getDefaultUserInputConfig (),
             action.input
           );
+          // When the default input switches to bot input, save default input value
+          userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
           return update (state, {
             userInput: {$set: userInputUpdateObj}
           });
@@ -226,7 +247,8 @@ define ("reducers/chatView",
         case ACTION_TYPES.RESET_USER_INPUT_DATA:
           userInputUpdateObj = objUtils.shallowMerge (
             _getDefaultUserInputConfig (), {
-              value: action.config.value ? state.userInput.value : ""
+              // Restore default input value when user input is reset
+              value: state.userInput.defaultInputValue
             }
           );
           return update (state, {
@@ -312,6 +334,20 @@ define ("reducers/chatView",
         case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
           return update (state, {
             error: {$set: INITIAL_ERROR_STATE}
+          });
+
+        case ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS:
+          return update (state, {
+            botState: {
+              botStepInProgress: {$set: action.inProgress}
+            }
+          });
+
+        case ACTION_TYPES.SAVE_BOT_STEP_MESSAGE:
+          return update (state, {
+            botState: {
+              botStepMessage: {$set: action.message}
+            }
           });
 
         case ACTION_TYPES.RESET:

@@ -8,14 +8,15 @@ define ("components/messageList",
   [
     "components/message",
     "components/commons/branding",
+    "components/commons/skipButtonWrapper",
     "helpers/message",
     "constants/propTypes",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes"
   ],
-  function (Message, Branding, messageHelpers, customPropTypes, chatViewConstants,
-    throttle, classes) {
+  function (Message, Branding, SkipButtonWrapper, messageHelpers, customPropTypes,
+    chatViewConstants, throttle, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -58,6 +59,7 @@ define ("components/messageList",
         onPillOptionSelect: PropTypes.func.isRequired,
         onScrollPastExistingConversation: PropTypes.func,
         onLoadMore: PropTypes.func,
+        onSkipUserInput: PropTypes.func,
         /**
          * If chat view footer has any failure
          */
@@ -138,9 +140,12 @@ define ("components/messageList",
             type,
             options,
             label,
-            disabled
+            disabled,
+            required,
+            skipLabel
           },
-          hasFailure
+          hasFailure,
+          onSkipUserInput
         } = this.props;
 
         // @TODO: Re-consider the approach to render the ChatViewFooterContainer
@@ -166,6 +171,17 @@ define ("components/messageList",
           );
         });
 
+        let skipBtnWrapperEl = null;
+
+        if (!required) {
+          skipBtnWrapperEl = (
+            <SkipButtonWrapper label={skipLabel}
+                               className="hs-message-list__skip-btn-wrapper"
+                               disabled={disabled}
+                               onClick={onSkipUserInput} />
+          );
+        }
+
         return (
           <div className="hs-message-list__pills-container">
             <small>
@@ -176,6 +192,7 @@ define ("components/messageList",
             <div className="hs-message-list__pill-options">
               {pillOptionsEl}
             </div>
+            {skipBtnWrapperEl}
           </div>
         );
       },

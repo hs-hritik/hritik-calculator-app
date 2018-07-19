@@ -8,6 +8,9 @@ define ("constants/appState",
   function () {
     "use strict";
 
+    // Version of web chat (the SDK, should not be confused with the API version)
+    const WEB_CHAT_VERSION = "2.1.0";
+
     const ISSUE_STATE = {
       ACTIVE: "active",
       RESOLVED: "resolved",
@@ -43,6 +46,7 @@ define ("constants/appState",
     const ISSUE_STATE_RESET = "Rejected";
 
     return {
+      WEB_CHAT_VERSION,
       ISSUE_STATE,
       PRE_ISSUE_RESET_TIMEOUT,
       ANON_USER_RESET_TIMEOUT,

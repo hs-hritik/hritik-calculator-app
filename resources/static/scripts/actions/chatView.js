@@ -59,7 +59,8 @@ define ("actions/chatView",
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
-      XHR_ISSUE_STATE
+      XHR_ISSUE_STATE,
+      WEB_CHAT_VERSION
     } = APP_STATE_CONSTANTS;
 
     const {EVENT} = analyticsConstants;
@@ -68,8 +69,8 @@ define ("actions/chatView",
 
     const PROCESS = true;
     const SKIP_PLATFORM_ID = true;
-    const SHOW_PRE_ISSUE_FOOTER = true;
-    const HIDE_PRE_ISSUE_FOOTER = !SHOW_PRE_ISSUE_FOOTER;
+    const ENABLE_FOOTER = true;
+    const DISABLE_FOOTER = !ENABLE_FOOTER;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
@@ -372,13 +373,11 @@ define ("actions/chatView",
     /**
      * Action to reset user input
      * This will reset label, errors, placeholders etc of user input
-     * @param {Object} config - config of user values to retain
      * @returns {Object} - Action
      */
-    const resetUserInput = (config = {}) => {
+    const resetUserInput = () => {
       return {
-        type: ACTION_TYPES.RESET_USER_INPUT_DATA,
-        config
+        type: ACTION_TYPES.RESET_USER_INPUT_DATA
       };
     };
 
@@ -403,13 +402,29 @@ define ("actions/chatView",
      */
     const handleMessageInput = (message) => {
       const {input} = message;
-      const {dispatch} = store;
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          issueType
+        }
+      } = getState ();
 
       // If bot message does not contain any input, don't process it and hide
       // the footer.
       // This is to handle bot info text messages which do not have input.
+      // If the issue type is preIssue, then hide footer and show TAI.
+      // If the issue type is issue, then
+      //   a. explicitly enable the footer
+      //   b. hide TAI
+      //   c. reset user input to default.
+
       if (!input) {
-        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          handleIssueFooterAndTAI (DISABLE_FOOTER);
+        } else {
+          handleIssueFooterAndTAI (ENABLE_FOOTER);
+          dispatch (resetUserInput ());
+        }
         return;
       }
 
@@ -429,7 +444,7 @@ define ("actions/chatView",
       );
 
       // Once bot input is processed, show the footer
-      handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+      handleIssueFooterAndTAI (ENABLE_FOOTER);
     };
 
     /**
@@ -447,7 +462,7 @@ define ("actions/chatView",
         case MESSAGE_TYPE.BOT_STARTED:
           // If the last message in poller is bot start
           // a] hide the footer
-          handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+          handleIssueFooterAndTAI (DISABLE_FOOTER);
           break;
 
         case MESSAGE_TYPE.BOT_ENDED:
@@ -456,14 +471,11 @@ define ("actions/chatView",
           // b] depending on whether next step is bot, hide or show the footer
           dispatch (resetUserInput ());
           if (hasNextBot) {
-            handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+            handleIssueFooterAndTAI (DISABLE_FOOTER);
           } else {
-            handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+            handleIssueFooterAndTAI (ENABLE_FOOTER);
           }
           break;
-
-        default:
-          handleMessageInput (latestMessage);
       }
     };
 
@@ -805,6 +817,12 @@ define ("actions/chatView",
       dispatch (actionCreators.toggleAgentTyping (false));
 
       if (issueState === ISSUE_STATE.RESOLVED) {
+        // We have to explicitly enable footer when issue is resolved.
+        // Reason being, for preIssue we wait only for bot step (according to design).
+        // So when issue is deflected i.e user accepts faq suggestion, the footer is
+        // hidden and user will not be able to see 'Start new conversation' button.
+        handleIssueFooterAndTAI (ENABLE_FOOTER);
+
         // If issue type is 'issue'
         // a. handle post chat features
         // b. show post issue resolution footer (resolution question | csat |
@@ -836,6 +854,74 @@ define ("actions/chatView",
     const isIssueActive = (issueState) => {
       return (chatViewHelpers.getProcessedIssueState (issueState) ===
               ISSUE_STATE.ACTIVE);
+    };
+
+    /**
+     * Action to save bot step message
+     * @param {Object} message - message object
+     * @returns {Object} - Action
+     */
+    const saveBotStepMessage = (message) => {
+      return {
+        type: ACTION_TYPES.SAVE_BOT_STEP_MESSAGE,
+        message
+      };
+    };
+
+    /**
+     * Action to set bot step in progress
+     * @param {Boolean} inProgress - whether bot step is in progress
+     * @returns {Object} - Action
+     */
+    const setBotStepInProgress = (inProgress) => {
+      return {
+        type: ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS,
+        inProgress
+      };
+    };
+
+    /**
+     * Function to save latest bot step in store and processes the latest bot input
+     * @param {Array} messages - list of unprocessed messages
+     */
+    const saveLatestBotStepAndProcessBotInput = (messages) => {
+      const {dispatch} = store;
+      const msgsLength = messages.length;
+
+      // Reverse loop on list of messages to see if there is any bot message.
+      // If we find any bot message, we will save that message in store and use
+      // the message input to render footer.
+      for (let i = msgsLength - 1; i >= 0; i--) {
+        const msg = messages [i];
+        const {
+          type
+        } = msg;
+
+        // isBotMessage will also handle the case where we get a non bot message
+        // and it's not supported. For non bot message which is not supported, we
+        // will not post bot cancel message.
+        if (messageHelpers.isBotMessage (msg)) {
+          const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported (type);
+          const botStepIsInProgress = botMsgIsNotSupported ||
+                                      messageHelpers.isBotStepMessage (type);
+          dispatch (
+            batchActions ([
+              // Bot step message contains all bot type message except bot control
+              // messages i.e bot_start and bot_end
+              setBotStepInProgress (botStepIsInProgress),
+              saveBotStepMessage (messageHelpers.getProcessedMessage (msg))
+            ])
+          );
+
+          handleMessageInput (msg);
+
+          if (botMsgIsNotSupported) {
+            postUserMessage ();
+          }
+
+          return;
+        }
+      }
     };
 
     /**
@@ -969,10 +1055,8 @@ define ("actions/chatView",
         dispatch (
           updateReplyText (initialUserMessage)
         );
-        postUserMessage ({
-          msgType: messageType,
-          msgBody: initialUserMessage
-        });
+
+        postUserMessage ();
       }
     };
 
@@ -1205,10 +1289,8 @@ define ("actions/chatView",
               const latestMessage = messages [messagesLength - 1];
               const processedMessages = messageHelpers.getProcessedMessages (messages);
 
-              // Handle latest message only for preIssue
-              if (isPreIssue) {
-                handleLatestMessage (latestMessage);
-              }
+              handleLatestMessage (latestMessage);
+              saveLatestBotStepAndProcessBotInput (messages);
 
               dispatch (
                 addMessages ({
@@ -1286,12 +1368,17 @@ define ("actions/chatView",
 
     /**
      * Handle TAI and enabling of chat footer
-     * @param {Boolean} showFooter - whether to hide TAI and show footer
+     * @param {Boolean} footerIsEnabled - whether to enable the footer
+     * When footer is enabled, TAI will be hidden
+     * When footer is disabled, TAI will be displayed
+     * If footerIsEnabled is passed as false then :
+     * In case of preIssue - footer will hide
+     * In case of issue - footer will be displayed but disabled
      */
-    const handlePreIssueFooter = (showFooter) => {
+    const handleIssueFooterAndTAI = (footerIsEnabled) => {
       const {dispatch} = store;
 
-      if (showFooter) {
+      if (footerIsEnabled) {
         dispatch (batchActions ([
           enableReplyBox (),
           toggleSystemTyping (false)
@@ -1319,7 +1406,7 @@ define ("actions/chatView",
       // If preIssue is converted to issue then reset user input and show footer
       if (preIssueConvertedToIssue) {
         dispatch (resetUserInput ());
-        handlePreIssueFooter (SHOW_PRE_ISSUE_FOOTER);
+        handleIssueFooterAndTAI (ENABLE_FOOTER);
       }
     };
 
@@ -1441,11 +1528,15 @@ define ("actions/chatView",
      * @param {Function} config.onSuccess - success callback
      * @param {Function} config.onEnd - end callback
      */
-    const postUserMessage = (config) => {
+    const postUserMessage = (config = {}) => {
       const {dispatch, getState} = store;
       const {
         chatView: {
-          userInput
+          userInput,
+          botState: {
+            botStepInProgress,
+            botStepMessage
+          }
         },
         appState: {
           domain,
@@ -1460,25 +1551,36 @@ define ("actions/chatView",
         onEnd
       } = config;
       const xhrIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
-      const actionsToDispatch = [disableReplyBox ()];
+      const actionsToDispatch = [disableReplyBox (), actionCreators.setFooterInactive ()];
       const isIssue = issueType === ISSUE_TYPE.ISSUE;
       const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
-      let xhrData = {};
+      const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage ();
+      let xhrData = null;
 
-      if (isIssue) {
-        // @TODO - Change request params after apis are changed.
-        // Currently the request params for issue remains same, only pre-issue
-        // params are different.
-        xhrData = {
-          "message-body": msgBody,
-          "message-type": msgType
-        };
-      } else {
-        actionsToDispatch.push (toggleSystemTyping (true));
-        xhrData = messageHelpers.getPreparedMessageData ({
-          input: userInput,
-          message: getLatestMessage ()
+      // There are two ways to get prepared message xhr data
+      // a] Config - used when we have to directly add message like user
+      //             accepted/rejected resolution question
+      // b] User input - used when user adds a message through input
+      if (msgType && msgBody) {
+        xhrData = messageHelpers.getPreparedMessageDataFromConfig ({
+          msgType,
+          msgBody
         });
+      } else if (!messageHelpers.isMessageTypeSupported (latestMessage.type)) {
+        xhrData = messageHelpers.getPreparedMessageDataForUnsupportedBotMessage ({
+          latestMessage,
+          isIssue
+        });
+      } else {
+        xhrData = messageHelpers.getPreparedMessageDataFromUserInput ({
+          input: userInput,
+          latestMessage,
+          isIssue
+        });
+      }
+
+      if (isPreIssue || (isIssue && botStepInProgress)) {
+        actionsToDispatch.push (toggleSystemTyping (true));
       }
 
       dispatch (batchActions (actionsToDispatch));
@@ -1495,7 +1597,9 @@ define ("actions/chatView",
           // updation will scroll the messages to bottom.
           // In case of preIssue, we do not want to enable reply box as it will be
           // enabled according to next bot step.
-          if (isIssue) {
+          // In case of issue, we want to enable reply box only if current step is
+          // not bot.
+          if (isIssue && !botStepInProgress) {
             dispatch (enableReplyBox ());
           }
           dispatch (
@@ -1607,13 +1711,12 @@ define ("actions/chatView",
         }
 
         dispatch (disableReplyBox ());
-        // @TODO - Find a place to track conversation started event
-        // Track the conversation started event.
-        // analyticsHelpers.track (EVENT.CONVERSATION_STARTED);
+
+        dispatch (updateUserInputData ({
+          value: trimmedValue
+        }));
 
         postUserMessage ({
-          msgBody: trimmedValue,
-          msgType: MESSAGE_TYPE.TEXT,
           onSuccess: () => {
             handleIssueReopen (issueState);
             dispatch (updateReplyText (""));
@@ -1720,8 +1823,18 @@ define ("actions/chatView",
           };
         }
 
+        /**
+         * Note :
+         * sm = sdk meta
+         * cb = chat bots
+         * library_version = current webchat version
+         */
         const xhrData = {
-          meta: JSON.stringify (meta)
+          meta: JSON.stringify (meta),
+          sm: JSON.stringify ({
+            cb: true
+          }),
+          library_version: WEB_CHAT_VERSION
         };
 
         // If CIF is set and contains at least one field, add it to XHR data
@@ -1755,7 +1868,7 @@ define ("actions/chatView",
 
         // We need to hide footer while creating preIssue because the default
         // value of input disabled is false, in store on page refresh.
-        handlePreIssueFooter (HIDE_PRE_ISSUE_FOOTER);
+        handleIssueFooterAndTAI (DISABLE_FOOTER);
 
         xhr ({
           route: routes.postPreIssue (domain),
@@ -2161,6 +2274,20 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Action to skip user input
+     * First update the skipped state in user input and then post user message
+     * @returns Function - Action
+     */
+    const skipUserInput = () => {
+      return (dispatch) => {
+        dispatch (updateUserInputData ({
+          skipped: true
+        }));
+        postUserMessage ();
+      };
+    };
+
     return {
       createPreIssue,
       updateReplyText,
@@ -2184,6 +2311,7 @@ define ("actions/chatView",
       setUserInputData,
       updateUserInputData,
       setUserSelectedOption,
-      handleErrorAction
+      handleErrorAction,
+      skipUserInput
     };
   });

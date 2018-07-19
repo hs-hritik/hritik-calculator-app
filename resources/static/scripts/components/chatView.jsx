@@ -42,6 +42,7 @@ define ("components/chatView",
         userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onSkipUserInput: PropTypes.func,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired,
@@ -66,7 +67,8 @@ define ("components/chatView",
           // Call to action text for the error. eg. Retry
           cta: PropTypes.string
         }),
-        errorActionHandler: PropTypes.func
+        errorActionHandler: PropTypes.func,
+        botStepInProgress: PropTypes.bool
       },
 
       getInitialState () {
@@ -132,6 +134,7 @@ define ("components/chatView",
           onRetryAttachmentClick,
           onSuggestedFaqClick,
           onScrollPastExistingConversation,
+          onSkipUserInput,
           userInput,
           unreadCount,
           issueIsCreated,
@@ -139,8 +142,10 @@ define ("components/chatView",
           hasFailure,
           error,
           userIsViewingPastMessages,
-          errorActionHandler
+          errorActionHandler,
+          botStepInProgress
         } = this.props;
+        const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
         if (loading || (error && error.title)) {
           return (
@@ -157,7 +162,7 @@ define ("components/chatView",
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
                       dragInfoText={text.dndInfoText}
-                      enabled={issueIsCreated}>
+                      enabled={dragAndDropEnabled}>
               {this._renderLoader ()}
               <div className="hs-view__content">
                 <MessageList messages={messages}
@@ -167,6 +172,7 @@ define ("components/chatView",
                              onPillOptionSelect={onPillOptionSelect}
                              onRetryAttachmentClick={onRetryAttachmentClick}
                              onSuggestedFaqClick={onSuggestedFaqClick}
+                             onSkipUserInput={onSkipUserInput}
                              hasFailure={hasFailure}
                              userInput={userInput}
                              userIsViewingPastMessages={userIsViewingPastMessages}

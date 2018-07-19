@@ -9,13 +9,15 @@ define ("components/chatViewFooter",
     "components/starRating",
     "components/containers/replyBox",
     "components/commons/fileInput",
+    "components/commons/skipButtonWrapper",
     "constants/chatView",
     "constants/keyCodes",
     "constants/propTypes",
+    "helpers/common",
     "gunpowder/utils/classes"
   ],
-  function (StarRating, ReplyBoxContainer, FileInput, CHAT_VIEW_CONSTANTS, KEY_CODES,
-    customPropTypes, classes) {
+  function (StarRating, ReplyBoxContainer, FileInput, SkipButtonWrapper,
+    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -82,31 +84,50 @@ define ("components/chatViewFooter",
         onFilesChange: PropTypes.func,
         issueIsCreated: PropTypes.bool,
         fullPrivacyEnabled: PropTypes.bool,
-        onCloseConversation: PropTypes.func.isRequired
+        onCloseConversation: PropTypes.func.isRequired,
+        botStepInProgress: PropTypes.bool.isRequired
       },
 
       render () {
+        const {failureConfig} = this.props;
+
+        if (failureConfig) {
+          return this._renderFailure ();
+        }
+
         const {
           footerIsActive,
           browserIsMobile,
           allowFullScreen,
           userInput: {
             type,
-            disabled
+            disabled,
+            required,
+            skipLabel
           },
-          failureConfig,
-          issueIsCreated
+          issueIsCreated,
+          onSkipUserInput
         } = this.props;
+        const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
+        const isPreIssue = !issueIsCreated;
 
-        // Hide footer only if
-        // a] There is no failure AND 1. user input type is pill select OR
-        //                             2. user input is disabled
-        //    AND
-        // b] issue is not created i.e. current issue type is preIssue
-        if (!failureConfig &&
-            (type === USER_INPUT_TYPES.PILL_SELECT || disabled) &&
-            !issueIsCreated) {
+        // Hide footer if
+        // 1] Input is pill select - applicable for both preIssue and issue
+        //    OR
+        // 2] PreIssue and input is disabled
+        if (inputIsPillSelect || (isPreIssue && disabled)) {
           return null;
+        }
+
+        let skipBtnWrapperEl = null;
+
+        if (!required) {
+          skipBtnWrapperEl = (
+            <SkipButtonWrapper label={skipLabel}
+                               className="hs-chat-footer__skip-btn-wrapper"
+                               disabled={disabled}
+                               onClick={onSkipUserInput} />
+          );
         }
 
         const footerClasses = classes ("hs-footer", {
@@ -118,6 +139,7 @@ define ("components/chatViewFooter",
 
         return (
           <div className={footerClasses}>
+            {skipBtnWrapperEl}
             {this._renderFooterComponent ()}
           </div>
         );
@@ -127,10 +149,6 @@ define ("components/chatViewFooter",
        * Render the active footer component
        */
       _renderFooterComponent () {
-        if (this.props.failureConfig) {
-          return this._renderFailure ();
-        }
-
         const {
           activeFooter
         } = this.props;
@@ -157,6 +175,9 @@ define ("components/chatViewFooter",
         }
       },
 
+      /**
+       * Render failure layout
+       */
       _renderFailure () {
         const {isLoading, message} = this.props.failureConfig;
 
@@ -178,6 +199,9 @@ define ("components/chatViewFooter",
         );
       },
 
+      /**
+       * Render failure retry button
+       */
       _renderRetryBtn () {
         if (!this.props.failureConfig.allowRetry) {
           return null;
@@ -193,29 +217,6 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Render reply box component
-       */
-      _renderReplyBox () {
-        const {
-          disabled,
-          value,
-          errorMsg
-        } = this.props.userInput;
-        const footerClasses = classes (
-          "hs-chat-footer", {
-            "hs-chat-footer--form-error": errorMsg,
-            "hs-chat-footer--form-invalid": disabled || !value.trim ()
-          }
-        );
-
-        return (
-          <div className={footerClasses}>
-            <ReplyBoxContainer className="hs-chat-footer__text-area" />
-          </div>
-        );
-      },
-
-      /**
        * Render user input
        * User input layout renders following things
        *  a. Label
@@ -227,17 +228,18 @@ define ("components/chatViewFooter",
           userInput: {
             value,
             type,
-            placeholder,
             errorMsg,
             disabled
           },
           onFooterFocus,
-          onFooterBlur
+          onFooterBlur,
+          browserIsMobile
         } = this.props;
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": errorMsg,
-            "hs-chat-footer--form-invalid": disabled || !value.trim ()
+            "hs-chat-footer--form-invalid": disabled || !value.trim (),
+            "hs-chat-footer--mobile": browserIsMobile
           }
         );
         let errorMsgEl = null;
@@ -254,12 +256,17 @@ define ("components/chatViewFooter",
             <ReplyBoxContainer className="hs-chat-footer__text-area" />
           );
         } else {
+          const htmlInputType = this._getHtmlInputType (type);
+          const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
+
           inputComponentEl = (
             <input className="hs-chat-footer__text-field"
-                   type={this._getHtmlInputType (type)}
+                   type={htmlInputType}
                    dir="auto"
+                   disabled={disabled}
                    value={value}
-                   placeholder={placeholder}
+                   ref={this._saveUserInputRef}
+                   placeholder={inputPlaceholder}
                    onChange={this._onInputFieldValueChange}
                    onKeyUp={this._onInputFieldKeyUp}
                    onFocus={onFooterFocus}
@@ -294,10 +301,19 @@ define ("components/chatViewFooter",
        * Render reply box action
        */
       _renderFooterAction () {
-        if (this.props.userInput.value || !this.props.issueIsCreated ||
-            this.props.fullPrivacyEnabled) {
+        const {
+          userInput: {
+            value
+          },
+          issueIsCreated,
+          fullPrivacyEnabled,
+          botStepInProgress
+        } = this.props;
+
+        if (value || !issueIsCreated || fullPrivacyEnabled || botStepInProgress) {
           return this._renderSendButton ();
         }
+
         return this._renderAttachmentButton ();
       },
 
@@ -493,10 +509,16 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Click handler for skip input button
+       * Reference to user input
        */
-      _onSkipUserInputClick () {
-        this.props.onSkipUserInput ();
+      _userInputRef: null,
+
+      /**
+       * Save user input reference
+       * @param {Object} ref - DOM reference
+       */
+      _saveUserInputRef (ref) {
+        this._userInputRef = ref;
       },
 
       /**
@@ -506,6 +528,54 @@ define ("components/chatViewFooter",
        */
       _getHtmlInputType (type) {
         return HTML_INPUT_TYPES [type] || HTML_INPUT_TYPES.PLAIN_TEXT;
+      },
+
+      /**
+       * Returns input placeholder string
+       * @param {String} htmlInputType - html input type (text, number, string)
+       * @returns {String} - html input placeholder
+       */
+      _getInputPlaceholder (htmlInputType) {
+        const {
+          userInput: {
+            placeholder
+          },
+          text
+        } = this.props;
+        let inputPlaceholder = placeholder;
+
+        // If date input is not supported, do not use placeholder sent by backend.
+        // Use predefined unsupported date input placeholder text.
+        if (htmlInputType === HTML_INPUT_TYPES.DATE &&
+            !commonHelpers.isDateInputSupported ()) {
+          inputPlaceholder = text.unsupportedDateInputPlaceholder;
+        }
+
+        return inputPlaceholder;
+      },
+
+      componentDidUpdate (prevProps) {
+        const {browserIsMobile} = this.props;
+
+        // If user input ref does not exists or browser is mobile, do not focus
+        if (!this._userInputRef || browserIsMobile) {
+          return;
+        }
+
+        const {
+          userInput: {
+            disabled: prevInputDisabled
+          }
+        } = prevProps;
+        const {
+          userInput: {
+            disabled: currentInputDisabled
+          }
+        } = this.props;
+
+        if (prevInputDisabled && !currentInputDisabled) {
+          this._userInputRef.focus ();
+        }
       }
     });
   }

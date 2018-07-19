@@ -8,61 +8,83 @@ define ("helpers/message",
   [
     "store",
     "constants/message",
-    "gunpowder/utils/uuid"
+    "helpers/common",
+    "gunpowder/utils/uuid",
+    "gunpowder/utils/date"
   ],
-  function (store, messageConstants, uuidGenerator) {
+  function (store, messageConstants, commonHelpers, uuidGenerator, dateUtils) {
     "use strict";
 
     const {
       TYPE: MESSAGE_TYPE,
-      RENDERABLE_MESSAGE_TYPES
+      RENDERABLE_MESSAGE_TYPES,
+      ORIGIN: MESSAGE_ORIGIN,
+      ROLE: MESSAGE_AUTHOR_ROLE,
+      BOT_STEP_MESSAGES,
+      BODY: MESSAGE_BODY,
+      BOT_CANCEL_REASON
     } = messageConstants;
     const MSG_ID_PREFIX = "message_";
 
+    const SECONDS = 60;
+    const MILLISECONDS = 1000;
+
+    // Create an array of values present in message type
+    const MESSAGE_TYPE_LIST = Object.keys (MESSAGE_TYPE).map ((key) => {
+      return MESSAGE_TYPE [key];
+    });
+
     /**
-     * Return processed message entitiy
-     * @param {Object} messages - unprocessed message entitiy
-     * @returns {Object} - processed message entitiy
+     * Return processed message
+     * @param {Object} message - unprocessed message
+     * @returns {Object} - processed message
+     */
+    const getProcessedMessage = (msg) => {
+      if (msg.processed) {
+        return msg;
+      }
+
+      const {type: messageType} = msg;
+
+      const msgObj = {
+        id: msg.id,
+        type: msg.type,
+        body: msg.body,
+        state: msg.state,
+        states: {}, // Applicable only in case of attachments
+        createdTs: msg.created_at,
+        redacted: msg.redacted,
+        author: msg.author,
+        isCustomerMsg: (msg.origin !== MESSAGE_ORIGIN.ADMIN),
+        attachments: getProcessedAttachments (msg)
+      };
+
+      if (msg.chatbot_info) {
+        msgObj.chatBotInfo = msg.chatbot_info;
+      }
+
+      // If message has faq data, process it
+      // FAQ data will be part of bot message
+      if (messageType === MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT) {
+        msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
+          return {
+            id: faq.data.id,
+            title: faq.title,
+            language: faq.data.language
+          };
+        });
+      }
+
+      return msgObj;
+    };
+
+    /**
+     * Return processed messages
+     * @param {Object} messages - unprocessed messages
+     * @returns {Array} - processed messages
      */
     const getProcessedMessages = (messages) => {
-      return messages.map ((msg) => {
-        if (msg.processed) {
-          return msg;
-        }
-
-        const {type: messageType} = msg;
-
-        const msgObj = {
-          id: msg.id,
-          type: msg.type,
-          body: msg.body,
-          redacted: msg.redacted,
-          state: msg.state,
-          states: {}, // Applicable only in case of attachments
-          createdTs: msg.created_at,
-          author: msg.author,
-          isCustomerMsg: (msg.origin !== "admin"),
-          attachments: getProcessedAttachments (msg)
-        };
-
-        if (msg.chatbot_info) {
-          msgObj.chatBotInfo = msg.chatbot_info;
-        }
-
-        // If message has faq data, process it
-        // FAQ data will be part of bot message
-        if (messageType === MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT) {
-          msgObj.suggestedFaqs = msg.faqs.map ((faq) => {
-            return {
-              id: faq.data.id,
-              title: faq.title,
-              language: faq.data.language
-            };
-          });
-        }
-
-        return msgObj;
-      });
+      return messages.map (getProcessedMessage);
     };
 
     /**
@@ -137,12 +159,34 @@ define ("helpers/message",
     };
 
     /**
-     * Return prepared message data for xhr
-     * @param {Object} config - config object
-     * @param {Object} config.input - user input object
-     * @param {String} config.message - message objectr
+     * Return prepared message xhr data from config
+     * @param {Object} config
+     * @param {String} config.msgBody - message body
+     * @param {String} config.msgType - message type
+     * @returns {Object} - prepared xhr data
      */
-    const getPreparedMessageData = (config) => {
+    const getPreparedMessageDataFromConfig = (config) => {
+      const {msgType, msgBody} = config;
+
+      // @NOTE - Currently config messages will be added only when issue is created.
+      // So we are not adding a check for preIssue.
+      // Also this will be modified/removed when apis are changes to support
+      // 'body' and 'type'.
+      return {
+        "message-body": msgBody,
+        "message-type": msgType
+      };
+    };
+
+    /**
+     * Return prepared message xhr data from user input
+     * @param {Object} config
+     * @param {Object} config.input - user input
+     * @param {Object} config.latestMessage - latest message
+     * @param {Object} config.isIssue - issue type is issue
+     * @returns {Object} - prepared xhr data
+     */
+    const getPreparedMessageDataFromUserInput = (config) => {
       const {
         input: {
           value,
@@ -150,20 +194,28 @@ define ("helpers/message",
           skipLabel,
           selectedOption
         },
-        message: {
-          type: messageType,
+        latestMessage: {
+          type: latestMsgType,
           id: messageId,
           chatBotInfo
-        }
+        },
+        isIssue
       } = config;
 
-      const responseMessageType = getUserResponseMessageType (messageType);
+      const responseMessageType = getUserResponseMessageType (latestMsgType);
 
       const requestData = {
-        body: value,
-        refers: messageId,
-        type: responseMessageType
+        refers: messageId
       };
+
+      // @TODO - Change request params after apis are changed.
+      // Ideally we should send same request params ('body' and 'type') for issue
+      // and preIssue.
+      const messageBodyKey = isIssue ? "message-body" : "body";
+      const messageTypeKey = isIssue ? "message-type" : "type";
+
+      requestData [messageBodyKey] = value;
+      requestData [messageTypeKey] = responseMessageType;
 
       if (responseMessageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
         // If this response is to the answer bot step, web chat sends which
@@ -175,20 +227,65 @@ define ("helpers/message",
         }
       }
 
-      if (chatBotInfo) {
+      // In case of bot interrupt, the sequence of messages is
+      // 1] Interrupt message (bot/agent) 2] Bot End.
+      // Bot end contains empty chat bot info. So checking for non empty
+      // chatBotInfo obj.
+      if (chatBotInfo && Object.keys (chatBotInfo).length) {
         requestData.chatbot_info = JSON.stringify (chatBotInfo);
       }
 
       if (skipped) {
-        requestData.body = skipLabel;
+        requestData [messageBodyKey] = skipLabel;
         requestData.skipped = skipped;
-      }
-
-      if (selectedOption && selectedOption.value) {
-        requestData.body = selectedOption.label;
+      } else if (responseMessageType === MESSAGE_TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT) {
+        const date = commonHelpers.getDateObjectFromString (value);
+        requestData [messageBodyKey] = dateUtils.format (date, "{dddd}, {mmmm} {dd}, {yyyy}");
+        requestData.meta = JSON.stringify ({
+          dt: date.getTime (),
+          // @Note :- We are multiplying by -1, because getTimezoneOffset method
+          // returns a value in mins from local time to UTC. We need the time
+          // difference from UTC to local time.
+          // Ref :- MDN - Date.getTimezoneOffset
+          tz_offset: date.getTimezoneOffset () * SECONDS * MILLISECONDS * -1
+        });
+      } else if (selectedOption && selectedOption.value) {
+        requestData [messageBodyKey] = selectedOption.label;
         requestData.option_data = JSON.stringify ({
           option_id: selectedOption.value
         });
+      }
+
+      return requestData;
+    };
+
+    /**
+     * Return prepared message xhr data for unsupported bot message
+     * @param {Object} config
+     * @param {Object} config.latestMessage - latest message
+     * @param {Object} config.isIssue - issue type is issue
+     * @returns {Object} - prepared xhr data
+     */
+    const getPreparedMessageDataForUnsupportedBotMessage = (config) => {
+      const {
+        isIssue,
+        latestMessage: {
+          id,
+          chatBotInfo
+        }
+      } = config;
+      const requestData = {};
+
+      const messageBodyKey = isIssue ? "message-body" : "body";
+      const messageTypeKey = isIssue ? "message-type" : "type";
+
+      requestData [messageTypeKey] = MESSAGE_TYPE.BOT_CANCELLED;
+      requestData [messageBodyKey] = MESSAGE_BODY.UNSUPPORTED_INPUT;
+      requestData.chatbot_cancelled_reason = BOT_CANCEL_REASON.UNSUPPORTED_INPUT;
+      requestData.refers = id;
+
+      if (chatBotInfo && Object.keys (chatBotInfo).length) {
+        requestData.chatbot_info = JSON.stringify (chatBotInfo);
       }
 
       return requestData;
@@ -310,11 +407,57 @@ define ("helpers/message",
       }
     };
 
+    /**
+     * Predicate to return whether message is of type bot
+     * @param {Object} msg - message
+     * @returns {Boolean} - whether given message type is bot message
+     */
+    const isBotMessage = (msg) => {
+      const {
+        author: {
+          roles
+        }
+      } = msg;
+
+      // We determine bot message using message's author role. So we have
+      // assurity that the given message is a bot message whether we support it
+      // or not.
+      if (!Array.isArray (roles)) {
+        return false;
+      }
+
+      return roles.indexOf (MESSAGE_AUTHOR_ROLE.CHAT_BOTS) !== -1;
+    };
+
+    /**
+     * Predicate to return whether message is of type bot step
+     * @param {String} msgType - type of message
+     * @returns {Boolean} - whether given message type is bot step
+     */
+    const isBotStepMessage = (msgType) => {
+      return BOT_STEP_MESSAGES.indexOf (msgType) !== -1;
+    };
+
+    /**
+     * Predicate to return whether message type is supported
+     * @param {String} msgType - type of message
+     * @returns {Boolean} - whether given message type is supported
+     */
+    const isMessageTypeSupported = (msgType) => {
+      return MESSAGE_TYPE_LIST.indexOf (msgType) !== -1;
+    };
+
     return {
+      getProcessedMessage,
       getProcessedMessages,
       getProcessedFaq,
-      getPreparedMessageData,
+      getPreparedMessageDataFromConfig,
+      getPreparedMessageDataFromUserInput,
+      getPreparedMessageDataForUnsupportedBotMessage,
       createMessage,
-      isRenderableMessage
+      isRenderableMessage,
+      isBotMessage,
+      isBotStepMessage,
+      isMessageTypeSupported
     };
   });

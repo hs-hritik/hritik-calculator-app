@@ -39,7 +39,10 @@ define ("components/containers/chatView",
           userIsViewingPastMessages,
           pastConversationsLoading,
           unreadMessageIds,
-          allMessagesAreLoaded
+          allMessagesAreLoaded,
+          botState: {
+            botStepInProgress
+          }
         },
         ui: {
           text
@@ -66,7 +69,8 @@ define ("components/containers/chatView",
         userIsViewingPastMessages,
         unreadCount: unreadMessageIds.length,
         pastConversationsLoading,
-        allMessagesAreLoaded
+        allMessagesAreLoaded,
+        botStepInProgress
       };
     };
 
@@ -95,6 +99,9 @@ define ("components/containers/chatView",
         },
         errorActionHandler: () => {
           dispatch (chatViewActions.handleErrorAction ());
+        },
+        onSkipUserInput: () => {
+          dispatch (chatViewActions.skipUserInput ());
         }
       };
     };

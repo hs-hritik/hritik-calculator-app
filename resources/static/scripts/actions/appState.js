@@ -773,16 +773,12 @@ define ("actions/appState",
      * @returns {Function} - action.
      */
     const startNewConversation = () => {
-      // We are not directly creating preIssue over here as we need meta data
-      // from parent page for issue creation.
-      // After the fetch is successful, the control flow will go to api js where
-      // we set meta data in store and handle issue creation.
-      // Note - This is applicable only for chat view. For out of business hours
-      // view, we will load the view first and when user submits the form, we call
-      // get parent page info.
-      // Ref :- api.js -> handleApis -> handleIssueCreation
+      // This is applicable only for chat view (in business hours). For out of business hours
+      // view, we load the business hours view first and when the user submits the form, we call
+      // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours ()) {
-        postSdkMessage.getParentInfo ();
+        store.dispatch (setConversationStarted ());
+        store.dispatch (chatViewActions.createPreIssue ());
       }
     };
 
@@ -853,18 +849,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set the parent page info
-     * @param {Object} parentPageInfo
-     * @returns {Object} - Action
-     */
-    const setParentPageInfo = (parentPageInfo) => {
-      return {
-        type: ACTION_TYPES.SET_PARENT_PAGE_INFO,
-        parentPageInfo
-      };
-    };
-
-    /**
      * Action to set the proactive chat rules in the state
      * @param {Object} proactiveChatRules
      * @returns {Object} - Action
@@ -907,26 +891,6 @@ define ("actions/appState",
       // Else load css file, replace placeholders with new values and append to
       // head
       setStyles ();
-    };
-
-    /**
-     * Action to set footer active
-     * @returns {Object} - Action
-     */
-    const setFooterActive = () => {
-      return {
-        type: ACTION_TYPES.SET_FOOTER_ACTIVE
-      };
-    };
-
-    /**
-     * Action to set footer inactive
-     * @returns {Object} - Action
-     */
-    const setFooterInactive = () => {
-      return {
-        type: ACTION_TYPES.SET_FOOTER_INACTIVE
-      };
     };
 
     /**
@@ -973,12 +937,9 @@ define ("actions/appState",
       closeConversation,
       replaceCif,
       setMetadata,
-      setParentPageInfo,
       setProactiveChatRules,
       executeProactiveChatRules,
       updateStyles,
-      setFooterActive,
-      setFooterInactive,
       resetPreIssue,
       setConversationStarted
     };

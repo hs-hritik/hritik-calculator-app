@@ -49,7 +49,6 @@ define ("reducers/ui",
         chatViewStartNewConversation: "Start a new conversation",
         chatViewIssueRejectionQuestion: "What else can we help you with?",
         greetingMsg: "Hi, how can we help you?",
-        faqSuggestionsAdditionalHelpMsg: "Do you still want to talk to an agent?",
         resolutionQuestionAccept: "Yes",
         resolutionQuestionReject: "No",
         conversationClosed: "Conversation closed.",
@@ -62,7 +61,6 @@ define ("reducers/ui",
         csatBotReviewPlaceholder: "Leave us additional feedback",
         csatBotReviewTitle: "Additional Feedback",
         csatViewHeader: "Chat with us",
-        infoBotRequestMsg: "Before we begin, we need some more information.",
         branding: "Powered by Helpshift",
         attachmentUploadingStatus: "Uploading..",
         attachmentRetryError: "Error. Click  to retry.",
@@ -95,6 +93,9 @@ define ("reducers/ui",
         conversationRedactedMsg: "Conversation Redacted",
         conversationsRedactedMsg: "Conversations Redacted",
         pastConversationsLoadingText: "Loading Messages...",
+        // We do not want to support i18n for unsupported date input.
+        // So the placeholder text will always be in english.
+        unsupportedDateInputPlaceholder: "DD/MM/YYYY",
         errorMessage: {
           [NO_AUTH_ERROR]: {
             title: "Authentication Failed",
@@ -368,13 +369,6 @@ define ("reducers/ui",
         case ACTION_TYPES.SET_DEVELOPER_UI_CONFIG:
           return update (state, {
             developerUiConfig: {$set: action.uiConfig}
-          });
-
-        case ACTION_TYPES.RESET:
-          // Retain the ui config and developer config set throught api
-          return update (INITIAL_STATE, {
-            uiConfig: {$set: state.uiConfig},
-            developerUiConfig: {$set: state.developerUiConfig}
           });
 
         default:
