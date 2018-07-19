@@ -8,7 +8,6 @@ define ("reducers/root",
   [
     "reducers/ui",
     "reducers/appState",
-    "reducers/entities",
     "reducers/chatView",
     "reducers/faqView",
     "reducers/csatView",
@@ -16,9 +15,8 @@ define ("reducers/root",
     "reducers/errors",
     "constants/actionTypes"
   ],
-  function (uiReducer, appStateReducer, entitiesReducer, chatViewReducer,
-    faqViewReducer, csatViewReducer, businessHoursViewReducer,
-    errorsReducer, ACTION_TYPES) {
+  function (uiReducer, appStateReducer, chatViewReducer, faqViewReducer,
+    csatViewReducer, businessHoursViewReducer, errorsReducer, ACTION_TYPES) {
     "use strict";
 
     const enableBatching = (reducer) => {
@@ -38,7 +36,6 @@ define ("reducers/root",
     return enableBatching (Redux.combineReducers ({
       appState: appStateReducer,
       ui: uiReducer,
-      entities: entitiesReducer,
       chatView: chatViewReducer,
       faqView: faqViewReducer,
       csatView: csatViewReducer,

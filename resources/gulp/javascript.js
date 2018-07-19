@@ -220,7 +220,7 @@ gulp.task ("copy-webchat", () => {
 gulp.task ("replace-localhost", function () {
   // Read command line args to get webchat root and api root urls and use them if passed
   // Sample usage is as follows :
-  // gulp --webchat http://localsite.helfshift.mobi --api http://localsite.helfshift.mobi
+  // gulp --webchat http://localsite.helfshift.mobi:port --api http://localsite.helfshift.mobi
   // This allows configuration of local site and api server
   const webChatRoot = gutil.env.webchat ? gutil.env.webchat :
                       "http://localhost:3000";

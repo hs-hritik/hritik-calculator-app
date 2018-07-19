@@ -7,13 +7,12 @@
 define ("components/containers/chatView",
   [
     "components/chatView",
-    "helpers/entitySchema",
     "actions/chatView",
     "actions/faqView",
     "helpers/common",
     "constants/chatView"
   ],
-  function (ChatView, entitySchema, chatViewActions, faqViewActions, commonHelpers,
+  function (ChatView, chatViewActions, faqViewActions, commonHelpers,
     chatViewConstants) {
     "use strict";
 
@@ -36,7 +35,10 @@ define ("components/containers/chatView",
           userInput,
           pollerFailureCount,
           loading,
-          error
+          error,
+          botState: {
+            botStepInProgress
+          }
         },
         ui: {
           text
@@ -57,7 +59,8 @@ define ("components/containers/chatView",
         userInput,
         loading,
         hasFailure,
-        error
+        error,
+        botStepInProgress
       };
     };
 
@@ -80,6 +83,9 @@ define ("components/containers/chatView",
         },
         errorActionHandler: () => {
           dispatch (chatViewActions.handleErrorAction ());
+        },
+        onSkipUserInput: () => {
+          dispatch (chatViewActions.skipUserInput ());
         }
       };
     };

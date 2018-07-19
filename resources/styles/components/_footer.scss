@@ -19,6 +19,7 @@
   $form-accent-color-light: var(--hs-form-accent-color-light);
 
   .hs-footer {
+    position: relative;
     flex: 0 0 auto;
     background-color: $form-bg-color;
     border-top: 1px solid $form-border-color;
