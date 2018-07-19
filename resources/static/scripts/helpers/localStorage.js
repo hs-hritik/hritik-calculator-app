@@ -20,7 +20,8 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      READ_FAQ_LIST: "rfl"
+      READ_FAQ_LIST: "rfl",
+      LS_MIGRATED: "lm"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
@@ -186,6 +187,19 @@ define ("helpers/localStorage",
      */
     const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
 
+    /**
+     * Set a flag denoting the localStorage migration completion.
+     */
+    const setLsMigrated = () => {
+      lsUtils.setItem (KEYS.LS_MIGRATED, true);
+    };
+
+    /**
+     * Get a flag denoting the localStorage migration completion.
+     * @returns {boolean}
+     */
+    const getLsMigrated = () => !!lsUtils.getItem (KEYS.LS_MIGRATED);
+
     return {
       getUserId,
       setUserId,
@@ -205,6 +219,8 @@ define ("helpers/localStorage",
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
       setReadFaqList,
-      getReadFaqList
+      getReadFaqList,
+      setLsMigrated,
+      getLsMigrated
     };
   });

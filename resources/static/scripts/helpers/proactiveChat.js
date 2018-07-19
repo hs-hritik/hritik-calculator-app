@@ -28,8 +28,8 @@ define ("helpers/proactiveChat",
       const {conditions} = rule;
       const {
         appState: {
-          metadata: {
-            "page-url": parentPageUrl
+          parentPageInfo: {
+            url: parentPageUrl
           },
           tags: pageTags
         }
