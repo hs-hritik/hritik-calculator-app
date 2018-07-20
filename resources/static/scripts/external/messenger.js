@@ -19,8 +19,21 @@
         HOST = urlParts [1],
         PATH = "/html/index.html?v=2";
 
-  const WEB_SDK_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
+  // Truncate platform id to a fixed length (24 in this implementation).
+  // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
+  // Part 1 - First split plat id by "_platform_" and slice the first part by 8
+  // chars -> get the first 8 chars of the domain. "testdoma" in this case.
+  // Part 2 - Then slice the plat id from the end by 16 chars -> get a unique
+  // part of the platform id. "-0319dffe2b25f9c" in this case.
+  const TRUNCATED_PLAT_ID = PLAT_ID.split ("_platform_") [0].slice (0, 8) + PLAT_ID.slice (-16);
+
+  // @TODO: Rename WEB_SDK -> WEB_CHAT
+  const WEB_SDK_DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
   const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
+
+  const PID_MIGRATOR_HTML_PATH = "/html/pid-migrator.html";
+  const PID_MIGRATOR_WEB_CHAT_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
+  const PID_MIGRATOR_WEB_CHAT_URL = `${PID_MIGRATOR_WEB_CHAT_DOMAIN}${PID_MIGRATOR_HTML_PATH}`;
 
   const WIDGET_POSITIONS = {
     TOP_LEFT: "top-left",
@@ -37,7 +50,8 @@
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
-    apiEvents: []
+    apiEvents: [],
+    lsDataToMigrate: null
   };
 
   const INIT = "init";
@@ -61,7 +75,8 @@
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
-    CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy"
+    CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
+    MIGRATE_LS: "MIGRATE_LS"
   };
 
   const SUPPORTED_EVENTS = {
@@ -216,14 +231,15 @@
 
   // Reference for web sdk iframe.
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
-      launcherButton;
+      launcherButton, pidMigratorWebChatIframe;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
 
   const parentPageInfo = {
     title: doc.title,
-    url: win.location.href
+    url: win.location.href,
+    origin: win.location.origin
   };
 
   /**
@@ -251,6 +267,14 @@
       type,
       data
     }), WEB_SDK_URL);
+  };
+
+  /**
+   * Util to remove a node from the DOM.
+   * @param {HTMLElement} node - the node to be removed
+   */
+  const _removeNode = (node) => {
+    node.parentNode.removeChild (node);
   };
 
   /**
@@ -362,11 +386,27 @@
   };
 
   /**
+   * Create the web chat iframe with the old URL format (the one with full platform
+   * id) - used for migrating old localStorage to the new one. The new iframe URL
+   * is going to have a truncated platform id value.
+   * @returns {Element} - old URL format web chat iframe with platform id migration code.
+   */
+  const createPidMigratorWebChatIframe = () => {
+    const iframe = doc.createElement ("iframe");
+    iframe.id = "hs-webchat-pid-migrator";
+    iframe.src = PID_MIGRATOR_WEB_CHAT_URL;
+    setStyle (iframe, {
+      display: "none"
+    });
+    return iframe;
+  };
+
+  /**
    * Destroy web sdk iframe.
    */
   const destroyWebSdkIframe = () => {
     if (webSdkIframe) {
-      webSdkIframe.parentNode.removeChild (webSdkIframe);
+      _removeNode (webSdkIframe);
       webSdkIframe = null;
     }
   };
@@ -376,8 +416,18 @@
    */
   const destroyLauncherIframe = () => {
     if (launcherIframe) {
-      launcherIframe.parentNode.removeChild (launcherIframe);
+      _removeNode (launcherIframe);
       launcherIframe = null;
+    }
+  };
+
+  /**
+   * Destroy the platform id migrator iframe
+   */
+  const destroyPidMigratorWebChatIframe = () => {
+    if (pidMigratorWebChatIframe) {
+      _removeNode (pidMigratorWebChatIframe);
+      pidMigratorWebChatIframe = null;
     }
   };
 
@@ -735,13 +785,19 @@
 
     processWidgetOptions ();
 
-    webSdkIframe = createWebSdkIframe ();
-    doc.body.appendChild (webSdkIframe);
+    // Load the platform id migrator iframe. This will send localStorage data
+    // back to this script, which would be sent to the new iframe (with truncated
+    // platform id).
+    pidMigratorWebChatIframe = createPidMigratorWebChatIframe ();
+    doc.body.appendChild (pidMigratorWebChatIframe);
 
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
-      // Only handle events from our web chat iframe
-      if (event.origin !== WEB_SDK_DOMAIN) {
+      // Only handle events from our web chat iframes (old and new)
+      if (
+        event.origin !== WEB_SDK_DOMAIN &&
+        event.origin !== PID_MIGRATOR_WEB_CHAT_DOMAIN
+      ) {
         return;
       }
 
@@ -756,6 +812,23 @@
       }
 
       switch (type) {
+        case EVENT_TYPES.MIGRATE_LS:
+          // When the old localStorage data is received, create the new (truncated
+          // platform id URL) iframe. This makes sure that the migration data is
+          // available when the web chat app execution starts with the SDK_JS_LOADED
+          // event.
+
+          // First set the localStorage data to be migrated to the state.
+          state.lsDataToMigrate = data;
+
+          // Then create and load the web chat iframe.
+          webSdkIframe = createWebSdkIframe ();
+          doc.body.appendChild (webSdkIframe);
+
+          // Finally destroy the migrator iframe.
+          destroyPidMigratorWebChatIframe ();
+          break;
+
         case EVENT_TYPES.SDK_JS_LOADED:
           // Before the Web Chat APIs can be called by the client, following
           // events should occur (in the given order).
@@ -766,10 +839,14 @@
           // config, which along with other settings, determines whether
           // the widget should load or not.
 
-          // Pass client config and parent page info to set initial app data
+          // Pass client config and parent page info to set initial app data.
+          // Also, pass the localStorage data to migrate. Passing this with setConfig
+          // in order to avoid another asynchronous postMessage call to the web
+          // chat iframe.
           setConfig ({
             clientConfig: win.helpshiftConfig,
-            parentPageInfo
+            parentPageInfo,
+            lsDataToMigrate: state.lsDataToMigrate
           });
           break;
 

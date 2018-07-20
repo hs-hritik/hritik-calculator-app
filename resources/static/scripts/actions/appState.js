@@ -14,7 +14,6 @@ define ("actions/appState",
     "constants/activeView",
     "helpers/xhr",
     "helpers/localStorage",
-    "helpers/prepareProcessXhrData",
     "helpers/audio",
     "helpers/proactiveChat",
     "helpers/ui",
@@ -32,10 +31,9 @@ define ("actions/appState",
     "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
-    analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
-    audioHelpers, proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers,
-    xhr, getUuid, store, chatViewActions, uiActions, batchActions, actionCreators,
-    browserUtils, dataTypeUtils, postSdkMessage) {
+    analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
+    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions,
+    uiActions, batchActions, actionCreators, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
     const SKIP_PLATFORM_ID = true;
@@ -57,8 +55,6 @@ define ("actions/appState",
       SHADES
     } = UI_CONFIG_CONSTANTS;
     const {EVENT} = analyticsConstants;
-
-    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     const isCssVarSupported = (window.CSS && window.CSS.supports &&
                                window.CSS.supports ("--fake-var", 0));
@@ -835,16 +831,17 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set metadata.
-     * @param {Object} metadata
+     * Action to set parent (client) page's data - title, url, and origin
+     * @param {Object} parentPageInfo - Parent page's data
+     * @param {string} [parentPageInfo.title] - Title of the parent page
+     * @param {string} [parentPageInfo.url] - URL of the parent page
+     * @param {string} [parentPageInfo.origin] - Origin of the parent page
      * @returns {Object} - Action
      */
-    const setMetadata = (parentPageInfo) => {
-      const metadata = getPreparedDeviceInfo (parentPageInfo);
-
+    const setParentPageInfo = (parentPageInfo) => {
       return {
-        type: ACTION_TYPES.SET_METADATA,
-        metadata
+        type: ACTION_TYPES.SET_PARENT_PAGE_INFO,
+        parentPageInfo
       };
     };
 
@@ -936,7 +933,7 @@ define ("actions/appState",
       startConversation,
       closeConversation,
       replaceCif,
-      setMetadata,
+      setParentPageInfo,
       setProactiveChatRules,
       executeProactiveChatRules,
       updateStyles,

@@ -65,7 +65,7 @@ define ("reducers/appState",
       browserIsMobile: false,
       tags: [],
       cif: {},
-      metadata: {},
+      parentPageInfo: {},
       sdkConfigOptions: {
         fullScreen: false,
         initialUserMessage: ""
@@ -237,9 +237,9 @@ define ("reducers/appState",
             cif: {$set: action.cif}
           });
 
-        case ACTION_TYPES.SET_METADATA:
+        case ACTION_TYPES.SET_PARENT_PAGE_INFO:
           return update (state, {
-            metadata: {$set: action.metadata}
+            parentPageInfo: {$set: action.parentPageInfo}
           });
 
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
