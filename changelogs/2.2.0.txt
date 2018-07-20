@@ -1,0 +1,12 @@
+Branches:
+feature/truncate-plat-id
+
+Changelog:
+Remove metadata from state and prepare it before firing xhr
+Remove unused modules from actions/appState and actions/chatView
+Set parent page info in state and use it with postMessage
+Remove unused modules from api.js
+Do not update web chat localStorage if migration has happened
+Set ls data to be migrated to web chat iframe's ls
+Load ls migrator iframe on the client page
+Add localStorage migration script in a new html file
