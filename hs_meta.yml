@@ -16,3 +16,23 @@ release:
       pattern: 'WEB_CHAT_VERSION = "\d+\.\d+\.\d+"'
       replacement: 'WEB_CHAT_VERSION = "{{ version }}"'
       num_expected: 1
+
+    - file: resources/static/html/index.html
+      pattern: 'v=\d+\.\d+\.\d+'
+      replacement: 'v={{ version }}'
+      num_expected: 2
+
+    - file: resources/static/scripts/constants/routes.js
+      pattern: 'v=\d+\.\d+\.\d+'
+      replacement: 'v={{ version }}'
+      num_expected: 1
+
+    - file: resources/static/scripts/external/messenger.js
+      pattern: 'v=\d+\.\d+\.\d+'
+      replacement: 'v={{ version }}'
+      num_expected: 1
+
+    - file: resources/static/scripts/requireConfig.js
+      pattern: 'v=\d+\.\d+\.\d+'
+      replacement: 'v={{ version }}'
+      num_expected: 1
