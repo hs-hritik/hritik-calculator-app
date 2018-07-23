@@ -158,21 +158,6 @@
     "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
 
-  const MESSENGER_IFRAME_MOBILE_STYLES = {
-    "position": "fixed",
-    "top": "0px",
-    "left": "0px",
-    "bottom": "0px",
-    "right": "0px",
-    "width": "100%",
-    "height": "100%",
-    "border": "none",
-    "margin": 0,
-    "padding": 0,
-    "overflow": "hidden",
-    "z-index": "9999999"
-  };
-
   const MESSENGER_IFRAME_FULL_SCREEN_STYLES = {
     "position": "fixed",
     "top": "0px",
@@ -250,7 +235,9 @@
   const parentPageInfo = {
     title: doc.title,
     url: win.location.href,
-    origin: win.location.origin
+    origin: win.location.origin,
+    width: Math.max (doc.documentElement.clientWidth, win.innerWidth || 0),
+    height: Math.max (doc.documentElement.clientHeight, win.innerHeight || 0)
   };
 
   /**
@@ -564,9 +551,7 @@
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
-    if (config.browserIsMobile) {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
-    } else if (state.widgetOptions.fullScreen) {
+    if (config.fullScreen) {
       setStyle (webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);

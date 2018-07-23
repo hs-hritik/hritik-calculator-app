@@ -8,10 +8,9 @@ define ("reducers/appState",
   [
     "constants/actionTypes",
     "constants/activeView",
-    "constants/appState",
-    "gunpowder/utils/object"
+    "constants/appState"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS) {
     "use strict";
 
     const update = React.addons.update;
@@ -20,6 +19,59 @@ define ("reducers/appState",
       ISSUE_TYPE,
       APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
+
+    // @NOTE -
+    // 1. The meaning of edge is different for different widget positions.
+    //    In case of widget position "bottom-*" the edge would be screen's bottom,
+    //    whereas for position "top-*" it would be screen's top.
+    //    But the value remains the same
+    // 2. Normal mode = webchat with default width and height.
+
+    // Width padding
+    const HORIZONTAL_PADDING_FROM_EDGE = 28;
+    // Original width of width
+    const WIDGET_WIDTH = 340;
+    // Total width = Original width + width padding
+    const TOTAL_WIDGET_WIDTH = WIDGET_WIDTH + HORIZONTAL_PADDING_FROM_EDGE;
+    // Height padding
+    const VERTICAL_PADDING_FROM_EDGE = 100;
+    // Minimum height of widget after resizing
+    const MIN_WIDGET_HEIGHT = 320;
+    // Total height = Minimum height + height padding
+    const TOTAL_WIDGET_HEIGHT = MIN_WIDGET_HEIGHT + VERTICAL_PADDING_FROM_EDGE;
+    // Viewable width factor is a multipler that decides how much viewable screen
+    // size should be in order to display widget in normal mode.
+    // Example - The screen size should be minimum 1.5 times widget width in order
+    // to display widget in normal mode. If not, display full screen.
+    const VIEWABLE_WIDTH_FACTOR = 1.5;
+
+    /**
+     * Predicate to return whether widget should be full screen of not
+     * Full screen is computed by two ways :
+     * 1. According to parent page's screen size OR
+     * 2. Developer passed full screen option in widget options
+     * @param {Object} config
+     * @param {Object} config.widgetOptions - widget options passed by devs
+     * @param {Boolean} config.widgetOptions.fullScreen - dev option for full screen
+     * @param {Object} config.screenSize - screen sizes
+     * @param {Number} config.screenSize.width - width of parent page
+     * @param {Number} config.screenSize.height - height of parent page
+     * @returns {Boolean} - whether to make widget full screen
+     */
+    const _shouldWebChatBeFullScreen = (config) => {
+      const {
+        widgetOptions,
+        screenSize: {
+          width,
+          height
+        }
+      } = config;
+
+      return (
+        (height < TOTAL_WIDGET_HEIGHT || width < (TOTAL_WIDGET_WIDTH * VIEWABLE_WIDTH_FACTOR)) ||
+        (widgetOptions && widgetOptions.fullScreen)
+      );
+    };
 
     const INITIAL_STATE = {
       wcEnabled: false,
@@ -145,7 +197,8 @@ define ("reducers/appState",
               userEmail,
               userAuthToken,
               tags,
-              fullPrivacy
+              fullPrivacy,
+              widgetOptions
             }
           } = action;
 
@@ -161,9 +214,13 @@ define ("reducers/appState",
             fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {
               fullScreen: {
-                $set: objUtils.getIn (
-                  action, ["config", "widgetOptions", "fullScreen"]
-                ) || false
+                $set: _shouldWebChatBeFullScreen ({
+                  screenSize: {
+                    width: state.parentPageInfo.width,
+                    height: state.parentPageInfo.height
+                  },
+                  widgetOptions
+                })
               }
             }
           });

@@ -608,16 +608,18 @@ define ("actions/appState",
     const getClientWmConfig = () => {
       const {
         appState: {
-          browserIsMobile,
-          wcEnabled
+          wcEnabled,
+          sdkConfigOptions: {
+            fullScreen
+          }
         }
       } = store.getState ();
       const hideWidget = commonHelpers.isWidgetHiddenOutOfBusinessHours ();
 
       return {
         widgetEnabled: wcEnabled && !hideWidget,
-        browserIsMobile: browserIsMobile,
-        cssConfig: getLauncherCssConfig ()
+        cssConfig: getLauncherCssConfig (),
+        fullScreen
       };
     };
 
