@@ -696,7 +696,7 @@ define ("actions/chatView",
         },
         appState: {
           featuresEnabled: {
-            conversationHistory
+            conversationHistory: conversationHistoryEnabled
           }
         }
       } = store.getState ();
@@ -716,14 +716,11 @@ define ("actions/chatView",
 
       // If conversation history is disabled, we only render the
       // currentIssue and its pre-issue.
-      let conversationIssues = issues;
-      if (!conversationHistory) {
-        conversationIssues = [currentIssue, previousIssue];
-      }
+      const conversationIssues = conversationHistoryEnabled ?
+        issues : [currentIssue, previousIssue];
 
       messages = createLinearMessageList (conversationIssues, {
         lastIssueId: null,
-        conversationHistory,
         hasOlderMsgs
       });
 
@@ -973,20 +970,20 @@ define ("actions/chatView",
      * Checks if all the conversation have been redacted and
      * creates a new preIssue + stops polling when they have been.
      * @param {Object} config - conversation redaction config.
-     * @param {Array} config.messages - messages length
+     * @param {Number} config.msgsLength - messages length
      * @param {Object} config.issueCursor - used to check if it's the first
      *                                      fetch call
-     * @returns {Boolean} - weather all the conversations have been redacted
+     * @returns {Boolean} - whether all the conversations have been redacted
      */
     const handleAllConversationRedaction = (config) => {
       const {dispatch} = store;
-      const {messages, issueCursor} = config;
+      const {msgsLength, issueCursor} = config;
 
       // If all the conversations have been redacted there would
       // be no messages and we should start conversation anew.
-      if (!messages.length && !issueCursor) {
-        dispatch (createPreIssue ());
+      if (!msgsLength && !issueCursor) {
         stopPollingForMessages ();
+        dispatch (createPreIssue ());
         return true;
       }
 
@@ -1308,8 +1305,8 @@ define ("actions/chatView",
               // Only set the backward cursor when initial issues are being
               // fetched, not when updates for issues are being recieved.
               //
-              // Note: This works because issueCursor is not first before
-              // first call.
+              // Note: This works because issueCursor is not set before
+              // the first call.
               if (!issueCursor) {
                 const oldestIssue = issues [issues.length - 1];
 
@@ -1434,7 +1431,7 @@ define ("actions/chatView",
       const {messages} = config;
 
       // Clone the existing list of message ids.
-      const finalUnreadMessageIds = unreadMessageIds.slice (0);
+      const finalUnreadMessageIds = unreadMessageIds.concat ();
 
       // Calculate unread count for agent messages only
       messages.forEach ((msg) => {
