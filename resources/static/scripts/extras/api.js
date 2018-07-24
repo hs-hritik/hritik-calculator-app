@@ -105,8 +105,8 @@ define ("extras/api",
         lsHelpers.setLsMigrated ();
       }
 
-      dispatch (appStateActions.setClientConfig (clientConfig));
       dispatch (appStateActions.setParentPageInfo (parentPageInfo));
+      dispatch (appStateActions.setClientConfig (clientConfig));
       dispatch (appStateActions.setDeviceId ());
       dispatch (appStateActions.setAnonUserId (userId));
       dispatch (appStateActions.setWmConfig ({
