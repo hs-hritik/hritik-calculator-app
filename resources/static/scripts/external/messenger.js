@@ -52,8 +52,9 @@
     cssConfig: {},
     apiEvents: [],
     webChatVisibility: {
-      launcher: "",
-      widget: ""
+      launcher: "block",
+      widget: "none",
+      hiddenByApi: false
     },
     lsDataToMigrate: null
   };
@@ -444,9 +445,11 @@
 
     if (currentlyMinimized) {
       webSdkIframe.style.display = "block";
+      state.webChatVisibility.widget = "block";
       updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
     } else {
       webSdkIframe.style.display = "none";
+      state.webChatVisibility.widget = "none";
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
 
@@ -724,6 +727,16 @@
   };
 
   /**
+   * Function to set default launcher visibility
+   * The default visibility of launcher is also dependant on showLauncher widget
+   * option passed by developers.
+   */
+  const setDefaultLauncherVisibility = () => {
+    state.webChatVisibility.launcher = state.widgetOptions.showLauncher ?
+                                       "block" : "none";
+  };
+
+  /**
    * Process widget options and save them in state
    */
   const processWidgetOptions = () => {
@@ -804,6 +817,8 @@
     }
 
     processWidgetOptions ();
+
+    setDefaultLauncherVisibility ();
 
     // Load the platform id migrator iframe. This will send localStorage data
     // back to this script, which would be sent to the new iframe (with truncated
@@ -917,51 +932,48 @@
   };
 
   /**
-   * Predicate to return whether webchat is hidden
-   */
-  const isWebChatHidden = () => {
-    return (state.webChatVisibility.launcher === "none" &&
-            state.webChatVisibility.widget === "none");
-  };
-
-  /**
    * JS API to open/maximize/show the messenger widget
    */
   const open = () => {
-    if (isWebChatHidden ()) {
-      return;
+    if (!state.webChatVisibility.hiddenByApi) {
+      toggleWebSdkIframe ({
+        minimized: false,
+        trigger: TRIGGER.API
+      });
     }
-    toggleWebSdkIframe ({
-      minimized: false,
-      trigger: TRIGGER.API
-    });
   };
 
   /**
    * JS API to close/minimize/hide the messenger widget
    */
   const close = () => {
-    if (isWebChatHidden ()) {
-      return;
+    if (!state.webChatVisibility.hiddenByApi) {
+      toggleWebSdkIframe ({
+        minimized: true
+      });
     }
-    toggleWebSdkIframe ({
-      minimized: true
-    });
   };
 
   /**
    * JS API to hide webchat
    * This will hide the launcher and widget completely
+   *
+   * @NOTE - css visibility has nothing to do with this. Although the name is
+   * visibility, we are saving the display property in state.
    */
   const hide = () => {
     // Save current visibility of webchat (launcher + widget) in state
-    // @NOTE - css visibility has nothing to do with this. Although the name is
-    // visibility, we are saving the display property in state.
-    state.webChatVisibility.launcher = launcherBtn.style.display;
-    state.webChatVisibility.widget = webSdkIframe.style.display;
+    // Check for showLauncher widget option as existence of launcher button is
+    // dependant on it
+    if (state.widgetOptions.showLauncher) {
+      state.webChatVisibility.launcher = launcherBtn.style.display;
+      launcherBtn.style.display = "none";
+    }
 
+    state.webChatVisibility.widget = webSdkIframe.style.display;
     webSdkIframe.style.display = "none";
-    launcherBtn.style.display = "none";
+
+    state.webChatVisibility.hiddenByApi = true;
   };
 
   /**
@@ -971,7 +983,14 @@
   const show = () => {
     // Restore the previous display properties of webchat (launcher + widget)
     webSdkIframe.style.display = state.webChatVisibility.widget;
-    launcherBtn.style.display = state.webChatVisibility.launcher;
+
+    // Check for showLauncher widget option as existence of launcher button is
+    // dependant on it
+    if (state.widgetOptions.showLauncher) {
+      launcherBtn.style.display = state.webChatVisibility.launcher;
+    }
+
+    state.webChatVisibility.hiddenByApi = false;
   };
 
   /**
