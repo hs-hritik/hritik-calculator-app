@@ -27,7 +27,6 @@ define ("actions/chatView",
     "helpers/liveUpdates",
     "helpers/attachments",
     "helpers/analytics",
-    "helpers/common",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
@@ -36,7 +35,7 @@ define ("actions/chatView",
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
     xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, commonHelpers, postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {
