@@ -248,6 +248,9 @@
    * @param {Object} styles - key-value pair of styles to be applied.
    */
   const setStyle = (el, styles) => {
+    if (!el) {
+      return;
+    }
     for (const key in styles) {
       if (styles.hasOwnProperty (key)) {
         el.style [key] = styles [key];
