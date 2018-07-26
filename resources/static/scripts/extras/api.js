@@ -133,7 +133,7 @@ define ("extras/api",
           issueState
         },
         chatView: {
-          unreadCount
+          unreadMessageIds
         }
       } = store.getState ();
 
@@ -142,9 +142,9 @@ define ("extras/api",
           app.init ();
         }
 
-        // If unreadCount isn't zero and active view is chat view,
+        // If unread count isn't zero and active view is chat view,
         // dispatch action to mark messages seen.
-        if (unreadCount !== 0 && ACTIVE_VIEW.CHAT === activeView) {
+        if (unreadMessageIds.length !== 0 && ACTIVE_VIEW.CHAT === activeView) {
           store.dispatch (chatViewActions.markMessagesSeen ());
         }
 
