@@ -5,7 +5,8 @@
  */
 
 define ("components/jumpToLatestBtn",
-  function () {
+  ["gunpowder/utils/classes"],
+  function (classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -13,6 +14,8 @@ define ("components/jumpToLatestBtn",
       displayName: "JumpToLatestBtn",
       propTypes: {
         show: PropTypes.bool,
+        skipBtnIsRendered: PropTypes.bool,
+        chatFooterIsHidden: PropTypes.bool,
         showUnreadIndicator: PropTypes.bool,
         onClick: PropTypes.func
       },
@@ -24,17 +27,30 @@ define ("components/jumpToLatestBtn",
       },
 
       render () {
-        const {show, showUnreadIndicator, onClick} = this.props;
+        const {
+          show,
+          showUnreadIndicator,
+          onClick,
+          skipBtnIsRendered,
+          chatFooterIsHidden
+        } = this.props;
 
         if (!show) {
           return null;
         }
 
+        const jumpToLatestBtnClasses = classes (
+          "hs-jump-to-latest", {
+            "hs-jump-to-latest--without-input-footer": chatFooterIsHidden,
+            "hs-jump-to-latest--with-skip-btn": !chatFooterIsHidden && skipBtnIsRendered
+          }
+        );
+
         const unreadIndicatorEl = showUnreadIndicator ?
           (<span className="hs-jump-to-latest__unread-icon" />) : null;
 
         return (
-          <div className="hs-jump-to-latest" onClick={onClick}>
+          <div className={jumpToLatestBtnClasses} onClick={onClick}>
             <i className="ion-chevron-right hs-jump-to-latest__icon" />
             {unreadIndicatorEl}
           </div>

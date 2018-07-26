@@ -28,6 +28,13 @@
     border-radius: radius(round);
     box-shadow: 0 0 1.5px 0 rgba(0, 0, 0, .33);
 
+    &--without-input-footer {
+      bottom: 30px;
+    }
+
+    &--with-skip-btn {
+      bottom: 120px;
+    }
 
     &__icon {
       color: $arrow-color;
