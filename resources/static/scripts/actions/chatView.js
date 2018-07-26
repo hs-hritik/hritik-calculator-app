@@ -704,6 +704,7 @@ define ("actions/chatView",
       const currentIssue = issues [0];
       let previousIssue = null;
       let messages = [];
+      let conversationIssues;
 
       // If current issue type is 'issue', find pre issue from issues list
       // and save it in previous
@@ -716,8 +717,12 @@ define ("actions/chatView",
 
       // If conversation history is disabled, we only render the
       // currentIssue and its pre-issue.
-      const conversationIssues = conversationHistoryEnabled ?
-        issues : [currentIssue, previousIssue];
+      if (conversationHistoryEnabled) {
+        conversationIssues = issues;
+      } else {
+        conversationIssues = previousIssue ?
+          [currentIssue, previousIssue] : [currentIssue];
+      }
 
       messages = createLinearMessageList (conversationIssues, {
         lastIssueId: null,
