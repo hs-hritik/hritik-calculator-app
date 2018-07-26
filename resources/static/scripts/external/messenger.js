@@ -46,6 +46,7 @@
     unreadCount: 0,
     widgetOptions: {
       showLauncher: true,
+      showCloseButton: true,
       fullScreen: false,
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
@@ -453,6 +454,15 @@
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
 
+    // @NOTE - More info on SPA behavior :- https://tinyurl.com/yafecdkv
+    // Toggle the visibility of launcher button when showCloseButton is set to false
+    if (state.widgetOptions.showLauncher && !state.widgetOptions.showCloseButton) {
+      // When the widget is opened, hide the launcher
+      // If the widget is hidden, show the launcher again
+      launcherBtn.style.display = state.webChatVisibility.widget === "block" ?
+                                  "none" : "block";
+    }
+
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
       minimized: !currentlyMinimized,
       trigger: config.trigger
@@ -545,6 +555,20 @@
   };
 
   /**
+   * Function to save required config options in local state
+   * After config is processed, widget sends computed values to messenger js and
+   * we have to save those latest computed values in state.
+   * @param {Object} config
+   */
+  const saveConfigOptionsInState = (config) => {
+    // CSS config options are computed by widget iframe depending on uiConfig
+    state.cssConfig = config.cssConfig;
+    // Full screen option is calculated by widget iframe depending on screens
+    // resolution
+    state.widgetOptions.fullScreen = config.fullScreen;
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
@@ -585,8 +609,7 @@
       return;
     }
 
-    state.cssConfig = config.cssConfig;
-
+    saveConfigOptionsInState (config);
     updateIframeStyles (config);
 
     const launcherHidden = !state.widgetOptions.showLauncher;
@@ -737,6 +760,27 @@
   };
 
   /**
+   * Function to update the widget (web chat iframe's) styles
+   */
+  const updateWidgetStyles = () => {
+    const {
+      widgetOptions: {
+        showLauncher,
+        showCloseButton
+      }
+    } = state;
+
+    // If show launcher is false or show close button is false then move the
+    // widget below its original position to have equal space from edge.
+    if (!showLauncher || !showCloseButton) {
+      // @NOTE - We are modifying the style in style constant as opposed to using
+      // setStyle method because the launcher is not present at this point in time.
+      // Also changing the constant will not have side effect as it expected behavior.
+      MESSENGER_IFRAME_STYLES.bottom = "28px";
+    }
+  };
+
+  /**
    * Process widget options and save them in state
    */
   const processWidgetOptions = () => {
@@ -744,6 +788,10 @@
 
     if (typeof options.showLauncher === "boolean") {
       state.widgetOptions.showLauncher = options.showLauncher;
+    }
+
+    if (typeof options.showCloseButton === "boolean") {
+      state.widgetOptions.showCloseButton = options.showCloseButton;
     }
 
     if (typeof options.fullScreen === "boolean") {
@@ -817,6 +865,7 @@
     }
 
     processWidgetOptions ();
+    updateWidgetStyles ();
 
     setDefaultLauncherVisibility ();
 

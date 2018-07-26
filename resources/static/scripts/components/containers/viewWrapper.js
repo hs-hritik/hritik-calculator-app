@@ -19,9 +19,9 @@ define ("components/containers/viewWrapper",
       const {
         appState: {
           activeView,
+          showHeaderCloseButton,
           sdkConfigOptions: {
-            fullScreen: allowFullScreen,
-            showLauncher: showCloseButton
+            fullScreen: allowFullScreen
           }
         }
       } = state;
@@ -29,7 +29,7 @@ define ("components/containers/viewWrapper",
       return {
         activeView,
         allowFullScreen,
-        showCloseButton,
+        showCloseButton: showHeaderCloseButton,
         viewStyles: {
           fontFamily: state.ui.uiConfig [BASE_FONT].value
         }

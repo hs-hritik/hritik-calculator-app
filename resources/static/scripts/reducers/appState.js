@@ -120,8 +120,10 @@ define ("reducers/appState",
       sdkConfigOptions: {
         fullScreen: false,
         showLauncher: true,
-        initialUserMessage: ""
+        initialUserMessage: "",
+        showCloseButton: true
       },
+      showHeaderCloseButton: true,
       conversationStarted: false,
       proactiveChatRules: [],
       analytics: {
@@ -198,9 +200,27 @@ define ("reducers/appState",
               userAuthToken,
               tags,
               fullPrivacy,
-              widgetOptions
+              widgetOptions = {}
             }
           } = action;
+
+          const fullScreen = _shouldWebChatBeFullScreen ({
+            screenSize: {
+              width: state.parentPageInfo.width,
+              height: state.parentPageInfo.height
+            },
+            widgetOptions
+          });
+          let showCloseButton = state.sdkConfigOptions.showCloseButton;
+          let showLauncher = state.sdkConfigOptions.showLauncher;
+
+          if (widgetOptions.hasOwnProperty ("showCloseButton")) {
+            showCloseButton = widgetOptions.showCloseButton;
+          }
+
+          if (widgetOptions.hasOwnProperty ("showLauncher")) {
+            showLauncher = widgetOptions.showLauncher;
+          }
 
           return update (state, {
             platformId: {$set: platformId || ""},
@@ -213,16 +233,18 @@ define ("reducers/appState",
             tags: {$set: tags || []},
             fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {
-              fullScreen: {
-                $set: _shouldWebChatBeFullScreen ({
-                  screenSize: {
-                    width: state.parentPageInfo.width,
-                    height: state.parentPageInfo.height
-                  },
-                  widgetOptions
-                })
-              }
-            }
+              fullScreen: {$set: fullScreen},
+              showCloseButton: {$set: showCloseButton},
+              showLauncher: {$set: showLauncher}
+            },
+            // We need to show header close button in following cases
+            // 1] showLauncher = true && fullScreen = true && showCloseButton = true
+            //    OR
+            // 2] showLauncher = false && showCloseButton = true
+            // @NOTE - These are optimized conditions. For more info refer SPA
+            // config options doc :- https://tinyurl.com/yafecdkv
+            showHeaderCloseButton: showLauncher ? {$set: showCloseButton && fullScreen} :
+                                   {$set: showCloseButton}
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
@@ -358,13 +380,6 @@ define ("reducers/appState",
         case ACTION_TYPES.TOGGLE_ONLINE_STATUS:
           return update (state, {
             online: {$set: action.online}
-          });
-
-        case ACTION_TYPES.SET_LAUNCHER_VISIBILITY:
-          return update (state, {
-            sdkConfigOptions: {
-              showLauncher: {$set: action.launcherIsVisible}
-            }
           });
 
         default:

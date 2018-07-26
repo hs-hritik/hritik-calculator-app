@@ -88,8 +88,7 @@ define ("extras/api",
         lsDataToMigrate
       } = data;
       const {
-        userId,
-        widgetOptions
+        userId
       } = clientConfig;
 
       // Set localStorage data to be migrated to web chat's localStorage
@@ -113,10 +112,6 @@ define ("extras/api",
         trigger,
         helpshiftConfig: clientConfig
       }));
-
-      if (widgetOptions && widgetOptions.hasOwnProperty ("showLauncher")) {
-        dispatch (appStateActions.setLauncherIsVisible (widgetOptions.showLauncher));
-      }
     };
 
     /**
