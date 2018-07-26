@@ -224,6 +224,8 @@ define ("components/messageList",
           offsetHeight
         } = ev.target;
 
+        this._scrollBottom = scrollHeight - offsetHeight - scrollTop;
+
         if (scrollTop + offsetHeight + JUMP_LATEST_BTN_SCROLL_THRESHOLD < scrollHeight) {
           this.props.onScrollPastExistingConversation (true);
         } else {
@@ -243,6 +245,11 @@ define ("components/messageList",
       _refCallback (ref) {
         this._scrollWrapperRef = ref;
       },
+
+      /**
+       * Scroll position from the bottom of the chat screen.
+       */
+      _scrollBottom: 0,
 
       /**
        * Throttled scroll bottom method used to delay scroll bottom execution
@@ -290,6 +297,22 @@ define ("components/messageList",
        * or if there is typing indicator.
        */
       componentDidUpdate (prevProps) {
+        const {
+          scrollHeight,
+          scrollTop,
+          offsetHeight
+        } = this._scrollWrapperRef;
+
+        const previousScrollBottom = this._scrollBottom;
+        const currentScrollBottom = scrollHeight - offsetHeight - scrollTop;
+
+        // When new messages are appended to the top, the Message list might
+        // scroll to the very top. To avoid that, we compare the current scrollBottom
+        // to the previous one and restore it if they are unequal.
+        if (currentScrollBottom !== previousScrollBottom) {
+          this._scrollWrapperRef.scrollTop = scrollHeight - previousScrollBottom - offsetHeight;
+        }
+
         const currentValidMessages = this.props.messages.filter ((message) => {
           return !!message;
         });
