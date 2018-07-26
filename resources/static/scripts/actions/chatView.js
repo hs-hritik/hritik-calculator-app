@@ -2011,7 +2011,7 @@ define ("actions/chatView",
         setUserIsViewingPastMessages (userHasScrolledToPastConvs)
       );
 
-      if (unreadMessageIds.length > 0 && userHasScrolledToPastConvs) {
+      if (unreadMessageIds.length > 0 && !userHasScrolledToPastConvs) {
         dispatch (markMessagesSeen ());
       }
     };
