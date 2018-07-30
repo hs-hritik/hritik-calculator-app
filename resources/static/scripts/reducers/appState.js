@@ -69,7 +69,7 @@ define ("reducers/appState",
 
       return (
         (height < TOTAL_WIDGET_HEIGHT || width < (TOTAL_WIDGET_WIDTH * VIEWABLE_WIDTH_FACTOR)) ||
-        (widgetOptions && widgetOptions.fullScreen)
+        !!(widgetOptions && widgetOptions.fullScreen)
       );
     };
 
