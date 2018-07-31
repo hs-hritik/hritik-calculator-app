@@ -39,6 +39,11 @@ define ("extras/api",
       ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
     ];
     const SKIP_REVIEW_COMMENTS = true;
+    const {
+      LS_KEYS: {
+        LAST_ACTIVITY_TIME: LAST_ACTIVITY_TIME_LS_VAL
+      }
+    } = lsHelpers;
 
     const {EVENT} = analyticsConstants;
 
@@ -95,7 +100,10 @@ define ("extras/api",
       // Set data in the localStorage only if it hasn't happened yet.
       if (!lsHelpers.getLsMigrated () && (lsDataToMigrate && typeof lsDataToMigrate === "object")) {
         for (const lsKey in lsDataToMigrate) {
-          if (lsDataToMigrate.hasOwnProperty (lsKey)) {
+          // Do not migrate last activity time because it results in preIssue reset.
+          // This flow is going to be removed after we are sure migration logic
+          // is not running for any user.
+          if (lsDataToMigrate.hasOwnProperty (lsKey) && lsKey !== LAST_ACTIVITY_TIME_LS_VAL) {
             lsUtils.setItem (lsKey, lsDataToMigrate [lsKey]);
           }
         }
