@@ -145,6 +145,7 @@ define ("components/chatView",
           issueIsCreated,
           loading,
           hasFailure,
+          pastConversationsLoading,
           error,
           userIsViewingPastMessages,
           errorActionHandler,
@@ -177,6 +178,7 @@ define ("components/chatView",
                              isTyping={isTyping}
                              showAgentNickname={showAgentNickname}
                              text={text}
+                             pastConversationsLoading={pastConversationsLoading}
                              onPillOptionSelect={onPillOptionSelect}
                              onRetryAttachmentClick={onRetryAttachmentClick}
                              onSuggestedFaqClick={onSuggestedFaqClick}

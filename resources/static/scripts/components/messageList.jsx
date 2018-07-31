@@ -54,6 +54,7 @@ define ("components/messageList",
         onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
         userIsViewingPastMessages: PropTypes.bool,
+        pastConversationsLoading: PropTypes.bool,
         text: PropTypes.object.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
         onPillOptionSelect: PropTypes.func.isRequired,
@@ -224,6 +225,10 @@ define ("components/messageList",
           offsetHeight
         } = ev.target;
 
+        const {
+          pastConversationsLoading
+        } = this.props;
+
         this._scrollBottom = scrollHeight - offsetHeight - scrollTop;
 
         if (scrollTop + offsetHeight + JUMP_LATEST_BTN_SCROLL_THRESHOLD < scrollHeight) {
@@ -232,7 +237,7 @@ define ("components/messageList",
           this.props.onScrollPastExistingConversation (false);
         }
 
-        if (scrollTop < LOAD_MORE_SCROLL_THRESHOLD) {
+        if (scrollTop < LOAD_MORE_SCROLL_THRESHOLD && !pastConversationsLoading) {
           this._throttledLoadMore ();
         }
       },
