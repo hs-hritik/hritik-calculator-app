@@ -59,6 +59,7 @@ define ("components/chatView",
         loading: PropTypes.bool,
         pastConversationsLoading: PropTypes.bool,
         allMessagesAreLoaded: PropTypes.bool,
+        latestConversationHasLoaded: PropTypes.bool,
         unreadCount: PropTypes.number,
         /**
          * If chat view footer has any failure
@@ -213,7 +214,15 @@ define ("components/chatView",
       },
 
       _onLoadMore () {
-        if (!this.props.allMessagesAreLoaded) {
+        const {
+          allMessagesAreLoaded,
+          latestConversationHasLoaded
+        } = this.props;
+
+        // If conversation history is enabled, we need to load more
+        // till all messages have been loaded. When disabled, only the
+        // latest conversation needs to load.
+        if (!allMessagesAreLoaded && !latestConversationHasLoaded) {
           this.props.onLoadMoreMessages ();
         }
       },

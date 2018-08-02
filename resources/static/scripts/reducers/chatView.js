@@ -105,6 +105,7 @@ define ("reducers/chatView",
       userIsViewingPastMessages: false,
       userIsRedacted: false,
       allMessagesAreLoaded: false,
+      latestConversationHasLoaded: false,
       pastConversationsLoading: false,
       issueCursor: 0,
       pollerFailureCount: 0,
@@ -196,6 +197,11 @@ define ("reducers/chatView",
             userInput: {
               disabled: {$set: false}
             }
+          });
+
+        case ACTION_TYPES.SET_LATEST_CONVERSATION_HAS_LOADED:
+          return update (state, {
+            latestConversationHasLoaded: {$set: true}
           });
 
         case ACTION_TYPES.TOGGLE_SYSTEM_TYPING:

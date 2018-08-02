@@ -503,6 +503,16 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set latest conversation has been loaded
+     * @returns {Object} - Action
+     */
+    const setLatestConversationHasLoaded = () => {
+      return {
+        type: ACTION_TYPES.SET_LATEST_CONVERSATION_HAS_LOADED
+      };
+    };
+
+    /**
      * Helper method to get particular issue id of the conversation
      * @TODO: This should be moved to a helper so that other parts of
      * code can use it as well.
@@ -648,30 +658,78 @@ define ("actions/chatView",
     };
 
     /**
+     * Get the latest issue and its preissue.
+     * @param {Array} issues - List of issues
+     * @returns {Array}
+     */
+    const getLatestConversation = (issues) => {
+      const currentIssue = issues [0];
+      let previousIssue = null;
+
+      // If current issue type is 'issue', find pre issue from issues list
+      // and save it in previous
+      if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
+        previousIssue = arrayUtils.find (issues, (issue) => {
+          return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
+                  issue.preissue_id === currentIssue.preissue_id);
+        });
+      }
+
+      return previousIssue ? [currentIssue, previousIssue] : [currentIssue];
+    };
+
+    /**
+     * Predicate to return if all messages of latest conversation have loaded
+     * @param {Array} issues - List of issues
+     * @returns {Boolean}
+     */
+    const hasLatestConversationLoaded = (issues) => {
+      const oldestIssue = issues [issues.length - 1];
+      const latestIssue = issues [0];
+
+      // Here, we compare oldest and newest issue to see if there are
+      // more than two issues. If their group ids are same, it means that
+      // there's only one issue; if they are different. there is more than one
+      return (oldestIssue.preissue_id !== latestIssue.preissue_id);
+    };
+
+    /**
      * Function to create a linear message list to be rendered
      * from the list of issues.
      * @param {Array} issueList - List of issues that have come in XHR response
      * @param {String} config.lastIssueId - Last issue ID rendered in the message list
      * @param {Boolean} config.hasOlderMsgs - Flag to determine if there are more messages
      *                                        left to be rendered.
+     * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
+     *                                                      feature is enable
      * @returns {Array} List of messages
      */
     const createLinearMessageList = (issueList, config) => {
       const {
         lastGroupId,
-        hasOlderMsgs
+        hasOlderMsgs,
+        conversationHistoryEnabled
       } = config;
 
       const orderedIssues = getOrderedIssueList (issueList);
-      const linearMsgList = getLinearMessages (orderedIssues, lastGroupId);
+      const issuesToRender = conversationHistoryEnabled ?
+        orderedIssues : getLatestConversation (orderedIssues);
+      const linearMsgList = getLinearMessages (issuesToRender, lastGroupId);
+      const latestConvHasLoaded = hasLatestConversationLoaded (issueList);
 
       if (!linearMsgList.length) {
         return [];
       }
 
+      // When conversation history is enabled, render the final date header
+      // when all messages have been loaded. Else, render it just after
+      // when the newest conversation has loaded.
+      const shouldRenderFinalDateHeader = conversationHistoryEnabled ?
+        hasOlderMsgs === false : latestConvHasLoaded;
+
       // if there are no more messages remaining to be fetched, we should
       // render the timestamp without a <hr> at the top of list
-      if (hasOlderMsgs === false) {
+      if (shouldRenderFinalDateHeader) {
         const oldestIssue = issueList [issueList.length - 1];
 
         linearMsgList.unshift (
@@ -700,31 +758,15 @@ define ("actions/chatView",
         }
       } = store.getState ();
       const {issues, hasOlderMsgs} = config;
-      const currentIssue = issues [0];
-      let previousIssue = null;
+      const latestConversation = getLatestConversation (issues);
+      const currentIssue = latestConversation [0];
+      const previousIssue = latestConversation [1];
+
       let messages = [];
-      let conversationIssues;
 
-      // If current issue type is 'issue', find pre issue from issues list
-      // and save it in previous
-      if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
-        previousIssue = arrayUtils.find (issues, (issue) => {
-          return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
-                  issue.preissue_id === currentIssue.preissue_id);
-        });
-      }
-
-      // If conversation history is disabled, we only render the
-      // currentIssue and its pre-issue.
-      if (conversationHistoryEnabled) {
-        conversationIssues = issues;
-      } else {
-        conversationIssues = previousIssue ?
-          [currentIssue, previousIssue] : [currentIssue];
-      }
-
-      messages = createLinearMessageList (conversationIssues, {
+      messages = createLinearMessageList (issues, {
         lastIssueId: null,
+        conversationHistoryEnabled,
         hasOlderMsgs
       });
 
@@ -895,13 +937,14 @@ define ("actions/chatView",
       for (let i = msgsLength - 1; i >= 0; i--) {
         const msg = messages [i];
         const {
-          type
+          type,
+          isSystemMsg
         } = msg;
 
         // isBotMessage will also handle the case where we get a non bot message
         // and it's not supported. For non bot message which is not supported, we
         // will not post bot cancel message.
-        if (messageHelpers.isBotMessage (msg)) {
+        if (!isSystemMsg && messageHelpers.isBotMessage (msg)) {
           const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported (type);
           const botStepIsInProgress = botMsgIsNotSupported ||
                                       messageHelpers.isBotStepMessage (type);
@@ -1083,7 +1126,10 @@ define ("actions/chatView",
       const {dispatch, getState} = store;
       const {
         appState: {
-          domain
+          domain,
+          featuresEnabled: {
+            conversationHistory: conversationHistoryEnabled
+          }
         },
         chatView: {
           messageCursor: {
@@ -1135,7 +1181,13 @@ define ("actions/chatView",
 
           const linearMsgs = createLinearMessageList (issues, {
             lastGroupId: preIssueId,
-            hasOlderMsgs
+            hasOlderMsgs,
+            conversationHistoryEnabled
+          });
+
+          handleSettingLatestConversationLoadStatus ({
+            conversationHistoryEnabled,
+            issues
           });
 
           const oldestIssue = issues [issues.length - 1];
@@ -1160,6 +1212,22 @@ define ("actions/chatView",
     };
 
     /**
+     * Set the flag in store when conversation history is enabled
+     * and all the messages have been loaded.
+     * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
+     *                                                      feature is enable
+     * @param {Array} config.issues - List of issues
+     */
+    const handleSettingLatestConversationLoadStatus = (config) => {
+      const {dispatch} = store;
+      const {conversationHistoryEnabled, issues} = config;
+
+      if (!conversationHistoryEnabled && hasLatestConversationLoaded (issues)) {
+        dispatch (setLatestConversationHasLoaded ());
+      }
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -1170,6 +1238,9 @@ define ("actions/chatView",
       const {
         appState: {
           domain,
+          featuresEnabled: {
+            conversationHistory: conversationHistoryEnabled
+          },
           issueType: previousIssueType
         },
         chatView: {
@@ -1223,6 +1294,14 @@ define ("actions/chatView",
 
             if (!issues.length) {
               return;
+            }
+
+            // Set the flag only in the first fetch call
+            if (!issueCursor) {
+              handleSettingLatestConversationLoadStatus ({
+                conversationHistoryEnabled,
+                issues
+              });
             }
 
             const {
