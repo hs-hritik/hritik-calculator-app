@@ -6,22 +6,17 @@
 
 define ("actions/businessHours",
   [
-    "store",
     "constants/actionTypes",
     "constants/routes",
-    "actions/chatView",
-    "actions/actionCreators",
     "actions/batch",
     "helpers/xhr",
     "gunpowder/utils/schema",
-    "gunpowder/utils/xhr",
     "gunpowder/utils/object",
-    "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
-  function (store, ACTION_TYPES, routes, chatViewActions, actionCreators, batchActions,
-    xhrHelpers, schema, xhr, objectUtils, postSdkMessage, browserUtils, upload) {
+  function (ACTION_TYPES, routes, batchActions, xhrHelpers, schema,
+    objectUtils, browserUtils, upload) {
     "use strict";
 
     const {Input} = schema;

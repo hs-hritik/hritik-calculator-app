@@ -7,11 +7,9 @@
 define ("components/replyBox",
   [
     "constants/keyCodes",
-    "components/commons/fileInput",
-    "gunpowder/utils/classes",
     "gunpowder/widgets/textareaAutosize"
   ],
-  function (KEY_CODES, FileInput, classes, TextareaAutosize) {
+  function (KEY_CODES, TextareaAutosize) {
     "use strict";
 
     const PropTypes = React.PropTypes;

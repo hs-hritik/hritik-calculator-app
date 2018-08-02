@@ -8,11 +8,9 @@
 define ("components/app",
   [
     "store",
-    "constants/eventTypes",
-    "actions/appState",
     "components/containers/viewWrapper"
   ],
-  function (store, EVENT_TYPES, appStateActions, ViewWrapperContainer) {
+  function (store, ViewWrapperContainer) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
