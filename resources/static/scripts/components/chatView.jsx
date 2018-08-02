@@ -7,17 +7,15 @@
 define ("components/chatView",
   [
     "components/messageList",
-    "components/jumpToLatestBtn",
     "components/containers/chatViewFooter",
     "components/infoView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
     "constants/propTypes",
-    "constants/chatView",
     "gunpowder/utils/classes"
   ],
-  function (MessageList, JumpToLatestBtn, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, classes) {
+  function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
+    DnDWrapper, customPropTypes, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -25,10 +23,6 @@ define ("components/chatView",
       MESSAGE_PROP_TYPE,
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
-
-    const {
-      USER_INPUT_TYPES
-    } = CHAT_VIEW_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatView",
@@ -142,7 +136,6 @@ define ("components/chatView",
           onScrollPastExistingConversation,
           onSkipUserInput,
           userInput,
-          unreadCount,
           issueIsCreated,
           loading,
           hasFailure,
@@ -163,11 +156,6 @@ define ("components/chatView",
                       onActionBtnClick={errorActionHandler} />
           );
         }
-
-        const showUnreadIndicator = unreadCount > 0;
-        const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
-        const isPreIssue = !issueIsCreated;
-        const chatFooterIsHidden = inputIsPillSelect || (isPreIssue && userInput.disabled);
 
         return (
           <DnDWrapper onDrop={this._onFilesDrop}
@@ -192,13 +180,8 @@ define ("components/chatView",
                              }
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef} />
-                  <JumpToLatestBtn show={userIsViewingPastMessages}
-                                   skipBtnIsRendered={!userInput.required}
-                                   chatFooterIsHidden={chatFooterIsHidden}
-                                   showUnreadIndicator={showUnreadIndicator}
-                                   onClick={this._onJumpBtnClick} />
               </div>
-              <ChatViewFooterContainer />
+              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick} />
             </DnDWrapper>
         );
       },

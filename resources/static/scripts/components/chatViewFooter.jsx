@@ -7,6 +7,7 @@
 define ("components/chatViewFooter",
   [
     "components/starRating",
+    "components/jumpToLatestBtn",
     "components/containers/replyBox",
     "components/commons/fileInput",
     "components/commons/skipButtonWrapper",
@@ -16,7 +17,7 @@ define ("components/chatViewFooter",
     "helpers/common",
     "gunpowder/utils/classes"
   ],
-  function (StarRating, ReplyBoxContainer, FileInput, SkipButtonWrapper,
+  function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes) {
     "use strict";
 
@@ -37,6 +38,8 @@ define ("components/chatViewFooter",
         rating: PropTypes.number,
         browserIsMobile: PropTypes.bool,
         allowFullScreen: PropTypes.bool,
+        userIsViewingPastMessages: PropTypes.bool,
+        unreadCount: PropTypes.number,
         /**
          * If any failure has to be displayed on the chat view footer.
          * It can be Network failure or any other failure.
@@ -60,6 +63,7 @@ define ("components/chatViewFooter",
          * On click handler for retry btn
          */
         onRetryBtnClick: PropTypes.func,
+        onJumpBtnClick: PropTypes.func,
         onSubmitReply: PropTypes.func.isRequired,
         onValueChangeInputField: PropTypes.func.isRequired,
         onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
@@ -99,6 +103,8 @@ define ("components/chatViewFooter",
           footerIsActive,
           browserIsMobile,
           allowFullScreen,
+          userIsViewingPastMessages,
+          unreadCount,
           userInput: {
             type,
             disabled,
@@ -137,8 +143,19 @@ define ("components/chatViewFooter",
           "hs-footer--failure": failureConfig
         });
 
+        const showUnreadIndicator = unreadCount > 0;
+        const jumpToLatestBtnEl = (
+          <div className="hs-chat-footer__jump-to-latest-wrapper">
+            <JumpToLatestBtn
+              show={userIsViewingPastMessages}
+              showUnreadIndicator={showUnreadIndicator}
+              onClick={this.props.onJumpBtnClick} />
+          </div>
+        );
+
         return (
           <div className={footerClasses}>
+            {jumpToLatestBtnEl}
             {skipBtnWrapperEl}
             {this._renderFooterComponent ()}
           </div>

@@ -37,6 +37,8 @@ define ("components/containers/chatViewFooter",
           activeFooter,
           userIsRedacted,
           pollerFailureCount,
+          userIsViewingPastMessages,
+          unreadMessageIds,
           botState: {
             botStepInProgress
           }
@@ -78,6 +80,8 @@ define ("components/containers/chatViewFooter",
         footerIsActive: footerIsActive,
         userInput,
         fullPrivacyEnabled,
+        userIsViewingPastMessages,
+        unreadCount: unreadMessageIds.length,
         failureConfig,
         botStepInProgress,
         browserIsMobile
