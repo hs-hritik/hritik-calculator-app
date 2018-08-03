@@ -453,9 +453,11 @@ define ("actions/appState",
         const {
           appState: {
             issueExists,
-            appResetTrigger
+            appResetTrigger,
+            minimized
           }
         } = getState ();
+        const widgetIsOpen = !minimized;
 
         // If atleast one issue exists on backend then start the poller.
         // (poller will check for issue state)
@@ -463,24 +465,25 @@ define ("actions/appState",
 
         // App reset trigger is used to determine way by which app has been reset.
         // We have to handle app reset scenarios differently.
-        // If app is reset using inital value (preIssue reset) or through api,
-        // then we go by normal flow by checking any issue exists.
-        // If app is reset using start new conversation, then we have to
-        // explicitly create a new preIssue.
-        // In future, we can add more reset scenarios below.
-        switch (appResetTrigger) {
-          case APP_RESET_TRIGGER.INITIAL:
-          case APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API:
-            if (issueExists) {
-              chatViewActions.startPollingForMessages ();
-            } else {
-              startNewConversation ();
-            }
-            break;
-
-          case APP_RESET_TRIGGER.START_NEW_CONVERSATION:
-            startNewConversation ();
-            break;
+        // If app reset is triggered by
+        // 1. preIssue reset conditions and widget is open
+        //    OR
+        // 2. clicking start new conversation button
+        //    OR
+        // 3. update helpshift config api and widget is open and issue does not
+        //    exist i.e. new user
+        // Then explicitly create a new preIssue.
+        // OR
+        // If issue exists for a user, then start the poller.
+        if (
+          (appResetTrigger === APP_RESET_TRIGGER.PRE_ISSUE_RESET && widgetIsOpen) ||
+          (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) ||
+          (appResetTrigger === APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API &&
+           widgetIsOpen && !issueExists)
+        ) {
+          startNewConversation ();
+        } else if (issueExists) {
+          chatViewActions.startPollingForMessages ();
         }
 
         // The reset trigger is reset to its default value once appropriate
@@ -825,22 +828,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to close the conversation
-     * @returns {Object} - Action
-     */
-    const closeConversation = () => {
-      return (dispatch) => {
-        dispatch (reset ({
-          skipUser: true,
-          minimizeMessenger: true
-        }));
-
-        // Fire event of chat end
-        postSdkMessage.chatEndEvent ();
-      };
-    };
-
-    /**
      * Action to replace the cifs
      * @param {Object} cif - data of cif
      * @returns {Object} - Action
@@ -934,6 +921,7 @@ define ("actions/appState",
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),
           onEnd: () => {
+            dispatch (setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET));
             // In both the cases (success and failure), we'll start with a new
             // conversation for the end user.
             dispatch (reset ({
@@ -953,7 +941,6 @@ define ("actions/appState",
       reset,
       setInitialUserMsg,
       startConversation,
-      closeConversation,
       replaceCif,
       setParentPageInfo,
       setProactiveChatRules,

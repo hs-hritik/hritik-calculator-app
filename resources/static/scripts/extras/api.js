@@ -247,7 +247,9 @@ define ("extras/api",
           store.dispatch (
             appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API)
           );
-          store.dispatch (appStateActions.reset ());
+          store.dispatch (appStateActions.reset ({
+            skipUser: true
+          }));
           break;
       }
     };
