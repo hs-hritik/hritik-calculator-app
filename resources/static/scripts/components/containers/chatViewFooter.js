@@ -30,7 +30,10 @@ define ("components/containers/chatViewFooter",
           footerIsActive,
           fullPrivacyEnabled,
           online,
-          browserIsMobile
+          browserIsMobile,
+          featuresEnabled: {
+            userAttachments: userAttachmentsEnabled
+          }
         },
         chatView: {
           userInput,
@@ -81,6 +84,7 @@ define ("components/containers/chatViewFooter",
         userInput,
         fullPrivacyEnabled,
         userIsViewingPastMessages,
+        userAttachmentsEnabled,
         unreadCount: unreadMessageIds.length,
         failureConfig,
         botStepInProgress,

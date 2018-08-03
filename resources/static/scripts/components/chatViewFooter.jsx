@@ -88,6 +88,7 @@ define ("components/chatViewFooter",
         onFilesChange: PropTypes.func,
         issueIsCreated: PropTypes.bool,
         fullPrivacyEnabled: PropTypes.bool,
+        userAttachmentsEnabled: PropTypes.bool,
         onCloseConversation: PropTypes.func.isRequired,
         botStepInProgress: PropTypes.bool.isRequired
       },
@@ -324,10 +325,12 @@ define ("components/chatViewFooter",
           },
           issueIsCreated,
           fullPrivacyEnabled,
+          userAttachmentsEnabled,
           botStepInProgress
         } = this.props;
 
-        if (value || !issueIsCreated || fullPrivacyEnabled || botStepInProgress) {
+        if (value || !issueIsCreated || fullPrivacyEnabled ||
+          botStepInProgress || !userAttachmentsEnabled) {
           return this._renderSendButton ();
         }
 
