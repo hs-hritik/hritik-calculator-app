@@ -258,8 +258,7 @@ define ("actions/chatView",
         xhr ({
           route: routes.putMessages (domain, activeIssueId, pluralIssueType),
           data: xhrHelpers.getPreparedXhrData ({
-            "md_state": "read",
-            "message-ids": JSON.stringify (unreadMessageIds)
+            md_state: "read"
           }, SKIP_PLATFORM_ID),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
