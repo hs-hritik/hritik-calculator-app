@@ -179,8 +179,6 @@ define ("actions/appState",
      * - Clear localstorage.
      * - Minimize widget if options.minimizeMessenger is true.
      * @param {Object} [options]
-     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                  By default, user related data will be reset.
      * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
      *                  chat related data or not. By default, they would NOT be reset.
      * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the widget or not.
@@ -193,7 +191,6 @@ define ("actions/appState",
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
-          skipUser: options.skipUser,
           resetProactiveChat: options.resetProactiveChat
         });
 
@@ -924,9 +921,7 @@ define ("actions/appState",
             dispatch (setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET));
             // In both the cases (success and failure), we'll start with a new
             // conversation for the end user.
-            dispatch (reset ({
-              skipUser: true
-            }));
+            dispatch (reset ());
           }
         });
       };

@@ -41,14 +41,12 @@ define ("helpers/localStorage",
      *
      * @param {string} key
      * @param {Object} [options]
-     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                  By default, user related data will be reset.
      * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
      *                  related data. By default, they won't be reset.
      * @returns {boolean}
      */
     const _shouldKeyReset = (key, options) => {
-      return !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
+      return !(USER_KEYS.indexOf (key) !== -1) &&
              !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1)) &&
              !(key === DEVICE_ID_KEY) &&
              !(key === LS_MIGRATED_KEY);

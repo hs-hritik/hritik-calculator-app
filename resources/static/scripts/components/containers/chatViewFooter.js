@@ -113,9 +113,7 @@ define ("components/containers/chatViewFooter",
               APP_RESET_TRIGGER.START_NEW_CONVERSATION
             )
           );
-          dispatch (appStateActions.reset ({
-            skipUser: true
-          }));
+          dispatch (appStateActions.reset ());
           dispatch (actionCreators.toggleChatViewLoading (true));
         },
         onSkipUserInput: () => {
