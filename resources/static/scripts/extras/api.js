@@ -161,7 +161,9 @@ define ("extras/api",
         appState: {
           activeView,
           conversationStarted,
-          issueState
+          appResetTrigger,
+          issueState,
+          issueType
         },
         chatView: {
           unreadCount
@@ -179,13 +181,32 @@ define ("extras/api",
           store.dispatch (chatViewActions.markMessagesSeen ());
         }
 
+        const preIssueIsRejected = (
+          issueType === ISSUE_TYPE.PRE_ISSUE &&
+          isIssueClosed (issueState)
+        );
+        const resetTriggerIsDefault = (appResetTrigger === APP_RESET_TRIGGER.INITIAL);
         // When the end user opens the widget, check if preIssue reset
         // is applicable and if so, handle it. Else, start a conversation, if it
         // hasn't started yet.
         if (_shouldPreIssueReset ()) {
           store.dispatch (appStateActions.resetPreIssue ());
         } else if (!conversationStarted) {
-          store.dispatch (appStateActions.startConversation ());
+          // This is to handle special case where we get rejected preIssue on
+          // first page load. We will set app trigger as pre issue reset and call
+          // reset method which will create a new preIssue.
+          // NOTE - Resetting preIssue and creating new preIssue should happen in
+          // sequence, but these are two different api calls. So if we call reset
+          // preIssue and the user closes the tab or browser, create new preIssue
+          // request wont be fired and the user will keep seeing reject preIssue.
+          if ((preIssueIsRejected && resetTriggerIsDefault)) {
+            store.dispatch (
+              appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET)
+            );
+            store.dispatch (appStateActions.reset ());
+          } else {
+            store.dispatch (appStateActions.startConversation ());
+          }
         }
 
         // Track the widget open event
