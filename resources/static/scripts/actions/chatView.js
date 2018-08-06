@@ -688,7 +688,7 @@ define ("actions/chatView",
 
       // Here, we compare oldest and newest issue to see if there are
       // more than two issues. If their group ids are same, it means that
-      // there's only one issue; if they are different. there is more than one
+      // there's only one issue; if they are different, there is more than one.
       return (oldestIssue.preissue_id !== latestIssue.preissue_id);
     };
 
@@ -700,7 +700,7 @@ define ("actions/chatView",
      * @param {Boolean} config.hasOlderMsgs - Flag to determine if there are more messages
      *                                        left to be rendered.
      * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
-     *                                                      feature is enable
+     *                                                      feature is enabled
      * @returns {Array} List of messages
      */
     const createLinearMessageList = (issueList, config) => {
@@ -1214,7 +1214,7 @@ define ("actions/chatView",
      * Set the flag in store when conversation history is enabled
      * and all the messages have been loaded.
      * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
-     *                                                      feature is enable
+     *                                                      feature is enabled
      * @param {Array} config.issues - List of issues
      */
     const handleSettingLatestConversationLoadStatus = (config) => {
