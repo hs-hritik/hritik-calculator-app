@@ -275,6 +275,9 @@ define ("components/messageList",
       _scrollToBottom () {
         const node = ReactDOM.findDOMNode (this._scrollWrapperRef);
         node.scrollTop = node.scrollHeight;
+
+        // updated scroll bottom after scrollTop is changed.
+        this._scrollBottom = 0;
       },
 
       _scrollAnimLoop (node, time = 0) {
@@ -318,18 +321,19 @@ define ("components/messageList",
           this._scrollWrapperRef.scrollTop = scrollHeight - previousScrollBottom - offsetHeight;
         }
 
-        const currentValidMessages = this.props.messages.filter ((message) => {
-          return !!message;
-        });
-        const previousValidMessages = prevProps.messages.filter ((message) => {
-          return !!message;
-        });
+        const {messages, userIsViewingPastMessages} = this.props;
+        const previousMessages = prevProps.messages;
+
+        const lastMessage = messages [messages.length - 1];
+        const newMessagesHaveBeenReceieved = messages.length > previousMessages.length;
 
         // Scrolling to bottom shouldn't happen if the user is amidst scrolling
         // through message. We prevent that from happening by checking if
         // user is viewing past messages.
-        if ((currentValidMessages.length > previousValidMessages.length) &&
-          !this.props.userIsViewingPastMessages) {
+        //
+        // If, however, the new message was sent by user himself, we scroll to bottom.
+        if ((newMessagesHaveBeenReceieved &&
+            (!userIsViewingPastMessages || lastMessage.isCustomerMsg))) {
           this._scrollToBottom ();
         }
       },
