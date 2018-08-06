@@ -1,0 +1,23 @@
+Branches:
+feature/spa-support
+
+Changelog:
+Handle preIssue rejection
+Remove skipUser param from reset
+Fix issue with preIssue creation
+Fix props error due to wrong full screen value
+Skip resetting ls migrated key
+Change the names of show/hide button in demo page
+Add validation to check existance of elem in set style method
+Add new widget option to show close button
+Fix parent page info not available in reducer while setting the config
+Fix visibility/api issues when showLauncher is set to false
+Change hs meta file to add correct webchat version
+Change the version of webchat in major minor and patchset format
+Change logic to display webchat full screen
+Change the logic to show close button in view header
+Add support for unread message count event
+Add new apis to hide and show webchat
+Add validation to check for existence of body tag
+Add support to update helpshift config
+Fix : Validation for initial user message api
