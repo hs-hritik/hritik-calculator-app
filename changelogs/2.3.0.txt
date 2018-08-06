@@ -1,0 +1,5 @@
+Branches:
+feature/ie-button-focus
+
+Changelog:
+Remove focus from reply box before it unmounts
