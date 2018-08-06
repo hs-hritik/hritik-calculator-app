@@ -30,8 +30,8 @@ define ("components/chatView",
         onSuggestedFaqClick: PropTypes.func,
         showAgentNickname: PropTypes.bool,
         isTyping: PropTypes.bool,
-        browserIsMobile: PropTypes.bool,
-        onMinimizeConversation: PropTypes.func,
+        showCloseButton: PropTypes.bool.isRequired,
+        onMinimizeConversation: PropTypes.func.isRequired,
         onFilesDrop: PropTypes.func.isRequired,
         onRetryAttachmentClick: PropTypes.func.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
@@ -64,7 +64,7 @@ define ("components/chatView",
 
       render () {
         const {
-          browserIsMobile,
+          showCloseButton,
           onMinimizeConversation,
           text,
           viewStyles
@@ -73,7 +73,7 @@ define ("components/chatView",
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.chatViewHeader}
-                        showCloseBtn={browserIsMobile}
+                        showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />
             {this._renderViewContents ()}
           </div>

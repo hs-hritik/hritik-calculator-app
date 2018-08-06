@@ -139,15 +139,15 @@
       var uiConfigTextarea = document.querySelector("#uiConfigTextarea");
       uiConfigTextarea.value = JSON.stringify(DEFAULT_UI_CONFIG, null, 4);
 
-      // Add click event for show button
-      var showBtn = document.querySelector("#showBtn");
-      showBtn.addEventListener("click", function () {
+      // Add click event for open button
+      var openBtn = document.querySelector("#openBtn");
+      openBtn.addEventListener("click", function () {
         window.Helpshift("open");
       });
 
-      // Add click event for hide button
-      var hideBtn = document.querySelector("#hideBtn");
-      hideBtn.addEventListener("click", function () {
+      // Add click event for close button
+      var closeBtn = document.querySelector("#closeBtn");
+      closeBtn.addEventListener("click", function () {
         window.Helpshift("close");
       });
 
@@ -173,11 +173,11 @@
   <div>
     <h2>Helpshift Web Chat Demo</h2>
     <div class="row">
-      <button class="btn" id="showBtn">Show</button>
+      <button class="btn" id="openBtn">Open</button>
       <div>Opens the widget.</div>
     </div>
     <div class="row">
-      <button class="btn" id="hideBtn">Hide</button>
+      <button class="btn" id="closeBtn">Close</button>
       <div>Closes the widget.</div>
     </div>
     <div class="row">

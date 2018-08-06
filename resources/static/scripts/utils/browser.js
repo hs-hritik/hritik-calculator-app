@@ -13,17 +13,9 @@ function () {
    * @returns {Boolean}
    */
   const isMobile = () => {
-    const screenWidth = screen.width,
-          winWidth = window.innerWidth,
-          width = (winWidth && winWidth <= screenWidth) ? winWidth : screenWidth;
-
-    return (
-      width < 600 && (
-        ("ontouchstart" in window) ||
-        (window.DocumentTouch && document instanceof window.DocumentTouch) ||
-        (/IEMobile|XBLWP7/).test (navigator.userAgent)
-      )
-    );
+    // eslint-disable-next-line max-len
+    const isMobileRegEx = /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop|XBLWP7/i;
+    return isMobileRegEx.test (navigator.userAgent);
   };
 
   /**

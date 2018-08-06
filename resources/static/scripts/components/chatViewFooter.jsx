@@ -97,7 +97,6 @@ define ("components/chatViewFooter",
 
         const {
           footerIsActive,
-          browserIsMobile,
           allowFullScreen,
           userInput: {
             type,
@@ -132,7 +131,6 @@ define ("components/chatViewFooter",
 
         const footerClasses = classes ("hs-footer", {
           "hs-footer--active" : footerIsActive,
-          "hs-footer--mobile": browserIsMobile,
           "hs-footer--full-screen": allowFullScreen,
           "hs-footer--failure": failureConfig
         });
