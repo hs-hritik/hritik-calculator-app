@@ -14,7 +14,6 @@ define ("actions/appState",
     "constants/activeView",
     "helpers/xhr",
     "helpers/localStorage",
-    "helpers/prepareProcessXhrData",
     "helpers/audio",
     "helpers/proactiveChat",
     "helpers/ui",
@@ -32,10 +31,9 @@ define ("actions/appState",
     "extras/postSdkMessage"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
-    analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, prepareProcessXhrDataHelpers,
-    audioHelpers, proactiveChatHelpers, uiHelpers, analyticsHelpers, commonHelpers,
-    xhr, getUuid, store, chatViewActions, uiActions, batchActions, actionCreators,
-    browserUtils, dataTypeUtils, postSdkMessage) {
+    analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
+    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions,
+    uiActions, batchActions, actionCreators, browserUtils, dataTypeUtils, postSdkMessage) {
     "use strict";
 
     const SKIP_PLATFORM_ID = true;
@@ -43,7 +41,8 @@ define ("actions/appState",
     const {
       ANON_USER_RESET_TIMEOUT,
       TRIGGER,
-      ISSUE_STATE_RESET
+      ISSUE_STATE_RESET,
+      APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
 
     const {
@@ -57,8 +56,6 @@ define ("actions/appState",
       SHADES
     } = UI_CONFIG_CONSTANTS;
     const {EVENT} = analyticsConstants;
-
-    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     const isCssVarSupported = (window.CSS && window.CSS.supports &&
                                window.CSS.supports ("--fake-var", 0));
@@ -182,8 +179,6 @@ define ("actions/appState",
      * - Clear localstorage.
      * - Minimize widget if options.minimizeMessenger is true.
      * @param {Object} [options]
-     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                  By default, user related data will be reset.
      * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
      *                  chat related data or not. By default, they would NOT be reset.
      * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the widget or not.
@@ -196,7 +191,6 @@ define ("actions/appState",
         dispatch (actionCreators.reset ());
         postSdkMessage.reset ();
         lsHelpers.reset ({
-          skipUser: options.skipUser,
           resetProactiveChat: options.resetProactiveChat
         });
 
@@ -426,12 +420,14 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set webchat is live
+     * Action to set app reset trigger
+     * @param {String} value - value of reset trigger
      * @returns {Object} - Action
      */
-    const setWebChatIsLive = () => {
+    const setAppResetTrigger = (value) => {
       return {
-        type: ACTION_TYPES.SET_WEB_CHAT_IS_LIVE
+        type: ACTION_TYPES.SET_APP_RESET_TRIGGER,
+        value
       };
     };
 
@@ -454,22 +450,42 @@ define ("actions/appState",
         const {
           appState: {
             issueExists,
-            webChatIsLive
+            appResetTrigger,
+            minimized
           }
         } = getState ();
+        const widgetIsOpen = !minimized;
 
-        // If atleast one issue exists on backend and app is not live (first page load)
-        // then start the poller. (poller will check for issue state)
-        // Else if the appLive then start a new conversation
-        // This control flow will be invoked when user clicks on 'start new
-        // conversation', reset is called, config will be fetched and app will be live
-        if (issueExists && !webChatIsLive) {
-          chatViewActions.startPollingForMessages ();
-        } else if (webChatIsLive) {
+        // If atleast one issue exists on backend then start the poller.
+        // (poller will check for issue state)
+        // Else start a new conversation by creating new preIssue.
+
+        // App reset trigger is used to determine way by which app has been reset.
+        // We have to handle app reset scenarios differently.
+        // If app reset is triggered by
+        // 1. preIssue reset conditions and widget is open
+        //    OR
+        // 2. clicking start new conversation button
+        //    OR
+        // 3. update helpshift config api and widget is open and issue does not
+        //    exist i.e. new user
+        // Then explicitly create a new preIssue.
+        // OR
+        // If issue exists for a user, then start the poller.
+        if (
+          (appResetTrigger === APP_RESET_TRIGGER.PRE_ISSUE_RESET && widgetIsOpen) ||
+          (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) ||
+          (appResetTrigger === APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API &&
+           widgetIsOpen && !issueExists)
+        ) {
           startNewConversation ();
+        } else if (issueExists) {
+          chatViewActions.startPollingForMessages ();
         }
 
-        dispatch (setWebChatIsLive ());
+        // The reset trigger is reset to its default value once appropriate
+        // action is performed.
+        dispatch (setAppResetTrigger (APP_RESET_TRIGGER.INITIAL));
       }
     };
 
@@ -592,16 +608,18 @@ define ("actions/appState",
     const getClientWmConfig = () => {
       const {
         appState: {
-          browserIsMobile,
-          wcEnabled
+          wcEnabled,
+          sdkConfigOptions: {
+            fullScreen
+          }
         }
       } = store.getState ();
       const hideWidget = commonHelpers.isWidgetHiddenOutOfBusinessHours ();
 
       return {
         widgetEnabled: wcEnabled && !hideWidget,
-        browserIsMobile: browserIsMobile,
-        cssConfig: getLauncherCssConfig ()
+        cssConfig: getLauncherCssConfig (),
+        fullScreen
       };
     };
 
@@ -807,22 +825,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to close the conversation
-     * @returns {Object} - Action
-     */
-    const closeConversation = () => {
-      return (dispatch) => {
-        dispatch (reset ({
-          skipUser: true,
-          minimizeMessenger: true
-        }));
-
-        // Fire event of chat end
-        postSdkMessage.chatEndEvent ();
-      };
-    };
-
-    /**
      * Action to replace the cifs
      * @param {Object} cif - data of cif
      * @returns {Object} - Action
@@ -835,16 +837,17 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set metadata.
-     * @param {Object} metadata
+     * Action to set parent (client) page's data - title, url, and origin
+     * @param {Object} parentPageInfo - Parent page's data
+     * @param {string} [parentPageInfo.title] - Title of the parent page
+     * @param {string} [parentPageInfo.url] - URL of the parent page
+     * @param {string} [parentPageInfo.origin] - Origin of the parent page
      * @returns {Object} - Action
      */
-    const setMetadata = (parentPageInfo) => {
-      const metadata = getPreparedDeviceInfo (parentPageInfo);
-
+    const setParentPageInfo = (parentPageInfo) => {
       return {
-        type: ACTION_TYPES.SET_METADATA,
-        metadata
+        type: ACTION_TYPES.SET_PARENT_PAGE_INFO,
+        parentPageInfo
       };
     };
 
@@ -915,11 +918,10 @@ define ("actions/appState",
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),
           onEnd: () => {
+            dispatch (setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET));
             // In both the cases (success and failure), we'll start with a new
             // conversation for the end user.
-            dispatch (reset ({
-              skipUser: true
-            }));
+            dispatch (reset ());
           }
         });
       };
@@ -934,13 +936,13 @@ define ("actions/appState",
       reset,
       setInitialUserMsg,
       startConversation,
-      closeConversation,
       replaceCif,
-      setMetadata,
+      setParentPageInfo,
       setProactiveChatRules,
       executeProactiveChatRules,
       updateStyles,
       resetPreIssue,
-      setConversationStarted
+      setConversationStarted,
+      setAppResetTrigger
     };
   });

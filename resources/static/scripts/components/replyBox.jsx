@@ -7,9 +7,10 @@
 define ("components/replyBox",
   [
     "constants/keyCodes",
+    "gunpowder/utils/object",
     "gunpowder/widgets/textareaAutosize"
   ],
-  function (KEY_CODES, TextareaAutosize) {
+  function (KEY_CODES, objectUtils, TextareaAutosize) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -105,6 +106,21 @@ define ("components/replyBox",
         const browserIsNotMobile = !this.props.browserIsMobile;
         if ((messageIsAdded || widgetIsOpened) && browserIsNotMobile) {
           this._textAreaRef.focus ();
+        }
+      },
+
+      componentWillUnmount () {
+        // In IE 11, the reply box focus remains visible even after this component
+        // unmounts resulting in a visible cursor over the other input buttons.
+        // This makes the buttons of the options input un-clickable. So, we are
+        // going to remove the focus from the reply box before it unmounts.
+        // `this._textAreaRef` is a reference to reply box component. Reply box
+        // component internally has reference to actual text area element and is
+        // saved in property `ta`.
+        if (objectUtils.getIn (this._textAreaRef, ["refs", "ta"])) {
+          if (typeof this._textAreaRef.refs.ta.blur === "function") {
+            this._textAreaRef.refs.ta.blur ();
+          }
         }
       }
     });

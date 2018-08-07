@@ -5,7 +5,8 @@
  */
 
 define ("utils/postMessage",
-  function () {
+  ["store"],
+  function (store) {
     "use strict";
 
     /**
@@ -14,9 +15,17 @@ define ("utils/postMessage",
      * @param {object} [data] - data for the message.
      */
     return (type, data) => {
+      const {
+        appState: {
+          parentPageInfo: {
+            origin: parentPageOrigin
+          }
+        }
+      } = store.getState ();
+
       window.parent.postMessage (JSON.stringify ({
         type,
         data
-      }), "*");
+      }), parentPageOrigin || "*");
     };
   });

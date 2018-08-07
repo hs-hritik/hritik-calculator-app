@@ -22,8 +22,10 @@ define ("components/faqView",
         title: PropTypes.string,
         body: PropTypes.string,
         loading: PropTypes.bool,
+        showCloseButton: PropTypes.bool.isRequired,
         errorMsg: PropTypes.string,
         onBackBtnClick: PropTypes.func.isRequired,
+        onMinimizeConversation: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           faqViewHeader: PropTypes.string.isRequired
         }).isRequired,
@@ -33,12 +35,20 @@ define ("components/faqView",
       },
 
       render () {
-        const {text, onBackBtnClick, viewStyles} = this.props;
+        const {
+          text,
+          onBackBtnClick,
+          viewStyles,
+          showCloseButton,
+          onMinimizeConversation
+        } = this.props;
 
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.faqViewHeader}
+                        showCloseBtn={showCloseButton}
                         showBackBtn={true}
+                        onCloseBtnClick={onMinimizeConversation}
                         onBackBtnClick={onBackBtnClick} />
             {this._renderViewContents ()}
           </div>

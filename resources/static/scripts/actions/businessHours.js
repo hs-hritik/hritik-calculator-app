@@ -10,16 +10,18 @@ define ("actions/businessHours",
     "constants/routes",
     "actions/batch",
     "helpers/xhr",
+    "helpers/prepareProcessXhrData",
     "gunpowder/utils/schema",
     "gunpowder/utils/object",
     "utils/browser",
     "utils/upload"
   ],
-  function (ACTION_TYPES, routes, batchActions, xhrHelpers, schema,
+  function (ACTION_TYPES, routes, batchActions, xhrHelpers, prepareProcessXhrDataHelpers, schema,
     objectUtils, browserUtils, upload) {
     "use strict";
 
     const {Input} = schema;
+    const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
     /**
      * Action to set business hours contact form details
@@ -110,7 +112,6 @@ define ("actions/businessHours",
         const {
           appState: {
             domain,
-            metadata,
             tags,
             cif,
             fullPrivacyEnabled,
@@ -142,7 +143,7 @@ define ("actions/businessHours",
         };
 
         const meta = {
-          device_info: metadata
+          device_info: getPreparedDeviceInfo ()
         };
 
         if (tags) {

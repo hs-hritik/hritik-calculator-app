@@ -8,17 +8,70 @@ define ("reducers/appState",
   [
     "constants/actionTypes",
     "constants/activeView",
-    "constants/appState",
-    "gunpowder/utils/object"
+    "constants/appState"
   ],
-  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, objUtils) {
+  function (ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS) {
     "use strict";
 
     const update = React.addons.update;
     const {
       ISSUE_STATE,
-      ISSUE_TYPE
+      ISSUE_TYPE,
+      APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
+
+    // @NOTE -
+    // 1. The meaning of edge is different for different widget positions.
+    //    In case of widget position "bottom-*" the edge would be screen's bottom,
+    //    whereas for position "top-*" it would be screen's top.
+    //    But the value remains the same
+    // 2. Normal mode = webchat with default width and height.
+
+    // Width padding
+    const HORIZONTAL_PADDING_FROM_EDGE = 28;
+    // Original width of width
+    const WIDGET_WIDTH = 340;
+    // Total width = Original width + width padding
+    const TOTAL_WIDGET_WIDTH = WIDGET_WIDTH + HORIZONTAL_PADDING_FROM_EDGE;
+    // Height padding
+    const VERTICAL_PADDING_FROM_EDGE = 100;
+    // Minimum height of widget after resizing
+    const MIN_WIDGET_HEIGHT = 320;
+    // Total height = Minimum height + height padding
+    const TOTAL_WIDGET_HEIGHT = MIN_WIDGET_HEIGHT + VERTICAL_PADDING_FROM_EDGE;
+    // Viewable width factor is a multipler that decides how much viewable screen
+    // size should be in order to display widget in normal mode.
+    // Example - The screen size should be minimum 1.5 times widget width in order
+    // to display widget in normal mode. If not, display full screen.
+    const VIEWABLE_WIDTH_FACTOR = 1.5;
+
+    /**
+     * Predicate to return whether widget should be full screen of not
+     * Full screen is computed by two ways :
+     * 1. According to parent page's screen size OR
+     * 2. Developer passed full screen option in widget options
+     * @param {Object} config
+     * @param {Object} config.widgetOptions - widget options passed by devs
+     * @param {Boolean} config.widgetOptions.fullScreen - dev option for full screen
+     * @param {Object} config.screenSize - screen sizes
+     * @param {Number} config.screenSize.width - width of parent page
+     * @param {Number} config.screenSize.height - height of parent page
+     * @returns {Boolean} - whether to make widget full screen
+     */
+    const _shouldWebChatBeFullScreen = (config) => {
+      const {
+        widgetOptions,
+        screenSize: {
+          width,
+          height
+        }
+      } = config;
+
+      return (
+        (height < TOTAL_WIDGET_HEIGHT || width < (TOTAL_WIDGET_WIDTH * VIEWABLE_WIDTH_FACTOR)) ||
+        !!(widgetOptions && widgetOptions.fullScreen)
+      );
+    };
 
     const INITIAL_STATE = {
       wcEnabled: false,
@@ -50,12 +103,10 @@ define ("reducers/appState",
       activeIssueId: "",
       internalIssueId: "",
 
-      // Used to start a new conversation when user clicks on start new conversation
-      // The value is not set to default on 'reset', rather retained throughout the
-      // application.
-      // Only on page refresh, the value will be false and when we initialize the
-      // conversation, we set it to true.
-      webChatIsLive: false,
+      // App reset triggers represent ways by which app can be reset i.e. reset
+      // method will be called. The reset method can be called from multiple
+      // places - preIssue reset, api, start new conversation
+      appResetTrigger: APP_RESET_TRIGGER.INITIAL,
       featuresEnabled: {
         greeting: true,
         csatBot: false,
@@ -67,11 +118,14 @@ define ("reducers/appState",
       browserIsMobile: false,
       tags: [],
       cif: {},
-      metadata: {},
+      parentPageInfo: {},
       sdkConfigOptions: {
         fullScreen: false,
-        initialUserMessage: ""
+        showLauncher: true,
+        initialUserMessage: "",
+        showCloseButton: true
       },
+      showHeaderCloseButton: true,
       conversationStarted: false,
       proactiveChatRules: [],
       analytics: {
@@ -118,9 +172,9 @@ define ("reducers/appState",
             issueExists: {$set: config.issue_exists}
           });
 
-        case ACTION_TYPES.SET_WEB_CHAT_IS_LIVE:
+        case ACTION_TYPES.SET_APP_RESET_TRIGGER:
           return update (state, {
-            webChatIsLive: {$set: true}
+            appResetTrigger: {$set: action.value}
           });
 
         case ACTION_TYPES.SET_LANGUAGE:
@@ -149,9 +203,28 @@ define ("reducers/appState",
               userEmail,
               userAuthToken,
               tags,
-              fullPrivacy
+              fullPrivacy,
+              widgetOptions = {}
             }
           } = action;
+
+          const fullScreen = _shouldWebChatBeFullScreen ({
+            screenSize: {
+              width: state.parentPageInfo.width,
+              height: state.parentPageInfo.height
+            },
+            widgetOptions
+          });
+          let showCloseButton = state.sdkConfigOptions.showCloseButton;
+          let showLauncher = state.sdkConfigOptions.showLauncher;
+
+          if (widgetOptions.hasOwnProperty ("showCloseButton")) {
+            showCloseButton = widgetOptions.showCloseButton;
+          }
+
+          if (widgetOptions.hasOwnProperty ("showLauncher")) {
+            showLauncher = widgetOptions.showLauncher;
+          }
 
           return update (state, {
             platformId: {$set: platformId || ""},
@@ -164,12 +237,18 @@ define ("reducers/appState",
             tags: {$set: tags || []},
             fullPrivacyEnabled: {$set: fullPrivacy || false},
             sdkConfigOptions: {
-              fullScreen: {
-                $set: objUtils.getIn (
-                  action, ["config", "widgetOptions", "fullScreen"]
-                ) || false
-              }
-            }
+              fullScreen: {$set: fullScreen},
+              showCloseButton: {$set: showCloseButton},
+              showLauncher: {$set: showLauncher}
+            },
+            // We need to show header close button in following cases
+            // 1] showLauncher = true && fullScreen = true && showCloseButton = true
+            //    OR
+            // 2] showLauncher = false && showCloseButton = true
+            // @NOTE - These are optimized conditions. For more info refer SPA
+            // config options doc :- https://tinyurl.com/yafecdkv
+            showHeaderCloseButton: showLauncher ? {$set: showCloseButton && fullScreen} :
+                                   {$set: showCloseButton}
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
@@ -241,9 +320,9 @@ define ("reducers/appState",
             cif: {$set: action.cif}
           });
 
-        case ACTION_TYPES.SET_METADATA:
+        case ACTION_TYPES.SET_PARENT_PAGE_INFO:
           return update (state, {
-            metadata: {$set: action.metadata}
+            parentPageInfo: {$set: action.parentPageInfo}
           });
 
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
@@ -290,10 +369,10 @@ define ("reducers/appState",
 
         case ACTION_TYPES.RESET:
           // Retain the cif values set through the api
-          // and webChatIsLive flag
+          // and appResetTrigger
           return update (INITIAL_STATE, {
             cif: {$set: state.cif},
-            webChatIsLive: {$set: state.webChatIsLive},
+            appResetTrigger: {$set: state.appResetTrigger},
             minimized: {$set: state.minimized}
           });
 

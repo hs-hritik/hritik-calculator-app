@@ -11,28 +11,26 @@ define ("extras/api",
     "constants/appState",
     "constants/activeView",
     "constants/analytics",
-    "extras/postSdkMessage",
     "actions/appState",
     "actions/chatView",
-    "actions/businessHours",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
     "components/app",
     "helpers/analytics",
-    "helpers/common",
-    "helpers/localStorage"
+    "helpers/localStorage",
+    "gunpowder/utils/localStorage"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
-    postSdkMessage, appStateActions, chatViewActions, businessHoursActions,
-    actionCreators, csatViewActions, uiActions, app, analyticsHelpers, commonHelpers,
-    lsHelpers) {
+    appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
+    app, analyticsHelpers, lsHelpers, lsUtils) {
     "use strict";
 
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
-      PRE_ISSUE_RESET_TIMEOUT
+      PRE_ISSUE_RESET_TIMEOUT,
+      APP_RESET_TRIGGER
     } = APP_STATE_CONSTANTS;
 
     const ISSUE_CLOSED_STATES = [
@@ -41,6 +39,11 @@ define ("extras/api",
       ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
     ];
     const SKIP_REVIEW_COMMENTS = true;
+    const {
+      LS_KEYS: {
+        LAST_ACTIVITY_TIME: LAST_ACTIVITY_TIME_LS_VAL
+      }
+    } = lsHelpers;
 
     const {EVENT} = analyticsConstants;
 
@@ -79,15 +82,43 @@ define ("extras/api",
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
      * @param {Object} data.parentPageInfo - Data (title, body) of the client website
      * @param {string} data.trigger - The source that triggered setting the config
+     * @param {string} data.lsDataToMigrate - localStorage data from the old iframe to be migrated
      */
     const setConfig = (data) => {
-      store.dispatch (appStateActions.setClientConfig (data.clientConfig));
-      store.dispatch (appStateActions.setMetadata (data.parentPageInfo));
-      store.dispatch (appStateActions.setDeviceId ());
-      store.dispatch (appStateActions.setAnonUserId (data.clientConfig.userId));
-      store.dispatch (appStateActions.setWmConfig ({
-        trigger: data.trigger,
-        helpshiftConfig: data.clientConfig
+      const {dispatch} = store;
+      const {
+        clientConfig,
+        parentPageInfo,
+        trigger,
+        lsDataToMigrate
+      } = data;
+      const {
+        userId
+      } = clientConfig;
+
+      // Set localStorage data to be migrated to web chat's localStorage
+      // Set data in the localStorage only if it hasn't happened yet.
+      if (!lsHelpers.getLsMigrated () && (lsDataToMigrate && typeof lsDataToMigrate === "object")) {
+        for (const lsKey in lsDataToMigrate) {
+          // Do not migrate last activity time because it results in preIssue reset.
+          // This flow is going to be removed after we are sure migration logic
+          // is not running for any user.
+          if (lsDataToMigrate.hasOwnProperty (lsKey) && lsKey !== LAST_ACTIVITY_TIME_LS_VAL) {
+            lsUtils.setItem (lsKey, lsDataToMigrate [lsKey]);
+          }
+        }
+
+        // Set a flag in the localStorage denoting the migration.
+        lsHelpers.setLsMigrated ();
+      }
+
+      dispatch (appStateActions.setParentPageInfo (parentPageInfo));
+      dispatch (appStateActions.setClientConfig (clientConfig));
+      dispatch (appStateActions.setDeviceId ());
+      dispatch (appStateActions.setAnonUserId (userId));
+      dispatch (appStateActions.setWmConfig ({
+        trigger,
+        helpshiftConfig: clientConfig
       }));
     };
 
@@ -130,7 +161,9 @@ define ("extras/api",
         appState: {
           activeView,
           conversationStarted,
-          issueState
+          appResetTrigger,
+          issueState,
+          issueType
         },
         chatView: {
           unreadMessageIds
@@ -148,13 +181,32 @@ define ("extras/api",
           store.dispatch (chatViewActions.markMessagesSeen ());
         }
 
+        const preIssueIsRejected = (
+          issueType === ISSUE_TYPE.PRE_ISSUE &&
+          isIssueClosed (issueState)
+        );
+        const resetTriggerIsDefault = (appResetTrigger === APP_RESET_TRIGGER.INITIAL);
         // When the end user opens the widget, check if preIssue reset
         // is applicable and if so, handle it. Else, start a conversation, if it
         // hasn't started yet.
         if (_shouldPreIssueReset ()) {
           store.dispatch (appStateActions.resetPreIssue ());
         } else if (!conversationStarted) {
-          store.dispatch (appStateActions.startConversation ());
+          // This is to handle special case where we get rejected preIssue on
+          // first page load. We will set app trigger as pre issue reset and call
+          // reset method which will create a new preIssue.
+          // NOTE - Resetting preIssue and creating new preIssue should happen in
+          // sequence, but these are two different api calls. So if we call reset
+          // preIssue and the user closes the tab or browser, create new preIssue
+          // request wont be fired and the user will keep seeing reject preIssue.
+          if ((preIssueIsRejected && resetTriggerIsDefault)) {
+            store.dispatch (
+              appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET)
+            );
+            store.dispatch (appStateActions.reset ());
+          } else {
+            store.dispatch (appStateActions.startConversation ());
+          }
         }
 
         // Track the widget open event
@@ -211,6 +263,12 @@ define ("extras/api",
           break;
         case EVENT_TYPES.CMD_SET_FULL_PRIVACY:
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
+          break;
+        case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
+          store.dispatch (
+            appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API)
+          );
+          store.dispatch (appStateActions.reset ());
           break;
       }
     };
