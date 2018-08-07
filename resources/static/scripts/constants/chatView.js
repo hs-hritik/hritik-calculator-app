@@ -55,7 +55,7 @@ define ("constants/chatView",
     // The number of failures after which we assume that there is some problem with the poller.
     const MAX_POLLER_FAILURES_ALLOWED = 2;
 
-    const USER_REDACTION_ERR_MSG = "NOT_FOUND";
+    const USER_REDACTION_ERR_MSG = "User Not Found";
     const USER_REDACTION_ERR_STATUS_CODE = 404;
 
     return {

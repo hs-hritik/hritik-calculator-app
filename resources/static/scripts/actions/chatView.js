@@ -1431,8 +1431,15 @@ define ("actions/chatView",
             // @TODO - Ideally, this exception should be logged to server.
           }
         },
-        onFailure: (response, statusCode) => {
-          // @TODO: Need to confirm the exact message and key from the backend.
+        onFailure: (request, statusCode) => {
+          let response;
+
+          try {
+            response = JSON.parse (request.response);
+          } catch (e) {
+            return;
+          }
+
           if (response.msg === USER_REDACTION_ERR_MSG &&
             statusCode === USER_REDACTION_ERR_STATUS_CODE) {
             dispatch (setUserIsRedacted ());
