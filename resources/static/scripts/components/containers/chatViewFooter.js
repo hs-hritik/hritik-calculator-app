@@ -13,14 +13,17 @@ define ("components/containers/chatViewFooter",
     "actions/csatView",
     "constants/activeView",
     "constants/chatView",
+    "constants/appState",
     "helpers/common",
     "extras/postSdkMessage"
   ],
   function (ChatViewFooter, chatViewActions, actionCreators, appStateActions,
-    csatViewActions, ACTIVE_VIEW, chatViewConstants, commonHelpers, postSdkMessage) {
+    csatViewActions, ACTIVE_VIEW, chatViewConstants, appStateConstants,
+    commonHelpers, postSdkMessage) {
     "use strict";
 
     const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
+    const {APP_RESET_TRIGGER} = appStateConstants;
 
     const mapStateToProps = (state) => {
       const {
@@ -105,9 +108,12 @@ define ("components/containers/chatViewFooter",
           // call getConfig. Once getConfig is called, it will initialize the
           // conversation and will take care of creating new preIssue.
           // Ref :- App state actions -> initializeConversation
-          dispatch (appStateActions.reset ({
-            skipUser: true
-          }));
+          dispatch (
+            appStateActions.setAppResetTrigger (
+              APP_RESET_TRIGGER.START_NEW_CONVERSATION
+            )
+          );
+          dispatch (appStateActions.reset ());
           dispatch (actionCreators.toggleChatViewLoading (true));
         },
         onSkipUserInput: () => {

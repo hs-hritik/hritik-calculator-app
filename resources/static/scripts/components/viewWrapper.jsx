@@ -23,7 +23,7 @@ define ("components/viewWrapper",
       displayName: "ViewWrapper",
       propTypes: {
         activeView: PropTypes.string.isRequired,
-        browserIsMobile: PropTypes.bool,
+        showCloseButton: PropTypes.bool.isRequired,
         allowFullScreen: PropTypes.bool,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
@@ -39,11 +39,17 @@ define ("components/viewWrapper",
        * Render the active view component.
        */
       _renderActiveViewComponent () {
+        const {
+          allowFullScreen,
+          viewStyles,
+          showCloseButton
+        } = this.props;
+
         const commonProps = {
-          browserIsMobile: this.props.browserIsMobile,
-          allowFullScreen: this.props.allowFullScreen,
+          allowFullScreen,
           onMinimizeConversation: this._onMinimizeConversation,
-          viewStyles: this.props.viewStyles
+          viewStyles,
+          showCloseButton
         };
 
         switch (this.props.activeView) {

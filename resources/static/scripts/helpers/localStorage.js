@@ -27,6 +27,7 @@ define ("helpers/localStorage",
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
+    const LS_MIGRATED_KEY = "LS_MIGRATED";
 
     /**
      * A helper function to check if a localstorage key should be
@@ -35,19 +36,20 @@ define ("helpers/localStorage",
      * The DEVICE_ID key should never be reset. We use DEVICE_ID to
      * identify a browser (the device). Its value should remain the
      * same irrespective of who (the user) is using it.
+     * Also, the LS_MIGRATED_KEY should not be reset because it's used to
+     * determine whether ls migration has happened for a browser.
      *
      * @param {string} key
      * @param {Object} [options]
-     * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-     *                  By default, user related data will be reset.
      * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
      *                  related data. By default, they won't be reset.
      * @returns {boolean}
      */
     const _shouldKeyReset = (key, options) => {
-      return !(options.skipUser && (USER_KEYS.indexOf (key) !== -1)) &&
+      return !(USER_KEYS.indexOf (key) !== -1) &&
              !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1)) &&
-             !(key === DEVICE_ID_KEY);
+             !(key === DEVICE_ID_KEY) &&
+             !(key === LS_MIGRATED_KEY);
     };
 
     /**
@@ -201,6 +203,7 @@ define ("helpers/localStorage",
     const getLsMigrated = () => !!lsUtils.getItem (KEYS.LS_MIGRATED);
 
     return {
+      LS_KEYS: KEYS,
       getUserId,
       setUserId,
       removeUserId,

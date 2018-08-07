@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2";
+        PATH = "/html/index.html?v=2.4.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -46,16 +46,24 @@
     unreadCount: 0,
     widgetOptions: {
       showLauncher: true,
+      showCloseButton: true,
       fullScreen: false,
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
     apiEvents: [],
+    webChatVisibility: {
+      launcher: "block",
+      widget: "none",
+      hiddenByApi: false
+    },
     lsDataToMigrate: null
   };
 
   const INIT = "init";
   const FORCE_UPDATE_STYLES = true;
+  // Time interval to wait for existence of document's body (in ms)
+  const BODY_WAIT_TIMER = 500;
 
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
@@ -76,11 +84,16 @@
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
     CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
+    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
     MIGRATE_LS: "MIGRATE_LS"
   };
 
+  /**
+   * The name of the events that are exposed to the developers
+   */
   const SUPPORTED_EVENTS = {
-    CHAT_END: "chatEnd"
+    CHAT_END: "chatEnd",
+    NEW_UNREAD_MESSAGES: "newUnreadMessages"
   };
 
   // Errors message strings
@@ -145,21 +158,6 @@
     "overflow":"hidden",
     "transform": "translate3d(0,0,0)",
     "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
-  };
-
-  const MESSENGER_IFRAME_MOBILE_STYLES = {
-    "position": "fixed",
-    "top": "0px",
-    "left": "0px",
-    "bottom": "0px",
-    "right": "0px",
-    "width": "100%",
-    "height": "100%",
-    "border": "none",
-    "margin": 0,
-    "padding": 0,
-    "overflow": "hidden",
-    "z-index": "9999999"
   };
 
   const MESSENGER_IFRAME_FULL_SCREEN_STYLES = {
@@ -231,7 +229,7 @@
 
   // Reference for web sdk iframe.
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
-      launcherButton, pidMigratorWebChatIframe;
+      launcherButton, bodyTimer, pidMigratorWebChatIframe;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
@@ -239,7 +237,9 @@
   const parentPageInfo = {
     title: doc.title,
     url: win.location.href,
-    origin: win.location.origin
+    origin: win.location.origin,
+    width: Math.max (doc.documentElement.clientWidth, win.innerWidth || 0),
+    height: Math.max (doc.documentElement.clientHeight, win.innerHeight || 0)
   };
 
   /**
@@ -248,6 +248,9 @@
    * @param {Object} styles - key-value pair of styles to be applied.
    */
   const setStyle = (el, styles) => {
+    if (!el) {
+      return;
+    }
     for (const key in styles) {
       if (styles.hasOwnProperty (key)) {
         el.style [key] = styles [key];
@@ -446,10 +449,21 @@
 
     if (currentlyMinimized) {
       webSdkIframe.style.display = "block";
+      state.webChatVisibility.widget = "block";
       updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
     } else {
       webSdkIframe.style.display = "none";
+      state.webChatVisibility.widget = "none";
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
+    }
+
+    // @NOTE - More info on SPA behavior :- https://tinyurl.com/yafecdkv
+    // Toggle the visibility of launcher button when showCloseButton is set to false
+    if (state.widgetOptions.showLauncher && !state.widgetOptions.showCloseButton) {
+      // When the widget is opened, hide the launcher
+      // If the widget is hidden, show the launcher again
+      launcherBtn.style.display = state.webChatVisibility.widget === "block" ?
+                                  "none" : "block";
     }
 
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
@@ -544,6 +558,20 @@
   };
 
   /**
+   * Function to save required config options in local state
+   * After config is processed, widget sends computed values to messenger js and
+   * we have to save those latest computed values in state.
+   * @param {Object} config
+   */
+  const saveConfigOptionsInState = (config) => {
+    // CSS config options are computed by widget iframe depending on uiConfig
+    state.cssConfig = config.cssConfig;
+    // Full screen option is calculated by widget iframe depending on screens
+    // resolution
+    state.widgetOptions.fullScreen = config.fullScreen;
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
@@ -553,9 +581,7 @@
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
-    if (config.browserIsMobile) {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_MOBILE_STYLES);
-    } else if (state.widgetOptions.fullScreen) {
+    if (config.fullScreen) {
       setStyle (webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
@@ -586,8 +612,7 @@
       return;
     }
 
-    state.cssConfig = config.cssConfig;
-
+    saveConfigOptionsInState (config);
     updateIframeStyles (config);
 
     const launcherHidden = !state.widgetOptions.showLauncher;
@@ -728,6 +753,37 @@
   };
 
   /**
+   * Function to set default launcher visibility
+   * The default visibility of launcher is also dependant on showLauncher widget
+   * option passed by developers.
+   */
+  const setDefaultLauncherVisibility = () => {
+    state.webChatVisibility.launcher = state.widgetOptions.showLauncher ?
+                                       "block" : "none";
+  };
+
+  /**
+   * Function to update the widget (web chat iframe's) styles
+   */
+  const updateWidgetStyles = () => {
+    const {
+      widgetOptions: {
+        showLauncher,
+        showCloseButton
+      }
+    } = state;
+
+    // If show launcher is false or show close button is false then move the
+    // widget below its original position to have equal space from edge.
+    if (!showLauncher || !showCloseButton) {
+      // @NOTE - We are modifying the style in style constant as opposed to using
+      // setStyle method because the launcher is not present at this point in time.
+      // Also changing the constant will not have side effect as it expected behavior.
+      MESSENGER_IFRAME_STYLES.bottom = "28px";
+    }
+  };
+
+  /**
    * Process widget options and save them in state
    */
   const processWidgetOptions = () => {
@@ -735,6 +791,10 @@
 
     if (typeof options.showLauncher === "boolean") {
       state.widgetOptions.showLauncher = options.showLauncher;
+    }
+
+    if (typeof options.showCloseButton === "boolean") {
+      state.widgetOptions.showCloseButton = options.showCloseButton;
     }
 
     if (typeof options.fullScreen === "boolean") {
@@ -763,9 +823,22 @@
       const valueText = value ? " | Value = " + value : "";
       const infoText = " | Info = " + info;
 
-      /* eslint-disable */
+      /* eslint-disable no-console */
       console.error (prefix + setText + valueText + infoText);
-      /* eslint-enable */
+      /* eslint-enable no-console */
+    });
+  };
+
+  /**
+   * Function to find the event name in the event list and call its handler
+   * @param {String} eventName - Name of the event
+   * @param {Any} eventData - Data for the event
+   */
+  const callApiEventHandler = (eventName, eventData) => {
+    state.apiEvents.forEach ((apiEvent) => {
+      if (apiEvent.eventName === eventName) {
+        apiEvent.eventHandler (eventData);
+      }
     });
   };
 
@@ -774,6 +847,17 @@
    * Entry point for rendering iframe on the client page.
    */
   const init = () => {
+    // Check for existence of document body, if body is not present, wait and
+    // try again in sometime
+    if (!document || !document.body) {
+      bodyTimer = setTimeout (init, BODY_WAIT_TIMER);
+      return;
+    }
+
+    if (bodyTimer) {
+      clearTimeout (bodyTimer);
+    }
+
     // If browser features required to run web chat isn't available on this
     // browser OR
     // if a web chat iframe already exists on the host web page,
@@ -784,6 +868,9 @@
     }
 
     processWidgetOptions ();
+    updateWidgetStyles ();
+
+    setDefaultLauncherVisibility ();
 
     // Load the platform id migrator iframe. This will send localStorage data
     // back to this script, which would be sent to the new iframe (with truncated
@@ -864,6 +951,11 @@
         case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
           renderUnreadCount ();
+
+          // Call the event handle for new unread messages event.
+          callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
+            unreadCount: data.count
+          });
           break;
 
         case EVENT_TYPES.SDK_RESET:
@@ -875,11 +967,8 @@
           break;
 
         case EVENT_TYPES.SDK_EVENT_CHAT_END:
-          state.apiEvents.forEach ((apiEvent) => {
-            if (apiEvent.eventName === SUPPORTED_EVENTS.CHAT_END) {
-              apiEvent.eventHandler ();
-            }
-          });
+          // Call the event handler for chat end event.
+          callApiEventHandler (SUPPORTED_EVENTS.CHAT_END);
           break;
 
         case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
@@ -898,19 +987,62 @@
    * JS API to open/maximize/show the messenger widget
    */
   const open = () => {
-    toggleWebSdkIframe ({
-      minimized: false,
-      trigger: TRIGGER.API
-    });
+    if (!state.webChatVisibility.hiddenByApi) {
+      toggleWebSdkIframe ({
+        minimized: false,
+        trigger: TRIGGER.API
+      });
+    }
   };
 
   /**
    * JS API to close/minimize/hide the messenger widget
    */
   const close = () => {
-    toggleWebSdkIframe ({
-      minimized: true
-    });
+    if (!state.webChatVisibility.hiddenByApi) {
+      toggleWebSdkIframe ({
+        minimized: true
+      });
+    }
+  };
+
+  /**
+   * JS API to hide webchat
+   * This will hide the launcher and widget completely
+   *
+   * @NOTE - css visibility has nothing to do with this. Although the name is
+   * visibility, we are saving the display property in state.
+   */
+  const hide = () => {
+    // Save current visibility of webchat (launcher + widget) in state
+    // Check for showLauncher widget option as existence of launcher button is
+    // dependant on it
+    if (state.widgetOptions.showLauncher) {
+      state.webChatVisibility.launcher = launcherBtn.style.display;
+      launcherBtn.style.display = "none";
+    }
+
+    state.webChatVisibility.widget = webSdkIframe.style.display;
+    webSdkIframe.style.display = "none";
+
+    state.webChatVisibility.hiddenByApi = true;
+  };
+
+  /**
+   * JS API to show webchat
+   * This will restore the visibility of the launcher and widget
+   */
+  const show = () => {
+    // Restore the previous display properties of webchat (launcher + widget)
+    webSdkIframe.style.display = state.webChatVisibility.widget;
+
+    // Check for showLauncher widget option as existence of launcher button is
+    // dependant on it
+    if (state.widgetOptions.showLauncher) {
+      launcherBtn.style.display = state.webChatVisibility.launcher;
+    }
+
+    state.webChatVisibility.hiddenByApi = false;
   };
 
   /**
@@ -919,7 +1051,7 @@
    */
   const setInitialUserMessage = (message) => {
     // message should be non-empty string
-    if (message && (typeof message === "string")) {
+    if (typeof message === "string" && message.trim ()) {
       _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
         message,
         trigger: TRIGGER.API
@@ -1083,6 +1215,15 @@
     });
   };
 
+  /**
+   * JS API to update helpshift config
+   * This api will be called by the developers when they get the config data at
+   *  later point after the parent page is loaded.
+   */
+  const updateHelpshiftConfig = () => {
+    _postMessage (EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG);
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -1098,7 +1239,10 @@
     replaceCustomIssueFields,
     setProactiveChatRules,
     updateUiConfig,
-    setFullPrivacy
+    setFullPrivacy,
+    updateHelpshiftConfig,
+    hide,
+    show
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

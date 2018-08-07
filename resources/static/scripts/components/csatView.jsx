@@ -21,9 +21,9 @@ define ("components/csatView",
       propTypes: {
         rating: PropTypes.number.isRequired,
         review: PropTypes.string,
-        browserIsMobile: PropTypes.bool,
+        showCloseButton: PropTypes.bool.isRequired,
         allowFullScreen: PropTypes.bool,
-        onMinimizeConversation: PropTypes.func,
+        onMinimizeConversation: PropTypes.func.isRequired,
         onSubmitCsat: PropTypes.func.isRequired,
         onUpdateCsatRating: PropTypes.func.isRequired,
         onUpdateCsatReview: PropTypes.func.isRequired,
@@ -42,12 +42,17 @@ define ("components/csatView",
       },
 
       render () {
-        const {text, browserIsMobile, onMinimizeConversation, viewStyles} = this.props;
+        const {
+          text,
+          showCloseButton,
+          onMinimizeConversation,
+          viewStyles
+        } = this.props;
 
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.csatViewHeader}
-                        showCloseBtn={browserIsMobile}
+                        showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />
             <div className="hs-view__content">
               <div className="hs-csat">
@@ -101,7 +106,6 @@ define ("components/csatView",
         const {
           text,
           rating,
-          browserIsMobile,
           allowFullScreen,
           csatSaveInProgress
         } = this.props;
@@ -112,7 +116,6 @@ define ("components/csatView",
         const btnDisabled = (rating === 0) || csatSaveInProgress;
         const footerClasses = classes ("hs-footer",
           "hs-footer--center-items", {
-            "hs-footer--mobile": browserIsMobile,
             "hs-footer--full-screen": allowFullScreen
           }
         );

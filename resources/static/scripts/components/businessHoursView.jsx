@@ -39,7 +39,7 @@ define ("components/businessHoursView",
     return React.createClass ({
       displayName: "BusinessHoursView",
       propTypes: {
-        browserIsMobile: PropTypes.bool.isRequired,
+        showCloseButton: PropTypes.bool.isRequired,
         allowFullScreen: PropTypes.bool,
         text: PropTypes.shape ({
           closeConversationBtn: PropTypes.string.isRequired,
@@ -81,7 +81,7 @@ define ("components/businessHoursView",
       render () {
         const {
           text,
-          browserIsMobile,
+          showCloseButton,
           onMinimizeConversation,
           onFilesChange,
           contactFormDetails,
@@ -95,7 +95,7 @@ define ("components/businessHoursView",
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.businessHoursViewHeader}
-                        showCloseBtn={browserIsMobile}
+                        showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />
               <div className="hs-view__content">
                 <DnDWrapper dragInfoText={text.dndInfoText}
@@ -179,7 +179,6 @@ define ("components/businessHoursView",
           onMinimizeConversation,
           contactFormDisabled,
           offlineBehaviour,
-          browserIsMobile,
           allowFullScreen
         } = this.props;
 
@@ -195,7 +194,6 @@ define ("components/businessHoursView",
 
         const footerClasses = classes ("hs-footer",
         "hs-footer--center-items", {
-          "hs-footer--mobile": browserIsMobile,
           "hs-footer--full-screen": allowFullScreen
         });
 
