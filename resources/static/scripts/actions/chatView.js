@@ -754,6 +754,7 @@ define ("actions/chatView",
           issueCursor
         },
         appState: {
+          fullPrivacyEnabled,
           featuresEnabled: {
             conversationHistory: conversationHistoryEnabled
           }
@@ -768,7 +769,7 @@ define ("actions/chatView",
 
       messages = createLinearMessageList (issues, {
         lastIssueId: null,
-        conversationHistoryEnabled,
+        conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
         hasOlderMsgs
       });
 
@@ -1129,6 +1130,7 @@ define ("actions/chatView",
       const {
         appState: {
           domain,
+          fullPrivacyEnabled,
           featuresEnabled: {
             conversationHistory: conversationHistoryEnabled
           }
@@ -1184,11 +1186,11 @@ define ("actions/chatView",
           const linearMsgs = createLinearMessageList (issues, {
             lastGroupId: preIssueId,
             hasOlderMsgs,
-            conversationHistoryEnabled
+            conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled
           });
 
           handleSettingLatestConversationLoadStatus ({
-            conversationHistoryEnabled,
+            conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
             issues
           });
 
@@ -1240,6 +1242,7 @@ define ("actions/chatView",
       const {
         appState: {
           domain,
+          fullPrivacyEnabled,
           featuresEnabled: {
             conversationHistory: conversationHistoryEnabled
           },
@@ -1298,10 +1301,10 @@ define ("actions/chatView",
               return;
             }
 
-            // Set the flag only in the first fetch call
+              // Set the flag only in the first fetch call
             if (!issueCursor) {
               handleSettingLatestConversationLoadStatus ({
-                conversationHistoryEnabled,
+                conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
                 issues
               });
             }
