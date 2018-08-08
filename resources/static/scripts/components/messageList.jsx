@@ -342,8 +342,8 @@ define ("components/messageList",
 
         const currentLastMessage = messages [messages.length - 1];
         const prevLastMessage = previousMessages [previousMessages.length - 1];
-        const newUserMessageIsAdded = (currentLastMessage.isCustomerMsg &&
-                                       currentLastMessage.id !== prevLastMessage.id);
+        const newUserMessageIsAdded = currentLastMessage &&
+          (currentLastMessage.isCustomerMsg && currentLastMessage.id !== prevLastMessage.id);
 
         // Scrolling to bottom shouldn't happen if
         // 1. The user is amidst scrolling through message.
