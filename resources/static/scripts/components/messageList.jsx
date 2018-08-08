@@ -30,13 +30,16 @@ define ("components/messageList",
 
     // After how much scrolling to the top, will the jump
     // to latest button be shown?
-    const JUMP_LATEST_BTN_SCROLL_THRESHOLD = 200;
+    //
+    // Threshold = Height of two message (57 * 2) +
+    // branding height (42) + message list bottom padding (16).
+    const JUMP_LATEST_BTN_SCROLL_THRESHOLD = 172;
 
     // We are using EaseInQuad function which ensures that scrolling
     // animation is smooth. Ref: https://gist.github.com/gre/1650294
     //
-    // This variable is to ensure that it starts off fast.
-    const JUMP_LATEST_BTN_ANIM_FACTOR = 100;
+    // This variable is to ensure that the animation runs fast.
+    const JUMP_LATEST_BTN_ANIM_FACTOR = 10000;
 
     // Load more throttle time in ms
     const LOAD_MORE_THROTTLE_TIMER = 1000;
