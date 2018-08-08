@@ -694,14 +694,25 @@ define ("actions/chatView",
      * @param {Array} issues - List of issues
      * @returns {Boolean}
      */
-    const hasLatestConversationLoaded = (issues) => {
+    const hasLatestConversationLoaded = (config) => {
+      const {issues, conversationHistoryEnabled, hasOlderMsgs} = config;
+
       const oldestIssue = issues [issues.length - 1];
       const latestIssue = issues [0];
+
+      // When conversationHistory is enabled, hasOlderMsgs would tell
+      // us if the conversation has ended.
+      if (conversationHistoryEnabled) {
+        return hasOlderMsgs === false;
+      }
 
       // Here, we compare oldest and newest issue to see if there are
       // more than two issues. If their group ids are same, it means that
       // there's only one issue; if they are different, there is more than one.
-      return (oldestIssue.preissue_id !== latestIssue.preissue_id);
+      //
+      // In case when there's only one issue in the issueList, hasOlderMsgs would
+      // tell us if the latest conversation has loaded.
+      return (oldestIssue.preissue_id !== latestIssue.preissue_id) || hasOlderMsgs === false;
     };
 
     /**
@@ -726,21 +737,19 @@ define ("actions/chatView",
       const issuesToRender = conversationHistoryEnabled ?
         orderedIssues : getLatestConversation (orderedIssues);
       const linearMsgList = getLinearMessages (issuesToRender, lastGroupId);
-      const latestConvHasLoaded = hasLatestConversationLoaded (issueList);
+      const latestConvHasLoaded = hasLatestConversationLoaded ({
+        issues: issueList,
+        hasOlderMsgs,
+        conversationHistoryEnabled
+      });
 
       if (!linearMsgList.length) {
         return [];
       }
 
-      // When conversation history is enabled, render the final date header
-      // when all messages have been loaded. Else, render it just after
-      // when the newest conversation has loaded.
-      const shouldRenderFinalDateHeader = conversationHistoryEnabled ?
-        hasOlderMsgs === false : latestConvHasLoaded;
-
       // if there are no more messages remaining to be fetched, we should
       // render the timestamp without a <hr> at the top of list
-      if (shouldRenderFinalDateHeader) {
+      if (latestConvHasLoaded) {
         const oldestIssue = issueList [issueList.length - 1];
 
         linearMsgList.unshift (
@@ -1203,6 +1212,7 @@ define ("actions/chatView",
           });
 
           handleSettingLatestConversationLoadStatus ({
+            hasOlderMsgs,
             conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
             issues
           });
@@ -1229,17 +1239,17 @@ define ("actions/chatView",
     };
 
     /**
-     * Set the flag in store when conversation history is enabled
+     * Set the flag in store when conversation history is disabled
      * and all the messages have been loaded.
      * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
      *                                                      feature is enabled
+     * @param {Boolean} config.hasOlderMsgs - Whether more messages need to be loaded
      * @param {Array} config.issues - List of issues
      */
     const handleSettingLatestConversationLoadStatus = (config) => {
       const {dispatch} = store;
-      const {conversationHistoryEnabled, issues} = config;
 
-      if (!conversationHistoryEnabled && hasLatestConversationLoaded (issues)) {
+      if (hasLatestConversationLoaded (config)) {
         dispatch (setLatestConversationHasLoaded ());
       }
     };
@@ -1314,9 +1324,10 @@ define ("actions/chatView",
               return;
             }
 
-              // Set the flag only in the first fetch call
+            // Set the flag only in the first fetch call
             if (!issueCursor) {
               handleSettingLatestConversationLoadStatus ({
+                hasOlderMsgs,
                 conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
                 issues
               });
