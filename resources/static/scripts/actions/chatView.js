@@ -610,6 +610,15 @@ define ("actions/chatView",
         finalMessages.unshift (...issue.messages);
       });
 
+      // Render redaction message for remaining conversations
+      if (redactionCount) {
+        finalMessages.unshift (
+          messageHelpers.createMessage (MESSAGE_TYPE.CONVERSATION_REDACTED, {
+            redactionCount
+          })
+        );
+      }
+
       return finalMessages;
     };
 
@@ -1067,7 +1076,11 @@ define ("actions/chatView",
         );
       } else {
         const oldestIssueMessages = issue.messages;
-        const oldestTimestamp = oldestIssueMessages [0].created_at;
+
+        // If the issue is redacted, then it might have an empty
+        // list of messages
+        const oldestTimestamp = oldestIssueMessages [0] ?
+          oldestIssueMessages [0].created_at : issue.created_at;
 
         dispatch (
           setActiveIssueMsgCursor ({
