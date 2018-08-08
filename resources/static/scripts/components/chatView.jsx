@@ -12,10 +12,12 @@ define ("components/chatView",
     "components/commons/viewHeader",
     "components/commons/dndWrapper",
     "constants/propTypes",
+    "constants/chatView",
+    "components/jumpToLatestBtn",
     "gunpowder/utils/classes"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes, classes) {
+    DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -23,6 +25,7 @@ define ("components/chatView",
       MESSAGE_PROP_TYPE,
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
+    const {USER_INPUT_TYPES} = CHAT_VIEW_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatView",
@@ -123,6 +126,36 @@ define ("components/chatView",
       },
 
       /**
+       * Render jump to latest button when input pills are rendered
+       * and chat view footer is hidden
+       */
+      _renderJumpToLatestBtn () {
+        const {
+          userIsViewingPastMessages,
+          unreadCount,
+          userInput: {
+            type
+          }
+        } = this.props;
+
+        const showUnreadIndicator = unreadCount > 0;
+        const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
+
+        if (inputIsPillSelect) {
+          return (
+            <div className="hs-chat-view__jump-to-latest-wrapper">
+              <JumpToLatestBtn
+                show={userIsViewingPastMessages}
+                showUnreadIndicator={showUnreadIndicator}
+                onClick={this._onJumpBtnClick} />
+            </div>
+          );
+        }
+
+        return null;
+      },
+
+      /**
        * Render view contents
        */
       _renderViewContents () {
@@ -146,6 +179,7 @@ define ("components/chatView",
           errorActionHandler,
           botStepInProgress
         } = this.props;
+
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
         if (loading || (error && error.title)) {
@@ -181,6 +215,7 @@ define ("components/chatView",
                              }
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef} />
+                {this._renderJumpToLatestBtn ()}
               </div>
               <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick} />
             </DnDWrapper>

@@ -16,6 +16,12 @@
   $subtitle-color: color(text, light);
 
   .hs-chat-view {
+    &__jump-to-latest-wrapper {
+      position: absolute;
+      right: 20px;
+      bottom: 30px;
+    }
+
     &__msgs-loader-container {
       display: flex;
       align-items: center;
