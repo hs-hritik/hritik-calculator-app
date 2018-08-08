@@ -108,7 +108,7 @@ define ("components/messageList",
                        isLastMessageInGroup={isLastMessageInGroup}
                        showAgentNickname={this.props.showAgentNickname}
                        text={this.props.text}
-                       onImageLoad={this._throttledScrollBottom}
+                       onImageLoad={this._onImageAttachmentLoad}
                        onRetryAttachmentClick={this.props.onRetryAttachmentClick}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
@@ -218,6 +218,19 @@ define ("components/messageList",
         this.props.onPillOptionSelect (option);
       },
 
+      /**
+       * Image load handler for attachment messages
+       */
+      _onImageAttachmentLoad () {
+        // If image attachments are loaded and user is not viewing past messages
+        // then scroll to bottom.
+        // We are using throttled scroll bottom as multiple images can be loaded
+        // at same time.
+        if (!this.props.userIsViewingPastMessages) {
+          this._throttledScrollBottom ();
+        }
+      },
+
       _onScroll (ev) {
         const {
           scrollHeight,
@@ -324,16 +337,16 @@ define ("components/messageList",
         const {messages, userIsViewingPastMessages} = this.props;
         const previousMessages = prevProps.messages;
 
-        const lastMessage = messages [messages.length - 1];
-        const newMessagesHaveBeenReceieved = messages.length > previousMessages.length;
+        const currentLastMessage = messages [messages.length - 1];
+        const prevLastMessage = previousMessages [previousMessages.length - 1];
+        const newUserMessageIsAdded = (currentLastMessage.isCustomerMsg &&
+                                       currentLastMessage.id !== prevLastMessage.id);
 
-        // Scrolling to bottom shouldn't happen if the user is amidst scrolling
-        // through message. We prevent that from happening by checking if
-        // user is viewing past messages.
-        //
-        // If, however, the new message was sent by user himself, we scroll to bottom.
-        if ((newMessagesHaveBeenReceieved &&
-            (!userIsViewingPastMessages || lastMessage.isCustomerMsg))) {
+        // Scrolling to bottom shouldn't happen if
+        // 1. The user is amidst scrolling through message.
+        //   OR
+        // 2. New user message is added
+        if (newUserMessageIsAdded || !userIsViewingPastMessages) {
           this._scrollToBottom ();
         }
       },
