@@ -1547,12 +1547,12 @@ define ("actions/chatView",
           id,
           type,
           state,
-          isCustomerMsg
+          isCustomerMsg,
+          isSystemMsg
         } = msg;
 
-        if (!isCustomerMsg &&
+        if (!isCustomerMsg && !isSystemMsg &&
             state !== MESSAGES_STATE.READ &&
-            type !== MESSAGE_TYPE.CHAT_SEPARATOR &&
             messageHelpers.isRenderableMessage (type)) {
           finalUnreadMessageIds.push (id);
         }
