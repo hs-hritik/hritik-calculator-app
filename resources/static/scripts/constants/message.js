@@ -38,11 +38,9 @@ define ("constants/message",
       ATTACHMENT: "Attachment",
       ACCEPTED: "Confirmation Accepted",
       REJECTED: "Confirmation Rejected",
-      // @TODO - Remove system info type of message for conversation history
-      SYSTEM_INFO: "SystemInfo",
-      /**
-       * Normal messages - end
-       */
+      CHAT_SEPARATOR: "ChatSeparator",
+      CONVERSATION_REDACTED: "Conversation Redacted",
+      // Non Bot messages - end
 
       /**
        * ------- Bot messages - start -------
@@ -100,7 +98,8 @@ define ("constants/message",
       TYPE.TEXT,
       TYPE.END_CHAT,
       TYPE.ATTACHMENT,
-      TYPE.SYSTEM_INFO,
+      TYPE.CHAT_SEPARATOR,
+      TYPE.CONVERSATION_REDACTED,
       TYPE.TEXT_MSG_WITH_TEXT_INPUT,
       TYPE.TEXT_MSG_WITH_EMAIL_INPUT,
       TYPE.TEXT_MSG_WITH_NUMERIC_INPUT,

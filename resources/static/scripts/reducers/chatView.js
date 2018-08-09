@@ -17,7 +17,8 @@ define ("reducers/chatView",
     const update = React.addons.update;
     const {
       ACTIVE_FOOTER,
-      USER_INPUT_TYPES
+      USER_INPUT_TYPES,
+      CURSOR_TYPES
     } = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_ERROR_STATE = {
@@ -49,6 +50,21 @@ define ("reducers/chatView",
     };
 
     /**
+     * Return a union of existing messageList and new messages
+     * @param {Array} existingMessageList - Existing list of messages
+     * @param {Array} newMessageList - New messages to be added
+     * @returns {Array} list of unique messages
+     */
+    const _getUniqueMessages = (existingMessageList, newMessageList) => {
+      const msgIdsAdded = existingMessageList.map ((msg) => msg.id);
+      const msgsToAdd = newMessageList.filter ((msg) => {
+        return msgIdsAdded.indexOf (msg.id) === -1;
+      });
+
+      return msgsToAdd;
+    };
+
+    /**
      * Predicate to return whether user input type is default input
      * @param {Object} state - current state
      * @returns {Boolean} - whether current input type is default input
@@ -63,16 +79,34 @@ define ("reducers/chatView",
       activeIssueMsgCursor: null,
       systemTyping: false,
       agentTyping: false,
+      unreadMessageIds: [],
       botState: {
         botStepInProgress: false,
         botStepMessage: null
       },
-      unreadCount: 0,
       messageList: [],
       messageCursor: {
-        preissues: {},
-        issues: {}
+        [CURSOR_TYPES.FORWARD]: {
+          value: "",
+          meta: {
+            issueType: "",
+            issueId: ""
+          }
+        },
+        [CURSOR_TYPES.BACKWARD]: {
+          value: "",
+          meta: {
+            issueType: "",
+            issueId: "",
+            preIssueId: ""
+          }
+        }
       },
+      userIsViewingPastMessages: false,
+      userIsRedacted: false,
+      allMessagesAreLoaded: false,
+      latestConversationHasLoaded: false,
+      pastConversationsLoading: false,
       issueCursor: 0,
       pollerFailureCount: 0,
       isCsatSubmitted: false,
@@ -119,8 +153,25 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
+          const {
+            cursorTs,
+            issueType,
+            issueId,
+            preIssueId,
+            cursorType
+          } = action.msgCursor;
+
           return update (state, {
-            messageCursor: {$merge: action.msgCursor}
+            messageCursor: {
+              [cursorType]: {
+                value: {$set: cursorTs},
+                meta: {
+                  issueType: {$set: issueType},
+                  issueId: {$set: issueId},
+                  preIssueId: {$set: preIssueId}
+                }
+              }
+            }
           });
 
         case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
@@ -148,9 +199,19 @@ define ("reducers/chatView",
             }
           });
 
+        case ACTION_TYPES.SET_LATEST_CONVERSATION_HAS_LOADED:
+          return update (state, {
+            latestConversationHasLoaded: {$set: true}
+          });
+
         case ACTION_TYPES.TOGGLE_SYSTEM_TYPING:
           return update (state, {
             systemTyping: {$set: action.typing}
+          });
+
+        case ACTION_TYPES.TOGGLE_CONVERSATIONS_LOADER:
+          return update (state, {
+            pastConversationsLoading: {$set: action.loading}
           });
 
         case ACTION_TYPES.TOGGLE_AGENT_TYPING:
@@ -158,9 +219,9 @@ define ("reducers/chatView",
             agentTyping: {$set: action.typing}
           });
 
-        case ACTION_TYPES.SET_UNREAD_COUNT:
+        case ACTION_TYPES.SET_UNREAD_MESSAGE_IDS:
           return update (state, {
-            unreadCount: {$set: action.count}
+            unreadMessageIds: {$set: action.messageIds}
           });
 
         case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
@@ -177,6 +238,16 @@ define ("reducers/chatView",
           userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
           return update (state, {
             userInput: {$set: userInputUpdateObj}
+          });
+
+        case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
+          return update (state, {
+            allMessagesAreLoaded: {$set: action.msgsLoaded}
+          });
+
+        case ACTION_TYPES.SET_USER_IS_REDACTED:
+          return update (state, {
+            userIsRedacted: {$set: true}
           });
 
         case ACTION_TYPES.RESET_USER_INPUT_DATA:
@@ -202,14 +273,22 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.ADD_MESSAGES:
-          const msgIdsAdded = state.messageList.map ((msg) => msg.id);
-          const msgsToAdd = action.messages.filter ((msg) => {
-            return msgIdsAdded.indexOf (msg.id) === -1;
+        case ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES:
+          return update (state, {
+            userIsViewingPastMessages: {$set: action.isViewing}
           });
 
+        case ACTION_TYPES.APPEND_MESSAGES:
           return update (state, {
-            messageList: {$push: msgsToAdd}
+            messageList: {$push: _getUniqueMessages (state.messageList, action.messages)}
+          });
+
+        case ACTION_TYPES.PREPEND_MESSAGES:
+          const uniqMessages = _getUniqueMessages (state.messageList, action.messages);
+          const newMessageList = uniqMessages.concat (state.messageList);
+
+          return update (state, {
+            messageList: {$set: newMessageList}
           });
 
         case ACTION_TYPES.REMOVE_MESSAGE:

@@ -1,0 +1,51 @@
+/**
+ * Jump to Latest Button
+ * @author Shubham Jain <shubham@helpshift.com>
+ * @created June 13, 2018
+ */
+
+define ("components/jumpToLatestBtn",
+  function () {
+    "use strict";
+
+    const PropTypes = React.PropTypes;
+    return React.createClass ({
+      displayName: "JumpToLatestBtn",
+      propTypes: {
+        show: PropTypes.bool,
+        skipBtnIsRendered: PropTypes.bool,
+        chatFooterIsHidden: PropTypes.bool,
+        showUnreadIndicator: PropTypes.bool,
+        onClick: PropTypes.func
+      },
+
+      getDefaultProps () {
+        return {
+          show: true
+        };
+      },
+
+      render () {
+        const {
+          show,
+          showUnreadIndicator,
+          onClick
+        } = this.props;
+
+        if (!show) {
+          return null;
+        }
+
+        const unreadIndicatorEl = showUnreadIndicator ?
+          (<span className="hs-jump-to-latest__unread-icon" />) : null;
+
+        return (
+          <div className="hs-jump-to-latest" onClick={onClick}>
+            <i className="ion-chevron-right hs-jump-to-latest__icon" />
+            {unreadIndicatorEl}
+          </div>
+        );
+      }
+    });
+  }
+);

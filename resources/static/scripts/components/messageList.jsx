@@ -28,6 +28,26 @@ define ("components/messageList",
     // Scroll throttle time in ms
     const SCROLL_THROTTLE_TIMER = 250;
 
+    // After how much scrolling to the top, will the jump
+    // to latest button be shown?
+    //
+    // Threshold = Height of two message (57 * 2) +
+    // branding height (42) + message list bottom padding (16).
+    const JUMP_LATEST_BTN_SCROLL_THRESHOLD = 172;
+
+    // We are using EaseInQuad function which ensures that scrolling
+    // animation is smooth. Ref: https://gist.github.com/gre/1650294
+    //
+    // This variable is to ensure that the animation runs fast.
+    const JUMP_LATEST_BTN_ANIM_FACTOR = 10000;
+
+    // Load more throttle time in ms
+    const LOAD_MORE_THROTTLE_TIMER = 1000;
+
+    // At what positioning from the top, should more messages
+    // be loaded?
+    const LOAD_MORE_SCROLL_THRESHOLD = 500;
+
     return React.createClass ({
       displayName: "MessageList",
       propTypes: {
@@ -36,9 +56,13 @@ define ("components/messageList",
         onSuggestedFaqClick: PropTypes.func,
         onRetryAttachmentClick: PropTypes.func,
         isTyping: PropTypes.bool,
+        userIsViewingPastMessages: PropTypes.bool,
+        pastConversationsLoading: PropTypes.bool,
         text: PropTypes.object.isRequired,
         userInput: USER_INPUT_PROP_TYPE,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onScrollPastExistingConversation: PropTypes.func,
+        onLoadMore: PropTypes.func,
         onSkipUserInput: PropTypes.func,
         /**
          * If chat view footer has any failure
@@ -48,7 +72,9 @@ define ("components/messageList",
 
       render () {
         return (
-          <div ref={this._refCallback} className="hs-view__scroll-wrapper" >
+          <div ref={this._refCallback}
+               className="hs-view__scroll-wrapper"
+               onScroll={this._onScroll}>
             <div className="hs-message-list" >
               {this._renderMessages ()}
               {this._renderTypingIndicator ()}
@@ -85,7 +111,7 @@ define ("components/messageList",
                        isLastMessageInGroup={isLastMessageInGroup}
                        showAgentNickname={this.props.showAgentNickname}
                        text={this.props.text}
-                       onImageLoad={this._throttledScrollBottom}
+                       onImageLoad={this._onImageAttachmentLoad}
                        onRetryAttachmentClick={this.props.onRetryAttachmentClick}
                        onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
           );
@@ -195,6 +221,43 @@ define ("components/messageList",
         this.props.onPillOptionSelect (option);
       },
 
+      /**
+       * Image load handler for attachment messages
+       */
+      _onImageAttachmentLoad () {
+        // If image attachments are loaded and user is not viewing past messages
+        // then scroll to bottom.
+        // We are using throttled scroll bottom as multiple images can be loaded
+        // at same time.
+        if (!this.props.userIsViewingPastMessages) {
+          this._throttledScrollBottom ();
+        }
+      },
+
+      _onScroll (ev) {
+        const {
+          scrollHeight,
+          scrollTop,
+          offsetHeight
+        } = ev.target;
+
+        const {
+          pastConversationsLoading
+        } = this.props;
+
+        this._scrollBottom = scrollHeight - offsetHeight - scrollTop;
+
+        if (scrollTop + offsetHeight + JUMP_LATEST_BTN_SCROLL_THRESHOLD < scrollHeight) {
+          this.props.onScrollPastExistingConversation (true);
+        } else {
+          this.props.onScrollPastExistingConversation (false);
+        }
+
+        if (scrollTop < LOAD_MORE_SCROLL_THRESHOLD && !pastConversationsLoading) {
+          this._throttledLoadMore ();
+        }
+      },
+
       _scrollWrapperRef: null,
 
       /**
@@ -205,6 +268,11 @@ define ("components/messageList",
       },
 
       /**
+       * Scroll position from the bottom of the chat screen.
+       */
+      _scrollBottom: 0,
+
+      /**
        * Throttled scroll bottom method used to delay scroll bottom execution
        * As images can load simultaneously, this method will get called
        * multiple times
@@ -212,11 +280,94 @@ define ("components/messageList",
       _throttledScrollBottom: null,
 
       /**
+       * Prevent multiple calls of load more function when user scrolls
+       * to the top of messages.
+       */
+      _throttledLoadMore: null,
+
+      /**
        * Scroll message list to the bottom.
        */
       _scrollToBottom () {
         const node = ReactDOM.findDOMNode (this._scrollWrapperRef);
         node.scrollTop = node.scrollHeight;
+
+        // updated scroll bottom after scrollTop is changed.
+        this._scrollBottom = 0;
+      },
+
+      _scrollAnimLoop (node, time = 0) {
+        // To scroll smoothly we are using EaseInQuad easing function.
+        // Ref: https://gist.github.com/gre/1650294
+        node.scrollTop += JUMP_LATEST_BTN_ANIM_FACTOR * time * time;
+
+        if (node.scrollTop + node.offsetHeight < node.scrollHeight) {
+          // Each animation frame corresponds to 16.6 ms = ~0.016s
+          const scrollAnimFunc = this._scrollAnimLoop.bind (this, node, time + 0.016);
+          requestAnimationFrame (scrollAnimFunc);
+        }
+      },
+
+      /**
+       * Scroll message list to the bottom.
+       */
+      _animatedScrollToBottom () {
+        const node = ReactDOM.findDOMNode (this._scrollWrapperRef);
+        this._scrollAnimLoop (node);
+      },
+
+      /**
+       * Restores previous scrolling position when new messages have been
+       * appended to the top.
+       */
+      _restorePreviousScrollPosition (currentMessages, previousMessages) {
+        const {
+          scrollHeight,
+          scrollTop,
+          offsetHeight
+        } = this._scrollWrapperRef;
+
+        const previousScrollBottom = this._scrollBottom;
+        const currentScrollBottom = scrollHeight - offsetHeight - scrollTop;
+
+        const currentFirstMessage = currentMessages [0];
+        const prevFirstMessage = previousMessages [0];
+
+        const messagesHaveBeenAppended = currentFirstMessage.id !== prevFirstMessage.id;
+
+        // When new messages are appended to the top, the Message list might
+        // scroll to the very top. To avoid that, we compare the current scrollBottom
+        // to the previous one and restore it if they are unequal.
+        if (messagesHaveBeenAppended && currentScrollBottom !== previousScrollBottom) {
+          this._scrollWrapperRef.scrollTop = scrollHeight - previousScrollBottom - offsetHeight;
+        }
+      },
+
+      /**
+       * Scrolls to bottom when the user sends a message and when
+       * new messages is received.
+       */
+      _handleScrollingToBottom (currentMessages, previousMessages) {
+        const {userIsViewingPastMessages} = this.props;
+
+        const currentLastMessage = currentMessages [currentMessages.length - 1];
+        const prevLastMessage = previousMessages [previousMessages.length - 1];
+
+        let newUserMessageIsAdded = false;
+        let newAgentMessageIsAdded = false;
+
+        if (currentLastMessage.id !== prevLastMessage.id) {
+          newUserMessageIsAdded = currentLastMessage.isCustomerMsg;
+          newAgentMessageIsAdded = !currentLastMessage.isCustomerMsg;
+        }
+
+        // Scrolling to bottom should happen if
+        // 1. The user sends a new message from the chat window.
+        //   OR
+        // 2. A new message is received and use isn't browsing through past messages
+        if (newUserMessageIsAdded || (newAgentMessageIsAdded && !userIsViewingPastMessages)) {
+          this._scrollToBottom ();
+        }
       },
 
       /**
@@ -224,16 +375,16 @@ define ("components/messageList",
        * or if there is typing indicator.
        */
       componentDidUpdate (prevProps) {
-        const currentValidMessages = this.props.messages.filter ((message) => {
-          return !!message;
-        });
-        const previousValidMessages = prevProps.messages.filter ((message) => {
-          return !!message;
-        });
+        const {messages} = this.props;
+        const previousMessages = prevProps.messages;
 
-        if ((currentValidMessages.length > previousValidMessages.length)) {
-          this._scrollToBottom ();
+        // If there's an empty message list, no processing is needed
+        if (!(messages.length && previousMessages.length)) {
+          return;
         }
+
+        this._restorePreviousScrollPosition (messages, previousMessages);
+        this._handleScrollingToBottom (messages, previousMessages);
       },
 
       /**
@@ -247,6 +398,9 @@ define ("components/messageList",
         this._throttledScrollBottom = throttle (
           this._scrollToBottom, SCROLL_THROTTLE_TIMER
         );
+
+        this._throttledLoadMore = throttle (this.props.onLoadMore, LOAD_MORE_THROTTLE_TIMER);
+
         this._scrollToBottom ();
       }
     });

@@ -111,6 +111,26 @@
       margin-left: gutter(4);
     }
 
+    // Ideally, border should have been used
+    // but opacity to border can only be given
+    // by rgba() syntax.
+    //
+    // @TODO: Confirm the margins and the relative color
+    &__hr {
+      height: 1px;
+      margin: gutter(16 0);
+      background: $chat-widget-secondary-text-color;
+      opacity: .2;
+    }
+
+    &__conversation-redacted {
+      padding: gutter(12 0);
+      font-size: font-size(body, small);
+      color: $chat-widget-secondary-text-color;
+      text-align: center;
+      opacity: .5;
+    }
+
     &__details {
       display: flex;
       font-size: font-size(body, small);
@@ -175,31 +195,21 @@
       opacity: 0;
     }
 
-    &--system-info {
-      display: flex;
-      align-items: center;
-      align-self: stretch;
+    &--timestamp,
+    &--info-text {
       max-width: 100%;
-      margin: gutter(28 0);
+      font-size: font-size(body, small);
       color: $chat-widget-secondary-text-color;
       text-align: center;
       opacity: .5;
+    }
 
-      &::before,
-      &::after {
-        flex: 1 1 auto;
-        height: 1px;
-        background: $chat-widget-secondary-text-color;
-        content: "";
-      }
+    &--timestamp {
+      margin-bottom: gutter(28);
+    }
 
-      &::before {
-        margin-right: gutter(8);
-      }
-
-      &::after {
-        margin-left: gutter(8);
-      }
+    &--info-text {
+      margin-top: gutter(28);
     }
 
     &:first-child {

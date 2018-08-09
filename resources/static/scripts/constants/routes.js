@@ -25,7 +25,9 @@ define ("constants/routes",
       return `${BASE}${domain}/${issueType}/${issueId}/messages`;
     };
 
-    const getIssuesAndMessages = (domain) => `${BASE}${domain}/messages`;
+    const getConversationUpdates = (domain) => `${BASE}${domain}/conversations/updates`;
+
+    const getConversationHistory = (domain) => `${BASE}${domain}/conversations/history`;
 
     const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
 
@@ -63,7 +65,8 @@ define ("constants/routes",
       webSocket,
       postAnalyticsEvent,
       postUserReply,
-      getIssuesAndMessages,
+      getConversationUpdates,
+      getConversationHistory,
       postSuggestedFaqRead,
       postIssue
     };

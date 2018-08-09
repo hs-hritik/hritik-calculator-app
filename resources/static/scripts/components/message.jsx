@@ -43,6 +43,8 @@ define ("components/message",
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
           csatBotRequestMsg: PropTypes.string.isRequired,
+          conversationRedactedMsg: PropTypes.string.isRequired,
+          conversationsRedactedMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
@@ -68,8 +70,10 @@ define ("components/message",
       render () {
         const {isCustomerMsg, type, states} = this.props.message;
 
-        if (type === MESSAGE_TYPE.SYSTEM_INFO) {
-          return this._renderSystemInfoMessage ();
+        if (type === MESSAGE_TYPE.CHAT_SEPARATOR) {
+          return this._renderChatSeparator ();
+        } else if (type === MESSAGE_TYPE.CONVERSATION_REDACTED) {
+          return this._renderConversationRedactionMsg ();
         }
 
         const msgClasses = classes (
@@ -145,14 +149,35 @@ define ("components/message",
        * Render text message.
        */
       _renderTextMessage () {
-        /* eslint-disable react/no-danger */
+        let textMessageEl;
+
+        const {
+          message: {
+            redacted,
+            body
+          }
+        } = this.props;
+
+        if (redacted) {
+          // Redaction message is a plain text and needs
+          // to be shown in italics.
+          textMessageEl = (
+            <em>{body}</em>
+          );
+        } else {
+          /* eslint-disable react/no-danger */
+          textMessageEl = (
+            <div dangerouslySetInnerHTML={{__html: body}} />
+          );
+          /* eslint-enable react/no-danger */
+        }
+
         return (
           <div className="hs-message__item" dir="auto">
-            <div dangerouslySetInnerHTML={{__html: this.props.message.body}} />
+            {textMessageEl}
             {this._renderAgentAttachments ()}
           </div>
         );
-        /* eslint-enable react/no-danger */
       },
 
       /**
@@ -170,6 +195,31 @@ define ("components/message",
         return (
           <div>
             {attachmentsEl}
+          </div>
+        );
+      },
+
+      _renderConversationRedactionMsg () {
+        const {
+          text: {
+            conversationRedactedMsg,
+            conversationsRedactedMsg
+          },
+          message: {
+            redactionCount
+          }
+        } = this.props;
+
+        const body = redactionCount && redactionCount > 1 ?
+          conversationsRedactedMsg.replace ("%d", redactionCount) : conversationRedactedMsg;
+
+        return (
+          <div>
+            <div className="hs-message__hr" />
+            <div className="hs-message__conversation-redacted">
+              <em>{body}</em>
+            </div>
+            <div className="hs-message__hr" />
           </div>
         );
       },
@@ -435,12 +485,31 @@ define ("components/message",
       },
 
       /**
-       * Render system info message.
+       * Render separator message.
        */
-      _renderSystemInfoMessage () {
+      _renderChatSeparator () {
+        const {hr, timestamp, infoText} = this.props.message;
+
+        let hrEl, timestampEl, infoTextEl;
+
+        if (hr) {
+          // horizontal line separating conversations
+          hrEl = (<div className="hs-message__hr" />);
+        }
+
+        if (timestamp) {
+          timestampEl = (<div className="hs-message hs-message--timestamp">{timestamp}</div>);
+        }
+
+        if (infoText) {
+          infoTextEl = (<div className="hs-message hs-message--info-text">{infoText}</div>);
+        }
+
         return (
-          <div className="hs-message hs-message--system-info">
-            {this.props.message.body}
+          <div>
+            {infoTextEl}
+            {hrEl}
+            {timestampEl}
           </div>
         );
       },
@@ -598,7 +667,7 @@ define ("components/message",
        * @param {String} name - attachment file name
        * @returns {Boolean} - attachment is of type image
        */
-      _isImageAttachment (name) {
+      _isImageAttachment (name, url) {
         const {message} = this.props;
 
         if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
@@ -610,13 +679,19 @@ define ("components/message",
                  message.attachments [0].fileName;
         }
 
+        let imageIdentifier;
+
         // If file does not contain any extension
-        if (name.indexOf (".") === -1) {
+        if (name.indexOf (".") !== -1) {
+          imageIdentifier = name;
+        } else if (url && url.indexOf (".") !== -1) {
+          imageIdentifier = url;
+        } else {
           return false;
         }
 
-        const dotIndex = name.lastIndexOf (".") + 1;
-        const fileExt = name.substr (dotIndex, name.length).toLowerCase ();
+        const dotIndex = imageIdentifier.lastIndexOf (".") + 1;
+        const fileExt = imageIdentifier.substr (dotIndex, imageIdentifier.length).toLowerCase ();
 
         return IMAGE_EXTENSIONS.indexOf (fileExt) !== -1;
       },
@@ -634,7 +709,8 @@ define ("components/message",
         }
 
         const isImageAttachment = this._isImageAttachment (
-          this._attachmentRenderConfig.name
+          this._attachmentRenderConfig.name,
+          this._attachmentRenderConfig.url
         );
         const localAttachmentHasError = message.isSystemMsg ?
                                         message.states.error : true;

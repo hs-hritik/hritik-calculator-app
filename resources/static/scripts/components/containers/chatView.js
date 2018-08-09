@@ -36,6 +36,11 @@ define ("components/containers/chatView",
           pollerFailureCount,
           loading,
           error,
+          userIsViewingPastMessages,
+          pastConversationsLoading,
+          latestConversationHasLoaded,
+          unreadMessageIds,
+          allMessagesAreLoaded,
           botState: {
             botStepInProgress
           }
@@ -47,6 +52,8 @@ define ("components/containers/chatView",
 
       const hasFailure = !online || (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED);
 
+      // @TODO: In future, we should pass unreadMessageIds so that individual
+      // message IDs can be marked as read
       return {
         messages,
         isTyping: systemTyping || agentTyping,
@@ -60,6 +67,11 @@ define ("components/containers/chatView",
         loading,
         hasFailure,
         error,
+        latestConversationHasLoaded,
+        userIsViewingPastMessages,
+        unreadCount: unreadMessageIds.length,
+        pastConversationsLoading,
+        allMessagesAreLoaded,
         botStepInProgress
       };
     };
@@ -76,6 +88,12 @@ define ("components/containers/chatView",
           dispatch (
             chatViewActions.createAttachmentMessage (message.file, message.id)
           );
+        },
+        onScrollPastExistingConversation: (userHasScrolledToPastConvs) => {
+          chatViewActions.handleScrollPastExistingConversation (userHasScrolledToPastConvs);
+        },
+        onLoadMoreMessages: () => {
+          chatViewActions.loadMoreMessages ();
         },
         onPillOptionSelect: (option) => {
           dispatch (chatViewActions.setUserSelectedOption (option));

@@ -53,6 +53,7 @@ define ("helpers/message",
         state: msg.state,
         states: {}, // Applicable only in case of attachments
         createdTs: msg.created_at,
+        redacted: msg.redacted,
         author: msg.author,
         isCustomerMsg: (msg.origin !== MESSAGE_ORIGIN.ADMIN),
         attachments: getProcessedAttachments (msg)
@@ -341,18 +342,43 @@ define ("helpers/message",
     };
 
     /**
-     * Create system info message
-     * @param {Object} config - options for system info message
-     * @returns {Object} - system info message object
+     * Create separator message
+     * @param {Object} config - options for separator message
+     * @param {Boolean} config.hr - options for separator message
+     * @param {String} config.timestamp - timestamp string
+     * @param {String} config.infoText - string to show above hr
+     * @returns {Object} - separator message object
      */
-    const createSystemInfoMessage = (config) => {
+    const createSeparatorMessage = (config) => {
       return {
         id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
-        type: MESSAGE_TYPE.SYSTEM_INFO,
+        type: MESSAGE_TYPE.CHAT_SEPARATOR,
         isCustomerMsg: false,
         isSystemMsg: true,
         createdTs: Date.now (),
-        body: config.body,
+        body: "",
+        timestamp: config.timestamp,
+        hr: config.hr,
+        infoText: config.infoText,
+        processed: true
+      };
+    };
+
+    /**
+     * Create conversation redacted message
+     * @param {Object} config - options for separator message
+     * @param {Boolean} config.redactionCount - how many conversations were redacted.
+     * @returns {Object} - conversation redacted message
+     */
+    const createRedactionMessage = (config) => {
+      return {
+        id: `${MSG_ID_PREFIX}${uuidGenerator ()}`,
+        type: MESSAGE_TYPE.CONVERSATION_REDACTED,
+        isCustomerMsg: false,
+        isSystemMsg: true,
+        createdTs: Date.now (),
+        body: "",
+        redactionCount: config.redactionCount,
         processed: true
       };
     };
@@ -370,8 +396,11 @@ define ("helpers/message",
         case MESSAGE_TYPE.ATTACHMENT:
           return createAttachmentMessage (options);
 
-        case MESSAGE_TYPE.SYSTEM_INFO:
-          return createSystemInfoMessage (options);
+        case MESSAGE_TYPE.CHAT_SEPARATOR:
+          return createSeparatorMessage (options);
+
+        case MESSAGE_TYPE.CONVERSATION_REDACTED:
+          return createRedactionMessage (options);
 
         default:
           return null;
