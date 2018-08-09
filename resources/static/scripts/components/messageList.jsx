@@ -44,7 +44,7 @@ define ("components/messageList",
     // Load more throttle time in ms
     const LOAD_MORE_THROTTLE_TIMER = 1000;
 
-    // At what positiong from the top, should more messages
+    // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
 
@@ -317,10 +317,10 @@ define ("components/messageList",
       },
 
       /**
-       * Scroll to bottom if messages length is increased,
-       * or if there is typing indicator.
+       * Restores previous scrolling position when new messages have been
+       * appended to the top.
        */
-      componentDidUpdate (prevProps) {
+      _restorePreviousScrollPosition (currentMessages, previousMessages) {
         const {
           scrollHeight,
           scrollTop,
@@ -330,28 +330,61 @@ define ("components/messageList",
         const previousScrollBottom = this._scrollBottom;
         const currentScrollBottom = scrollHeight - offsetHeight - scrollTop;
 
+        const currentFirstMessage = currentMessages [0];
+        const prevFirstMessage = previousMessages [0];
+
+        const messagesHaveBeenAppended = currentFirstMessage.id !== prevFirstMessage.id;
+
         // When new messages are appended to the top, the Message list might
         // scroll to the very top. To avoid that, we compare the current scrollBottom
         // to the previous one and restore it if they are unequal.
-        if (currentScrollBottom !== previousScrollBottom) {
+        if (messagesHaveBeenAppended && currentScrollBottom !== previousScrollBottom) {
           this._scrollWrapperRef.scrollTop = scrollHeight - previousScrollBottom - offsetHeight;
         }
+      },
 
-        const {messages, userIsViewingPastMessages} = this.props;
-        const previousMessages = prevProps.messages;
+      /**
+       * Scrolls to bottom when the user sends a message and when
+       * new messages is received.
+       */
+      _handleScrollingToBottom (currentMessages, previousMessages) {
+        const {userIsViewingPastMessages} = this.props;
 
-        const currentLastMessage = messages [messages.length - 1];
+        const currentLastMessage = currentMessages [currentMessages.length - 1];
         const prevLastMessage = previousMessages [previousMessages.length - 1];
-        const newUserMessageIsAdded = currentLastMessage &&
-          (currentLastMessage.isCustomerMsg && currentLastMessage.id !== prevLastMessage.id);
 
-        // Scrolling to bottom shouldn't happen if
-        // 1. The user is amidst scrolling through message.
+        let newUserMessageIsAdded = false;
+        let newAgentMessageIsAdded = false;
+
+        if (currentLastMessage.id !== prevLastMessage.id) {
+          newUserMessageIsAdded = currentLastMessage.isCustomerMsg;
+          newAgentMessageIsAdded = !currentLastMessage.isCustomerMsg;
+        }
+
+        // Scrolling to bottom should happen if
+        // 1. The user sends a new message from the chat window.
         //   OR
-        // 2. New user message is added
-        if (newUserMessageIsAdded || !userIsViewingPastMessages) {
+        // 2. A new message is received and use isn't browsing through past messages
+        if (newUserMessageIsAdded || (newAgentMessageIsAdded && !userIsViewingPastMessages)) {
           this._scrollToBottom ();
         }
+      },
+
+      /**
+       * Scroll to bottom if messages length is increased,
+       * or if there is typing indicator.
+       */
+      componentDidUpdate (prevProps) {
+        const {messages} = this.props;
+        const previousMessages = prevProps.messages;
+
+        // If there's an empty message list, no processing is needed
+        if (!(messages.length && previousMessages.length)) {
+          return;
+        }
+
+        this._restorePreviousScrollPosition (messages, previousMessages);
+        this._handleScrollingToBottom (messages, previousMessages);
       },
 
       /**
