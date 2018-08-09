@@ -378,6 +378,18 @@ define ("components/messageList",
         const {messages} = this.props;
         const previousMessages = prevProps.messages;
 
+        // Scroll to bottom if the messages are being loaded for the
+        // first time. This checked by seeing if there were there
+        // are messages in current update but there weren't any in
+        // the previous one.
+        //
+        // This condition handles cases where component gets mounted
+        // first and gets message update later (hence, escapes the
+        // scrollToBottom in componentDidMount)
+        if (messages.length && previousMessages.length === 0) {
+          this._scrollToBottom ();
+        }
+
         // If there's an empty message list, no processing is needed
         if (!(messages.length && previousMessages.length)) {
           return;
