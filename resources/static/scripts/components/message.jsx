@@ -667,7 +667,7 @@ define ("components/message",
        * @param {String} name - attachment file name
        * @returns {Boolean} - attachment is of type image
        */
-      _isImageAttachment (name) {
+      _isImageAttachment (name, url) {
         const {message} = this.props;
 
         if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
@@ -679,13 +679,19 @@ define ("components/message",
                  message.attachments [0].fileName;
         }
 
+        let imageIdentifier;
+
         // If file does not contain any extension
-        if (name.indexOf (".") === -1) {
+        if (name.indexOf (".") !== -1) {
+          imageIdentifier = name;
+        } else if (url && url.indexOf (".") !== -1) {
+          imageIdentifier = url;
+        } else {
           return false;
         }
 
-        const dotIndex = name.lastIndexOf (".") + 1;
-        const fileExt = name.substr (dotIndex, name.length).toLowerCase ();
+        const dotIndex = imageIdentifier.lastIndexOf (".") + 1;
+        const fileExt = imageIdentifier.substr (dotIndex, imageIdentifier.length).toLowerCase ();
 
         return IMAGE_EXTENSIONS.indexOf (fileExt) !== -1;
       },
@@ -703,7 +709,8 @@ define ("components/message",
         }
 
         const isImageAttachment = this._isImageAttachment (
-          this._attachmentRenderConfig.name
+          this._attachmentRenderConfig.name,
+          this._attachmentRenderConfig.url
         );
         const localAttachmentHasError = message.isSystemMsg ?
                                         message.states.error : true;
