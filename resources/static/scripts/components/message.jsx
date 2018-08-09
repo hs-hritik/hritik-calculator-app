@@ -211,7 +211,7 @@ define ("components/message",
         } = this.props;
 
         const body = redactionCount && redactionCount > 1 ?
-          `${redactionCount} ${conversationsRedactedMsg}` : conversationRedactedMsg;
+          conversationsRedactedMsg.replace ("%d", redactionCount) : conversationRedactedMsg;
 
         return (
           <div>
