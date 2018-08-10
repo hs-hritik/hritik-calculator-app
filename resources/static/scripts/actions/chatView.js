@@ -568,14 +568,18 @@ define ("actions/chatView",
     /**
      * Create a linear message list from issue list
      * @param {Object} issues - Issue List
-     * @param {String} lastGroupId - ID of the last pre-issue in the list
+     * @param {String} config.lastGroupId - ID of the last pre-issue in the list
+     * @param {String} config.hasOlderMsgs - Flag to determine if there are more messages
+     *                                       left to be rendered.
      * @returns {Array} Array of messages
      */
-    const getLinearMessages = (issues, lastGroupId) => {
+    const getLinearMessages = (issues, config) => {
       const finalMessages = [];
-      let previousGroupId = lastGroupId;
+      const {hasOlderMsgs} = config;
 
+      let previousGroupId = config.lastGroupId;
       let redactionCount = 0;
+
       issues.forEach ((issue) => {
         const currentGroupId = issue.preissue_id;
 
@@ -585,6 +589,15 @@ define ("actions/chatView",
         if (issue.redacted) {
           redactionCount++;
           return;
+        }
+
+        // If there has been transition from one issue to another
+        // insert a date separator.
+        //
+        // Since issues are received with the latest issue at the top and the
+        // oldest at the last, we create the right rendering order by using unshift
+        if (previousGroupId && currentGroupId !== previousGroupId) {
+          finalMessages.unshift (_getIssueDateSeparator (issue.created_at));
         }
 
         // Render a redaction message with redaction count.
@@ -597,21 +610,17 @@ define ("actions/chatView",
           redactionCount = 0;
         }
 
-        // If there has been transition from one issue to another
-        // insert a date separator.
-        //
-        // Since issues are received with the latest issue at the top and the
-        // oldest at the last, we create the right rendering order by using unshift
-        if (previousGroupId && currentGroupId !== previousGroupId) {
-          finalMessages.unshift (_getIssueDateSeparator (issue.created_at));
-        }
-
         previousGroupId = currentGroupId;
         finalMessages.unshift (...issue.messages);
       });
 
       // Render redaction message for remaining conversations
-      if (redactionCount) {
+      // Note: Conversation redaction message doesn't need to be rendered
+      // if it's the last conversation - hence hasOlderMsgs check.
+      if (redactionCount && hasOlderMsgs) {
+        const createdAt = issues [issues.length - 1].created_at;
+
+        finalMessages.unshift (_getIssueDateSeparator (createdAt));
         finalMessages.unshift (
           messageHelpers.createMessage (MESSAGE_TYPE.CONVERSATION_REDACTED, {
             redactionCount
@@ -736,7 +745,10 @@ define ("actions/chatView",
       const orderedIssues = getOrderedIssueList (issueList);
       const issuesToRender = conversationHistoryEnabled ?
         orderedIssues : getLatestConversation (orderedIssues);
-      const linearMsgList = getLinearMessages (issuesToRender, lastGroupId);
+      const linearMsgList = getLinearMessages (issuesToRender, {
+        hasOlderMsgs,
+        lastGroupId
+      });
       const latestConvHasLoaded = hasLatestConversationLoaded ({
         issues: issueList,
         hasOlderMsgs,
@@ -1038,18 +1050,20 @@ define ("actions/chatView",
      * Checks if all the conversation have been redacted and
      * creates a new preIssue + stops polling when they have been.
      * @param {Object} config - conversation redaction config.
-     * @param {Number} config.msgsLength - messages length
+     * @param {Array} config.issue - array of issues
      * @param {Object} config.issueCursor - used to check if it's the first
      *                                      fetch call
      * @returns {Boolean} - whether all the conversations have been redacted
      */
-    const handleAllConversationRedaction = (config) => {
+    const handleAllConversationsRedaction = (config) => {
       const {dispatch} = store;
-      const {msgsLength, issueCursor} = config;
+      const {issues, issueCursor} = config;
+
+      const issueListHasNonRedactedIssue = issues.some ((issue) => !issue.redacted);
 
       // If all the conversations have been redacted there would
       // be no messages and we should start conversation anew.
-      if (!msgsLength && !issueCursor) {
+      if (!issueListHasNonRedactedIssue && !issueCursor) {
         stopPollingForMessages ();
         dispatch (createPreIssue ());
         return true;
@@ -1333,19 +1347,20 @@ define ("actions/chatView",
               });
             }
 
-            const {
-              currentIssue,
-              messages
-            } = getCurrentIssueAndMessages ({issues, hasOlderMsgs});
 
-            const conversationsRedacted = handleAllConversationRedaction ({
-              msgsLength: messages.length,
+            const conversationsRedacted = handleAllConversationsRedaction ({
+              issues,
               issueCursor
             });
 
             if (conversationsRedacted) {
               return;
             }
+
+            const {
+              currentIssue,
+              messages
+            } = getCurrentIssueAndMessages ({issues, hasOlderMsgs});
 
             const {
               publish_id: issueId,
@@ -1415,7 +1430,7 @@ define ("actions/chatView",
               });
 
               // Only set the backward cursor when initial issues are being
-              // fetched, not when updates for issues are being recieved.
+              // fetched, not when updates for issues are being received.
               //
               // Note: This works because issueCursor is not set before
               // the first call.

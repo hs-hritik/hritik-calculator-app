@@ -219,7 +219,6 @@ define ("components/message",
             <div className="hs-message__conversation-redacted">
               <em>{body}</em>
             </div>
-            <div className="hs-message__hr" />
           </div>
         );
       },
