@@ -74,7 +74,7 @@ define ("components/messageList",
         return (
           <div ref={this._refCallback}
                className="hs-view__scroll-wrapper"
-               onScroll={this._onScroll}>
+               onScroll={this._eventPresistedScroll}>
             <div className="hs-message-list" >
               {this._renderMessages ()}
               {this._renderTypingIndicator ()}
@@ -234,6 +234,20 @@ define ("components/messageList",
         }
       },
 
+      /**
+       * Scroll handler to persist event object for throttled scroll
+       * @param {Object} ev - Event object
+       */
+      _eventPresistedScroll (ev) {
+        // Ref - https://reactjs.org/docs/events.html#event-pooling
+        ev.persist ();
+        this._throttledScroll (ev);
+      },
+
+      /**
+       * Scroll handler of message list
+       * @param {Object} ev - Event object
+       */
       _onScroll (ev) {
         const {
           scrollHeight,
@@ -412,6 +426,10 @@ define ("components/messageList",
         );
 
         this._throttledLoadMore = throttle (this.props.onLoadMore, LOAD_MORE_THROTTLE_TIMER);
+
+        this._throttledScroll = throttle (
+          this._onScroll, SCROLL_THROTTLE_TIMER, {leading: false}
+        );
 
         this._scrollToBottom ();
       }
