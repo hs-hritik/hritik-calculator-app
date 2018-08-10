@@ -131,6 +131,10 @@
       opacity: .5;
     }
 
+    &--redacted {
+      opacity: .5;
+    }
+
     &__details {
       display: flex;
       font-size: font-size(body, small);

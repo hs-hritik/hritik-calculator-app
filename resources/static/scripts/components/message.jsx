@@ -162,7 +162,7 @@ define ("components/message",
           // Redaction message is a plain text and needs
           // to be shown in italics.
           textMessageEl = (
-            <em>{body}</em>
+            <em className="hs-message--redacted">{body}</em>
           );
         } else {
           /* eslint-disable react/no-danger */
