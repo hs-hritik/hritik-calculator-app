@@ -12,7 +12,6 @@ define ("extras/api",
     "constants/activeView",
     "constants/analytics",
     "actions/appState",
-    "actions/chatView",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
@@ -22,7 +21,7 @@ define ("extras/api",
     "gunpowder/utils/localStorage"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
-    appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
+    appStateActions, actionCreators, csatViewActions, uiActions,
     app, analyticsHelpers, lsHelpers, lsUtils) {
     "use strict";
 
@@ -159,26 +158,16 @@ define ("extras/api",
       // Let the client know that the app is mounted.
       const {
         appState: {
-          activeView,
           conversationStarted,
           appResetTrigger,
           issueState,
           issueType
-        },
-        chatView: {
-          unreadMessageIds
         }
       } = store.getState ();
 
       if (!minimized) {
         if (!app.isMounted ()) {
           app.init ();
-        }
-
-        // If unread count isn't zero and active view is chat view,
-        // dispatch action to mark messages seen.
-        if (unreadMessageIds.length !== 0 && ACTIVE_VIEW.CHAT === activeView) {
-          store.dispatch (chatViewActions.markMessagesSeen ());
         }
 
         const preIssueIsRejected = (
