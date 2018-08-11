@@ -43,6 +43,7 @@ define ("components/message",
         onImageLoad: PropTypes.func,
         text: PropTypes.shape ({
           csatBotRequestMsg: PropTypes.string.isRequired,
+          messageDeleted: PropTypes.string.isRequired,
           conversationRedactedMsg: PropTypes.string.isRequired,
           conversationsRedactedMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
@@ -155,6 +156,9 @@ define ("components/message",
           message: {
             redacted,
             body
+          },
+          text: {
+            messageDeleted
           }
         } = this.props;
 
@@ -162,7 +166,7 @@ define ("components/message",
           // Redaction message is a plain text and needs
           // to be shown in italics.
           textMessageEl = (
-            <em className="hs-message--redacted">{body}</em>
+            <em className="hs-message--redacted">{messageDeleted}</em>
           );
         } else {
           /* eslint-disable react/no-danger */

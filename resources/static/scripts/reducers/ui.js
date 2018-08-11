@@ -93,6 +93,7 @@ define ("reducers/ui",
         conversationRedactedMsg: "Conversation Redacted",
         conversationsRedactedMsg: "Conversations Redacted",
         pastConversationsLoadingText: "Loading Messages...",
+        messageDeleted: "Message Deleted",
         // We do not want to support i18n for unsupported date input.
         // So the placeholder text will always be in english.
         unsupportedDateInputPlaceholder: "DD/MM/YYYY",
