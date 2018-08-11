@@ -567,10 +567,16 @@ define ("actions/appState",
      * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
      */
     const getWmConfig = (domain, callbacks) => {
+      // IE 11 caches config call which causes new preIssues to be created for
+      // new user. In order to invalidate browser cache we are sending a new
+      // timestamp in every request.
+      const requestData = xhrHelpers.getPreparedXhrData ();
+      requestData.nonce = Date.now ();
+
       xhr ({
         route: routes.getWmConfig (domain),
         headers: xhrHelpers.getCommonHeaders (),
-        data: xhrHelpers.getPreparedXhrData (),
+        data: requestData,
         onSuccess: callbacks.onSuccess,
         onFailure: callbacks.onFailure
       });
