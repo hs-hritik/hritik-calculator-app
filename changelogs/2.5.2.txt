@@ -1,0 +1,7 @@
+Changelog:
+Use config translations for message redaction msg
+Fix network call caching issue
+Fix: conversation redaction UI issues
+Fix redacted message style
+Fix issue with messages marked as seen when user toggles the widget
+Fix scroll lag issue on mobile devices

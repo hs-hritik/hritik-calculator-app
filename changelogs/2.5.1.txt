@@ -1,0 +1,2 @@
+Changelog:
+Fix: chat window scrolling to top when the widget is opened

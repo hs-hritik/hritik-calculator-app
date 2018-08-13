@@ -7,12 +7,11 @@
 
 define ("components/faqView",
   [
-    "gunpowder/utils/classes",
     "components/commons/viewHeader",
     "components/commons/branding",
     "components/infoView"
   ],
-  function (classes, ViewHeader, Branding, InfoView) {
+  function (ViewHeader, Branding, InfoView) {
     "use strict";
 
     const {PropTypes} = React;

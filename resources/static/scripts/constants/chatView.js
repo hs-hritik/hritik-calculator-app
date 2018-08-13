@@ -42,6 +42,11 @@ define ("constants/chatView",
       PLAIN_TEXT: "text"
     };
 
+    const CURSOR_TYPES = {
+      FORWARD: "forward",
+      BACKWARD: "backward"
+    };
+
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
     // @TODO - Below time interval's value is open to discussion
     // 6500 seems too low according to new conditions
@@ -50,12 +55,18 @@ define ("constants/chatView",
     // The number of failures after which we assume that there is some problem with the poller.
     const MAX_POLLER_FAILURES_ALLOWED = 2;
 
+    const USER_REDACTION_ERR_MSG = "User Not Found";
+    const USER_REDACTION_ERR_STATUS_CODE = 404;
+
     return {
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
       MESSAGES_FORCE_POLLING_TIMEOUT,
       USER_INPUT_TYPES,
       HTML_INPUT_TYPES,
-      MAX_POLLER_FAILURES_ALLOWED
+      CURSOR_TYPES,
+      MAX_POLLER_FAILURES_ALLOWED,
+      USER_REDACTION_ERR_MSG,
+      USER_REDACTION_ERR_STATUS_CODE
     };
   });

@@ -39,7 +39,7 @@ define ("extras/lsMiddleware",
           lsHelpers.setUserId (action.config.userId);
           break;
 
-        case ACTION_TYPES.ADD_MESSAGES:
+        case ACTION_TYPES.APPEND_MESSAGES:
           const hasUserMessage = action.messages.some ((m) => m.isCustomerMsg);
           const conversationHasStarted = state.appState.conversationStarted;
 

@@ -95,6 +95,9 @@ define ("actions/faqView",
         xhr ({
           route: routes.getFaq (domain, faqId),
           headers: xhrHelpers.getCommonHeaders (),
+          data: {
+            nonce: Date.now ()
+          },
           onSuccess: (response) => {
             const faq = messageHelpers.getProcessedFaq (response, language);
             dispatch (setActiveFaq (faq));

@@ -16,7 +16,7 @@ define ("constants/routes",
     // @TODO: This is not an ideal solution. Either make this configurable or
     // implement an automatic cache busting solution based on a file's content.
     // Also, update this in html/index.html, messenger.js, and requireConfig.js.
-    const getCss = () => "/css/style.css?v=2.4.0";
+    const getCss = () => "/css/style.css?v=2.5.2";
 
     // @NOTE - Used to create issue out of business hours
     const postIssue = (domain) => `${BASE}${domain}/issues`;
@@ -25,7 +25,9 @@ define ("constants/routes",
       return `${BASE}${domain}/${issueType}/${issueId}/messages`;
     };
 
-    const getIssuesAndMessages = (domain) => `${BASE}${domain}/messages`;
+    const getConversationUpdates = (domain) => `${BASE}${domain}/conversations/updates`;
+
+    const getConversationHistory = (domain) => `${BASE}${domain}/conversations/history`;
 
     const getFaq = (domain, faqId) => `${BASE}${domain}/faqs/${faqId}`;
 
@@ -63,7 +65,8 @@ define ("constants/routes",
       webSocket,
       postAnalyticsEvent,
       postUserReply,
-      getIssuesAndMessages,
+      getConversationUpdates,
+      getConversationHistory,
       postSuggestedFaqRead,
       postIssue
     };

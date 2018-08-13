@@ -33,12 +33,18 @@ define ("components/containers/chatViewFooter",
           footerIsActive,
           fullPrivacyEnabled,
           online,
-          browserIsMobile
+          browserIsMobile,
+          featuresEnabled: {
+            userAttachments: userAttachmentsEnabled
+          }
         },
         chatView: {
           userInput,
           activeFooter,
+          userIsRedacted,
           pollerFailureCount,
+          userIsViewingPastMessages,
+          unreadMessageIds,
           botState: {
             botStepInProgress
           }
@@ -56,6 +62,10 @@ define ("components/containers/chatViewFooter",
       if (!online) {
         failureConfig = {
           message: text.noInternetConnection
+        };
+      } else if (userIsRedacted) {
+        failureConfig = {
+          message: text.userRedactionMessage
         };
       } else if (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED) {
         failureConfig = {
@@ -76,6 +86,9 @@ define ("components/containers/chatViewFooter",
         footerIsActive: footerIsActive,
         userInput,
         fullPrivacyEnabled,
+        userIsViewingPastMessages,
+        userAttachmentsEnabled,
+        unreadCount: unreadMessageIds.length,
         failureConfig,
         botStepInProgress,
         browserIsMobile

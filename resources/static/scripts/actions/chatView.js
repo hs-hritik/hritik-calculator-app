@@ -27,7 +27,6 @@ define ("actions/chatView",
     "helpers/liveUpdates",
     "helpers/attachments",
     "helpers/analytics",
-    "helpers/common",
     "helpers/prepareProcessXhrData",
     "extras/postSdkMessage",
     "utils/browser",
@@ -37,8 +36,7 @@ define ("actions/chatView",
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
     xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, commonHelpers, prepareProcessXhrDataHelpers, postSdkMessage,
-    browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, postSdkMessage, browserUtils, upload) {
     "use strict";
 
     const {
@@ -50,7 +48,10 @@ define ("actions/chatView",
     const {
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
-      MESSAGES_FORCE_POLLING_TIMEOUT
+      MESSAGES_FORCE_POLLING_TIMEOUT,
+      CURSOR_TYPES,
+      USER_REDACTION_ERR_MSG,
+      USER_REDACTION_ERR_STATUS_CODE
     } = CHAT_VIEW_CONSTANTS;
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -65,6 +66,8 @@ define ("actions/chatView",
     } = APP_STATE_CONSTANTS;
 
     const {EVENT} = analyticsConstants;
+
+    const update = React.addons.update;
 
     const PROCESS = true;
     const SKIP_PLATFORM_ID = true;
@@ -98,18 +101,26 @@ define ("actions/chatView",
      * @param {Object} config - config
      * @param {Array} config.messages - array of response messages
      * @param {Boolean} [config.process] - whether to process messages
+     * @param {Boolean} [config.prepend] - whether to push messages at the start
      * @returns {Object} - action
      */
     const addMessages = (config) => {
-      const {messages, process = true} = config;
+      const {messages, process = true, prepend = false} = config;
       let processedMessages = messages;
 
       if (process) {
         processedMessages = messageHelpers.getProcessedMessages (messages);
       }
 
+      if (prepend) {
+        return {
+          type: ACTION_TYPES.PREPEND_MESSAGES,
+          messages: processedMessages
+        };
+      }
+
       return {
-        type: ACTION_TYPES.ADD_MESSAGES,
+        type: ACTION_TYPES.APPEND_MESSAGES,
         messages: processedMessages
       };
     };
@@ -200,25 +211,29 @@ define ("actions/chatView",
 
     /**
      * Action to set active issue message cursor.
-     * @param {Number} msgCursor - message cursor (unix timestamp)
+     * @param {Object} msgCursorObj - message cursor object
+     * @param {Number} msgCursorObj.cursorTs - unix timestamp of message's creation time
+     * @param {String} msgCursorObj.issueId - Issue ID
+     * @param {String} msgCursorObj.issueType - Type of issues (PRE_ISSUE/ISSUE)
+     * @param {String} msgCursorObj.cursorType - Type of cursor (FORWARD/BACKWARD)
      * @returns {Object} - action
      */
-    const setActiveIssueMsgCursor = (msgCursor) => {
+    const setActiveIssueMsgCursor = (msgCursorObj) => {
       return {
         type: ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR,
-        msgCursor
+        msgCursor: msgCursorObj
       };
     };
 
     /**
-     * Action to set unread messages count.
-     * @param {Number} count - unread count.
+     * Action to set unread message Ids
+     * @param {Array} messageIds - array of message Ids.
      * @returns {Object} - action
      */
-    const setUnreadCount = (count) => {
+    const setUnreadMessageIds = (messageIds) => {
       return {
-        type: ACTION_TYPES.SET_UNREAD_COUNT,
-        count
+        type: ACTION_TYPES.SET_UNREAD_MESSAGE_IDS,
+        messageIds
       };
     };
 
@@ -236,16 +251,13 @@ define ("actions/chatView",
             issueType
           },
           chatView: {
-            unreadCount
+            unreadMessageIds
           }
         } = getState ();
         const pluralIssueType = chatViewHelpers.getPluralizedIssueType (issueType);
 
-        if (unreadCount !== 0) {
-          dispatch (setUnreadCount (0));
-          postSdkMessage.updateUnreadCount (0);
-        }
-
+        // @TODO: message-Ids key is unconfirmed. Get Ack
+        // from the BE team
         xhr ({
           route: routes.putMessages (domain, activeIssueId, pluralIssueType),
           data: xhrHelpers.getPreparedXhrData ({
@@ -254,6 +266,11 @@ define ("actions/chatView",
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
         });
+
+        if (unreadMessageIds.length !== 0) {
+          dispatch (setUnreadMessageIds ([]));
+          postSdkMessage.updateUnreadCount (0);
+        }
       };
     };
 
@@ -264,9 +281,9 @@ define ("actions/chatView",
      */
     const switchToChatView = () => {
       return (dispatch, getState) => {
-        const {unreadCount} = getState ().chatView;
+        const {unreadMessageIds, userIsViewingPastMessages} = getState ().chatView;
 
-        if (unreadCount !== 0) {
+        if (unreadMessageIds.length !== 0 && !userIsViewingPastMessages) {
           store.dispatch (markMessagesSeen ());
         }
 
@@ -345,6 +362,16 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set user is redacted
+     * @returns {Object} - Action
+     */
+    const setUserIsRedacted = () => {
+      return {
+        type: ACTION_TYPES.SET_USER_IS_REDACTED
+      };
+    };
+
+    /**
      * Action to reset user input
      * This will reset label, errors, placeholders etc of user input
      * @returns {Object} - Action
@@ -352,6 +379,18 @@ define ("actions/chatView",
     const resetUserInput = () => {
       return {
         type: ACTION_TYPES.RESET_USER_INPUT_DATA
+      };
+    };
+
+    /**
+     * Action to set active issue message cursor.
+     * @param {Boolean} msgsLoaded - flag to denote if all messages have been loaded
+     * @returns {Object} - action
+     */
+    const setAllMessagesAreLoaded = (msgsLoaded) => {
+      return {
+        type: ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED,
+        msgsLoaded
       };
     };
 
@@ -466,6 +505,274 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to set latest conversation has been loaded
+     * @returns {Object} - Action
+     */
+    const setLatestConversationHasLoaded = () => {
+      return {
+        type: ACTION_TYPES.SET_LATEST_CONVERSATION_HAS_LOADED
+      };
+    };
+
+    /**
+     * Helper method to get particular issue id of the conversation
+     * @TODO: This should be moved to a helper so that other parts of
+     * code can use it as well.
+     * @param {Object} issue - issue object
+     * @returns {String} Issue ID
+     */
+    const _getIssueId = (issue) => {
+      if (issue.type === ISSUE_TYPE.PRE_ISSUE) {
+        return issue.preissue_id;
+      }
+
+      return issue.issue_id;
+    };
+
+
+    /**
+     * Helper method to create a date separator message
+     * @param {Number} timestamp - Unix timestamp that needs to rendered
+     * @param {Boolean} hr - Boolean to signify if a line is to be rendered or not
+     * @returns {Object} Conversation history object.
+     */
+    const _getIssueDateSeparator = (timestamp, hr = true) => {
+      const conversationStartDateMessage = messageHelpers.createMessage (
+        MESSAGE_TYPE.CHAT_SEPARATOR, {
+          hr,
+          timestamp: dateUtils.format (timestamp, "{dddd}, {mmmm} {dd}, {yyyy}")
+        }
+      );
+
+      return conversationStartDateMessage;
+    };
+
+    /**
+     * Helper method to return index of preissue for an issue
+     * @param {Array} issueList - list of issues
+     * @param {String} preIssueId - Id of the preissue that needs to be found
+     * @returns {Number} Matching issue for preIssue
+     */
+    const _getPreIssueIndex = (issueList, preIssueId) => {
+      for (let i = 0; i < issueList.length; i++) {
+        const issue = issueList[i];
+        if (issue.type === ISSUE_TYPE.PRE_ISSUE &&
+          issue.preissue_id === preIssueId) {
+          return i;
+        }
+      }
+
+      return -1;
+    };
+
+    /**
+     * Create a linear message list from issue list
+     * @param {Object} issues - Issue List
+     * @param {String} config.lastGroupId - ID of the last pre-issue in the list
+     * @param {String} config.hasOlderMsgs - Flag to determine if there are more messages
+     *                                       left to be rendered.
+     * @returns {Array} Array of messages
+     */
+    const getLinearMessages = (issues, config) => {
+      const finalMessages = [];
+      const {hasOlderMsgs} = config;
+
+      let previousGroupId = config.lastGroupId;
+      let redactionCount = 0;
+
+      issues.forEach ((issue) => {
+        const currentGroupId = issue.preissue_id;
+
+        // Count the number of redacted issues in succession.
+        // Essentially, we want to show "5 Conversations Redacted"
+        // when there are 5 conversations redacted in a row.
+        if (issue.redacted) {
+          redactionCount++;
+          return;
+        }
+
+        // If there has been transition from one issue to another
+        // insert a date separator.
+        //
+        // Since issues are received with the latest issue at the top and the
+        // oldest at the last, we create the right rendering order by using unshift
+        if (previousGroupId && currentGroupId !== previousGroupId) {
+          finalMessages.unshift (_getIssueDateSeparator (issue.created_at));
+        }
+
+        // Render a redaction message with redaction count.
+        if (redactionCount) {
+          finalMessages.unshift (
+            messageHelpers.createMessage (MESSAGE_TYPE.CONVERSATION_REDACTED, {
+              redactionCount
+            })
+          );
+          redactionCount = 0;
+        }
+
+        previousGroupId = currentGroupId;
+        finalMessages.unshift (...issue.messages);
+      });
+
+      // Render redaction message for remaining conversations
+      // Note: Conversation redaction message doesn't need to be rendered
+      // if it's the last conversation - hence hasOlderMsgs check.
+      if (redactionCount && hasOlderMsgs) {
+        const createdAt = issues [issues.length - 1].created_at;
+
+        finalMessages.unshift (_getIssueDateSeparator (createdAt));
+        finalMessages.unshift (
+          messageHelpers.createMessage (MESSAGE_TYPE.CONVERSATION_REDACTED, {
+            redactionCount
+          })
+        );
+      }
+
+      return finalMessages;
+    };
+
+    /**
+     * Function to return a correctly ordered list of issues.
+     *
+     * There's a chance that issues from the backend aren't
+     * in the correct order. We reorder them by searching preissue
+     * for every corresponding issue.
+     *
+     * Basically, it makes sure that the issue list reflects the way
+     * they are to be rendered (Issue-Preissue--Issue-Preissue).
+     *
+     * @param {Array} issueList - List of issues
+     * @returns {Array} Array of issue objects
+     */
+    const getOrderedIssueList = (issueList) => {
+      // @TODO: Check if cloning could be made more efficient
+      const clonedIssueList = issueList.map ((issue) => {
+        return update (issue, {});
+      });
+      const finalIssueList = [];
+
+      for (let i = 0; i < clonedIssueList.length; i++) {
+        const issue = clonedIssueList[i];
+
+        if (issue.processed) {
+          continue;
+        }
+
+        finalIssueList.push (issue);
+        issue.processed = true;
+
+        if (issue.type === ISSUE_TYPE.ISSUE) {
+          // Find preIssue in the list and add it to final list
+          const preIssueIndex = _getPreIssueIndex (clonedIssueList, issue.preissue_id);
+          const preIssue = preIssueIndex !== -1 ? clonedIssueList [preIssueIndex] : null;
+
+          // Check if the issue has already been processed in the preceding step
+          if (preIssue && !preIssue.processed) {
+            preIssue.processed = true;
+            finalIssueList.push (preIssue);
+          }
+        }
+      }
+
+      return finalIssueList;
+    };
+
+    /**
+     * Get the latest issue and its preissue.
+     * @param {Array} issues - List of issues
+     * @returns {Array}
+     */
+    const getLatestConversation = (issues) => {
+      const currentIssue = issues [0];
+      let previousIssue = null;
+
+      // If current issue type is 'issue', find pre issue from issues list
+      // and save it in previous
+      if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
+        previousIssue = arrayUtils.find (issues, (issue) => {
+          return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
+                  issue.preissue_id === currentIssue.preissue_id);
+        });
+      }
+
+      return previousIssue ? [currentIssue, previousIssue] : [currentIssue];
+    };
+
+    /**
+     * Predicate to return if all messages of latest conversation have loaded
+     * @param {Array} issues - List of issues
+     * @returns {Boolean}
+     */
+    const hasLatestConversationLoaded = (config) => {
+      const {issues, conversationHistoryEnabled, hasOlderMsgs} = config;
+
+      const oldestIssue = issues [issues.length - 1];
+      const latestIssue = issues [0];
+
+      // When conversationHistory is enabled, hasOlderMsgs would tell
+      // us if the conversation has ended.
+      if (conversationHistoryEnabled) {
+        return hasOlderMsgs === false;
+      }
+
+      // Here, we compare oldest and newest issue to see if there are
+      // more than two issues. If their group ids are same, it means that
+      // there's only one issue; if they are different, there is more than one.
+      //
+      // In case when there's only one issue in the issueList, hasOlderMsgs would
+      // tell us if the latest conversation has loaded.
+      return (oldestIssue.preissue_id !== latestIssue.preissue_id) || hasOlderMsgs === false;
+    };
+
+    /**
+     * Function to create a linear message list to be rendered
+     * from the list of issues.
+     * @param {Array} issueList - List of issues that have come in XHR response
+     * @param {String} config.lastIssueId - Last issue ID rendered in the message list
+     * @param {Boolean} config.hasOlderMsgs - Flag to determine if there are more messages
+     *                                        left to be rendered.
+     * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
+     *                                                      feature is enabled
+     * @returns {Array} List of messages
+     */
+    const createLinearMessageList = (issueList, config) => {
+      const {
+        lastGroupId,
+        hasOlderMsgs,
+        conversationHistoryEnabled
+      } = config;
+
+      const orderedIssues = getOrderedIssueList (issueList);
+      const issuesToRender = conversationHistoryEnabled ?
+        orderedIssues : getLatestConversation (orderedIssues);
+      const linearMsgList = getLinearMessages (issuesToRender, {
+        hasOlderMsgs,
+        lastGroupId
+      });
+      const latestConvHasLoaded = hasLatestConversationLoaded ({
+        issues: issueList,
+        hasOlderMsgs,
+        conversationHistoryEnabled
+      });
+
+      if (!linearMsgList.length) {
+        return [];
+      }
+
+      // if there are no more messages remaining to be fetched, we should
+      // render the timestamp without a <hr> at the top of list
+      if (latestConvHasLoaded) {
+        const oldestIssue = issueList [issueList.length - 1];
+
+        linearMsgList.unshift (
+          _getIssueDateSeparator (oldestIssue.created_at, false)
+        );
+      }
+
+      return linearMsgList;
+    };
+
+    /**
      * Returns active issue and list of messages
      * @param {Object} config - config for creating active issue and  message list
      * @param {Object} config.issues - issues list
@@ -475,41 +782,26 @@ define ("actions/chatView",
       const {
         chatView: {
           issueCursor
+        },
+        appState: {
+          fullPrivacyEnabled,
+          featuresEnabled: {
+            conversationHistory: conversationHistoryEnabled
+          }
         }
       } = store.getState ();
-      const {issues} = config;
-      const currentIssue = issues [0];
-      const currentIssueMessages = (currentIssue && currentIssue.messages) || [];
-      let previousIssue = null;
-      let previousIssueMessages = [];
-      let issueCreationDate = currentIssue.created_at;
+      const {issues, hasOlderMsgs} = config;
+      const latestConversation = getLatestConversation (issues);
+      const currentIssue = latestConversation [0];
+      const previousIssue = latestConversation [1];
+
       let messages = [];
 
-      // If current issue type is 'issue', find pre issue from issues list
-      // and save it in previous
-      if (currentIssue && currentIssue.type === ISSUE_TYPE.ISSUE) {
-        previousIssue = arrayUtils.find (issues, (issue) => {
-          return (issue.type === ISSUE_TYPE.PRE_ISSUE &&
-                  issue.internal_id === currentIssue.preissue_id);
-        });
-        if (previousIssue) {
-          issueCreationDate = previousIssue.created_at;
-          previousIssueMessages = previousIssue.messages || previousIssueMessages;
-        }
-      }
-
-      messages = previousIssueMessages.concat (currentIssueMessages);
-
-      // For the first fetch of issues list, add conversation start date message
-      // at the start of message list. (This is a system info message)
-      if (!issueCursor) {
-        const conversationStartDateMessage = messageHelpers.createMessage (
-          MESSAGE_TYPE.SYSTEM_INFO, {
-            body: dateUtils.format (issueCreationDate, "{dddd}, {mmmm} {dd}, {yyyy}")
-          }
-        );
-        messages = [conversationStartDateMessage].concat (messages);
-      }
+      messages = createLinearMessageList (issues, {
+        lastIssueId: null,
+        conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
+        hasOlderMsgs
+      });
 
       // When a preIssue gets converted to an issue, track issue_created event.
       // When the preIssue gets converted to an issue, the preIssue object's status
@@ -523,7 +815,7 @@ define ("actions/chatView",
         previousIssue.state_data.state === XHR_ISSUE_STATE.PRE_ISSUE.ISSUE_CREATED
       ) {
         analyticsHelpers.track (EVENT.ISSUE_CREATED, {
-          issueId: currentIssue.internal_id
+          issueId: currentIssue.issue_id
         });
       }
 
@@ -537,9 +829,13 @@ define ("actions/chatView",
      * Handle chat end
      * a] Either show start new conversation footer or close conversation footer
      * b] Add chat ended message in message list
+     * @param {Object} config - config object
+     * @param {Boolean} config.conversationHasEnded - Should conversation
+     *                                                     closed message be rendered.
      */
-    const handleChatEnd = () => {
+    const handleChatEnd = (config) => {
       const {dispatch, getState} = store;
+      const {conversationHasEnded} = config;
       const {
         appState: {
           sdkConfigOptions: {
@@ -550,6 +846,7 @@ define ("actions/chatView",
           text
         }
       } = getState ();
+      const conversationClosedMsg = conversationHasEnded ? text.conversationClosed : "";
 
       // If initial user message is set through api, show close conversation footer
       // Else show start new conversation footer
@@ -563,9 +860,10 @@ define ("actions/chatView",
 
       // Show system info message - This conversation has ended.
       dispatch (createMessage ({
-        type: MESSAGE_TYPE.SYSTEM_INFO,
+        type: MESSAGE_TYPE.CHAT_SEPARATOR,
         messageConfig: {
-          body: text.conversationEndNote
+          infoText: conversationClosedMsg,
+          hr: true
         }
       }));
     };
@@ -582,9 +880,6 @@ define ("actions/chatView",
         appState: {
           issueType,
           issueState
-        },
-        chatView: {
-          issueCursor
         }
       } = getState ();
 
@@ -615,13 +910,16 @@ define ("actions/chatView",
         } else if (issueType === ISSUE_TYPE.PRE_ISSUE) {
           // If preIssue is resolved i.e. user has accepted faq suggestions, then
           // provide an option to start new conversation
-          handleChatEnd ();
+          handleChatEnd ({
+            conversationHasEnded: false
+          });
         }
-      } else if (issueState === ISSUE_STATE.REJECTED && !issueCursor) {
-        // a] Issue cursor is not present i.e. its first poll (page refresh)
-        // AND
-        // b] Issue state is 'rejected' then handle end chat
-        handleChatEnd ();
+      } else if (issueState === ISSUE_STATE.REJECTED) {
+        // Show "Conversation Closed" message and "Start a new conversation"
+        // button when the issue is rejected
+        handleChatEnd ({
+          conversationHasEnded: true
+        });
       }
     };
 
@@ -672,13 +970,14 @@ define ("actions/chatView",
       for (let i = msgsLength - 1; i >= 0; i--) {
         const msg = messages [i];
         const {
-          type
+          type,
+          isSystemMsg
         } = msg;
 
         // isBotMessage will also handle the case where we get a non bot message
         // and it's not supported. For non bot message which is not supported, we
         // will not post bot cancel message.
-        if (messageHelpers.isBotMessage (msg)) {
+        if (!isSystemMsg && messageHelpers.isBotMessage (msg)) {
           const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported (type);
           const botStepIsInProgress = botMsgIsNotSupported ||
                                       messageHelpers.isBotStepMessage (type);
@@ -748,6 +1047,77 @@ define ("actions/chatView",
     };
 
     /**
+     * Checks if all the conversation have been redacted and
+     * creates a new preIssue + stops polling when they have been.
+     * @param {Object} config - conversation redaction config.
+     * @param {Array} config.issue - array of issues
+     * @param {Object} config.issueCursor - used to check if it's the first
+     *                                      fetch call
+     * @returns {Boolean} - whether all the conversations have been redacted
+     */
+    const handleAllConversationsRedaction = (config) => {
+      const {dispatch} = store;
+      const {issues, issueCursor} = config;
+
+      const issueListHasNonRedactedIssue = issues.some ((issue) => !issue.redacted);
+
+      // If all the conversations have been redacted there would
+      // be no messages and we should start conversation anew.
+      if (!issueListHasNonRedactedIssue && !issueCursor) {
+        stopPollingForMessages ();
+        dispatch (createPreIssue ());
+        return true;
+      }
+
+      return false;
+    };
+
+    /**
+     * Set the forward/backward message cursors from the issue list
+     * @param {Object} messageCursorConfig
+     * @param {Array} messageCursorConfig.issues - list of issues
+     * @param {String} messageCursorConfig.cursorType - type of cursor (FORWARD/BACKWARD)
+     * @param {Number} messageCursorConfig.cursorTs - unix timestamp of message whose cursor
+     *                                                needs to be set. Only needed FORWARD cursor.
+     */
+    const saveMessageCursor = (messageCursorConfig) => {
+      const {dispatch} = store;
+      const {
+        issue,
+        cursorType,
+        cursorTs
+      } = messageCursorConfig;
+
+      if (cursorType === CURSOR_TYPES.FORWARD) {
+        dispatch (
+          setActiveIssueMsgCursor ({
+            cursorType,
+            cursorTs,
+            issueType: issue.type,
+            issueId: _getIssueId (issue)
+          })
+        );
+      } else {
+        const oldestIssueMessages = issue.messages;
+
+        // If the issue is redacted, then it might have an empty
+        // list of messages
+        const oldestTimestamp = oldestIssueMessages [0] ?
+          oldestIssueMessages [0].created_at : issue.created_at;
+
+        dispatch (
+          setActiveIssueMsgCursor ({
+            cursorType,
+            cursorTs: oldestTimestamp,
+            issueType: issue.type,
+            preissueId: issue.preissue_id,
+            issueId: _getIssueId (issue)
+          })
+        );
+      }
+    };
+
+    /**
      * Handle submit initial user message for bot step
      * @param {String} messageType - Type of message
      */
@@ -774,6 +1144,131 @@ define ("actions/chatView",
     };
 
     /**
+     * Show/Hide past conversations loading animation
+     * @param {Boolean} loading - should the conversations loading animation be shown
+     * @returns {Object} action
+     */
+    const toggleConversationsLoader = (loading) => {
+      return {
+        type: ACTION_TYPES.TOGGLE_CONVERSATIONS_LOADER,
+        loading
+      };
+    };
+
+    /**
+     * Fire xhr to load more messages.
+     * @param {Object} config - data required for xhr
+     * @param {Function} config.onSuccess - success callback
+     * @param {Function} config.onEnd - end callback
+     */
+    const loadMoreMessages = () => {
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          domain,
+          fullPrivacyEnabled,
+          featuresEnabled: {
+            conversationHistory: conversationHistoryEnabled
+          }
+        },
+        chatView: {
+          messageCursor: {
+            [CURSOR_TYPES.BACKWARD]: {
+              value: cursorTs,
+              meta: {
+                issueType,
+                preIssueId,
+                issueId
+              }
+            }
+          },
+          pastConversationsLoading
+        }
+      } = getState ();
+
+      // If messages are already being loaded, return.
+      if (pastConversationsLoading) {
+        return;
+      }
+
+      const isIssue = issueType === ISSUE_TYPE.ISSUE;
+      const xhrData = {
+        cursor: cursorTs
+      };
+
+      if (isIssue) {
+        xhrData.issue_id = issueId;
+      } else {
+        xhrData.preissue_id = issueId;
+      }
+
+      dispatch (toggleConversationsLoader (true));
+
+      xhr ({
+        route: routes.getConversationHistory (domain),
+        data: xhrHelpers.getPreparedXhrData (xhrData),
+        method: "POST",
+        headers: xhrHelpers.getCommonHeaders (),
+        onSuccess: (response) => {
+          const {
+            issues,
+            has_older_messages: hasOlderMsgs
+          } = response;
+
+          if (!issues.length) {
+            return;
+          }
+
+          const linearMsgs = createLinearMessageList (issues, {
+            lastGroupId: preIssueId,
+            hasOlderMsgs,
+            conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled
+          });
+
+          handleSettingLatestConversationLoadStatus ({
+            hasOlderMsgs,
+            conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
+            issues
+          });
+
+          const oldestIssue = issues [issues.length - 1];
+
+          dispatch (
+            batchActions ([
+              toggleConversationsLoader (false),
+              addMessages ({
+                messages: linearMsgs,
+                prepend: true
+              }),
+              setAllMessagesAreLoaded (!hasOlderMsgs)
+            ])
+          );
+
+          saveMessageCursor ({
+            issue: oldestIssue,
+            cursorType: CURSOR_TYPES.BACKWARD
+          });
+        }
+      });
+    };
+
+    /**
+     * Set the flag in store when conversation history is disabled
+     * and all the messages have been loaded.
+     * @param {Boolean} config.conversationHistoryEnabled - Whether conversation history
+     *                                                      feature is enabled
+     * @param {Boolean} config.hasOlderMsgs - Whether more messages need to be loaded
+     * @param {Array} config.issues - List of issues
+     */
+    const handleSettingLatestConversationLoadStatus = (config) => {
+      const {dispatch} = store;
+
+      if (hasLatestConversationLoaded (config)) {
+        dispatch (setLatestConversationHasLoaded ());
+      }
+    };
+
+    /**
      * Xhr to fetch active issue messages.
      * On success, add messages to the store and also update the active
      * issue message cursor.
@@ -784,29 +1279,47 @@ define ("actions/chatView",
       const {
         appState: {
           domain,
+          fullPrivacyEnabled,
+          featuresEnabled: {
+            conversationHistory: conversationHistoryEnabled
+          },
           issueType: previousIssueType
         },
         chatView: {
-          messageCursor,
+          messageCursor: {
+            forward: forwardMessageCursor
+          },
           issueCursor,
           pollerFailureCount: prevPollerFailureCount
         }
       } = store.getState ();
 
-      const xhrData = {
-        "mc": JSON.stringify (messageCursor),
-        "new-timestamp": Date.now ()
-      };
+      const xhrData = {};
+      const {
+        meta: {
+          issueId: forwardMsgIssueId,
+          issueType
+        }
+      } = forwardMessageCursor;
+
+      if (forwardMsgIssueId) {
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          xhrData.preissue_id = forwardMsgIssueId;
+        } else if (issueType === ISSUE_TYPE.ISSUE) {
+          xhrData.issue_id = forwardMsgIssueId;
+        }
+      }
 
       if (issueCursor) {
-        xhrData.since = issueCursor;
+        xhrData.cursor = issueCursor;
       }
 
       lastFetchStartTime = Date.now ();
       lastFetchCompleted = false;
 
+      // @TODO: Confirm the keys after discussing with backend
       fetchMessagesXhr = xhr ({
-        route: routes.getIssuesAndMessages (domain),
+        route: routes.getConversationUpdates (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
@@ -816,29 +1329,50 @@ define ("actions/chatView",
           try {
             lastPollerCallSucceeded = true;
             const {
+              has_older_messages: hasOlderMsgs,
               issues = [],
-              timestamp
+              cursor
             } = response;
 
             if (!issues.length) {
               return;
             }
 
+            // Set the flag only in the first fetch call
+            if (!issueCursor) {
+              handleSettingLatestConversationLoadStatus ({
+                hasOlderMsgs,
+                conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
+                issues
+              });
+            }
+
+
+            const conversationsRedacted = handleAllConversationsRedaction ({
+              issues,
+              issueCursor
+            });
+
+            if (conversationsRedacted) {
+              return;
+            }
+
             const {
               currentIssue,
               messages
-            } = getCurrentIssueAndMessages ({issues});
+            } = getCurrentIssueAndMessages ({issues, hasOlderMsgs});
 
             const {
-              id: issueId,
-              internal_id: internalIssueId,
+              publish_id: issueId,
               type: currentIssueType,
               state_data: {
                 state: issueState
               },
               csat_received: isCsatSubmitted
             } = currentIssue;
+
             const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
+            const internalIssueId = _getIssueId (currentIssue);
 
             if (!isIssueActive (issueState)) {
               stopPollingForMessages ();
@@ -878,24 +1412,40 @@ define ("actions/chatView",
             if (messagesLength) {
               const latestMessage = messages [messagesLength - 1];
               const processedMessages = messageHelpers.getProcessedMessages (messages);
-              const pluralIssueType = chatViewHelpers.getPluralizedIssueType (currentIssueType);
 
               handleLatestMessage (latestMessage);
               saveLatestBotStepAndProcessBotInput (messages);
 
               dispatch (
-                batchActions ([
-                  addMessages ({
-                    messages: processedMessages,
-                    process: false
-                  }),
-                  setActiveIssueMsgCursor ({
-                    [pluralIssueType]: {
-                      [issueId]: timestamp
-                    }
-                  })
-                ])
+                addMessages ({
+                  messages: processedMessages,
+                  process: false
+                })
               );
+
+              saveMessageCursor ({
+                issue: currentIssue,
+                cursorTs: cursor,
+                cursorType: CURSOR_TYPES.FORWARD
+              });
+
+              // Only set the backward cursor when initial issues are being
+              // fetched, not when updates for issues are being received.
+              //
+              // Note: This works because issueCursor is not set before
+              // the first call.
+              if (!issueCursor) {
+                const oldestIssue = issues [issues.length - 1];
+
+                dispatch (
+                  setAllMessagesAreLoaded (!hasOlderMsgs)
+                );
+
+                saveMessageCursor ({
+                  issue: oldestIssue,
+                  cursorType: CURSOR_TYPES.BACKWARD
+                });
+              }
 
               if (isPreIssue) {
                 // Post user reply requires the messages to be added and user
@@ -915,13 +1465,24 @@ define ("actions/chatView",
             }
             handleIssueState ();
 
-            dispatch (setIssueCursor (timestamp));
+            dispatch (setIssueCursor (cursor));
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
           }
         },
-        onFailure: () => {
-          // @TODO: Handler failure.
+        onFailure: (request, statusCode) => {
+          let response;
+
+          try {
+            response = JSON.parse (request.response);
+          } catch (e) {
+            return;
+          }
+
+          if (response.msg === USER_REDACTION_ERR_MSG &&
+            statusCode === USER_REDACTION_ERR_STATUS_CODE) {
+            dispatch (setUserIsRedacted ());
+          }
         },
         onEnd: () => {
           const newPollerFailureCount = lastPollerCallSucceeded ? 0 : (prevPollerFailureCount + 1);
@@ -996,40 +1557,46 @@ define ("actions/chatView",
           activeView
         },
         chatView: {
-          unreadCount,
-          issueCursor
+          unreadMessageIds,
+          issueCursor,
+          userIsViewingPastMessages
         }
       } = getState ();
       const {messages} = config;
-      let finalUnreadCount = unreadCount;
+
+      // Clone the existing list of message ids.
+      const finalUnreadMessageIds = unreadMessageIds.concat ();
 
       // Calculate unread count for agent messages only
       messages.forEach ((msg) => {
         const {
+          id,
           type,
           state,
-          isCustomerMsg
+          isCustomerMsg,
+          isSystemMsg
         } = msg;
 
-        if (!isCustomerMsg &&
+        if (!isCustomerMsg && !isSystemMsg &&
             state !== MESSAGES_STATE.READ &&
-            type !== MESSAGE_TYPE.SYSTEM_INFO &&
             messageHelpers.isRenderableMessage (type)) {
-          finalUnreadCount++;
+          finalUnreadMessageIds.push (id);
         }
       });
 
-      // If the chat view is active, and the messenger is not in minimized state,
-      // that means the user has seen the messages.
-      if (!minimized && ACTIVE_VIEW.CHAT === activeView) {
+      // If the chat view is active, the messenger is not in minimized state,
+      // and the user is not viewing past messages that means the user
+      // has seen the messages.
+      if (!minimized && ACTIVE_VIEW.CHAT === activeView &&
+          !userIsViewingPastMessages) {
         dispatch (markMessagesSeen ());
       } else {
-        dispatch (setUnreadCount (finalUnreadCount));
-        postSdkMessage.updateUnreadCount (finalUnreadCount);
+        dispatch (setUnreadMessageIds (finalUnreadMessageIds));
+        postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length);
       }
 
       // Do not play sound on page load even if there are unread messages
-      if (issueCursor && finalUnreadCount) {
+      if (issueCursor && finalUnreadMessageIds.length) {
         audioHelpers.playReceive ();
       }
     };
@@ -1042,6 +1609,7 @@ define ("actions/chatView",
       return (dispatch, getState) => {
         const {
           appState: {
+            issueState,
             postChatFeatures: {
               resolutionQuestionCompleted,
               csatCompleted
@@ -1064,7 +1632,9 @@ define ("actions/chatView",
             event: EVENT.CSAT_REQUESTED
           });
         } else {
-          handleChatEnd ();
+          handleChatEnd ({
+            conversationHasEnded: issueState === ISSUE_STATE.REJECTED
+          });
         }
       };
     };
@@ -1437,10 +2007,13 @@ define ("actions/chatView",
           method: "POST",
           onSuccess: (response) => {
             const newIssueId = response.id;
+            const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
+              response.preissue_id : response.issue_id;
+
             dispatch (
               batchActions ([
                 setActiveIssueId (newIssueId),
-                actionCreators.setInternalIssueId (response.internal_id),
+                actionCreators.setInternalIssueId (internalId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
                 setChatViewFooter (ACTIVE_FOOTER.REPLY)
               ])
@@ -1535,6 +2108,40 @@ define ("actions/chatView",
         type: ACTION_TYPES.TOGGLE_SYSTEM_TYPING,
         typing
       };
+    };
+
+    /**
+     * Action to set flag when user is viewing past messages in the chat
+     * @param {Boolean} isViewing - Flag to set when user views past messages
+     * @returns {Object} - Action
+     */
+    const setUserIsViewingPastMessages = (isViewing) => {
+      return {
+        type: ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES,
+        isViewing
+      };
+    };
+
+    /**
+     * Handle user scrolling through the chat window
+     * @param {Boolean} userHasScrolledToPastConvs - Flag to set when user
+     *                                               views past messages
+     */
+    const handleScrollPastExistingConversation = (userHasScrolledToPastConvs) => {
+      const {dispatch, getState} = store;
+      const {
+        chatView: {
+          unreadMessageIds
+        }
+      } = getState ();
+
+      dispatch (
+        setUserIsViewingPastMessages (userHasScrolledToPastConvs)
+      );
+
+      if (unreadMessageIds.length > 0 && !userHasScrolledToPastConvs) {
+        dispatch (markMessagesSeen ());
+      }
     };
 
     /**
@@ -1822,10 +2429,13 @@ define ("actions/chatView",
       setChatViewFooter,
       updateIssueState,
       markMessagesSeen,
+      handleScrollPastExistingConversation,
       switchToChatView,
+      loadMoreMessages,
       createAttachmentMessages,
       createAttachmentMessage,
       showPostIssueResolutionFooter,
+      setUserIsViewingPastMessages,
       acceptResolutionQuestion,
       rejectResolutionQuestion,
       setUserInputData,

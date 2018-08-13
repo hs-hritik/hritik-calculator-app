@@ -1,0 +1,62 @@
+Branches:
+feature/conversation-history
+
+Changelog:
+Use url to infer extension of the image
+Reduce unread indicator radius
+Fix: scrolling issues in MessageList
+Add localized strings
+Consider empty msg list when checking for new messages in messageList
+Fix: render final date header when issueList has a single issue
+Render JumpToLatest btn in footer when ChatViewFooter is hidden
+Don't count system messages for unread count
+Make JumpToLatest button scroll faster
+Fix conversation redaction issues
+Show correct info message when user is redacted
+Disable conversation history when FullPrivacy is enabled
+Fix issue of scroll to bottom when load more api is called
+Fix: user not scrolling to the bottom after they send a message
+Fix few typos in Chatview actions
+Handle disabling of user attachments
+Remove message-ids from the message seen request
+Remove unused packages
+Move JumpToLatest button to footer to make it responsive to footer size
+Fix: Handle disabling of conversation history
+Fix: Two load more calls getting triggered.
+Fix: Message List scrolling to top when new messages are loaded
+Remove unused component
+Render Jump to Latest button at different positions to prevent overlap
+Fix: unread indicator getting reset on scrolling a little
+Fix: Messages seen PUT call getting triggered before issue is created
+Fix: ChatView getting stuck if conversation history is disabled
+Fix typos, variable names, and comments in ChatView actions
+Don't show conversation history if the feature is disabled
+Fix: use the correct oldest message.
+Show issue rejection ui while the user is still on chat screen
+Handle user redaction while using webchat
+Use array of message IDs to keep track of unread messages
+Add handling for conversation redaction.
+Add unread count indicator when there unread messages
+Fix comments and variable names for ChatView
+Convert GET call to POST according to the new contract
+Fix mulitple issues related to conversation history
+Use preIssueId as groupId while creating linear message list
+Change format of message cursors
+Load more messages when user scrolls up
+Add loading animation for messages loading.
+Don't scroll to bottom if Jump To Latest button is visible
+Handle loading of all messages
+Define process function to create messageList with all issues
+Add new UI for conversation closed/rejected
+Scroll to Bottom when JumpToLatest Button is clicked
+Create message type for redacted conversation
+Trigger load more when user scrolls to the top
+Show the JumpToLatest button when user scrolls up
+Create JumpToLatestBtn component
+Use 'cursor' instead of 'timestamp' as described in the new contract
+Add handling for message redaction
+Create new store structure for storing cursors
+Change message fetch XHR according to new contract
+Split ADD_MESSAGE into two actions
+Change the look of timestamp message
+Add a message type to render a separator between two conversations
