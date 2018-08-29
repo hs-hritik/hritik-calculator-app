@@ -1,0 +1,2 @@
+Changelog:
+Fix: messages not being marked as seen when chat window is toggled
