@@ -35,6 +35,7 @@ define ("components/chatView",
         showAgentNickname: PropTypes.bool,
         isTyping: PropTypes.bool,
         userIsViewingPastMessages: PropTypes.bool,
+        minimized: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onScrollPastExistingConversation: PropTypes.func,
@@ -86,11 +87,27 @@ define ("components/chatView",
           showCloseButton,
           onMinimizeConversation,
           text,
-          viewStyles
+          viewStyles,
+          minimized
         } = this.props;
 
+        // In certain cases, Safari ignores scroll events on
+        // the web chat window, making it impossible to scroll through
+        // the messages. This usually happens after toggling the
+        // web chat launcher.
+        //
+        // The root cause is not known but it was found that the
+        // problem is fixed when reflow/repaint is triggered on the
+        // Webchat component.
+        //
+        // Therefore, we assign a special class whenever the chat window
+        // is maximized to trigger reflow.
+        const viewClasses = classes ("hs-view", {
+          "hs-view--safari-fix": !minimized
+        });
+
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ViewHeader title={text.chatViewHeader}
                         showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />
