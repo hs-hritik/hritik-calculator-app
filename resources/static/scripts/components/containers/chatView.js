@@ -26,6 +26,7 @@ define ("components/containers/chatView",
           },
           activeIssueId,
           issueType,
+          minimized,
           online
         },
         chatView: {
@@ -56,6 +57,7 @@ define ("components/containers/chatView",
       // message IDs can be marked as read
       return {
         messages,
+        minimized,
         isTyping: systemTyping || agentTyping,
         showAgentNickname: agentNickname,
         text: text,
