@@ -1,0 +1,6 @@
+Branches:
+feature/unread-safari-issue
+
+Changelog:
+Fix: Safari ignoring scroll events after web chat is toggled
+Fix: messages marked as seen when chat window is minimized

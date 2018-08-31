@@ -2130,6 +2130,9 @@ define ("actions/chatView",
     const handleScrollPastExistingConversation = (userHasScrolledToPastConvs) => {
       const {dispatch, getState} = store;
       const {
+        appState: {
+          minimized
+        },
         chatView: {
           unreadMessageIds
         }
@@ -2139,7 +2142,7 @@ define ("actions/chatView",
         setUserIsViewingPastMessages (userHasScrolledToPastConvs)
       );
 
-      if (unreadMessageIds.length > 0 && !userHasScrolledToPastConvs) {
+      if (unreadMessageIds.length > 0 && !userHasScrolledToPastConvs && !minimized) {
         dispatch (markMessagesSeen ());
       }
     };
