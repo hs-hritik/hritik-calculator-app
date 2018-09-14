@@ -92,9 +92,6 @@ define ("extras/api",
         trigger,
         lsDataToMigrate
       } = data;
-      const {
-        userId
-      } = clientConfig;
 
       // Set localStorage data to be migrated to web chat's localStorage
       // Set data in the localStorage only if it hasn't happened yet.
@@ -115,7 +112,7 @@ define ("extras/api",
       dispatch (appStateActions.setParentPageInfo (parentPageInfo));
       dispatch (appStateActions.setClientConfig (clientConfig));
       dispatch (appStateActions.setDeviceId ());
-      dispatch (appStateActions.setAnonUserId (userId));
+      dispatch (appStateActions.setAnonUserId ());
       dispatch (appStateActions.setWmConfig ({
         trigger,
         helpshiftConfig: clientConfig
