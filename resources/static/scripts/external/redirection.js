@@ -1,6 +1,6 @@
 /**
  * JS for getting the user config from backend and depending
- * on data creating an iframe for the respective pid.hs.com
+ * on data creating an iframe for the respective truncate_pid.hs.com
  * The purpose of all of this is to set the appropriate values
  * from user's previous session into the local storage so that
  * user can continue the conversation.
@@ -21,7 +21,8 @@
 
 
   /**
-   * Post message to the iframe.
+   * Post message to the re-engagement iframe.
+   * The origin of the iframe is same as that of the web chat.
    * Helper function to communicate with the sdk iframe using
    * postMessage. Stringifies the data before sending it.
    * @param {Element} iframe - target iframe element
@@ -106,7 +107,7 @@
   };
 
   /**
-   * Create iframe for pid.hs.com
+   * Create iframe for truncate_pid.hs.com
    * @param {String} src - Source of the iframe
    * @returns {Element} - re-engagement iframe
    */
@@ -158,20 +159,9 @@
       }
 
       if (type === SEND_LISTEN_MESSAGE_TYPES.IFRAME_LOADED) {
-        const {aui, di, authToken, email, name} = response;
-
-        _postMessage (
-          iframe,
-          IFRAME_SRC,
-          SEND_LISTEN_MESSAGE_TYPES.SET_LS,
-          {
-            aui,
-            di,
-            authToken,
-            email,
-            name
-          }
-        );
+        // Post message to iframe with XHR response.
+        // This will set the local storage values for the truncate_pid.hs.com
+        _postMessage (iframe, IFRAME_SRC, SEND_LISTEN_MESSAGE_TYPES.SET_LS, response);
       } else if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE) {
         // If post message is successful then redirect to the brand's domain
         win.location.href = response.redirectionUrl;

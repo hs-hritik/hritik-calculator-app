@@ -21,7 +21,9 @@ define ("helpers/localStorage",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
       READ_FAQ_LIST: "rfl",
-      LS_MIGRATED: "lm"
+      LS_MIGRATED: "lm",
+      RE_ENGAGEMENT_REDIRECTED: "redirected",
+      RE_ENGAGEMENT_DATA: "red"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
