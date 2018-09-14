@@ -82,49 +82,29 @@ define ("actions/appState",
 
     /**
      * Set user identifier for anon user in state and localstorage.
-     *
-     * A user is identified by one the following two identifiers -
-     * 1. userId
-     *    - passed with the helpshiftConfig object
-     *    - denotes a "logged in user"
-     *    - is stored in localstorage (persisted across page reloads)
-     * 2. anonUserIdentifier
-     *    - created for anonymous (non-logged-in) user
-     *    - is associated with the "default profile"
-     *    - has a special format (hsft_anon_<timestamp>_<15 random characters>)
-     *    - is stored in localstorage (persisted across page reloads)
-     *
-     * Web Chat communicates with backend with either of the two values (with the
-     * `uid` key with APIs).
-     * `userId` always means the value passed with helpshiftConfig. This value
-     * gets set in the state and the localstorage with the SET_CLIENT_CONFIG action.
-     */
-    const setAnonUserId = () => {
-      return () => {
-        const anonUserId = commonHelpers.getAnonUserId ();
-        dispatchAndSetAnonUserId (anonUserId);
-      };
-    };
-
-    /**
-     * Dispatch and set the anon user id in the app state and localstorage respectively.
      * Checks localstorage if an anon user id already exists.
      * If it does, it gets the value from the ls and sets it in the
      * state while not affecting ls at all.
      * If it does not exist, it sets a new value (`anonUserId`) in state
      * and localstorage.
      *
-     * @param {string} anonUserId - Identifier for the anon user.
+     * FAQ: How does Web Chat identify the user?
+     * https://helpshift.atlassian.net/wiki/spaces/FRON/pages/774963891/
+       FAQ#FAQ-4.HowdoestheWebChatidentifytheuser?
      */
-    const dispatchAndSetAnonUserId = (anonUserId) => {
-      const currentAnonUserId = lsHelpers.getAnonUserId ();
+    const setAnonUserId = () => {
+      return () => {
+        const currentAnonUserId = lsHelpers.getAnonUserId ();
 
-      if (!currentAnonUserId) {
-        store.dispatch (setAnonUserIdValue (anonUserId));
-        lsHelpers.setAnonUserId (anonUserId);
-      } else {
-        store.dispatch (setAnonUserIdValue (currentAnonUserId));
-      }
+        if (!currentAnonUserId) {
+          const anonUserId = commonHelpers.getAnonUserId ();
+
+          store.dispatch (setAnonUserIdValue (anonUserId));
+          lsHelpers.setAnonUserId (anonUserId);
+        } else {
+          store.dispatch (setAnonUserIdValue (currentAnonUserId));
+        }
+      };
     };
 
     /**
