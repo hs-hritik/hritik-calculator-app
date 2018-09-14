@@ -9,10 +9,32 @@
  * @created Sep 10, 2018
  */
 
-(function () {
+(function (win) {
   "use strict";
 
   const GET_USER_CONFIG_URL = "/websdk/get-user-config/";
+  const SEND_LISTEN_MESSAGE_TYPES = {
+    SET_LS: "set-ls",
+    SET_LS_DONE: "set-ls-done",
+    IFRAME_LOADED: "iframe-loaded"
+  };
+
+
+  /**
+   * Post message to the iframe.
+   * Helper function to communicate with the sdk iframe using
+   * postMessage. Stringifies the data before sending it.
+   * @param {Element} iframe - target iframe element
+   * @param {String} targetUrl - Target URL
+   * @param {String} type - type of message
+   * @param {Object} data - data for the message
+   */
+  const _postMessage = (iframe, targetUrl, type, data) => {
+    iframe.contentWindow.postMessage (JSON.stringify ({
+      type,
+      data
+    }), targetUrl);
+  };
 
   /**
    * Convert passed object to query string format
@@ -101,7 +123,7 @@
    * Get re-engagement config from backend & on success of the XHR
    * create & append re-engagement iframe to the body.
    */
-  getReEnagementConfig (window.location.href, (response) => {
+  getReEnagementConfig (win.location.href, (response) => {
     // On dev env, this gets replaced by a localhost URL.
     // See babel tasks in resources/gulp/javascript.js
     const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
@@ -124,5 +146,36 @@
 
     const iframe = createReEngagementIframe (IFRAME_SRC);
     document.body.appendChild (iframe);
+
+    win.addEventListener ("message", (ev) => {
+      let type;
+
+      try {
+        const eventData = JSON.parse (ev.data);
+        type = eventData.type;
+      } catch (exception) {
+        return;
+      }
+
+      if (type === SEND_LISTEN_MESSAGE_TYPES.IFRAME_LOADED) {
+        const {aui, di, authToken, email, name} = response;
+
+        _postMessage (
+          iframe,
+          IFRAME_SRC,
+          SEND_LISTEN_MESSAGE_TYPES.SET_LS,
+          {
+            aui,
+            di,
+            authToken,
+            email,
+            name
+          }
+        );
+      } else if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE) {
+        // If post message is successful then redirect to the brand's domain
+        win.location.href = response.redirectionUrl;
+      }
+    }, false);
   });
-}) ();
+}) (window);
