@@ -12,6 +12,7 @@
 (function (win) {
   "use strict";
 
+  const ENV_API_ROOT = "{{ENV_API_ROOT}}";
   const GET_USER_CONFIG_URL = "/websdk/get-user-config/";
   const SEND_LISTEN_MESSAGE_TYPES = {
     SET_LS: "set-ls",
@@ -55,7 +56,7 @@
 
   /**
    * Function to make an XMLHttpRequest.
-   * This method only supports the GET request as it's the only
+   * This method only supports the POST request as it's the only
    * type of XHR required on this page.
    * @param {params} Object - object holding XHR parameters
    * @param {params.url} String - URL for the XHR
@@ -66,15 +67,17 @@
    */
   const sendXhr = (params = {}) => {
     const xhr = new XMLHttpRequest ();
-    let {url} = params;
-    const {data, onSuccess} = params;
-    const method = "GET";
+    let {data} = params;
+    const {url, onSuccess} = params;
+    const method = "POST";
 
     if (data) {
-      url += "?" + queryStringify (data);
+      data = queryStringify (data);
     }
 
     xhr.open (method, url, true);
+
+    xhr.setRequestHeader ("Content-Type", "application/x-www-form-urlencoded");
     xhr.setRequestHeader ("X-Requested-With", "XMLHttpRequest");
 
     // Handling success callback only as the XHR is expected to fail silently
@@ -86,7 +89,7 @@
       }
     };
 
-    xhr.send ();
+    xhr.send (data);
     return xhr;
   };
 
@@ -98,7 +101,7 @@
    */
   const getReEnagementConfig = (link, onSuccess) => {
     return sendXhr ({
-      GET_USER_CONFIG_URL,
+      url: ENV_API_ROOT + GET_USER_CONFIG_URL,
       data: {
         link
       },
