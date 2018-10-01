@@ -9,7 +9,7 @@
  * @created Sep 10, 2018
  */
 
-(function (win) {
+(function (win, doc) {
   "use strict";
 
   const ENV_API_ROOT = "{{ENV_API_ROOT}}";
@@ -149,7 +149,7 @@
    * @returns {Element} - re-engagement iframe
    */
   const createReEngagementIframe = (src) => {
-    const iframe = document.createElement ("iframe");
+    const iframe = doc.createElement ("iframe");
 
     iframe.id = "hs-re-engagement-iframe";
     iframe.src = src;
@@ -158,8 +158,16 @@
   };
 
   /**
+   * Shows the "redirecting to {channelName}..." text
+   * @params {String} name - channel name
+   */
+  const showRedirectingText = (name) => {
+    doc.querySelector (".js-redirection-text").innerText = `Redirecting to ${name}...`;
+  };
+
+  /**
    * Initializes the redirection page
-   * 1. @TODO: Shows the "redirecting to {channel_name}..." text
+   * 1. Shows the "redirecting to {channelName}..." text
    * 2. Fires an XHR to get the config for re-engagement
    */
   const init = () => {
@@ -175,6 +183,10 @@
     }
 
     const link = urlParams.get ("link");
+    const channelName = urlParams.get ("channel_name");
+
+    // Shows the "redirecting to {channelName}..." text
+    showRedirectingText (channelName);
 
     /*
      * Get re-engagement config from backend & on success of the XHR
@@ -204,7 +216,7 @@
       const IFRAME_SRC = `${DOMAIN}${PATH}`;
 
       const iframe = createReEngagementIframe (IFRAME_SRC);
-      document.body.appendChild (iframe);
+      doc.body.appendChild (iframe);
 
       win.addEventListener ("message", (ev) => {
         let type;
@@ -230,4 +242,4 @@
 
   // Initializes the redirection process
   init ();
-}) (window);
+}) (window, document);
