@@ -20,6 +20,42 @@
     IFRAME_LOADED: "iframe-loaded"
   };
 
+  /**
+   * Generates store object containing key-value pairs from the URL's query params.
+   *
+   * This is a workaround for IE & older versions of Safari.
+   * If URLSearchParams constructor is not present then use
+   *  _localUrlSearchParams.
+   *
+   * @returns {Object} - Contaings method to get the individual query param
+   */
+  const _localUrlSearchParams = () => {
+    // To see railroad diagram of the following reg exp visit:
+    // https://regexper.com/#%2F%28%5B%5E%26%3D%5D%2B%29%3D%3F%28%5B%5E%26%5D*%29%2Fg
+    const regex = /([^&=]+)=?([^&]*)/g, store = {};
+    let match;
+    let haystack = window.location.search;
+
+    haystack = haystack.substring (haystack.indexOf ("?") + 1, haystack.length);
+    match = regex.exec (haystack);
+
+    while (match) {
+      store [decodeURIComponent (match [1])] = decodeURIComponent (match [2]);
+      match = regex.exec (haystack);
+    }
+
+    return {
+      /**
+       * Returns the value corresponding to given key
+       * @param {String} key - query param key
+       * @returns {String} value - value from the store
+       */
+      get: (key) => {
+        return store [key];
+      }
+    };
+  };
+
 
   /**
    * Post message to the re-engagement iframe.
@@ -95,16 +131,14 @@
 
   /**
    * Fire XHR to get the re-engagement config.
-   * @param {String} link - Re-engagement link
+   * @param {Object} data - Re-engagement config request params
    * @param {Function} onSuccess - Function to execute on success of XHR
    * @retruns {Object} XMLHttpRequest
    */
-  const getReEnagementConfig = (link, onSuccess) => {
+  const getReEnagementConfig = (data = {}, onSuccess) => {
     return sendXhr ({
       url: ENV_API_ROOT + GET_USER_CONFIG_URL,
-      data: {
-        link
-      },
+      data,
       onSuccess
     });
   };
@@ -123,52 +157,77 @@
     return iframe;
   };
 
-  /*
-   * Get re-engagement config from backend & on success of the XHR
-   * create & append re-engagement iframe to the body.
+  /**
+   * Initializes the redirection page
+   * 1. @TODO: Shows the "redirecting to {channel_name}..." text
+   * 2. Fires an XHR to get the config for re-engagement
    */
-  getReEnagementConfig (win.location.href, (response) => {
-    // On dev env, this gets replaced by a localhost URL.
-    // See babel tasks in resources/gulp/javascript.js
-    const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
-    const urlParts = WEB_CHAT_ROOT.split ("://"),
-          PROTOCOL = `${urlParts [0]}://`,
-          PLAT_ID = response.pid,
-          HOST = urlParts [1],
-          PATH = "/html/re-engagement.html";
+  const init = () => {
+    let urlParams;
 
-    // Truncate platform id to a fixed length (24 in this implementation).
-    // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
-    // Part 1 - First split plat id by "_platform_" and slice the first part by 8
-    // chars -> get the first 8 chars of the domain. "testdoma" in this case.
-    // Part 2 - Then slice the plat id from the end by 16 chars -> get a unique
-    // part of the platform id. "-0319dffe2b25f9c" in this case.
-    const TRUNCATED_PLAT_ID = PLAT_ID.split ("_platform_") [0].slice (0, 8) + PLAT_ID.slice (-16);
+    // This is a workaround for IE & older versions of Safari.
+    // If URLSearchParams constructor is not present then use
+    // _localUrlSearchParams.
+    if (URLSearchParams) {
+      urlParams = new URLSearchParams (win.location.search);
+    } else {
+      urlParams = _localUrlSearchParams ();
+    }
 
-    const DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
-    const IFRAME_SRC = `${DOMAIN}${PATH}`;
+    const link = urlParams.get ("link");
 
-    const iframe = createReEngagementIframe (IFRAME_SRC);
-    document.body.appendChild (iframe);
+    /*
+     * Get re-engagement config from backend & on success of the XHR
+     * create & append re-engagement iframe to the body.
+     */
+    getReEnagementConfig ({
+      link
+    }, (response) => {
+      // On dev env, this gets replaced by a localhost URL.
+      // See babel tasks in resources/gulp/javascript.js
+      const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
+      const urlParts = WEB_CHAT_ROOT.split ("://"),
+            PROTOCOL = `${urlParts [0]}://`,
+            PLAT_ID = response.pid,
+            HOST = urlParts [1],
+            PATH = "/html/re-engagement.html";
 
-    win.addEventListener ("message", (ev) => {
-      let type;
+      // Truncate platform id to a fixed length (24 in this implementation).
+      // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
+      // Part 1 - First split plat id by "_platform_" and slice the first part by 8
+      // chars -> get the first 8 chars of the domain. "testdoma" in this case.
+      // Part 2 - Then slice the plat id from the end by 16 chars -> get a unique
+      // part of the platform id. "-0319dffe2b25f9c" in this case.
+      const TRUNCATED_PLAT_ID = PLAT_ID.split ("_platform_") [0].slice (0, 8) + PLAT_ID.slice (-16);
 
-      try {
-        const eventData = JSON.parse (ev.data);
-        type = eventData.type;
-      } catch (exception) {
-        return;
-      }
+      const DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
+      const IFRAME_SRC = `${DOMAIN}${PATH}`;
 
-      if (type === SEND_LISTEN_MESSAGE_TYPES.IFRAME_LOADED) {
-        // Post message to iframe with XHR response.
-        // This will set the local storage values for the truncate_pid.hs.com
-        _postMessage (iframe, IFRAME_SRC, SEND_LISTEN_MESSAGE_TYPES.SET_LS, response);
-      } else if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE) {
-        // If post message is successful then redirect to the brand's domain
-        win.location.href = response.redirectionUrl;
-      }
-    }, false);
-  });
+      const iframe = createReEngagementIframe (IFRAME_SRC);
+      document.body.appendChild (iframe);
+
+      win.addEventListener ("message", (ev) => {
+        let type;
+
+        try {
+          const eventData = JSON.parse (ev.data);
+          type = eventData.type;
+        } catch (exception) {
+          return;
+        }
+
+        if (type === SEND_LISTEN_MESSAGE_TYPES.IFRAME_LOADED) {
+          // Post message to iframe with XHR response.
+          // This will set the local storage values for the truncate_pid.hs.com
+          _postMessage (iframe, IFRAME_SRC, SEND_LISTEN_MESSAGE_TYPES.SET_LS, response);
+        } else if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE) {
+          // If post message is successful then redirect to the brand's domain
+          win.location.href = response.redirectionUrl;
+        }
+      }, false);
+    });
+  };
+
+  // Initializes the redirection process
+  init ();
 }) (window);
