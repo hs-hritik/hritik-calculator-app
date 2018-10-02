@@ -234,7 +234,7 @@
           _postMessage (iframe, IFRAME_SRC, SEND_LISTEN_MESSAGE_TYPES.SET_LS, response);
         } else if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE) {
           // If post message is successful then redirect to the brand's domain
-          win.location.href = response.redirectionUrl;
+          win.location.href = response.custom_url || response.last_session_url;
         }
       }, false);
     });
