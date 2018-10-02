@@ -913,6 +913,27 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set the value in the state which represents whether
+     * the widget should auto open after config has been fetched.
+     * @param {Boolean} widgetShouldAutoOpen - default is true
+     * @returns {Object}
+     */
+    const setWidgetShouldAutoOpen = (widgetShouldAutoOpen = true) => ({
+      type: ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN,
+      widgetShouldAutoOpen
+    });
+
+    /**
+     * Action to set re-engagement id
+     * @param {String} id - re-engagement id
+     * @returns {Object}
+     */
+    const setReEngagementId = (id) => ({
+      type: ACTION_TYPES.SET_RE_ENGAGEMENT_ID,
+      id
+    });
+
     return {
       setDeviceId,
       setAnonUserId,
@@ -929,6 +950,8 @@ define ("actions/appState",
       updateStyles,
       resetPreIssue,
       setConversationStarted,
-      setAppResetTrigger
+      setAppResetTrigger,
+      setWidgetShouldAutoOpen,
+      setReEngagementId
     };
   });

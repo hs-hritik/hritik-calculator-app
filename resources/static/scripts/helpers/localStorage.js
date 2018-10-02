@@ -23,7 +23,8 @@ define ("helpers/localStorage",
       READ_FAQ_LIST: "rfl",
       LS_MIGRATED: "lm",
       RE_ENGAGEMENT_REDIRECTED: "redirected",
-      RE_ENGAGEMENT_DATA: "red"
+      RE_ENGAGEMENT_DATA: "red",
+      RE_ENGAGEMENT_ID: "rid"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
@@ -204,6 +205,33 @@ define ("helpers/localStorage",
      */
     const getLsMigrated = () => !!lsUtils.getItem (KEYS.LS_MIGRATED);
 
+    /**
+     * Get a flag denoting that the user has been redirected for
+     * re-engagement in the ongoing conversation.
+     * @returns {boolean}
+     */
+    const getRedirectedFlag = () => !!lsUtils.getItem (KEYS.RE_ENGAGEMENT_REDIRECTED);
+
+    /**
+     * Get & parse the re-engagement data
+     * @returns {Object}
+     */
+    const getReEngagementData = () => lsUtils.getItem (KEYS.RE_ENGAGEMENT_DATA, true);
+
+    /**
+     * Set re-engagement id
+     * @param {String} id - re-engagement id
+     */
+    const setReEngagementId = (id) => lsUtils.setItem (KEYS.RE_ENGAGEMENT_ID, id);
+
+    /**
+     * Remove re-engagement related data from local storage
+     */
+    const removeReEngagementData = () => {
+      lsUtils.removeItem (KEYS.RE_ENGAGEMENT_REDIRECTED);
+      lsUtils.removeItem (KEYS.RE_ENGAGEMENT_DATA);
+    };
+
     return {
       LS_KEYS: KEYS,
       getUserId,
@@ -226,6 +254,10 @@ define ("helpers/localStorage",
       setReadFaqList,
       getReadFaqList,
       setLsMigrated,
-      getLsMigrated
+      getLsMigrated,
+      getRedirectedFlag,
+      getReEngagementData,
+      setReEngagementId,
+      removeReEngagementData
     };
   });

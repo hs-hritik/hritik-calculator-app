@@ -47,7 +47,7 @@
       const ls = window.localStorage;
 
       ls.setItem (LOCAL_STORAGE_KEYS.REDIRECTED, true);
-      ls.setItem (LOCAL_STORAGE_KEYS.RE_ENGAGEMENT_DATA, data);
+      ls.setItem (LOCAL_STORAGE_KEYS.RE_ENGAGEMENT_DATA, JSON.stringify (data));
 
       _postMessage (SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE);
     }
