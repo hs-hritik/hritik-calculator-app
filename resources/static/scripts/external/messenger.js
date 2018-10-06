@@ -651,6 +651,14 @@
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
       markSdkReady ();
+
+      // If widgetShouldAutoOpen is true then dispatch message to open
+      // the widget.
+      if (config.widgetShouldAutoOpen) {
+        toggleWebSdkIframe ({
+          minimized: false
+        });
+      }
     };
 
     doc.body.appendChild (launcherIframe);

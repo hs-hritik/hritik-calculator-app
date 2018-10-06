@@ -498,7 +498,8 @@ define ("actions/appState",
               appState: {
                 featuresEnabled,
                 wcEnabled
-              }
+              },
+              widgetShouldAutoOpen
             } = store.getState ();
 
             // Set the ui configuration flags in the state.
@@ -506,6 +507,11 @@ define ("actions/appState",
 
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig ());
+
+            // If widgetShouldAutoOpen is true then reset the value of it to false.
+            if (widgetShouldAutoOpen) {
+              store.dispatch (setWidgetShouldAutoOpen (false));
+            }
 
             if (wcEnabled) {
               // A side-effect of getting the web chat config would be to
@@ -595,6 +601,7 @@ define ("actions/appState",
       const {
         appState: {
           wcEnabled,
+          widgetShouldAutoOpen,
           sdkConfigOptions: {
             fullScreen
           }
@@ -605,7 +612,8 @@ define ("actions/appState",
       return {
         widgetEnabled: wcEnabled && !hideWidget,
         cssConfig: getLauncherCssConfig (),
-        fullScreen
+        fullScreen,
+        widgetShouldAutoOpen
       };
     };
 
