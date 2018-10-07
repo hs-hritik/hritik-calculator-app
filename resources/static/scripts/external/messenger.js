@@ -74,6 +74,7 @@
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
+    SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
@@ -93,7 +94,8 @@
    */
   const SUPPORTED_EVENTS = {
     CHAT_END: "chatEnd",
-    NEW_UNREAD_MESSAGES: "newUnreadMessages"
+    NEW_UNREAD_MESSAGES: "newUnreadMessages",
+    USER_CHANGED: "userChanged"
   };
 
   // Errors message strings
@@ -943,6 +945,10 @@
             parentPageInfo,
             lsDataToMigrate: state.lsDataToMigrate
           });
+          break;
+
+        case EVENT_TYPES.SDK_USER_CHANGED_VIA_RE_ENGAGEMENT:
+          callApiEventHandler (SUPPORTED_EVENTS.USER_CHANGED, data.userInfo);
           break;
 
         case EVENT_TYPES.SDK_CONFIG_LOADED:
