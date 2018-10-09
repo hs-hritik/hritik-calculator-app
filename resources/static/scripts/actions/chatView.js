@@ -961,7 +961,7 @@ define ("actions/chatView",
      * @param {Array} messages - list of unprocessed messages
      */
     const saveLatestBotStepAndProcessBotInput = (messages) => {
-      const {dispatch} = store;
+      const {dispatch, getState} = store;
       const msgsLength = messages.length;
 
       // Reverse loop on list of messages to see if there is any bot message.
@@ -998,6 +998,20 @@ define ("actions/chatView",
 
           return;
         }
+      }
+
+      // At this point, all the messages have been parsed and no bot message was
+      // encountered. In order to counter any unknown bug during the preissue state
+      // disable the footer so that the end user isn't able to send a message that
+      // doesn't correspond to a bot message during preissue.
+      const {
+        appState: {
+          issueType
+        }
+      } = getState ();
+
+      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+        handleIssueFooterAndTAI (DISABLE_FOOTER);
       }
     };
 
