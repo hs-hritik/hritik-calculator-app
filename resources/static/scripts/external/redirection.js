@@ -216,6 +216,14 @@
     getReEnagementConfig ({
       link
     }, (response) => {
+      if (response.expired_link) {
+        // If link has expired then redirect to provided URL.
+        // Webchat will consider this user as new anonymous user
+        // unless user logs-in into the system.
+        win.location.href = response.custom_url || response.last_session_url;
+        return;
+      }
+
       response = _getProcessedResponse (response);
 
       // On dev env, this gets replaced by a localhost URL.
