@@ -166,6 +166,27 @@
   };
 
   /**
+   * Process re-engagement data.
+   * @param {Object} data - response received from re-engagement config XHR
+   * @returns {Object} processed data
+   */
+  const _getProcessedResponse = (data) => {
+    // Backend always sends the email if present for the user.
+    // In frontend, email is considered as the unique identifier of the known user.
+    // Dropping email value if uid is present will help us keep the frontend logic
+    // simpler becasue now there is one less condition to check for "user change event"
+    // logic. i.e:
+    // 1. If just email is present then compare current user's email this email
+    // 2. If uid & email are both present then drop the email irrespective of
+    // known/unknown user and only compare the uid of current user and this uid.
+    if (data.uid) {
+      data.email = "";
+    }
+
+    return data;
+  };
+
+  /**
    * Initializes the redirection page
    * 1. Shows the "redirecting to {channelName}..." text
    * 2. Fires an XHR to get the config for re-engagement
@@ -195,6 +216,8 @@
     getReEnagementConfig ({
       link
     }, (response) => {
+      response = _getProcessedResponse (response);
+
       // On dev env, this gets replaced by a localhost URL.
       // See babel tasks in resources/gulp/javascript.js
       const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
