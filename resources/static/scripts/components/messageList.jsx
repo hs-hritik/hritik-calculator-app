@@ -64,6 +64,11 @@ define ("components/messageList",
         onScrollPastExistingConversation: PropTypes.func,
         onLoadMore: PropTypes.func,
         onSkipUserInput: PropTypes.func,
+
+        /**
+         * Widget is minimized or not
+         **/
+        minimized: PropTypes.bool.isRequired,
         /**
          * If chat view footer has any failure
          */
@@ -331,10 +336,9 @@ define ("components/messageList",
       },
 
       /**
-       * Restores previous scrolling position when new messages have been
-       * appended to the top.
+       * Restores previous scrolling position
        */
-      _restorePreviousScrollPosition (currentMessages, previousMessages) {
+      _restorePreviousScrollPosition () {
         const {
           scrollHeight,
           scrollTop,
@@ -344,15 +348,7 @@ define ("components/messageList",
         const previousScrollBottom = this._scrollBottom;
         const currentScrollBottom = scrollHeight - offsetHeight - scrollTop;
 
-        const currentFirstMessage = currentMessages [0];
-        const prevFirstMessage = previousMessages [0];
-
-        const messagesHaveBeenAppended = currentFirstMessage.id !== prevFirstMessage.id;
-
-        // When new messages are appended to the top, the Message list might
-        // scroll to the very top. To avoid that, we compare the current scrollBottom
-        // to the previous one and restore it if they are unequal.
-        if (messagesHaveBeenAppended && currentScrollBottom !== previousScrollBottom) {
+        if (currentScrollBottom !== previousScrollBottom) {
           this._scrollWrapperRef.scrollTop = scrollHeight - previousScrollBottom - offsetHeight;
         }
       },
@@ -384,13 +380,22 @@ define ("components/messageList",
         }
       },
 
-      /**
-       * Scroll to bottom if messages length is increased,
-       * or if there is typing indicator.
-       */
       componentDidUpdate (prevProps) {
-        const {messages} = this.props;
+        const {messages, minimized} = this.props;
         const previousMessages = prevProps.messages;
+        const currentFirstMessage = messages [0];
+        const prevFirstMessage = previousMessages [0];
+        const messagesHaveBeenAppended = currentFirstMessage.id !== prevFirstMessage.id;
+
+       /**
+        * Restores previous scrolling position when new messages have been
+        * appended to the top or if widget is toggled to open state.
+        * ON-CALL Issue: https://helpshift.atlassian.net/browse/ONCALL-3088 [Not retaining scroll
+        * position when widget is toggled on Firefox]
+        */
+        if ((!minimized && prevProps.minimized) || messagesHaveBeenAppended) {
+          this._restorePreviousScrollPosition ();
+        }
 
         // Scroll to bottom if the messages are being loaded for the
         // first time. This checked by seeing if there were there
@@ -409,7 +414,6 @@ define ("components/messageList",
           return;
         }
 
-        this._restorePreviousScrollPosition (messages, previousMessages);
         this._handleScrollingToBottom (messages, previousMessages);
       },
 
