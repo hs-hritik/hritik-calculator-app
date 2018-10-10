@@ -221,6 +221,12 @@ define ("helpers/localStorage",
     const setReEngagementId = (id) => lsUtils.setItem (KEYS.RE_ENGAGEMENT_ID, id);
 
     /**
+     * Get re-engagement id
+     * @returns {String} re-engagement id
+     */
+    const getReEngagementId = () => lsUtils.getItem (KEYS.RE_ENGAGEMENT_ID);
+
+    /**
      * Remove re-engagement related data from local storage
      */
     const removeReEngagementData = () => {
@@ -254,6 +260,7 @@ define ("helpers/localStorage",
       getRedirectedFlag,
       getReEngagementData,
       setReEngagementId,
+      getReEngagementId,
       removeReEngagementData
     };
   });

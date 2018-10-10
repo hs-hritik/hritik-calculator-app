@@ -190,13 +190,15 @@ define ("actions/appState",
      */
     const rehydrateState = () => {
       const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
-            readFaqList = lsHelpers.getReadFaqList ();
+            readFaqList = lsHelpers.getReadFaqList (),
+            reEngagementId = lsHelpers.getReEngagementId ();
 
       store.dispatch ({
         type: ACTION_TYPES.REHYDRATE,
         data: {
           suggestedFaqReadTracked,
-          readFaqList
+          readFaqList,
+          reEngagementId
         }
       });
     };
