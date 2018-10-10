@@ -234,6 +234,8 @@ define ("helpers/localStorage",
       lsUtils.removeItem (KEYS.RE_ENGAGEMENT_DATA);
     };
 
+    const removeReEngagementId = () => lsUtils.removeItem (KEYS.RE_ENGAGEMENT_ID);
+
     return {
       LS_KEYS: KEYS,
       getUserId,
@@ -261,6 +263,7 @@ define ("helpers/localStorage",
       getReEngagementData,
       setReEngagementId,
       getReEngagementId,
-      removeReEngagementData
+      removeReEngagementData,
+      removeReEngagementId
     };
   });

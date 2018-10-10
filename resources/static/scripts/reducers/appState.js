@@ -205,6 +205,11 @@ define ("reducers/appState",
             reEngagementId: {$set: action.id}
           });
 
+        case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
+          return update (state, {
+            reEngagementId: {$set: ""}
+          });
+
         case ACTION_TYPES.SET_CLIENT_CONFIG:
           const {
             config: {

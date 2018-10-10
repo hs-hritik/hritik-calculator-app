@@ -1690,7 +1690,8 @@ define ("actions/chatView",
         appState: {
           domain,
           activeIssueId,
-          issueType
+          issueType,
+          reEngagementId
         }
       } = getState ();
       const {
@@ -1726,6 +1727,13 @@ define ("actions/chatView",
           latestMessage,
           isIssue
         });
+      }
+
+      if (reEngagementId) {
+        xhrData.re_engagement_id = reEngagementId;
+
+        // Remove re-engagement id from the state & localStorage
+        dispatch (actionCreators.resetReEngagementId ());
       }
 
       if (isPreIssue || (isIssue && botStepInProgress)) {
