@@ -14,10 +14,10 @@
 
   const ENV_API_ROOT = "{{ENV_API_ROOT}}";
   const GET_USER_CONFIG_URL = "/websdk/get-user-config/";
-  const SEND_LISTEN_MESSAGE_TYPES = {
-    SET_LS: "set-ls",
-    SET_LS_DONE: "set-ls-done",
-    IFRAME_LOADED: "iframe-loaded"
+  const MESSAGE_TYPES = {
+    CMD_SET_LS: "set-ls",
+    SDK_SET_LS_DONE: "set-ls-done",
+    SDK_IFRAME_LOADED: "iframe-loaded"
   };
 
   /**
@@ -259,11 +259,11 @@
           return;
         }
 
-        if (type === SEND_LISTEN_MESSAGE_TYPES.IFRAME_LOADED) {
+        if (type === MESSAGE_TYPES.SDK_IFRAME_LOADED) {
           // Post message to iframe with XHR response.
           // This will set the local storage values for the truncate_pid.hs.com
-          _postMessage (iframe, IFRAME_SRC, SEND_LISTEN_MESSAGE_TYPES.SET_LS, response);
-        } else if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE) {
+          _postMessage (iframe, IFRAME_SRC, MESSAGE_TYPES.CMD_SET_LS, response);
+        } else if (type === MESSAGE_TYPES.SDK_SET_LS_DONE) {
           // If post message is successful then redirect to the brand's domain
           win.location.href = response.custom_url || response.last_session_url;
         }

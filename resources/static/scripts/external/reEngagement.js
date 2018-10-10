@@ -7,11 +7,12 @@
 (function () {
   "use strict";
 
-  const SEND_LISTEN_MESSAGE_TYPES = {
-    SET_LS: "set-ls",
-    SET_LS_DONE: "set-ls-done",
-    IFRAME_LOADED: "iframe-loaded"
+  const MESSAGE_TYPES = {
+    CMD_SET_LS: "set-ls",
+    SDK_SET_LS_DONE: "set-ls-done",
+    SDK_IFRAME_LOADED: "iframe-loaded"
   };
+
   const LOCAL_STORAGE_KEYS = {
     REDIRECTED: "redirected",
     RE_ENGAGEMENT_DATA: "red"
@@ -43,16 +44,16 @@
       return;
     }
 
-    if (type === SEND_LISTEN_MESSAGE_TYPES.SET_LS) {
+    if (type === MESSAGE_TYPES.CMD_SET_LS) {
       const ls = window.localStorage;
 
       ls.setItem (LOCAL_STORAGE_KEYS.REDIRECTED, true);
       ls.setItem (LOCAL_STORAGE_KEYS.RE_ENGAGEMENT_DATA, JSON.stringify (data));
 
-      _postMessage (SEND_LISTEN_MESSAGE_TYPES.SET_LS_DONE);
+      _postMessage (MESSAGE_TYPES.SDK_SET_LS_DONE);
     }
   }, false);
 
   /* Iframe is loaded */
-  _postMessage (SEND_LISTEN_MESSAGE_TYPES.IFRAME_LOADED);
+  _postMessage (MESSAGE_TYPES.SDK_IFRAME_LOADED);
 }) ();
