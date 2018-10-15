@@ -1,0 +1,5 @@
+Branches:
+feature/fix-cache-timeout-change
+
+Changelog:
+Disable footer in preissue state when no bot message is encountered
