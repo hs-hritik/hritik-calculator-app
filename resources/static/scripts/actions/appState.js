@@ -944,6 +944,16 @@ define ("actions/appState",
       id
     });
 
+    /**
+     * Action to set the focus value of the window
+     * @params {Boolean} windowIsFocused
+     * @returns {Object} - Action object
+     */
+    const setWindowIsFocused = (windowIsFocused) => ({
+      type: ACTION_TYPES.SET_WINDOW_IS_FOCUSED,
+      windowIsFocused
+    });
+
     return {
       setDeviceId,
       setAnonUserId,
@@ -962,6 +972,7 @@ define ("actions/appState",
       setConversationStarted,
       setAppResetTrigger,
       setWidgetShouldAutoOpen,
-      setReEngagementId
+      setReEngagementId,
+      setWindowIsFocused
     };
   });

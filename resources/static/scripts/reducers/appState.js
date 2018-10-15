@@ -140,7 +140,8 @@ define ("reducers/appState",
       online: true,
       // User re-engagement related intial values
       widgetShouldAutoOpen: false,
-      reEngagementId: ""
+      reEngagementId: "",
+      windowIsFocused: false
     };
 
     return (state = INITIAL_STATE, action) => {

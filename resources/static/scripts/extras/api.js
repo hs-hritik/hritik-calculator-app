@@ -19,13 +19,13 @@ define ("extras/api",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
+    "helpers/common",
     "extras/postSdkMessage",
-    "gunpowder/utils/localStorage",
     "gunpowder/utils/object"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, postSdkMessage, objUtils) {
+    app, analyticsHelpers, lsHelpers, commonHelpers, postSdkMessage, objUtils) {
     "use strict";
 
     const {
@@ -234,15 +234,10 @@ define ("extras/api",
       // Let the client know that the app is mounted.
       const {
         appState: {
-          activeView,
           conversationStarted,
           appResetTrigger,
           issueState,
           issueType
-        },
-        chatView: {
-          unreadMessageIds,
-          userIsViewingPastMessages
         }
       } = store.getState ();
 
@@ -253,10 +248,7 @@ define ("extras/api",
 
         // When chat widget is opened and user isn't viewing the past messages,
         // mark unread messages as seen.
-        if (unreadMessageIds.length !== 0 && ACTIVE_VIEW.CHAT === activeView &&
-            !userIsViewingPastMessages) {
-          store.dispatch (chatViewActions.markMessagesSeen ());
-        }
+        store.dispatch (chatViewActions.markMessagesSeen ());
 
         const preIssueIsRejected = (
           issueType === ISSUE_TYPE.PRE_ISSUE &&
