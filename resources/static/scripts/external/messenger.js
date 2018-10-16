@@ -239,6 +239,42 @@
   };
 
   /**
+   * Function to get the default value for registered event
+   * @returns {Object}
+   */
+  const _getDefaultRegisteredEventValue = () => {
+    return {
+      eventHasOccured: false,
+      data: null
+    };
+  };
+
+  // The events which are called before event handler is registered
+  // are stored in this register. The handler is called by checking
+  // if event is already present in the register. If event is present
+  // then call the handler with corresponding data and remove the event
+  // from the register.
+  // Following are the cases which should be considered for each new event:
+  // 1. If developer doesn't want previous user data then we don't have
+  // functionality in place to handle this scenario.
+  // 2. If same event occurs multiple times then we override the existing
+  // value with new value. We do not queue it.
+  // 3. This doesn't consider time sensitive events. If this is required
+  // then we need to think of functionality changes. Example: If we want
+  // to notify developer for every new message by agent.
+  const eventRegister = {
+    [SUPPORTED_EVENTS.USER_CHANGED]: _getDefaultRegisteredEventValue ()
+  };
+
+  /**
+   * Reset registered events value to default value.
+   * @param {String} eventName
+   */
+  const resetRegisteredEvent = (eventName) => {
+    eventRegister [eventName] = _getDefaultRegisteredEventValue ();
+  };
+
+  /**
    * Util to set style for a given element.
    * @param {Element} el - The element to which styles have to be applied.
    * @param {Object} styles - key-value pair of styles to be applied.
@@ -808,16 +844,30 @@
   };
 
   /**
-   * Function to find the event name in the event list and call its handler
+   * Function to find the event name in the event list and call its handler.
+   * If eventName is not found within event list then add it in eventRegister.
    * @param {String} eventName - Name of the event
    * @param {Any} eventData - Data for the event
    */
   const callApiEventHandler = (eventName, eventData) => {
+    let handlerIsFound = false;
+
     state.apiEvents.forEach ((apiEvent) => {
       if (apiEvent.eventName === eventName) {
         apiEvent.eventHandler (eventData);
+        handlerIsFound = true;
       }
     });
+
+    // Add event to the eventRegister if the handler is not found.
+    // The event handler will be called when developer calls the
+    // addEventListener Helpshift API for this event.
+    if (!handlerIsFound && eventRegister [eventName]) {
+      eventRegister [eventName] = {
+        eventHasOccured: true,
+        data: eventData
+      };
+    }
   };
 
   /**
@@ -1064,6 +1114,15 @@
         eventName,
         eventHandler
       });
+
+      // If event has already occured for the current event
+      // then call the handler with the registered data.
+      // Reset the event in register once the handler is called.
+      const registeredEvent = eventRegister [eventName];
+      if (registeredEvent && registeredEvent.eventHasOccured) {
+        callApiEventHandler (eventName, registeredEvent.data);
+        resetRegisteredEvent (eventName);
+      }
     }
   };
 
