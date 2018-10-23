@@ -56,7 +56,11 @@ define ("actions/chatView",
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
-    const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
+    const {
+      FILE_UPLOAD_ERRORS,
+      TYPE: ERROR_TYPES,
+      RESPONSE_STATUS_CODE
+    } = ERROR_CONSTANTS;
 
     const {
       ISSUE_STATE,
@@ -2019,7 +2023,13 @@ define ("actions/chatView",
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
-          onSuccess: (response) => {
+          onSuccess: (response, xhrObj, statusCode) => {
+            // If pre-issue exists then just start the poller to fetch existing.
+            if (statusCode === RESPONSE_STATUS_CODE.PRE_ISSUE_EXISTS) {
+              startPollingForMessages ();
+              return;
+            }
+
             const newIssueId = response.id;
             const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
               response.preissue_id : response.issue_id;

@@ -20,14 +20,12 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      READ_FAQ_LIST: "rfl",
-      LS_MIGRATED: "lm"
+      READ_FAQ_LIST: "rfl"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
-    const LS_MIGRATED_KEY = "LS_MIGRATED";
 
     /**
      * A helper function to check if a localstorage key should be
@@ -36,8 +34,6 @@ define ("helpers/localStorage",
      * The DEVICE_ID key should never be reset. We use DEVICE_ID to
      * identify a browser (the device). Its value should remain the
      * same irrespective of who (the user) is using it.
-     * Also, the LS_MIGRATED_KEY should not be reset because it's used to
-     * determine whether ls migration has happened for a browser.
      *
      * @param {string} key
      * @param {Object} [options]
@@ -48,8 +44,7 @@ define ("helpers/localStorage",
     const _shouldKeyReset = (key, options) => {
       return !(USER_KEYS.indexOf (key) !== -1) &&
              !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1)) &&
-             !(key === DEVICE_ID_KEY) &&
-             !(key === LS_MIGRATED_KEY);
+             !(key === DEVICE_ID_KEY);
     };
 
     /**
@@ -189,19 +184,6 @@ define ("helpers/localStorage",
      */
     const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
 
-    /**
-     * Set a flag denoting the localStorage migration completion.
-     */
-    const setLsMigrated = () => {
-      lsUtils.setItem (KEYS.LS_MIGRATED, true);
-    };
-
-    /**
-     * Get a flag denoting the localStorage migration completion.
-     * @returns {boolean}
-     */
-    const getLsMigrated = () => !!lsUtils.getItem (KEYS.LS_MIGRATED);
-
     return {
       LS_KEYS: KEYS,
       getUserId,
@@ -222,8 +204,6 @@ define ("helpers/localStorage",
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
       setReadFaqList,
-      getReadFaqList,
-      setLsMigrated,
-      getLsMigrated
+      getReadFaqList
     };
   });
