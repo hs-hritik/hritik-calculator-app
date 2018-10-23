@@ -159,10 +159,10 @@
 
   /**
    * Shows the "redirecting to {channelName}..." text
-   * @params {String} name - channel name
+   * @params {String} redirectText - localised redirection text to be displayed
    */
-  const showRedirectingText = (name) => {
-    doc.querySelector (".js-redirection-text").innerText = `Redirecting to ${name}...`;
+  const showRedirectingText = (redirectText) => {
+    doc.querySelector (".js-redirection-text").innerText = `${redirectText}...`;
   };
 
   /**
@@ -204,10 +204,10 @@
     }
 
     const link = urlParams.get ("link");
-    const channelName = urlParams.get ("channel_name");
+    const redirectText = urlParams.get ("redirect_text");
 
-    // Shows the "redirecting to {channelName}..." text
-    showRedirectingText (channelName);
+    // Shows the localised "Redirecting to" proceeded by the channel name.
+    showRedirectingText (redirectText);
 
     /*
      * Get re-engagement config from backend & on success of the XHR
