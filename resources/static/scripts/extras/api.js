@@ -23,7 +23,7 @@ define ("extras/api",
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, lsUtils) {
+    app, analyticsHelpers, lsHelpers) {
     "use strict";
 
     const {
@@ -39,11 +39,6 @@ define ("extras/api",
       ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
     ];
     const SKIP_REVIEW_COMMENTS = true;
-    const {
-      LS_KEYS: {
-        LAST_ACTIVITY_TIME: LAST_ACTIVITY_TIME_LS_VAL
-      }
-    } = lsHelpers;
 
     const {EVENT} = analyticsConstants;
 
@@ -89,28 +84,11 @@ define ("extras/api",
       const {
         clientConfig,
         parentPageInfo,
-        trigger,
-        lsDataToMigrate
+        trigger
       } = data;
       const {
         userId
       } = clientConfig;
-
-      // Set localStorage data to be migrated to web chat's localStorage
-      // Set data in the localStorage only if it hasn't happened yet.
-      if (!lsHelpers.getLsMigrated () && (lsDataToMigrate && typeof lsDataToMigrate === "object")) {
-        for (const lsKey in lsDataToMigrate) {
-          // Do not migrate last activity time because it results in preIssue reset.
-          // This flow is going to be removed after we are sure migration logic
-          // is not running for any user.
-          if (lsDataToMigrate.hasOwnProperty (lsKey) && lsKey !== LAST_ACTIVITY_TIME_LS_VAL) {
-            lsUtils.setItem (lsKey, lsDataToMigrate [lsKey]);
-          }
-        }
-
-        // Set a flag in the localStorage denoting the migration.
-        lsHelpers.setLsMigrated ();
-      }
 
       dispatch (appStateActions.setParentPageInfo (parentPageInfo));
       dispatch (appStateActions.setClientConfig (clientConfig));
