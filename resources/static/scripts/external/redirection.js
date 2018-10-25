@@ -180,7 +180,7 @@
     // 2. If uid & email are both present then drop the email irrespective of
     // known/unknown user and only compare the uid of current user and this uid.
     if (data.uid) {
-      data.email = "";
+      delete data.email;
     }
 
     return data;
