@@ -197,7 +197,7 @@
     // This is a workaround for IE & older versions of Safari.
     // If URLSearchParams constructor is not present then use
     // _localUrlSearchParams.
-    if (URLSearchParams) {
+    if (window.URLSearchParams) {
       urlParams = new URLSearchParams (win.location.search);
     } else {
       urlParams = _localUrlSearchParams ();
