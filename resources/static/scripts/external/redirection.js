@@ -12,6 +12,7 @@
 (function (win, doc) {
   "use strict";
 
+  const AUI_PREFIX = "hsft_anon_";
   const ENV_API_ROOT = "{{ENV_API_ROOT}}";
   const GET_USER_CONFIG_URL = "/websdk/get-user-config/";
   const MESSAGE_TYPES = {
@@ -187,6 +188,15 @@
   };
 
   /**
+   * Method to identify if user is anonymous or known
+   * @params {String} id - user id
+   * @returns {Boolean}
+   */
+  const _isUserAnonymous = (id = "") => {
+    return (id.indexOf (AUI_PREFIX) === 0);
+  };
+
+  /**
    * Initializes the redirection page
    * 1. Shows the "redirecting to {channelName}..." text
    * 2. Fires an XHR to get the config for re-engagement
@@ -216,11 +226,24 @@
     getReEnagementConfig ({
       link
     }, (response) => {
+      let redirectionLink;
+
+      // 1. If user is logged-in & custom URL is provided then redirect to
+      // the provided custom URL.
+      // 2. If user is logged-in & custom URL is not provided then redirect to
+      // the last session URL.
+      // 3. If user is anonymous then redirect to last session URL.
+      if (response.custom_url && !_isUserAnonymous (response.uid)) {
+        redirectionLink = response.custom_url;
+      } else {
+        redirectionLink = response.last_session_url;
+      }
+
       if (response.expired_link) {
         // If link has expired then redirect to provided URL.
         // Webchat will consider this user as new anonymous user
         // unless user logs-in into the system.
-        win.location.href = response.custom_url || response.last_session_url;
+        win.location.href = redirectionLink;
         return;
       }
 
@@ -265,7 +288,7 @@
           _postMessage (iframe, IFRAME_SRC, MESSAGE_TYPES.CMD_SET_LS, response);
         } else if (type === MESSAGE_TYPES.SDK_SET_LS_DONE) {
           // If post message is successful then redirect to the brand's domain
-          win.location.href = response.custom_url || response.last_session_url;
+          win.location.href = redirectionLink;
         }
       }, false);
     });
