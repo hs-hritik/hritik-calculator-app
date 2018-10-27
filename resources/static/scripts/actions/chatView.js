@@ -56,7 +56,11 @@ define ("actions/chatView",
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
-    const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
+    const {
+      FILE_UPLOAD_ERRORS,
+      TYPE: ERROR_TYPES,
+      RESPONSE_STATUS_CODE
+    } = ERROR_CONSTANTS;
 
     const {
       ISSUE_STATE,
@@ -961,7 +965,7 @@ define ("actions/chatView",
      * @param {Array} messages - list of unprocessed messages
      */
     const saveLatestBotStepAndProcessBotInput = (messages) => {
-      const {dispatch} = store;
+      const {dispatch, getState} = store;
       const msgsLength = messages.length;
 
       // Reverse loop on list of messages to see if there is any bot message.
@@ -998,6 +1002,20 @@ define ("actions/chatView",
 
           return;
         }
+      }
+
+      // At this point, all the messages have been parsed and no bot message was
+      // encountered. In order to counter any unknown bug during the preissue state
+      // disable the footer so that the end user isn't able to send a message that
+      // doesn't correspond to a bot message during preissue.
+      const {
+        appState: {
+          issueType
+        }
+      } = getState ();
+
+      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+        handleIssueFooterAndTAI (DISABLE_FOOTER);
       }
     };
 
@@ -2005,7 +2023,13 @@ define ("actions/chatView",
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
-          onSuccess: (response) => {
+          onSuccess: (response, xhrObj, statusCode) => {
+            // If pre-issue exists then just start the poller to fetch existing.
+            if (statusCode === RESPONSE_STATUS_CODE.PRE_ISSUE_EXISTS) {
+              startPollingForMessages ();
+              return;
+            }
+
             const newIssueId = response.id;
             const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
               response.preissue_id : response.issue_id;

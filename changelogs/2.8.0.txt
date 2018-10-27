@@ -1,0 +1,6 @@
+Branches:
+feature/fix-multiple-pre-issue-creation
+
+Changelog:
+Remove PID Migrator. Load Webchat frame directly.
+Handle starting of the poller if user has existing pre-issue/issue
