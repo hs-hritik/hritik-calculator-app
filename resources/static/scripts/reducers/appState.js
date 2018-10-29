@@ -211,6 +211,11 @@ define ("reducers/appState",
             reEngagementId: {$set: ""}
           });
 
+        case ACTION_TYPES.SET_WINDOW_IS_FOCUSED:
+          return update (state, {
+            windowIsFocused: {$set: action.windowIsFocused}
+          });
+
         case ACTION_TYPES.SET_CLIENT_CONFIG:
           const {
             config: {
