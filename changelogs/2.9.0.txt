@@ -1,0 +1,38 @@
+Branches:
+feature/re-engagement
+
+Changelog:
+Add reducer for "SET_WINDOW_IS_FOCUSED"
+Revert "Change condition to start the poller if issue exists"
+Add "SET_WINDOW_IS_FOCUSED" action type
+Change condition to start the poller if issue exists
+Add condition to decide the redirection URL
+Check window.URLSearchParams to avoid "Can't find variable" error
+Fix: delete re-engagement email key if uid is present
+Use h2 for displaying redirection text instead of h1
+Show localised redirection text
+Add functionality to handle unregistered events
+Fix: messages are incorrectly marked as seen
+Add styles to redirection text
+Add "CMD", "SDK" as prefix for post messages keys
+Pass re_engagement_id with the post user message XHR
+Pass engagement_id to the open widget event
+Handle link expiry case for re-engagement URL
+Process re-engagement config received via re-engagement config XHR
+Handle user changed event to call corresponding event handler
+Handle auto opening of widget
+Add functionality to handle re-engagement
+Fix the re-enagement file location & url variable
+Add method to show redirection text on the page
+Add a workaround for converting stringified query params to object
+Change get-user-config XHR method to "POST"
+Fix: remove userId param from setAnonUserId call
+Fix: generate new anon user id if it doesn't exist in local storage
+Set redirected & re-engagement data in local storage
+Handle sending & receiving of messages across iframe
+Create XHR to get the re-engagement config
+Add function to create re-engagement iframe
+Add JS file for re-engagement page
+Add JS file for redirection page
+Create HTML page for setting local storage values of pid.hs.com
+Create redirection.html page
