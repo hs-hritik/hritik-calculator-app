@@ -28,6 +28,7 @@ define ("actions/chatView",
     "helpers/attachments",
     "helpers/analytics",
     "helpers/prepareProcessXhrData",
+    "helpers/common",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
@@ -36,7 +37,9 @@ define ("actions/chatView",
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
     xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, prepareProcessXhrDataHelpers, postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, postSdkMessage,
+    browserUtils, upload) {
+
     "use strict";
 
     const {
@@ -248,6 +251,12 @@ define ("actions/chatView",
      */
     const markMessagesSeen = () => {
       return (dispatch, getState) => {
+        // Do not fire read event if user has not seen
+        // latest messages.
+        if (!commonHelpers.areMessagesSeen ()) {
+          return;
+        }
+
         const {
           appState: {
             domain,
@@ -284,13 +293,8 @@ define ("actions/chatView",
      * @returns {Function} - action
      */
     const switchToChatView = () => {
-      return (dispatch, getState) => {
-        const {unreadMessageIds, userIsViewingPastMessages} = getState ().chatView;
-
-        if (unreadMessageIds.length !== 0 && !userIsViewingPastMessages) {
-          store.dispatch (markMessagesSeen ());
-        }
-
+      return (dispatch) => {
+        store.dispatch (markMessagesSeen ());
         dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
       };
     };
@@ -1570,14 +1574,9 @@ define ("actions/chatView",
     const handleUnreadMessages = (config) => {
       const {dispatch, getState} = store;
       const {
-        appState: {
-          minimized,
-          activeView
-        },
         chatView: {
           unreadMessageIds,
-          issueCursor,
-          userIsViewingPastMessages
+          issueCursor
         }
       } = getState ();
       const {messages} = config;
@@ -1602,11 +1601,7 @@ define ("actions/chatView",
         }
       });
 
-      // If the chat view is active, the messenger is not in minimized state,
-      // and the user is not viewing past messages that means the user
-      // has seen the messages.
-      if (!minimized && ACTIVE_VIEW.CHAT === activeView &&
-          !userIsViewingPastMessages) {
+      if (commonHelpers.areMessagesSeen ()) {
         dispatch (markMessagesSeen ());
       } else {
         dispatch (setUnreadMessageIds (finalUnreadMessageIds));
@@ -1690,7 +1685,8 @@ define ("actions/chatView",
         appState: {
           domain,
           activeIssueId,
-          issueType
+          issueType,
+          reEngagementId
         }
       } = getState ();
       const {
@@ -1726,6 +1722,13 @@ define ("actions/chatView",
           latestMessage,
           isIssue
         });
+      }
+
+      if (reEngagementId) {
+        xhrData.re_engagement_id = reEngagementId;
+
+        // Remove re-engagement id from the state & localStorage
+        dispatch (actionCreators.resetReEngagementId ());
       }
 
       if (isPreIssue || (isIssue && botStepInProgress)) {
@@ -2152,23 +2155,12 @@ define ("actions/chatView",
      *                                               views past messages
      */
     const handleScrollPastExistingConversation = (userHasScrolledToPastConvs) => {
-      const {dispatch, getState} = store;
-      const {
-        appState: {
-          minimized
-        },
-        chatView: {
-          unreadMessageIds
-        }
-      } = getState ();
+      const {dispatch} = store;
 
       dispatch (
         setUserIsViewingPastMessages (userHasScrolledToPastConvs)
       );
-
-      if (unreadMessageIds.length > 0 && !userHasScrolledToPastConvs && !minimized) {
-        dispatch (markMessagesSeen ());
-      }
+      dispatch (markMessagesSeen ());
     };
 
     /**

@@ -82,49 +82,29 @@ define ("actions/appState",
 
     /**
      * Set user identifier for anon user in state and localstorage.
-     *
-     * A user is identified by one the following two identifiers -
-     * 1. userId
-     *    - passed with the helpshiftConfig object
-     *    - denotes a "logged in user"
-     *    - is stored in localstorage (persisted across page reloads)
-     * 2. anonUserIdentifier
-     *    - created for anonymous (non-logged-in) user
-     *    - is associated with the "default profile"
-     *    - has a special format (hsft_anon_<timestamp>_<15 random characters>)
-     *    - is stored in localstorage (persisted across page reloads)
-     *
-     * Web Chat communicates with backend with either of the two values (with the
-     * `uid` key with APIs).
-     * `userId` always means the value passed with helpshiftConfig. This value
-     * gets set in the state and the localstorage with the SET_CLIENT_CONFIG action.
-     */
-    const setAnonUserId = () => {
-      return () => {
-        const anonUserId = commonHelpers.getAnonUserId ();
-        dispatchAndSetAnonUserId (anonUserId);
-      };
-    };
-
-    /**
-     * Dispatch and set the anon user id in the app state and localstorage respectively.
      * Checks localstorage if an anon user id already exists.
      * If it does, it gets the value from the ls and sets it in the
      * state while not affecting ls at all.
      * If it does not exist, it sets a new value (`anonUserId`) in state
      * and localstorage.
      *
-     * @param {string} anonUserId - Identifier for the anon user.
+     * FAQ: How does Web Chat identify the user?
+     * https://helpshift.atlassian.net/wiki/spaces/FRON/pages/774963891/
+       FAQ#FAQ-4.HowdoestheWebChatidentifytheuser?
      */
-    const dispatchAndSetAnonUserId = (anonUserId) => {
-      const currentAnonUserId = lsHelpers.getAnonUserId ();
+    const setAnonUserId = () => {
+      return () => {
+        const currentAnonUserId = lsHelpers.getAnonUserId ();
 
-      if (!currentAnonUserId) {
-        store.dispatch (setAnonUserIdValue (anonUserId));
-        lsHelpers.setAnonUserId (anonUserId);
-      } else {
-        store.dispatch (setAnonUserIdValue (currentAnonUserId));
-      }
+        if (!currentAnonUserId) {
+          const anonUserId = commonHelpers.getAnonUserId ();
+
+          store.dispatch (setAnonUserIdValue (anonUserId));
+          lsHelpers.setAnonUserId (anonUserId);
+        } else {
+          store.dispatch (setAnonUserIdValue (currentAnonUserId));
+        }
+      };
     };
 
     /**
@@ -210,13 +190,15 @@ define ("actions/appState",
      */
     const rehydrateState = () => {
       const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked (),
-            readFaqList = lsHelpers.getReadFaqList ();
+            readFaqList = lsHelpers.getReadFaqList (),
+            reEngagementId = lsHelpers.getReEngagementId ();
 
       store.dispatch ({
         type: ACTION_TYPES.REHYDRATE,
         data: {
           suggestedFaqReadTracked,
-          readFaqList
+          readFaqList,
+          reEngagementId
         }
       });
     };
@@ -518,7 +500,8 @@ define ("actions/appState",
               appState: {
                 featuresEnabled,
                 wcEnabled
-              }
+              },
+              widgetShouldAutoOpen
             } = store.getState ();
 
             // Set the ui configuration flags in the state.
@@ -526,6 +509,11 @@ define ("actions/appState",
 
             // Send the config event loaded back to the client
             postSdkMessage.wmConfig (getClientWmConfig ());
+
+            // If widgetShouldAutoOpen is true then reset the value of it to false.
+            if (widgetShouldAutoOpen) {
+              store.dispatch (setWidgetShouldAutoOpen (false));
+            }
 
             if (wcEnabled) {
               // A side-effect of getting the web chat config would be to
@@ -615,6 +603,7 @@ define ("actions/appState",
       const {
         appState: {
           wcEnabled,
+          widgetShouldAutoOpen,
           sdkConfigOptions: {
             fullScreen
           }
@@ -625,7 +614,8 @@ define ("actions/appState",
       return {
         widgetEnabled: wcEnabled && !hideWidget,
         cssConfig: getLauncherCssConfig (),
-        fullScreen
+        fullScreen,
+        widgetShouldAutoOpen
       };
     };
 
@@ -933,6 +923,37 @@ define ("actions/appState",
       };
     };
 
+    /**
+     * Action to set the value in the state which represents whether
+     * the widget should auto open after config has been fetched.
+     * @param {Boolean} widgetShouldAutoOpen - default is true
+     * @returns {Object}
+     */
+    const setWidgetShouldAutoOpen = (widgetShouldAutoOpen = true) => ({
+      type: ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN,
+      widgetShouldAutoOpen
+    });
+
+    /**
+     * Action to set re-engagement id
+     * @param {String} id - re-engagement id
+     * @returns {Object}
+     */
+    const setReEngagementId = (id) => ({
+      type: ACTION_TYPES.SET_RE_ENGAGEMENT_ID,
+      id
+    });
+
+    /**
+     * Action to set the focus value of the window
+     * @params {Boolean} windowIsFocused
+     * @returns {Object} - Action object
+     */
+    const setWindowIsFocused = (windowIsFocused) => ({
+      type: ACTION_TYPES.SET_WINDOW_IS_FOCUSED,
+      windowIsFocused
+    });
+
     return {
       setDeviceId,
       setAnonUserId,
@@ -949,6 +970,9 @@ define ("actions/appState",
       updateStyles,
       resetPreIssue,
       setConversationStarted,
-      setAppResetTrigger
+      setAppResetTrigger,
+      setWidgetShouldAutoOpen,
+      setReEngagementId,
+      setWindowIsFocused
     };
   });

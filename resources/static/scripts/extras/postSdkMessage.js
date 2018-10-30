@@ -83,6 +83,16 @@ function (EVENT_TYPES, postMessage) {
     });
   };
 
+  /**
+   * Post sdk event to fire user changed event
+   * @param {Object} userInfo - Re-engagement user's information
+   */
+  const userChanged = (userInfo) => {
+    postMessage (EVENT_TYPES.SDK_USER_CHANGED_VIA_RE_ENGAGEMENT, {
+      userInfo
+    });
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -91,6 +101,7 @@ function (EVENT_TYPES, postMessage) {
     jsLoaded,
     chatEndEvent,
     uiConfigUpdatedEvent,
-    uiConfigErrors
+    uiConfigErrors,
+    userChanged
   };
 });
