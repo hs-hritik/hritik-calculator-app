@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.8.0";
+        PATH = "/html/index.html?v=2.9.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -69,6 +69,7 @@
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
+    SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
@@ -87,7 +88,8 @@
    */
   const SUPPORTED_EVENTS = {
     CHAT_END: "chatEnd",
-    NEW_UNREAD_MESSAGES: "newUnreadMessages"
+    NEW_UNREAD_MESSAGES: "newUnreadMessages",
+    USER_CHANGED: "userChanged"
   };
 
   // Errors message strings
@@ -234,6 +236,42 @@
     origin: win.location.origin,
     width: Math.max (doc.documentElement.clientWidth, win.innerWidth || 0),
     height: Math.max (doc.documentElement.clientHeight, win.innerHeight || 0)
+  };
+
+  /**
+   * Function to get the default value for registered event
+   * @returns {Object}
+   */
+  const _getDefaultRegisteredEventValue = () => {
+    return {
+      eventHasOccured: false,
+      data: null
+    };
+  };
+
+  // The events which are called before event handler is registered
+  // are stored in this register. The handler is called by checking
+  // if event is already present in the register. If event is present
+  // then call the handler with corresponding data and remove the event
+  // from the register.
+  // Following are the cases which should be considered for each new event:
+  // 1. If developer doesn't want previous user data then we don't have
+  // functionality in place to handle this scenario.
+  // 2. If same event occurs multiple times then we override the existing
+  // value with new value. We do not queue it.
+  // 3. This doesn't consider time sensitive events. If this is required
+  // then we need to think of functionality changes. Example: If we want
+  // to notify developer for every new message by agent.
+  const eventRegister = {
+    [SUPPORTED_EVENTS.USER_CHANGED]: _getDefaultRegisteredEventValue ()
+  };
+
+  /**
+   * Reset registered events value to default value.
+   * @param {String} eventName
+   */
+  const resetRegisteredEvent = (eventName) => {
+    eventRegister [eventName] = _getDefaultRegisteredEventValue ();
   };
 
   /**
@@ -619,6 +657,14 @@
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
       markSdkReady ();
+
+      // If widgetShouldAutoOpen is true then dispatch message to open
+      // the widget.
+      if (config.widgetShouldAutoOpen) {
+        toggleWebSdkIframe ({
+          minimized: false
+        });
+      }
     };
 
     doc.body.appendChild (launcherIframe);
@@ -798,16 +844,30 @@
   };
 
   /**
-   * Function to find the event name in the event list and call its handler
+   * Function to find the event name in the event list and call its handler.
+   * If eventName is not found within event list then add it in eventRegister.
    * @param {String} eventName - Name of the event
    * @param {Any} eventData - Data for the event
    */
   const callApiEventHandler = (eventName, eventData) => {
+    let handlerIsFound = false;
+
     state.apiEvents.forEach ((apiEvent) => {
       if (apiEvent.eventName === eventName) {
         apiEvent.eventHandler (eventData);
+        handlerIsFound = true;
       }
     });
+
+    // Add event to the eventRegister if the handler is not found.
+    // The event handler will be called when developer calls the
+    // addEventListener Helpshift API for this event.
+    if (!handlerIsFound && eventRegister [eventName]) {
+      eventRegister [eventName] = {
+        eventHasOccured: true,
+        data: eventData
+      };
+    }
   };
 
   /**
@@ -879,6 +939,10 @@
             clientConfig: win.helpshiftConfig,
             parentPageInfo
           });
+          break;
+
+        case EVENT_TYPES.SDK_USER_CHANGED_VIA_RE_ENGAGEMENT:
+          callApiEventHandler (SUPPORTED_EVENTS.USER_CHANGED, data.userInfo);
           break;
 
         case EVENT_TYPES.SDK_CONFIG_LOADED:
@@ -1050,6 +1114,15 @@
         eventName,
         eventHandler
       });
+
+      // If event has already occured for the current event
+      // then call the handler with the registered data.
+      // Reset the event in register once the handler is called.
+      const registeredEvent = eventRegister [eventName];
+      if (registeredEvent && registeredEvent.eventHasOccured) {
+        callApiEventHandler (eventName, registeredEvent.data);
+        resetRegisteredEvent (eventName);
+      }
     }
   };
 

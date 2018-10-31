@@ -12,10 +12,11 @@ define ("helpers/common",
     "gunpowder/utils/uuid",
     "constants/message",
     "constants/businessHoursView",
-    "constants/appState"
+    "constants/appState",
+    "constants/activeView"
   ],
   function (store, arrayUtils, getUuid, messageConstants, bhConstants,
-    appStateConstants) {
+    appStateConstants, ACTIVE_VIEW) {
     "use strict";
 
     const {ISSUE_TYPE} = appStateConstants;
@@ -308,6 +309,35 @@ define ("helpers/common",
       return NUMBER_WITH_DECIMAL_REG_EX.test (value);
     };
 
+    /*
+     * Predicate for checking if user has seen messages or not.
+     * If the window is in focus & chat view is active,
+     * Web Chat is not in minimized state, and the user is not
+     * viewing past messages that means the user has seen the messages.
+     * @returns {Boolean}
+     */
+    const areMessagesSeen = () => {
+      const {
+        appState: {
+          minimized,
+          activeView,
+          windowIsFocused
+        },
+        chatView: {
+          userIsViewingPastMessages,
+          unreadMessageIds
+        }
+      } = store.getState ();
+
+      return (
+        !!unreadMessageIds.length &&
+        windowIsFocused &&
+        !minimized &&
+        ACTIVE_VIEW.CHAT === activeView &&
+        !userIsViewingPastMessages
+      );
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -321,6 +351,7 @@ define ("helpers/common",
       getFaqSuggestionMessageId,
       isDateInputSupported,
       getDateObjectFromString,
-      isNumberValid
+      isNumberValid,
+      areMessagesSeen
     };
   });

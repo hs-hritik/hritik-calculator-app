@@ -20,7 +20,11 @@ define ("helpers/localStorage",
       SITE_ACTIVITY_START_TIME: "sast",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
-      READ_FAQ_LIST: "rfl"
+      READ_FAQ_LIST: "rfl",
+      LS_MIGRATED: "lm",
+      RE_ENGAGEMENT_REDIRECTED: "redirected",
+      RE_ENGAGEMENT_DATA: "red",
+      RE_ENGAGEMENT_ID: "rid"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
@@ -184,6 +188,54 @@ define ("helpers/localStorage",
      */
     const getReadFaqList = () => lsUtils.getItem (KEYS.READ_FAQ_LIST, true);
 
+    /**
+     * Set a flag denoting the localStorage migration completion.
+     */
+    const setLsMigrated = () => {
+      lsUtils.setItem (KEYS.LS_MIGRATED, true);
+    };
+
+    /**
+     * Get a flag denoting the localStorage migration completion.
+     * @returns {boolean}
+     */
+    const getLsMigrated = () => !!lsUtils.getItem (KEYS.LS_MIGRATED);
+
+    /**
+     * Get a flag denoting that the user has been redirected for
+     * re-engagement in the ongoing conversation.
+     * @returns {boolean}
+     */
+    const getRedirectedFlag = () => !!lsUtils.getItem (KEYS.RE_ENGAGEMENT_REDIRECTED);
+
+    /**
+     * Get & parse the re-engagement data
+     * @returns {Object}
+     */
+    const getReEngagementData = () => lsUtils.getItem (KEYS.RE_ENGAGEMENT_DATA, true);
+
+    /**
+     * Set re-engagement id
+     * @param {String} id - re-engagement id
+     */
+    const setReEngagementId = (id) => lsUtils.setItem (KEYS.RE_ENGAGEMENT_ID, id);
+
+    /**
+     * Get re-engagement id
+     * @returns {String} re-engagement id
+     */
+    const getReEngagementId = () => lsUtils.getItem (KEYS.RE_ENGAGEMENT_ID);
+
+    /**
+     * Remove re-engagement related data from local storage
+     */
+    const removeReEngagementData = () => {
+      lsUtils.removeItem (KEYS.RE_ENGAGEMENT_REDIRECTED);
+      lsUtils.removeItem (KEYS.RE_ENGAGEMENT_DATA);
+    };
+
+    const removeReEngagementId = () => lsUtils.removeItem (KEYS.RE_ENGAGEMENT_ID);
+
     return {
       LS_KEYS: KEYS,
       getUserId,
@@ -204,6 +256,14 @@ define ("helpers/localStorage",
       setSuggestedFaqReadTracked,
       getSuggestedFaqReadTracked,
       setReadFaqList,
-      getReadFaqList
+      getReadFaqList,
+      setLsMigrated,
+      getLsMigrated,
+      getRedirectedFlag,
+      getReEngagementData,
+      setReEngagementId,
+      getReEngagementId,
+      removeReEngagementData,
+      removeReEngagementId
     };
   });

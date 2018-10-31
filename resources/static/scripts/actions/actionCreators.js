@@ -204,6 +204,14 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to reset re-engagement Id
+     * @returns {Object} - Action
+     */
+    const resetReEngagementId = () => ({
+      type: ACTION_TYPES.RESET_RE_ENGAGEMENT_ID
+    });
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -222,6 +230,7 @@ define ("actions/actionCreators",
       toggleChatViewLoading,
       toggleOnlineStatus,
       setFooterActive,
-      setFooterInactive
+      setFooterInactive,
+      resetReEngagementId
     };
   });

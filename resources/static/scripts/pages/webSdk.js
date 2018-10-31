@@ -7,9 +7,10 @@
 require (
   [
     "extras/postSdkMessage",
-    "extras/api"
+    "extras/api",
+    "extras/globalEvents"
   ],
-  function (postSdkMessage, api) {
+  function (postSdkMessage, api, globalEvents) {
     "use strict";
 
     /**
@@ -33,6 +34,8 @@ require (
     };
 
     window.addEventListener ("message", onMessage, false);
+
+    globalEvents.addFocusAndBlurEventListener ();
 
     postSdkMessage.jsLoaded ();
   });

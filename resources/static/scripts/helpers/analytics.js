@@ -166,7 +166,8 @@ define ("helpers/analytics",
       const {
         appState: {
           internalIssueId,
-          issueType
+          issueType,
+          reEngagementId
         }
       } = store.getState ();
 
@@ -179,6 +180,10 @@ define ("helpers/analytics",
           b: outOfBusinessHours
         }
       };
+
+      if (reEngagementId) {
+        eventData.engagement_id = reEngagementId;
+      }
 
       // If issue exists — send issueId with `id` and type `c` with `t`.
       // If issue doesn’t exist — send preIssueId with `preissue_id` and type `i` with `t`.
