@@ -69,7 +69,8 @@ define ("actions/chatView",
       ISSUE_STATE,
       ISSUE_TYPE,
       XHR_ISSUE_STATE,
-      WEB_CHAT_VERSION
+      WEB_CHAT_VERSION,
+      ALLOWED_EMPTY_POLLER_COUNT
     } = APP_STATE_CONSTANTS;
 
     const {EVENT} = analyticsConstants;
@@ -88,7 +89,8 @@ define ("actions/chatView",
         lastFetchStartTime = null,
         lastFetchCompleted = false,
         lastPollerCallSucceeded = false,
-        agentActivitySubscribed = false;
+        agentActivitySubscribed = false,
+        emptyPollerCount = 0;
 
     /**
      * Action to update reply text.
@@ -1339,7 +1341,6 @@ define ("actions/chatView",
       lastFetchStartTime = Date.now ();
       lastFetchCompleted = false;
 
-      // @TODO: Confirm the keys after discussing with backend
       fetchMessagesXhr = xhr ({
         route: routes.getConversationUpdates (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
@@ -1357,6 +1358,28 @@ define ("actions/chatView",
             } = response;
 
             if (!issues.length) {
+              // If cursor is empty then only increment empty poller count.
+              // Empty cursor means we have not received any issues data from
+              // the poller
+              if (!cursor) {
+                const {
+                  appState: {
+                    minimized
+                  }
+                } = store.getState ();
+
+                emptyPollerCount++;
+
+                // Create a new preIssue if
+                // 1. Empty poller count is greater than allowed empty poller count
+                // 2. Widget is open
+                // Ref: ONCALL-3288 - This is to handle the case of issue redaction
+                // where issue_exists is true but issues list is empty.
+                if (emptyPollerCount >= ALLOWED_EMPTY_POLLER_COUNT && !minimized) {
+                  dispatch (createPreIssue ());
+                  emptyPollerCount = 0;
+                }
+              }
               return;
             }
 
@@ -1368,7 +1391,6 @@ define ("actions/chatView",
                 issues
               });
             }
-
 
             const conversationsRedacted = handleAllConversationsRedaction ({
               issues,
