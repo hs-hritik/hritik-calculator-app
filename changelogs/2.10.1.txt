@@ -1,0 +1,3 @@
+Changelog:
+Update user's last activity when preIssue is created
+Encode parent origin with the iframe URL
