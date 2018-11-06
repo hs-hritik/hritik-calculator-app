@@ -58,6 +58,12 @@ define ("constants/appState",
       PRE_ISSUE_RESET: "PRE_ISSUE_RESET"
     };
 
+    /**
+     * Allowed empty poller iterations for creating new preIssue. After these
+     * many poller iterations, create a new preIssue.
+     */
+    const ALLOWED_EMPTY_POLLER_COUNT = 5;
+
     return {
       WEB_CHAT_VERSION,
       ISSUE_STATE,
@@ -67,6 +73,7 @@ define ("constants/appState",
       ISSUE_TYPE,
       ISSUE_STATE_RESET,
       XHR_ISSUE_STATE,
-      APP_RESET_TRIGGER
+      APP_RESET_TRIGGER,
+      ALLOWED_EMPTY_POLLER_COUNT
     };
   });
