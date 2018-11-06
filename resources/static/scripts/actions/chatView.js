@@ -1959,6 +1959,15 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to update user's last activity time
+     */
+    const updateUserLastActivityTime = () => {
+      return {
+        type: ACTION_TYPES.UPDATE_USER_LAT
+      };
+    };
+
+    /**
      * Create pre-issue on backend.
      */
     const createPreIssue = () => {
@@ -2064,7 +2073,8 @@ define ("actions/chatView",
                 setActiveIssueId (newIssueId),
                 actionCreators.setInternalIssueId (internalId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
-                setChatViewFooter (ACTIVE_FOOTER.REPLY)
+                setChatViewFooter (ACTIVE_FOOTER.REPLY),
+                updateUserLastActivityTime ()
               ])
             );
             startPollingForMessages ();

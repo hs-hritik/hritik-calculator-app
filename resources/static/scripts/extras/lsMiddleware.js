@@ -48,6 +48,10 @@ define ("extras/lsMiddleware",
           }
           break;
 
+        case ACTION_TYPES.UPDATE_USER_LAT:
+          throttledSetLastActivityTime ();
+          break;
+
         case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
           // Proactive chat actions are to be executed based on the time on page
           // and time on site rules.
