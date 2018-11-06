@@ -32,7 +32,7 @@
 
   // A query string with parent page's origin, which is later used with the
   // postMessage call by web chat to the parent page.
-  const PARENT_ORIGIN_QUERY_STRING = `parent=${win.location.origin}`;
+  const PARENT_ORIGIN_QUERY_STRING = `parent=${encodeURIComponent (win.location.origin)}`;
 
   // @TODO: Use `&` or `?` appropriately. PATH already contains hard-coded `?` so
   // it's safe to use `&` here but this must be made generic when `?` is removed.
