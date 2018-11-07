@@ -154,11 +154,12 @@ define ("helpers/analytics",
 
     /**
      * Track the widget load event.
+     * @param {Number} ts - unix epoch
      */
-    const _trackWidgetLoad = () => {
+    const _trackWidgetLoad = (ts) => {
       const eventPayload = {
         e: JSON.stringify ([{
-          ts: Date.now (),
+          ts,
           t: PAYLOAD_EVENT.WIDGET_LOAD
         }])
       };
@@ -171,6 +172,7 @@ define ("helpers/analytics",
      * @param {Object} [config]
      * @param {string} [config.trigger] - whether the widget was opened via an API
      *    call or a user action.
+     * @param {Number} [config.ts] - unix epoch
      */
     const _trackWidgetOpen = (config = {}) => {
       const {
@@ -184,7 +186,7 @@ define ("helpers/analytics",
       const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 0 : 1;
 
       const eventData = {
-        ts: Date.now (),
+        ts: config.ts,
         d: {
           s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
           b: outOfBusinessHours
@@ -218,11 +220,12 @@ define ("helpers/analytics",
      * Track the issue created event. This event is tracked only when the issue
      * creation succeeds.
      * @param {string} [config.issueId] - issueId of the created issue
+     * @param {Number} [config.ts] - unix epoch
      */
     const _trackIssueCreated = (config = {}) => {
       const eventPayload = {
         e: JSON.stringify ([{
-          ts: Date.now (),
+          ts: config.ts,
           d: {
             id: config.issueId
           },
@@ -280,8 +283,9 @@ define ("helpers/analytics",
      * 3. CSAT submitted
      * @param {Object} config
      * @param {string} config.event - The CSAT event to track
+     * @param {Number} config.ts - unix epoch
      */
-    const _trackCsatEvents = ({event}) => {
+    const _trackCsatEvents = ({event, ts}) => {
       const {
         appState: {
           internalIssueId
@@ -289,7 +293,7 @@ define ("helpers/analytics",
       } = store.getState ();
 
       const eventData = {
-        ts: Date.now (),
+        ts,
         d: {
           id: internalIssueId
         }
@@ -332,8 +336,9 @@ define ("helpers/analytics",
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
+     * @param {Number} [config.ts] - Unix epoch
      */
-    const track = (event, config) => {
+    const track = (event, config = {}) => {
       // Do not track the event if initiated via a search engine bot or crawler.
       if (_isBot) {
         return;
@@ -350,10 +355,12 @@ define ("helpers/analytics",
         return;
       }
 
+      config.ts = config.ts || Date.now ();
+
       // Handle events considering state is ready now.
       switch (event) {
         case EVENT.WIDGET_LOAD:
-          _trackWidgetLoad ();
+          _trackWidgetLoad (config.ts);
           break;
         case EVENT.WIDGET_OPEN:
           _trackWidgetOpen (config);
@@ -370,7 +377,18 @@ define ("helpers/analytics",
       }
     };
 
+    /**
+     * Flush all the pending events and empty the queue
+     */
+    const flushEvents = () => {
+      while (eventsQueue.length > 0) {
+        const {name, config, ts} = eventsQueue.shift ();
+        track (name, config, ts);
+      }
+    };
+
     return {
-      track
+      track,
+      flushEvents
     };
   });
