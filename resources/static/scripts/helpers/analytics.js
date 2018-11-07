@@ -42,6 +42,16 @@ define ("helpers/analytics",
       PAYLOAD_SOURCE
     } = analyticsConstants;
 
+    /* If issue related data is unavailable i.e. if poller has not started yet
+     * then enqueue all the events. The event format is as follows:
+     * {
+     *   name: EVENT.WIDGET_OPEN,
+     *   config: eventConfig,
+     *   ts: Date.now ()
+     * }
+     */
+    const eventsQueue = [];
+
     let _route;
     const _isBot = browserUtils.isBot ();
     const _lang = browserUtils.getLanguage ();
@@ -305,30 +315,58 @@ define ("helpers/analytics",
     };
 
     /**
+     * Predicate to check if issue data is fetched.
+     * @returns {Boolean}
+     */
+    const _isIssueStateReady = () => {
+      const {
+        appState: {
+          internalIssueId
+        }
+      } = store.getState ();
+
+      return !!internalIssueId;
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
      */
     const track = (event, config) => {
       // Do not track the event if initiated via a search engine bot or crawler.
-      if (!_isBot) {
-        switch (event) {
-          case EVENT.WIDGET_LOAD:
-            _trackWidgetLoad ();
-            break;
-          case EVENT.WIDGET_OPEN:
-            _trackWidgetOpen (config);
-            break;
-          case EVENT.ISSUE_CREATED:
-            _trackIssueCreated (config);
-            break;
-          case EVENT.SUGGESTED_FAQ_READ:
-            _trackSuggestedFaqRead ();
-            break;
-          case EVENT.CSAT:
-            _trackCsatEvents (config);
-            break;
-        }
+      if (_isBot) {
+        return;
+      }
+
+      // If issue data is not available then enqueue event.
+      if (!_isIssueStateReady ()) {
+        eventsQueue.push ({
+          config,
+          name: event,
+          ts: Date.now ()
+        });
+
+        return;
+      }
+
+      // Handle events considering state is ready now.
+      switch (event) {
+        case EVENT.WIDGET_LOAD:
+          _trackWidgetLoad ();
+          break;
+        case EVENT.WIDGET_OPEN:
+          _trackWidgetOpen (config);
+          break;
+        case EVENT.ISSUE_CREATED:
+          _trackIssueCreated (config);
+          break;
+        case EVENT.SUGGESTED_FAQ_READ:
+          _trackSuggestedFaqRead ();
+          break;
+        case EVENT.CSAT:
+          _trackCsatEvents (config);
+          break;
       }
     };
 
