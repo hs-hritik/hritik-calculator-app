@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.9.0";
+        PATH = "/html/index.html?v=2.10.1";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -29,7 +29,14 @@
 
   // @TODO: Rename WEB_SDK -> WEB_CHAT
   const WEB_SDK_DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
-  const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
+
+  // A query string with parent page's origin, which is later used with the
+  // postMessage call by web chat to the parent page.
+  const PARENT_ORIGIN_QUERY_STRING = `parent=${encodeURIComponent (win.location.origin)}`;
+
+  // @TODO: Use `&` or `?` appropriately. PATH already contains hard-coded `?` so
+  // it's safe to use `&` here but this must be made generic when `?` is removed.
+  const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}&${PARENT_ORIGIN_QUERY_STRING}`;
 
   const WIDGET_POSITIONS = {
     TOP_LEFT: "top-left",
