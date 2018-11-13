@@ -4,7 +4,6 @@ const gulp = require ("gulp");
 const babel = require ("gulp-babel");
 const rename = require ("gulp-rename");
 const uglify = require ("gulp-uglify");
-const download = require ("gulp-download");
 const print = require ("gulp-print");
 const notifier = require ("node-notifier");
 const {argv} = require ("yargs");
@@ -77,8 +76,6 @@ const PATHS = {
     "!dist/scripts/external/**"
   ]
 };
-
-const REACT_URL = "http://fb.me/react-with-addons-{version}{min}.js";
 
 /**
  * Paths used in templating
@@ -244,28 +241,6 @@ gulp.task ("build-localshiva", function () {
         skipBinary: true
       }))
       .pipe (gulp.dest (PATHS.localshivaDest));
-});
-
-/**
- * Task to update react library with the latest version.
- * (For lazy people)
- */
-gulp.task ("update-react", function () {
-  const version = argv.version;
-
-  if (!version) {
-    console.log ("Please enter React version");
-    return;
-  }
-  const url = REACT_URL.replace ("{version}", version);
-
-  download (url.replace ("{min}", ""))
-               .pipe (rename ("react-with-addons.js"))
-               .pipe (gulp.dest (PATHS.libs));
-
-  download (url.replace ("{min}", ".min"))
-               .pipe (rename ("react-with-addons-min.js"))
-               .pipe (gulp.dest (PATHS.libs));
 });
 
 /**

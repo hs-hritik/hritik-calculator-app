@@ -2337,33 +2337,6 @@
       "from": "gulp-csscomb@>=3.0.8 <4.0.0",
       "resolved": "https://registry.npmjs.org/gulp-csscomb/-/gulp-csscomb-3.0.8.tgz"
     },
-    "gulp-download": {
-      "version": "0.0.1",
-      "from": "gulp-download@0.0.1",
-      "resolved": "https://registry.npmjs.org/gulp-download/-/gulp-download-0.0.1.tgz",
-      "dependencies": {
-        "gulp-util": {
-          "version": "3.0.8",
-          "from": "gulp-util@latest",
-          "resolved": "https://registry.npmjs.org/gulp-util/-/gulp-util-3.0.8.tgz"
-        },
-        "minimist": {
-          "version": "1.2.0",
-          "from": "minimist@>=1.1.0 <2.0.0",
-          "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz"
-        },
-        "object-assign": {
-          "version": "3.0.0",
-          "from": "object-assign@>=3.0.0 <4.0.0",
-          "resolved": "https://registry.npmjs.org/object-assign/-/object-assign-3.0.0.tgz"
-        },
-        "through": {
-          "version": "2.3.8",
-          "from": "through@latest",
-          "resolved": "https://registry.npmjs.org/through/-/through-2.3.8.tgz"
-        }
-      }
-    },
     "gulp-eslint": {
       "version": "3.0.1",
       "from": "gulp-eslint@>=3.0.1 <4.0.0",
@@ -4100,11 +4073,6 @@
       "from": "request@latest",
       "resolved": "https://registry.npmjs.org/request/-/request-2.83.0.tgz"
     },
-    "request-progress": {
-      "version": "3.0.0",
-      "from": "request-progress@latest",
-      "resolved": "https://registry.npmjs.org/request-progress/-/request-progress-3.0.0.tgz"
-    },
     "require-dir": {
       "version": "0.3.2",
       "from": "require-dir@>=0.3.1 <0.4.0",
@@ -4550,11 +4518,6 @@
       "version": "1.0.2",
       "from": "textextensions@>=1.0.0 <1.1.0",
       "resolved": "https://registry.npmjs.org/textextensions/-/textextensions-1.0.2.tgz"
-    },
-    "throttleit": {
-      "version": "1.0.0",
-      "from": "throttleit@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/throttleit/-/throttleit-1.0.0.tgz"
     },
     "through": {
       "version": "2.3.8",
