@@ -1510,6 +1510,10 @@ define ("actions/chatView",
             handleIssueState ();
 
             dispatch (setIssueCursor (cursor));
+
+            // Considering the state is ready, flush all the events recorded
+            // till now.
+            analyticsHelpers.flushEvents ();
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
           }
