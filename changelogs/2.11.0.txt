@@ -1,0 +1,6 @@
+Branches:
+feature/widget-open-event-fix
+
+Changelog:
+Flush events once the issue state is ready
+Enqueue events if issue state is not ready
