@@ -28,6 +28,7 @@ define ("actions/chatView",
     "helpers/attachments",
     "helpers/analytics",
     "helpers/prepareProcessXhrData",
+    "helpers/common",
     "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
@@ -36,7 +37,9 @@ define ("actions/chatView",
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
     xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, prepareProcessXhrDataHelpers, postSdkMessage, browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, postSdkMessage,
+    browserUtils, upload) {
+
     "use strict";
 
     const {
@@ -56,13 +59,18 @@ define ("actions/chatView",
 
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
 
-    const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
+    const {
+      FILE_UPLOAD_ERRORS,
+      TYPE: ERROR_TYPES,
+      RESPONSE_STATUS_CODE
+    } = ERROR_CONSTANTS;
 
     const {
       ISSUE_STATE,
       ISSUE_TYPE,
       XHR_ISSUE_STATE,
-      WEB_CHAT_VERSION
+      WEB_CHAT_VERSION,
+      ALLOWED_EMPTY_POLLER_COUNT
     } = APP_STATE_CONSTANTS;
 
     const {EVENT} = analyticsConstants;
@@ -81,7 +89,8 @@ define ("actions/chatView",
         lastFetchStartTime = null,
         lastFetchCompleted = false,
         lastPollerCallSucceeded = false,
-        agentActivitySubscribed = false;
+        agentActivitySubscribed = false,
+        emptyPollerCount = 0;
 
     /**
      * Action to update reply text.
@@ -244,6 +253,12 @@ define ("actions/chatView",
      */
     const markMessagesSeen = () => {
       return (dispatch, getState) => {
+        // Do not fire read event if user has not seen
+        // latest messages.
+        if (!commonHelpers.areMessagesSeen ()) {
+          return;
+        }
+
         const {
           appState: {
             domain,
@@ -280,13 +295,8 @@ define ("actions/chatView",
      * @returns {Function} - action
      */
     const switchToChatView = () => {
-      return (dispatch, getState) => {
-        const {unreadMessageIds, userIsViewingPastMessages} = getState ().chatView;
-
-        if (unreadMessageIds.length !== 0 && !userIsViewingPastMessages) {
-          store.dispatch (markMessagesSeen ());
-        }
-
+      return (dispatch) => {
+        store.dispatch (markMessagesSeen ());
         dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
       };
     };
@@ -961,7 +971,7 @@ define ("actions/chatView",
      * @param {Array} messages - list of unprocessed messages
      */
     const saveLatestBotStepAndProcessBotInput = (messages) => {
-      const {dispatch} = store;
+      const {dispatch, getState} = store;
       const msgsLength = messages.length;
 
       // Reverse loop on list of messages to see if there is any bot message.
@@ -998,6 +1008,20 @@ define ("actions/chatView",
 
           return;
         }
+      }
+
+      // At this point, all the messages have been parsed and no bot message was
+      // encountered. In order to counter any unknown bug during the preissue state
+      // disable the footer so that the end user isn't able to send a message that
+      // doesn't correspond to a bot message during preissue.
+      const {
+        appState: {
+          issueType
+        }
+      } = getState ();
+
+      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+        handleIssueFooterAndTAI (DISABLE_FOOTER);
       }
     };
 
@@ -1317,7 +1341,6 @@ define ("actions/chatView",
       lastFetchStartTime = Date.now ();
       lastFetchCompleted = false;
 
-      // @TODO: Confirm the keys after discussing with backend
       fetchMessagesXhr = xhr ({
         route: routes.getConversationUpdates (domain),
         data: xhrHelpers.getPreparedXhrData (xhrData),
@@ -1335,6 +1358,28 @@ define ("actions/chatView",
             } = response;
 
             if (!issues.length) {
+              // If cursor is empty then only increment empty poller count.
+              // Empty cursor means we have not received any issues data from
+              // the poller
+              if (!cursor) {
+                const {
+                  appState: {
+                    minimized
+                  }
+                } = store.getState ();
+
+                emptyPollerCount++;
+
+                // Create a new preIssue if
+                // 1. Empty poller count is greater than allowed empty poller count
+                // 2. Widget is open
+                // Ref: ONCALL-3288 - This is to handle the case of issue redaction
+                // where issue_exists is true but issues list is empty.
+                if (emptyPollerCount >= ALLOWED_EMPTY_POLLER_COUNT && !minimized) {
+                  dispatch (createPreIssue ());
+                  emptyPollerCount = 0;
+                }
+              }
               return;
             }
 
@@ -1346,7 +1391,6 @@ define ("actions/chatView",
                 issues
               });
             }
-
 
             const conversationsRedacted = handleAllConversationsRedaction ({
               issues,
@@ -1466,6 +1510,10 @@ define ("actions/chatView",
             handleIssueState ();
 
             dispatch (setIssueCursor (cursor));
+
+            // Considering the state is ready, flush all the events recorded
+            // till now.
+            analyticsHelpers.flushEvents ();
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
           }
@@ -1552,14 +1600,9 @@ define ("actions/chatView",
     const handleUnreadMessages = (config) => {
       const {dispatch, getState} = store;
       const {
-        appState: {
-          minimized,
-          activeView
-        },
         chatView: {
           unreadMessageIds,
-          issueCursor,
-          userIsViewingPastMessages
+          issueCursor
         }
       } = getState ();
       const {messages} = config;
@@ -1584,11 +1627,7 @@ define ("actions/chatView",
         }
       });
 
-      // If the chat view is active, the messenger is not in minimized state,
-      // and the user is not viewing past messages that means the user
-      // has seen the messages.
-      if (!minimized && ACTIVE_VIEW.CHAT === activeView &&
-          !userIsViewingPastMessages) {
+      if (commonHelpers.areMessagesSeen ()) {
         dispatch (markMessagesSeen ());
       } else {
         dispatch (setUnreadMessageIds (finalUnreadMessageIds));
@@ -1672,7 +1711,8 @@ define ("actions/chatView",
         appState: {
           domain,
           activeIssueId,
-          issueType
+          issueType,
+          reEngagementId
         }
       } = getState ();
       const {
@@ -1708,6 +1748,13 @@ define ("actions/chatView",
           latestMessage,
           isIssue
         });
+      }
+
+      if (reEngagementId) {
+        xhrData.re_engagement_id = reEngagementId;
+
+        // Remove re-engagement id from the state & localStorage
+        dispatch (actionCreators.resetReEngagementId ());
       }
 
       if (isPreIssue || (isIssue && botStepInProgress)) {
@@ -1916,6 +1963,15 @@ define ("actions/chatView",
     };
 
     /**
+     * Action to update user's last activity time
+     */
+    const updateUserLastActivityTime = () => {
+      return {
+        type: ACTION_TYPES.UPDATE_USER_LAT
+      };
+    };
+
+    /**
      * Create pre-issue on backend.
      */
     const createPreIssue = () => {
@@ -2005,7 +2061,13 @@ define ("actions/chatView",
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
-          onSuccess: (response) => {
+          onSuccess: (response, xhrObj, statusCode) => {
+            // If pre-issue exists then just start the poller to fetch existing.
+            if (statusCode === RESPONSE_STATUS_CODE.PRE_ISSUE_EXISTS) {
+              startPollingForMessages ();
+              return;
+            }
+
             const newIssueId = response.id;
             const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
               response.preissue_id : response.issue_id;
@@ -2015,7 +2077,8 @@ define ("actions/chatView",
                 setActiveIssueId (newIssueId),
                 actionCreators.setInternalIssueId (internalId),
                 updateIssueState (ISSUE_STATE.ACTIVE),
-                setChatViewFooter (ACTIVE_FOOTER.REPLY)
+                setChatViewFooter (ACTIVE_FOOTER.REPLY),
+                updateUserLastActivityTime ()
               ])
             );
             startPollingForMessages ();
@@ -2128,23 +2191,12 @@ define ("actions/chatView",
      *                                               views past messages
      */
     const handleScrollPastExistingConversation = (userHasScrolledToPastConvs) => {
-      const {dispatch, getState} = store;
-      const {
-        appState: {
-          minimized
-        },
-        chatView: {
-          unreadMessageIds
-        }
-      } = getState ();
+      const {dispatch} = store;
 
       dispatch (
         setUserIsViewingPastMessages (userHasScrolledToPastConvs)
       );
-
-      if (unreadMessageIds.length > 0 && !userHasScrolledToPastConvs && !minimized) {
-        dispatch (markMessagesSeen ());
-      }
+      dispatch (markMessagesSeen ());
     };
 
     /**

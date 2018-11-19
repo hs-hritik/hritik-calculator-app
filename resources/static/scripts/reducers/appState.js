@@ -137,7 +137,11 @@ define ("reducers/appState",
         csatCompleted: false
       },
       fullPrivacyEnabled: false,
-      online: true
+      online: true,
+      // User re-engagement related intial values
+      widgetShouldAutoOpen: false,
+      reEngagementId: "",
+      windowIsFocused: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -190,6 +194,26 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_ANON_USER_ID:
           return update (state, {
             anonUserIdentifier: {$set: action.id}
+          });
+
+        case ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN:
+          return update (state, {
+            widgetShouldAutoOpen: {$set: action.widgetShouldAutoOpen}
+          });
+
+        case ACTION_TYPES.SET_RE_ENGAGEMENT_ID:
+          return update (state, {
+            reEngagementId: {$set: action.id}
+          });
+
+        case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
+          return update (state, {
+            reEngagementId: {$set: ""}
+          });
+
+        case ACTION_TYPES.SET_WINDOW_IS_FOCUSED:
+          return update (state, {
+            windowIsFocused: {$set: action.windowIsFocused}
           });
 
         case ACTION_TYPES.SET_CLIENT_CONFIG:

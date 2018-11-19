@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.6.0";
+        PATH = "/html/index.html?v=2.11.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -29,11 +29,14 @@
 
   // @TODO: Rename WEB_SDK -> WEB_CHAT
   const WEB_SDK_DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
-  const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}`;
 
-  const PID_MIGRATOR_HTML_PATH = "/html/pid-migrator.html";
-  const PID_MIGRATOR_WEB_CHAT_DOMAIN = `${PROTOCOL}${PLAT_ID}.${HOST}`;
-  const PID_MIGRATOR_WEB_CHAT_URL = `${PID_MIGRATOR_WEB_CHAT_DOMAIN}${PID_MIGRATOR_HTML_PATH}`;
+  // A query string with parent page's origin, which is later used with the
+  // postMessage call by web chat to the parent page.
+  const PARENT_ORIGIN_QUERY_STRING = `parent=${encodeURIComponent (win.location.origin)}`;
+
+  // @TODO: Use `&` or `?` appropriately. PATH already contains hard-coded `?` so
+  // it's safe to use `&` here but this must be made generic when `?` is removed.
+  const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}&${PARENT_ORIGIN_QUERY_STRING}`;
 
   const WIDGET_POSITIONS = {
     TOP_LEFT: "top-left",
@@ -56,8 +59,7 @@
       launcher: "block",
       widget: "none",
       hiddenByApi: false
-    },
-    lsDataToMigrate: null
+    }
   };
 
   const INIT = "init";
@@ -74,6 +76,7 @@
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
+    SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
@@ -84,8 +87,7 @@
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
     CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
-    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
-    MIGRATE_LS: "MIGRATE_LS"
+    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config"
   };
 
   /**
@@ -93,7 +95,8 @@
    */
   const SUPPORTED_EVENTS = {
     CHAT_END: "chatEnd",
-    NEW_UNREAD_MESSAGES: "newUnreadMessages"
+    NEW_UNREAD_MESSAGES: "newUnreadMessages",
+    USER_CHANGED: "userChanged"
   };
 
   // Errors message strings
@@ -229,7 +232,7 @@
 
   // Reference for web sdk iframe.
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
-      launcherButton, bodyTimer, pidMigratorWebChatIframe;
+      launcherButton, bodyTimer;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
@@ -240,6 +243,42 @@
     origin: win.location.origin,
     width: Math.max (doc.documentElement.clientWidth, win.innerWidth || 0),
     height: Math.max (doc.documentElement.clientHeight, win.innerHeight || 0)
+  };
+
+  /**
+   * Function to get the default value for registered event
+   * @returns {Object}
+   */
+  const _getDefaultRegisteredEventValue = () => {
+    return {
+      eventHasOccured: false,
+      data: null
+    };
+  };
+
+  // The events which are called before event handler is registered
+  // are stored in this register. The handler is called by checking
+  // if event is already present in the register. If event is present
+  // then call the handler with corresponding data and remove the event
+  // from the register.
+  // Following are the cases which should be considered for each new event:
+  // 1. If developer doesn't want previous user data then we don't have
+  // functionality in place to handle this scenario.
+  // 2. If same event occurs multiple times then we override the existing
+  // value with new value. We do not queue it.
+  // 3. This doesn't consider time sensitive events. If this is required
+  // then we need to think of functionality changes. Example: If we want
+  // to notify developer for every new message by agent.
+  const eventRegister = {
+    [SUPPORTED_EVENTS.USER_CHANGED]: _getDefaultRegisteredEventValue ()
+  };
+
+  /**
+   * Reset registered events value to default value.
+   * @param {String} eventName
+   */
+  const resetRegisteredEvent = (eventName) => {
+    eventRegister [eventName] = _getDefaultRegisteredEventValue ();
   };
 
   /**
@@ -389,22 +428,6 @@
   };
 
   /**
-   * Create the web chat iframe with the old URL format (the one with full platform
-   * id) - used for migrating old localStorage to the new one. The new iframe URL
-   * is going to have a truncated platform id value.
-   * @returns {Element} - old URL format web chat iframe with platform id migration code.
-   */
-  const createPidMigratorWebChatIframe = () => {
-    const iframe = doc.createElement ("iframe");
-    iframe.id = "hs-webchat-pid-migrator";
-    iframe.src = PID_MIGRATOR_WEB_CHAT_URL;
-    setStyle (iframe, {
-      display: "none"
-    });
-    return iframe;
-  };
-
-  /**
    * Destroy web sdk iframe.
    */
   const destroyWebSdkIframe = () => {
@@ -421,16 +444,6 @@
     if (launcherIframe) {
       _removeNode (launcherIframe);
       launcherIframe = null;
-    }
-  };
-
-  /**
-   * Destroy the platform id migrator iframe
-   */
-  const destroyPidMigratorWebChatIframe = () => {
-    if (pidMigratorWebChatIframe) {
-      _removeNode (pidMigratorWebChatIframe);
-      pidMigratorWebChatIframe = null;
     }
   };
 
@@ -651,6 +664,14 @@
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
       markSdkReady ();
+
+      // If widgetShouldAutoOpen is true then dispatch message to open
+      // the widget.
+      if (config.widgetShouldAutoOpen) {
+        toggleWebSdkIframe ({
+          minimized: false
+        });
+      }
     };
 
     doc.body.appendChild (launcherIframe);
@@ -830,16 +851,30 @@
   };
 
   /**
-   * Function to find the event name in the event list and call its handler
+   * Function to find the event name in the event list and call its handler.
+   * If eventName is not found within event list then add it in eventRegister.
    * @param {String} eventName - Name of the event
    * @param {Any} eventData - Data for the event
    */
   const callApiEventHandler = (eventName, eventData) => {
+    let handlerIsFound = false;
+
     state.apiEvents.forEach ((apiEvent) => {
       if (apiEvent.eventName === eventName) {
         apiEvent.eventHandler (eventData);
+        handlerIsFound = true;
       }
     });
+
+    // Add event to the eventRegister if the handler is not found.
+    // The event handler will be called when developer calls the
+    // addEventListener Helpshift API for this event.
+    if (!handlerIsFound && eventRegister [eventName]) {
+      eventRegister [eventName] = {
+        eventHasOccured: true,
+        data: eventData
+      };
+    }
   };
 
   /**
@@ -872,19 +907,13 @@
 
     setDefaultLauncherVisibility ();
 
-    // Load the platform id migrator iframe. This will send localStorage data
-    // back to this script, which would be sent to the new iframe (with truncated
-    // platform id).
-    pidMigratorWebChatIframe = createPidMigratorWebChatIframe ();
-    doc.body.appendChild (pidMigratorWebChatIframe);
+    webSdkIframe = createWebSdkIframe ();
+    doc.body.appendChild (webSdkIframe);
 
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
       // Only handle events from our web chat iframes (old and new)
-      if (
-        event.origin !== WEB_SDK_DOMAIN &&
-        event.origin !== PID_MIGRATOR_WEB_CHAT_DOMAIN
-      ) {
+      if (event.origin !== WEB_SDK_DOMAIN) {
         return;
       }
 
@@ -899,23 +928,6 @@
       }
 
       switch (type) {
-        case EVENT_TYPES.MIGRATE_LS:
-          // When the old localStorage data is received, create the new (truncated
-          // platform id URL) iframe. This makes sure that the migration data is
-          // available when the web chat app execution starts with the SDK_JS_LOADED
-          // event.
-
-          // First set the localStorage data to be migrated to the state.
-          state.lsDataToMigrate = data;
-
-          // Then create and load the web chat iframe.
-          webSdkIframe = createWebSdkIframe ();
-          doc.body.appendChild (webSdkIframe);
-
-          // Finally destroy the migrator iframe.
-          destroyPidMigratorWebChatIframe ();
-          break;
-
         case EVENT_TYPES.SDK_JS_LOADED:
           // Before the Web Chat APIs can be called by the client, following
           // events should occur (in the given order).
@@ -932,9 +944,12 @@
           // chat iframe.
           setConfig ({
             clientConfig: win.helpshiftConfig,
-            parentPageInfo,
-            lsDataToMigrate: state.lsDataToMigrate
+            parentPageInfo
           });
+          break;
+
+        case EVENT_TYPES.SDK_USER_CHANGED_VIA_RE_ENGAGEMENT:
+          callApiEventHandler (SUPPORTED_EVENTS.USER_CHANGED, data.userInfo);
           break;
 
         case EVENT_TYPES.SDK_CONFIG_LOADED:
@@ -1106,6 +1121,15 @@
         eventName,
         eventHandler
       });
+
+      // If event has already occured for the current event
+      // then call the handler with the registered data.
+      // Reset the event in register once the handler is called.
+      const registeredEvent = eventRegister [eventName];
+      if (registeredEvent && registeredEvent.eventHasOccured) {
+        callApiEventHandler (eventName, registeredEvent.data);
+        resetRegisteredEvent (eventName);
+      }
     }
   };
 

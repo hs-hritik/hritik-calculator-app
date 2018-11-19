@@ -21,13 +21,15 @@ define ("helpers/localStorage",
       PROACTIVE_CHAT_HAS_TRIGGERED: "pcht",
       SUGGESTED_FAQ_READ_TRACKED: "sfrt",
       READ_FAQ_LIST: "rfl",
-      LS_MIGRATED: "lm"
+      LS_MIGRATED: "lm",
+      RE_ENGAGEMENT_REDIRECTED: "redirected",
+      RE_ENGAGEMENT_DATA: "red",
+      RE_ENGAGEMENT_ID: "rid"
     };
 
     const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
     const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
     const DEVICE_ID_KEY = "DEVICE_ID";
-    const LS_MIGRATED_KEY = "LS_MIGRATED";
 
     /**
      * A helper function to check if a localstorage key should be
@@ -36,8 +38,6 @@ define ("helpers/localStorage",
      * The DEVICE_ID key should never be reset. We use DEVICE_ID to
      * identify a browser (the device). Its value should remain the
      * same irrespective of who (the user) is using it.
-     * Also, the LS_MIGRATED_KEY should not be reset because it's used to
-     * determine whether ls migration has happened for a browser.
      *
      * @param {string} key
      * @param {Object} [options]
@@ -48,8 +48,7 @@ define ("helpers/localStorage",
     const _shouldKeyReset = (key, options) => {
       return !(USER_KEYS.indexOf (key) !== -1) &&
              !(!options.resetProactiveChat && (PROACTIVE_CHAT_KEYS.indexOf (key) !== -1)) &&
-             !(key === DEVICE_ID_KEY) &&
-             !(key === LS_MIGRATED_KEY);
+             !(key === DEVICE_ID_KEY);
     };
 
     /**
@@ -202,6 +201,41 @@ define ("helpers/localStorage",
      */
     const getLsMigrated = () => !!lsUtils.getItem (KEYS.LS_MIGRATED);
 
+    /**
+     * Get a flag denoting that the user has been redirected for
+     * re-engagement in the ongoing conversation.
+     * @returns {boolean}
+     */
+    const getRedirectedFlag = () => !!lsUtils.getItem (KEYS.RE_ENGAGEMENT_REDIRECTED);
+
+    /**
+     * Get & parse the re-engagement data
+     * @returns {Object}
+     */
+    const getReEngagementData = () => lsUtils.getItem (KEYS.RE_ENGAGEMENT_DATA, true);
+
+    /**
+     * Set re-engagement id
+     * @param {String} id - re-engagement id
+     */
+    const setReEngagementId = (id) => lsUtils.setItem (KEYS.RE_ENGAGEMENT_ID, id);
+
+    /**
+     * Get re-engagement id
+     * @returns {String} re-engagement id
+     */
+    const getReEngagementId = () => lsUtils.getItem (KEYS.RE_ENGAGEMENT_ID);
+
+    /**
+     * Remove re-engagement related data from local storage
+     */
+    const removeReEngagementData = () => {
+      lsUtils.removeItem (KEYS.RE_ENGAGEMENT_REDIRECTED);
+      lsUtils.removeItem (KEYS.RE_ENGAGEMENT_DATA);
+    };
+
+    const removeReEngagementId = () => lsUtils.removeItem (KEYS.RE_ENGAGEMENT_ID);
+
     return {
       LS_KEYS: KEYS,
       getUserId,
@@ -224,6 +258,12 @@ define ("helpers/localStorage",
       setReadFaqList,
       getReadFaqList,
       setLsMigrated,
-      getLsMigrated
+      getLsMigrated,
+      getRedirectedFlag,
+      getReEngagementData,
+      setReEngagementId,
+      getReEngagementId,
+      removeReEngagementData,
+      removeReEngagementId
     };
   });

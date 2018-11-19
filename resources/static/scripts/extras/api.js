@@ -19,11 +19,13 @@ define ("extras/api",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
-    "gunpowder/utils/localStorage"
+    "helpers/common",
+    "extras/postSdkMessage",
+    "gunpowder/utils/object"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, lsUtils) {
+    app, analyticsHelpers, lsHelpers, commonHelpers, postSdkMessage, objUtils) {
     "use strict";
 
     const {
@@ -39,13 +41,13 @@ define ("extras/api",
       ISSUE_STATE.RESOLVED_BY_FAQ_SUGGESTIONS
     ];
     const SKIP_REVIEW_COMMENTS = true;
-    const {
-      LS_KEYS: {
-        LAST_ACTIVITY_TIME: LAST_ACTIVITY_TIME_LS_VAL
-      }
-    } = lsHelpers;
 
     const {EVENT} = analyticsConstants;
+    const AUI_PREFIX = "hsft_anon_";
+    const RE_ENGAGEMENT_USER_STATE = {
+      LOGGED_IN: "logged-in",
+      ANONYMOUS: "anonymous"
+    };
 
     /**
      * Check if preIssue reset is applicable.
@@ -77,45 +79,118 @@ define ("extras/api",
     };
 
     /**
+     * Private method to identify if user is anonymous or known
+     * @params {String} id - user id
+     * @returns {Boolean}
+     */
+    const _isUserAnonymous = (id = "") => {
+      return (id.indexOf (AUI_PREFIX) === 0);
+    };
+
+    /**
+     * Handle user re-engagement
+     * 1. If current user is logged-in and re-engagement user is logged-in then
+     * fire an event if users are different.
+     * 2. If current user is logged-in and re-engagement user is anonymous then
+     * fire the user changed event.
+     * 3. If current user is anonymous and re-engagement user was logged-in(known)
+     * user then fire the user changed event.
+     * 4. If current user is anonymous and re-engagement user is also anonymous
+     * then set the localStorage value of anonUserId to re-engagement uid.
+     *
+     * @param {Object} clientConfig - helpshift config provided by the developer
+     */
+    const _handleReEngagement = (clientConfig) => {
+      if (!lsHelpers.getRedirectedFlag ()) {
+        return;
+      }
+
+      const reEngagementData = lsHelpers.getReEngagementData ();
+
+      // If user is redacted then don't do anything
+      if (!(reEngagementData.uid || reEngagementData.email)) {
+        return;
+      }
+
+      const {dispatch} = store;
+      // Re-engagement user is of type "logged-in"
+      const userWasLoggedIn = (
+        !(_isUserAnonymous (reEngagementData.uid)) || !!(reEngagementData.email)
+      );
+
+      // current user is logged in with userId or userEmail
+      if (clientConfig.userId || clientConfig.userEmail) {
+        if (userWasLoggedIn) {
+          if (clientConfig.userId === reEngagementData.uid ||
+              clientConfig.userEmail === reEngagementData.email) {
+            // Current user and re-engagement user is same
+            // Set "widgetShouldAutoOpen" to true in state so that
+            // this value will be checked afterwards and widget will be opened
+            // automatically.
+            dispatch (appStateActions.setWidgetShouldAutoOpen (true));
+          } else {
+            // Current user and re-engagement users are different.
+            // Fire the user changed event.
+            postSdkMessage.userChanged ({
+              originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
+              pageUrl: reEngagementData.last_session_url
+            });
+          }
+        } else {
+          // Current user is logged in & re-engagement user is anonymous.
+          // Fire the user changed event
+          postSdkMessage.userChanged ({
+            originalState: RE_ENGAGEMENT_USER_STATE.ANONYMOUS,
+            pageUrl: reEngagementData.last_session_url
+          });
+        }
+      } else if (userWasLoggedIn) {
+        // Current user is anonymous and re-engagement users is logged-in user.
+        // Fire the user changed event.
+        postSdkMessage.userChanged ({
+          originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
+          pageUrl: reEngagementData.last_session_url
+        });
+      } else {
+        // Current user is anonymous & re-engagement user is also anonymous.
+        // Set value in localStorage as anon user id is picked up from the
+        // localStorage.
+        lsHelpers.setAnonUserId (reEngagementData.uid);
+
+        // Set "widgetShouldAutoOpen" to true in state so that
+        // this value will be checked afterwards and widget will be opened
+        // automatically.
+        dispatch (appStateActions.setWidgetShouldAutoOpen (true));
+      }
+
+      dispatch (appStateActions.setReEngagementId (reEngagementData.re_engagement_id));
+      lsHelpers.removeReEngagementData ();
+    };
+
+
+    /**
      * Set the initial data to the app state.
      * @param {Object} data
      * @param {Object} data.clientConfig - Config set by the client with helpshiftConfig
      * @param {Object} data.parentPageInfo - Data (title, body) of the client website
      * @param {string} data.trigger - The source that triggered setting the config
-     * @param {string} data.lsDataToMigrate - localStorage data from the old iframe to be migrated
      */
     const setConfig = (data) => {
       const {dispatch} = store;
       const {
-        clientConfig,
         parentPageInfo,
-        trigger,
-        lsDataToMigrate
+        clientConfig,
+        trigger
       } = data;
-      const {
-        userId
-      } = clientConfig;
 
-      // Set localStorage data to be migrated to web chat's localStorage
-      // Set data in the localStorage only if it hasn't happened yet.
-      if (!lsHelpers.getLsMigrated () && (lsDataToMigrate && typeof lsDataToMigrate === "object")) {
-        for (const lsKey in lsDataToMigrate) {
-          // Do not migrate last activity time because it results in preIssue reset.
-          // This flow is going to be removed after we are sure migration logic
-          // is not running for any user.
-          if (lsDataToMigrate.hasOwnProperty (lsKey) && lsKey !== LAST_ACTIVITY_TIME_LS_VAL) {
-            lsUtils.setItem (lsKey, lsDataToMigrate [lsKey]);
-          }
-        }
-
-        // Set a flag in the localStorage denoting the migration.
-        lsHelpers.setLsMigrated ();
-      }
+      // Get updated clientConfig if user has landed on page via re-engagement
+      const clientConfigCopy = objUtils.shallowMerge ({}, clientConfig);
+      _handleReEngagement (clientConfigCopy);
 
       dispatch (appStateActions.setParentPageInfo (parentPageInfo));
       dispatch (appStateActions.setClientConfig (clientConfig));
       dispatch (appStateActions.setDeviceId ());
-      dispatch (appStateActions.setAnonUserId (userId));
+      dispatch (appStateActions.setAnonUserId ());
       dispatch (appStateActions.setWmConfig ({
         trigger,
         helpshiftConfig: clientConfig
@@ -159,15 +234,10 @@ define ("extras/api",
       // Let the client know that the app is mounted.
       const {
         appState: {
-          activeView,
           conversationStarted,
           appResetTrigger,
           issueState,
           issueType
-        },
-        chatView: {
-          unreadMessageIds,
-          userIsViewingPastMessages
         }
       } = store.getState ();
 
@@ -178,10 +248,7 @@ define ("extras/api",
 
         // When chat widget is opened and user isn't viewing the past messages,
         // mark unread messages as seen.
-        if (unreadMessageIds.length !== 0 && ACTIVE_VIEW.CHAT === activeView &&
-            !userIsViewingPastMessages) {
-          store.dispatch (chatViewActions.markMessagesSeen ());
-        }
+        store.dispatch (chatViewActions.markMessagesSeen ());
 
         const preIssueIsRejected = (
           issueType === ISSUE_TYPE.PRE_ISSUE &&

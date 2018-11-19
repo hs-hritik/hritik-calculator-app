@@ -5,16 +5,19 @@
  */
 
 define ("utils/postMessage",
-  ["store"],
-  function (store) {
+  [
+    "store",
+    "gunpowder/utils/url"
+  ],
+  function (store, urlUtils) {
     "use strict";
 
     /**
-     * Post message to the parent.
-     * @param {string} type - type of message.
-     * @param {object} [data] - data for the message.
+     * Gets the origin of the parent page by reading the query string of the web
+     * chat iframe's URL. Falls back to the origin stored in the state and "*".
+     * @returns {string} - the origin string.
      */
-    return (type, data) => {
+    const _getParentPageOrigin = () => {
       const {
         appState: {
           parentPageInfo: {
@@ -23,9 +26,26 @@ define ("utils/postMessage",
         }
       } = store.getState ();
 
+      const urlParams = urlUtils.getQueryParams (window.document.location);
+
+      if (urlParams.get ("parent")) {
+        return urlParams.get ("parent");
+      }
+
+      return parentPageOrigin || "*";
+    };
+
+    /**
+     * Post message to the parent page.
+     * @param {string} type - type of message.
+     * @param {object} [data] - data for the message.
+     */
+    return (type, data) => {
+      const parentPageOrigin = _getParentPageOrigin ();
+
       window.parent.postMessage (JSON.stringify ({
         type,
         data
-      }), parentPageOrigin || "*");
+      }), parentPageOrigin);
     };
   });

@@ -42,6 +42,16 @@ define ("helpers/analytics",
       PAYLOAD_SOURCE
     } = analyticsConstants;
 
+    /* If issue related data is unavailable i.e. if poller has not started yet
+     * then enqueue all the events. The event format is as follows:
+     * {
+     *   name: EVENT.WIDGET_OPEN,
+     *   config: eventConfig,
+     *   ts: Date.now ()
+     * }
+     */
+    const eventsQueue = [];
+
     let _route;
     const _isBot = browserUtils.isBot ();
     const _lang = browserUtils.getLanguage ();
@@ -144,11 +154,12 @@ define ("helpers/analytics",
 
     /**
      * Track the widget load event.
+     * @param {Number} ts - unix epoch
      */
-    const _trackWidgetLoad = () => {
+    const _trackWidgetLoad = (ts) => {
       const eventPayload = {
         e: JSON.stringify ([{
-          ts: Date.now (),
+          ts,
           t: PAYLOAD_EVENT.WIDGET_LOAD
         }])
       };
@@ -161,24 +172,30 @@ define ("helpers/analytics",
      * @param {Object} [config]
      * @param {string} [config.trigger] - whether the widget was opened via an API
      *    call or a user action.
+     * @param {Number} [config.ts] - unix epoch
      */
     const _trackWidgetOpen = (config = {}) => {
       const {
         appState: {
           internalIssueId,
-          issueType
+          issueType,
+          reEngagementId
         }
       } = store.getState ();
 
       const outOfBusinessHours = commonHelpers.isOutOfBusinessHours () ? 0 : 1;
 
       const eventData = {
-        ts: Date.now (),
+        ts: config.ts,
         d: {
           s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
           b: outOfBusinessHours
         }
       };
+
+      if (reEngagementId) {
+        eventData.engagement_id = reEngagementId;
+      }
 
       // If issue exists — send issueId with `id` and type `c` with `t`.
       // If issue doesn’t exist — send preIssueId with `preissue_id` and type `i` with `t`.
@@ -203,11 +220,12 @@ define ("helpers/analytics",
      * Track the issue created event. This event is tracked only when the issue
      * creation succeeds.
      * @param {string} [config.issueId] - issueId of the created issue
+     * @param {Number} [config.ts] - unix epoch
      */
     const _trackIssueCreated = (config = {}) => {
       const eventPayload = {
         e: JSON.stringify ([{
-          ts: Date.now (),
+          ts: config.ts,
           d: {
             id: config.issueId
           },
@@ -265,8 +283,9 @@ define ("helpers/analytics",
      * 3. CSAT submitted
      * @param {Object} config
      * @param {string} config.event - The CSAT event to track
+     * @param {Number} config.ts - unix epoch
      */
-    const _trackCsatEvents = ({event}) => {
+    const _trackCsatEvents = ({event, ts}) => {
       const {
         appState: {
           internalIssueId
@@ -274,7 +293,7 @@ define ("helpers/analytics",
       } = store.getState ();
 
       const eventData = {
-        ts: Date.now (),
+        ts,
         d: {
           id: internalIssueId
         }
@@ -300,34 +319,76 @@ define ("helpers/analytics",
     };
 
     /**
+     * Predicate to check if issue data is fetched.
+     * @returns {Boolean}
+     */
+    const _isIssueStateReady = () => {
+      const {
+        appState: {
+          internalIssueId
+        }
+      } = store.getState ();
+
+      return !!internalIssueId;
+    };
+
+    /**
      * Track the given event with relevant data.
      * @param {string} event - The event to track.
      * @param {Object} [config]
+     * @param {Number} [config.ts] - Unix epoch
      */
-    const track = (event, config) => {
+    const track = (event, config = {}) => {
       // Do not track the event if initiated via a search engine bot or crawler.
-      if (!_isBot) {
-        switch (event) {
-          case EVENT.WIDGET_LOAD:
-            _trackWidgetLoad ();
-            break;
-          case EVENT.WIDGET_OPEN:
-            _trackWidgetOpen (config);
-            break;
-          case EVENT.ISSUE_CREATED:
-            _trackIssueCreated (config);
-            break;
-          case EVENT.SUGGESTED_FAQ_READ:
-            _trackSuggestedFaqRead ();
-            break;
-          case EVENT.CSAT:
-            _trackCsatEvents (config);
-            break;
-        }
+      if (_isBot) {
+        return;
+      }
+
+      // If issue data is not available then enqueue event.
+      if (!_isIssueStateReady ()) {
+        eventsQueue.push ({
+          config,
+          name: event,
+          ts: Date.now ()
+        });
+
+        return;
+      }
+
+      config.ts = config.ts || Date.now ();
+
+      // Handle events considering state is ready now.
+      switch (event) {
+        case EVENT.WIDGET_LOAD:
+          _trackWidgetLoad (config.ts);
+          break;
+        case EVENT.WIDGET_OPEN:
+          _trackWidgetOpen (config);
+          break;
+        case EVENT.ISSUE_CREATED:
+          _trackIssueCreated (config);
+          break;
+        case EVENT.SUGGESTED_FAQ_READ:
+          _trackSuggestedFaqRead ();
+          break;
+        case EVENT.CSAT:
+          _trackCsatEvents (config);
+          break;
+      }
+    };
+
+    /**
+     * Flush all the pending events and empty the queue
+     */
+    const flushEvents = () => {
+      while (eventsQueue.length > 0) {
+        const {name, config, ts} = eventsQueue.shift ();
+        track (name, config, ts);
       }
     };
 
     return {
-      track
+      track,
+      flushEvents
     };
   });

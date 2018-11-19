@@ -1,0 +1,8 @@
+Branches:
+feature/ONCALL-3288
+feature/post-message-improvements
+
+Changelog:
+Upgrade gunpowder to 1.0.21
+Stop using "*" as targetOrigin with postMessage
+Fix ONCALL-3288 issue
