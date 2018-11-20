@@ -41,8 +41,6 @@ gulp.task ("ls", function () {
       babel             - [Production] Compile JS
       scripts           - Compile JS
       babel:watch       - Watch for JS changes
-      uglify            - [Production] Uglify JS
-      overwrite-min     - [Production] Replace debug version of lib files to minified ones
       build-ec2         - [Production] Replace EC2 specific template strings
       build-azure       - [Production] Replace Azure specific template strings
       build-localshiva  - [Production] Replace staging specific template strings

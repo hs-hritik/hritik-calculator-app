@@ -64,11 +64,6 @@ sass-lint: npminstall bundlerinstall
 npminstall:
 	$(NPM) install
 
-# @TODO - Remove this task
-compress-js: npminstall
-	@echo "\nCompress JS..."
-	$(GULP) --gulpfile "resources/gulpfile.babel.js" uglify
-
 # eslint is only to be run when js files changed because we want to
 # always ensure that new changes obey the rules but the unchanged
 # files may not obey new rules.
@@ -80,12 +75,6 @@ eslint: npminstall
 reactjs: npminstall
 	@echo "\nCompile JSX..."
 	@cd resources && $(GULP) babel --production
-
-# @TODO - Remove this task
-js-libs: npminstall
-	@echo "\nOverwrite minified libs..."
-	@cd resources && $(GULP) overwrite-min
-	@echo "\nDone..."
 
 gunpowder: npminstall
 	@echo "Copying gunpowder files to scripts dir"

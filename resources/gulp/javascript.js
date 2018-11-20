@@ -3,7 +3,6 @@
 const gulp = require ("gulp");
 const babel = require ("gulp-babel");
 const rename = require ("gulp-rename");
-const uglify = require ("gulp-uglify");
 const print = require ("gulp-print");
 const notifier = require ("node-notifier");
 const {argv} = require ("yargs");
@@ -13,7 +12,6 @@ const replace = require ("gulp-replace");
 const runSequence = require ("run-sequence");
 const concat = require ("gulp-concat");
 const del = require ("del");
-
 
 /**
  * Name of app bundle
@@ -33,10 +31,6 @@ const PATHS = {
   libsSrc: "static/libs/**/*.js",
   libsDest: "dist/libs",
   libsDestDev: "localhost/libs/",
-  libsMinSrc: "static/libs/*-min.js",
-  libs: "static/libs",
-
-  uglify: "dist/scripts/**/*.js",
 
   // Env specific paths
   ec2Source: ["dist/ec2/**/*.*", "!dist/ec2/fonts/**/*.*"],
@@ -149,35 +143,6 @@ gulp.task ("babel", function () {
   if (argv.production || argv.prod) {
     babelCompile (PATHS.scriptsSrc, PATHS.scriptsDest);
   }
-});
-
-/**
- * Goes through all the js files. Compresses them and keeps them in the same spot.
- */
-// @TODO - Remove this task
-gulp.task ("uglify", function () {
-  return gulp.src (PATHS.uglify)
-    .pipe (uglify ())
-    .pipe (gulp.dest (PATHS.scriptsDest))
-    .pipe (print (function (filepath) {
-      return `Uglified: ${filepath}`;
-    }));
-});
-
-/**
- * Overwrites minified libs.
- * If there's a file in /libs/ folder with name say foo-min.js,
- * this task overwrites foo.js with foo-min.js
- * This is used to replace dev version of react with prod version
- */
-// @TODO - Remove this task
-gulp.task ("overwrite-min", function () {
-  gulp.src (PATHS.libsMinSrc)
-    .pipe (rename (function (path) {
-      path.basename = path.basename.replace ("-min", "");
-      console.log (`Replaced ${path.basename}-min.js with ${path.basename}.js`);
-    }))
-    .pipe (gulp.dest (PATHS.libs));
 });
 
 /**
