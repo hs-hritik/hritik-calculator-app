@@ -13,6 +13,7 @@ export PATH := $(abspath ./tools):$(PATH)
 #
 GULP ?= gulp
 NPM ?= npm
+NODE ?= node
 
 JS_TEST_TARGETS = reactjs
 GUNPOWDER_SRC = node_modules/@helpshiftdev/gunpowder/resources/static/scripts/*
@@ -63,6 +64,7 @@ sass-lint: npminstall bundlerinstall
 npminstall:
 	$(NPM) install
 
+# @TODO - Remove this task
 compress-js: npminstall
 	@echo "\nCompress JS..."
 	$(GULP) --gulpfile "resources/gulpfile.babel.js" uglify
@@ -79,6 +81,7 @@ reactjs: npminstall
 	@echo "\nCompile JSX..."
 	@cd resources && $(GULP) babel --production
 
+# @TODO - Remove this task
 js-libs: npminstall
 	@echo "\nOverwrite minified libs..."
 	@cd resources && $(GULP) overwrite-min
@@ -90,6 +93,19 @@ gunpowder: npminstall
 	@cp -r $(GUNPOWDER_SRC) $(GUNPOWDER_DEST);
 	@echo "Done"
 
+bundle-js:
+	@echo "Bundling and minifying js files"
+	$(NODE) r.js -o build.js
+	@echo "Bundle generated"
+	@echo "Cleaning unwanted js files"
+	@cd resources && $(GULP) clean-unwanted-js
+	@echo "Done"
+
+bundle-libs:
+	@echo "\Bundling minified libs..."
+	@cd resources && $(GULP) bundle-libs
+	@echo "\nDone"
+
 # The dist task is to compile and compress resources and
 # copy them to the `dist` directory.
 # All resources to be deployed must be copied to the `dist` directory.
@@ -97,7 +113,8 @@ gunpowder: npminstall
 # directory, so copying html, libs, and fonts to dist here.
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
-dist: prepare-dist npminstall styles gunpowder reactjs compress-js js-libs copy-html-libs prepare-subdir ec2 azure localshiva clean-subdir
+
+dist: prepare-dist npminstall styles gunpowder reactjs copy-html-libs bundle-js bundle-libs prepare-subdir ec2 azure localshiva clean-subdir
 
 # The distdev task is to npm install resources and call the gulp task to
 # set the local environment up.

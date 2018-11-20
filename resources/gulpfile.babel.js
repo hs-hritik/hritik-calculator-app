@@ -48,6 +48,8 @@ gulp.task ("ls", function () {
       build-localshiva  - [Production] Replace staging specific template strings
       replace-localhost - Replace local env specific template strings
       update-react      - Update React to the latest version
+      bundle-js         - Bundles app's js files
+      bundle-libs       - Bundles library files
       libs              - Copy library files to the server directory
       copy-webchat      - Copy web chat entry script to the server directory
 
