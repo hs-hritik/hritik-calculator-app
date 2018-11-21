@@ -14,6 +14,11 @@ const concat = require ("gulp-concat");
 const del = require ("del");
 
 /**
+ * Webchat version
+ */
+const WEBCHAT_VERSION = "2.11.0";
+
+/**
  * Name of app bundle
  */
 const APP_BUNDLE_NAME = "app";
@@ -84,13 +89,11 @@ const TEMPLATE_PATHS = {
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/scripts/requireConfig.js"></script>
     `,
-    PROD: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=2.11.0\"></script>"
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEBCHAT_VERSION}"></script>`
   },
   APP: {
     DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
-    // @TODO - Remove hardcoded version of webchat and add find replace pattern
-    // in hs_meta.yml file
-    PROD: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=2.11.0\"></script>"
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEBCHAT_VERSION}"></script>`
   }
 };
 
