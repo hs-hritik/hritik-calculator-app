@@ -1,0 +1,2 @@
+Changelog:
+Fix webchat version typo
