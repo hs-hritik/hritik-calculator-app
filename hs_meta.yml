@@ -36,3 +36,8 @@ release:
       pattern: 'v=\d+\.\d+\.\d+'
       replacement: 'v={{ version }}'
       num_expected: 1
+
+    - file: resources/gulp/javascript.js
+      pattern: 'WEB_CHAT_VERSION = "\d+\.\d+\.\d+"'
+      replacement: 'WEB_CHAT_VERSION = "{{ version }}"'
+      num_expected: 1
