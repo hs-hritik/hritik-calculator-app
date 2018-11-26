@@ -1,0 +1,8 @@
+Branches:
+feature/tooling-changes-v1.1
+
+Changelog:
+Remove hardcoded webchat version
+Remove unused tasks
+Remove update react task
+Add task to combine all the app and lib js files
