@@ -16,7 +16,7 @@ const del = require ("del");
 /**
  * Webchat version
  */
-const WEBCHAT_VERSION = "2.12.0";
+const WEB_CHAT_VERSION = "2.12.0";
 
 /**
  * Name of app bundle
@@ -89,11 +89,11 @@ const TEMPLATE_PATHS = {
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/scripts/requireConfig.js"></script>
     `,
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEBCHAT_VERSION}"></script>`
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"></script>`
   },
   APP: {
     DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEBCHAT_VERSION}"></script>`
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"></script>`
   }
 };
 
