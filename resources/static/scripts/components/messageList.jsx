@@ -383,9 +383,13 @@ define ("components/messageList",
       componentDidUpdate (prevProps) {
         const {messages, minimized} = this.props;
         const previousMessages = prevProps.messages;
-        const currentFirstMessage = messages [0];
-        const prevFirstMessage = previousMessages [0];
-        const messagesHaveBeenAppended = currentFirstMessage.id !== prevFirstMessage.id;
+        let messagesHaveBeenAppended = false;
+
+        if (messages.length) {
+          messagesHaveBeenAppended = (
+            !previousMessages.length || (messages [0].id !== previousMessages [0].id)
+          );
+        }
 
        /**
         * Restores previous scrolling position when new messages have been
