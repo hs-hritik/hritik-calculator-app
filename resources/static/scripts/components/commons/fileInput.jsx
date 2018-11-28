@@ -14,18 +14,6 @@ define ("components/commons/fileInput",
                            ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
                            ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csv";
 
-    const DEFAULT_ACCEPT_MIME_TYPES = [
-      "application/zip", "application/x-rar-compressed", "application/x-tar", "application/x-gzip",
-      "audio/mpeg", "audio/wav", "audio/ogg", "image/jpeg", "image/png", "image/gif", "image/bmp",
-      "text/plain", "application/rtf", "video/webm", "video/3gpp", "video/quicktime",
-      "video/x-msvideo", "video/x-ms-wmv", "video/x-flv", "audio/ogg", "video/ogg",
-      "application/msword", "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.ms-powerpoint",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      "application/pdf", "image/tiff", "text/csv"
-    ];
-
     const PropTypes = React.PropTypes;
 
     return React.createClass ({
@@ -38,14 +26,6 @@ define ("components/commons/fileInput",
          * https://developer.mozilla.org/en/docs/Web/HTML/Element/Input#attr-accept
          */
         accept: PropTypes.string,
-
-        /**
-         * Even if we provide the "accept" param to input file, the user cannot be restricted
-         * from selecting "All Files" in the file select dialogue and that will enable the
-         * user to upload any kind of file. For this, we can check the mime type of the file
-         * too. For this, the allowed mime types can be passed as props.
-         */
-        acceptMimeTypes: PropTypes.arrayOf (PropTypes.string),
 
         /**
          * Change handler for files select
@@ -80,8 +60,7 @@ define ("components/commons/fileInput",
 
       getDefaultProps () {
         return {
-          accept: DEFAULT_ACCEPT,
-          acceptMimeTypes: DEFAULT_ACCEPT_MIME_TYPES
+          accept: DEFAULT_ACCEPT
         };
       },
 
@@ -148,45 +127,7 @@ define ("components/commons/fileInput",
           fileInputValue: ""
         });
 
-        const {files} = ev.target;
-
-        if (!this._areAllFilesValid (files)) {
-          // @TODO: Handle showing of error message
-        }
-
-        this.props.onChange (files);
-      },
-
-      /**
-       * Check that given file has the the expected valid mime-types.
-       * It will return true if no mime types are passed.
-       * @param {Object} file
-       * @returns {Boolean}
-       */
-      _isMimeTypeValid: function (file) {
-        const {acceptMimeTypes} = this.props;
-
-        const fileType = file.type;
-        const mimeTypesAreValid = (
-          Array.isArray (acceptMimeTypes) && acceptMimeTypes.length
-        );
-
-        // skip the check if acceptMimeTypes isn't
-        // there or if file deosn't have a mime type. e.g: text file.
-        if (!fileType || !mimeTypesAreValid) {
-          return true;
-        }
-
-        return acceptMimeTypes.indexOf (file.type) > -1;
-      },
-
-      /**
-       * Predicate for checking if all files are valid or not
-       * @param {Object[]} files
-       * @returns {Boolean}
-       */
-      _areAllFilesValid: function (files) {
-        return Array.prototype.every.call (files, this._isMimeTypeValid);
+        this.props.onChange (ev.target.files);
       }
     });
   }

@@ -2386,9 +2386,16 @@ define ("actions/chatView",
               },
               onAddMessage (msg) {
                 attachmentMsgId = msg.id;
-                // If attachment size is not valid, set error on message
-                // Else upload the file
-                if (!attachmentsHelpers.isAttachmentsSizeValid (msg.file.size)) {
+                if (!attachmentsHelpers.isAttachmentTypeValid (msg.file.type)) {
+                  // If attachment type is not valid, set error on message
+                  dispatch (
+                    setAttachmentError (
+                      attachmentMsgId,
+                      FILE_UPLOAD_ERRORS.INVALID_TYPE
+                    )
+                  );
+                } else if (!attachmentsHelpers.isAttachmentsSizeValid (msg.file.size)) {
+                  // If attachment size is not valid, set error on message
                   dispatch (
                     setAttachmentError (attachmentMsgId, FILE_UPLOAD_ERRORS.SIZE_EXCEEDED)
                   );

@@ -17,7 +17,8 @@ define ("helpers/attachments",
       UNITS_LIST,
       MAX_CHAR_LIMIT,
       MAX_EXTENSION_LIMIT,
-      ELLIPSIS_LENGTH
+      ELLIPSIS_LENGTH,
+      SUPPORTED_MIME_TYPES
     } = ATTACHMENT_CONSTANTS;
 
     /**
@@ -85,6 +86,26 @@ define ("helpers/attachments",
     };
 
     /**
+     * Predicate to check the validity of attachment type
+     *
+     * Even if we provide the "accept" param to input file, the user cannot be restricted
+     * from selecting "All Files" in the file select dialogue and that will enable the
+     * user to upload any kind of file. For this, we can check the mime type of the file
+     * too.
+     *
+     * @param {String} type - MIME type of the file
+     * @returns {Boolean}
+     */
+    const isAttachmentTypeValid = (type) => {
+      // Skip the check if file deosn't have a mime type. e.g: text file.
+      if (!type) {
+        return true;
+      }
+
+      return SUPPORTED_MIME_TYPES.indexOf (type) > -1;
+    };
+
+    /**
      * Return formatted file name
      * @param {String} - file name
      * @returns {String} - ellipsis string
@@ -122,6 +143,7 @@ define ("helpers/attachments",
       humanizeFileSize,
       isAttachmentsNumberValid,
       isAttachmentsSizeValid,
+      isAttachmentTypeValid,
       getFormattedFileName
     };
   }
