@@ -58,7 +58,8 @@ define ("reducers/businessHoursView",
         attachmentsMeta: {
           featureIsEnabled: false,
           limitHasExceeded: false,
-          sizeHasExceeded: false
+          sizeHasExceeded: false,
+          attachmentsAreInvalid: false
         },
         attachments: []
       }
@@ -116,9 +117,25 @@ define ("reducers/businessHoursView",
       return attachmentsHelper.isAttachmentsSizeValid (totalSize);
     };
 
+    /**
+     * Predicate to check if all files have valid mime type
+     * @param {Object[]} attachments
+     * @returns {Boolean}
+     */
+    const areAttachmentsValid = (attachments) => {
+      if (!attachments.length) {
+        return true;
+      }
+
+      return Array.prototype.every.call (attachments, ({file}) => {
+        return attachmentsHelper.isAttachmentTypeValid (file.type);
+      });
+    };
+
     return (state = INITIAL_STATE, action) => {
       let attachmentNumberIsInvalid;
       let attachmentSizeIsInvalid;
+      let attachmentsAreInvalid;
 
       switch (action.type) {
         case ACTION_TYPES.SET_WM_CONFIG:
@@ -205,19 +222,28 @@ define ("reducers/businessHoursView",
             processedAttachments.length,
             ATTACHMENT_OPERATIONS.ADD
           ));
-          attachmentSizeIsInvalid = !(isTotalSizeOfAttachmentsValid (
-            processedAttachments.concat (state.contactFormDetails.attachments)
-          ));
+
+          const allAttachments = processedAttachments.concat (
+            state.contactFormDetails.attachments
+          );
+
+          attachmentSizeIsInvalid = !(isTotalSizeOfAttachmentsValid (allAttachments));
+          attachmentsAreInvalid = !(areAttachmentsValid (allAttachments));
 
           return update (state, {
             contactFormDisabled: {
-              $set: (attachmentNumberIsInvalid || attachmentSizeIsInvalid)
+              $set: (
+                attachmentNumberIsInvalid ||
+                attachmentSizeIsInvalid ||
+                attachmentsAreInvalid
+              )
             },
             contactFormDetails: {
               attachments: {$push: processedAttachments},
               attachmentsMeta: {
                 limitHasExceeded: {$set: attachmentNumberIsInvalid},
-                sizeHasExceeded: {$set: attachmentSizeIsInvalid}
+                sizeHasExceeded: {$set: attachmentSizeIsInvalid},
+                attachmentsAreInvalid: {$set: attachmentsAreInvalid}
               }
             }
           });
@@ -233,19 +259,23 @@ define ("reducers/businessHoursView",
             ATTACHMENT_OPERATIONS.REMOVE
           ));
 
-          attachmentSizeIsInvalid = !(isTotalSizeOfAttachmentsValid (
-            filteredAttachments
-          ));
+          attachmentSizeIsInvalid = !(isTotalSizeOfAttachmentsValid (filteredAttachments));
+          attachmentsAreInvalid = !(areAttachmentsValid (filteredAttachments));
 
           return update (state, {
             contactFormDisabled: {
-              $set: (attachmentNumberIsInvalid || attachmentSizeIsInvalid)
+              $set: (
+                attachmentNumberIsInvalid ||
+                attachmentSizeIsInvalid ||
+                attachmentsAreInvalid
+              )
             },
             contactFormDetails: {
               attachments: {$set: filteredAttachments},
               attachmentsMeta: {
                 limitHasExceeded: {$set: attachmentNumberIsInvalid},
-                sizeHasExceeded: {$set: attachmentSizeIsInvalid}
+                sizeHasExceeded: {$set: attachmentSizeIsInvalid},
+                attachmentsAreInvalid: {$set: attachmentsAreInvalid}
               }
             }
           });
