@@ -65,6 +65,7 @@
     "prettyjson": "^1.2.1",
     "require-dir": "^0.3.1",
     "run-sequence": "^2.2.0",
-    "yargs": "^8.0.1"
+    "yargs": "^8.0.1",
+    "gulp-sri": "0.3.1"
   }
 }
