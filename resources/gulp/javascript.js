@@ -89,11 +89,13 @@ const TEMPLATE_PATHS = {
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/scripts/requireConfig.js"></script>
     `,
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"></script>`
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
   },
   APP: {
     DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"></script>`
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
+"integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
   }
 };
 
@@ -163,6 +165,12 @@ gulp.task ("build-ec2", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
         skipBinary: true
       }))
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", "__temp__fake__hash__libs__", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", "__temp__fake__hash__app__", {
+        skipBinary: true
+      }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
         skipBinary: true
       }))
@@ -184,6 +192,12 @@ gulp.task ("build-azure", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
         skipBinary: true
       }))
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", "__temp__fake__hash__libs__", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", "__temp__fake__hash__app__", {
+        skipBinary: true
+      }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
         skipBinary: true
       }))
@@ -203,6 +217,12 @@ gulp.task ("build-localshiva", function () {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", "__temp__fake__hash__libs__", {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", "__temp__fake__hash__app__", {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
