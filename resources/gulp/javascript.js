@@ -178,6 +178,17 @@ gulp.task ("babel", function () {
 });
 
 /**
+ * Returns a string by combining latest three hashes corresponding
+ * to a given path from the hs-sri.json file.
+ * @param {String} path - bundle path from dist directory
+ * @returns {String} A string of latest three hashes.
+ */
+const getBundleHash = (path) => {
+  const hsSri = require (PATHS.requirePath.hsSri);
+  return hsSri [path].slice (0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join (" ");
+};
+
+/**
  * Production task.
  * Replace EC2 specific template strings with given values
  */
@@ -192,10 +203,10 @@ gulp.task ("build-ec2", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
         skipBinary: true
       }))
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", "__temp__fake__hash__libs__", {
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (`${PATHS.libsDest}/libs-min.js`), {
         skipBinary: true
       }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", "__temp__fake__hash__app__", {
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (`${PATHS.scriptsDest}/app-min.js`), {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
@@ -219,10 +230,10 @@ gulp.task ("build-azure", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
         skipBinary: true
       }))
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", "__temp__fake__hash__libs__", {
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (`${PATHS.libsDest}/libs-min.js`), {
         skipBinary: true
       }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", "__temp__fake__hash__app__", {
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (`${PATHS.scriptsDest}/app-min.js`), {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
@@ -246,10 +257,10 @@ gulp.task ("build-localshiva", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
         skipBinary: true
       }))
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", "__temp__fake__hash__libs__", {
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (`${PATHS.libsDest}/libs-min.js`), {
         skipBinary: true
       }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", "__temp__fake__hash__app__", {
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (`${PATHS.scriptsDest}/app-min.js`), {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
