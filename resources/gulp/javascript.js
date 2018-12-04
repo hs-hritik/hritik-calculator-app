@@ -12,6 +12,24 @@ const replace = require ("gulp-replace");
 const runSequence = require ("run-sequence");
 const concat = require ("gulp-concat");
 const del = require ("del");
+const sri = require ("gulp-sri");
+const fs = require ("fs");
+
+/**
+ * Maximum hashes to add to the integrity attribute.
+ * Ideally, there should be one bundle in production but in case of release
+ * there might be two to three versions of a bundle. In this case,
+ * client can get served with any of these versions hence we need to keep
+ * three hashes for checking the integrity.
+ */
+const MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE = 3;
+
+/**
+ * Maximum SRIs to maintain corresponding to a single resource in hs-sri.json
+ * If new SRI is generated for newer version of a resource and max sri limit
+ * per resource is reached then it pops the oldest sri and prepends the latest SRI.
+ */
+const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 
 /**
  * Webchat version
@@ -73,7 +91,16 @@ const PATHS = {
     `!dist/scripts/${APP_BUNDLE_NAME}-min.js`,
     `!dist/scripts/${APP_BUNDLE_NAME}-min.js.map`,
     "!dist/scripts/external/**"
-  ]
+  ],
+
+  // SRI related paths
+  requirePath: {
+    hsSri: "../hs-sri.json",
+    tempSri: "../sri.json"
+  }
+
+  hsSri: "./hs-sri.json",
+  tempSri: "./sri.json"
 };
 
 /**
@@ -258,6 +285,69 @@ gulp.task ("bundle-libs", function () {
  */
 gulp.task ("clean-unwanted-js", function () {
   del (PATHS.unwantedAppSource);
+});
+
+/**
+ * Task to generate sri for libs and app JS bundles
+ */
+gulp.task ("sri", function () {
+  // Pick all js files with in dist directory
+  const DIST_FILES = "/*.js";
+  // Destination directory path for app and libs
+  const DEST_PATHS = [
+    `${PATHS.scriptsDest}${DIST_FILES}`,
+    `${PATHS.libsDest}${DIST_FILES}`
+  ];
+
+  return gulp.src (DEST_PATHS)
+    .pipe (sri ({
+      algorithms: ["sha512"]
+    }))
+    .pipe (gulp.dest ("."))
+    .pipe (print (() => console.log ("Temporary resources/sri.json file generated")));
+});
+
+/**
+ * Task to update hs-sri.json file
+ * It checks if newly generated hash for bundles matches with the first three
+ * hashes of the previous versions of the same bundle, if it does then the
+ * latest version is skipped.
+ * This is required because we maintain hashses of last 10 versions corresponding to a file.
+ * But we only add first three versions to the integrity attribute (check getBundleHash function)
+ */
+gulp.task ("update-sri-list", function () {
+  const hsSri = require (PATHS.requirePath.hsSri);
+  const sri = require (PATHS.requirePath.tempSri);
+
+  Object.keys (sri).forEach ((key) => {
+    // If new bundle is added then it won't be present
+    // in hs-sri.json file. So, create a key corresponding
+    // to that file and associate it to empty array.
+    if (!Array.isArray (hsSri [key])) {
+      hsSri [key] = []
+    }
+
+    // If the sri hash value is present with in first three hash values
+    // then don't add this value otherwise add it.
+    if (hsSri [key].slice (0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).indexOf (sri [key]) !== -1) {
+      return;
+    }
+
+    // Pop the last value if max limit has reached
+    if (hsSri [key].length === MAX_SRI_LIMIT_PER_RESOURCE) {
+      hsSri [key].pop ();
+    }
+
+    // Prepend the latest hash value in the array
+    hsSri [key].unshift (sri [key]);
+  });
+
+  // Write the changes to hs-sri.json file
+  const writeStream = fs.createWriteStream (PATHS.hsSri);
+  writeStream.write (JSON.stringify (hsSri));
+
+  // Delete sri.json temp file
+  fs.unlink (PATHS.tempSri);
 });
 
 /**
