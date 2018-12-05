@@ -1,0 +1,7 @@
+Branches:
+feature/validate-file-input
+
+Changelog:
+Add attachment type validation for Out Of Business Hours feature
+Render file type error message if file's MIME type is invalid
+Restrict file selection and add validation for selected files
