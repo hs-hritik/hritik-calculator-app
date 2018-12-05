@@ -50,6 +50,7 @@ define ("components/businessHoursView",
           businessHoursThankYouMessage: PropTypes.string.isRequired,
           businessHoursAttachmentsLimitExceedMsg: PropTypes.string.isRequired,
           businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
+          attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired
         }).isRequired,
@@ -61,7 +62,8 @@ define ("components/businessHoursView",
           attachmentsMeta: PropTypes.shape ({
             featureIsEnabled: PropTypes.bool,
             limitHasExceeded: PropTypes.bool,
-            sizeHasExceeded: PropTypes.bool
+            sizeHasExceeded: PropTypes.bool,
+            attachmentsAreInvalid: PropTypes.bool
           }).isRequired
         }).isRequired,
         offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
@@ -314,11 +316,12 @@ define ("components/businessHoursView",
           const attachmentsEl = attachments.map (this._renderAttachment);
           const {
             limitHasExceeded,
-            sizeHasExceeded
+            sizeHasExceeded,
+            attachmentsAreInvalid
           } = attachmentsMeta;
           const wrapperClasses = classes (
             "hs-business-hours__attachment-wrapper", {
-              error: limitHasExceeded || sizeHasExceeded
+              error: limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid
             }
           );
           attachmentsWrapperEl = (
@@ -405,10 +408,12 @@ define ("components/businessHoursView",
         const {onFilesChange, text: {dndInfoText}} = this.props;
         const {
           limitHasExceeded,
-          sizeHasExceeded
+          sizeHasExceeded,
+          attachmentsAreInvalid
         } = this.props.contactFormDetails.attachmentsMeta;
 
-        const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded);
+        const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid);
+
         return (
           <div className="hs-business-hours__attachment-placeholder">
             <FileInput iconClasses="ion-attachment"
@@ -426,20 +431,23 @@ define ("components/businessHoursView",
       _renderAttachmentErrors () {
         const {
           limitHasExceeded,
-          sizeHasExceeded
+          sizeHasExceeded,
+          attachmentsAreInvalid
         } = this.props.contactFormDetails.attachmentsMeta;
 
-        if (!limitHasExceeded && !sizeHasExceeded) {
+        if (!limitHasExceeded && !sizeHasExceeded && !attachmentsAreInvalid) {
           return null;
         }
 
         const {
           businessHoursAttachmentsLimitExceedMsg,
-          businessHoursAttachmentsSizeExceedMsg
+          businessHoursAttachmentsSizeExceedMsg,
+          attachmentFileTypeError
         } = this.props.text;
 
         let limitExceedInfoTextEl = null;
         let sizeExceedInfoTextEl = null;
+        let invalidTypeInfoTextEl = null;
 
         if (limitHasExceeded) {
           limitExceedInfoTextEl = this._renderAttachmentError (
@@ -453,10 +461,17 @@ define ("components/businessHoursView",
           );
         }
 
+        if (attachmentsAreInvalid) {
+          invalidTypeInfoTextEl = this._renderAttachmentError (
+            attachmentFileTypeError
+          );
+        }
+
         return (
           <div>
             {limitExceedInfoTextEl}
             {sizeExceedInfoTextEl}
+            {invalidTypeInfoTextEl}
           </div>
         );
       },
