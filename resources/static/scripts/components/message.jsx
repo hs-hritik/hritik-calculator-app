@@ -48,6 +48,7 @@ define ("components/message",
           conversationsRedactedMsg: PropTypes.string.isRequired,
           attachmentRetryError: PropTypes.string.isRequired,
           attachmentFileSizeError: PropTypes.string.isRequired,
+          attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
           attachmentUploadingStatus: PropTypes.string.isRequired
         }).isRequired
@@ -648,6 +649,15 @@ define ("components/message",
               <i className={iconClasses} />,
               <small>
                 {text.attachmentFileSizeError}
+              </small>
+            ];
+            break;
+
+          case FILE_UPLOAD_ERRORS.INVALID_TYPE:
+            errorTextEl = [
+              <i className={iconClasses} />,
+              <small>
+                {text.attachmentFileTypeError}
               </small>
             ];
             break;
