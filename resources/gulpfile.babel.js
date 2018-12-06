@@ -115,6 +115,15 @@ gulp.task ("build-localhost", function () {
     "replace-localhost", "copy-webchat", "copy-demo");
 });
 
+/**
+ * Combined tasks for generating sri for JS bundles and updating
+ * the hs-sri.json file.
+ */
+gulp.task ("generate-sri", function () {
+  console.log ("Generating SRI for JS bundles");
+  runSequence ("sri", "update-sri-list");
+});
+
 gulp.task ("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);
 gulp.task ("default", ["watch"]);
 gulp.task ("lint", ["lint:sass", "eslint"]);
