@@ -97,7 +97,7 @@ const PATHS = {
   requirePath: {
     hsSri: "../hs-sri.json",
     tempSri: "../sri.json"
-  }
+  },
 
   hsSri: "./hs-sri.json",
   tempSri: "./sri.json"

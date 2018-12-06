@@ -95,6 +95,11 @@ bundle-libs:
 	@cd resources && $(GULP) bundle-libs
 	@echo "\nDone"
 
+sri:
+	@echo "Generating SRI"
+	@cd resources && $(GULP) generate-sri
+	@echo "Done"
+
 # The dist task is to compile and compress resources and
 # copy them to the `dist` directory.
 # All resources to be deployed must be copied to the `dist` directory.
@@ -103,7 +108,7 @@ bundle-libs:
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
 
-dist: prepare-dist npminstall styles gunpowder reactjs copy-html-libs bundle-js bundle-libs prepare-subdir ec2 azure localshiva clean-subdir
+dist: prepare-dist npminstall styles gunpowder reactjs copy-html-libs bundle-js bundle-libs sri prepare-subdir ec2 azure localshiva clean-subdir
 
 # The distdev task is to npm install resources and call the gulp task to
 # set the local environment up.
