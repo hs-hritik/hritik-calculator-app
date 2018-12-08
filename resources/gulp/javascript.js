@@ -3,8 +3,6 @@
 const gulp = require ("gulp");
 const babel = require ("gulp-babel");
 const rename = require ("gulp-rename");
-const uglify = require ("gulp-uglify");
-const download = require ("gulp-download");
 const print = require ("gulp-print");
 const notifier = require ("node-notifier");
 const {argv} = require ("yargs");
@@ -12,6 +10,23 @@ const {getTimeStamp} = require ("./utils");
 const gutil = require ("gulp-util");
 const replace = require ("gulp-replace");
 const runSequence = require ("run-sequence");
+const concat = require ("gulp-concat");
+const del = require ("del");
+
+/**
+ * Webchat version
+ */
+const WEB_CHAT_VERSION = "2.14.0";
+
+/**
+ * Name of app bundle
+ */
+const APP_BUNDLE_NAME = "app";
+
+/**
+ * Name of library bundle
+ */
+const LIBS_BUNDLE_NAME = "libs";
 
 const PATHS = {
   scriptsSrc: "static/scripts/**/*.+(js|jsx)",
@@ -19,11 +34,8 @@ const PATHS = {
   scriptsDestDev: "localhost/scripts",
 
   libsSrc: "static/libs/**/*.js",
+  libsDest: "dist/libs",
   libsDestDev: "localhost/libs/",
-  libsMinSrc: "static/libs/*-min.js",
-  libs: "static/libs",
-
-  uglify: "dist/scripts/**/*.js",
 
   // Env specific paths
   ec2Source: ["dist/ec2/**/*.*", "!dist/ec2/fonts/**/*.*"],
@@ -36,10 +48,54 @@ const PATHS = {
   localhostDest: "localhost/",
 
   // Specific paths to run the local server
-  webChatSrcDev: "localhost/scripts/external/messenger.js"
+  webChatSrcDev: "localhost/scripts/external/messenger.js",
+
+  // Library bundle specific path
+  // @NOTE - Any new file added to libs folder will not be automatically minified
+  // You will have to add it explicity to following array.
+  bundleLibsSource: [
+    "static/libs/react-with-addons-min.js",
+    "static/libs/react-dom-min.js",
+    "static/libs/redux-min.js",
+    "static/libs/react-redux-min.js",
+    "static/libs/require-min.js"
+  ],
+  // This is the source of files to be removed once libs bundle is generated
+  // Basically remove all the file inside dist/libs except for libs-min.js
+  unwantedLibsSource: [
+    "dist/libs/**/*",
+    `!dist/libs/${LIBS_BUNDLE_NAME}-min.js`
+  ],
+
+  // App bundle specific path
+  unwantedAppSource: [
+    "dist/scripts/**/*",
+    `!dist/scripts/${APP_BUNDLE_NAME}-min.js`,
+    `!dist/scripts/${APP_BUNDLE_NAME}-min.js.map`,
+    "!dist/scripts/external/**"
+  ]
 };
 
-const REACT_URL = "http://fb.me/react-with-addons-{version}{min}.js";
+/**
+ * Paths used in templating
+ */
+const TEMPLATE_PATHS = {
+  LIBS: {
+    DEV: `
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-with-addons.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-dom.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/redux.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-redux.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/scripts/requireConfig.js"></script>
+    `,
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"></script>`
+  },
+  APP: {
+    DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"></script>`
+  }
+};
 
 /**
  * Run babel on a given source folder
@@ -93,38 +149,17 @@ gulp.task ("babel", function () {
 });
 
 /**
- * Goes through all the js files. Compresses them and keeps them in the same spot.
- */
-gulp.task ("uglify", function () {
-  return gulp.src (PATHS.uglify)
-    .pipe (uglify ())
-    .pipe (gulp.dest (PATHS.scriptsDest))
-    .pipe (print (function (filepath) {
-      return `Uglified: ${filepath}`;
-    }));
-});
-
-/**
- * Overwrites minified libs.
- * If there's a file in /libs/ folder with name say foo-min.js,
- * this task overwrites foo.js with foo-min.js
- * This is used to replace dev version of react with prod version
- */
-gulp.task ("overwrite-min", function () {
-  gulp.src (PATHS.libsMinSrc)
-    .pipe (rename (function (path) {
-      path.basename = path.basename.replace ("-min", "");
-      console.log (`Replaced ${path.basename}-min.js with ${path.basename}.js`);
-    }))
-    .pipe (gulp.dest (PATHS.libs));
-});
-
-/**
  * Production task.
  * Replace EC2 specific template strings with given values
  */
 gulp.task ("build-ec2", function () {
   gulp.src (PATHS.ec2Source)
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD, {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD, {
+        skipBinary: true
+      }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
         skipBinary: true
       }))
@@ -140,6 +175,12 @@ gulp.task ("build-ec2", function () {
  */
 gulp.task ("build-azure", function () {
   gulp.src (PATHS.azureSource)
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD, {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD, {
+        skipBinary: true
+      }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
         skipBinary: true
       }))
@@ -155,6 +196,12 @@ gulp.task ("build-azure", function () {
  */
 gulp.task ("build-localshiva", function () {
   gulp.src (PATHS.localshivaSource)
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD, {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD, {
+        skipBinary: true
+      }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
         skipBinary: true
       }))
@@ -165,33 +212,32 @@ gulp.task ("build-localshiva", function () {
 });
 
 /**
- * Task to update react library with the latest version.
- * (For lazy people)
- */
-gulp.task ("update-react", function () {
-  const version = argv.version;
-
-  if (!version) {
-    console.log ("Please enter React version");
-    return;
-  }
-  const url = REACT_URL.replace ("{version}", version);
-
-  download (url.replace ("{min}", ""))
-               .pipe (rename ("react-with-addons.js"))
-               .pipe (gulp.dest (PATHS.libs));
-
-  download (url.replace ("{min}", ".min"))
-               .pipe (rename ("react-with-addons-min.js"))
-               .pipe (gulp.dest (PATHS.libs));
-});
-
-/**
  * Copy libs from source dir (workspace) to destination dir (server)
  */
 gulp.task ("libs", () => {
   return gulp.src (PATHS.libsSrc)
     .pipe (gulp.dest (PATHS.libsDestDev));
+});
+
+/**
+ * Task to combine given libs in single bundle file
+ */
+gulp.task ("bundle-libs", function () {
+  gulp.src (PATHS.bundleLibsSource)
+    .pipe (concat (`${LIBS_BUNDLE_NAME}-min.js`))
+    .pipe (gulp.dest (PATHS.libsDest))
+    .pipe (print (() => {
+      // Delete all the lib files inside dist/libs except libs bundle file
+      del (PATHS.unwantedLibsSource);
+      console.log ("Libs are bundled");
+    }));
+});
+
+/**
+ * Task to clean unwanted js files after we generate app bundle
+ */
+gulp.task ("clean-unwanted-js", function () {
+  del (PATHS.unwantedAppSource);
 });
 
 /**
@@ -228,6 +274,12 @@ gulp.task ("replace-localhost", function () {
                   "https://api.helpshift.com";
 
   return gulp.src (PATHS.localhostSource)
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.DEV, {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.DEV, {
+        skipBinary: true
+      }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", webChatRoot, {
         skipBinary: true
       }))

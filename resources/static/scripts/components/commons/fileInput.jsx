@@ -9,11 +9,24 @@ define ("components/commons/fileInput",
   function (classes) {
     "use strict";
 
+    const DEFAULT_ACCEPT = ".zip, .rar, .tar, .gzip, .mp3, .mpeg, .wav, .ogg, .amr, .jpeg, " +
+                           ".jpg, .png, .gif, .bmp, .txt, .rtf, .webm, .mpeg4, .3gpp, .mov, " +
+                           ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
+                           ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csv";
+
     const PropTypes = React.PropTypes;
 
     return React.createClass ({
       displayName: "FileInput",
       propTypes: {
+        /**
+         * By default the widget will accept all types of files.
+         * But you can define what kind of files the widget should accept.
+         * Refer to following link for more details:
+         * https://developer.mozilla.org/en/docs/Web/HTML/Element/Input#attr-accept
+         */
+        accept: PropTypes.string,
+
         /**
          * Change handler for files select
          */
@@ -45,6 +58,12 @@ define ("components/commons/fileInput",
         labelClasses: PropTypes.string
       },
 
+      getDefaultProps () {
+        return {
+          accept: DEFAULT_ACCEPT
+        };
+      },
+
       getInitialState () {
         return {
           fileInputValue: ""
@@ -57,7 +76,8 @@ define ("components/commons/fileInput",
           iconClasses,
           disabled,
           noPadding,
-          labelClasses
+          labelClasses,
+          accept
         } = this.props;
         let infoTextEl = null;
 
@@ -90,6 +110,7 @@ define ("components/commons/fileInput",
                    value={this.state.fileInputValue}
                    id="upload-file"
                    multiple={true}
+                   accept={accept}
                    disabled={disabled}
                    className="hs-file-input__file"
                    onChange={this._onFilesChange} />
@@ -105,6 +126,7 @@ define ("components/commons/fileInput",
         this.setState ({
           fileInputValue: ""
         });
+
         this.props.onChange (ev.target.files);
       }
     });

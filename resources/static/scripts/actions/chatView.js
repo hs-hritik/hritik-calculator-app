@@ -2014,13 +2014,16 @@ define ("actions/chatView",
          * sm = sdk meta
          * cb = chat bots
          * library_version = current webchat version
+         * timezone_minutes = timezone offset. This is required while rendering
+         * the message timestamp in re-engagement email.
          */
         const xhrData = {
           meta: JSON.stringify (meta),
           sm: JSON.stringify ({
             cb: true
           }),
-          library_version: WEB_CHAT_VERSION
+          library_version: WEB_CHAT_VERSION,
+          timezone_minutes: -(new Date ().getTimezoneOffset ())
         };
 
         // If CIF is set and contains at least one field, add it to XHR data
@@ -2386,9 +2389,16 @@ define ("actions/chatView",
               },
               onAddMessage (msg) {
                 attachmentMsgId = msg.id;
-                // If attachment size is not valid, set error on message
-                // Else upload the file
-                if (!attachmentsHelpers.isAttachmentsSizeValid (msg.file.size)) {
+                if (!attachmentsHelpers.isAttachmentTypeValid (msg.file.type)) {
+                  // If attachment type is not valid, set error on message
+                  dispatch (
+                    setAttachmentError (
+                      attachmentMsgId,
+                      FILE_UPLOAD_ERRORS.INVALID_TYPE
+                    )
+                  );
+                } else if (!attachmentsHelpers.isAttachmentsSizeValid (msg.file.size)) {
+                  // If attachment size is not valid, set error on message
                   dispatch (
                     setAttachmentError (attachmentMsgId, FILE_UPLOAD_ERRORS.SIZE_EXCEEDED)
                   );
