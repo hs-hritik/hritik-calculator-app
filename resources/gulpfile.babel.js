@@ -120,8 +120,9 @@ gulp.task ("build-localhost", function () {
  * the hs-sri.json file.
  */
 gulp.task ("generate-sri", function () {
-  console.log ("Generating SRI for JS bundles");
-  runSequence ("sri", "update-sri-list");
+  console.log ("Generating & Embedding environment specific SRI for JS bundles");
+  runSequence ("sri", "update-sri-list", "update-ec2-sri", "update-azure-sri",
+    "update-localshiva-sri");
 });
 
 gulp.task ("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);

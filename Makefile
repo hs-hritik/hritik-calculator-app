@@ -96,7 +96,7 @@ bundle-libs:
 	@echo "\nDone"
 
 sri:
-	@echo "Generating SRI"
+	@echo "Starting SRI related tasks"
 	@cd resources && $(GULP) generate-sri
 	@echo "Done"
 
@@ -108,7 +108,7 @@ sri:
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
 
-dist: prepare-dist npminstall styles gunpowder reactjs copy-html-libs bundle-js bundle-libs sri prepare-subdir ec2 azure localshiva clean-subdir
+dist: prepare-dist npminstall styles gunpowder reactjs copy-html-libs bundle-js bundle-libs prepare-subdir ec2 azure localshiva sri clean-subdir
 
 # The distdev task is to npm install resources and call the gulp task to
 # set the local environment up.

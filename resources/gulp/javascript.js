@@ -100,7 +100,32 @@ const PATHS = {
   },
 
   hsSri: "./hs-sri.json",
-  tempSri: "./sri.json"
+  tempSri: "./sri.json",
+
+  // Environment specific SRI related paths
+  sri: {
+    ec2: {
+      source: {
+        app: "dist/ec2/scripts/app-min.js",
+        libs: "dist/ec2/libs/libs-min.js"
+      },
+      dest: "dist/ec2/html/index.html"
+    },
+    azure: {
+      source: {
+        app: "dist/azure/scripts/app-min.js",
+        libs: "dist/azure/libs/libs-min.js"
+      },
+      dest: "dist/azure/html/index.html"
+    },
+    localshiva: {
+      source: {
+        app: "dist/localshiva/scripts/app-min.js",
+        libs: "dist/localshiva/libs/libs-min.js"
+      },
+      dest: "dist/localshiva/html/index.html"
+    }
+  }
 };
 
 /**
@@ -203,12 +228,6 @@ gulp.task ("build-ec2", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
         skipBinary: true
       }))
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (`${PATHS.libsDest}/libs-min.js`), {
-        skipBinary: true
-      }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (`${PATHS.scriptsDest}/app-min.js`), {
-        skipBinary: true
-      }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
         skipBinary: true
       }))
@@ -230,12 +249,6 @@ gulp.task ("build-azure", function () {
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
         skipBinary: true
       }))
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (`${PATHS.libsDest}/libs-min.js`), {
-        skipBinary: true
-      }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (`${PATHS.scriptsDest}/app-min.js`), {
-        skipBinary: true
-      }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
         skipBinary: true
       }))
@@ -255,12 +268,6 @@ gulp.task ("build-localshiva", function () {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
-        skipBinary: true
-      }))
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (`${PATHS.libsDest}/libs-min.js`), {
-        skipBinary: true
-      }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (`${PATHS.scriptsDest}/app-min.js`), {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
@@ -302,12 +309,21 @@ gulp.task ("clean-unwanted-js", function () {
  * Task to generate sri for libs and app JS bundles
  */
 gulp.task ("sri", function () {
-  // Pick all js files with in dist directory
-  const DIST_FILES = "/*.js";
-  // Destination directory path for app and libs
+  const {
+    sri: {
+      ec2,
+      azure,
+      localshiva
+    }
+  } = PATHS;
+
   const DEST_PATHS = [
-    `${PATHS.scriptsDest}${DIST_FILES}`,
-    `${PATHS.libsDest}${DIST_FILES}`
+    ec2.source.app,
+    ec2.source.libs,
+    azure.source.app,
+    azure.source.libs,
+    localshiva.source.app,
+    localshiva.source.libs
   ];
 
   return gulp.src (DEST_PATHS)
@@ -359,6 +375,39 @@ gulp.task ("update-sri-list", function () {
 
   // Delete sri.json temp file
   fs.unlink (PATHS.tempSri);
+});
+
+gulp.task ("update-ec2-sri", function () {
+  gulp.src (PATHS.sri.ec2.dest)
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.ec2.source.libs), {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.ec2.source.app), {
+        skipBinary: true
+      }))
+      .pipe (gulp.dest ("dist/ec2/html/"));
+});
+
+gulp.task ("update-azure-sri", function () {
+  gulp.src (PATHS.sri.azure.dest)
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.azure.source.libs), {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.azure.source.app), {
+        skipBinary: true
+      }))
+      .pipe (gulp.dest ("dist/azure/html/"));
+});
+
+gulp.task ("update-localshiva-sri", function () {
+  gulp.src (PATHS.sri.localshiva.dest)
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.localshiva.source.libs), {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.localshiva.source.app), {
+        skipBinary: true
+      }))
+      .pipe (gulp.dest ("dist/localshiva/html/"));
 });
 
 /**
