@@ -1,0 +1,5 @@
+Branches:
+feature/fix-ONCALL-3488
+
+Changelog:
+Fix word break in pill-input options
