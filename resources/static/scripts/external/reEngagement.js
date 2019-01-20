@@ -45,12 +45,20 @@
     }
 
     if (type === MESSAGE_TYPES.CMD_SET_LS) {
-      const ls = window.localStorage;
-
-      ls.setItem (LOCAL_STORAGE_KEYS.REDIRECTED, true);
-      ls.setItem (LOCAL_STORAGE_KEYS.RE_ENGAGEMENT_DATA, JSON.stringify (data));
-
-      _postMessage (MESSAGE_TYPES.SDK_SET_LS_DONE);
+      // Safari on iOS in private browsing mode doesn't behave well. It may or may
+      // not throw and exception when using localstorage depending on the version
+      // of the browser. Versions 11 and 12 fail silently without an exception.
+      // Previous versions throw an exception that blocks further execution, thus
+      // the user gets stuck on the redirection page.
+      try {
+        const ls = window.localStorage;
+        ls.setItem (LOCAL_STORAGE_KEYS.REDIRECTED, true);
+        ls.setItem (LOCAL_STORAGE_KEYS.RE_ENGAGEMENT_DATA, JSON.stringify (data));
+      } catch (exception) {
+        // @TODO: Report this exception to our servers, when the logging setup is done.
+      } finally {
+        _postMessage (MESSAGE_TYPES.SDK_SET_LS_DONE);
+      }
     }
   }, false);
 

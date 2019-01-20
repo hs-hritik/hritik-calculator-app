@@ -12,7 +12,8 @@ define ("constants/errors",
       SIZE_EXCEEDED: 1,
       RETRY: 2,
       FAILURE: 3,
-      ABORTED: 4
+      ABORTED: 4,
+      INVALID_TYPE: 5
     };
 
     const RESPONSE_STATUS_CODE = {

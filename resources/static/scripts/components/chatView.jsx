@@ -194,7 +194,8 @@ define ("components/chatView",
           error,
           userIsViewingPastMessages,
           errorActionHandler,
-          botStepInProgress
+          botStepInProgress,
+          minimized
         } = this.props;
 
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -231,7 +232,8 @@ define ("components/chatView",
                                onScrollPastExistingConversation
                              }
                              onLoadMore={this._onLoadMore}
-                             ref={this._setMsgListRef} />
+                             ref={this._setMsgListRef}
+                             minimized={minimized} />
                 {this._renderJumpToLatestBtn ()}
               </div>
               <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick} />

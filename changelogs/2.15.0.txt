@@ -1,0 +1,6 @@
+Branches:
+feature/fix-scroll-to-bottom-issue
+
+Changelog:
+Fix condition to check if messages are appended
+Restore scroll position when chat window is toggled

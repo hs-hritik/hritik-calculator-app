@@ -1,0 +1,5 @@
+Branches:
+feature/ls-fallback
+
+Changelog:
+Avoid localstorage error for Safari private browsing
