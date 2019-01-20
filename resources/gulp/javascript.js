@@ -16,23 +16,23 @@ const sri = require ("gulp-sri");
 const fs = require ("fs");
 
 /**
- * Maximum hashes to add to the integrity attribute.
- * Ideally, there should be one bundle in production but in case of release
- * there might be two to three versions of a bundle. In this case,
- * client can get served with any of these versions hence we need to keep
- * three hashes for checking the integrity.
+ * Maximum hashes to add to the integrity attribute of script tag.
+ * Ideally, there should be only one app and min bundle each in production but
+ * in case of deployments there might be two to three versions of a bundle temporarily.
+ * In this case, the client may request any of these versions, which would fail
+ * the SRI integrity check. Hence, we need to keep three hashes for checking the integrity.
  */
 const MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE = 3;
 
 /**
- * Maximum SRIs to maintain corresponding to a single resource in hs-sri.json
- * If new SRI is generated for newer version of a resource and max sri limit
- * per resource is reached then it pops the oldest sri and prepends the latest SRI.
+ * Maximum number of SRIs to maintain corresponding to a single resource in hs-sri.json.
+ * If a new SRI is generated for a newer version of a resource and max SRI limit
+ * per resource is reached then it pops the oldest SRI and prepends the latest SRI.
  */
 const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 
 /**
- * Webchat version
+ * Web Chat version
  */
 const WEB_CHAT_VERSION = "2.13.1";
 
@@ -147,7 +147,7 @@ integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
   APP: {
     DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
     PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
-"integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
+integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
   }
 };
 
@@ -203,9 +203,9 @@ gulp.task ("babel", function () {
 });
 
 /**
- * Returns a string by combining latest three hashes corresponding
+ * Returns a string by combining the latest three SRI hashes corresponding
  * to a given path from the hs-sri.json file.
- * @param {String} path - bundle path from dist directory
+ * @param {String} path - bundle path from the dist directory
  * @returns {String} A string of latest three hashes.
  */
 const getBundleHash = (path) => {
@@ -339,7 +339,7 @@ gulp.task ("sri", function () {
  * It checks if newly generated hash for bundles matches with the first three
  * hashes of the previous versions of the same bundle, if it does then the
  * latest version is skipped.
- * This is required because we maintain hashses of last 10 versions corresponding to a file.
+ * This is required because we maintain hashes of last 10 versions corresponding to a file.
  * But we only add first three versions to the integrity attribute (check getBundleHash function)
  */
 gulp.task ("update-sri-list", function () {
@@ -351,7 +351,7 @@ gulp.task ("update-sri-list", function () {
     // in hs-sri.json file. So, create a key corresponding
     // to that file and associate it to empty array.
     if (!Array.isArray (hsSri [key])) {
-      hsSri [key] = []
+      hsSri [key] = [];
     }
 
     // If the sri hash value is present with in first three hash values
