@@ -48,7 +48,7 @@ define (
           /**
            * Title of the option
            */
-          title: PropTypes.string.isRequired,
+          label: PropTypes.string.isRequired,
 
           /**
            * Description of the option
