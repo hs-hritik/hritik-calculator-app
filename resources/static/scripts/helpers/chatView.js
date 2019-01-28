@@ -23,15 +23,25 @@ define ("helpers/chatView",
       ISSUE_STATE,
       XHR_ISSUE_STATE
     } = appStateConstants;
-    const {USER_INPUT_TYPES} = chatViewConstants;
+    const {
+      USER_INPUT_TYPES,
+      PICKER_INPUT_THRESHOLD,
+      OPTIONS_INPUT_TYPES
+    } = chatViewConstants;
     const {Input} = schema;
 
     /**
-     * Return an input type
+     * Return an input type based on the message type. In case of options msg
+     * type, the message will have a specific input type.
+     * NOTE: For Bots-APIs v1, we are going to use options length as a fallback
+     * to determine the input type. In V2, we will start receiving the input type
+     * which will be used to determine the input type.
      * @param {String} messageType - message type
+     * @param {String} msgInputType - Input type received in message
+     * @param {Number} optionsCount - Length of the options list
      * @returns {String} - input type
      */
-    const getUserInputType = (messageType) => {
+    const getUserInputType = (messageType, msgInputType, optionsCount) => {
       switch (messageType) {
         case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
           return USER_INPUT_TYPES.PLAIN_TEXT;
@@ -47,6 +57,13 @@ define ("helpers/chatView",
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
+          if (
+            msgInputType === OPTIONS_INPUT_TYPES.LIST_PICKER ||
+            optionsCount > PICKER_INPUT_THRESHOLD
+          ) {
+            return USER_INPUT_TYPES.LIST_PICKER;
+          }
+
           return USER_INPUT_TYPES.PILL_SELECT;
 
         // For message type = 'EMPTY_MSG_WITH_TEXT_INPUT' i.e. first user message
@@ -64,6 +81,29 @@ define ("helpers/chatView",
      * @returns {Object} - processed input object
      */
     const getProcessedUserInput = (config) => {
+      // @TODO START
+      // Remove this dummy data after integration with backend.
+      config.input.options = [{
+        data : {option_id: "id1"},
+        title: "Option 1"
+      }, {
+        data: {option_id: "id2"},
+        title: "Option 2"
+      }, {
+        data: {option_id: "id3"},
+        title: "Option 3"
+      }, {
+        data: {option_id: "id4"},
+        title: "Option 4"
+      }, {
+        data: {option_id: "id5"},
+        title: "Option 5"
+      }, {
+        data: {option_id: "id6"},
+        title: "Option 6"
+      }];
+      // @TODO END
+
       const {
         messageType,
         input: {
@@ -71,10 +111,14 @@ define ("helpers/chatView",
           placeholder,
           label,
           skip_label: skipLabel,
+          // NOTE: This won't be available in the Bots-API v1
+          type: optionsInputType,
           options
         }
       } = config;
-      const userInputType = getUserInputType (messageType);
+      const userInputType = getUserInputType (
+        messageType, optionsInputType, options.length
+      );
 
       const processedInput = {
         type: userInputType,
@@ -84,7 +128,10 @@ define ("helpers/chatView",
         placeholder
       };
 
-      if (userInputType === USER_INPUT_TYPES.PILL_SELECT) {
+      if (
+        userInputType === USER_INPUT_TYPES.PILL_SELECT ||
+        userInputType === USER_INPUT_TYPES.LIST_PICKER
+      ) {
         processedInput.options = options.map ((option) => {
           return {
             label: option.title,

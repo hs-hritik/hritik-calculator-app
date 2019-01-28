@@ -32,7 +32,8 @@ define ("constants/chatView",
       EMAIL: "EMAIL",
       NUMERIC: "NUMERIC",
       DATE: "DATE",
-      PILL_SELECT: "PILL_SELECT"
+      PILL_SELECT: "PILL_SELECT",
+      LIST_PICKER: "LIST_PICKER"
     };
 
     const HTML_INPUT_TYPES = {
@@ -45,6 +46,11 @@ define ("constants/chatView",
     const CURSOR_TYPES = {
       FORWARD: "forward",
       BACKWARD: "backward"
+    };
+
+    const OPTIONS_INPUT_TYPES = {
+      PILLS: "option_pills",
+      LIST_PICKER: "list_picker"
     };
 
     const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
@@ -67,6 +73,8 @@ define ("constants/chatView",
       CURSOR_TYPES,
       MAX_POLLER_FAILURES_ALLOWED,
       USER_REDACTION_ERR_MSG,
-      USER_REDACTION_ERR_STATUS_CODE
+      USER_REDACTION_ERR_STATUS_CODE,
+      PICKER_INPUT_THRESHOLD: 5,
+      OPTIONS_INPUT_TYPES
     };
   });
