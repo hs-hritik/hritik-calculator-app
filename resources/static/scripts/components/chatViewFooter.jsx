@@ -15,10 +15,12 @@ define ("components/chatViewFooter",
     "constants/keyCodes",
     "constants/propTypes",
     "helpers/common",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "components/commons/picker"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
-    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes) {
+    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
+    Picker) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -271,6 +273,8 @@ define ("components/chatViewFooter",
           inputComponentEl = (
             <ReplyBoxContainer className="hs-chat-footer__text-area" />
           );
+        } else if (type === USER_INPUT_TYPES.LIST_PICKER) {
+          inputComponentEl = this._renderPicker ();
         } else {
           const htmlInputType = this._getHtmlInputType (type);
           const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
@@ -301,12 +305,20 @@ define ("components/chatViewFooter",
           );
         }
 
+        let footerLabelEl = null;
+        let footerActionEl = null;
+
+        if (type !== USER_INPUT_TYPES.LIST_PICKER) {
+          footerLabelEl = this._renderFooterLabelComponent ();
+          footerActionEl = this._renderFooterAction ();
+        }
+
         return (
           <div className={footerClasses}>
-            {this._renderFooterLabelComponent ()}
+            {footerLabelEl}
             <div key="input" className="hs-chat-footer__field">
               {inputComponentEl}
-              {this._renderFooterAction ()}
+              {footerActionEl}
             </div>
             {errorMsgEl}
           </div>
@@ -333,6 +345,32 @@ define ("components/chatViewFooter",
         }
 
         return this._renderAttachmentButton ();
+      },
+
+      /**
+       * Renders the picker element
+       */
+      _renderPicker () {
+        const {
+          userInput: {
+            options,
+            listPicker: {
+              closed,
+              searchPlaceholder,
+              headerLabel,
+              searchNoResultsText
+            }
+          }
+        } = this.props;
+
+        return (
+          <Picker options={options}
+                  closed={closed}
+                  onToggle={this._onPickerToggle}
+                  searchPlaceholder={searchPlaceholder}
+                  headerLabel={headerLabel}
+                  searchNoResultsText={searchNoResultsText} />
+        );
       },
 
       /**
@@ -524,6 +562,13 @@ define ("components/chatViewFooter",
         } else if (ev.keyCode === KEY_CODES.ENTER) {
           this.props.onSubmitReply ();
         }
+      },
+
+      /**
+       * Handle change in opened state of the Picker
+       */
+      _onPickerToggle () {
+        // @TODO: Implement
       },
 
       /**

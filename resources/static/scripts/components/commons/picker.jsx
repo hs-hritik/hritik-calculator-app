@@ -30,6 +30,28 @@ define (
 
     const {PropTypes} = React;
 
+    const optionsPropType = PropTypes.arrayOf (PropTypes.shape ({
+      /**
+       * Unique id for the option
+       */
+      value: PropTypes.string.isRequired,
+
+      /**
+       * Title of the option
+       */
+      label: PropTypes.string.isRequired,
+
+      /**
+       * Description of the option
+       */
+      description: PropTypes.string,
+
+      /**
+       * Icon to be shown for the option
+       */
+      iconUrl: PropTypes.string
+    }));
+
     /**
      * Component to render the list of options
      */
@@ -39,27 +61,7 @@ define (
         /**
          * Options of the list
          */
-        options: PropTypes.arrayOf (PropTypes.shape ({
-          /**
-           * Unique id for the option
-           */
-          value: PropTypes.string.isRequired,
-
-          /**
-           * Title of the option
-           */
-          label: PropTypes.string.isRequired,
-
-          /**
-           * Description of the option
-           */
-          description: PropTypes.string,
-
-          /**
-           * Icon to be shown for the option
-           */
-          iconUrl: PropTypes.string
-        })).isRequired,
+        options: optionsPropType.isRequired,
 
         /**
          * Callback when an option is selected
@@ -252,19 +254,71 @@ define (
         /**
          * Handler when the closed state is toggled
          */
-        onToggle: PropTypes.func.isRequired
+        onToggle: PropTypes.func.isRequired,
+
+        /**
+         * Options of the list
+         */
+        options: optionsPropType.isRequired,
+
+        /**
+         * Placeholder for the search input
+         */
+        searchPlaceholder: PropTypes.string.isRequired,
+
+        /**
+         * Label for the header
+         */
+        headerLabel: PropTypes.string.isRequired,
+
+        /**
+         * Text shown when search query doesn't match any option
+         */
+        searchNoResultsText: PropTypes.string.isRequired
       },
 
       render () {
         // @TODO: Implement list render logic
+        const {
+          searchPlaceholder: placeholder,
+          headerLabel: label,
+          closed,
+          options
+        } = this.props;
         return (
           <div className="hs-picker">
-            <PickerHeader />
+            <PickerHeader placeholder={placeholder}
+                          label={label}
+                          closed={closed}
+                          onSearch={this._onSearch}
+                          onToggleButtonClick={this._onHeaderToggleButtonClick} />
             <div className="hs-picker__options-container">
-              <OptionsList />
+              <OptionsList options={options}
+                           onSelect={this._onOptionSelect} />
             </div>
           </div>
         );
+      },
+
+      /**
+       * Handle change in search query
+       */
+      _onSearch () {
+        // @TODO: Implement filtering
+      },
+
+      /**
+       * Handle click on search toggle button
+       */
+      _onHeaderToggleButtonClick () {
+        // @TODO: Update closed flag
+      },
+
+      /**
+       * Handle option selection
+       */
+      _onOptionSelect () {
+        // @TODO: Call action to send selected user reply
       }
     });
   }

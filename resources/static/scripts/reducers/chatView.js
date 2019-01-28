@@ -45,7 +45,13 @@ define ("reducers/chatView",
         skipLabel: "",
         skipped: false,
         placeholder: "",
-        errorMsg: ""
+        errorMsg: "",
+        listPicker: {
+          closed: true,
+          searchPlaceholder: "",
+          headerLabel: "",
+          searchNoResultsText: ""
+        }
       };
     };
 
