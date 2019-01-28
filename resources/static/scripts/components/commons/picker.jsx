@@ -175,6 +175,7 @@ define (
         } = this.state;
 
         let searchEl;
+        let searchIconEl = null;
 
         if (searchInputIsShown) {
           searchEl = this._renderSearchInput ();
@@ -188,13 +189,17 @@ define (
               {label}
             </div>
           );
+
+          searchIconEl = (
+            <i className="ion-magnifier"
+               onClick={this._onSearchIconClick} />
+          );
         }
 
         return (
-          <div>
+          <div className="hs-picker-header__search-wrapper">
             {searchEl}
-            <i className="ion-magnifier"
-               onClick={this._onSearchIconClick} />
+            {searchIconEl}
           </div>
         );
       },
