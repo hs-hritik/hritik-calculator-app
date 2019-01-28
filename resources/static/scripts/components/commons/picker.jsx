@@ -21,9 +21,9 @@
   */
 
 define (
-  "components/picker",
+  "components/commons/picker",
   [
-    "utils/classes"
+    "gunpowder/utils/classes"
   ],
   function (classes) {
     "use strict";
