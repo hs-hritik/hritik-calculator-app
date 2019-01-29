@@ -49,7 +49,6 @@ define ("reducers/chatView",
         listPicker: {
           closed: true,
           searchPlaceholder: "",
-          headerLabel: "",
           searchNoResultsText: ""
         }
       };

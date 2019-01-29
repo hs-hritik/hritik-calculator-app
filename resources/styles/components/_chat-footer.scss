@@ -59,6 +59,11 @@
       align-items: center;
     }
 
+    &__picker-field {
+      flex: 1 0 auto;
+      padding: gutter(0 8);
+    }
+
     &__title,
     &__error-text {
       flex: 1 1 auto;
@@ -224,6 +229,10 @@
           font-size: font-size(body, large);
         }
       }
+    }
+
+    &--no-bottom-padding {
+      padding-bottom: 0;
     }
   }
 }

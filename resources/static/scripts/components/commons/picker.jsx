@@ -70,10 +70,25 @@ define (
       },
 
       render () {
-        // @TODO: Flesh this out.
         return (
-          <ul className="hs-picker-options" />
+          <ul className="hs-picker-options">
+            {this._renderListItems ()}
+          </ul>
         );
+      },
+
+      _renderListItems () {
+        const {
+          options
+        } = this.props;
+
+        return options.map ((option) => {
+          return (
+            <li className="hs-picker-options__option-item" key={option.value}>
+              {option.label}
+            </li>
+          );
+        });
       }
     });
 
@@ -171,6 +186,9 @@ define (
 
       _renderSearch () {
         const {
+          closed
+        } = this.props;
+        const {
           searchInputIsShown
         } = this.state;
 
@@ -185,15 +203,17 @@ define (
           } = this.props;
 
           searchEl = (
-            <div className="hs-picker-header__search-label">
+            <small className="hs-picker-header__search-label">
               {label}
-            </div>
+            </small>
           );
 
-          searchIconEl = (
-            <i className="ion-magnifier"
-               onClick={this._onSearchIconClick} />
-          );
+          if (!closed) {
+            searchIconEl = (
+              <i className="ion-magnifier"
+                 onClick={this._onSearchIconClick} />
+            );
+          }
         }
 
         return (
@@ -215,7 +235,8 @@ define (
 
         return (
           <div className="hs-picker-header__input-wrapper">
-            <input value={query}
+            <input className="hs-picker-header__input"
+                   value={query}
                    placeholder={placeholder}
                    onChange={this._onSearchQueryChange} />
           </div>
@@ -279,7 +300,12 @@ define (
         /**
          * Text shown when search query doesn't match any option
          */
-        searchNoResultsText: PropTypes.string.isRequired
+        searchNoResultsText: PropTypes.string.isRequired,
+
+        /**
+         * Custmom classes for the picker
+         */
+        className: PropTypes.string
       },
 
       render () {
@@ -288,16 +314,30 @@ define (
           searchPlaceholder: placeholder,
           headerLabel: label,
           closed,
-          options
+          options,
+          className
         } = this.props;
+
+        const pickerClasses = classes (
+          className,
+          "hs-picker",
+          {
+            "hs-picker--opened": !closed,
+            "hs-picker--closed": closed
+          }
+        );
+
         return (
-          <div className="hs-picker">
-            <PickerHeader placeholder={placeholder}
-                          label={label}
-                          closed={closed}
-                          onSearch={this._onSearch}
-                          onToggleButtonClick={this._onHeaderToggleButtonClick} />
-            <div className="hs-picker__options-container">
+          <div className={pickerClasses}>
+            <div className="hs-picker__header-wrapper">
+              <PickerHeader placeholder={placeholder}
+                            label={label}
+                            closed={closed}
+                            onSearch={this._onSearch}
+                            onToggleButtonClick={this._onHeaderToggleButtonClick} />
+            </div>
+
+            <div className="hs-picker__options-wrapper">
               <OptionsList options={options}
                            onSelect={this._onOptionSelect} />
             </div>

@@ -1,0 +1,33 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the picker header component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group picker
+///
+
+@include component(picker-header) {
+  $search-label-color: color(text, light);
+
+  .hs-picker-header {
+    display: flex;
+    align-items: center;
+
+    &__input {
+      flex: 1 0 auto;
+    }
+
+    &__search-wrapper {
+      flex: 1 0 auto;
+      margin-left: gutter(20);
+    }
+
+    &__search-label {
+      color: $search-label-color;
+    }
+  }
+}

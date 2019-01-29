@@ -1,0 +1,23 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the picker options component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group picker
+///
+
+@include component(picker-options) {
+
+  .hs-picker-options {
+    margin: 0;
+    list-style: none;
+
+    &__option-item {
+      padding: gutter(16 0);
+    }
+  }
+}

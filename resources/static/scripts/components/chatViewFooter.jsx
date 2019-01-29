@@ -257,7 +257,8 @@ define ("components/chatViewFooter",
           "hs-chat-footer", {
             "hs-chat-footer--form-error": errorMsg,
             "hs-chat-footer--form-invalid": disabled || !value.trim (),
-            "hs-chat-footer--mobile": browserIsMobile
+            "hs-chat-footer--mobile": browserIsMobile,
+            "hs-chat-footer--no-bottom-padding": type === USER_INPUT_TYPES.LIST_PICKER
           }
         );
         let errorMsgEl = null;
@@ -354,17 +355,18 @@ define ("components/chatViewFooter",
         const {
           userInput: {
             options,
+            label: headerLabel,
             listPicker: {
               closed,
               searchPlaceholder,
-              headerLabel,
               searchNoResultsText
             }
           }
         } = this.props;
 
         return (
-          <Picker options={options}
+          <Picker className="hs-chat-footer__picker-field"
+                  options={options}
                   closed={closed}
                   onToggle={this._onPickerToggle}
                   searchPlaceholder={searchPlaceholder}

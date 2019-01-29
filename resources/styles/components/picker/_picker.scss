@@ -1,0 +1,34 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the picker component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group picker
+///
+
+@include component(picker) {
+  $picker-closed-max-height: 117px;
+
+  .hs-picker {
+    display: flex;
+    flex-direction: column;
+
+    &__header-wrapper {
+      flex: 1 0 auto;
+      padding-bottom: gutter(16);
+    }
+
+    &__options-container {
+      display: flex;
+    }
+
+    &--closed {
+      max-height: $picker-closed-max-height;
+      overflow: hidden;
+    }
+  }
+}
