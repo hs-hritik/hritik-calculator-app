@@ -111,7 +111,10 @@ define ("components/chatViewFooter",
             type,
             disabled,
             required,
-            skipLabel
+            skipLabel,
+            listPicker: {
+              closed: listPickerIsClosed
+            }
           },
           issueIsCreated,
           onSkipUserInput
@@ -141,7 +144,8 @@ define ("components/chatViewFooter",
         const footerClasses = classes ("hs-footer", {
           "hs-footer--active" : footerIsActive,
           "hs-footer--full-screen": allowFullScreen,
-          "hs-footer--failure": failureConfig
+          "hs-footer--failure": failureConfig,
+          "hs-footer--list-picker-opened": !listPickerIsClosed
         });
 
         const showUnreadIndicator = unreadCount > 0;
@@ -247,7 +251,10 @@ define ("components/chatViewFooter",
             value,
             type,
             errorMsg,
-            disabled
+            disabled,
+            listPicker: {
+              closed: listPickerIsClosed
+            }
           },
           onFooterFocus,
           onFooterBlur,
@@ -258,7 +265,8 @@ define ("components/chatViewFooter",
             "hs-chat-footer--form-error": errorMsg,
             "hs-chat-footer--form-invalid": disabled || !value.trim (),
             "hs-chat-footer--mobile": browserIsMobile,
-            "hs-chat-footer--no-bottom-padding": type === USER_INPUT_TYPES.LIST_PICKER
+            "hs-chat-footer--no-bottom-padding": type === USER_INPUT_TYPES.LIST_PICKER,
+            "hs-chat-footer--list-picker-opened": !listPickerIsClosed
           }
         );
         let errorMsgEl = null;

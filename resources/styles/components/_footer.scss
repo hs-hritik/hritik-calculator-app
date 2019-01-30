@@ -69,5 +69,11 @@
       background-color: inherit;
       border-top: 0;
     }
+
+    &--list-picker-opened {
+      flex: 0 0 auto;
+      justify-content: flex-start;
+      height: 100%;
+    }
   }
 }

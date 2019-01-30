@@ -234,5 +234,9 @@
     &--no-bottom-padding {
       padding-bottom: 0;
     }
+
+    &--list-picker-opened {
+      justify-content: flex-start;
+    }
   }
 }

@@ -135,18 +135,28 @@ define (
           searchInputIsShown
         } = this.state;
 
-        let actionBtnIconEl;
+        const {
+          closed
+        } = this.props;
+
+        let actionBtnEl;
         if (searchInputIsShown) {
-          actionBtnIconEl = this._renderCloseSearchIcon ();
+          actionBtnEl = this._renderCloseSearchIcon ();
         } else {
-          actionBtnIconEl = this._renderToggleIcon ();
+          actionBtnEl = this._renderToggleIcon ();
         }
 
+        const headerClasses = classes (
+          "hs-picker-header",
+          {
+            "hs-picker-header--closed": closed,
+            "hs-picker-header--opened": !closed
+          }
+        );
+
         return (
-          <div className="hs-picker-header">
-            <button className="hs-picker-header__action-button">
-              {actionBtnIconEl}
-            </button>
+          <div className={headerClasses}>
+            {actionBtnEl}
             {this._renderSearch ()}
           </div>
         );
@@ -154,13 +164,13 @@ define (
 
       _renderCloseSearchIcon () {
         const btnIconClasses = classes (
-          "hs-picker-header__close-search-icon",
-          "ion-arrow-left"
+          "hs-picker-header__action-icon",
+          "ion-arrow-thin-left"
         );
 
         return (
           <i className={btnIconClasses}
-             onClick={this._onCloseSearchClick} />
+             onClick={this._onCloseSearchIconClick} />
         );
       },
 
@@ -170,11 +180,14 @@ define (
           onToggleButtonClick
         } = this.props;
 
+        // TODO: Fix icons. Using these until we add the required icons
+        // "ion-chevron-down": !closed,
+        // "ion-chevron-up": closed
         const iconClasses = classes (
-          "hs-picker-header__toggle-icon",
+          "hs-picker-header__action-icon",
           {
-            "ion-chevron-down": !closed,
-            "ion-chevron-up": closed
+            "ion-alert-circled": !closed,
+            "ion-attachment": closed
           }
         );
 
@@ -210,7 +223,7 @@ define (
 
           if (!closed) {
             searchIconEl = (
-              <i className="ion-magnifier"
+              <i className="hs-picker-header__search-icon ion-magnifier"
                  onClick={this._onSearchIconClick} />
             );
           }
@@ -255,7 +268,7 @@ define (
       /**
        * Handle click on close search button
        */
-      _onCloseSearchButtonClick () {
+      _onCloseSearchIconClick () {
         this.setState ({
           searchInputIsShown: false
         });

@@ -11,7 +11,11 @@
 ///
 
 @include component(picker-header) {
+  // @TODO: Use the colors from config
   $search-label-color: color(text, light);
+  $action-icon-size: font-size(body, large);
+  $action-icon-color: color(button);
+
 
   .hs-picker-header {
     display: flex;
@@ -22,12 +26,27 @@
     }
 
     &__search-wrapper {
+      display: flex;
+      align-items: center;
       flex: 1 0 auto;
+      justify-content: space-between;
       margin-left: gutter(20);
     }
 
     &__search-label {
       color: $search-label-color;
+    }
+
+    &__action-icon,
+    &__search-icon {
+      font-size: $action-icon-size;
+      color: $action-icon-color;
+    }
+
+    &--opened {
+      .hs-picker-header__action-icon {
+        cursor: pointer;
+      }
     }
   }
 }
