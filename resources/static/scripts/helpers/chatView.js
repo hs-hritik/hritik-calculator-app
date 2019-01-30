@@ -101,6 +101,18 @@ define ("helpers/chatView",
       }, {
         data: {option_id: "id6"},
         title: "Option 6"
+      }, {
+        data: {option_id: "id7"},
+        title: "Option 7"
+      }, {
+        data: {option_id: "id8"},
+        title: "Option 8"
+      }, {
+        data: {option_id: "id9"},
+        title: "Option 9"
+      }, {
+        data: {option_id: "id10"},
+        title: "Option 10"
       }];
       // @TODO END
 

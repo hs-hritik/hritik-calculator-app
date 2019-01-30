@@ -278,6 +278,15 @@ define ("reducers/chatView",
             }
           });
 
+        case ACTION_TYPES.TOGGLE_LIST_PICKER:
+          return update (state, {
+            userInput: {
+              listPicker: {
+                closed: {$set: action.closed}
+              }
+            }
+          });
+
         case ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES:
           return update (state, {
             userIsViewingPastMessages: {$set: action.isViewing}

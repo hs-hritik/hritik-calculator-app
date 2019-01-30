@@ -121,7 +121,12 @@ define (
         /**
          * Handler for click on toggle button
          */
-        onToggleButtonClick: PropTypes.func
+        onToggleButtonClick: PropTypes.func,
+
+        /**
+         * Handler for click on the label
+         */
+        onLabelClick: PropTypes.func
       },
       getInitialState () {
         return {
@@ -216,7 +221,8 @@ define (
           } = this.props;
 
           searchEl = (
-            <small className="hs-picker-header__search-label">
+            <small className="hs-picker-header__search-label"
+                   onClick={this._onLabelClick}>
               {label}
             </small>
           );
@@ -249,6 +255,7 @@ define (
         return (
           <div className="hs-picker-header__input-wrapper">
             <input className="hs-picker-header__input"
+                   autoFocus
                    value={query}
                    placeholder={placeholder}
                    onChange={this._onSearchQueryChange} />
@@ -279,6 +286,23 @@ define (
        */
       _onSearchQueryChange (ev) {
         this.props.onSearch (ev.target.value);
+      },
+
+      /**
+       * Handle click on the header label
+       */
+      _onLabelClick () {
+        const {
+          onLabelClick
+        } = this.props;
+
+        this.setState ({
+          searchInputIsShown: true
+        });
+
+        if (onLabelClick) {
+          onLabelClick ();
+        }
       }
     });
 
@@ -288,12 +312,12 @@ define (
         /**
          * Whether the picker is closed or not
          */
-        closed: PropTypes.bool.isRequired,
+        closed: PropTypes.bool,
 
         /**
          * Handler when the closed state is toggled
          */
-        onToggle: PropTypes.func.isRequired,
+        onToggle: PropTypes.func,
 
         /**
          * Options of the list
@@ -320,13 +344,20 @@ define (
          */
         className: PropTypes.string
       },
+      getInitialState () {
+        return {
+          closed: true
+        };
+      },
 
       render () {
-        // @TODO: Implement list render logic
+        const {
+          closed
+        } = this.state;
+
         const {
           searchPlaceholder: placeholder,
           headerLabel: label,
-          closed,
           options,
           className
         } = this.props;
@@ -347,7 +378,8 @@ define (
                             label={label}
                             closed={closed}
                             onSearch={this._onSearch}
-                            onToggleButtonClick={this._onHeaderToggleButtonClick} />
+                            onToggleButtonClick={this._onHeaderToggleButtonClick}
+                            onLabelClick={this._onHeaderLabelClick} />
             </div>
 
             <div className="hs-picker__options-wrapper">
@@ -369,7 +401,24 @@ define (
        * Handle click on search toggle button
        */
       _onHeaderToggleButtonClick () {
-        // @TODO: Update closed flag
+        const {
+          closed
+        } = this.state;
+
+        this._updateToggleStateAndTriggerChange (!closed);
+      },
+
+      /**
+       * Handle click on header label
+       */
+      _onHeaderLabelClick () {
+        const {
+          closed
+        } = this.state;
+
+        if (closed) {
+          this._updateToggleStateAndTriggerChange (false);
+        }
       },
 
       /**
@@ -377,6 +426,25 @@ define (
        */
       _onOptionSelect () {
         // @TODO: Call action to send selected user reply
+      },
+
+      /**
+       * Updates the value of closed flag and triggers onToggle passed
+       * in props.
+       * @param closed {Boolean} - Whether the picker is closed
+       */
+      _updateToggleStateAndTriggerChange (closed) {
+        const {
+          onToggle
+        } = this.props;
+
+        this.setState ({
+          closed
+        });
+
+        if (onToggle) {
+          onToggle (closed);
+        }
       }
     });
   }

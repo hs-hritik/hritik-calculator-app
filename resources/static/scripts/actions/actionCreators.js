@@ -212,6 +212,16 @@ define ("actions/actionCreators",
       type: ACTION_TYPES.RESET_RE_ENGAGEMENT_ID
     });
 
+    /**
+     * Return action to toggle list picker closed state
+     * @param {Boolean} closed - Whether the picker is closed
+     * @returns {Object} - the action object
+     */
+    const toggleListPicker = (closed) => ({
+      type: ACTION_TYPES.TOGGLE_LIST_PICKER,
+      closed
+    });
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -231,6 +241,7 @@ define ("actions/actionCreators",
       toggleOnlineStatus,
       setFooterActive,
       setFooterInactive,
-      resetReEngagementId
+      resetReEngagementId,
+      toggleListPicker
     };
   });

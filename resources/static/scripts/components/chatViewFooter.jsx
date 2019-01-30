@@ -72,6 +72,7 @@ define ("components/chatViewFooter",
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
+        onListPickerToggle: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           resolutionQuestionAccept: PropTypes.string.isRequired,
           resolutionQuestionReject: PropTypes.string.isRequired,
@@ -365,7 +366,6 @@ define ("components/chatViewFooter",
             options,
             label: headerLabel,
             listPicker: {
-              closed,
               searchPlaceholder,
               searchNoResultsText
             }
@@ -375,7 +375,6 @@ define ("components/chatViewFooter",
         return (
           <Picker className="hs-chat-footer__picker-field"
                   options={options}
-                  closed={closed}
                   onToggle={this._onPickerToggle}
                   searchPlaceholder={searchPlaceholder}
                   headerLabel={headerLabel}
@@ -576,9 +575,10 @@ define ("components/chatViewFooter",
 
       /**
        * Handle change in opened state of the Picker
+       * @param {Boolean} closed - Whether the picker is closed
        */
-      _onPickerToggle () {
-        // @TODO: Implement
+      _onPickerToggle (closed) {
+        this.props.onListPickerToggle (closed);
       },
 
       /**
