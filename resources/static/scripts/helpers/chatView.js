@@ -83,7 +83,7 @@ define ("helpers/chatView",
     const getProcessedUserInput = (config) => {
       // @TODO START
       // Remove this dummy data after integration with backend.
-      config.input.options = [{
+      const dummyOptions = [{
         data : {option_id: "id1"},
         title: "Option 1"
       }, {
@@ -114,6 +114,7 @@ define ("helpers/chatView",
         data: {option_id: "id10"},
         title: "Option 10"
       }];
+      config.input.options = config.input.options.concat (dummyOptions);
       // @TODO END
 
       const {

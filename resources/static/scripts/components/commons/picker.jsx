@@ -84,11 +84,21 @@ define (
 
         return options.map ((option) => {
           return (
-            <li className="hs-picker-options__option-item" key={option.value}>
+            <li className="hs-picker-options__option-item"
+                key={option.value}
+                onClick={this._onOptionClick.bind (this, option)}>
               {option.label}
             </li>
           );
         });
+      },
+
+      /**
+       * Handle click on individual list item
+       * @param {Object} optionValue - option that was clicked
+       */
+      _onOptionClick (optionValue) {
+        this.props.onSelect (optionValue);
       }
     });
 
@@ -342,7 +352,12 @@ define (
         /**
          * Custmom classes for the picker
          */
-        className: PropTypes.string
+        className: PropTypes.string,
+
+        /**
+         * Handler for option selection
+         */
+        onSelect: PropTypes.func
       },
       getInitialState () {
         return {
@@ -423,9 +438,20 @@ define (
 
       /**
        * Handle option selection
+       * @param {Object} option - The option that was selected
        */
-      _onOptionSelect () {
-        // @TODO: Call action to send selected user reply
+      _onOptionSelect (option) {
+        const {
+          onSelect
+        } = this.props;
+
+        if (!this.state.closed) {
+          this._updateClosedAndTriggerOnToggle (true);
+        }
+
+        if (onSelect) {
+          onSelect (option);
+        }
       },
 
       /**

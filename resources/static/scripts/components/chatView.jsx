@@ -46,6 +46,7 @@ define ("components/chatView",
         userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onListPickerOptionSelect: PropTypes.func,
         onSkipUserInput: PropTypes.func,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
@@ -182,6 +183,7 @@ define ("components/chatView",
           showAgentNickname,
           text,
           onPillOptionSelect,
+          onListPickerOptionSelect,
           onRetryAttachmentClick,
           onSuggestedFaqClick,
           onScrollPastExistingConversation,
@@ -236,7 +238,8 @@ define ("components/chatView",
                              minimized={minimized} />
                 {this._renderJumpToLatestBtn ()}
               </div>
-              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick} />
+              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick}
+                                       onListPickerOptionSelect={onListPickerOptionSelect} />
             </DnDWrapper>
         );
       },

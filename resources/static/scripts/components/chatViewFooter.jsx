@@ -72,7 +72,8 @@ define ("components/chatViewFooter",
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
-        onListPickerToggle: PropTypes.func.isRequired,
+        onListPickerToggle: PropTypes.func,
+        onListPickerOptionSelect: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           resolutionQuestionAccept: PropTypes.string.isRequired,
           resolutionQuestionReject: PropTypes.string.isRequired,
@@ -369,13 +370,15 @@ define ("components/chatViewFooter",
               searchPlaceholder,
               searchNoResultsText
             }
-          }
+          },
+          onListPickerOptionSelect
         } = this.props;
 
         return (
           <Picker className="hs-chat-footer__picker-field"
                   options={options}
                   onToggle={this._onPickerToggle}
+                  onSelect={onListPickerOptionSelect}
                   searchPlaceholder={searchPlaceholder}
                   headerLabel={headerLabel}
                   searchNoResultsText={searchNoResultsText} />
