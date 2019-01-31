@@ -13,6 +13,7 @@
 @include component(picker) {
   $picker-closed-max-height: 117px;
   $header-opened-bottom-border: color(border);
+  $no-search-results-text-color: color(text, light);
 
   .hs-picker {
     display: flex;
@@ -26,6 +27,12 @@
     &__options-container {
       display: flex;
       flex: 1 0 auto;
+    }
+
+    &__no-search-results {
+      padding: gutter(12 0);
+      color: $no-search-results-text-color;
+      text-align: center;
     }
 
     &--closed {

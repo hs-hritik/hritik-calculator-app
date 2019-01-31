@@ -295,7 +295,13 @@ define (
        * Handle change in search query
        */
       _onSearchQueryChange (ev) {
-        this.props.onSearch (ev.target.value);
+        const query = ev.target.value;
+
+        this.setState ({
+          query
+        });
+
+        this.props.onSearch (query);
       },
 
       /**
@@ -361,7 +367,8 @@ define (
       },
       getInitialState () {
         return {
-          closed: true
+          closed: true,
+          query: ""
         };
       },
 
@@ -373,7 +380,6 @@ define (
         const {
           searchPlaceholder: placeholder,
           headerLabel: label,
-          options,
           className
         } = this.props;
 
@@ -396,20 +402,51 @@ define (
                             onToggleButtonClick={this._onHeaderToggleButtonClick}
                             onLabelClick={this._onHeaderLabelClick} />
             </div>
+            {this._renderOptionsList ()}
+          </div>
+        );
+      },
 
-            <div className="hs-picker__options-wrapper">
-              <OptionsList options={options}
-                           onSelect={this._onOptionSelect} />
+      _renderOptionsList () {
+        const {
+          query
+        } = this.state;
+
+        const {
+          options
+        } = this.props;
+
+        let optionsListEl;
+        const filteredOptions = this._filterOptions (options, query);
+
+        if (filteredOptions.length) {
+          optionsListEl = (
+            <OptionsList options={filteredOptions}
+                         onSelect={this._onOptionSelect} />
+          );
+        } else {
+          optionsListEl = (
+            <div className="hs-picker__no-search-results">
+              {this.props.searchNoResultsText}
             </div>
+          );
+        }
+
+        return (
+          <div className="hs-picker__options-wrapper">
+            {optionsListEl}
           </div>
         );
       },
 
       /**
        * Handle change in search query
+       * @param {String} query - Search query
        */
-      _onSearch () {
-        // @TODO: Implement filtering
+      _onSearch (query) {
+        this.setState ({
+          query
+        });
       },
 
       /**
@@ -471,6 +508,66 @@ define (
         if (onToggle) {
           onToggle (closed);
         }
+      },
+
+      /**
+       * Filters the options list using the query provided according to the
+       * following alogrithm:
+       * * At the top results of prefix search for title will show
+       * * Below that results of substring search for title will show
+       * * Below that results of prefix search for description (if present) will
+       * show
+       * * Below that results of substring search for description (if present)
+       * will show
+       * @param {Array} options - Array of options
+       * @param {String} query - Query to be used for filtering
+       * @return {Array} - Filtered list of options
+       */
+      _filterOptions (options, query) {
+        if (query) {
+          query = query.trim ();
+        }
+
+        if (!query) {
+          return options;
+        }
+
+        const titlePrefixResults = [];
+        const titleSubStrResults = [];
+        const descPrefixResults = [];
+        const descSubStrResults = [];
+
+        options.forEach ((optionItem) => {
+          const {
+            label: title,
+            description: desc
+          } = optionItem;
+
+          const lowerCaseQuery = query.toLowerCase ();
+
+          const indexInTitle = title.toLowerCase ().indexOf (lowerCaseQuery);
+
+          if (indexInTitle === 0) {
+            titlePrefixResults.push (optionItem);
+          } else if (indexInTitle > 0) {
+            titleSubStrResults.push (optionItem);
+          } else if (desc) {
+            const indexInDesc = desc.toLowerCase ().indexOf (lowerCaseQuery);
+
+            if (indexInDesc === 0) {
+              descPrefixResults.push (optionItem);
+            } else if (indexInDesc > 0) {
+              descSubStrResults.push (optionItem);
+            }
+          }
+        });
+
+        return [
+          ...titlePrefixResults,
+          ...titleSubStrResults,
+          ...descPrefixResults,
+          ...descSubStrResults
+        ];
       }
     });
   }
