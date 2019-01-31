@@ -11,6 +11,8 @@
 ///
 
 @include component(picker-options) {
+  // @TODO: Fix how the color value is derived
+  $highlighted-option-background: rgba(67, 191, 108, .05);
 
   .hs-picker-options {
     margin: 0;
@@ -18,6 +20,11 @@
 
     &__option-item {
       padding: gutter(16 0);
+      cursor: pointer;
+
+      &-highlighted {
+        background: $highlighted-option-background;
+      }
     }
   }
 }

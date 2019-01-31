@@ -66,7 +66,17 @@ define (
         /**
          * Callback when an option is selected
          */
-        onSelect: PropTypes.func.isRequired
+        onSelect: PropTypes.func.isRequired,
+
+        /**
+         * Highlighted option index
+         */
+        highlightedIndex: PropTypes.number,
+
+        /**
+         * Handler for mouse enter event on option
+         */
+        onOptionItemMouseEnter: PropTypes.func.isRequired
       },
 
       render () {
@@ -79,14 +89,25 @@ define (
 
       _renderListItems () {
         const {
-          options
+          options,
+          highlightedIndex
         } = this.props;
 
-        return options.map ((option) => {
+        return options.map ((option, index) => {
+          const optionItemClasses = classes (
+            "hs-picker-options__option-item",
+            {
+              "hs-picker-options__option-item-highlighted": (
+                index === highlightedIndex
+              )
+            }
+          );
+
           return (
-            <li className="hs-picker-options__option-item"
+            <li className={optionItemClasses}
                 key={option.value}
-                onClick={this._onOptionClick.bind (this, option)}>
+                onClick={this._onOptionClick.bind (this, option)}
+                onMouseEnter={this._onOptionItemMouseEnter.bind (this, index)}>
               {option.label}
             </li>
           );
@@ -99,6 +120,13 @@ define (
        */
       _onOptionClick (optionValue) {
         this.props.onSelect (optionValue);
+      },
+
+      /**
+       * Handle mouse-enter on individual list item
+       */
+      _onOptionItemMouseEnter (index) {
+        this.props.onOptionItemMouseEnter (index);
       }
     });
 
@@ -368,7 +396,8 @@ define (
       getInitialState () {
         return {
           closed: true,
-          query: ""
+          query: "",
+          highlightedIndex: -1
         };
       },
 
@@ -409,7 +438,8 @@ define (
 
       _renderOptionsList () {
         const {
-          query
+          query,
+          highlightedIndex
         } = this.state;
 
         const {
@@ -422,7 +452,9 @@ define (
         if (filteredOptions.length) {
           optionsListEl = (
             <OptionsList options={filteredOptions}
-                         onSelect={this._onOptionSelect} />
+                         onSelect={this._onOptionSelect}
+                         highlightedIndex={highlightedIndex}
+                         onOptionItemMouseEnter={this._onOptionItemMouseEnter} />
           );
         } else {
           optionsListEl = (
@@ -444,8 +476,11 @@ define (
        * @param {String} query - Search query
        */
       _onSearch (query) {
+        // Reset the highlightedIndex to 0 because the list of options
+        // is going to change
         this.setState ({
-          query
+          query,
+          highlightedIndex: 0
         });
       },
 
@@ -489,6 +524,20 @@ define (
         if (onSelect) {
           onSelect (option);
         }
+      },
+
+      /**
+       * Handler for mouse enter event on option
+       * @param {Number} optionIndex - index of option on which event occurred
+       */
+      _onOptionItemMouseEnter (optionIndex) {
+        if (this.state.closed) {
+          return;
+        }
+
+        this.setState ({
+          highlightedIndex: optionIndex
+        });
       },
 
       /**
