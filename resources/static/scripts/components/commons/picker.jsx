@@ -397,6 +397,7 @@ define (
         return {
           closed: true,
           query: "",
+          filteredOptions: this.props.options,
           highlightedIndex: -1
         };
       },
@@ -438,16 +439,11 @@ define (
 
       _renderOptionsList () {
         const {
-          query,
-          highlightedIndex
+          highlightedIndex,
+          filteredOptions
         } = this.state;
 
-        const {
-          options
-        } = this.props;
-
         let optionsListEl;
-        const filteredOptions = this._filterOptions (options, query);
 
         if (filteredOptions.length) {
           optionsListEl = (
@@ -480,6 +476,7 @@ define (
         // is going to change
         this.setState ({
           query,
+          filteredOptions: this._filterOptions (this.props.options, query),
           highlightedIndex: 0
         });
       },
@@ -617,6 +614,17 @@ define (
           ...descPrefixResults,
           ...descSubStrResults
         ];
+      },
+
+      componentWillReceiveProps (nextProps) {
+        // @TODO: Optimize this to check for diff in options
+        const filteredOptions = this._filterOptions (
+          nextProps.options, this.state.query
+        );
+
+        this.setState ({
+          filteredOptions
+        });
       }
     });
   }
