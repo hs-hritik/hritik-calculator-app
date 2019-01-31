@@ -23,9 +23,10 @@
 define (
   "components/commons/picker",
   [
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "constants/keyCodes"
   ],
-  function (classes) {
+  function (classes, KEY_CODES) {
     "use strict";
 
     const {PropTypes} = React;
@@ -164,7 +165,12 @@ define (
         /**
          * Handler for click on the label
          */
-        onLabelClick: PropTypes.func
+        onLabelClick: PropTypes.func,
+
+        /**
+         * Handler for keydown even on search input
+         */
+        onSearchInputKeyDown: PropTypes.func
       },
       getInitialState () {
         return {
@@ -296,7 +302,8 @@ define (
                    autoFocus
                    value={query}
                    placeholder={placeholder}
-                   onChange={this._onSearchQueryChange} />
+                   onChange={this._onSearchQueryChange}
+                   onKeyDown={this._onSearchInputKeyDown} />
           </div>
         );
       },
@@ -347,6 +354,20 @@ define (
         if (onLabelClick) {
           onLabelClick ();
         }
+      },
+
+      /**
+       * Handler for keydown event on search input
+       * @param {Object} ev - Event object
+       */
+      _onSearchInputKeyDown (ev) {
+        if (ev.keyCode === KEY_CODES.ESCAPE) {
+          this.setState ({
+            searchInputIsShown: false
+          });
+        }
+
+        this.props.onSearchInputKeyDown (ev);
       }
     });
 
@@ -430,7 +451,8 @@ define (
                             closed={closed}
                             onSearch={this._onSearch}
                             onToggleButtonClick={this._onHeaderToggleButtonClick}
-                            onLabelClick={this._onHeaderLabelClick} />
+                            onLabelClick={this._onHeaderLabelClick}
+                            onSearchInputKeyDown={this._onSearchInputKeyDown} />
             </div>
             {this._renderOptionsList ()}
           </div>
@@ -535,6 +557,53 @@ define (
         this.setState ({
           highlightedIndex: optionIndex
         });
+      },
+
+      /**
+       * Handler for keydown on search input
+       * @param {Object}} ev - Event object
+       */
+      _onSearchInputKeyDown (ev) {
+        const {
+          filteredOptions,
+          highlightedIndex
+        } = this.state;
+        const optionsLen = filteredOptions.length;
+
+        // Do nothing if the list is empty
+        if (!optionsLen) {
+          return;
+        }
+
+        switch (ev.keyCode) {
+          case KEY_CODES.ENTER:
+            const {onSelect} = this.props;
+
+            this._updateClosedAndTriggerOnToggle (true);
+
+            if (onSelect) {
+              onSelect (filteredOptions [highlightedIndex]);
+            }
+            break;
+
+          case KEY_CODES.UP_ARROW:
+            let newHighlightedIndex = highlightedIndex - 1;
+
+            if (newHighlightedIndex < 0) {
+              newHighlightedIndex = optionsLen - 1;
+            }
+
+            this.setState ({
+              highlightedIndex: newHighlightedIndex
+            });
+            break;
+
+          case KEY_CODES.DOWN_ARROW:
+            this.setState ({
+              highlightedIndex: (highlightedIndex + 1) % optionsLen
+            });
+            break;
+        }
       },
 
       /**
