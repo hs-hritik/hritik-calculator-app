@@ -507,11 +507,16 @@ define (
        * Handle click on search toggle button
        */
       _onHeaderToggleButtonClick () {
-        const {
-          closed
-        } = this.state;
+        const updatedClosedStateValue = !this.state.closed;
 
-        this._updateToggleStateAndTriggerChange (!closed);
+        this._updateToggleStateAndTriggerChange (updatedClosedStateValue);
+
+        // If the widget was toggled to closed state, remove the highlighting
+        if (updatedClosedStateValue) {
+          this.setState ({
+            highlightedIndex: -1
+          });
+        }
       },
 
       /**
