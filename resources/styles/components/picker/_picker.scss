@@ -11,22 +11,24 @@
 ///
 
 @include component(picker) {
-  $picker-closed-max-height: 117px;
+  $picker-closed-max-height: 112px;
   $header-opened-bottom-border: color(border);
   $no-search-results-text-color: color(text, light);
 
   .hs-picker {
     display: flex;
     flex-direction: column;
+    // height: 100%;
 
     &__header-wrapper {
-      flex: 1 0 auto;
-      padding-bottom: gutter(16);
+      flex: 0 0 auto;
+      padding: gutter(12 20);
     }
 
-    &__options-container {
+    &__options-wrapper {
       display: flex;
-      flex: 1 0 auto;
+      flex-basis: 100%;
+      overflow-y: scroll;
     }
 
     &__no-search-results {
@@ -41,6 +43,10 @@
 
       .hs-picker__header-wrapper {
         cursor: pointer;
+      }
+
+      .hs-picker__options-wrapper {
+        overflow-y: hidden;
       }
     }
 

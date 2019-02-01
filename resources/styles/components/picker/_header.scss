@@ -23,6 +23,8 @@
 
     &__input {
       flex: 1 0 auto;
+      border: 0;
+      outline: none;
     }
 
     &__search-wrapper {
@@ -41,12 +43,7 @@
     &__search-icon {
       font-size: $action-icon-size;
       color: $action-icon-color;
-    }
-
-    &--opened {
-      .hs-picker-header__action-icon {
-        cursor: pointer;
-      }
+      cursor: pointer;
     }
   }
 }

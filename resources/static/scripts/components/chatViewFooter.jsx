@@ -270,7 +270,8 @@ define ("components/chatViewFooter",
             "hs-chat-footer--form-error": errorMsg,
             "hs-chat-footer--form-invalid": disabled || !value.trim (),
             "hs-chat-footer--mobile": browserIsMobile,
-            "hs-chat-footer--no-bottom-padding": type === USER_INPUT_TYPES.LIST_PICKER,
+            "hs-chat-footer--no-padding": type === USER_INPUT_TYPES.LIST_PICKER,
+            "hs-chat-footer--list-picker-closed": listPickerIsClosed,
             "hs-chat-footer--list-picker-opened": !listPickerIsClosed
           }
         );

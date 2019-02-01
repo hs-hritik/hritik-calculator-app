@@ -61,7 +61,7 @@
 
     &__picker-field {
       flex: 1 0 auto;
-      padding: gutter(0 8);
+      max-width: 100%;
     }
 
     &__title,
@@ -231,12 +231,19 @@
       }
     }
 
-    &--no-bottom-padding {
-      padding-bottom: 0;
+    &--no-padding {
+      padding: 0;
     }
 
     &--list-picker-opened {
       justify-content: flex-start;
+      height: 100%;
+
+      .hs-chat-footer__field {
+        display: flex;
+        align-items: center;
+        height: 100%;
+      }
     }
   }
 }
