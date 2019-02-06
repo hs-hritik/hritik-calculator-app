@@ -551,7 +551,7 @@ define (
         } = this.props;
 
         if (!this.state.closed) {
-          this._updateClosedAndTriggerOnToggle (true);
+          this._updateToggleStateAndTriggerChange (true);
         }
 
         if (onSelect) {
@@ -593,7 +593,7 @@ define (
           case KEY_CODES.ENTER:
             const {onSelect} = this.props;
 
-            this._updateClosedAndTriggerOnToggle (true);
+            this._updateToggleStateAndTriggerChange (true);
 
             if (onSelect) {
               onSelect (filteredOptions [highlightedIndex]);
