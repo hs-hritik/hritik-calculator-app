@@ -384,11 +384,6 @@ define (
       displayName: "Picker",
       propTypes: {
         /**
-         * Whether the picker is closed or not
-         */
-        closed: PropTypes.bool,
-
-        /**
          * Handler when the closed state is toggled
          */
         onToggle: PropTypes.func,
@@ -492,10 +487,24 @@ define (
         }
 
         return (
-          <div className="hs-picker__options-wrapper">
+          <div className="hs-picker__options-wrapper"
+               ref={this._saveOptionsWrapperRef}>
             {optionsListEl}
           </div>
         );
+      },
+
+      /**
+       * Ref of the options wrapper div
+       */
+      _optionsWrapperRef: null,
+
+      /**
+       * Saves the ref for options wrapper div
+       * @param {Object} ref  - Ref of the options wrapper
+       */
+      _saveOptionsWrapperRef (ref) {
+        this._optionsWrapperRef = ref;
       },
 
       /**
@@ -708,6 +717,14 @@ define (
         this.setState ({
           filteredOptions
         });
+      },
+
+      componentDidUpdate (prevProps, prevState) {
+        // Scroll to top if the picker goes from open to closed state.
+        if (!prevState.closed && this.state.closed && this._optionsWrapperRef) {
+          const node = ReactDOM.findDOMNode (this._optionsWrapperRef);
+          node.scrollTop = 0;
+        }
       }
     });
   }
