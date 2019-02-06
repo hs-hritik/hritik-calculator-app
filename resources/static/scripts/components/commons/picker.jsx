@@ -321,9 +321,7 @@ define (
        * Handle click on close search button
        */
       _onCloseSearchIconClick () {
-        this.setState ({
-          searchInputIsShown: false
-        });
+        this._resetSearch ();
       },
 
       /**
@@ -362,12 +360,23 @@ define (
        */
       _onSearchInputKeyDown (ev) {
         if (ev.keyCode === KEY_CODES.ESCAPE) {
-          this.setState ({
-            searchInputIsShown: false
-          });
+          this._resetSearch ();
         }
 
         this.props.onSearchInputKeyDown (ev);
+      },
+
+      /**
+       * Hides the search input, sets the search query to empty and
+       * triggers onSearch with empty value.
+       */
+      _resetSearch () {
+        this.setState ({
+          searchInputIsShown: false,
+          query: ""
+        });
+
+        this.props.onSearch ("");
       }
     });
 
