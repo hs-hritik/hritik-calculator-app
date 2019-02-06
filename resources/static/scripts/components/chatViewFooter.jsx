@@ -134,7 +134,7 @@ define ("components/chatViewFooter",
 
         let skipBtnWrapperEl = null;
 
-        if (!required) {
+        if (!required && listPickerIsClosed) {
           skipBtnWrapperEl = (
             <SkipButtonWrapper label={skipLabel}
                                className="hs-chat-footer__skip-btn-wrapper"
