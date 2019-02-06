@@ -24,9 +24,10 @@ define (
   "components/commons/picker",
   [
     "gunpowder/utils/classes",
-    "constants/keyCodes"
+    "constants/keyCodes",
+    "helpers/dom"
   ],
-  function (classes, KEY_CODES) {
+  function (classes, KEY_CODES, domHelpers) {
     "use strict";
 
     const {PropTypes} = React;
@@ -618,14 +619,34 @@ define (
 
             this.setState ({
               highlightedIndex: newHighlightedIndex
+            }, () => {
+              this._scrollOptionIntoView ();
             });
             break;
 
           case KEY_CODES.DOWN_ARROW:
             this.setState ({
               highlightedIndex: (highlightedIndex + 1) % optionsLen
+            }, () => {
+              this._scrollOptionIntoView ();
             });
             break;
+        }
+      },
+
+      /**
+       * Scrolls the highlighted option into view
+       */
+      _scrollOptionIntoView () {
+        if (this._optionsWrapperRef) {
+          const wrapper = ReactDOM.findDOMNode (this._optionsWrapperRef);
+
+          if (!this.state.highlightedIndex) {
+            wrapper.scrollTop = 0;
+          } else {
+            const li = wrapper.querySelector (".hs-picker-options__option-item-highlighted");
+            domHelpers.scrollIntoView (wrapper, li);
+          }
         }
       },
 
