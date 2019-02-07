@@ -25,9 +25,10 @@ define (
   [
     "gunpowder/utils/classes",
     "constants/keyCodes",
-    "helpers/dom"
+    "helpers/dom",
+    "utils/browser"
   ],
-  function (classes, KEY_CODES, domHelpers) {
+  function (classes, KEY_CODES, domHelpers, browserUtils) {
     "use strict";
 
     const {PropTypes} = React;
@@ -408,20 +409,37 @@ define (
         /**
          * Handler for option selection
          */
-        onSelect: PropTypes.func
+        onSelect: PropTypes.func,
+
+        /**
+         * Minimum height of the widget
+         */
+        minHeight: PropTypes.number.isRequired,
+
+        /**
+         * Maximum height the widget can have
+         */
+        maxHeight: PropTypes.number.isRequired,
+
+        /**
+         * Selector of the parent which has the max possible height
+         */
+        maxHeightParentSelector: PropTypes.string
       },
       getInitialState () {
         return {
           closed: true,
           query: "",
           filteredOptions: this.props.options,
-          highlightedIndex: -1
+          highlightedIndex: -1,
+          height: this.props.minHeight
         };
       },
 
       render () {
         const {
-          closed
+          closed,
+          height
         } = this.state;
 
         const {
@@ -439,8 +457,23 @@ define (
           }
         );
 
+        const style = {
+          maxHeight: height
+        };
+
+        let touchEventsHandlers = {};
+        if (browserUtils.areTouchEventsSupported ()) {
+          touchEventsHandlers = {
+            onTouchStart: this._onTouchStart,
+            onTouchMove: this._onTouchMove,
+            onTouchEnd: this._onTouchEnd
+          };
+        }
+
         return (
-          <div className={pickerClasses}>
+          <div className={pickerClasses}
+               {...touchEventsHandlers}
+               style={style}>
             <div className="hs-picker__header-wrapper">
               <PickerHeader placeholder={placeholder}
                             label={label}
@@ -498,6 +531,11 @@ define (
       _saveOptionsWrapperRef (ref) {
         this._optionsWrapperRef = ref;
       },
+
+      /**
+       * Reference to the touch events from touch start & touch move events
+       */
+      _touchEv: null,
 
       /**
        * Handle change in search query
@@ -626,6 +664,113 @@ define (
       },
 
       /**
+       * Handle touch start event. Saves the TouchEvent ref which can be used in
+       * subsequent touch move events to calculate the change in height.
+       * @param {Object} - Event object
+       */
+      _onTouchStart (ev) {
+        if (!this.state.closed) {
+          return;
+        }
+
+        this._touchEv = ev.changedTouches [0];
+      },
+
+      /**
+       * Handle touch move event. Calculates the change in height using the ref
+       * stored from previous touch move events or touch start event.
+       * @param {Object} - Event object
+       */
+      _onTouchMove (ev) {
+        if (!this.state.closed) {
+          return;
+        }
+
+        const touchEv = ev.changedTouches [0];
+        const changeInHeight = Math.round (touchEv.clientY - this._touchEv.clientY);
+        this._touchEv = touchEv;
+
+        this._updateHeight (this.state.height - changeInHeight);
+      },
+
+      /**
+       * Handle touch end event. This event indicates the intent to finish resizing
+       * of the picker. Based on the current height of the widget, it will snap
+       * the value of the height to minimum or maximum.
+       */
+      _onTouchEnd () {
+        if (!this.state.closed) {
+          return;
+        }
+
+        this._completeResize ();
+      },
+
+      /**
+       * Updates the height value in the state with given value. If the value
+       * is greater than max possible height, then it will set it to max allowed
+       * height and trigger onToggle.
+       * @param {Number} newHeight - The new value of height
+       */
+      _updateHeight (newHeight) {
+        const {
+          minHeight,
+          maxHeight
+        } = this.props;
+
+        if (newHeight >= maxHeight) {
+          newHeight = maxHeight;
+        } else if (newHeight <= minHeight) {
+          newHeight = minHeight;
+        }
+
+        this.setState ({
+          height: newHeight
+        });
+
+        // If the new value of height is same as max allowed value and if
+        // the widget is in closed state, then set the closed state to false and
+        // trigger onToggle
+        if (newHeight === maxHeight) {
+          this._updateToggleStateAndTriggerChange (false);
+        }
+      },
+
+      /**
+       * Snaps the height of the widget to either minimum or maximum based on
+       * the current value of the height in state. If the current height is less
+       * than or equal to half of the maximum value, sets the height to minimum.
+       * If the current height is more than half of the maximum value, sets
+       * the height to maximum. Also triggers change in the closed state
+       * depending on the height.
+       */
+      _completeResize () {
+        const {
+          minHeight,
+          maxHeight
+        } = this.props;
+
+        const {
+          height: currentHeight
+        } = this.state;
+
+        const newHeight = (currentHeight <= (maxHeight / 2)) ? minHeight : maxHeight;
+
+        if (currentHeight !== newHeight) {
+          this.setState ({
+            height: newHeight
+          });
+
+          // If the new value of height is same as max allowed value and if
+          // the widget is in closed state, then set the closed state to false and
+          // trigger onToggle
+          if (newHeight === maxHeight) {
+            this._updateToggleStateAndTriggerChange (false);
+          }
+        }
+      },
+
+      /**
        * Scrolls the highlighted option into view
        */
       _scrollOptionIntoView () {
@@ -647,12 +792,19 @@ define (
        * @param closed {Boolean} - Whether the picker is closed
        */
       _updateToggleStateAndTriggerChange (closed) {
+        if (closed === this.state.closed) {
+          return;
+        }
+
         const {
-          onToggle
+          onToggle,
+          minHeight,
+          maxHeight
         } = this.props;
 
         this.setState ({
-          closed
+          closed,
+          height: closed ? minHeight : maxHeight
         });
 
         if (onToggle) {

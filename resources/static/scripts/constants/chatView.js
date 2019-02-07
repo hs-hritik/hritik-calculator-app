@@ -75,6 +75,7 @@ define ("constants/chatView",
       USER_REDACTION_ERR_MSG,
       USER_REDACTION_ERR_STATUS_CODE,
       PICKER_INPUT_THRESHOLD: 5,
-      OPTIONS_INPUT_TYPES
+      OPTIONS_INPUT_TYPES,
+      PICKER_MIN_HEIGHT: 112 // px
     };
   });

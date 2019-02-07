@@ -27,7 +27,8 @@ define ("components/chatViewFooter",
     const {
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
-      HTML_INPUT_TYPES
+      HTML_INPUT_TYPES,
+      PICKER_MIN_HEIGHT
     } = CHAT_VIEW_CONSTANTS;
     const {
       USER_INPUT_PROP_TYPE
@@ -97,6 +98,11 @@ define ("components/chatViewFooter",
         userAttachmentsEnabled: PropTypes.bool,
         onCloseConversation: PropTypes.func.isRequired,
         botStepInProgress: PropTypes.bool.isRequired
+      },
+      getInitialState () {
+        return {
+          pickerMaxHeight: PICKER_MIN_HEIGHT
+        };
       },
 
       render () {
@@ -386,7 +392,9 @@ define ("components/chatViewFooter",
                   onSelect={onListPickerOptionSelect}
                   searchPlaceholder={searchPlaceholder}
                   headerLabel={headerLabel}
-                  searchNoResultsText={searchNoResultsText} />
+                  searchNoResultsText={searchNoResultsText}
+                  minHeight={PICKER_MIN_HEIGHT}
+                  maxHeight={this.state.pickerMaxHeight} />
         );
       },
 
@@ -657,6 +665,14 @@ define ("components/chatViewFooter",
         if (prevInputDisabled && !currentInputDisabled) {
           this._userInputRef.focus ();
         }
+      },
+
+      componentDidMount () {
+        // Calculate the maximum height the picker widget can have.
+        const parentNode = document.querySelector (".hs-dnd-wrapper");
+        this.setState ({
+          pickerMaxHeight: parentNode.getBoundingClientRect ().height
+        });
       }
     });
   }
