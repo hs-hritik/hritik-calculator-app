@@ -33,6 +33,8 @@ define (
 
     const {PropTypes} = React;
 
+    const WHEEL_END_EVENT_TIMEOUT = 450; // ms
+
     const optionsPropType = PropTypes.arrayOf (PropTypes.shape ({
       /**
        * Unique id for the option
@@ -473,6 +475,7 @@ define (
         return (
           <div className={pickerClasses}
                {...touchEventsHandlers}
+               onWheel={this._onWheel}
                style={style}>
             <div className="hs-picker__header-wrapper">
               <PickerHeader placeholder={placeholder}
@@ -704,6 +707,42 @@ define (
         }
 
         this._completeResize ();
+      },
+
+      /**
+       * Ref to the timeout used for keeping track of wheel events end
+       */
+      _onWheelTimer: null,
+
+      /**
+       * Handles the onWheel event.
+       * NOTE: We do not get a wheel-end event. To detect this, we start a
+       * timeout every time the handler is called. If the next wheel event does
+       * not come in the timeout interval, we infer that the wheel event has
+       * been stopped. When the wheel event stops, we snap the height
+       * to min or max if the widget is not already in open state.
+       * @param {Object} ev - The WheelEvent object
+       */
+      _onWheel (ev) {
+        if (!this.state.closed) {
+          return;
+        }
+
+        this._updateHeight (ev.deltaY + this.state.height);
+
+        if (this._onWheelTimer) {
+          window.clearTimeout (this._onWheelTimer);
+          this._onWheelTimer = null;
+        }
+
+        this._onWheelTimer = window.setTimeout (() => {
+          this._onWheelTimer = null;
+          if (!this.state.closed) {
+            return;
+          }
+
+          this._completeResize ();
+        }, WHEEL_END_EVENT_TIMEOUT);
       },
 
       /**
