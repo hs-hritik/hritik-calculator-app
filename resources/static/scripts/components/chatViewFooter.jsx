@@ -122,13 +122,16 @@ define ("components/chatViewFooter",
           onSkipUserInput
         } = this.props;
         const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
+        const inputIsListPicker = (type === USER_INPUT_TYPES.LIST_PICKER);
         const isPreIssue = !issueIsCreated;
 
         // Hide footer if
         // 1] Input is pill select - applicable for both preIssue and issue
-        //    OR
         // 2] PreIssue and input is disabled
-        if (inputIsPillSelect || (isPreIssue && disabled)) {
+        // 3] Input is list picker and input is disabled
+        if (
+          inputIsPillSelect || ((isPreIssue || inputIsListPicker) && disabled)
+        ) {
           return null;
         }
 
