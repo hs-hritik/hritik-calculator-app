@@ -45,10 +45,7 @@ define ("constants/propTypes",
       placeholder: PropTypes.string,
       errorMsg: PropTypes.string,
       listPicker: PropTypes.shape ({
-        closed: PropTypes.bool,
-        searchPlaceholder: PropTypes.string,
-        searchLabel: PropTypes.string,
-        searchNoResultsText: PropTypes.string
+        closed: PropTypes.bool
       })
     });
 

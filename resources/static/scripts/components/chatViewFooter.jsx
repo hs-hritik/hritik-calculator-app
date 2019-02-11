@@ -82,7 +82,9 @@ define ("components/chatViewFooter",
           chatViewConversationResolutionQuestion: PropTypes.string.isRequired,
           chatViewIssueRejectionQuestion: PropTypes.string.isRequired,
           chatViewStartNewConversation: PropTypes.string.isRequired,
-          retryBtn: PropTypes.string.isRequired
+          retryBtn: PropTypes.string.isRequired,
+          searchPlaceholder: PropTypes.string,
+          noSearchResultsText: PropTypes.string
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -369,13 +371,13 @@ define ("components/chatViewFooter",
         const {
           userInput: {
             options,
-            label: headerLabel,
-            listPicker: {
-              searchPlaceholder,
-              searchNoResultsText
-            }
+            label: headerLabel
           },
-          onListPickerOptionSelect
+          onListPickerOptionSelect,
+          text: {
+            searchPlaceholder,
+            noSearchResultsText: searchNoResultsText
+          }
         } = this.props;
 
         return (

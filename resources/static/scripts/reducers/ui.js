@@ -109,7 +109,9 @@ define ("reducers/ui",
             subtitle: "Unable to reach support"
             // @TODO: Confirm if a CTA is needed.
           }
-        }
+        },
+        searchPlaceholder: "Search",
+        noSearchResultsText: "No results found"
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

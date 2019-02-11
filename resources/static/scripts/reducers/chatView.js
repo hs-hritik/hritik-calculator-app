@@ -47,9 +47,7 @@ define ("reducers/chatView",
         placeholder: "",
         errorMsg: "",
         listPicker: {
-          closed: true,
-          searchPlaceholder: "",
-          searchNoResultsText: ""
+          closed: true
         }
       };
     };
