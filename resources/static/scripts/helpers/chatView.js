@@ -114,7 +114,9 @@ define ("helpers/chatView",
         data: {option_id: "id10"},
         title: "Option 10"
       }];
-      config.input.options = config.input.options.concat (dummyOptions);
+      if (config.input.options) {
+        config.input.options = config.input.options.concat (dummyOptions);
+      }
       // @TODO END
 
       const {
@@ -129,8 +131,9 @@ define ("helpers/chatView",
           options
         }
       } = config;
+      const optionsLen = options ? options.length : 0;
       const userInputType = getUserInputType (
-        messageType, optionsInputType, options.length
+        messageType, optionsInputType, optionsLen
       );
 
       const processedInput = {
