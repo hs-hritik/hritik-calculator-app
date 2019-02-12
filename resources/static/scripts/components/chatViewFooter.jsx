@@ -267,18 +267,25 @@ define ("components/chatViewFooter",
           onFooterBlur,
           browserIsMobile
         } = this.props;
+        const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": errorMsg,
             "hs-chat-footer--form-invalid": disabled || !value.trim (),
             "hs-chat-footer--mobile": browserIsMobile,
-            "hs-chat-footer--no-padding": type === USER_INPUT_TYPES.LIST_PICKER,
-            "hs-chat-footer--list-picker-closed": listPickerIsClosed,
-            "hs-chat-footer--list-picker-opened": !listPickerIsClosed
+            "hs-chat-footer--no-padding": inputIsListPicker,
+            "hs-chat-footer--list-picker-closed": inputIsListPicker && listPickerIsClosed,
+            "hs-chat-footer--list-picker-opened": inputIsListPicker && !listPickerIsClosed
           }
         );
-        let errorMsgEl = null;
-        let inputComponentEl = null;
+
+        if (inputIsListPicker) {
+          return (
+            <div className={footerClasses}>
+              {this._renderPicker ()}
+            </div>
+          );
+        }
 
         // We need to render reply box for input component for input type plain text
         // and default input (when user is on issue state) as
@@ -286,12 +293,11 @@ define ("components/chatViewFooter",
         // b. Rendering normal input type 'text' will clip the text once it goes
         //    beyond available width
         // c. There can be label for input type plain text (this layout supports label)
+        let inputComponentEl;
         if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
           inputComponentEl = (
             <ReplyBoxContainer className="hs-chat-footer__text-area" />
           );
-        } else if (type === USER_INPUT_TYPES.LIST_PICKER) {
-          inputComponentEl = this._renderPicker ();
         } else {
           const htmlInputType = this._getHtmlInputType (type);
           const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
@@ -312,6 +318,7 @@ define ("components/chatViewFooter",
           );
         }
 
+        let errorMsgEl = null;
         if (errorMsg) {
           errorMsgEl = (
             <div className="hs-chat-footer__field">
@@ -322,20 +329,12 @@ define ("components/chatViewFooter",
           );
         }
 
-        let footerLabelEl = null;
-        let footerActionEl = null;
-
-        if (type !== USER_INPUT_TYPES.LIST_PICKER) {
-          footerLabelEl = this._renderFooterLabelComponent ();
-          footerActionEl = this._renderFooterAction ();
-        }
-
         return (
           <div className={footerClasses}>
-            {footerLabelEl}
+            {this._renderFooterLabelComponent ()}
             <div key="input" className="hs-chat-footer__field">
               {inputComponentEl}
-              {footerActionEl}
+              {this._renderFooterAction ()}
             </div>
             {errorMsgEl}
           </div>
