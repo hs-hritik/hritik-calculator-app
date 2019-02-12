@@ -39,11 +39,22 @@
       color: $search-label-color;
     }
 
-    &__action-icon,
-    &__search-icon {
+    &__close-search-icon,
+    &__search-icon,
+    &__toggle-icon {
       font-size: $action-icon-size;
       color: $action-icon-color;
       cursor: pointer;
+    }
+
+    &__toggle-icon {
+      @include rotate(-90);
+    }
+
+    &--opened {
+      .hs-picker-header__toggle-icon {
+        @include rotate(90);
+      }
     }
   }
 }

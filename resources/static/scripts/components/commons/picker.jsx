@@ -214,7 +214,7 @@ define (
 
       _renderCloseSearchIcon () {
         const btnIconClasses = classes (
-          "hs-picker-header__action-icon",
+          "hs-picker-header__close-search-icon",
           "ion-arrow-thin-left"
         );
 
@@ -225,25 +225,16 @@ define (
       },
 
       _renderToggleIcon () {
-        const {
-          closed,
-          onToggleButtonClick
-        } = this.props;
-
-        // TODO: Fix icons. Using these until we add the required icons
-        // "ion-chevron-down": !closed,
-        // "ion-chevron-up": closed
+        // Use chevron-right and it will have transform:rotate
+        // based on the state of the widget.
         const iconClasses = classes (
-          "hs-picker-header__action-icon",
-          {
-            "ion-alert-circled": !closed,
-            "ion-attachment": closed
-          }
+          "hs-picker-header__toggle-icon",
+          "ion-chevron-right"
         );
 
         return (
           <i className={iconClasses}
-             onClick={onToggleButtonClick} />
+             onClick={this.props.onToggleButtonClick} />
         );
       },
 
