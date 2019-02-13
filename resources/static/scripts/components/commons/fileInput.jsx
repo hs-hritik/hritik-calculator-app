@@ -12,7 +12,7 @@ define ("components/commons/fileInput",
     const DEFAULT_ACCEPT = ".zip, .rar, .tar, .gzip, .mp3, .mpeg, .wav, .ogg, .amr, .jpeg, " +
                            ".jpg, .png, .gif, .bmp, .txt, .rtf, .webm, .mpeg4, .3gpp, .mov, " +
                            ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
-                           ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csv";
+                           ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csvm, .mp4";
 
     const PropTypes = React.PropTypes;
 
