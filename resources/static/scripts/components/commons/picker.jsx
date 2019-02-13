@@ -777,11 +777,9 @@ define (
 
       /**
        * Snaps the height of the widget to either minimum or maximum based on
-       * the current value of the height in state. If the current height is less
-       * than or equal to half of the maximum value, sets the height to minimum.
-       * If the current height is more than half of the maximum value, sets
-       * the height to maximum. Also triggers change in the closed state
-       * depending on the height.
+       * the current value of the height in state. If the current height is more
+       * than the minimum height, it sets the height to maximum height. Otherwise,
+       * it sets it to the minimum height.
        */
       _completeResize () {
         const {
@@ -793,7 +791,7 @@ define (
           height: currentHeight
         } = this.state;
 
-        const newHeight = (currentHeight <= (maxHeight / 2)) ? minHeight : maxHeight;
+        const newHeight = (currentHeight > minHeight) ? maxHeight : minHeight;
 
         if (currentHeight !== newHeight) {
           this.setState ({
