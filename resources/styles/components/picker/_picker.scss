@@ -17,17 +17,18 @@
   .hs-picker {
     display: flex;
     flex-direction: column;
-    // height: 100%;
+    overflow-y: hidden;
 
     &__header-wrapper {
       flex: 0 0 auto;
       padding: gutter(12 20);
+      cursor: pointer;
     }
 
     &__options-wrapper {
       display: flex;
       flex-basis: 100%;
-      overflow-y: scroll;
+      overflow-y: hidden;
     }
 
     &__no-search-results {
@@ -37,19 +38,13 @@
       text-align: center;
     }
 
-    &--closed {
-      overflow: hidden;
-
-      .hs-picker__header-wrapper {
-        cursor: pointer;
-      }
+    &--opened {
+      overflow-y: scroll;
 
       .hs-picker__options-wrapper {
-        overflow-y: hidden;
+        overflow-y: scroll;
       }
-    }
 
-    &--opened {
       .hs-picker__header-wrapper {
         border-bottom: 1px solid $header-opened-bottom-border;
       }

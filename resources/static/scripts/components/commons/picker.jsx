@@ -11,13 +11,14 @@
   * The "options" are required to be passed as props. The options list is not
   * stored in the state. The value received from props is filtered before
   * rendering.
-  * The "closed" value is controlled. The parent component needs to handle the
-  * onToggle callback and update the value of "closed" in its local state.
-  * The change in the value of "closed" can be triggered by the following:
-  * 1. In closed state, when user clicks the toggle button (chevron-up)
-  * 2. In closed state, when user clicks the header label
-  * 3. In closed state, @TODO: Add scroll trigger explaination.
-  * 4. In opened state, when user clicks the toggle button (chevron-down)
+  * The "toggleState" value is uncontrolled. The parent component needs to handle the
+  * onToggleStateChange callback and update the value of "toggleState" in its local state.
+  * The change in the value of "toggleState" can be triggered by the following:
+  * 1. In toggleState "closed", when user clicks the toggle button (chevron-up)
+  * 2. In toggleState "closed", when user clicks the header label
+  * 3. In toggleState "closed", @TODO: Add scroll trigger explaination.
+  * 4. In toggleState "opened", when user clicks the toggle button (chevron-down)
+  * @TODO: Update this according to the new implementation
   */
 
 define (
@@ -34,6 +35,12 @@ define (
     const {PropTypes} = React;
 
     const WHEEL_END_EVENT_TIMEOUT = 450; // ms
+
+    const TOGGLE_STATES = {
+      OPENED: "opened",
+      RESIZING: "resizing",
+      CLOSED: "closed"
+    };
 
     const optionsPropType = PropTypes.arrayOf (PropTypes.shape ({
       /**
@@ -157,9 +164,11 @@ define (
         label: PropTypes.string.isRequired,
 
         /**
-         * Whether the picker is closed or not
+         * Toggle state of the picker
          */
-        closed: PropTypes.bool.isRequired,
+        toggleState: PropTypes.oneOf ([
+          TOGGLE_STATES.CLOSED, TOGGLE_STATES.OPENED, TOGGLE_STATES.RESIZING
+        ]).isRequired,
 
         /**
          * Handler for click on toggle button
@@ -189,7 +198,7 @@ define (
         } = this.state;
 
         const {
-          closed
+          toggleState
         } = this.props;
 
         let actionBtnEl;
@@ -202,8 +211,7 @@ define (
         const headerClasses = classes (
           "hs-picker-header",
           {
-            "hs-picker-header--closed": closed,
-            "hs-picker-header--opened": !closed
+            "hs-picker-header--opened": toggleState === TOGGLE_STATES.OPENED
           }
         );
 
@@ -243,7 +251,7 @@ define (
 
       _renderSearch () {
         const {
-          closed
+          toggleState
         } = this.props;
         const {
           searchInputIsShown
@@ -266,7 +274,7 @@ define (
             </small>
           );
 
-          if (!closed) {
+          if (toggleState === TOGGLE_STATES.OPENED) {
             searchIconEl = (
               <i className="hs-picker-header__search-icon ion-magnifier"
                  onClick={this._onSearchIconClick} />
@@ -379,9 +387,9 @@ define (
       displayName: "Picker",
       propTypes: {
         /**
-         * Handler when the closed state is toggled
+         * Handler when the toggleState state is toggled
          */
-        onToggle: PropTypes.func,
+        onToggleStateChange: PropTypes.func,
 
         /**
          * Options of the list
@@ -425,7 +433,7 @@ define (
       },
       getInitialState () {
         return {
-          closed: true,
+          toggleState: TOGGLE_STATES.CLOSED,
           query: "",
           filteredOptions: this.props.options,
           highlightedIndex: -1,
@@ -435,7 +443,7 @@ define (
 
       render () {
         const {
-          closed,
+          toggleState,
           height
         } = this.state;
 
@@ -449,8 +457,7 @@ define (
           className,
           "hs-picker",
           {
-            "hs-picker--opened": !closed,
-            "hs-picker--closed": closed
+            "hs-picker--opened": this._isPickerOpened ()
           }
         );
 
@@ -475,7 +482,7 @@ define (
             <div className="hs-picker__header-wrapper">
               <PickerHeader placeholder={placeholder}
                             label={label}
-                            closed={closed}
+                            toggleState={toggleState}
                             onSearch={this._onSearch}
                             onToggleButtonClick={this._onHeaderToggleButtonClick}
                             onLabelClick={this._onHeaderLabelClick}
@@ -536,6 +543,11 @@ define (
       _touchEv: null,
 
       /**
+       * Ref to the timeout used for keeping track of wheel events end
+       */
+      _onWheelTimer: null,
+
+      /**
        * Handle change in search query
        * @param {String} query - Search query
        */
@@ -553,12 +565,18 @@ define (
        * Handle click on search toggle button
        */
       _onHeaderToggleButtonClick () {
-        const updatedClosedStateValue = !this.state.closed;
+        let updatedToggleStateValue;
 
-        this._updateToggleStateAndTriggerChange (updatedClosedStateValue);
+        if (this._isPickerClosed ()) {
+          updatedToggleStateValue = TOGGLE_STATES.OPENED;
+        } else {
+          updatedToggleStateValue = TOGGLE_STATES.CLOSED;
+        }
+
+        this._updateToggleStateAndTriggerChange (updatedToggleStateValue);
 
         // If the widget was toggled to closed state, remove the highlighting
-        if (updatedClosedStateValue) {
+        if (updatedToggleStateValue === TOGGLE_STATES.CLOSED) {
           this.setState ({
             highlightedIndex: -1
           });
@@ -569,12 +587,8 @@ define (
        * Handle click on header label
        */
       _onHeaderLabelClick () {
-        const {
-          closed
-        } = this.state;
-
-        if (closed) {
-          this._updateToggleStateAndTriggerChange (false);
+        if (this._isPickerClosed ()) {
+          this._updateToggleStateAndTriggerChange (TOGGLE_STATES.OPENED);
         }
       },
 
@@ -587,8 +601,8 @@ define (
           onSelect
         } = this.props;
 
-        if (!this.state.closed) {
-          this._updateToggleStateAndTriggerChange (true);
+        if (this._isPickerOpened ()) {
+          this._updateToggleStateAndTriggerChange (TOGGLE_STATES.CLOSED);
         }
 
         if (onSelect) {
@@ -601,7 +615,7 @@ define (
        * @param {Number} optionIndex - index of option on which event occurred
        */
       _onOptionItemMouseEnter (optionIndex) {
-        if (this.state.closed) {
+        if (!this._isPickerOpened ()) {
           return;
         }
 
@@ -630,7 +644,7 @@ define (
           case KEY_CODES.ENTER:
             const {onSelect} = this.props;
 
-            this._updateToggleStateAndTriggerChange (true);
+            this._updateToggleStateAndTriggerChange (TOGGLE_STATES.CLOSED);
 
             if (onSelect) {
               onSelect (filteredOptions [highlightedIndex]);
@@ -667,7 +681,7 @@ define (
        * @param {Object} - Event object
        */
       _onTouchStart (ev) {
-        if (!this.state.closed) {
+        if (!this._isPickerClosed ()) {
           return;
         }
 
@@ -680,7 +694,7 @@ define (
        * @param {Object} - Event object
        */
       _onTouchMove (ev) {
-        if (!this.state.closed) {
+        if (this._isPickerOpened ()) {
           return;
         }
 
@@ -697,17 +711,12 @@ define (
        * the value of the height to minimum or maximum.
        */
       _onTouchEnd () {
-        if (!this.state.closed) {
+        if (this._isPickerOpened ()) {
           return;
         }
 
         this._completeResize ();
       },
-
-      /**
-       * Ref to the timeout used for keeping track of wheel events end
-       */
-      _onWheelTimer: null,
 
       /**
        * Handles the onWheel event.
@@ -719,7 +728,7 @@ define (
        * @param {Object} ev - The WheelEvent object
        */
       _onWheel (ev) {
-        if (!this.state.closed) {
+        if (this._isPickerOpened ()) {
           return;
         }
 
@@ -732,7 +741,7 @@ define (
 
         this._onWheelTimer = window.setTimeout (() => {
           this._onWheelTimer = null;
-          if (!this.state.closed) {
+          if (this._isPickerOpened ()) {
             return;
           }
 
@@ -743,7 +752,7 @@ define (
       /**
        * Updates the height value in the state with given value. If the value
        * is greater than max possible height, then it will set it to max allowed
-       * height and trigger onToggle.
+       * height and trigger onToggleStateChange.
        * @param {Number} newHeight - The new value of height
        */
       _updateHeight (newHeight) {
@@ -763,10 +772,10 @@ define (
         });
 
         // If the new value of height is same as max allowed value and if
-        // the widget is in closed state, then set the closed state to false and
-        // trigger onToggle
+        // the widget is in closed state, then set toggleState to "opened" and
+        // trigger onToggleStateChange
         if (newHeight === maxHeight) {
-          this._updateToggleStateAndTriggerChange (false);
+          this._updateToggleStateAndTriggerChange (TOGGLE_STATES.OPENED);
         }
       },
 
@@ -794,10 +803,10 @@ define (
           });
 
           // If the new value of height is same as max allowed value and if
-          // the widget is in closed state, then set the closed state to false and
-          // trigger onToggle
+          // the widget is in closed state, then set the closed state to
+          // "opened" and trigger onToggleStateChange
           if (newHeight === maxHeight) {
-            this._updateToggleStateAndTriggerChange (false);
+            this._updateToggleStateAndTriggerChange (TOGGLE_STATES.OPENED);
           }
         }
       },
@@ -819,29 +828,58 @@ define (
       },
 
       /**
-       * Updates the value of closed flag and triggers onToggle passed
+       * Updates the value of toggleState and triggers onToggleStateChange passed
        * in props.
-       * @param closed {Boolean} - Whether the picker is closed
+       * @param newToggleState {String} - Current toggle state, one of closed, resizing
+       * or opened
        */
-      _updateToggleStateAndTriggerChange (closed) {
-        if (closed === this.state.closed) {
+      _updateToggleStateAndTriggerChange (newToggleState) {
+        if (newToggleState === this.state.toggleState) {
           return;
         }
 
         const {
-          onToggle,
+          onToggleStateChange,
           minHeight,
           maxHeight
         } = this.props;
 
-        this.setState ({
-          closed,
-          height: closed ? minHeight : maxHeight
-        });
+        const stateChange = {
+          toggleState: newToggleState
+        };
 
-        if (onToggle) {
-          onToggle (closed);
+        if (newToggleState === TOGGLE_STATES.CLOSED) {
+          stateChange.height = minHeight;
+        } else if (newToggleState === TOGGLE_STATES.OPENED) {
+          stateChange.height = maxHeight;
         }
+
+        this.setState (stateChange);
+
+        if (onToggleStateChange) {
+          onToggleStateChange (newToggleState);
+        }
+      },
+
+      /**
+       * Returns true if toggleState value is "opened"
+       */
+      _isPickerOpened () {
+        return this.state.toggleState === TOGGLE_STATES.OPENED;
+      },
+
+      /**
+       * Returns true if toggleState value is "closed"
+       */
+      _isPickerClosed () {
+        return this.state.toggleState === TOGGLE_STATES.CLOSED;
+      },
+
+      /**
+       * Returns true if toggleState value is "resizing"
+       */
+      _isPickerResizing () {
+        return this.state.toggleState === TOGGLE_STATES.RESIZING;
       },
 
       /**
@@ -917,7 +955,10 @@ define (
 
       componentDidUpdate (prevProps, prevState) {
         // Scroll to top if the picker goes from open to closed state.
-        if (!prevState.closed && this.state.closed && this._optionsWrapperRef) {
+        if (
+          this._optionsWrapperRef && (prevState.toggleState === TOGGLE_STATES.OPENED) &&
+          this._isPickerClosed ()
+        ) {
           const node = ReactDOM.findDOMNode (this._optionsWrapperRef);
           node.scrollTop = 0;
         }

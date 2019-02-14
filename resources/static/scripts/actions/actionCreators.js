@@ -213,13 +213,14 @@ define ("actions/actionCreators",
     });
 
     /**
-     * Return action to toggle list picker closed state
-     * @param {Boolean} closed - Whether the picker is closed
+     * Return action to change list picker toggle state
+     * @param {String} toggleState - Whether the picker is in "closed", "opened" or
+     * "resizing" state
      * @returns {Object} - the action object
      */
-    const toggleListPicker = (closed) => ({
-      type: ACTION_TYPES.TOGGLE_LIST_PICKER,
-      closed
+    const updateListPickerToggleState = (toggleState) => ({
+      type: ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE,
+      toggleState
     });
 
     return {
@@ -242,6 +243,6 @@ define ("actions/actionCreators",
       setFooterActive,
       setFooterInactive,
       resetReEngagementId,
-      toggleListPicker
+      updateListPickerToggleState
     };
   });

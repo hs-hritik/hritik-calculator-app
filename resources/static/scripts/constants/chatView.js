@@ -4,9 +4,17 @@
  * @created June 14, 2017
  */
 
-define ("constants/chatView",
-  function () {
+define (
+  "constants/chatView",
+  [
+    "constants/listPicker"
+  ],
+  function (LIST_PICKER_CONSTANTS) {
     "use strict";
+
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     const ACTIVE_FOOTER = {
       REPLY: "REPLY",
@@ -64,6 +72,8 @@ define ("constants/chatView",
     const USER_REDACTION_ERR_MSG = "User Not Found";
     const USER_REDACTION_ERR_STATUS_CODE = 404;
 
+    const DEFAULT_LIST_PICKER_TOGGLE_STATE = LIST_PICKER_TOGGLE_STATES.CLOSED;
+
     return {
       ACTIVE_FOOTER,
       MESSAGES_POLLING_TIMEOUT,
@@ -76,6 +86,7 @@ define ("constants/chatView",
       USER_REDACTION_ERR_STATUS_CODE,
       PICKER_INPUT_THRESHOLD: 5,
       OPTIONS_INPUT_TYPES,
-      PICKER_MIN_HEIGHT: 112 // px
+      PICKER_MIN_HEIGHT: 112, // px
+      DEFAULT_LIST_PICKER_TOGGLE_STATE
     };
   });

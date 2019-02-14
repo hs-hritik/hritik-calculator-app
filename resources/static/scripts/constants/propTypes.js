@@ -4,11 +4,18 @@
  * @created May 31, 2017
  */
 
-define ("constants/propTypes",
-  function () {
+define (
+  "constants/propTypes",
+  [
+    "constants/listPicker"
+  ],
+  function (LIST_PICKER_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     const MESSAGE_PROP_TYPE = PropTypes.shape ({
       id: PropTypes.string.isRequired,
@@ -45,7 +52,11 @@ define ("constants/propTypes",
       placeholder: PropTypes.string,
       errorMsg: PropTypes.string,
       listPicker: PropTypes.shape ({
-        closed: PropTypes.bool
+        toggleState: PropTypes.oneOf ([
+          LIST_PICKER_TOGGLE_STATES.CLOSED,
+          LIST_PICKER_TOGGLE_STATES.OPENED,
+          LIST_PICKER_TOGGLE_STATES.RESIZING
+        ])
       })
     });
 

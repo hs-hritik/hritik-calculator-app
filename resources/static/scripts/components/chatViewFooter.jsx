@@ -16,11 +16,12 @@ define ("components/chatViewFooter",
     "constants/propTypes",
     "helpers/common",
     "gunpowder/utils/classes",
-    "components/commons/picker"
+    "components/commons/picker",
+    "constants/listPicker"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
-    Picker) {
+    Picker, LIST_PICKER_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -33,6 +34,10 @@ define ("components/chatViewFooter",
     const {
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
+
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -73,7 +78,7 @@ define ("components/chatViewFooter",
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
-        onListPickerToggle: PropTypes.func,
+        onListPickerToggleStateChange: PropTypes.func,
         onListPickerOptionSelect: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           resolutionQuestionAccept: PropTypes.string.isRequired,
@@ -123,7 +128,7 @@ define ("components/chatViewFooter",
             required,
             skipLabel,
             listPicker: {
-              closed: listPickerIsClosed
+              toggleState: listPickerToggleState
             }
           },
           issueIsCreated,
@@ -131,6 +136,13 @@ define ("components/chatViewFooter",
         } = this.props;
         const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
         const inputIsListPicker = (type === USER_INPUT_TYPES.LIST_PICKER);
+        const listPickerIsClosed = (
+          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.CLOSED
+        );
+        const listPickerIsOpened = (
+          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED
+        );
+
         const isPreIssue = !issueIsCreated;
 
         // Hide footer if
@@ -158,7 +170,7 @@ define ("components/chatViewFooter",
           "hs-footer--active" : footerIsActive,
           "hs-footer--full-screen": allowFullScreen,
           "hs-footer--failure": failureConfig,
-          "hs-footer--list-picker-opened": !listPickerIsClosed
+          "hs-footer--list-picker-opened": listPickerIsOpened
         });
 
         const showUnreadIndicator = unreadCount > 0;
@@ -266,7 +278,7 @@ define ("components/chatViewFooter",
             errorMsg,
             disabled,
             listPicker: {
-              closed: listPickerIsClosed
+              toggleState: listPickerToggleState
             }
           },
           onFooterFocus,
@@ -274,14 +286,16 @@ define ("components/chatViewFooter",
           browserIsMobile
         } = this.props;
         const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
+        const listPickerIsOpened = (
+          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED
+        );
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": errorMsg,
             "hs-chat-footer--form-invalid": disabled || !value.trim (),
             "hs-chat-footer--mobile": browserIsMobile,
             "hs-chat-footer--no-padding": inputIsListPicker,
-            "hs-chat-footer--list-picker-closed": inputIsListPicker && listPickerIsClosed,
-            "hs-chat-footer--list-picker-opened": inputIsListPicker && !listPickerIsClosed
+            "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened
           }
         );
 
@@ -388,7 +402,7 @@ define ("components/chatViewFooter",
         return (
           <Picker className="hs-chat-footer__picker-field"
                   options={options}
-                  onToggle={this._onPickerToggle}
+                  onToggleStateChange={this._onPickerToggleStateChange}
                   onSelect={onListPickerOptionSelect}
                   searchPlaceholder={searchPlaceholder}
                   headerLabel={headerLabel}
@@ -590,11 +604,11 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Handle change in opened state of the Picker
-       * @param {Boolean} closed - Whether the picker is closed
+       * Handle change in toggle state of the Picker
+       * @param {String} toggleState - Toggle state of the Picker
        */
-      _onPickerToggle (closed) {
-        this.props.onListPickerToggle (closed);
+      _onPickerToggleStateChange (toggleState) {
+        this.props.onListPickerToggleStateChange (toggleState);
       },
 
       /**
