@@ -421,12 +421,7 @@ define (
         /**
          * Maximum height the widget can have
          */
-        maxHeight: PropTypes.number.isRequired,
-
-        /**
-         * Selector of the parent which has the max possible height
-         */
-        maxHeightParentSelector: PropTypes.string
+        maxHeight: PropTypes.number.isRequired
       },
       getInitialState () {
         return {
