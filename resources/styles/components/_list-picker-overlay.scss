@@ -1,0 +1,26 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the list picker overlay
+// - - - - - - - - - - - - - - -
+
+///
+/// @group list-picker-overlay
+///
+
+@include component(list-picker-overlay) {
+  $bg: color(bg, x-dark);
+  $opacity: .20;
+
+  .hs-list-picker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: $bg;
+    opacity: $opacity;
+  }
+}

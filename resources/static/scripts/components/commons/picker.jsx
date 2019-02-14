@@ -19,6 +19,22 @@
   * 3. In toggleState "closed", @TODO: Add scroll trigger explaination.
   * 4. In toggleState "opened", when user clicks the toggle button (chevron-down)
   * @TODO: Update this according to the new implementation
+  *
+  * The parent who is rendering the picker can optionally render an overlay
+  * like in case of web chat. The overlay should be the picker's or the picker's
+  * ancestor's sibling. For example:
+  * <MainContainer>
+  *   <Overlay />
+  *   <Picker />
+  * </MainContainer>
+  *
+  * or
+  * <MainContainer>
+  *   <Overlay />
+  *   <PickerWrapper>
+  *     <Picker />
+  *   </PickerWrapper>
+  * </MainContainer>
   */
 
 define (
