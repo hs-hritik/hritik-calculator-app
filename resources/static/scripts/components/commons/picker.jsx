@@ -538,9 +538,14 @@ define (
       },
 
       /**
-       * Reference to the touch events from touch start & touch move events
+       * Reference to touch start event
        */
-      _touchEv: null,
+      _touchStartEv: null,
+
+      /**
+       * Reference to previous touch move event
+       */
+      _prevTouchMoveEv: null,
 
       /**
        * Ref to the timeout used for keeping track of wheel events end
@@ -685,7 +690,7 @@ define (
           return;
         }
 
-        this._touchEv = ev.changedTouches [0];
+        this._touchStartEv = ev.changedTouches [0];
       },
 
       /**
@@ -699,8 +704,20 @@ define (
         }
 
         const touchEv = ev.changedTouches [0];
-        const changeInHeight = Math.round (touchEv.clientY - this._touchEv.clientY);
-        this._touchEv = touchEv;
+        let prevTouchEv;
+
+        // If there is no existing touch move event, it means that this is the
+        // first touch move event. In that case, use the touch start event as the
+        // previous touch event to calculate change in height and set the toggleState
+        // to "resizing"
+        if (!this._prevTouchMoveEv) {
+          prevTouchEv = this._touchStartEv;
+          this._updateToggleStateAndTriggerChange (TOGGLE_STATES.RESIZING);
+        } else {
+          prevTouchEv = this._prevTouchMoveEv;
+        }
+        this._prevTouchMoveEv = touchEv;
+        const changeInHeight = Math.round (touchEv.clientY - prevTouchEv.clientY);
 
         this._updateHeight (this.state.height - changeInHeight);
       },
@@ -711,6 +728,9 @@ define (
        * the value of the height to minimum or maximum.
        */
       _onTouchEnd () {
+        this._touchStartEv = null;
+        this._prevTouchMoveEv = null;
+
         if (this._isPickerOpened ()) {
           return;
         }
@@ -737,6 +757,10 @@ define (
         if (this._onWheelTimer) {
           window.clearTimeout (this._onWheelTimer);
           this._onWheelTimer = null;
+        } else {
+          // If the timer ref is null, it means that this is the first wheel
+          // event. Update the toggleState to "resizing" in this case.
+          this._updateToggleStateAndTriggerChange (TOGGLE_STATES.RESIZING);
         }
 
         this._onWheelTimer = window.setTimeout (() => {
@@ -808,6 +832,8 @@ define (
           if (newHeight === maxHeight) {
             this._updateToggleStateAndTriggerChange (TOGGLE_STATES.OPENED);
           }
+        } else if (newHeight === minHeight && !this._isPickerClosed ()) {
+          this._updateToggleStateAndTriggerChange (TOGGLE_STATES.CLOSED);
         }
       },
 
