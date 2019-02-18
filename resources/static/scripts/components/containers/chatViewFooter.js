@@ -143,7 +143,7 @@ define ("components/containers/chatViewFooter",
           dispatch (appStateActions.toggleMinimized (true));
         },
         onListPickerToggleStateChange: (toggleState) => {
-          dispatch (actionCreators.changeListPickerToggleState (toggleState));
+          dispatch (actionCreators.updateListPickerToggleState (toggleState));
         }
       };
     };
