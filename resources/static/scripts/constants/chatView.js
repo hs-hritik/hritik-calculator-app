@@ -7,7 +7,7 @@
 define (
   "constants/chatView",
   [
-    "constants/listPicker"
+    "gunpowder/constants/widgets/picker"
   ],
   function (LIST_PICKER_CONSTANTS) {
     "use strict";

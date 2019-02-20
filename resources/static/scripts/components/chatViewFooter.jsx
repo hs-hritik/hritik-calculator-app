@@ -16,8 +16,8 @@ define ("components/chatViewFooter",
     "constants/propTypes",
     "helpers/common",
     "gunpowder/utils/classes",
-    "components/commons/picker",
-    "constants/listPicker"
+    "gunpowder/widgets/picker",
+    "gunpowder/constants/widgets/picker"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,

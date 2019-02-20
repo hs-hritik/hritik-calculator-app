@@ -15,7 +15,7 @@ define ("components/chatView",
     "constants/chatView",
     "components/jumpToLatestBtn",
     "gunpowder/utils/classes",
-    "constants/listPicker"
+    "gunpowder/constants/widgets/picker"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
