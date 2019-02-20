@@ -170,7 +170,8 @@ define ("components/chatViewFooter",
           "hs-footer--active" : footerIsActive,
           "hs-footer--full-screen": allowFullScreen,
           "hs-footer--failure": failureConfig,
-          "hs-footer--list-picker-opened": listPickerIsOpened
+          "hs-footer--list-picker-opened": listPickerIsOpened,
+          "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened
         });
 
         const showUnreadIndicator = unreadCount > 0;
