@@ -25,6 +25,10 @@
       flex: 1 0 auto;
       border: 0;
       outline: none;
+
+      &::-ms-clear {
+        display: none;
+      }
     }
 
     &__search-wrapper {
