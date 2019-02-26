@@ -1,0 +1,5 @@
+Branches:
+feature/fix-CSR-3524
+
+Changelog:
+Support mp4 files as attachments
