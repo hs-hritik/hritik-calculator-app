@@ -81,44 +81,6 @@ define ("helpers/chatView",
      * @returns {Object} - processed input object
      */
     const getProcessedUserInput = (config) => {
-      // @TODO START
-      // Remove this dummy data after integration with backend.
-      const dummyOptions = [{
-        data : {option_id: "id1"},
-        title: "Option 1"
-      }, {
-        data: {option_id: "id2"},
-        title: "Option 2"
-      }, {
-        data: {option_id: "id3"},
-        title: "Option 3"
-      }, {
-        data: {option_id: "id4"},
-        title: "Option 4"
-      }, {
-        data: {option_id: "id5"},
-        title: "Option 5"
-      }, {
-        data: {option_id: "id6"},
-        title: "Option 6"
-      }, {
-        data: {option_id: "id7"},
-        title: "Option 7"
-      }, {
-        data: {option_id: "id8"},
-        title: "Option 8"
-      }, {
-        data: {option_id: "id9"},
-        title: "Option 9"
-      }, {
-        data: {option_id: "id10"},
-        title: "Option 10"
-      }];
-      if (config.input.options) {
-        config.input.options = config.input.options.concat (dummyOptions);
-      }
-      // @TODO END
-
       const {
         messageType,
         input: {
