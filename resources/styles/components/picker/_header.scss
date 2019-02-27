@@ -47,6 +47,7 @@
     &__search-icon,
     &__toggle-icon {
       font-size: $action-icon-size;
+      font-weight: font-weight(bold);
       color: $action-icon-color;
       cursor: pointer;
     }
