@@ -11,7 +11,7 @@
 ///
 
 @include component(picker) {
-  $header-opened-bottom-border: color(border);
+  $header-opened-bottom-border: var(--hs-form-border-color);
   $no-search-results-text-color: color(text, light);
 
   .hs-picker {
