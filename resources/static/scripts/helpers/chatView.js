@@ -28,6 +28,11 @@ define ("helpers/chatView",
       PICKER_INPUT_THRESHOLD,
       OPTIONS_INPUT_TYPES
     } = chatViewConstants;
+
+    // Input types for which validations are not required
+    const NO_INPUT_VALIDATIONS_REQUIRED_TYPES = [
+      USER_INPUT_TYPES.PILL_SELECT, USER_INPUT_TYPES.LIST_PICKER
+    ];
     const {Input} = schema;
 
     /**
@@ -126,16 +131,18 @@ define ("helpers/chatView",
      * Validation config will be object containing error and error message
      * @param {Object} userInput - user input object
      * @param {Object} text - text object containing validation strings
-     * @returns {Object} - validation config
+     * @returns {String} - Returns errorMsg if input is invalid. If input is
+     * valid then returns empty string.
      */
-    const getUserInputValidationConfig = (userInput, text) => {
+    const validateUserInput = (userInput, text) => {
       const {value, type, required} = userInput;
-      const validations = [];
 
-      // Skip required validation for input type pill select
-      if (required && type !== USER_INPUT_TYPES.PILL_SELECT) {
-        validations.push ("required");
+      if (NO_INPUT_VALIDATIONS_REQUIRED_TYPES.indexOf (type) > -1) {
+        return "";
       }
+
+      // If input is not skippable, then add the "required" validation.
+      const validations = required ? ["required"] : [];
 
       // @NOTE - We are passing object in validation just to have custom error messages
       // We do not want the default error message strings returned by Input.
@@ -169,9 +176,7 @@ define ("helpers/chatView",
         validations
       });
 
-      return {
-        errorMsg: input.isValid ()
-      };
+      return input.isValid ();
     };
 
     /**
@@ -209,7 +214,7 @@ define ("helpers/chatView",
     return {
       getProcessedUserInput,
       getPluralizedIssueType,
-      getUserInputValidationConfig,
+      validateUserInput,
       getProcessedIssueState
     };
   });
