@@ -155,14 +155,38 @@ define ("components/chatViewFooter",
           return null;
         }
 
-        let skipBtnWrapperEl = null;
+        /**
+         * NOTE: "Jump to latest" and "skip" buttons are not semantically related.
+         * However, for ease of layout and positioning, we are putting them in
+         * one wrapper.
+         */
+        let miscActionsWrapper = null;
 
-        if (!required && listPickerIsClosed) {
-          skipBtnWrapperEl = (
-            <SkipButtonWrapper label={skipLabel}
-                               className="hs-chat-footer__skip-btn-wrapper"
-                               disabled={disabled}
-                               onClick={onSkipUserInput} />
+        if (!inputIsListPicker || listPickerIsClosed) {
+          let skipBtnWrapperEl = null;
+
+          if (!required) {
+            skipBtnWrapperEl = (
+              <SkipButtonWrapper
+                label={skipLabel}
+                className="hs-chat-footer__skip-btn-wrapper"
+                disabled={disabled}
+                onClick={onSkipUserInput} />
+            );
+          }
+
+          const showUnreadIndicator = unreadCount > 0;
+
+          miscActionsWrapper = (
+            <div className="hs-chat-footer__misc-actions-wrapper">
+              <div className="hs-chat-footer__jump-to-latest-wrapper">
+                <JumpToLatestBtn
+                  show={userIsViewingPastMessages}
+                  showUnreadIndicator={showUnreadIndicator}
+                  onClick={this.props.onJumpBtnClick} />
+              </div>
+              {skipBtnWrapperEl}
+            </div>
           );
         }
 
@@ -174,20 +198,9 @@ define ("components/chatViewFooter",
           "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened
         });
 
-        const showUnreadIndicator = unreadCount > 0;
-        const jumpToLatestBtnEl = (
-          <div className="hs-chat-footer__jump-to-latest-wrapper">
-            <JumpToLatestBtn
-              show={userIsViewingPastMessages}
-              showUnreadIndicator={showUnreadIndicator}
-              onClick={this.props.onJumpBtnClick} />
-          </div>
-        );
-
         return (
           <div className={footerClasses}>
-            {jumpToLatestBtnEl}
-            {skipBtnWrapperEl}
+            {miscActionsWrapper}
             {this._renderFooterComponent ()}
           </div>
         );
