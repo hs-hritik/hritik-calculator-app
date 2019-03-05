@@ -39,6 +39,12 @@
       }
     }
 
+    &__input-wrapper {
+      display: flex;
+      align-items: center;
+      flex-basis: 100%;
+    }
+
     &__search-wrapper {
       display: flex;
       align-items: center;
@@ -53,7 +59,8 @@
 
     &__close-search-icon,
     &__search-icon,
-    &__toggle-icon {
+    &__toggle-icon,
+    &__clear-search-icon {
       font-size: $action-icon-size;
       font-weight: font-weight(bold);
       color: $action-icon-color;
@@ -62,6 +69,10 @@
 
     &__toggle-icon {
       @include rotate(-90);
+    }
+
+    &__clear-search-icon {
+      margin-left: gutter(16);
     }
 
     &--opened {
