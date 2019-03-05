@@ -13,9 +13,9 @@
 @include component(picker-header) {
   // @TODO: Use the colors from config
   $search-label-color: color(text, light);
-  $action-icon-size: font-size(body, large);
+  $action-icon-size: icon-size();
   $action-icon-color: color(button);
-
+  $search-placeholder-color: color(text, x-light);
 
   .hs-picker-header {
     display: flex;
@@ -28,6 +28,10 @@
 
       &::-ms-clear {
         display: none;
+      }
+
+      &::placeholder {
+        color: $search-placeholder-color;
       }
     }
 
