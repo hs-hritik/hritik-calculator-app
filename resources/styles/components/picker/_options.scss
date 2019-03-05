@@ -15,12 +15,13 @@
   $highlighted-option-background: rgba(67, 191, 108, .05);
 
   .hs-picker-options {
-    flex-basis: 100%;
+    width: 100%;
     margin: 0;
     list-style: none;
 
     &__option-item {
-      padding: gutter(12 20);
+      @include ellipsis;
+      padding: gutter(12 16);
       cursor: pointer;
 
       &-highlighted {

@@ -13,9 +13,10 @@
 @include component(picker-header) {
   // @TODO: Use the colors from config
   $search-label-color: color(text, light);
-  $action-icon-size: font-size(body, large);
-  $action-icon-color: color(button);
-
+  $action-icon-size: icon-size();
+  $action-icon-color: var(--hs-base-color);
+  $search-input-caret-color: var(--hs-base-color);
+  $search-placeholder-color: color(text, x-light);
 
   .hs-picker-header {
     display: flex;
@@ -25,9 +26,16 @@
       flex: 1 0 auto;
       border: 0;
       outline: none;
+      // scss-lint:disable PropertySpelling
+      caret-color: $search-input-caret-color;
+      // scss-lint:enable PropertySpelling
 
       &::-ms-clear {
         display: none;
+      }
+
+      &::placeholder {
+        color: $search-placeholder-color;
       }
     }
 
