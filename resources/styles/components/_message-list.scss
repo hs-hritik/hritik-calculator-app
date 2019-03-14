@@ -82,12 +82,6 @@
       font-weight: font-weight(medium);
       letter-spacing: -.5px;
       color: $chat-widget-secondary-text-color;
-      // @NOTE - We use the same translated string sent from backend in case of
-      // pill select and picker. But, we need to set uppercase explicitly in case
-      // of pill select and not in case of list-picker because for picker the
-      // the heading is not to be shown in uppercase.
-      // Ref: https://helpshift.atlassian.net/browse/IOS-4828
-      text-transform: uppercase;
       opacity: .8;
     }
 
