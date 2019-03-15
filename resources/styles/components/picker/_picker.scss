@@ -13,6 +13,7 @@
 @include component(picker) {
   $header-opened-bottom-border: var(--hs-form-border-color);
   $no-search-results-text-color: color(text, light);
+  $no-tap-highlight-color: rgba(255, 255, 255, 0);
 
   .hs-picker {
     display: flex;
@@ -23,6 +24,7 @@
       flex: 0 0 auto;
       padding: gutter(12 16);
       cursor: pointer;
+      -webkit-tap-highlight-color: $no-tap-highlight-color;
     }
 
     &__options-wrapper {

@@ -13,6 +13,7 @@
 @include component(picker-options) {
   // @TODO: Fix how the color value is derived
   $highlighted-option-background: rgba(67, 191, 108, .05);
+  $no-tap-highlight-color: rgba(255, 255, 255, 0);
 
   .hs-picker-options {
     width: 100%;
@@ -23,6 +24,7 @@
       @include ellipsis;
       padding: gutter(12 16);
       cursor: pointer;
+      -webkit-tap-highlight-color: $no-tap-highlight-color;
 
       &-highlighted {
         background: $highlighted-option-background;
