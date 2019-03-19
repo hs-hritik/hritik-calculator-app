@@ -57,7 +57,9 @@ define ("constants/localization",
       "conversations_deleted":"conversationsRedactedMsg",
       "internet_error": "noInternetConnection",
       "connecting_text": "connectingText",
-      "system_error": "unknownErrorReconnecting"
+      "system_error": "unknownErrorReconnecting",
+      "search_placeholder": "searchPlaceholder",
+      "no_search_results": "noSearchResultsText"
     };
 
     return {

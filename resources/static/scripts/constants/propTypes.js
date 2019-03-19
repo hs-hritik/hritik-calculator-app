@@ -4,11 +4,18 @@
  * @created May 31, 2017
  */
 
-define ("constants/propTypes",
-  function () {
+define (
+  "constants/propTypes",
+  [
+    "gunpowder/constants/widgets/picker"
+  ],
+  function (LIST_PICKER_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     const MESSAGE_PROP_TYPE = PropTypes.shape ({
       id: PropTypes.string.isRequired,
@@ -43,7 +50,14 @@ define ("constants/propTypes",
       required: PropTypes.bool,
       skipLabel: PropTypes.string,
       placeholder: PropTypes.string,
-      errorMsg: PropTypes.string
+      errorMsg: PropTypes.string,
+      listPicker: PropTypes.shape ({
+        toggleState: PropTypes.oneOf ([
+          LIST_PICKER_TOGGLE_STATES.CLOSED,
+          LIST_PICKER_TOGGLE_STATES.OPENED,
+          LIST_PICKER_TOGGLE_STATES.RESIZING
+        ])
+      })
     });
 
     return {

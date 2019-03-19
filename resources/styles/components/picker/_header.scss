@@ -1,0 +1,85 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the picker header component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group picker
+///
+
+@include component(picker-header) {
+  $search-label-color: var(--hs-chat-widget-secondary-text-color);
+  $action-icon-size: icon-size();
+  $action-icon-color: var(--hs-base-color);
+  $search-input-caret-color: var(--hs-base-color);
+
+  .hs-picker-header {
+    display: flex;
+    align-items: center;
+
+    &__input {
+      flex: 1 0 auto;
+      border: 0;
+      outline: none;
+      // scss-lint:disable PropertySpelling
+      caret-color: $search-input-caret-color;
+      // scss-lint:enable PropertySpelling
+
+      &::-ms-clear {
+        display: none;
+      }
+    }
+
+    &__input-wrapper {
+      display: flex;
+      align-items: center;
+      flex-basis: 100%;
+    }
+
+    &__search-wrapper {
+      display: flex;
+      align-items: center;
+      flex: 1 0 auto;
+      justify-content: space-between;
+      margin-left: gutter(16);
+    }
+
+    &__search-label {
+      flex-basis: 100%;
+      color: $search-label-color;
+    }
+
+    &__search-label,
+    &__input {
+      padding: gutter(4 0);
+    }
+
+    &__close-search-icon,
+    &__search-icon,
+    &__toggle-icon,
+    &__clear-search-icon {
+      padding: gutter(4);
+      font-size: $action-icon-size;
+      font-weight: font-weight(bold);
+      color: $action-icon-color;
+      cursor: pointer;
+    }
+
+    &__toggle-icon {
+      @include rotate(-90);
+    }
+
+    &__clear-search-icon {
+      margin-left: gutter(12);
+    }
+
+    &--opened {
+      .hs-picker-header__toggle-icon {
+        @include rotate(90);
+      }
+    }
+  }
+}

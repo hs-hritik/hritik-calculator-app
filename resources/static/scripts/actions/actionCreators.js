@@ -212,6 +212,17 @@ define ("actions/actionCreators",
       type: ACTION_TYPES.RESET_RE_ENGAGEMENT_ID
     });
 
+    /**
+     * Return action to change list picker toggle state
+     * @param {String} toggleState - Whether the picker is in "closed", "opened" or
+     * "resizing" state
+     * @returns {Object} - the action object
+     */
+    const updateListPickerToggleState = (toggleState) => ({
+      type: ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE,
+      toggleState
+    });
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -231,6 +242,7 @@ define ("actions/actionCreators",
       toggleOnlineStatus,
       setFooterActive,
       setFooterInactive,
-      resetReEngagementId
+      resetReEngagementId,
+      updateListPickerToggleState
     };
   });

@@ -1,0 +1,67 @@
+Branches:
+feature/bots-picker-tpapi
+
+Changelog:
+Fix zoom behaviour on picker search input
+Improve clickable area for picker buttons
+Upgrade gunpowder to 1.0.25
+Picker: Fix scrollbar visibility behaviour on Edge & IE
+Fix picker option highlight color
+Fix click behaviour on picker header label
+Use color from css var for picker search header label
+Remove touch highlighting on picker header
+Update icon files & codes
+Remove uppercase for pill select heading
+Update gunpowder version to 1.0.24
+Add styling for clear search icon
+Fix misc styling issues in picker
+Revert "Fix misc styling issues in picker"
+Fix misc styling issues in picker
+Fix position of unread msgs symbol on jump-to-latest btn
+Fix letter case for pill options heading
+Fix positioning of jump to latest btn
+Use gunpowder 1.0.23
+Fix input validation for picker
+Use color from variables for picker bottom border in opened state
+Fix font-weight for action icons
+Remove dummy data for picker options
+Fix width of options list
+Hide clear search button on IE11
+Picker: Add box-shadow when picker is not opened
+Use picker and related dependencies from gunpowder
+Update gunpowder dependency
+Fix action call for updating picker toggle state
+Render overlay on content while picker is resized
+Picker: Handle toggleState update when resizing
+Picker: Improve toggle state logic
+Picker: Remove unused maxHeightParentSelector prop
+Picker: Tweak height snapping logic
+Handle scroll behaviour on wheel event
+Handle touch events to have scroll behaviour
+Fix layout of picker in chat view footer
+Fix picker toggle icon
+Fix input config processing with options
+Picker: Handle translations for search
+Picker: Scroll highlighted option into view
+Reset the scroll to zero when picker is closed
+Picker: Fix renamed function name
+Picker: Reset search query on closing search
+Picker: Fix miscellaneous styling issues
+Hide picker input if input field is disabled
+Hide skip btn in ChatViewFooter if picker is opened
+Picker: Remove option highlighting in closed state
+Picker: Handle keyboard events
+Picker: Move filtered options to state
+Picker: Handle highlighting of option on mouse-enter
+Filter picker options according to search query
+Wire Picker onSelect callback
+Wire picker toggle behaviour
+Handle picker closed states
+Render options list
+Render search icon conditionally
+Render picker in chat view footer
+Add & process list picker input type
+Rename title prop to label
+Fix picker file & dependencies paths
+Move picker to commons from components
+Add Picker component

@@ -292,3 +292,11 @@
   word-break: break-all;
   word-break: break-word; //scss-lint:disable DuplicateProperty
 }
+
+@mixin rotate($degrees) {
+  // scss-lint:disable VendorPrefix
+  -ms-transform: rotate(#{ $degrees }deg);
+  -webkit-transform: rotate(#{ $degrees }deg);
+  // scss-lint:enable VendorPrefix
+  transform: rotate(#{ $degrees }deg);
+}

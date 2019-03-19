@@ -14,10 +14,12 @@ define ("components/chatView",
     "constants/propTypes",
     "constants/chatView",
     "components/jumpToLatestBtn",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/constants/widgets/picker"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes) {
+    DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
+    LIST_PICKER_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -26,6 +28,9 @@ define ("components/chatView",
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
     const {USER_INPUT_TYPES} = CHAT_VIEW_CONSTANTS;
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatView",
@@ -46,6 +51,7 @@ define ("components/chatView",
         userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onListPickerOptionSelect: PropTypes.func,
         onSkipUserInput: PropTypes.func,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
@@ -173,6 +179,27 @@ define ("components/chatView",
       },
 
       /**
+       * Renders the picker overlay if picker is in resizing state
+       */
+      _renderPickerOverlay () {
+        const {
+          userInput: {
+            listPicker: {
+              toggleState
+            }
+          }
+        } = this.props;
+
+        if (toggleState !== LIST_PICKER_TOGGLE_STATES.RESIZING) {
+          return null;
+        }
+
+        return (
+          <div className="hs-list-picker-overlay" />
+        );
+      },
+
+      /**
        * Render view contents
        */
       _renderViewContents () {
@@ -182,6 +209,7 @@ define ("components/chatView",
           showAgentNickname,
           text,
           onPillOptionSelect,
+          onListPickerOptionSelect,
           onRetryAttachmentClick,
           onSuggestedFaqClick,
           onScrollPastExistingConversation,
@@ -236,7 +264,9 @@ define ("components/chatView",
                              minimized={minimized} />
                 {this._renderJumpToLatestBtn ()}
               </div>
-              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick} />
+              {this._renderPickerOverlay ()}
+              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick}
+                                       onListPickerOptionSelect={onListPickerOptionSelect} />
             </DnDWrapper>
         );
       },
