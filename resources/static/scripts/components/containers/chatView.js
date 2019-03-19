@@ -106,6 +106,10 @@ define ("components/containers/chatView",
         },
         onSkipUserInput: () => {
           dispatch (chatViewActions.skipUserInput ());
+        },
+        onListPickerOptionSelect: (option) => {
+          dispatch (chatViewActions.setUserSelectedOption (option));
+          dispatch (chatViewActions.submitReply ());
         }
       };
     };

@@ -1860,13 +1860,15 @@ define ("actions/chatView",
           return;
         }
 
-        const validationConfig = chatViewHelpers.getUserInputValidationConfig (
+        const errorMsg = chatViewHelpers.validateUserInput (
           userInput,
           text
         );
 
-        if (validationConfig.errorMsg) {
-          dispatch (updateUserInputData (validationConfig));
+        if (errorMsg) {
+          dispatch (updateUserInputData ({
+            errorMsg
+          }));
           return;
         }
 

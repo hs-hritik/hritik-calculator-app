@@ -15,21 +15,29 @@ define ("components/chatViewFooter",
     "constants/keyCodes",
     "constants/propTypes",
     "helpers/common",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/widgets/picker",
+    "gunpowder/constants/widgets/picker"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
-    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes) {
+    CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
+    Picker, LIST_PICKER_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
     const {
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
-      HTML_INPUT_TYPES
+      HTML_INPUT_TYPES,
+      PICKER_MIN_HEIGHT
     } = CHAT_VIEW_CONSTANTS;
     const {
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
+
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -70,6 +78,8 @@ define ("components/chatViewFooter",
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
+        onListPickerToggleStateChange: PropTypes.func,
+        onListPickerOptionSelect: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           resolutionQuestionAccept: PropTypes.string.isRequired,
           resolutionQuestionReject: PropTypes.string.isRequired,
@@ -78,7 +88,9 @@ define ("components/chatViewFooter",
           chatViewConversationResolutionQuestion: PropTypes.string.isRequired,
           chatViewIssueRejectionQuestion: PropTypes.string.isRequired,
           chatViewStartNewConversation: PropTypes.string.isRequired,
-          retryBtn: PropTypes.string.isRequired
+          retryBtn: PropTypes.string.isRequired,
+          searchPlaceholder: PropTypes.string,
+          noSearchResultsText: PropTypes.string
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -91,6 +103,11 @@ define ("components/chatViewFooter",
         userAttachmentsEnabled: PropTypes.bool,
         onCloseConversation: PropTypes.func.isRequired,
         botStepInProgress: PropTypes.bool.isRequired
+      },
+      getInitialState () {
+        return {
+          pickerMaxHeight: PICKER_MIN_HEIGHT
+        };
       },
 
       render () {
@@ -109,53 +126,81 @@ define ("components/chatViewFooter",
             type,
             disabled,
             required,
-            skipLabel
+            skipLabel,
+            listPicker: {
+              toggleState: listPickerToggleState
+            }
           },
           issueIsCreated,
           onSkipUserInput
         } = this.props;
         const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
+        const inputIsListPicker = (type === USER_INPUT_TYPES.LIST_PICKER);
+        const listPickerIsClosed = (
+          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.CLOSED
+        );
+        const listPickerIsOpened = (
+          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED
+        );
+
         const isPreIssue = !issueIsCreated;
 
         // Hide footer if
         // 1] Input is pill select - applicable for both preIssue and issue
-        //    OR
         // 2] PreIssue and input is disabled
-        if (inputIsPillSelect || (isPreIssue && disabled)) {
+        // 3] Input is list picker and input is disabled
+        if (
+          inputIsPillSelect || ((isPreIssue || inputIsListPicker) && disabled)
+        ) {
           return null;
         }
 
-        let skipBtnWrapperEl = null;
+        /**
+         * NOTE: "Jump to latest" and "skip" buttons are not semantically related.
+         * However, for ease of layout and positioning, we are putting them in
+         * one wrapper.
+         */
+        let miscActionsWrapper = null;
 
-        if (!required) {
-          skipBtnWrapperEl = (
-            <SkipButtonWrapper label={skipLabel}
-                               className="hs-chat-footer__skip-btn-wrapper"
-                               disabled={disabled}
-                               onClick={onSkipUserInput} />
+        if (!inputIsListPicker || listPickerIsClosed) {
+          let skipBtnWrapperEl = null;
+
+          if (!required) {
+            skipBtnWrapperEl = (
+              <SkipButtonWrapper
+                label={skipLabel}
+                className="hs-chat-footer__skip-btn-wrapper"
+                disabled={disabled}
+                onClick={onSkipUserInput} />
+            );
+          }
+
+          const showUnreadIndicator = unreadCount > 0;
+
+          miscActionsWrapper = (
+            <div className="hs-chat-footer__misc-actions-wrapper">
+              <div className="hs-chat-footer__jump-to-latest-wrapper">
+                <JumpToLatestBtn
+                  show={userIsViewingPastMessages}
+                  showUnreadIndicator={showUnreadIndicator}
+                  onClick={this.props.onJumpBtnClick} />
+              </div>
+              {skipBtnWrapperEl}
+            </div>
           );
         }
 
         const footerClasses = classes ("hs-footer", {
           "hs-footer--active" : footerIsActive,
           "hs-footer--full-screen": allowFullScreen,
-          "hs-footer--failure": failureConfig
+          "hs-footer--failure": failureConfig,
+          "hs-footer--list-picker-opened": listPickerIsOpened,
+          "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened
         });
-
-        const showUnreadIndicator = unreadCount > 0;
-        const jumpToLatestBtnEl = (
-          <div className="hs-chat-footer__jump-to-latest-wrapper">
-            <JumpToLatestBtn
-              show={userIsViewingPastMessages}
-              showUnreadIndicator={showUnreadIndicator}
-              onClick={this.props.onJumpBtnClick} />
-          </div>
-        );
 
         return (
           <div className={footerClasses}>
-            {jumpToLatestBtnEl}
-            {skipBtnWrapperEl}
+            {miscActionsWrapper}
             {this._renderFooterComponent ()}
           </div>
         );
@@ -245,21 +290,36 @@ define ("components/chatViewFooter",
             value,
             type,
             errorMsg,
-            disabled
+            disabled,
+            listPicker: {
+              toggleState: listPickerToggleState
+            }
           },
           onFooterFocus,
           onFooterBlur,
           browserIsMobile
         } = this.props;
+        const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
+        const listPickerIsOpened = (
+          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED
+        );
         const footerClasses = classes (
           "hs-chat-footer", {
             "hs-chat-footer--form-error": errorMsg,
             "hs-chat-footer--form-invalid": disabled || !value.trim (),
-            "hs-chat-footer--mobile": browserIsMobile
+            "hs-chat-footer--mobile": browserIsMobile,
+            "hs-chat-footer--no-padding": inputIsListPicker,
+            "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened
           }
         );
-        let errorMsgEl = null;
-        let inputComponentEl = null;
+
+        if (inputIsListPicker) {
+          return (
+            <div className={footerClasses}>
+              {this._renderPicker ()}
+            </div>
+          );
+        }
 
         // We need to render reply box for input component for input type plain text
         // and default input (when user is on issue state) as
@@ -267,6 +327,7 @@ define ("components/chatViewFooter",
         // b. Rendering normal input type 'text' will clip the text once it goes
         //    beyond available width
         // c. There can be label for input type plain text (this layout supports label)
+        let inputComponentEl;
         if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
           inputComponentEl = (
             <ReplyBoxContainer className="hs-chat-footer__text-area" />
@@ -291,6 +352,7 @@ define ("components/chatViewFooter",
           );
         }
 
+        let errorMsgEl = null;
         if (errorMsg) {
           errorMsgEl = (
             <div className="hs-chat-footer__field">
@@ -333,6 +395,46 @@ define ("components/chatViewFooter",
         }
 
         return this._renderAttachmentButton ();
+      },
+
+      /**
+       * Renders the picker element
+       */
+      _renderPicker () {
+        const {
+          userInput: {
+            options,
+            label: headerLabel
+          },
+          onListPickerOptionSelect,
+          text: {
+            searchPlaceholder,
+            noSearchResultsText: searchNoResultsText
+          },
+          browserIsMobile
+        } = this.props;
+
+        // @TODO: Pass browserIsMobile as a prop to Picker when it is
+        // supported
+        // JIRA: https://helpshift.atlassian.net/browse/FRON-3988
+        const pickerClasses = classes (
+          "hs-chat-footer__picker-field",
+          {
+            "hs-picker--mobile": browserIsMobile
+          }
+        );
+
+        return (
+          <Picker className={pickerClasses}
+                  options={options}
+                  onToggleStateChange={this._onPickerToggleStateChange}
+                  onSelect={onListPickerOptionSelect}
+                  searchPlaceholder={searchPlaceholder}
+                  headerLabel={headerLabel}
+                  searchNoResultsText={searchNoResultsText}
+                  minHeight={PICKER_MIN_HEIGHT}
+                  maxHeight={this.state.pickerMaxHeight} />
+        );
       },
 
       /**
@@ -527,6 +629,14 @@ define ("components/chatViewFooter",
       },
 
       /**
+       * Handle change in toggle state of the Picker
+       * @param {String} toggleState - Toggle state of the Picker
+       */
+      _onPickerToggleStateChange (toggleState) {
+        this.props.onListPickerToggleStateChange (toggleState);
+      },
+
+      /**
        * Reference to user input
        */
       _userInputRef: null,
@@ -594,6 +704,14 @@ define ("components/chatViewFooter",
         if (prevInputDisabled && !currentInputDisabled) {
           this._userInputRef.focus ();
         }
+      },
+
+      componentDidMount () {
+        // Calculate the maximum height the picker widget can have.
+        const parentNode = document.querySelector (".hs-dnd-wrapper");
+        this.setState ({
+          pickerMaxHeight: parentNode.getBoundingClientRect ().height
+        });
       }
     });
   }

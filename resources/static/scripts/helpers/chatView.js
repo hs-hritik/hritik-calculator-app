@@ -23,15 +23,30 @@ define ("helpers/chatView",
       ISSUE_STATE,
       XHR_ISSUE_STATE
     } = appStateConstants;
-    const {USER_INPUT_TYPES} = chatViewConstants;
+    const {
+      USER_INPUT_TYPES,
+      PICKER_INPUT_THRESHOLD,
+      OPTIONS_INPUT_TYPES
+    } = chatViewConstants;
+
+    // Input types for which validations are not required
+    const NO_INPUT_VALIDATIONS_REQUIRED_TYPES = [
+      USER_INPUT_TYPES.PILL_SELECT, USER_INPUT_TYPES.LIST_PICKER
+    ];
     const {Input} = schema;
 
     /**
-     * Return an input type
+     * Return an input type based on the message type. In case of options msg
+     * type, the message will have a specific input type.
+     * NOTE: For Bots-APIs v1, we are going to use options length as a fallback
+     * to determine the input type. In V2, we will start receiving the input type
+     * which will be used to determine the input type.
      * @param {String} messageType - message type
+     * @param {String} msgInputType - Input type received in message
+     * @param {Number} optionsCount - Length of the options list
      * @returns {String} - input type
      */
-    const getUserInputType = (messageType) => {
+    const getUserInputType = (messageType, msgInputType, optionsCount) => {
       switch (messageType) {
         case MESSAGE_TYPE.TEXT_MSG_WITH_TEXT_INPUT:
           return USER_INPUT_TYPES.PLAIN_TEXT;
@@ -47,6 +62,13 @@ define ("helpers/chatView",
 
         case MESSAGE_TYPE.TEXT_MSG_WITH_OPTION_INPUT:
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
+          if (
+            msgInputType === OPTIONS_INPUT_TYPES.LIST_PICKER ||
+            optionsCount > PICKER_INPUT_THRESHOLD
+          ) {
+            return USER_INPUT_TYPES.LIST_PICKER;
+          }
+
           return USER_INPUT_TYPES.PILL_SELECT;
 
         // For message type = 'EMPTY_MSG_WITH_TEXT_INPUT' i.e. first user message
@@ -71,10 +93,15 @@ define ("helpers/chatView",
           placeholder,
           label,
           skip_label: skipLabel,
+          // NOTE: This won't be available in the Bots-API v1
+          type: optionsInputType,
           options
         }
       } = config;
-      const userInputType = getUserInputType (messageType);
+      const optionsLen = options ? options.length : 0;
+      const userInputType = getUserInputType (
+        messageType, optionsInputType, optionsLen
+      );
 
       const processedInput = {
         type: userInputType,
@@ -84,7 +111,10 @@ define ("helpers/chatView",
         placeholder
       };
 
-      if (userInputType === USER_INPUT_TYPES.PILL_SELECT) {
+      if (
+        userInputType === USER_INPUT_TYPES.PILL_SELECT ||
+        userInputType === USER_INPUT_TYPES.LIST_PICKER
+      ) {
         processedInput.options = options.map ((option) => {
           return {
             label: option.title,
@@ -101,16 +131,18 @@ define ("helpers/chatView",
      * Validation config will be object containing error and error message
      * @param {Object} userInput - user input object
      * @param {Object} text - text object containing validation strings
-     * @returns {Object} - validation config
+     * @returns {String} - Returns errorMsg if input is invalid. If input is
+     * valid then returns empty string.
      */
-    const getUserInputValidationConfig = (userInput, text) => {
+    const validateUserInput = (userInput, text) => {
       const {value, type, required} = userInput;
-      const validations = [];
 
-      // Skip required validation for input type pill select
-      if (required && type !== USER_INPUT_TYPES.PILL_SELECT) {
-        validations.push ("required");
+      if (NO_INPUT_VALIDATIONS_REQUIRED_TYPES.indexOf (type) > -1) {
+        return "";
       }
+
+      // If input is not skippable, then add the "required" validation.
+      const validations = required ? ["required"] : [];
 
       // @NOTE - We are passing object in validation just to have custom error messages
       // We do not want the default error message strings returned by Input.
@@ -144,9 +176,7 @@ define ("helpers/chatView",
         validations
       });
 
-      return {
-        errorMsg: input.isValid ()
-      };
+      return input.isValid ();
     };
 
     /**
@@ -184,7 +214,7 @@ define ("helpers/chatView",
     return {
       getProcessedUserInput,
       getPluralizedIssueType,
-      getUserInputValidationConfig,
+      validateUserInput,
       getProcessedIssueState
     };
   });

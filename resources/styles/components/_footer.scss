@@ -69,5 +69,18 @@
       background-color: inherit;
       border-top: 0;
     }
+
+    &--list-picker-opened {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+    }
+
+    &--with-list-picker {
+      border-top-right-radius: radius();
+      border-top-left-radius: radius();
+      box-shadow: 0 2px 20px 0 rgba(0, 0, 0, .1);
+    }
   }
 }

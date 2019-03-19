@@ -18,6 +18,7 @@
   $indicator-color: color(secondary, dark);
 
   .hs-jump-to-latest {
+    position: relative;
     display: flex;
     padding: gutter(5);
     cursor: pointer;
