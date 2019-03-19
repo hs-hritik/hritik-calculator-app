@@ -40,6 +40,17 @@
       text-align: center;
     }
 
+    // @TODO: This should come through picker-header. So pass the prop browserIsMobile
+    // to Picker & its children and then set this style in hs-picker-header
+    // JIRA: https://helpshift.atlassian.net/browse/FRON-3988
+    &--mobile {
+      .hs-picker-header__input {
+        // @NOTE - If we want to avoid zoom on focus for iOS devices, we need to
+        // set the font size to 16px
+        font-size: font-size(body, large);
+      }
+    }
+
     &--opened {
       overflow-y: auto;
       // Auto hide vertical scrollbars on IE and Edge. Similar to how FF

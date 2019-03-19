@@ -410,11 +410,22 @@ define ("components/chatViewFooter",
           text: {
             searchPlaceholder,
             noSearchResultsText: searchNoResultsText
-          }
+          },
+          browserIsMobile
         } = this.props;
 
+        // @TODO: Pass browserIsMobile as a prop to Picker when it is
+        // supported
+        // JIRA: https://helpshift.atlassian.net/browse/FRON-3988
+        const pickerClasses = classes (
+          "hs-chat-footer__picker-field",
+          {
+            "hs-picker--mobile": browserIsMobile
+          }
+        );
+
         return (
-          <Picker className="hs-chat-footer__picker-field"
+          <Picker className={pickerClasses}
                   options={options}
                   onToggleStateChange={this._onPickerToggleStateChange}
                   onSelect={onListPickerOptionSelect}
