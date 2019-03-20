@@ -67,10 +67,6 @@ define ("components/chatViewFooter",
            */
           allowRetry: PropTypes.bool
         }),
-        /**
-         * On click handler for retry btn
-         */
-        onRetryBtnClick: PropTypes.func,
         onJumpBtnClick: PropTypes.func,
         onSubmitReply: PropTypes.func.isRequired,
         onValueChangeInputField: PropTypes.func.isRequired,
@@ -111,13 +107,8 @@ define ("components/chatViewFooter",
       },
 
       render () {
-        const {failureConfig} = this.props;
-
-        if (failureConfig) {
-          return this._renderFailure ();
-        }
-
         const {
+          failureConfig,
           footerIsActive,
           allowFullScreen,
           userIsViewingPastMessages,
@@ -134,6 +125,28 @@ define ("components/chatViewFooter",
           issueIsCreated,
           onSkipUserInput
         } = this.props;
+
+        const showUnreadIndicator = unreadCount > 0;
+        const jumpToLatestBtnEl = (
+          <div className="hs-chat-footer__jump-to-latest-wrapper">
+            <JumpToLatestBtn
+              show={userIsViewingPastMessages}
+              showUnreadIndicator={showUnreadIndicator}
+              onClick={this.props.onJumpBtnClick} />
+          </div>
+        );
+
+        if (failureConfig) {
+          return (
+            <div className="hs-footer hs-footer--failure">
+              {this._renderFailure ()}
+              <div className="hs-chat-footer__misc-actions-wrapper">
+                {jumpToLatestBtnEl}
+              </div>
+            </div>
+          );
+        }
+
         const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
         const inputIsListPicker = (type === USER_INPUT_TYPES.LIST_PICKER);
         const listPickerIsClosed = (
@@ -175,16 +188,9 @@ define ("components/chatViewFooter",
             );
           }
 
-          const showUnreadIndicator = unreadCount > 0;
-
           miscActionsWrapper = (
             <div className="hs-chat-footer__misc-actions-wrapper">
-              <div className="hs-chat-footer__jump-to-latest-wrapper">
-                <JumpToLatestBtn
-                  show={userIsViewingPastMessages}
-                  showUnreadIndicator={showUnreadIndicator}
-                  onClick={this.props.onJumpBtnClick} />
-              </div>
+              {jumpToLatestBtnEl}
               {skipBtnWrapperEl}
             </div>
           );
@@ -271,8 +277,8 @@ define ("components/chatViewFooter",
         const {retryBtn} = this.props.text;
 
         return (
-          <a onClick={this.props.onRetryBtnClick} className="hs-chat-footer__field-item">
-            {retryBtn}
+          <a onClick={this.props.onStartNewConversation} className="hs-chat-footer__field-item">
+            <strong>{retryBtn}</strong>
           </a>
         );
       },

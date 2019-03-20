@@ -233,22 +233,16 @@ define ("components/chatView",
           loading,
           hasFailure,
           pastConversationsLoading,
-          error,
           userIsViewingPastMessages,
-          errorActionHandler,
           botStepInProgress,
           minimized
         } = this.props;
 
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
-        if (loading || (error && error.title)) {
+        if (loading) {
           return (
-            <InfoView loading={loading}
-                      title={error.title}
-                      subtitle={error.subtitle}
-                      actionBtnText={error.cta}
-                      onActionBtnClick={errorActionHandler} />
+            <InfoView loading={loading} />
           );
         }
 

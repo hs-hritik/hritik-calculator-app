@@ -22,6 +22,7 @@
   $loader-color: color(primary);
 
   .hs-chat-footer {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
