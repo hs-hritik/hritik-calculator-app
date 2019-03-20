@@ -404,6 +404,21 @@ define ("actions/chatView",
       };
     };
 
+
+    /**
+     * Action to set flag when loading more messages (when the user scrolls up) fails
+     * @param {Boolean} loadingMoreMsgsHasFailed - flag to denote if loading more messages
+     *                                             has failed
+     * @returns {Object} - action
+     */
+    const setLoadingMoreMsgsFailed = (loadingMoreMsgsHasFailed) => {
+      return {
+        type: ACTION_TYPES.SET_LOADING_MORE_MSGS_FAILED,
+        loadingMoreMsgsHasFailed
+      };
+    };
+
+
     /**
      * Handles message input
      * Parse the input data for message and save it in store
@@ -1259,7 +1274,7 @@ define ("actions/chatView",
 
           dispatch (
             batchActions ([
-              toggleConversationsLoader (false),
+              setLoadingMoreMsgsFailed (false),
               addMessages ({
                 messages: linearMsgs,
                 prepend: true
@@ -1272,6 +1287,20 @@ define ("actions/chatView",
             issue: oldestIssue,
             cursorType: CURSOR_TYPES.BACKWARD
           });
+        },
+
+        onFailure: () => {
+          dispatch (
+            batchActions ([
+              setLoadingMoreMsgsFailed (true)
+            ])
+          );
+        },
+
+        onEnd: () => {
+          dispatch (
+            toggleConversationsLoader (false)
+          );
         }
       });
     };
