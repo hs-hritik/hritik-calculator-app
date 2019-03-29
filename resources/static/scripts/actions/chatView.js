@@ -1291,9 +1291,7 @@ define ("actions/chatView",
 
         onFailure: () => {
           dispatch (
-            batchActions ([
-              setLoadingMoreMsgsFailed (true)
-            ])
+            setLoadingMoreMsgsFailed (true)
           );
         },
 

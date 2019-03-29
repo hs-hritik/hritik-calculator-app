@@ -41,7 +41,7 @@ define ("components/chatView",
         isTyping: PropTypes.bool,
         userIsViewingPastMessages: PropTypes.bool,
         minimized: PropTypes.bool,
-        msgsLoadingHasFailed: PropTypes.bool,
+        loadingMoreMsgsHasFailed: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onScrollPastExistingConversation: PropTypes.func,
@@ -126,7 +126,7 @@ define ("components/chatView",
       _renderLoader () {
         const {
           pastConversationsLoading,
-          msgsLoadingHasFailed,
+          loadingMoreMsgsHasFailed,
           text: {
             pastConversationsLoadingText,
             loadMoreMessagesFailedText,
@@ -135,13 +135,16 @@ define ("components/chatView",
         } = this.props;
 
         if (!pastConversationsLoading) {
-          if (msgsLoadingHasFailed) {
+          if (loadingMoreMsgsHasFailed) {
             return (
               <div className="hs-chat-view__msgs-loader-container">
                 <span className="hs-chat-view__msg-loading-failed-txt">
                   {loadMoreMessagesFailedText}
                 </span>
-                <a onClick={this.props.onLoadMoreMessages}>{clickToRetryText}</a>
+                <a onClick={this.props.onLoadMoreMessages}
+                  className="hs-chat-view__msg-loading-failed-link">
+                  <strong>{clickToRetryText}</strong>
+                </a>
               </div>
             );
           }
@@ -293,7 +296,7 @@ define ("components/chatView",
         const {
           allMessagesAreLoaded,
           latestConversationHasLoaded,
-          msgsLoadingHasFailed
+          loadingMoreMsgsHasFailed
         } = this.props;
 
         // If conversation history is enabled, we need to load more
@@ -302,7 +305,7 @@ define ("components/chatView",
         //
         // If loading messages has failed, we should only allow loading more
         // messages when "Tap To Retry" is clicked.
-        if (!allMessagesAreLoaded && !latestConversationHasLoaded && !msgsLoadingHasFailed) {
+        if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
           this.props.onLoadMoreMessages ();
         }
       },

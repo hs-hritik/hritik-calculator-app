@@ -18,7 +18,7 @@
   .hs-chat-view {
 
     &__msg-loading-failed-txt {
-      opacity: .5;
+      opacity: .8;
     }
 
     &__jump-to-latest-wrapper {
@@ -31,8 +31,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-top: gutter(8);
-      padding-bottom: gutter(8);
+      padding: gutter(12 0);
+    }
+
+    &__msg-loading-failed-link {
+      margin-left: gutter(4);
     }
 
     &__msgs-loader-spinner {
