@@ -45,6 +45,7 @@ define ("components/containers/chatViewFooter",
           pollerFailureCount,
           userIsViewingPastMessages,
           unreadMessageIds,
+          error,
           botState: {
             botStepInProgress
           }
@@ -59,7 +60,12 @@ define ("components/containers/chatViewFooter",
 
       let failureConfig;
 
-      if (!online) {
+      if (error && error.title) {
+        failureConfig = {
+          message: error.title,
+          allowRetry: true
+        };
+      } else if (!online) {
         failureConfig = {
           message: text.noInternetConnection
         };

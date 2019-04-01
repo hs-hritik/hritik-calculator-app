@@ -41,6 +41,7 @@ define ("components/chatView",
         isTyping: PropTypes.bool,
         userIsViewingPastMessages: PropTypes.bool,
         minimized: PropTypes.bool,
+        loadingMoreMsgsHasFailed: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onScrollPastExistingConversation: PropTypes.func,
@@ -125,12 +126,28 @@ define ("components/chatView",
       _renderLoader () {
         const {
           pastConversationsLoading,
+          loadingMoreMsgsHasFailed,
           text: {
-            pastConversationsLoadingText
+            pastConversationsLoadingText,
+            loadMoreMessagesFailedText,
+            clickToRetryText
           }
         } = this.props;
 
         if (!pastConversationsLoading) {
+          if (loadingMoreMsgsHasFailed) {
+            return (
+              <div className="hs-chat-view__msgs-loader-container">
+                <span className="hs-chat-view__msg-loading-failed-txt">
+                  {loadMoreMessagesFailedText}
+                </span>
+                <a onClick={this.props.onLoadMoreMessages}
+                  className="hs-chat-view__msg-loading-failed-link">
+                  <strong>{clickToRetryText}</strong>
+                </a>
+              </div>
+            );
+          }
           return null;
         }
 
@@ -219,22 +236,16 @@ define ("components/chatView",
           loading,
           hasFailure,
           pastConversationsLoading,
-          error,
           userIsViewingPastMessages,
-          errorActionHandler,
           botStepInProgress,
           minimized
         } = this.props;
 
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
-        if (loading || (error && error.title)) {
+        if (loading) {
           return (
-            <InfoView loading={loading}
-                      title={error.title}
-                      subtitle={error.subtitle}
-                      actionBtnText={error.cta}
-                      onActionBtnClick={errorActionHandler} />
+            <InfoView loading={loading} />
           );
         }
 
@@ -284,13 +295,17 @@ define ("components/chatView",
       _onLoadMore () {
         const {
           allMessagesAreLoaded,
-          latestConversationHasLoaded
+          latestConversationHasLoaded,
+          loadingMoreMsgsHasFailed
         } = this.props;
 
         // If conversation history is enabled, we need to load more
         // till all messages have been loaded. When disabled, only the
         // latest conversation needs to load.
-        if (!allMessagesAreLoaded && !latestConversationHasLoaded) {
+        //
+        // If loading messages has failed, we should only allow loading more
+        // messages when "Tap To Retry" is clicked.
+        if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
           this.props.onLoadMoreMessages ();
         }
       },
