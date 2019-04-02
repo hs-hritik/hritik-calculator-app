@@ -1,0 +1,7 @@
+Branches:
+feature/spam-prevention
+
+Changelog:
+Styling and bug fixes
+Render "Network Error" in the footer
+Handle failed state of load more messages action

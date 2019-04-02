@@ -84,6 +84,7 @@ define ("reducers/chatView",
       systemTyping: false,
       agentTyping: false,
       unreadMessageIds: [],
+      loadingMoreMsgsHasFailed: false,
       botState: {
         botStepInProgress: false,
         botStepMessage: null
@@ -247,6 +248,12 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
           return update (state, {
             allMessagesAreLoaded: {$set: action.msgsLoaded}
+          });
+
+
+        case ACTION_TYPES.SET_LOADING_MORE_MSGS_FAILED:
+          return update (state, {
+            loadingMoreMsgsHasFailed: {$set: action.loadingMoreMsgsHasFailed}
           });
 
         case ACTION_TYPES.SET_USER_IS_REDACTED:
