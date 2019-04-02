@@ -1807,6 +1807,14 @@ define ("actions/chatView",
           if (isIssue && !botStepInProgress) {
             dispatch (enableReplyBox ());
           }
+
+          // This response type indicates that the first message from the user was sent.
+          // Trigger conversationStartEvent which, then, can be tracked by the
+          // addEventListener callbacks
+          if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
+            postSdkMessage.conversationStartEvent (response.body);
+          }
+
           dispatch (
             batchActions ([
               addMessages ({

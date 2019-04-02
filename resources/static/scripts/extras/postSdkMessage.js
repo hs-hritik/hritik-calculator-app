@@ -30,6 +30,17 @@ function (EVENT_TYPES, postMessage) {
   };
 
   /**
+   * Post sdk even to handle conversation start
+   * This is triggered when user adds the first message.
+   * @param {string} message - message body
+   */
+  const conversationStartEvent = (message) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_START, {
+      message
+    });
+  };
+
+  /**
    * Post message to update unread count
    * @param {Number} unreadCount
    */
@@ -102,6 +113,7 @@ function (EVENT_TYPES, postMessage) {
     chatEndEvent,
     uiConfigUpdatedEvent,
     uiConfigErrors,
+    conversationStartEvent,
     userChanged
   };
 });

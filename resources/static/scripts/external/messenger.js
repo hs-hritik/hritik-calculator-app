@@ -74,6 +74,7 @@
     SDK_RESET: "sdk-reset",
     SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
+    SDK_EVENT_CONVERSATION_START: "sdk-event-conversation-start",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
@@ -95,6 +96,7 @@
    */
   const SUPPORTED_EVENTS = {
     CHAT_END: "chatEnd",
+    CONVERSATION_START: "conversationStart",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle"
@@ -989,6 +991,13 @@
         case EVENT_TYPES.SDK_EVENT_CHAT_END:
           // Call the event handler for chat end event.
           callApiEventHandler (SUPPORTED_EVENTS.CHAT_END);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_START:
+          // Call the event handler for chat end event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_START, {
+            message: data.message
+          });
           break;
 
         case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
