@@ -111,6 +111,15 @@ bundle-libs:
 	@cd resources && $(GULP) bundle-libs
 	@echo ">> Finished task: $@"
 
+# Minify external JS files. The bundle-js task doesn't minify the external
+# JS files like messenger.js and redirection.js because these files are not
+# a part of the dependency tree of the app's entry point (pages/webSdk). Also,
+# these files are not supposed to be bundled together.
+minify-ext-js:
+	@echo "Bundling external JS files"
+	@cd resources && $(GULP) minify-ext-js
+	@echo "------Done------"
+
 # The dist task is to compile and compress resources and
 # copy them to the `dist` directory.
 # All resources to be deployed must be copied to the `dist` directory.
@@ -120,7 +129,7 @@ bundle-libs:
 # the dist directory.
 dist: prepare-dist npminstall \
 	styles gunpowder reactjs copy-html-libs \
-	bundle-js bundle-libs \
+	bundle-js bundle-libs minify-ext-js \
 	prepare-subdir ec2 azure localshiva \
 	clean-subdir
 
