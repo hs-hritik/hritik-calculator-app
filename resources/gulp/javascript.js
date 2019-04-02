@@ -16,7 +16,7 @@ const del = require ("del");
 /**
  * Webchat version
  */
-const WEB_CHAT_VERSION = "2.19.0";
+const WEB_CHAT_VERSION = "2.20.0";
 
 /**
  * Name of app bundle

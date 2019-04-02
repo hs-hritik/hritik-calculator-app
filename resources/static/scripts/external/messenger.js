@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.19.0";
+        PATH = "/html/index.html?v=2.20.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -1032,13 +1032,17 @@
     // Save current visibility of webchat (launcher + widget) in state
     // Check for showLauncher widget option as existence of launcher button is
     // dependant on it
-    if (state.widgetOptions.showLauncher) {
+    // If the launcher button is already hidden, don't do anything
+    if (state.widgetOptions.showLauncher && launcherBtn.style.display !== "none") {
       state.webChatVisibility.launcher = launcherBtn.style.display;
       launcherBtn.style.display = "none";
     }
 
-    state.webChatVisibility.widget = webSdkIframe.style.display;
-    webSdkIframe.style.display = "none";
+    // If the webSdkIframe iframe is already hidden, don't do anything
+    if (webSdkIframe.style.display !== "none") {
+      state.webChatVisibility.widget = webSdkIframe.style.display;
+      webSdkIframe.style.display = "none";
+    }
 
     state.webChatVisibility.hiddenByApi = true;
   };

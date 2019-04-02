@@ -1,0 +1,5 @@
+Branches:
+feature/fix-oncall-3710
+
+Changelog:
+Fix behavior of "hide" API
