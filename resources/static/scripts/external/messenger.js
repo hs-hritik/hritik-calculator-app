@@ -96,7 +96,8 @@
   const SUPPORTED_EVENTS = {
     CHAT_END: "chatEnd",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
-    USER_CHANGED: "userChanged"
+    USER_CHANGED: "userChanged",
+    WIDGET_TOGGLE: "widgetToggle"
   };
 
   // Errors message strings
@@ -469,6 +470,10 @@
       state.webChatVisibility.widget = "none";
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
+
+    callApiEventHandler ("widgetToggle", {
+      visible: state.webChatVisibility.widget === "block"
+    });
 
     // @NOTE - More info on SPA behavior :- https://tinyurl.com/yafecdkv
     // Toggle the visibility of launcher button when showCloseButton is set to false
@@ -1016,7 +1021,8 @@
   const close = () => {
     if (!state.webChatVisibility.hiddenByApi) {
       toggleWebSdkIframe ({
-        minimized: true
+        minimized: true,
+        trigger: TRIGGER.API
       });
     }
   };
