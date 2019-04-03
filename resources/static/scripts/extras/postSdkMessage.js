@@ -56,6 +56,16 @@ function (EVENT_TYPES, postMessage) {
 
 
   /**
+   * This is triggered when user submits csat review
+   * @param {Number} csatObj.rating - CSAT Rating [1-5]
+   * @param {String} csatObj.review - CSAT Review comment
+   */
+  const csatSubmitEvent = (csatObj) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT, csatObj);
+  };
+
+
+  /**
    * Post message to update unread count
    * @param {Number} unreadCount
    */
@@ -130,6 +140,7 @@ function (EVENT_TYPES, postMessage) {
     uiConfigErrors,
     conversationStartEvent,
     userChanged,
-    messageAddEvent
+    messageAddEvent,
+    csatSubmitEvent
   };
 });

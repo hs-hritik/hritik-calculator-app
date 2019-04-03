@@ -78,6 +78,7 @@
     SDK_EVENT_CONVERSATION_END: "sdk-event-conversation-end",
     SDK_EVENT_MESSAGE_ADD: "sdk-event-message-add",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
+    SDK_EVENT_CSAT_SUBMIT: "sdk-event-csat-submit",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
@@ -100,6 +101,7 @@
     CHAT_END: "chatEnd",
     CONVERSATION_START: "conversationStart",
     MESSAGE_ADD: "messageAdd",
+    CSAT_SUBMIT: "csatSubmit",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle"
@@ -1008,6 +1010,15 @@
           callApiEventHandler (SUPPORTED_EVENTS.MESSAGE_ADD, {
             type: data.type,
             body: data.body
+          });
+          break;
+
+
+        case EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT:
+          // Call the event handler for csat submit event.
+          callApiEventHandler (SUPPORTED_EVENTS.CSAT_SUBMIT, {
+            rating: data.rating,
+            review: data.review
           });
           break;
 
