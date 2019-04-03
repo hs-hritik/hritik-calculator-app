@@ -40,6 +40,21 @@ function (EVENT_TYPES, postMessage) {
     });
   };
 
+
+  /**
+   *
+   * This is triggered when user sends a message.
+   * @param {string} type - type of message
+   * @param {string} body - content of the message
+   */
+  const messageAddEvent = (type, body) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_MESSAGE_ADD, {
+      type,
+      body
+    });
+  };
+
+
   /**
    * Post message to update unread count
    * @param {Number} unreadCount
@@ -114,6 +129,7 @@ function (EVENT_TYPES, postMessage) {
     uiConfigUpdatedEvent,
     uiConfigErrors,
     conversationStartEvent,
-    userChanged
+    userChanged,
+    messageAddEvent
   };
 });

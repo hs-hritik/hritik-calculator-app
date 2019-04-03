@@ -45,7 +45,9 @@ define ("actions/chatView",
     const {
       TYPE: MESSAGE_TYPE,
       STATE: MESSAGES_STATE,
-      BODY: MESSAGE_BODY
+      BODY: MESSAGE_BODY,
+      TEXT_INPUT_MESSAGE_TYPES,
+      MESSAGE_ADD_EVENT_TYPES
     } = MESSAGE_CONSTANTS;
 
     const {
@@ -1796,6 +1798,7 @@ define ("actions/chatView",
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
+
           // We do not want to batch following actions as we have to explicitly
           // enable reply box first and then add messages.
           // This is to allow reply box to take height first and then message list
@@ -1813,6 +1816,10 @@ define ("actions/chatView",
           // addEventListener callbacks
           if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
             postSdkMessage.conversationStartEvent (response.body);
+          }
+
+          if (TEXT_INPUT_MESSAGE_TYPES.indexOf (response.type) !== -1) {
+            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body);
           }
 
           dispatch (
@@ -2378,6 +2385,8 @@ define ("actions/chatView",
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
+            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT);
+
             // Remove the FE (dummy) attachment message from message list
             // Add new backend message in message list
             handleIssueReopen (issueState);
