@@ -87,6 +87,7 @@
     CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
     CMD_SET_LANGUAGE: "cmd-set-language",
     CMD_SET_CIF: "cmd-set-cif",
+    CMD_SET_METADATA: "cmd-set-metadata",
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
@@ -1236,6 +1237,18 @@
   };
 
   /**
+   * Set custom meta data
+   * @param {Object} metaData - meta data object
+   */
+  const setCustomMetadata = (metadata) => {
+    if (metadata && isObject (metadata)) {
+      _postMessage (EVENT_TYPES.CMD_SET_METADATA, {
+        metadata
+      });
+    }
+  };
+
+  /**
    * Replace custom issue fields
    * @param {Object} cifData - cif data
    */
@@ -1297,6 +1310,7 @@
     addEventListener,
     removeEventListener,
     setCustomIssueFields,
+    setCustomMetadata,
     replaceCustomIssueFields,
     setProactiveChatRules,
     updateUiConfig,

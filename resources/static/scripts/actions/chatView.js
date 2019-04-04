@@ -2024,6 +2024,7 @@ define ("actions/chatView",
           appState: {
             domain,
             tags,
+            metadata,
             cif,
             featuresEnabled: {
               greeting: greetingFeatureEnabled
@@ -2051,6 +2052,12 @@ define ("actions/chatView",
           meta.custom_meta = {
             "hs-tags": tags
           };
+        }
+
+        if (metadata && Object.keys (metadata).length) {
+          meta.custom_meta = update (meta.custom_meta, {
+            $merge: metadata
+          });
         }
 
         /**

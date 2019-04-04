@@ -118,6 +118,7 @@ define ("reducers/appState",
       browserIsMobile: false,
       tags: [],
       cif: {},
+      metadata: {},
       parentPageInfo: {},
       sdkConfigOptions: {
         fullScreen: false,
@@ -339,6 +340,11 @@ define ("reducers/appState",
             cif: {$merge: action.cif}
           });
 
+        case ACTION_TYPES.SET_METADATA:
+          return update (state, {
+            metadata: {$merge: action.metadata}
+          });
+
         case ACTION_TYPES.REPLACE_CIF:
           return update (state, {
             cif: {$set: action.cif}
@@ -396,6 +402,7 @@ define ("reducers/appState",
           // and appResetTrigger
           return update (INITIAL_STATE, {
             cif: {$set: state.cif},
+            metadata: {$set: state.metadata},
             appResetTrigger: {$set: state.appResetTrigger},
             minimized: {$set: state.minimized}
           });

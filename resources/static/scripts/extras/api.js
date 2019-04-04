@@ -318,6 +318,9 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_CIF:
           store.dispatch (actionCreators.setCif (data.cifData));
           break;
+        case EVENT_TYPES.CMD_SET_METADATA:
+          store.dispatch (actionCreators.setMetadata (data.metadata));
+          break;
         case EVENT_TYPES.CMD_REPLACE_CIF:
           store.dispatch (appStateActions.replaceCif (data.cifData));
           break;
