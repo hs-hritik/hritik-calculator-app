@@ -103,6 +103,7 @@
     CONVERSATION_START: "conversationStart",
     MESSAGE_ADD: "messageAdd",
     CSAT_SUBMIT: "csatSubmit",
+    CONVERSATION_END: "conversationEnd",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle"
@@ -1000,10 +1001,15 @@
           break;
 
         case EVENT_TYPES.SDK_EVENT_CONVERSATION_START:
-          // Call the event handler for chat end event.
+          // Call the event handler for conversation start event.
           callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_START, {
             message: data.message
           });
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_END:
+          // Call the event handler for conversation end event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_END);
           break;
 
         case EVENT_TYPES.SDK_EVENT_MESSAGE_ADD:

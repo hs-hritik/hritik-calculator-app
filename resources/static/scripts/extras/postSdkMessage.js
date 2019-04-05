@@ -40,6 +40,17 @@ function (EVENT_TYPES, postMessage) {
     });
   };
 
+  /**
+   * Post sdk event to handle conversation end
+   * Triggered when
+   *    a) If there's no resolution question,
+   *       when Issue is resolved/rejected.
+   *    b) If there's a resolution question,
+   *       when resolution is accepted.
+   */
+  const conversationEndEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_END);
+  };
 
   /**
    *
@@ -139,6 +150,7 @@ function (EVENT_TYPES, postMessage) {
     uiConfigUpdatedEvent,
     uiConfigErrors,
     conversationStartEvent,
+    conversationEndEvent,
     userChanged,
     messageAddEvent,
     csatSubmitEvent

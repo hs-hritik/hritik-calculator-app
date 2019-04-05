@@ -906,9 +906,17 @@ define ("actions/chatView",
       const {
         appState: {
           issueType,
-          issueState
+          issueState,
+          featuresEnabled: {
+            resolutionQuestion: resolutionQuestionEnabled
+          }
+        },
+        chatView: {
+          issueCursor
         }
       } = getState ();
+
+      let conversationEndEventShouldTrigger = false;
 
       // Do not handle active state as we will wait for user input/bot steps
       if (issueState === ISSUE_STATE.ACTIVE) {
@@ -940,6 +948,8 @@ define ("actions/chatView",
           handleChatEnd ({
             conversationHasEnded: false
           });
+
+          conversationEndEventShouldTrigger = true;
         }
       } else if (issueState === ISSUE_STATE.REJECTED) {
         // Show "Conversation Closed" message and "Start a new conversation"
@@ -947,6 +957,14 @@ define ("actions/chatView",
         handleChatEnd ({
           conversationHasEnded: true
         });
+      }
+
+      // We don't want to retrigger conversation end event when the page is
+      // refreshed. Since, issueCursor would not be 0 when messages are fetched
+      // just after conversation has ended, but will be when messages are fetched
+      // from the start, we use it as a check.
+      if ((issueCursor && !resolutionQuestionEnabled) || conversationEndEventShouldTrigger) {
+        postSdkMessage.conversationEndEvent ();
       }
     };
 
@@ -1798,7 +1816,6 @@ define ("actions/chatView",
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
-
           // We do not want to batch following actions as we have to explicitly
           // enable reply box first and then add messages.
           // This is to allow reply box to take height first and then message list
