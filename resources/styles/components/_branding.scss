@@ -16,5 +16,9 @@
     color: $chat-widget-secondary-text-color;
     text-align: center;
     opacity: .4;
+
+    &--hidden {
+      padding: gutter(4 0);
+    }
   }
 }

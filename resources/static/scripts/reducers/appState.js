@@ -113,7 +113,8 @@ define ("reducers/appState",
         agentNickname: false,
         resolutionQuestion: true,
         conversationHistory: true,
-        userAttachments: true
+        userAttachments: true,
+        branding: true
       },
       browserIsMobile: false,
       tags: [],
@@ -172,6 +173,7 @@ define ("reducers/appState",
               userAttachments: {$set: config.allow_user_attachments},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
+              branding: {$set: !config.disable_helpshift_branding},
               audioNotifications: {$set: config.audio_notifications_enabled}
             },
             issueExists: {$set: config.issue_exists}
