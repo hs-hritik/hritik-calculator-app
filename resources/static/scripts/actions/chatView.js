@@ -1982,6 +1982,7 @@ define ("actions/chatView",
           ])
         );
         startPollingForMessages ();
+        postSdkMessage.conversationReopenedEvent ();
       }
     };
 

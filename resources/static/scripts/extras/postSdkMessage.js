@@ -53,6 +53,15 @@ function (EVENT_TYPES, postMessage) {
   };
 
   /**
+   * Post sdk event to handle conversation reopen.
+   * Ie, when the resolution is rejected and user sends
+   * a new message
+   */
+  const conversationReopenedEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED);
+  };
+
+  /**
    *
    * This is triggered when user sends a message.
    * @param {string} type - type of message
@@ -151,6 +160,7 @@ function (EVENT_TYPES, postMessage) {
     uiConfigErrors,
     conversationStartEvent,
     conversationEndEvent,
+    conversationReopenedEvent,
     userChanged,
     messageAddEvent,
     csatSubmitEvent

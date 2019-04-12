@@ -76,6 +76,7 @@
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
     SDK_EVENT_CONVERSATION_START: "sdk-event-conversation-start",
     SDK_EVENT_CONVERSATION_END: "sdk-event-conversation-end",
+    SDK_EVENT_CONVERSATION_REOPENED: "sdk-event-conversation-reopened",
     SDK_EVENT_MESSAGE_ADD: "sdk-event-message-add",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_EVENT_CSAT_SUBMIT: "sdk-event-csat-submit",
@@ -104,6 +105,7 @@
     MESSAGE_ADD: "messageAdd",
     CSAT_SUBMIT: "csatSubmit",
     CONVERSATION_END: "conversationEnd",
+    CONVERSATION_REOPENED: "conversationReopened",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle"
@@ -1010,6 +1012,11 @@
         case EVENT_TYPES.SDK_EVENT_CONVERSATION_END:
           // Call the event handler for conversation end event.
           callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_END);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED:
+          // Call the event handler for conversation reopened event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REOPENED);
           break;
 
         case EVENT_TYPES.SDK_EVENT_MESSAGE_ADD:
