@@ -62,6 +62,22 @@ function (EVENT_TYPES, postMessage) {
   };
 
   /**
+   * Post sdk event to handle conversation being resolved from
+   * the agent-side
+   */
+  const conversationResolvedEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_RESOLVED);
+  };
+
+  /**
+   * Post sdk event to handle conversation being rejected from
+   * the agent-side
+   */
+  const conversationRejectedEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_REJECTED);
+  };
+
+  /**
    *
    * This is triggered when user sends a message.
    * @param {string} type - type of message
@@ -161,6 +177,8 @@ function (EVENT_TYPES, postMessage) {
     conversationStartEvent,
     conversationEndEvent,
     conversationReopenedEvent,
+    conversationResolvedEvent,
+    conversationRejectedEvent,
     userChanged,
     messageAddEvent,
     csatSubmitEvent

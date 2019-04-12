@@ -77,6 +77,8 @@
     SDK_EVENT_CONVERSATION_START: "sdk-event-conversation-start",
     SDK_EVENT_CONVERSATION_END: "sdk-event-conversation-end",
     SDK_EVENT_CONVERSATION_REOPENED: "sdk-event-conversation-reopened",
+    SDK_EVENT_CONVERSATION_RESOLVED: "sdk-event-conversation-resolved",
+    SDK_EVENT_CONVERSATION_REJECTED: "sdk-event-conversation-rejected",
     SDK_EVENT_MESSAGE_ADD: "sdk-event-message-add",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_EVENT_CSAT_SUBMIT: "sdk-event-csat-submit",
@@ -106,6 +108,8 @@
     CSAT_SUBMIT: "csatSubmit",
     CONVERSATION_END: "conversationEnd",
     CONVERSATION_REOPENED: "conversationReopened",
+    CONVERSATION_RESOLVED: "conversationResolved",
+    CONVERSATION_REJECTED: "conversationRejected",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle"
@@ -1017,6 +1021,16 @@
         case EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED:
           // Call the event handler for conversation reopened event.
           callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REOPENED);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_RESOLVED:
+          // Call the event handler for conversation resolved event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_RESOLVED);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_REJECTED:
+          // Call the event handler for conversation rejected event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REJECTED);
           break;
 
         case EVENT_TYPES.SDK_EVENT_MESSAGE_ADD:

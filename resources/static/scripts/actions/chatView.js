@@ -959,12 +959,20 @@ define ("actions/chatView",
         });
       }
 
-      // We don't want to retrigger conversation end event when the page is
+      // We don't want to retrigger these events when the page is
       // refreshed. Since, issueCursor would not be 0 when messages are fetched
       // just after conversation has ended, but will be when messages are fetched
       // from the start, we use it as a check.
-      if ((issueCursor && !resolutionQuestionEnabled) || conversationEndEventShouldTrigger) {
-        postSdkMessage.conversationEndEvent ();
+      if (issueCursor) {
+        if (issueState === ISSUE_STATE.RESOLVED) {
+          postSdkMessage.conversationResolvedEvent ();
+        } else if (issueState === ISSUE_STATE.REJECTED) {
+          postSdkMessage.conversationRejectedEvent ();
+        }
+
+        if (!resolutionQuestionEnabled || conversationEndEventShouldTrigger) {
+          postSdkMessage.conversationEndEvent ();
+        }
       }
     };
 
