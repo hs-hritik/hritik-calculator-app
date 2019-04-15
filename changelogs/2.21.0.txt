@@ -1,0 +1,15 @@
+Branches:
+feature/websdk-parity
+
+Changelog:
+Change key of CSAT comment in the API
+Fix: Trigger conversationEnd on resolution accept
+Add support for hiding branding
+Add support for conv. resolved/rejected events
+Add conversation reopen event
+Add support for conversation end event
+Add support for setting metadata
+Add event for CSAT submission
+Add support for add message event
+Add support for conversation start event
+Add support for widget open/close event
