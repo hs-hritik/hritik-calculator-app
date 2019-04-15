@@ -22,6 +22,7 @@ define ("actions/businessHours",
 
     const {Input} = schema;
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
+    const {update} = React.addons;
 
     /**
      * Action to set business hours contact form details
@@ -114,6 +115,7 @@ define ("actions/businessHours",
             domain,
             tags,
             cif,
+            metadata,
             fullPrivacyEnabled,
             developerSetLanguage
           },
@@ -150,6 +152,12 @@ define ("actions/businessHours",
           meta.custom_meta = {
             "hs-tags": tags
           };
+        }
+
+        if (metadata && Object.keys (metadata).length) {
+          meta.custom_meta = update (meta.custom_meta || {}, {
+            $merge: metadata
+          });
         }
         xhrData.meta = JSON.stringify (meta);
 

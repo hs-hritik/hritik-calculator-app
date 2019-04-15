@@ -7,14 +7,14 @@
 define ("components/businessHoursView",
   [
     "components/commons/viewHeader",
-    "components/commons/branding",
+    "components/containers/branding",
     "components/commons/fileInput",
     "components/commons/dndWrapper",
     "constants/businessHoursView",
     "helpers/attachments",
     "gunpowder/utils/classes"
   ],
-  function (ViewHeader, Branding, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
+  function (ViewHeader, BrandingContainer, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
     attachmentsHelpers, classes) {
     "use strict";
 
@@ -116,7 +116,11 @@ define ("components/businessHoursView",
        * Render business hours contact form
        */
       _renderContactForm () {
-        const {text, offlineBehaviour, contactFormSubmitted} = this.props;
+        const {
+          text,
+          offlineBehaviour,
+          contactFormSubmitted
+        } = this.props;
 
         if (offlineBehaviour !== CONTACT_FORM || contactFormSubmitted) {
           return null;
@@ -132,7 +136,7 @@ define ("components/businessHoursView",
               {this._renderFormField (EMAIL)}
               {this._renderFormField (MESSAGE)}
               {this._renderAttachments ()}
-              <Branding text={text} />
+              <BrandingContainer />
             </div>
           </div>
         );
@@ -165,7 +169,7 @@ define ("components/businessHoursView",
               {infoMessage}
             </p>
             <div>
-              <Branding text={text} />
+              <BrandingContainer />
             </div>
           </div>
         );

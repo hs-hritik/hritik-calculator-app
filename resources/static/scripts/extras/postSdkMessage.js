@@ -30,6 +30,78 @@ function (EVENT_TYPES, postMessage) {
   };
 
   /**
+   * Post sdk even to handle conversation start
+   * This is triggered when user adds the first message.
+   * @param {string} message - message body
+   */
+  const conversationStartEvent = (message) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_START, {
+      message
+    });
+  };
+
+  /**
+   * Post sdk event to handle conversation end
+   * Triggered when
+   *    a) If there's no resolution question,
+   *       when Issue is resolved/rejected.
+   *    b) If there's a resolution question,
+   *       when resolution is accepted.
+   */
+  const conversationEndEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_END);
+  };
+
+  /**
+   * Post sdk event to handle conversation reopen.
+   * Ie, when the resolution is rejected and user sends
+   * a new message
+   */
+  const conversationReopenedEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED);
+  };
+
+  /**
+   * Post sdk event to handle conversation being resolved from
+   * the agent-side
+   */
+  const conversationResolvedEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_RESOLVED);
+  };
+
+  /**
+   * Post sdk event to handle conversation being rejected from
+   * the agent-side
+   */
+  const conversationRejectedEvent = () => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_REJECTED);
+  };
+
+  /**
+   *
+   * This is triggered when user sends a message.
+   * @param {string} type - type of message
+   * @param {string} body - content of the message
+   */
+  const messageAddEvent = (type, body) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_MESSAGE_ADD, {
+      type,
+      body
+    });
+  };
+
+
+  /**
+   * This is triggered when user submits csat review
+   * @param {Number} csatObj.rating - CSAT Rating [1-5]
+   * @param {String} csatObj.review - CSAT Review comment
+   */
+  const csatSubmitEvent = (csatObj) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT, csatObj);
+  };
+
+
+  /**
    * Post message to update unread count
    * @param {Number} unreadCount
    */
@@ -102,6 +174,13 @@ function (EVENT_TYPES, postMessage) {
     chatEndEvent,
     uiConfigUpdatedEvent,
     uiConfigErrors,
-    userChanged
+    conversationStartEvent,
+    conversationEndEvent,
+    conversationReopenedEvent,
+    conversationResolvedEvent,
+    conversationRejectedEvent,
+    userChanged,
+    messageAddEvent,
+    csatSubmitEvent
   };
 });

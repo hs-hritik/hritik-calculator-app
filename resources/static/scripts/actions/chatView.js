@@ -45,7 +45,9 @@ define ("actions/chatView",
     const {
       TYPE: MESSAGE_TYPE,
       STATE: MESSAGES_STATE,
-      BODY: MESSAGE_BODY
+      BODY: MESSAGE_BODY,
+      TEXT_INPUT_MESSAGE_TYPES,
+      MESSAGE_ADD_EVENT_TYPES
     } = MESSAGE_CONSTANTS;
 
     const {
@@ -904,9 +906,17 @@ define ("actions/chatView",
       const {
         appState: {
           issueType,
-          issueState
+          issueState,
+          featuresEnabled: {
+            resolutionQuestion: resolutionQuestionEnabled
+          }
+        },
+        chatView: {
+          issueCursor
         }
       } = getState ();
+
+      let conversationEndEventShouldTrigger = false;
 
       // Do not handle active state as we will wait for user input/bot steps
       if (issueState === ISSUE_STATE.ACTIVE) {
@@ -938,6 +948,8 @@ define ("actions/chatView",
           handleChatEnd ({
             conversationHasEnded: false
           });
+
+          conversationEndEventShouldTrigger = true;
         }
       } else if (issueState === ISSUE_STATE.REJECTED) {
         // Show "Conversation Closed" message and "Start a new conversation"
@@ -945,6 +957,22 @@ define ("actions/chatView",
         handleChatEnd ({
           conversationHasEnded: true
         });
+      }
+
+      // We don't want to retrigger these events when the page is
+      // refreshed. Since, issueCursor would not be 0 when messages are fetched
+      // just after conversation has ended, but will be when messages are fetched
+      // from the start, we use it as a check.
+      if (issueCursor) {
+        if (issueState === ISSUE_STATE.RESOLVED) {
+          postSdkMessage.conversationResolvedEvent ();
+        } else if (issueState === ISSUE_STATE.REJECTED) {
+          postSdkMessage.conversationRejectedEvent ();
+        }
+
+        if (!resolutionQuestionEnabled || conversationEndEventShouldTrigger) {
+          postSdkMessage.conversationEndEvent ();
+        }
       }
     };
 
@@ -1807,6 +1835,22 @@ define ("actions/chatView",
           if (isIssue && !botStepInProgress) {
             dispatch (enableReplyBox ());
           }
+
+          // This response type indicates that the first message from the user was sent.
+          // Trigger conversationStartEvent which, then, can be tracked by the
+          // addEventListener callbacks
+          if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
+            postSdkMessage.conversationStartEvent (response.body);
+          }
+
+          if (TEXT_INPUT_MESSAGE_TYPES.indexOf (response.type) !== -1) {
+            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body);
+          }
+
+          if (response.type === MESSAGE_TYPE.ACCEPTED) {
+            postSdkMessage.conversationEndEvent ();
+          }
+
           dispatch (
             batchActions ([
               addMessages ({
@@ -1950,6 +1994,7 @@ define ("actions/chatView",
           ])
         );
         startPollingForMessages ();
+        postSdkMessage.conversationReopenedEvent ();
       }
     };
 
@@ -2009,6 +2054,7 @@ define ("actions/chatView",
           appState: {
             domain,
             tags,
+            metadata,
             cif,
             featuresEnabled: {
               greeting: greetingFeatureEnabled
@@ -2036,6 +2082,12 @@ define ("actions/chatView",
           meta.custom_meta = {
             "hs-tags": tags
           };
+        }
+
+        if (metadata && Object.keys (metadata).length) {
+          meta.custom_meta = update (meta.custom_meta, {
+            $merge: metadata
+          });
         }
 
         /**
@@ -2370,6 +2422,8 @@ define ("actions/chatView",
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
+            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT);
+
             // Remove the FE (dummy) attachment message from message list
             // Add new backend message in message list
             handleIssueReopen (issueState);

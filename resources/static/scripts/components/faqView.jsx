@@ -8,10 +8,10 @@
 define ("components/faqView",
   [
     "components/commons/viewHeader",
-    "components/commons/branding",
+    "components/containers/branding",
     "components/infoView"
   ],
-  function (ViewHeader, Branding, InfoView) {
+  function (ViewHeader, BrandingContainer, InfoView) {
     "use strict";
 
     const {PropTypes} = React;
@@ -56,7 +56,12 @@ define ("components/faqView",
       },
 
       _renderViewContents () {
-        const {title, body, text, loading, errorMsg} = this.props;
+        const {
+          title,
+          body,
+          loading,
+          errorMsg
+        } = this.props;
 
         if (loading || errorMsg) {
           return (
@@ -73,7 +78,7 @@ define ("components/faqView",
               <div className="hs-faq__body"
                     dangerouslySetInnerHTML={{__html: body}} />
             </div>
-            <Branding text={text} />
+            <BrandingContainer />
           </div>
         );
         /* eslint-enable react/no-danger */
