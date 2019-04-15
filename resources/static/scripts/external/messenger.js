@@ -1046,7 +1046,7 @@
           // Call the event handler for csat submit event.
           callApiEventHandler (SUPPORTED_EVENTS.CSAT_SUBMIT, {
             rating: data.rating,
-            review: data.review
+            additionalFeedback: data.review
           });
           break;
 
