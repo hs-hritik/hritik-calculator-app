@@ -1847,6 +1847,10 @@ define ("actions/chatView",
             postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body);
           }
 
+          if (response.type === MESSAGE_TYPE.ACCEPTED) {
+            postSdkMessage.conversationEndEvent ();
+          }
+
           dispatch (
             batchActions ([
               addMessages ({
