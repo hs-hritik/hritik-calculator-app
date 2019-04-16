@@ -80,6 +80,19 @@ define ("actions/actionCreators",
     });
 
     /**
+     * Return the action to set metadata
+     * @param {Object} metadata - the metadata object to set
+     * @returns {Object} - the action object
+     */
+    const setMetadata = (metadata) => {
+      return {
+        type: ACTION_TYPES.SET_METADATA,
+        metadata
+      };
+    };
+
+
+    /**
      * Return the action to set tags
      * @param {array} tags - the tags list to set
      * @returns {Object} - the action object
@@ -231,6 +244,7 @@ define ("actions/actionCreators",
       setGreetingMsg,
       setLanguage,
       setCif,
+      setMetadata,
       setTags,
       setSuggestedFaqReadTracked,
       updateReadFaqList,
