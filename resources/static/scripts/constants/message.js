@@ -173,6 +173,23 @@ define ("constants/message",
       READ: "read"
     };
 
+    // Types of messages for messageAdd event
+    const MESSAGE_ADD_EVENT_TYPES = {
+      TEXT: "text",
+      ATTACHMENT: "attachment"
+    };
+
+    const TEXT_INPUT_MESSAGE_TYPES = [
+      TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT,
+      TYPE.RESP_TEXT_MSG_WITH_TEXT_INPUT,
+      TYPE.RESP_TEXT_MSG_WITH_EMAIL_INPUT,
+      TYPE.RESP_TEXT_MSG_WITH_NUMERIC_INPUT,
+      TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT,
+      TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT,
+      TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT,
+      TYPE.TEXT
+    ];
+
     return {
       TYPE,
       ORIGIN,
@@ -180,6 +197,8 @@ define ("constants/message",
       STATE,
       BODY,
       RENDERABLE_MESSAGE_TYPES,
+      TEXT_INPUT_MESSAGE_TYPES,
+      MESSAGE_ADD_EVENT_TYPES,
       BOT_STEP_MESSAGES,
       BOT_CANCEL_REASON
     };
