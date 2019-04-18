@@ -12,11 +12,12 @@ const replace = require ("gulp-replace");
 const runSequence = require ("run-sequence");
 const concat = require ("gulp-concat");
 const del = require ("del");
+const uglify = require ("gulp-uglify");
 
 /**
  * Webchat version
  */
-const WEB_CHAT_VERSION = "2.21.0";
+const WEB_CHAT_VERSION = "2.22.0";
 
 /**
  * Name of app bundle
@@ -60,6 +61,7 @@ const PATHS = {
     "static/libs/react-redux-min.js",
     "static/libs/require-min.js"
   ],
+
   // This is the source of files to be removed once libs bundle is generated
   // Basically remove all the file inside dist/libs except for libs-min.js
   unwantedLibsSource: [
@@ -73,7 +75,10 @@ const PATHS = {
     `!dist/scripts/${APP_BUNDLE_NAME}-min.js`,
     `!dist/scripts/${APP_BUNDLE_NAME}-min.js.map`,
     "!dist/scripts/external/**"
-  ]
+  ],
+
+  externalJsSrc: "dist/scripts/external/*.js",
+  externalJsDest: "dist/scripts/external/"
 };
 
 /**
@@ -231,6 +236,18 @@ gulp.task ("bundle-libs", function () {
       del (PATHS.unwantedLibsSource);
       console.log ("Libs are bundled");
     }));
+});
+
+/**
+ * Task to minify external JS files. These files are not part of the requirejs
+ * module system, so they don't get minified via r.js optimizer.
+ * Note: The source here is the `dist` directory because the compilation (by babel)
+ * happens before this step and this step just minifies the compiled files.
+ */
+gulp.task ("minify-ext-js", function () {
+  return gulp.src (PATHS.externalJsSrc)
+    .pipe (uglify ())
+    .pipe (gulp.dest (PATHS.externalJsDest));
 });
 
 /**

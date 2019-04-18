@@ -50,50 +50,75 @@ endif
 static: dist
 
 bundlerinstall:
-	@echo "\nEnsuring Bundler Installation for SCSS compilation..."
+	@echo ">> Starting task: $@"
+	@echo "Ensuring Bundler Installation for SCSS compilation"
 	bundler install
+	@echo ">> Finished task: $@"
 
 styles: npminstall bundlerinstall
-	@echo "\nCompile and Lint Sass files in resources/styles folder..."
+	@echo ">> Starting task: $@"
+	@echo "Compiling and Linting Sass files in resources/styles folder"
 	@cd resources && $(GULP) sass:compile
+	@echo ">> Finished task: $@"
 
 sass-lint: npminstall bundlerinstall
-	@echo "\nLint Sass files in resources/styles folder..."
+	@echo ">> Starting task: $@"
+	@echo "Lint Sass files in resources/styles folder"
 	@cd resources && $(GULP) sass:lint
+	@echo ">> Finished task: $@"
 
 npminstall:
+	@echo ">> Starting task: $@"
+	@echo "Installing node packages"
 	$(NPM) install
+	@echo ">> Finished task: $@"
 
 # eslint is only to be run when js files changed because we want to
 # always ensure that new changes obey the rules but the unchanged
 # files may not obey new rules.
 eslint: npminstall
-	@echo "\nRunning eslint on js & jsx files."
+	@echo ">> Starting task: $@"
+	@echo "Running eslint on JS & JSX files."
 	$(NPM) install resources/static/eslint;
 	$(GULP) --gulpfile "resources/gulpfile.babel.js" eslint $(eslint_prefixed_js_diff);
+	@echo ">> Finished task: $@"
 
 reactjs: npminstall
-	@echo "\nCompile JSX..."
+	@echo ">> Starting task: $@"
+	@echo "Compiling JSX"
 	@cd resources && $(GULP) babel --production
+	@echo ">> Finished task: $@"
 
 gunpowder: npminstall
+	@echo ">> Starting task: $@"
 	@echo "Copying gunpowder files to scripts dir"
 	@mkdir -p $(GUNPOWDER_DEST);
 	@cp -r $(GUNPOWDER_SRC) $(GUNPOWDER_DEST);
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 bundle-js:
+	@echo ">> Starting task: $@"
 	@echo "Bundling and minifying js files"
 	$(NODE) r.js -o build.js
 	@echo "Bundle generated"
 	@echo "Cleaning unwanted js files"
 	@cd resources && $(GULP) clean-unwanted-js
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 bundle-libs:
-	@echo "\Bundling minified libs..."
+	@echo ">> Starting task: $@"
+	@echo "Bundling minified libs"
 	@cd resources && $(GULP) bundle-libs
-	@echo "\nDone"
+	@echo ">> Finished task: $@"
+
+# Minify external JS files. The bundle-js task doesn't minify the external
+# JS files like messenger.js and redirection.js because these files are not
+# a part of the dependency tree of the app's entry point (pages/webSdk). Also,
+# these files are not supposed to be bundled together.
+minify-ext-js:
+	@echo "Bundling external JS files"
+	@cd resources && $(GULP) minify-ext-js
+	@echo "------Done------"
 
 # The dist task is to compile and compress resources and
 # copy them to the `dist` directory.
@@ -102,81 +127,107 @@ bundle-libs:
 # directory, so copying html, libs, and fonts to dist here.
 # Create a symlink for messenger.js (the web messenger entry script file) to
 # the dist directory.
-
-dist: prepare-dist npminstall styles gunpowder reactjs copy-html-libs bundle-js bundle-libs prepare-subdir ec2 azure localshiva clean-subdir
+dist: prepare-dist npminstall \
+	styles gunpowder reactjs copy-html-libs \
+	bundle-js bundle-libs minify-ext-js \
+	prepare-subdir ec2 azure localshiva \
+	clean-subdir
 
 # The distdev task is to npm install resources and call the gulp task to
 # set the local environment up.
 distdev: npminstall gunpowder localhost
 
 prepare-dist:
+	@echo ">> Starting task: $@"
 	@echo "Creating the dist directory"
 	@mkdir -p resources/dist
 	@mkdir -p resources/dist/demo
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 copy-html-libs:
+	@echo ">> Starting task: $@"
+	@echo "Copying HTML, libs, fonts, and assets to the dist dir"
 	@cp -R resources/static/{html,libs,fonts,assets} resources/dist
+	@echo ">> Finished task: $@"
 
 copy-temp:
+	@echo ">> Starting task: $@"
 	@mkdir -v resources/build
 	@mv -v resources/dist/* resources/build/
 
 prepare-ec2:
+	@echo ">> Starting task: $@"
 	@echo "Creating ec2 subdirectory in the dist directory"
 	@mkdir resources/dist/ec2
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 prepare-azure:
+	@echo ">> Starting task: $@"
 	@echo "Creating azure subdirectory in the dist directory"
 	@mkdir resources/dist/azure
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 prepare-locashiva:
+	@echo ">> Starting task: $@"
 	@echo "Creating localshiva subdirectory in the dist directory"
 	@mkdir resources/dist/localshiva
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
 
 ec2:
+	@echo ">> Starting task: $@"
+	@echo "Preparing build dir for EC2"
 	@cp -R resources/build/* resources/dist/ec2/
 	@cd resources/dist/ec2; ln -sv scripts/external/messenger.js webChat.js;
 	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-ec2
+	@echo ">> Finished task: $@"
 
 azure:
+	@echo ">> Starting task: $@"
+	@echo "Preparing build dir for Azure"
 	@cp -R resources/build/* resources/dist/azure/
 	@cd resources/dist/azure; ln -sv scripts/external/messenger.js webChat.js;
 	@cd resources/dist/azure/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-azure
+	@echo ">> Finished task: $@"
 
 localshiva:
+	@echo ">> Starting task: $@"
+	@echo "Preparing build dir for localshiva"
 	@cp -R resources/build/* resources/dist/localshiva/
 	@cd resources/dist/localshiva; ln -sv scripts/external/messenger.js webChat.js;
 	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
 	@cd resources && $(GULP) build-localshiva
+	@echo ">> Finished task: $@"
 
 localhost:
+	@echo ">> Starting task: $@"
+	@echo "Preparing build dir for localhost"
 	@cd resources && $(GULP) build-localhost;
 	@mkdir -p resources/localhost/demo
+	@echo ">> Finished task: $@"
 
 clean-dev:
+	@echo ">> Starting task: $@"
 	@echo "Running make clean to clean the dist directory"
 	@rm -rf resources/localhost
 	@rm -rf resources/static/scripts/gunpowder
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 clean:
+	@echo ">> Starting task: $@"
 	@echo "Running make clean to clean the dist directory"
 	@rm -rf resources/dist
 	@rm -rf resources/static/scripts/gunpowder
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 clean-subdir:
+	@echo ">> Starting task: $@"
 	@echo "Cleaning dist directory"
 	@rm -rf resources/build
-	@echo "Done"
+	@echo ">> Finished task: $@"
 
 jstests: $(JS_TEST_TARGETS)
 
