@@ -9,8 +9,6 @@ const autoprefixer = require ("gulp-autoprefixer");
 const scssLint = require ("gulp-scss-lint");
 const importOnce = require ("node-sass-import-once");
 const cache = require ("gulp-cached");
-const Parker = require ("parker/lib/Parker");
-const prettyJSON = require ("prettyjson");
 
 
 const PATHS = {

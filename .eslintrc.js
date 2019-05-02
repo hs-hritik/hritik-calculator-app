@@ -1,8 +1,7 @@
 module.exports = {
   "plugins": [
     "react",
-    "hs",
-    "compat"
+    "hs"
   ],
   "parserOptions": {
     "ecmaVersion": 6,
@@ -220,9 +219,6 @@ module.exports = {
     "react/wrap-multilines": 2,
 
     // Helpshift Specific
-    "hs/func-call-spacing": [2, "always"],
-
-    // Browser compatibility
-    "compat/compat": 2
+    "hs/func-call-spacing": [2, "always"]
   }
 }
