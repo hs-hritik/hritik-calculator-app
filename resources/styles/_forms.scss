@@ -248,13 +248,11 @@ textarea {
   @include input-expand(true);
   @include input-style;
 
-  // scss-lint:disable VendorPrefix
   &::-webkit-input-placeholder,
   &::-moz-placeholder,
   &:-ms-input-placeholder {
     color: $_input-placeholder-color;
   }
-  // scss-lint:enable VendorPrefix
 
   &:focus,
   &.focus {

@@ -28,10 +28,8 @@
 
     &__icon {
       color: $arrow-color;
-      // scss-lint:disable VendorPrefix
       -ms-transform: rotate(90deg);
       -webkit-transform: rotate(90deg);
-      // scss-lint:enable VendorPrefix
       transform: rotate(90deg);
     }
 

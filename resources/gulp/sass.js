@@ -83,7 +83,7 @@ const lintSass = (path, isProduction) => {
 };
 
 /**
- * Compiles sass files into css and run scss-lint
+ * Compiles sass files into css and run stylelint
  */
 const compileSass = (path, prod = false) => {
   let sassHasErrors = false;

@@ -302,13 +302,11 @@
 @mixin word-break {
   word-break: break-all;
   /* stylelint-disable-next-line declaration-block-no-duplicate-properties */
-  word-break: break-word; //scss-lint:disable DuplicateProperty
+  word-break: break-word;
 }
 
 @mixin rotate($degrees) {
-  // scss-lint:disable VendorPrefix
   -ms-transform: rotate(#{ $degrees }deg);
   -webkit-transform: rotate(#{ $degrees }deg);
-  // scss-lint:enable VendorPrefix
   transform: rotate(#{ $degrees }deg);
 }
