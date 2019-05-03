@@ -117,4 +117,4 @@ gulp.task ("build-localhost", function () {
 
 gulp.task ("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);
 gulp.task ("default", ["watch"]);
-gulp.task ("lint", ["lint:sass", "eslint"]);
+gulp.task ("lint", ["sass:lint", "eslint"]);

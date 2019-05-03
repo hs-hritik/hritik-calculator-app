@@ -1,12 +1,11 @@
 /* eslint-disable strict, no-undef, no-console, no-unused-expressions  */
-const fs = require ("fs");
 const gulp = require ("gulp");
 const sass = require ("gulp-sass");
+const gulpStylelint = require ("gulp-stylelint");
 const gutil = require ("gulp-util");
 const plumber = require ("gulp-plumber");
 const sourcemaps = require ("gulp-sourcemaps");
 const autoprefixer = require ("gulp-autoprefixer");
-const scssLint = require ("gulp-scss-lint");
 const importOnce = require ("node-sass-import-once");
 const cache = require ("gulp-cached");
 
@@ -58,44 +57,29 @@ const SASS_OPTIONS = {
 
 
 /**
- * Function to run scss-lint
+ * Function to run stylelint
+ * @param {string} path - Path of the directory which has scss files
+ * @param {boolean} isProduction - Whether the environment is production
  */
-
-const lintSassDev = (path) => {
+const lintSass = (path, isProduction) => {
   gutil.log (gutil.colors.blue.bold (
     "*** START: SCSS Lint ***"
   ));
 
   return gulp.src (path.lint)
-             .pipe (cache ("scssLint"))
-             .pipe (scssLint ({
-               bundleExec: true,
-               config: ".scss-lint.yml"
-             }))
-             .on ("end", () => {
-               gutil.log (gutil.colors.blue.bold (
-                 "*** END: SCSS Lint ***\n"
-               ));
-             });
-};
-
-const lintSassProd = (path) => {
-  gutil.log (gutil.colors.blue.bold (
-    "*** START: SCSS Lint ***"
-  ));
-
-  return gulp.src (path.lint)
-             .pipe (cache ("scssLint"))
-             .pipe (scssLint ({
-               bundleExec: true,
-               config: ".scss-lint.yml"
-             }))
-             .on ("end", () => {
-               gutil.log (gutil.colors.blue.bold (
-                 "*** END: SCSS Lint ***\n"
-               ));
-             })
-             .pipe (scssLint.failReporter ("E"));
+    .pipe (cache ("styleLintKey"))
+    .pipe (gulpStylelint ({
+      failAfterError: isProduction,
+      reporters: [
+        {formatter: "string", console: true}
+      ],
+      debug: !isProduction
+    }))
+    .on ("end", () => {
+      gutil.log (gutil.colors.blue.bold (
+        "*** END: SCSS Lint ***\n"
+      ));
+    });
 };
 
 /**
@@ -105,25 +89,25 @@ const compileSass = (path, prod = false) => {
   let sassHasErrors = false;
 
   return gulp.src (path.src)
-             .pipe (sourcemaps.init ())
-             .pipe (plumber ())
-             .pipe (sass (prod === true ?
-                                   SASS_OPTIONS.production : SASS_OPTIONS.development)
-                                     .on ("error", sass.logError)
-                                     .on ("error", () => {
-                                       sassHasErrors = true;
-                                     }))
-             .pipe (autoprefixer ({
-               browsers: BROWSER_COMPATIBILITY
-             }))
-             .pipe (sourcemaps.write ("."))
-             .pipe (plumber.stop ())
-             .pipe (gulp.dest (path.dest))
-             .on ("finish", () => {
-               if (!sassHasErrors) {
-                 (prod === true) ? lintSassProd (path) : lintSassDev (path);
-               }
-             });
+    .pipe (sourcemaps.init ())
+    .pipe (plumber ())
+    .pipe (sass (prod === true ?
+                          SASS_OPTIONS.production : SASS_OPTIONS.development)
+                            .on ("error", sass.logError)
+                            .on ("error", () => {
+                              sassHasErrors = true;
+                            }))
+    .pipe (autoprefixer ({
+      browsers: BROWSER_COMPATIBILITY
+    }))
+    .pipe (sourcemaps.write ("."))
+    .pipe (plumber.stop ())
+    .pipe (gulp.dest (path.dest))
+    .on ("finish", () => {
+      if (!sassHasErrors) {
+        lintSass (path, prod);
+      }
+    });
 };
 
 
@@ -140,5 +124,5 @@ gulp.task ("sass:watch", ["sass:styles"], () => {
 });
 
 gulp.task ("sass:lint", function () {
-  return lintSassProd (PATHS.styles, true);
+  return lintSass (PATHS.styles, true);
 });

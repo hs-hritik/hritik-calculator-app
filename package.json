@@ -47,9 +47,9 @@
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.6.1",
     "gulp-sass": "^4.0.2",
-    "gulp-scss-lint": "^0.4.0",
     "gulp-sketch": "^1.0.4",
     "gulp-sourcemaps": "^2.6.0",
+    "gulp-stylelint": "^8.0.0",
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.8",
     "node-notifier": "^5.1.2",
@@ -57,6 +57,9 @@
     "npm-which": "^3.0.1",
     "require-dir": "^0.3.1",
     "run-sequence": "^2.2.0",
+    "stylelint": "^9.6.0",
+    "stylelint-declaration-use-variable": "^1.7.0",
+    "stylelint-order": "^1.0.0",
     "yargs": "^8.0.1"
   }
 }

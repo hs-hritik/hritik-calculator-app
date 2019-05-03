@@ -197,10 +197,10 @@ $_dropdown-item-spacing: gutter(12 24 12 12);
   @include set-default-type;
 
   height: auto;
+  padding: map-fetch($_input-size, $size, spacing);
   margin: 0;
   font-size: map-fetch($_input-size, $size, font-size);
   line-height: $_input-line-height;
-  padding: map-fetch($_input-size, $size, spacing);
   outline: 0;
   transition: border-color .125s ease-out;
 }

@@ -9,13 +9,13 @@
 
 @font-face {
   font-family: "hesticons";
+  font-style: normal;
+  font-weight: normal;
   src: url("/fonts/hesticons/hesticons.eot?t=20190314");
   src: url("/fonts/hesticons/hesticons.eot?t=20190314#iefix") format("eot"),
-  url("/fonts/hesticons/hesticons.woff?t=20190314") format("woff"),
-  url("/fonts/hesticons/hesticons.ttf?t=20190314") format("truetype"),
-  url("/fonts/hesticons/hesticons.svg?t=20190314#hesticons") format("svg");
-  font-weight: normal;
-  font-style: normal;
+    url("/fonts/hesticons/hesticons.woff?t=20190314") format("woff"),
+    url("/fonts/hesticons/hesticons.ttf?t=20190314") format("truetype"),
+    url("/fonts/hesticons/hesticons.svg?t=20190314#hesticons") format("svg");
 }
 
 %ion {

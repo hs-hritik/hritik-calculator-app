@@ -169,6 +169,7 @@ $hs-button-disabled-opacity: .5;
   line-height: $lh;
   text-align: center;
   vertical-align: middle;
+  cursor: pointer;
   border: 1px solid transparent;
   border-radius: $hs-button-radius;
 
@@ -176,11 +177,10 @@ $hs-button-disabled-opacity: .5;
     border-radius: $hs-button-radius-small;
   }
 
-  cursor: pointer;
-  -moz-appearance: none;
-  -webkit-appearance: none;
   outline: 0;
   transition: background-color .125s ease-out;
+  -moz-appearance: none;
+  -webkit-appearance: none;
 }
 
 /// Expands a button to make it full-width.
@@ -254,8 +254,8 @@ $hs-button-disabled-opacity: .5;
   $disabled-color: map-fetch($hs-button-colors, $fill, $type);
   $disabled-bg: map-fetch($hs-button-bg, $fill, base, $type);
 
-  opacity: $hs-button-disabled-opacity;
   cursor: not-allowed;
+  opacity: $hs-button-disabled-opacity;
 
   &:hover,
   &:focus {

@@ -82,10 +82,10 @@
 
 // ellipsis
 @mixin ellipsis($width: 100%) {
-  white-space: nowrap;
   width: $width;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /// Create equal side border radius on elements.
@@ -146,39 +146,46 @@
   $triangle-color,
   $triangle-direction
 ) {
-  content: "";
+  $down-triangle-border-color: $triangle-color transparent transparent;
+  $up-triangle-border-color: transparent transparent $triangle-color;
+  $right-triangle-border-color: transparent transparent transparent $triangle-color;
+  $left-triangle-border-color: transparent $triangle-color transparent transparent;
+  $top-left-triangle-border-color: $triangle-color transparent transparent;
+  $top-right-triangle-border-color: $triangle-color transparent transparent;
+
   display: block;
   width: 0;
   height: 0;
   border: inset $triangle-size;
+  content: "";
 
   @if ($triangle-direction == down) {
-    border-color: $triangle-color transparent transparent;
+    border-color: $down-triangle-border-color;
     border-top-style: solid;
     border-bottom-width: 0;
   }
   @if ($triangle-direction == up) {
-    border-color: transparent transparent $triangle-color;
+    border-color: $up-triangle-border-color;
     border-bottom-style: solid;
     border-top-width: 0;
   }
   @if ($triangle-direction == right) {
-    border-color: transparent transparent transparent $triangle-color;
+    border-color: $right-triangle-border-color;
     border-left-style: solid;
     border-right-width: 0;
   }
   @if ($triangle-direction == left) {
-    border-color: transparent $triangle-color transparent transparent;
+    border-color: $left-triangle-border-color;
     border-right-style: solid;
     border-left-width: 0;
   }
   @if ($triangle-direction == topleft) {
-    border-color: $triangle-color transparent transparent;
+    border-color: $top-left-triangle-border-color;
     border-top-style: solid;
     border-left-width: 0;
   }
   @if ($triangle-direction == topright) {
-    border-color: $triangle-color transparent transparent;
+    border-color: $top-right-triangle-border-color;
     border-top-style: solid;
     border-right-width: 0;
   }
@@ -242,19 +249,21 @@
   } @else if $media == retina {
 
 
+    /* stylelint-disable unit-whitelist */
     @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 
-    //https://developer.mozilla.org/en/CSS/Media_queries
-    only screen and (min--moz-device-pixel-ratio: 1.5),
+      // https://developer.mozilla.org/en/CSS/Media_queries
+      only screen and (min--moz-device-pixel-ratio: 1.5),
 
-    // http://dev.opera.com/articles/view/an-introduction-to-meta-viewport-and-viewport
-    only screen and (-o-min-device-pixel-ratio: 3/2),
+      // http://dev.opera.com/articles/view/an-introduction-to-meta-viewport-and-viewport
+      only screen and (-o-min-device-pixel-ratio: 3/2),
 
-    only screen and (min-device-pixel-ratio: 1.5),
+      only screen and (min-device-pixel-ratio: 1.5),
 
-    // Refer: https://github.com/h5bp/html5-boilerplate/issues/1178
-    only screen and (min-resolution: 1.5dppx) {
+      // Refer: https://github.com/h5bp/html5-boilerplate/issues/1178
+      only screen and (min-resolution: 1.5dppx) {
       @content;
+      /* stylelint-enable unit-whitelist */
     }
   }
 }
@@ -274,6 +283,7 @@
 // on container
 @mixin show-hide-when($state, $display: block) {
   .show-when-#{ $state } {
+    /* stylelint-disable declaration-no-important */
     display: none !important;
   }
 
@@ -284,12 +294,14 @@
 
     .hide-when-#{ $state } {
       display: none !important;
+      /* stylelint-enable declaration-no-important */
     }
   }
 }
 
 @mixin word-break {
   word-break: break-all;
+  /* stylelint-disable-next-line declaration-block-no-duplicate-properties */
   word-break: break-word; //scss-lint:disable DuplicateProperty
 }
 
