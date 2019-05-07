@@ -1,4 +1,4 @@
-/* eslint-disable strict, no-undef, no-console, no-unused-expressions  */
+/* eslint-disable strict, no-console  */
 const gulp = require ("gulp");
 const sass = require ("gulp-sass");
 const gulpStylelint = require ("gulp-stylelint");
