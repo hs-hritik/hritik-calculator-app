@@ -4,6 +4,7 @@ const sass = require ("gulp-sass");
 const gulpStylelint = require ("gulp-stylelint");
 const gutil = require ("gulp-util");
 const plumber = require ("gulp-plumber");
+const gulpIf = require ("gulp-if");
 const sourcemaps = require ("gulp-sourcemaps");
 const autoprefixer = require ("gulp-autoprefixer");
 const importOnce = require ("node-sass-import-once");
@@ -67,7 +68,7 @@ const lintSass = (path, isProduction) => {
   ));
 
   return gulp.src (path.lint)
-    .pipe (cache ("styleLintKey"))
+    .pipe (gulpIf (!isProduction, cache ("styleLintKey")))
     .pipe (gulpStylelint ({
       failAfterError: isProduction,
       reporters: [
