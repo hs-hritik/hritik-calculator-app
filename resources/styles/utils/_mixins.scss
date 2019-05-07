@@ -28,7 +28,7 @@
 
   @if $include-2x != false {
 
-    @if ($width != false && $height != false) {
+    @if ($width != false and $height != false) {
 
       @include respond-to(retina) {
         $dot-index: str-index($src, ".");
