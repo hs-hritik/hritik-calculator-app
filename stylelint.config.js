@@ -11,6 +11,9 @@ module.exports = {
     "color-hex-length": "short",
     "max-nesting-depth": 6,
     "string-quotes": "double",
+    "selector-pseudo-element-colon-notation": "double",
+    "declaration-block-no-shorthand-property-overrides": true,
+    "length-zero-no-unit": true,
     "unit-whitelist": [["px", "%", "s", "vh", "deg"], {
       "ignoreProperties": {
         "px": ["border", "width", "height", "margin", "top"],
@@ -202,6 +205,30 @@ module.exports = {
     // https://github.com/bjankord/stylelint-config-sass-guidelines/issues/20#issuecomment-349972873
     "selector-class-pattern": ["^(?:(?:hs)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:__[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?$", {
       severity: "warning"
-    }]
+    }],
+
+    // Disallow vendor prefixes
+    "property-no-vendor-prefix": [true, {
+      severity: "warning"
+    }],
+    "value-no-vendor-prefix": true,
+    "selector-no-vendor-prefix": [true, {
+      "severity": "warning"
+    }],
+    "at-rule-no-vendor-prefix": true,
+    "media-feature-name-no-vendor-prefix": [true, {
+      "severity": "warning"
+    }],
+
+    // Disallow unknown properties, values etc.
+    "property-no-unknown": true,
+    "unit-no-unknown": true,
+    "selector-type-no-unknown": true,
+    "selector-pseudo-class-no-unknown": true,
+    "selector-pseudo-element-no-unknown": true,
+    "media-feature-name-no-unknown": [true, {
+      "severity": "warning"
+    }],
+    "no-unknown-animations": true
   }
 }
