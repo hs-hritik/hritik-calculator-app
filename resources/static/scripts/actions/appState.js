@@ -438,6 +438,12 @@ define ("actions/appState",
         } = getState ();
         const widgetIsOpen = !minimized;
 
+        if (!issueExists) {
+          postSdkMessage.conversationStatusEvent ({
+            open: false
+          });
+        }
+
         // If atleast one issue exists on backend then start the poller.
         // (poller will check for issue state)
         // Else start a new conversation by creating new preIssue.
