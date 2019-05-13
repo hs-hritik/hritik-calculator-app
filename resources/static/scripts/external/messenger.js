@@ -891,7 +891,7 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && eventRegister [eventName]) {
+    if (!handlerIsFound && !eventRegister [eventName]) {
       eventRegister [eventName] = {
         eventHasOccured: true,
         data: eventData
