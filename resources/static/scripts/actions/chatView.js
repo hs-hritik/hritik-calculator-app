@@ -1472,8 +1472,13 @@ define ("actions/chatView",
 
             const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
             const internalIssueId = _getIssueId (currentIssue);
+            const issueIsActive = isIssueActive (issueState);
 
-            if (!isIssueActive (issueState)) {
+            postSdkMessage.conversationStatusEvent ({
+              open: issueIsActive
+            });
+
+            if (!issueIsActive) {
               stopPollingForMessages ();
 
               const preIssueActionTriggered = handleCreatePreIssueForInitialUserMessage ({
