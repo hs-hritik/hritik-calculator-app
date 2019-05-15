@@ -1,0 +1,14 @@
+Branches:
+feature/remove-ruby
+
+Changelog:
+Add stylelint rules.
+Fix node-sass warnings
+Use cache for linting styles only in development
+Remove unnecessary eslint-disable annotations
+Remove scss-lint annotations
+Replace scss-lint with stylelint
+Remove unused node modules
+Update gulp-sass and remove node-sass
+Move mixins out of button SCSS component
+Rename .eslintrc to .eslintrc.js
