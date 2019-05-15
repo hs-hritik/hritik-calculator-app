@@ -148,13 +148,11 @@
       // @NOTE - Disabling pseudo element lint rule as it gives error for
       // -webkit-clear-button scss lint recognize -webkit-clear-button as a
       // pseudo class and not a pseudo element
-      // scss-lint:disable PseudoElement
       &[type=date]::-webkit-inner-spin-button,
       &[type=date]::-webkit-clear-button {
         display: none;
         -webkit-appearance: none;
       }
-      // scss-lint:enable PseudoElement
     }
 
     &__attachment-icon,

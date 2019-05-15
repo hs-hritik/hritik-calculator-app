@@ -304,16 +304,18 @@ $animations: (
   }
 }
 
-@mixin animation($name, $duration: $duration, $delay: $delay,
-                 $function: $function, $fill: $fill,
-                 $visibility: $visibility, $count: $count) {
-  animation-name: hs-#{$name};
-  animation-duration: #{$duration};
+@mixin animation(
+  $name, $duration: $duration, $delay: $delay,
+  $function: $function, $fill: $fill,
+  $visibility: $visibility, $count: $count
+) {
   animation-delay: #{$delay};
+  animation-duration: #{$duration};
+  animation-iteration-count: #{$count};
+  animation-name: hs-#{$name};
   animation-timing-function: #{$function};
   animation-fill-mode: #{$fill};
   backface-visibility: #{$visibility};
-  animation-iteration-count: #{$count};
 }
 
 @include generate-keyframes;
