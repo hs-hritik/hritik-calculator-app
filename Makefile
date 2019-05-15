@@ -49,19 +49,13 @@ endif
 
 static: dist
 
-bundlerinstall:
-	@echo ">> Starting task: $@"
-	@echo "Ensuring Bundler Installation for SCSS compilation"
-	bundler install
-	@echo ">> Finished task: $@"
-
-styles: npminstall bundlerinstall
+styles: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Compiling and Linting Sass files in resources/styles folder"
 	@cd resources && $(GULP) sass:compile
 	@echo ">> Finished task: $@"
 
-sass-lint: npminstall bundlerinstall
+sass-lint: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Lint Sass files in resources/styles folder"
 	@cd resources && $(GULP) sass:lint

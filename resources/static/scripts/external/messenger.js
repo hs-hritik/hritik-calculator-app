@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.23.0";
+        PATH = "/html/index.html?v=2.24.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -80,6 +80,7 @@
     SDK_EVENT_CONVERSATION_RESOLVED: "sdk-event-conversation-resolved",
     SDK_EVENT_CONVERSATION_REJECTED: "sdk-event-conversation-rejected",
     SDK_EVENT_MESSAGE_ADD: "sdk-event-message-add",
+    SDK_EVENT_CONVERSATION_STATUS: "sdk-event-conversation-status",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
     SDK_EVENT_CSAT_SUBMIT: "sdk-event-csat-submit",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
@@ -112,7 +113,8 @@
     CONVERSATION_REJECTED: "conversationRejected",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
-    WIDGET_TOGGLE: "widgetToggle"
+    WIDGET_TOGGLE: "widgetToggle",
+    CONVERSATION_STATUS: "conversationStatus"
   };
 
   // Errors message strings
@@ -889,7 +891,7 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && eventRegister [eventName]) {
+    if (!handlerIsFound && !eventRegister [eventName]) {
       eventRegister [eventName] = {
         eventHasOccured: true,
         data: eventData
@@ -1041,13 +1043,17 @@
           });
           break;
 
-
         case EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT:
           // Call the event handler for csat submit event.
           callApiEventHandler (SUPPORTED_EVENTS.CSAT_SUBMIT, {
             rating: data.rating,
             additionalFeedback: data.review
           });
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_STATUS:
+          // Call the event handler for conversation status event
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_STATUS, data);
           break;
 
         case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:

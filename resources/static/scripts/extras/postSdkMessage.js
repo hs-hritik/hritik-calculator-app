@@ -165,6 +165,16 @@ function (EVENT_TYPES, postMessage) {
     });
   };
 
+  /**
+   * Post sdk event to notify conversation status
+   * @param {Object} data
+   * @param {Boolean} data.open - whether conversation is open i.e. issue or
+   *                              preIssue is active (not closed)
+   */
+  const conversationStatusEvent = (data) => {
+    postMessage (EVENT_TYPES.SDK_EVENT_CONVERSATION_STATUS, data);
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -181,6 +191,7 @@ function (EVENT_TYPES, postMessage) {
     conversationRejectedEvent,
     userChanged,
     messageAddEvent,
-    csatSubmitEvent
+    csatSubmitEvent,
+    conversationStatusEvent
   };
 });
