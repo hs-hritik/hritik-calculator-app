@@ -19,13 +19,13 @@ define ("extras/api",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
-    "helpers/common",
     "extras/postSdkMessage",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "actions/common"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, commonHelpers, postSdkMessage, objUtils) {
+    app, analyticsHelpers, lsHelpers, postSdkMessage, objUtils, commonActions) {
     "use strict";
 
     const {
@@ -270,9 +270,11 @@ define ("extras/api",
           // request wont be fired and the user will keep seeing reject preIssue.
           if ((preIssueIsRejected && resetTriggerIsDefault)) {
             store.dispatch (
-              appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET)
+              commonActions.appReload ({
+                trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
+                callback: chatViewActions.stopPollingForMessages
+              })
             );
-            store.dispatch (appStateActions.reset ());
           } else {
             store.dispatch (appStateActions.startConversation ());
           }
@@ -295,7 +297,7 @@ define ("extras/api",
      */
     const handleInitialUserMsg = ({message}) => {
       // Set initial user message in store
-      store.dispatch (appStateActions.setInitialUserMsg (message));
+      store.dispatch (actionCreators.setInitialUserMsg (message));
     };
 
     const handleApis = (type, data) => {
@@ -337,10 +339,10 @@ define ("extras/api",
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
           break;
         case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
-          store.dispatch (
-            appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API)
-          );
-          store.dispatch (appStateActions.reset ());
+          store.dispatch (commonActions.appReload ({
+            trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
+            callback: chatViewActions.stopPollingForMessages
+          }));
           break;
       }
     };
