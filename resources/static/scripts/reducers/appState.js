@@ -406,7 +406,10 @@ define ("reducers/appState",
             cif: {$set: state.cif},
             metadata: {$set: state.metadata},
             appResetTrigger: {$set: state.appResetTrigger},
-            minimized: {$set: state.minimized}
+            minimized: {$set: state.minimized},
+            sdkConfigOptions: {
+              initialUserMessage: {$set: state.sdkConfigOptions.initialUserMessage}
+            }
           });
 
         case ACTION_TYPES.SET_FULL_PRIVACY:

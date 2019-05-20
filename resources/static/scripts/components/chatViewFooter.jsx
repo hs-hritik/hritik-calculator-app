@@ -225,6 +225,7 @@ define ("components/chatViewFooter",
           case ACTIVE_FOOTER.SOLUTION_REJECTED:
             return this._renderUserInput ();
 
+          // @TODO - Remove code to render close button after product ack
           case ACTIVE_FOOTER.CLOSED:
             return this._renderCloseConversationFooter ();
 

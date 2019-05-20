@@ -864,26 +864,13 @@ define ("actions/chatView",
       const {dispatch, getState} = store;
       const {conversationHasEnded} = config;
       const {
-        appState: {
-          sdkConfigOptions: {
-            initialUserMessage
-          }
-        },
         ui: {
           text
         }
       } = getState ();
       const conversationClosedMsg = conversationHasEnded ? text.conversationClosed : "";
 
-      // If initial user message is set through api, show close conversation footer
-      // Else show start new conversation footer
-      if (initialUserMessage) {
-        // Show closed conversation footer
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
-      } else {
-        // Show start new conversation footer
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
-      }
+      dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
 
       // Show system info message - This conversation has ended.
       dispatch (createMessage ({
@@ -1101,11 +1088,12 @@ define ("actions/chatView",
         appState: {
           sdkConfigOptions: {
             initialUserMessage
-          }
+          },
+          minimized
         }
       } = getState ();
 
-      if (initialUserMessage) {
+      if (initialUserMessage && !minimized) {
         dispatch (createPreIssue ());
         preIssueActionTriggered = true;
       }
@@ -1201,12 +1189,48 @@ define ("actions/chatView",
       // If message type is accept first user message (EMPTY_MSG_WITH_TEXT_INPUT)
       // and initialUserMessage is set through api, do not wait for user input
       // Directly send the message as bot response
+      // We reset initial user message once it's passed to bot as we do not want
+      // to reuse same message for more than one conversation.
       if (messageType === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
         dispatch (
-          updateReplyText (initialUserMessage)
+          batchActions ([
+            updateReplyText (initialUserMessage),
+            actionCreators.setInitialUserMsg ("")
+          ])
         );
 
         postUserMessage ();
+      }
+    };
+
+    /**
+     * Handle reset initial user message
+     * If the initial user message api is called during on going conversation
+     * then reset the user message.
+     * @param {Object} config
+     * @param {Number} config.issueCursor - issue cursor
+     * @param {Boolean} config.issueIsActive - whether current issue or preIssue active
+     * @param {Boolean} config.isPreIssue - whether current issue type is preIssue
+     */
+    const handleResetInitialUserMessage = (config) => {
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          sdkConfigOptions: {
+            initialUserMessage
+          }
+        }
+      } = getState ();
+      const {issueCursor, issueIsActive, isPreIssue} = config;
+
+      // Clear user message set through api if
+      // a] This is the first poller call.
+      //    (Here we are assuming the developer has called the api before the poller)
+      // b] If issue type is not preIssue
+      // c] Issue is active (not resolved or rejected)
+      // d] And developer has set initial user message
+      if (!issueCursor && !isPreIssue && issueIsActive && initialUserMessage) {
+        dispatch (actionCreators.setInitialUserMsg (""));
       }
     };
 
@@ -1478,6 +1502,12 @@ define ("actions/chatView",
               open: issueIsActive
             });
 
+            handleResetInitialUserMessage ({
+              issueCursor,
+              issueIsActive,
+              isPreIssue
+            });
+
             if (!issueIsActive) {
               stopPollingForMessages ();
 
@@ -1567,6 +1597,7 @@ define ("actions/chatView",
                 messages: processedMessages
               });
             }
+
             handleIssueState ();
 
             dispatch (setIssueCursor (cursor));
@@ -1576,6 +1607,8 @@ define ("actions/chatView",
             analyticsHelpers.flushEvents ();
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
+            // eslint-disable-next-line
+            console.error ("Something went wrong = ", ex);
           }
         },
         onFailure: (request, statusCode) => {
@@ -1643,8 +1676,14 @@ define ("actions/chatView",
                                         currentIssueType === ISSUE_TYPE.ISSUE);
 
       // If preIssue is converted to issue then reset user input and show footer
+      // Also reset initial user message
       if (preIssueConvertedToIssue) {
-        dispatch (resetUserInput ());
+        dispatch (
+          batchActions ([
+            actionCreators.setInitialUserMsg (""),
+            resetUserInput ()
+          ])
+        );
         handleIssueFooterAndTAI (ENABLE_FOOTER);
       }
     };
