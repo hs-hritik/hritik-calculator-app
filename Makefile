@@ -203,6 +203,13 @@ localhost:
 	@mkdir -p resources/localhost/demo
 	@echo ">> Finished task: $@"
 
+# Start Sonarqube scanner
+scan:
+	@echo ">> Starting task: $@"
+	@echo "Starting Sonarqube scanner"
+	sonar-scanner -Dsonar.projectVersion=1.0
+	@echo ">> Finished task: $@"
+
 clean-dev:
 	@echo ">> Starting task: $@"
 	@echo "Running make clean to clean the dist directory"
