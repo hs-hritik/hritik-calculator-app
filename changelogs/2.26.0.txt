@@ -1,0 +1,7 @@
+Branches:
+feature/sonarqube-setup
+
+Changelog:
+Add a make task for sonarqube scanner
+Exclude files from getting scanned by sonarqube
+Update main configuration file of sonarqube
