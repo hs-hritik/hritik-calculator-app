@@ -128,7 +128,7 @@ define ("components/containers/chatViewFooter",
           // call getConfig. Once getConfig is called, it will initialize the
           // conversation and will take care of creating new preIssue.
           // Ref :- App state actions -> initializeConversation
-          dispatch (commonActions.appReload ({
+          dispatch (commonActions.reloadApp ({
             loading: true,
             trigger: APP_RESET_TRIGGER.START_NEW_CONVERSATION,
             callback: chatViewActions.stopPollingForMessages

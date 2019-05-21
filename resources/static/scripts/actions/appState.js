@@ -859,7 +859,7 @@ define ("actions/appState",
           onEnd: () => {
             // In both the cases (success and failure), we'll start with a new
             // conversation for the end user.
-            dispatch (commonActions.appReload ({
+            dispatch (commonActions.reloadApp ({
               trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
               callback: chatViewActions.stopPollingForMessages
             }));

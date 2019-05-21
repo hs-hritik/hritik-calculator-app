@@ -31,7 +31,7 @@ define ("actions/common",
      * @param {Function} [config.callback] - additional callback to be executed during reload
      * This callback will mostly be stop poller function.
      */
-    const appReload = (config) => {
+    const reloadApp = (config) => {
       return (dispatch) => {
         const {trigger, loading = false, callback} = config;
 
@@ -52,7 +52,7 @@ define ("actions/common",
     };
 
     return {
-      appReload
+      reloadApp
     };
   }
 );

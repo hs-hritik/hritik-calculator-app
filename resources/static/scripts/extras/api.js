@@ -266,7 +266,7 @@ define ("extras/api",
           // start new conversation.
           if (initialUserMessage && issueStateIsClosed) {
             store.dispatch (
-              commonActions.appReload ({
+              commonActions.reloadApp ({
                 trigger: APP_RESET_TRIGGER.START_NEW_CONVERSATION,
                 loading: true,
                 callback: chatViewActions.stopPollingForMessages
@@ -281,7 +281,7 @@ define ("extras/api",
             // preIssue and the user closes the tab or browser, create new preIssue
             // request wont be fired and the user will keep seeing reject preIssue.
             store.dispatch (
-              commonActions.appReload ({
+              commonActions.reloadApp ({
                 trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
                 callback: chatViewActions.stopPollingForMessages
               })
@@ -350,7 +350,7 @@ define ("extras/api",
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
           break;
         case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
-          store.dispatch (commonActions.appReload ({
+          store.dispatch (commonActions.reloadApp ({
             trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
             callback: chatViewActions.stopPollingForMessages
           }));
