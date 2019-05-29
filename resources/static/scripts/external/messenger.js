@@ -196,6 +196,21 @@
     "z-index": "9999999"
   };
 
+  const MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES = {
+    "position": "absolute",
+    "top": "0px",
+    "left": "0px",
+    "bottom": "0px",
+    "right": "0px",
+    "width": "100%",
+    "height": "100%",
+    "border": "none",
+    "margin": 0,
+    "padding": 0,
+    "overflow": "hidden",
+    "z-index": "9999999"
+  };
+
   const UNREAD_COUNT_STYLES = {
     "background-color": "#fa3e3e",
     "border-radius": "50%",
@@ -607,6 +622,17 @@
   };
 
   /**
+   * Function to return widget selector DOM
+   * Checks if widget selector is passed in helpshfitConfig
+   * and returns the DOM element else returns null
+   * @returns {(HTMLElement|null)} - Widget selector
+   */
+  const getWidgetSelector = () => {
+    const widgetSelector = win.helpshiftConfig.widgetSelector;
+    return widgetSelector && doc.querySelector (widgetSelector) || null;
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
@@ -616,7 +642,10 @@
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
-    if (config.fullScreen) {
+    const webchatContainer = getWidgetSelector ();
+    if (webchatContainer) {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES);
+    } else if (config.fullScreen) {
       setStyle (webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
@@ -930,7 +959,14 @@
     setDefaultLauncherVisibility ();
 
     webSdkIframe = createWebSdkIframe ();
-    doc.body.appendChild (webSdkIframe);
+
+    const webchatContainer = getWidgetSelector ();
+
+    if (webchatContainer) {
+      webchatContainer.appendChild (webSdkIframe);
+    } else {
+      doc.body.appendChild (webSdkIframe);
+    }
 
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
