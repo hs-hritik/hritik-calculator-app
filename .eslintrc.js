@@ -12,7 +12,8 @@ module.exports = {
   "env": {
     "browser": true,
     "amd": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
   "globals": {
     "React": true,

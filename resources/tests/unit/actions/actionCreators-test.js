@@ -1,8 +1,10 @@
 // @TODO: This is a CommonJS module. Explore how to write ES6 modules for tests.
 const actionCreators = require ("../../../static/scripts/actions/actionCreators");
-const ACTION_TYPES = require ("../../../static/scripts/constants/actionTypes")
+const ACTION_TYPES = require ("../../../static/scripts/constants/actionTypes");
 
 describe ("action creators", () => {
+  "use strict";
+
   it ("should create an action to update the view", () => {
     const type = ACTION_TYPES.UPDATE_ACTIVE_VIEW;
     const view = "DUMMY_VIEW";
@@ -10,7 +12,7 @@ describe ("action creators", () => {
     const expectedAction = {
       type,
       view
-    }
+    };
     expect (actionCreators.updateActiveView (view)).toEqual (expectedAction);
   });
 
