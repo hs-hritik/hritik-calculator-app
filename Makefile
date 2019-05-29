@@ -210,6 +210,13 @@ scan:
 	sonar-scanner -Dsonar.projectVersion=1.0
 	@echo ">> Finished task: $@"
 
+# Start unit tests
+unit-test:
+	@echo ">> Starting task: $@"
+	@echo "Starting unit tests"
+	$(NPM) test
+	@echo ">> Finished task: $@"
+
 clean-dev:
 	@echo ">> Starting task: $@"
 	@echo "Running make clean to clean the dist directory"
@@ -232,6 +239,6 @@ clean-subdir:
 
 jstests: $(JS_TEST_TARGETS)
 
-test: clean $(TEST_TARGETS)
+test: clean $(TEST_TARGETS) unit-test
 
 .PHONY: test
