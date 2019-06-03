@@ -1,0 +1,9 @@
+Branches:
+feature/voice-mvp
+
+Changelog:
+Add support for widget selector
+Add support for phone number
+Rename appReload action to reloadApp
+Change behaviour of set initial user message
+Move actions from app state to action creators
