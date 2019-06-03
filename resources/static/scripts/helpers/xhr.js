@@ -77,6 +77,7 @@ define ("helpers/xhr",
         deviceId,
         userId,
         anonUserIdentifier,
+        phoneNumber,
         userEmail,
         userAuthToken,
         platformId,
@@ -92,7 +93,11 @@ define ("helpers/xhr",
       // If userId is passed (irrespective of if email is passed), set `uid` to `userId`.
       // If userId is not passed and email is passed, don't send `uid`.
       // If email is the only identifier in fullPrivacy mode, set `uid` to `anonUserIdentifier`.
-      if (
+      // If phone number is set, pass only phone number and skip other user identifiers
+      // @NOTE: For now phone number will be set if the source is voice
+      if (phoneNumber) {
+        commonXhrData.phone_number = phoneNumber;
+      } else if (
         (!userId && !userEmail) ||
         (!userId && userEmail && fullPrivacyEnabled)
       ) {

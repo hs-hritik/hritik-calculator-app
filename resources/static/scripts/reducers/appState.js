@@ -92,6 +92,7 @@ define ("reducers/appState",
       userName: "",
       userEmail: "",
       userAuthToken: "",
+      phoneNumber: "",
 
       // Backend flag to represent if any issue exists
       issueExists: false,
@@ -226,6 +227,7 @@ define ("reducers/appState",
               language,
               domain,
               userId,
+              phoneNumber,
               userName,
               userEmail,
               userAuthToken,
@@ -258,6 +260,7 @@ define ("reducers/appState",
             developerSetLanguage: {$set: language || ""},
             domain: {$set: domain || ""},
             userId: {$set: userId || ""},
+            phoneNumber: {$set: phoneNumber || ""},
             userName: {$set: userName || ""},
             userEmail: {$set: userEmail || ""},
             userAuthToken: {$set: userAuthToken || ""},
@@ -406,7 +409,10 @@ define ("reducers/appState",
             cif: {$set: state.cif},
             metadata: {$set: state.metadata},
             appResetTrigger: {$set: state.appResetTrigger},
-            minimized: {$set: state.minimized}
+            minimized: {$set: state.minimized},
+            sdkConfigOptions: {
+              initialUserMessage: {$set: state.sdkConfigOptions.initialUserMessage}
+            }
           });
 
         case ACTION_TYPES.SET_FULL_PRIVACY:
