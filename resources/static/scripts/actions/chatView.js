@@ -20,6 +20,7 @@ define ("actions/chatView",
     "gunpowder/utils/date",
     "actions/batch",
     "actions/actionCreators",
+    "actions/postSdkMessage",
     "helpers/message",
     "helpers/chatView",
     "helpers/xhr",
@@ -29,16 +30,14 @@ define ("actions/chatView",
     "helpers/analytics",
     "helpers/prepareProcessXhrData",
     "helpers/common",
-    "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS, ACTIVE_VIEW,
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
-    xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
+    xhr, arrayUtils, dateUtils, batchActions, actionCreators, postSdkMessage, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, postSdkMessage,
-    browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, browserUtils, upload) {
 
     "use strict";
 
@@ -286,7 +285,7 @@ define ("actions/chatView",
 
         if (unreadMessageIds.length !== 0) {
           dispatch (setUnreadMessageIds ([]));
-          postSdkMessage.updateUnreadCount (0);
+          dispatch (postSdkMessage.updateUnreadCount (0));
         }
       };
     };
@@ -965,13 +964,13 @@ define ("actions/chatView",
       // from the start, we use it as a check.
       if (issueCursor) {
         if (issueState === ISSUE_STATE.RESOLVED) {
-          postSdkMessage.conversationResolvedEvent ();
+          dispatch (postSdkMessage.conversationResolvedEvent ());
         } else if (issueState === ISSUE_STATE.REJECTED) {
-          postSdkMessage.conversationRejectedEvent ();
+          dispatch (postSdkMessage.conversationRejectedEvent ());
         }
 
         if (!resolutionQuestionEnabled || conversationEndEventShouldTrigger) {
-          postSdkMessage.conversationEndEvent ();
+          dispatch (postSdkMessage.conversationEndEvent ());
         }
       }
     };
@@ -1474,9 +1473,9 @@ define ("actions/chatView",
             const internalIssueId = _getIssueId (currentIssue);
             const issueIsActive = isIssueActive (issueState);
 
-            postSdkMessage.conversationStatusEvent ({
+            dispatch (postSdkMessage.conversationStatusEvent ({
               open: issueIsActive
-            });
+            }));
 
             if (!issueIsActive) {
               stopPollingForMessages ();
@@ -1691,7 +1690,7 @@ define ("actions/chatView",
         dispatch (markMessagesSeen ());
       } else {
         dispatch (setUnreadMessageIds (finalUnreadMessageIds));
-        postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length);
+        dispatch (postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length));
       }
 
       // Do not play sound on page load even if there are unread messages
@@ -1845,15 +1844,15 @@ define ("actions/chatView",
           // Trigger conversationStartEvent which, then, can be tracked by the
           // addEventListener callbacks
           if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
-            postSdkMessage.conversationStartEvent (response.body);
+            dispatch (postSdkMessage.conversationStartEvent (response.body));
           }
 
           if (TEXT_INPUT_MESSAGE_TYPES.indexOf (response.type) !== -1) {
-            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body);
+            dispatch (postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body));
           }
 
           if (response.type === MESSAGE_TYPE.ACCEPTED) {
-            postSdkMessage.conversationEndEvent ();
+            dispatch (postSdkMessage.conversationEndEvent ());
           }
 
           dispatch (
@@ -1999,7 +1998,7 @@ define ("actions/chatView",
           ])
         );
         startPollingForMessages ();
-        postSdkMessage.conversationReopenedEvent ();
+        dispatch (postSdkMessage.conversationReopenedEvent ());
       }
     };
 
@@ -2427,7 +2426,7 @@ define ("actions/chatView",
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT);
+            dispatch (postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT));
 
             // Remove the FE (dummy) attachment message from message list
             // Add new backend message in message list

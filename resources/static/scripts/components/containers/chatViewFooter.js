@@ -11,15 +11,15 @@ define ("components/containers/chatViewFooter",
     "actions/actionCreators",
     "actions/appState",
     "actions/csatView",
+    "actions/postSdkMessage",
     "constants/activeView",
     "constants/chatView",
     "constants/appState",
-    "helpers/common",
-    "extras/postSdkMessage"
+    "helpers/common"
   ],
   function (ChatViewFooter, chatViewActions, actionCreators, appStateActions,
-    csatViewActions, ACTIVE_VIEW, chatViewConstants, appStateConstants,
-    commonHelpers, postSdkMessage) {
+    csatViewActions, postSdkMessage, ACTIVE_VIEW, chatViewConstants, appStateConstants,
+    commonHelpers) {
     "use strict";
 
     const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
@@ -145,7 +145,7 @@ define ("components/containers/chatViewFooter",
           dispatch (chatViewActions.createAttachmentMessages (files));
         },
         onCloseConversation: () => {
-          postSdkMessage.chatEndEvent ();
+          dispatch (postSdkMessage.chatEndEvent ());
           dispatch (appStateActions.toggleMinimized (true));
         },
         onListPickerToggleStateChange: (toggleState) => {

@@ -26,14 +26,14 @@ define ("actions/appState",
     "actions/ui",
     "actions/batch",
     "actions/actionCreators",
+    "actions/postSdkMessage",
     "utils/browser",
-    "utils/dataType",
-    "extras/postSdkMessage"
+    "utils/dataType"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
     analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
     uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions,
-    uiActions, batchActions, actionCreators, browserUtils, dataTypeUtils, postSdkMessage) {
+    uiActions, batchActions, actionCreators, postSdkMessage, browserUtils, dataTypeUtils) {
     "use strict";
 
     const SKIP_PLATFORM_ID = true;
@@ -169,14 +169,14 @@ define ("actions/appState",
         chatViewActions.stopPollingForMessages ();
         dispatch (setConversationEnded ());
         dispatch (actionCreators.reset ());
-        postSdkMessage.reset ();
+        dispatch (postSdkMessage.reset ());
         lsHelpers.reset ({
           resetProactiveChat: options.resetProactiveChat
         });
 
         const {minimized} = getState ().appState;
         if (options.minimizeMessenger && !minimized) {
-          postSdkMessage.toggleMessenger (true);
+          dispatch (postSdkMessage.toggleMessenger (true));
         }
       };
     };
@@ -439,9 +439,9 @@ define ("actions/appState",
         const widgetIsOpen = !minimized;
 
         if (!issueExists) {
-          postSdkMessage.conversationStatusEvent ({
+          dispatch (postSdkMessage.conversationStatusEvent ({
             open: false
-          });
+          }));
         }
 
         // If atleast one issue exists on backend then start the poller.
@@ -514,7 +514,7 @@ define ("actions/appState",
             setUiConfig (helpshiftConfig);
 
             // Send the config event loaded back to the client
-            postSdkMessage.wmConfig (getClientWmConfig ());
+            dispatch (postSdkMessage.wmConfig (getClientWmConfig ()));
 
             // If widgetShouldAutoOpen is true then reset the value of it to false.
             if (widgetShouldAutoOpen) {
@@ -697,7 +697,7 @@ define ("actions/appState",
      * This event is used to pass updated launcher styles to messenger js
      */
     const _postUiConfigUpdatedEvent = () => {
-      postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ());
+      store.dispatch (postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ()));
     };
 
     /**

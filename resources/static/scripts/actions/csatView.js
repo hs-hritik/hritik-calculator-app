@@ -10,18 +10,17 @@ define ("actions/csatView",
     "actions/actionCreators",
     "actions/chatView",
     "actions/batch",
+    "actions/postSdkMessage",
     "constants/actionTypes",
     "constants/routes",
     "constants/activeView",
     "constants/analytics",
     "gunpowder/utils/xhr",
     "helpers/xhr",
-    "helpers/analytics",
-    "extras/postSdkMessage"
+    "helpers/analytics"
   ],
-  function (store, actionCreator, chatViewActions, batchActions, ACTION_TYPES,
-    routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers,
-    postSdkMessage) {
+  function (store, actionCreator, chatViewActions, batchActions, postSdkMessage, ACTION_TYPES,
+    routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
@@ -76,10 +75,10 @@ define ("actions/csatView",
           headers: xhrHelpers.getCommonHeaders (),
           method: "POST",
           onSuccess: () => {
-            postSdkMessage.csatSubmitEvent ({
+            dispatch (postSdkMessage.csatSubmitEvent ({
               rating,
               review: csatReview
-            });
+            }));
           },
           onEnd: () => {
             dispatch (

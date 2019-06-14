@@ -16,16 +16,15 @@ define ("extras/api",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
+    "actions/postSdkMessage",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
-    "helpers/common",
-    "extras/postSdkMessage",
     "gunpowder/utils/object"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, commonHelpers, postSdkMessage, objUtils) {
+    postSdkMessage, app, analyticsHelpers, lsHelpers, objUtils) {
     "use strict";
 
     const {
@@ -131,26 +130,26 @@ define ("extras/api",
           } else {
             // Current user and re-engagement users are different.
             // Fire the user changed event.
-            postSdkMessage.userChanged ({
+            dispatch (postSdkMessage.userChanged ({
               originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
               pageUrl: reEngagementData.last_session_url
-            });
+            }));
           }
         } else {
           // Current user is logged in & re-engagement user is anonymous.
           // Fire the user changed event
-          postSdkMessage.userChanged ({
+          dispatch (postSdkMessage.userChanged ({
             originalState: RE_ENGAGEMENT_USER_STATE.ANONYMOUS,
             pageUrl: reEngagementData.last_session_url
-          });
+          }));
         }
       } else if (userWasLoggedIn) {
         // Current user is anonymous and re-engagement users is logged-in user.
         // Fire the user changed event.
-        postSdkMessage.userChanged ({
+        dispatch (postSdkMessage.userChanged ({
           originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
           pageUrl: reEngagementData.last_session_url
-        });
+        }));
       } else {
         // Current user is anonymous & re-engagement user is also anonymous.
         // Set value in localStorage as anon user id is picked up from the
