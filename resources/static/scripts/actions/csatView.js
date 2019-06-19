@@ -15,12 +15,12 @@ define ("actions/csatView",
     "constants/routes",
     "constants/activeView",
     "constants/analytics",
-    "gunpowder/utils/xhr",
     "helpers/xhr",
-    "helpers/analytics"
+    "helpers/analytics",
+    "axios"
   ],
   function (store, actionCreator, chatViewActions, batchActions, postSdkMessage, ACTION_TYPES,
-    routes, ACTIVE_VIEW, analyticsConstants, xhr, xhrHelpers, analyticsHelpers) {
+    routes, ACTIVE_VIEW, analyticsConstants, xhrHelpers, analyticsHelpers, axios) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
@@ -67,20 +67,25 @@ define ("actions/csatView",
           xhrData.comment = csatReview;
         }
 
+        const xhrOptions = {
+          method: "POST",
+          url: routes.postCSAT (domain, activeIssueId),
+          headers: xhrHelpers.getCommonHeadersForAxios (),
+          data: xhrHelpers.getPreparedXhrData (xhrData, {
+            queryStringify: true
+          })
+        };
+
         dispatch (setCsatSaveInProgress (true));
 
-        xhr ({
-          route: routes.postCSAT (domain, activeIssueId),
-          data: xhrHelpers.getPreparedXhrData (xhrData),
-          headers: xhrHelpers.getCommonHeaders (),
-          method: "POST",
-          onSuccess: () => {
+        return axios (xhrOptions)
+          .then (() => {
             dispatch (postSdkMessage.csatSubmitEvent ({
               rating,
               review: csatReview
             }));
-          },
-          onEnd: () => {
+          })
+          .finally (() => {
             dispatch (
               batchActions ([
                 actionCreator.updateActiveView (ACTIVE_VIEW.CHAT),
@@ -89,14 +94,13 @@ define ("actions/csatView",
               ])
             );
             dispatch (chatViewActions.showPostIssueResolutionFooter ());
-          }
-        });
 
-        // Track CSAT submitted event here (we don't have to wait for the CSAT
-        // submitted XHR).
-        analyticsHelpers.track (EVENT.CSAT, {
-          event: EVENT.CSAT_SURVEY_SUBMITTED
-        });
+            // Track CSAT submitted event here (we don't have to wait for the CSAT
+            // submitted XHR).
+            analyticsHelpers.track (EVENT.CSAT, {
+              event: EVENT.CSAT_SURVEY_SUBMITTED
+            });
+          });
       };
     };
 
