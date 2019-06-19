@@ -6,6 +6,7 @@ require.config ({
   paths: {
     libs: `${DOMAIN}/libs/`,
     reduxThunk: `${DOMAIN}/libs/redux-thunk`,
-    uaParser: `${DOMAIN}/libs/ua-parser`
+    uaParser: `${DOMAIN}/libs/ua-parser`,
+    axios: `${DOMAIN}/libs/axios`
   }
 });
