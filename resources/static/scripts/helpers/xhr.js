@@ -29,6 +29,23 @@ define ("helpers/xhr",
     } = errorConstants;
 
     /**
+     * Convert an object to query strings.
+     * For example, {like: "a", rolling: "stone"} will be converted to
+     * "like=a&rolling=stone".
+     * @param {Object} obj - object to query stringify
+     * @returns {string} - the query string
+     */
+    const _queryStringify = (obj) => {
+      const qs = [];
+      for (const key in obj) {
+        if (obj.hasOwnProperty (key)) {
+          qs.push (encodeURIComponent (key) + "=" + encodeURIComponent (obj [key]));
+        }
+      }
+      return qs.join ("&");
+    };
+
+    /**
      * Return common headers which are to be passed to each xhr request.
      * @returns {Object} - header key-value pairs.
      */
@@ -49,6 +66,19 @@ define ("helpers/xhr",
     };
 
     /**
+     * Get common headers to be passed with every xhr request via axios.
+     * This is needed because the xhr util adds the Content-Type header with the
+     * xhr call. With axios, this helper function has to be used in order to set
+     * the headers.
+     * @returns {Object} - header key-value pairs.
+     */
+    const getCommonHeadersForAxios = () => {
+      return objUtils.shallowMerge (getCommonHeaders (), {
+        "Content-Type": "application/x-www-form-urlencoded"
+      });
+    };
+
+    /**
      * Get the data object to be passed with the `data` field of an XHR call. It
      * merges the custom data (specific to an XHR) with the common XHR data. The
      * common XHR data contains the following.
@@ -65,14 +95,20 @@ define ("helpers/xhr",
      *     foo: "a",
      *     bar: "b"
      *   }),
-     *   onSucess: () => {}
+     *   onSuccess: () => {}
      * })
      *
-     * @param {Object} customXhrData
-     * @param {Boolean} skipPlatformId - whether to skip adding platform-id
+     * @param {Object} [customXhrData]
+     * @param {Object} [options]
+     * @param {boolean} [options.skipPlatformId] - whether to skip adding platform-id
+     * @param {boolean} [options.queryStringify] - whether to query-strigify xhr data
      * @returns {Object}
      */
-    const getPreparedXhrData = (customXhrData, skipPlatformId) => {
+    const getPreparedXhrData = (customXhrData, options) => {
+      const skipPlatformId = options ? options.skipPlatformId : false;
+      const queryStringify = options ? options.queryStringify : false;
+      let xhrData;
+
       const {
         deviceId,
         userId,
@@ -126,10 +162,15 @@ define ("helpers/xhr",
       // Merge custom and common XHR data objects if the passed custom data is
       // an object.
       if (objUtils.isObject (customXhrData)) {
-        return objUtils.shallowMerge (commonXhrData, customXhrData);
+        xhrData = objUtils.shallowMerge (commonXhrData, customXhrData);
+      } else {
+        xhrData = commonXhrData;
       }
 
-      return commonXhrData;
+      if (queryStringify) {
+        return _queryStringify (xhrData);
+      }
+      return xhrData;
     };
 
     /**
@@ -180,6 +221,7 @@ define ("helpers/xhr",
 
     return {
       getCommonHeaders,
+      getCommonHeadersForAxios,
       getPreparedXhrData,
       handleAuthFailure
     };

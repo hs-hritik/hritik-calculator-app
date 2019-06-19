@@ -36,8 +36,6 @@ define ("actions/appState",
     uiActions, batchActions, actionCreators, postSdkMessage, browserUtils, dataTypeUtils) {
     "use strict";
 
-    const SKIP_PLATFORM_ID = true;
-
     const {
       ANON_USER_RESET_TIMEOUT,
       TRIGGER,
@@ -916,7 +914,9 @@ define ("actions/appState",
           route: routes.putResetPreIssue (domain, activeIssueId),
           data: xhrHelpers.getPreparedXhrData ({
             state: ISSUE_STATE_RESET
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),
           onEnd: () => {

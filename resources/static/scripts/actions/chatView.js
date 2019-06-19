@@ -79,7 +79,6 @@ define ("actions/chatView",
     const update = React.addons.update;
 
     const PROCESS = true;
-    const SKIP_PLATFORM_ID = true;
     const ENABLE_FOOTER = true;
     const DISABLE_FOOTER = !ENABLE_FOOTER;
 
@@ -278,7 +277,9 @@ define ("actions/chatView",
           route: routes.putMessages (domain, activeIssueId, pluralIssueType),
           data: xhrHelpers.getPreparedXhrData ({
             md_state: "read"
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
         });
@@ -1824,7 +1825,9 @@ define ("actions/chatView",
 
       xhr ({
         route: routes.postUserReply (domain, activeIssueId, xhrIssueType),
-        data: xhrHelpers.getPreparedXhrData (xhrData, SKIP_PLATFORM_ID),
+        data: xhrHelpers.getPreparedXhrData (xhrData, {
+          skipPlatformId: true
+        }),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
@@ -2422,7 +2425,9 @@ define ("actions/chatView",
           formData: xhrHelpers.getPreparedXhrData ({
             "issue-id": activeIssueId,
             "message-type": MESSAGE_TYPE.ATTACHMENT
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
