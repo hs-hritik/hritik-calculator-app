@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CsatView should render correctly (snapshot) 1`] = `
+<div
+  className="hs-view"
+  style={
+    Object {
+      "fontFamily": "MOCK_FONT_FAMILY",
+    }
+  }
+>
+  <ViewHeader
+    onCloseBtnClick={[MockFunction]}
+    showCloseBtn={false}
+    title="MOCK_VIEW_HEADER"
+  />
+  <div
+    className="hs-view__content"
+  >
+    <div
+      className="hs-csat"
+    >
+      <div
+        className="hs-csat__form"
+      >
+        <div
+          className="hs-csat__form-item"
+        >
+          <h3
+            className="hs-csat__heading"
+          >
+            MOCK_REQUEST_MESSAGE
+          </h3>
+        </div>
+        <div
+          className="hs-csat__form-item"
+        >
+          <StarRating
+            editing={true}
+            name="csat"
+            onStarClick={[Function]}
+            starCount={5}
+            value={0}
+          />
+        </div>
+        <div
+          className="hs-csat__form-item"
+        >
+          <small
+            className="hs-csat__form-label"
+          >
+            MOCK_REVIEW_TITLE
+          </small>
+          <textarea
+            className="hs-csat__input"
+            dir="auto"
+            disabled={false}
+            onChange={[Function]}
+            placeholder="MOCK_REVIEW_PLACEHOLDER"
+            value="MOCK_REVIEW"
+          />
+        </div>
+      </div>
+      <Connect(Branding) />
+      <div
+        className="hs-footer hs-footer--center-items"
+      >
+        <div
+          className="hs-footer__vertical-items-wrapper"
+        >
+          <button
+            className="hs-button hs-footer__btn"
+            disabled={true}
+            onClick={[MockFunction]}
+          >
+            MOCK_FORM_SUBMIT_BUTTON
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

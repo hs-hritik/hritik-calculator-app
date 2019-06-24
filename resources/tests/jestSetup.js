@@ -4,13 +4,16 @@
  * @author Prasenjit Sharan <prasenjit@helpshift.com>
  * @created 19 June, 2019
  */
+const enzyme = require ("enzyme");
+const Adapter = require ("enzyme-adapter-react-15.4");
 
 // Update node's global object with references to React, Redux, etc for tests.
-if (!global.React) {
+if (!global.React || !global.Redux || !global.ReactRedux) {
   const React = require ("react");
   const PureRenderMixin = require ("react-addons-pure-render-mixin");
   const update = require ("react-addons-update");
   const Redux = require ("redux");
+  const ReactRedux = require ("react-redux");
 
   // Add react, react-addons, and redux to the global scope.
   // We can't use `libs/react-with-addons` and `libs/redux` because jest
@@ -23,4 +26,8 @@ if (!global.React) {
     update
   };
   global.Redux = Redux;
+  global.ReactRedux = ReactRedux;
 }
+
+// Enzyme setup
+enzyme.configure ({adapter: new Adapter ()});
