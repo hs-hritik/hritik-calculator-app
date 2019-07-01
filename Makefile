@@ -26,7 +26,7 @@ GUNPOWDER_DEST = resources/static/scripts/gunpowder
 # tests for HTML and CSS.
 ifdef GERRIT_CHANGE_ID
 	git_diff = $(shell sh -c 'git diff-tree --no-commit-id --name-only --root -m -r HEAD')
-	js_diff = $(shell sh -c "echo $(git_diff) | xargs -n 1 | grep -E 'scripts/.+\.js$$|__tests__/src/.+\.js$$|scripts/.+\.jsx$$|__tests__/src/.+\.jsx$$'")
+	js_diff = $(shell sh -c "echo $(git_diff) | xargs -n 1 | grep -E 'scripts/.+\.js$$|tests/.+\.js$$|scripts/.+\.jsx$$|tests/.+\.jsx$$'")
 	eslint_prefixed_js_diff = $(addprefix -f ,$(js_diff))
 	styles_diff = $(shell sh -c "echo $(git_diff) | grep 'styles/.*\.scss'")
 	makefile_diff = $(shell sh -c "echo $(git_diff) | grep Makefile")
