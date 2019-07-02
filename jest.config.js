@@ -78,8 +78,8 @@ module.exports = {
 
   // A map from regular expressions to module names that allow to stub out resources with a single module
   moduleNameMapper: {
-    "reduxThunk": "<rootDir>/resources/static/libs/redux-thunk-min.js",
-    "uaParser": "<rootDir>/resources/static/libs/ua-parser-min.js"
+    reduxThunk: "<rootDir>/resources/static/libs/redux-thunk-min.js",
+    uaParser: "<rootDir>/resources/static/libs/ua-parser-min.js"
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -125,7 +125,7 @@ module.exports = {
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
   setupFiles: [
-    "./resources/tests/jestSetup.js"
+    "./resources/__tests__/jestSetup.js"
   ],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
@@ -145,7 +145,7 @@ module.exports = {
 
   // The glob patterns Jest uses to detect test files
   testMatch: [
-    "**/tests/unit/**/*.js?(x)"
+    "**/__tests__/unit/**/*.js?(x)"
   ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
@@ -171,7 +171,7 @@ module.exports = {
   // A map from regular expressions to paths to transformers
   transform: {
     "^.+\\.jsx?$": "babel-jest"
-  },
+  }
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
