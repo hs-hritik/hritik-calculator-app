@@ -12,14 +12,15 @@ define ("components/containers/chatViewFooter",
     "actions/appState",
     "actions/csatView",
     "actions/postSdkMessage",
+    "actions/common",
     "constants/activeView",
     "constants/chatView",
     "constants/appState",
     "helpers/common"
   ],
   function (ChatViewFooter, chatViewActions, actionCreators, appStateActions,
-    csatViewActions, postSdkMessage, ACTIVE_VIEW, chatViewConstants, appStateConstants,
-    commonHelpers) {
+    csatViewActions, postSdkMessage, commonActions, ACTIVE_VIEW, chatViewConstants,
+    appStateConstants, commonHelpers) {
     "use strict";
 
     const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
@@ -123,17 +124,15 @@ define ("components/containers/chatViewFooter",
           dispatch (chatViewActions.rejectResolutionQuestion ());
         },
         onStartNewConversation: () => {
-          // We need to just call reset as it will clear all the store data and
+          // We need to just call app reset as it will clear all the store data and
           // call getConfig. Once getConfig is called, it will initialize the
           // conversation and will take care of creating new preIssue.
           // Ref :- App state actions -> initializeConversation
-          dispatch (
-            appStateActions.setAppResetTrigger (
-              APP_RESET_TRIGGER.START_NEW_CONVERSATION
-            )
-          );
-          dispatch (appStateActions.reset ());
-          dispatch (actionCreators.toggleChatViewLoading (true));
+          dispatch (commonActions.reloadApp ({
+            loading: true,
+            trigger: APP_RESET_TRIGGER.START_NEW_CONVERSATION,
+            callback: chatViewActions.stopPollingForMessages
+          }));
         },
         onSkipUserInput: () => {
           dispatch (chatViewActions.skipUserInput ());

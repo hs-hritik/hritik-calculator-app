@@ -27,13 +27,14 @@ define ("actions/appState",
     "actions/batch",
     "actions/actionCreators",
     "actions/postSdkMessage",
+    "actions/common",
     "utils/browser",
     "utils/dataType"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
     analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
-    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions,
-    uiActions, batchActions, actionCreators, postSdkMessage, browserUtils, dataTypeUtils) {
+    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions, uiActions,
+    batchActions, actionCreators, postSdkMessage, commonActions, browserUtils, dataTypeUtils) {
     "use strict";
 
     const {
@@ -116,16 +117,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set conversation ended
-     * @returns {Object} - Action
-     */
-    const setConversationEnded = () => {
-      return {
-        type: ACTION_TYPES.SET_CONVERSATION_ENDED
-      };
-    };
-
-    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
@@ -144,37 +135,6 @@ define ("actions/appState",
         // handled on click of 'start new conversation' button which will call reset.
         if (!issueExists) {
           startNewConversation ();
-        }
-      };
-    };
-
-    /**
-     * Action to reset the conversation.
-     * It does the following tasks:
-     * - Stop polling for agent messages.
-     * - Dispatch action to reset the store.
-     * - Post reset message to parent.
-     * - Clear localstorage.
-     * - Minimize widget if options.minimizeMessenger is true.
-     * @param {Object} [options]
-     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
-     *                  chat related data or not. By default, they would NOT be reset.
-     * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the widget or not.
-     *                                                Defaults to false.
-     */
-    const reset = (options = {}) => {
-      return (dispatch, getState) => {
-        chatViewActions.stopPollingForMessages ();
-        dispatch (setConversationEnded ());
-        dispatch (actionCreators.reset ());
-        dispatch (postSdkMessage.reset ());
-        lsHelpers.reset ({
-          resetProactiveChat: options.resetProactiveChat
-        });
-
-        const {minimized} = getState ().appState;
-        if (options.minimizeMessenger && !minimized) {
-          dispatch (postSdkMessage.toggleMessenger (true));
         }
       };
     };
@@ -400,18 +360,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set app reset trigger
-     * @param {String} value - value of reset trigger
-     * @returns {Object} - Action
-     */
-    const setAppResetTrigger = (value) => {
-      return {
-        type: ACTION_TYPES.SET_APP_RESET_TRIGGER,
-        value
-      };
-    };
-
-    /**
      * Initialize conversation - either enable the chat view or the out of
      * business hours view.
      */
@@ -471,7 +419,7 @@ define ("actions/appState",
 
         // The reset trigger is reset to its default value once appropriate
         // action is performed.
-        dispatch (setAppResetTrigger (APP_RESET_TRIGGER.INITIAL));
+        dispatch (actionCreators.setAppResetTrigger (APP_RESET_TRIGGER.INITIAL));
       }
     };
 
@@ -813,18 +761,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set initial user message in store
-     * @param {String} - message
-     * @returns {Object} - Action
-     */
-    const setInitialUserMsg = (message) => {
-      return {
-        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
-        message
-      };
-    };
-
-    /**
      * Action to replace the cifs
      * @param {Object} cif - data of cif
      * @returns {Object} - Action
@@ -920,10 +856,12 @@ define ("actions/appState",
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),
           onEnd: () => {
-            dispatch (setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET));
             // In both the cases (success and failure), we'll start with a new
             // conversation for the end user.
-            dispatch (reset ());
+            dispatch (commonActions.reloadApp ({
+              trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
+              callback: chatViewActions.stopPollingForMessages
+            }));
           }
         });
       };
@@ -966,8 +904,6 @@ define ("actions/appState",
       setClientConfig,
       setWmConfig,
       toggleMinimized,
-      reset,
-      setInitialUserMsg,
       startConversation,
       replaceCif,
       setParentPageInfo,
@@ -976,7 +912,6 @@ define ("actions/appState",
       updateStyles,
       resetPreIssue,
       setConversationStarted,
-      setAppResetTrigger,
       setWidgetShouldAutoOpen,
       setReEngagementId,
       setWindowIsFocused

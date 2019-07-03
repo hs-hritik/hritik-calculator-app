@@ -236,6 +236,40 @@ define ("actions/actionCreators",
       toggleState
     });
 
+     /**
+     * Action to set conversation ended
+     * @returns {Object} - Action
+     */
+    const setConversationEnded = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ENDED
+      };
+    };
+
+    /**
+     * Action to set app reset trigger
+     * @param {String} value - value of reset trigger
+     * @returns {Object} - Action
+     */
+    const setAppResetTrigger = (value) => {
+      return {
+        type: ACTION_TYPES.SET_APP_RESET_TRIGGER,
+        value
+      };
+    };
+
+    /**
+     * Action to set initial user message in store
+     * @param {String} - message
+     * @returns {Object} - Action
+     */
+    const setInitialUserMsg = (message) => {
+      return {
+        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
+        message
+      };
+    };
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -257,6 +291,9 @@ define ("actions/actionCreators",
       setFooterActive,
       setFooterInactive,
       resetReEngagementId,
-      updateListPickerToggleState
+      updateListPickerToggleState,
+      setAppResetTrigger,
+      setInitialUserMsg,
+      setConversationEnded
     };
   });
