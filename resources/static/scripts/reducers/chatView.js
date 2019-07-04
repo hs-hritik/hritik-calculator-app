@@ -279,7 +279,7 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.SET_USER_IS_REDACTED:
           return update (state, {
-            userIsRedacted: {$set: true}
+            userIsRedacted: {$set: action.userIsRedacted}
           });
 
         case ACTION_TYPES.RESET_USER_INPUT_DATA:
