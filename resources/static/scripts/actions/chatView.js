@@ -86,6 +86,7 @@ define ("actions/chatView",
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
+        createPreissueXhr = null,
         fetchMessagesXhr = null,
         fetchMessagesTimer = null,
         lastFetchStartTime = null,
@@ -218,6 +219,17 @@ define ("actions/chatView",
       liveUpdatesHelpers.detachAgentActivityListener ();
 
       agentActivitySubscribed = false;
+    };
+
+    /**
+     * Abort create preissue XHR if it's in progress
+     */
+    const abortCreatePreissueXhr = () => {
+      // Check if preissue XHR is in progress. If so, abort it.
+      if (createPreissueXhr) {
+        createPreissueXhr.abort ();
+        createPreissueXhr = null;
+      }
     };
 
     /**
@@ -2184,7 +2196,7 @@ define ("actions/chatView",
         // value of input disabled is false, in store on page refresh.
         handleIssueFooterAndTAI (DISABLE_FOOTER);
 
-        xhr ({
+        createPreissueXhr = xhr ({
           route: routes.postPreIssue (domain),
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
@@ -2620,6 +2632,7 @@ define ("actions/chatView",
       createPreIssue,
       updateReplyText,
       submitReply,
+      abortCreatePreissueXhr,
       startPollingForMessages,
       stopPollingForMessages,
       addMessages,

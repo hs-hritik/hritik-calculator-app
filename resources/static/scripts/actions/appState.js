@@ -62,6 +62,8 @@ define ("actions/appState",
     const isCssVarSupported = (window.CSS && window.CSS.supports &&
                                window.CSS.supports ("--fake-var", 0));
 
+    let getConfigXhr = null;
+
     /**
      * Set the Device id value in the state/localstorage via an action.
      * If a value is present in the localstorage, keep using the same
@@ -516,7 +518,7 @@ define ("actions/appState",
       const requestData = xhrHelpers.getPreparedXhrData ();
       requestData.nonce = Date.now ();
 
-      xhr ({
+      getConfigXhr = xhr ({
         route: routes.getWmConfig (domain),
         headers: xhrHelpers.getCommonHeaders (),
         data: requestData,
@@ -899,6 +901,17 @@ define ("actions/appState",
       windowIsFocused
     });
 
+    /**
+     * Abort get web chat config XHR if it's in progress
+     */
+    const abortGetConfigXhr = () => {
+      // Check if get web chat config xhr is in progress. If so, abort it.
+      if (getConfigXhr) {
+        getConfigXhr.abort ();
+        getConfigXhr = null;
+      }
+    };
+
     return {
       setDeviceId,
       setAnonUserId,
@@ -915,6 +928,7 @@ define ("actions/appState",
       setConversationStarted,
       setWidgetShouldAutoOpen,
       setReEngagementId,
-      setWindowIsFocused
+      setWindowIsFocused,
+      abortGetConfigXhr
     };
   });
