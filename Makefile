@@ -32,7 +32,7 @@ ifdef GERRIT_CHANGE_ID
 	makefile_diff = $(shell sh -c "echo $(git_diff) | grep Makefile")
 
 	ifneq ($(eslint_prefixed_js_diff),)
-		TEST_TARGETS := $(TEST_TARGETS) npminstall gunpowder reactjs eslint
+		TEST_TARGETS := $(TEST_TARGETS) npminstall gunpowder reactjs eslint unit-test
 		JS_TEST_TARGETS := $(JS_TEST_TARGETS) eslint
 	endif
 
@@ -239,6 +239,6 @@ clean-subdir:
 
 jstests: $(JS_TEST_TARGETS)
 
-test: clean $(TEST_TARGETS) unit-test
+test: clean $(TEST_TARGETS)
 
 .PHONY: test
