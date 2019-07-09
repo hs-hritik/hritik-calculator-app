@@ -1,0 +1,3 @@
+Changelog:
+Update r.js build file with axios
+Run unit-test only when there's a js/jsx change
