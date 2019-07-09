@@ -26,19 +26,16 @@ define ("actions/appState",
     "actions/ui",
     "actions/batch",
     "actions/actionCreators",
+    "actions/postSdkMessage",
+    "actions/common",
     "utils/browser",
-    "utils/dataType",
-    "extras/postSdkMessage",
-    "actions/common"
+    "utils/dataType"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
     analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
-    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions,
-    uiActions, batchActions, actionCreators, browserUtils, dataTypeUtils, postSdkMessage,
-    commonActions) {
+    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions, uiActions,
+    batchActions, actionCreators, postSdkMessage, commonActions, browserUtils, dataTypeUtils) {
     "use strict";
-
-    const SKIP_PLATFORM_ID = true;
 
     const {
       ANON_USER_RESET_TIMEOUT,
@@ -388,9 +385,9 @@ define ("actions/appState",
         const widgetIsOpen = !minimized;
 
         if (!issueExists) {
-          postSdkMessage.conversationStatusEvent ({
+          dispatch (postSdkMessage.conversationStatusEvent ({
             open: false
-          });
+          }));
         }
 
         // If atleast one issue exists on backend then start the poller.
@@ -463,7 +460,7 @@ define ("actions/appState",
             setUiConfig (helpshiftConfig);
 
             // Send the config event loaded back to the client
-            postSdkMessage.wmConfig (getClientWmConfig ());
+            dispatch (postSdkMessage.wmConfig (getClientWmConfig ()));
 
             // If widgetShouldAutoOpen is true then reset the value of it to false.
             if (widgetShouldAutoOpen) {
@@ -646,7 +643,7 @@ define ("actions/appState",
      * This event is used to pass updated launcher styles to messenger js
      */
     const _postUiConfigUpdatedEvent = () => {
-      postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ());
+      store.dispatch (postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ()));
     };
 
     /**
@@ -853,7 +850,9 @@ define ("actions/appState",
           route: routes.putResetPreIssue (domain, activeIssueId),
           data: xhrHelpers.getPreparedXhrData ({
             state: ISSUE_STATE_RESET
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),
           onEnd: () => {

@@ -12,7 +12,8 @@ module.exports = {
   "env": {
     "browser": true,
     "amd": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
   "globals": {
     "React": true,
@@ -56,7 +57,7 @@ module.exports = {
 
     // Best Practices
     "curly": 2,
-    "dot-notation": [2, {"allowKeywords": false}],
+    "dot-notation": [2],
     "dot-location": [2, "property"],
     "eqeqeq": 2,
     "guard-for-in": 2,

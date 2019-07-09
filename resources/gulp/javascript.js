@@ -87,6 +87,7 @@ const PATHS = {
 const TEMPLATE_PATHS = {
   LIBS: {
     DEV: `
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/axios.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-with-addons.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-dom.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/redux.js"></script>

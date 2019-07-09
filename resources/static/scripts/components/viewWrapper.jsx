@@ -10,11 +10,10 @@ define ("components/viewWrapper",
     "components/containers/chatView",
     "components/containers/faqView",
     "components/containers/csatView",
-    "components/containers/businessHoursView",
-    "extras/postSdkMessage"
+    "components/containers/businessHoursView"
   ],
   function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer,
-    BusinessHoursViewContainer, postSdkMessage) {
+    BusinessHoursViewContainer) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -28,7 +27,8 @@ define ("components/viewWrapper",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        onToggleOnlineStatus: PropTypes.func.isRequired
+        onToggleOnlineStatus: PropTypes.func.isRequired,
+        onMinimizeConversation: PropTypes.func.isRequired
       },
 
       render () {
@@ -74,7 +74,7 @@ define ("components/viewWrapper",
        * Handler for minimize conversation.
        */
       _onMinimizeConversation () {
-        postSdkMessage.toggleMessenger (true);
+        this.props.onMinimizeConversation ();
       },
 
       _onOnline () {
