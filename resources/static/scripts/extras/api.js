@@ -352,7 +352,14 @@ define ("extras/api",
         case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
           store.dispatch (commonActions.reloadApp ({
             trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
-            callback: chatViewActions.stopPollingForMessages
+            callback: () => {
+              // When app reloads/resets with an updated config, stop existing network
+              // calls so that the application's state doesn't get unintended
+              // values due to previous XHRs returning after reset is complete.
+              appStateActions.abortGetConfigXhr ();
+              chatViewActions.stopPollingForMessages ();
+              chatViewActions.abortCreatePreissueXhr ();
+            }
           }));
           break;
       }

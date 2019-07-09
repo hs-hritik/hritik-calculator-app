@@ -84,6 +84,7 @@ define ("actions/chatView",
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
+        createPreissueXhr = null,
         fetchMessagesXhr = null,
         fetchMessagesTimer = null,
         lastFetchStartTime = null,
@@ -216,6 +217,17 @@ define ("actions/chatView",
       liveUpdatesHelpers.detachAgentActivityListener ();
 
       agentActivitySubscribed = false;
+    };
+
+    /**
+     * Abort create preissue XHR if it's in progress
+     */
+    const abortCreatePreissueXhr = () => {
+      // Check if preissue XHR is in progress. If so, abort it.
+      if (createPreissueXhr) {
+        createPreissueXhr.abort ();
+        createPreissueXhr = null;
+      }
     };
 
     /**
@@ -375,11 +387,13 @@ define ("actions/chatView",
 
     /**
      * Action to set user is redacted
+     * @param {boolean} userIsRedacted - true if the user has to be redacted
      * @returns {Object} - Action
      */
-    const setUserIsRedacted = () => {
+    const setUserIsRedacted = (userIsRedacted) => {
       return {
-        type: ACTION_TYPES.SET_USER_IS_REDACTED
+        type: ACTION_TYPES.SET_USER_IS_REDACTED,
+        userIsRedacted
       };
     };
 
@@ -1393,7 +1407,8 @@ define ("actions/chatView",
             forward: forwardMessageCursor
           },
           issueCursor,
-          pollerFailureCount: prevPollerFailureCount
+          pollerFailureCount: prevPollerFailureCount,
+          userIsRedacted
         }
       } = store.getState ();
 
@@ -1429,7 +1444,19 @@ define ("actions/chatView",
           // @NOTE - This is to make sure that onEnd is called even if
           // any code in onSuccess results in an Exception.
           try {
+            // Undo updates when the poller fails
+            // 1. Poller succeeded
+            // Refer onEnd callback where this value is used.
             lastPollerCallSucceeded = true;
+
+            // 2. If the poller succeeds, it means that it's a valid user. If
+            // the user was set to be redacted with the previous poller
+            // failure, undo it.
+            // Refer the onFailure callback where the user is redacted.
+            if (userIsRedacted) {
+              dispatch (setUserIsRedacted (false));
+            }
+
             const {
               has_older_messages: hasOlderMsgs,
               issues = [],
@@ -1622,7 +1649,7 @@ define ("actions/chatView",
 
           if (response.msg === USER_REDACTION_ERR_MSG &&
             statusCode === USER_REDACTION_ERR_STATUS_CODE) {
-            dispatch (setUserIsRedacted ());
+            dispatch (setUserIsRedacted (true));
           }
         },
         onEnd: () => {
@@ -2186,7 +2213,7 @@ define ("actions/chatView",
         // value of input disabled is false, in store on page refresh.
         handleIssueFooterAndTAI (DISABLE_FOOTER);
 
-        xhr ({
+        createPreissueXhr = xhr ({
           route: routes.postPreIssue (domain),
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
@@ -2624,6 +2651,7 @@ define ("actions/chatView",
       createPreIssue,
       updateReplyText,
       submitReply,
+      abortCreatePreissueXhr,
       startPollingForMessages,
       stopPollingForMessages,
       addMessages,
