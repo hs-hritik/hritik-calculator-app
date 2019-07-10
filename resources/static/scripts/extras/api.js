@@ -16,16 +16,16 @@ define ("extras/api",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
+    "actions/postSdkMessage",
+    "actions/common",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
-    "extras/postSdkMessage",
-    "gunpowder/utils/object",
-    "actions/common"
+    "gunpowder/utils/object"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, postSdkMessage, objUtils, commonActions) {
+    postSdkMessage, commonActions, app, analyticsHelpers, lsHelpers, objUtils) {
     "use strict";
 
     const {
@@ -131,26 +131,26 @@ define ("extras/api",
           } else {
             // Current user and re-engagement users are different.
             // Fire the user changed event.
-            postSdkMessage.userChanged ({
+            dispatch (postSdkMessage.userChanged ({
               originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
               pageUrl: reEngagementData.last_session_url
-            });
+            }));
           }
         } else {
           // Current user is logged in & re-engagement user is anonymous.
           // Fire the user changed event
-          postSdkMessage.userChanged ({
+          dispatch (postSdkMessage.userChanged ({
             originalState: RE_ENGAGEMENT_USER_STATE.ANONYMOUS,
             pageUrl: reEngagementData.last_session_url
-          });
+          }));
         }
       } else if (userWasLoggedIn) {
         // Current user is anonymous and re-engagement users is logged-in user.
         // Fire the user changed event.
-        postSdkMessage.userChanged ({
+        dispatch (postSdkMessage.userChanged ({
           originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
           pageUrl: reEngagementData.last_session_url
-        });
+        }));
       } else {
         // Current user is anonymous & re-engagement user is also anonymous.
         // Set value in localStorage as anon user id is picked up from the
@@ -352,7 +352,14 @@ define ("extras/api",
         case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
           store.dispatch (commonActions.reloadApp ({
             trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
-            callback: chatViewActions.stopPollingForMessages
+            callback: () => {
+              // When app reloads/resets with an updated config, stop existing network
+              // calls so that the application's state doesn't get unintended
+              // values due to previous XHRs returning after reset is complete.
+              appStateActions.abortGetConfigXhr ();
+              chatViewActions.stopPollingForMessages ();
+              chatViewActions.abortCreatePreissueXhr ();
+            }
           }));
           break;
       }

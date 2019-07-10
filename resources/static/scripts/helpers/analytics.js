@@ -24,8 +24,6 @@ define ("helpers/analytics",
     browserUtils, actionCreators) {
     "use strict";
 
-    const SKIP_PLATFORM_ID = true;
-
     const {
       ISSUE_TYPE,
       ISSUE_STATE
@@ -267,7 +265,9 @@ define ("helpers/analytics",
       xhr ({
         route: routes.postSuggestedFaqRead (domain),
         headers: xhrHelpers.getCommonHeaders (),
-        data: xhrHelpers.getPreparedXhrData (xhrData, SKIP_PLATFORM_ID),
+        data: xhrHelpers.getPreparedXhrData (xhrData, {
+          skipPlatformId: true
+        }),
         method: "POST",
         onSuccess: () => {
           // Store the fact that the SUGGESTED_FAQ_READ event has been tracked once

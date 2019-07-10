@@ -10,7 +10,7 @@
 define ("actions/common",
   [
     "actions/actionCreators",
-    "extras/postSdkMessage",
+    "actions/postSdkMessage",
     "helpers/localStorage"
   ],
   function (actionCreators, postSdkMessage, lsHelpers) {
@@ -43,7 +43,7 @@ define ("actions/common",
         dispatch (actionCreators.setAppResetTrigger (trigger));
         dispatch (actionCreators.setConversationEnded ());
         dispatch (actionCreators.reset ());
-        postSdkMessage.reset ();
+        dispatch (postSdkMessage.reset ());
         lsHelpers.reset ({
           resetProactiveChat: false
         });

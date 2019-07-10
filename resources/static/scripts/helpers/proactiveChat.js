@@ -9,7 +9,7 @@ define ("helpers/proactiveChat",
     "constants/proactiveChat",
     "store",
     "actions/actionCreators",
-    "extras/postSdkMessage",
+    "actions/postSdkMessage",
     "helpers/localStorage"
   ],
   function (proactiveChatConstants, store, actionCreators, postSdkMessage, lsHelpers) {
@@ -111,7 +111,7 @@ define ("helpers/proactiveChat",
     const _openWidget = () => {
       const {minimized} = store.getState ().appState;
       if (minimized) {
-        postSdkMessage.toggleMessenger (false);
+        store.dispatch (postSdkMessage.toggleMessenger (false));
       }
     };
 

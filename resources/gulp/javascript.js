@@ -17,7 +17,7 @@ const uglify = require ("gulp-uglify");
 /**
  * Webchat version
  */
-const WEB_CHAT_VERSION = "2.27.0";
+const WEB_CHAT_VERSION = "2.28.1";
 
 /**
  * Name of app bundle
@@ -87,6 +87,7 @@ const PATHS = {
 const TEMPLATE_PATHS = {
   LIBS: {
     DEV: `
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/axios.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-with-addons.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-dom.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/redux.js"></script>

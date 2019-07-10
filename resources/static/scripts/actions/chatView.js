@@ -20,6 +20,7 @@ define ("actions/chatView",
     "gunpowder/utils/date",
     "actions/batch",
     "actions/actionCreators",
+    "actions/postSdkMessage",
     "helpers/message",
     "helpers/chatView",
     "helpers/xhr",
@@ -29,16 +30,14 @@ define ("actions/chatView",
     "helpers/analytics",
     "helpers/prepareProcessXhrData",
     "helpers/common",
-    "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS, ACTIVE_VIEW,
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
-    xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
+    xhr, arrayUtils, dateUtils, batchActions, actionCreators, postSdkMessage, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, postSdkMessage,
-    browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, browserUtils, upload) {
 
     "use strict";
 
@@ -80,12 +79,12 @@ define ("actions/chatView",
     const update = React.addons.update;
 
     const PROCESS = true;
-    const SKIP_PLATFORM_ID = true;
     const ENABLE_FOOTER = true;
     const DISABLE_FOOTER = !ENABLE_FOOTER;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
+        createPreissueXhr = null,
         fetchMessagesXhr = null,
         fetchMessagesTimer = null,
         lastFetchStartTime = null,
@@ -221,6 +220,17 @@ define ("actions/chatView",
     };
 
     /**
+     * Abort create preissue XHR if it's in progress
+     */
+    const abortCreatePreissueXhr = () => {
+      // Check if preissue XHR is in progress. If so, abort it.
+      if (createPreissueXhr) {
+        createPreissueXhr.abort ();
+        createPreissueXhr = null;
+      }
+    };
+
+    /**
      * Action to set active issue message cursor.
      * @param {Object} msgCursorObj - message cursor object
      * @param {Number} msgCursorObj.cursorTs - unix timestamp of message's creation time
@@ -279,14 +289,16 @@ define ("actions/chatView",
           route: routes.putMessages (domain, activeIssueId, pluralIssueType),
           data: xhrHelpers.getPreparedXhrData ({
             md_state: "read"
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
         });
 
         if (unreadMessageIds.length !== 0) {
           dispatch (setUnreadMessageIds ([]));
-          postSdkMessage.updateUnreadCount (0);
+          dispatch (postSdkMessage.updateUnreadCount (0));
         }
       };
     };
@@ -375,11 +387,13 @@ define ("actions/chatView",
 
     /**
      * Action to set user is redacted
+     * @param {boolean} userIsRedacted - true if the user has to be redacted
      * @returns {Object} - Action
      */
-    const setUserIsRedacted = () => {
+    const setUserIsRedacted = (userIsRedacted) => {
       return {
-        type: ACTION_TYPES.SET_USER_IS_REDACTED
+        type: ACTION_TYPES.SET_USER_IS_REDACTED,
+        userIsRedacted
       };
     };
 
@@ -952,13 +966,13 @@ define ("actions/chatView",
       // from the start, we use it as a check.
       if (issueCursor) {
         if (issueState === ISSUE_STATE.RESOLVED) {
-          postSdkMessage.conversationResolvedEvent ();
+          dispatch (postSdkMessage.conversationResolvedEvent ());
         } else if (issueState === ISSUE_STATE.REJECTED) {
-          postSdkMessage.conversationRejectedEvent ();
+          dispatch (postSdkMessage.conversationRejectedEvent ());
         }
 
         if (!resolutionQuestionEnabled || conversationEndEventShouldTrigger) {
-          postSdkMessage.conversationEndEvent ();
+          dispatch (postSdkMessage.conversationEndEvent ());
         }
       }
     };
@@ -1393,7 +1407,8 @@ define ("actions/chatView",
             forward: forwardMessageCursor
           },
           issueCursor,
-          pollerFailureCount: prevPollerFailureCount
+          pollerFailureCount: prevPollerFailureCount,
+          userIsRedacted
         }
       } = store.getState ();
 
@@ -1429,7 +1444,19 @@ define ("actions/chatView",
           // @NOTE - This is to make sure that onEnd is called even if
           // any code in onSuccess results in an Exception.
           try {
+            // Undo updates when the poller fails
+            // 1. Poller succeeded
+            // Refer onEnd callback where this value is used.
             lastPollerCallSucceeded = true;
+
+            // 2. If the poller succeeds, it means that it's a valid user. If
+            // the user was set to be redacted with the previous poller
+            // failure, undo it.
+            // Refer the onFailure callback where the user is redacted.
+            if (userIsRedacted) {
+              dispatch (setUserIsRedacted (false));
+            }
+
             const {
               has_older_messages: hasOlderMsgs,
               issues = [],
@@ -1498,9 +1525,9 @@ define ("actions/chatView",
             const internalIssueId = _getIssueId (currentIssue);
             const issueIsActive = isIssueActive (issueState);
 
-            postSdkMessage.conversationStatusEvent ({
+            dispatch (postSdkMessage.conversationStatusEvent ({
               open: issueIsActive
-            });
+            }));
 
             handleResetInitialUserMessage ({
               issueCursor,
@@ -1622,7 +1649,7 @@ define ("actions/chatView",
 
           if (response.msg === USER_REDACTION_ERR_MSG &&
             statusCode === USER_REDACTION_ERR_STATUS_CODE) {
-            dispatch (setUserIsRedacted ());
+            dispatch (setUserIsRedacted (true));
           }
         },
         onEnd: () => {
@@ -1730,7 +1757,7 @@ define ("actions/chatView",
         dispatch (markMessagesSeen ());
       } else {
         dispatch (setUnreadMessageIds (finalUnreadMessageIds));
-        postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length);
+        dispatch (postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length));
       }
 
       // Do not play sound on page load even if there are unread messages
@@ -1864,7 +1891,9 @@ define ("actions/chatView",
 
       xhr ({
         route: routes.postUserReply (domain, activeIssueId, xhrIssueType),
-        data: xhrHelpers.getPreparedXhrData (xhrData, SKIP_PLATFORM_ID),
+        data: xhrHelpers.getPreparedXhrData (xhrData, {
+          skipPlatformId: true
+        }),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
@@ -1884,15 +1913,15 @@ define ("actions/chatView",
           // Trigger conversationStartEvent which, then, can be tracked by the
           // addEventListener callbacks
           if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
-            postSdkMessage.conversationStartEvent (response.body);
+            dispatch (postSdkMessage.conversationStartEvent (response.body));
           }
 
           if (TEXT_INPUT_MESSAGE_TYPES.indexOf (response.type) !== -1) {
-            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body);
+            dispatch (postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body));
           }
 
           if (response.type === MESSAGE_TYPE.ACCEPTED) {
-            postSdkMessage.conversationEndEvent ();
+            dispatch (postSdkMessage.conversationEndEvent ());
           }
 
           dispatch (
@@ -2038,7 +2067,7 @@ define ("actions/chatView",
           ])
         );
         startPollingForMessages ();
-        postSdkMessage.conversationReopenedEvent ();
+        dispatch (postSdkMessage.conversationReopenedEvent ());
       }
     };
 
@@ -2184,7 +2213,7 @@ define ("actions/chatView",
         // value of input disabled is false, in store on page refresh.
         handleIssueFooterAndTAI (DISABLE_FOOTER);
 
-        xhr ({
+        createPreissueXhr = xhr ({
           route: routes.postPreIssue (domain),
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
@@ -2462,11 +2491,13 @@ define ("actions/chatView",
           formData: xhrHelpers.getPreparedXhrData ({
             "issue-id": activeIssueId,
             "message-type": MESSAGE_TYPE.ATTACHMENT
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
-            postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT);
+            dispatch (postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT));
 
             // Remove the FE (dummy) attachment message from message list
             // Add new backend message in message list
@@ -2620,6 +2651,7 @@ define ("actions/chatView",
       createPreIssue,
       updateReplyText,
       submitReply,
+      abortCreatePreissueXhr,
       startPollingForMessages,
       stopPollingForMessages,
       addMessages,

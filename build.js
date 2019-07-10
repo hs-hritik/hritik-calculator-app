@@ -9,7 +9,8 @@
   // All relative paths set relative to baseUrl above
   paths: {
     reduxThunk: "../libs/redux-thunk",
-    uaParser: "../libs/ua-parser"
+    uaParser: "../libs/ua-parser",
+    axios: "../libs/axios"
   },
   // Entry point of our application without extension as per optimizer config syntax
   name: "pages/webSdk",

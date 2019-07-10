@@ -9,10 +9,9 @@ define ("helpers/ui",
   [
     "constants/uiConfig",
     "utils/color",
-    "utils/dataType",
-    "extras/postSdkMessage"
+    "utils/dataType"
   ],
-  function (UI_CONFIG_CONSTANTS, colorUtils, dataTypeUtils, postSdkMessage) {
+  function (UI_CONFIG_CONSTANTS, colorUtils, dataTypeUtils) {
     "use strict";
 
     const {
@@ -156,7 +155,13 @@ define ("helpers/ui",
       });
 
       if (uiConfigErrors.length) {
-        postSdkMessage.uiConfigErrors (uiConfigErrors);
+        // @TODO: This is causing circular dependency, like so:
+        // store.js > reducers/root.js > reducers/ui.js > helpers/ui.js
+        // > actions/postSdkMessage.js > store.js
+        // This is not a heavily used feature and moreover this is error
+        // handling for this feature, so removing it for now.
+        // Find another way to post message from this module.
+        // store.dispatch (postSdkMessage.uiConfigErrors (uiConfigErrors));
       }
 
       return finalConfig;

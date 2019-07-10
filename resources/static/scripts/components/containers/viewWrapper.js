@@ -8,9 +8,10 @@ define ("components/containers/viewWrapper",
   [
     "components/viewWrapper",
     "constants/uiConfig",
-    "actions/actionCreators"
+    "actions/actionCreators",
+    "actions/postSdkMessage"
   ],
-  function (ViewWrapper, UI_CONFIG_CONSTANTS, actionCreators) {
+  function (ViewWrapper, UI_CONFIG_CONSTANTS, actionCreators, postSdkMessage) {
     "use strict";
 
     const {BASE_FONT} = UI_CONFIG_CONSTANTS.FLATTENED_UI_CONFIG;
@@ -40,6 +41,9 @@ define ("components/containers/viewWrapper",
       return {
         onToggleOnlineStatus: (online) => {
           dispatch (actionCreators.toggleOnlineStatus (online));
+        },
+        onMinimizeConversation: () => {
+          dispatch (postSdkMessage.toggleMessenger (true));
         }
       };
     };

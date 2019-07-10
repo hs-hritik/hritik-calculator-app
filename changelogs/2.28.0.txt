@@ -1,0 +1,22 @@
+Branches:
+feature/FRON-4542
+feature/unit-test-setup
+
+Changelog:
+Unredact the user when poller succeeds
+Abort config and preissue XHRs when app is reloaded
+Use actions/postMessage instead of extras/postMessage in common actions
+Rename `test` directory to `__tests__`
+Add unit test for component/CsatView
+Add unit tests for reducers/csatView
+Add tests for actions/csatView's async action
+Add changes in test files to test target in Makefile
+Use axios to fire submit csat xhr
+Add axios library to make promise based xhr requests
+Update eslint rule to allow keywords to be used with dot notation
+Add an option to query-stringify xhr data
+Dispatch an action to post message instead of calling it directly
+Add make task for running unit test
+Use ES6 module for writing tests
+Run ESLint on test files
+Set up Jest and write initial tests
