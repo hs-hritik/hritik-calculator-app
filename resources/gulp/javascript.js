@@ -17,7 +17,7 @@ const uglify = require ("gulp-uglify");
 /**
  * Webchat version
  */
-const WEB_CHAT_VERSION = "2.28.1";
+const WEB_CHAT_VERSION = "2.29.0";
 
 /**
  * Name of app bundle
