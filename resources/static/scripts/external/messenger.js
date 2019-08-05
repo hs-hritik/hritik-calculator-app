@@ -45,6 +45,7 @@
     BOTTOM_RIGHT: "bottom-right"
   };
 
+  // Local state managed by this script.
   const state = {
     unreadCount: 0,
     widgetOptions: {
@@ -1032,6 +1033,12 @@
           break;
 
         case EVENT_TYPES.SDK_RESET:
+          // Reset unread count of the local state and re-render
+          state.unreadCount = 0;
+          renderUnreadCount ();
+
+          // Call `setConfig` which will ultimately create a preissue and/or
+          // start the poller.
           setConfig ({
             clientConfig: win.helpshiftConfig,
             parentPageInfo,
