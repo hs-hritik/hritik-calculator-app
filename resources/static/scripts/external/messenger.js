@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.28.1";
+        PATH = "/html/index.html?v=2.29.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -45,6 +45,7 @@
     BOTTOM_RIGHT: "bottom-right"
   };
 
+  // Local state managed by this script.
   const state = {
     unreadCount: 0,
     widgetOptions: {
@@ -1032,6 +1033,12 @@
           break;
 
         case EVENT_TYPES.SDK_RESET:
+          // Reset unread count of the local state and re-render
+          state.unreadCount = 0;
+          renderUnreadCount ();
+
+          // Call `setConfig` which will ultimately create a preissue and/or
+          // start the poller.
           setConfig ({
             clientConfig: win.helpshiftConfig,
             parentPageInfo,
