@@ -22,6 +22,7 @@
   $loader-color: color(primary);
 
   .hs-chat-footer {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -34,10 +35,25 @@
       justify-content: center;
     }
 
-    &__jump-to-latest-wrapper {
+    &__misc-actions-wrapper {
       position: absolute;
-      top: -50px;
-      right: 20px;
+      right: 0;
+      bottom: calc(100% + 2px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__jump-to-latest-wrapper {
+      align-self: flex-end;
+      margin: gutter(0 20 20 0);
+    }
+
+    &__skip-btn-wrapper {
+      display: flex;
+      padding: gutter(12 0 12 12);
+      margin-right: gutter(16);
+      background-color: $chat-widget-bg-color;
+      border-top-left-radius: 24px;
     }
 
     &__button {
@@ -57,6 +73,11 @@
     &__field {
       display: flex;
       align-items: center;
+    }
+
+    &__picker-field {
+      flex: 1 0 auto;
+      max-width: 100%;
     }
 
     &__title,
@@ -127,13 +148,11 @@
       // @NOTE - Disabling pseudo element lint rule as it gives error for
       // -webkit-clear-button scss lint recognize -webkit-clear-button as a
       // pseudo class and not a pseudo element
-      // scss-lint:disable PseudoElement
       &[type=date]::-webkit-inner-spin-button,
       &[type=date]::-webkit-clear-button {
         display: none;
         -webkit-appearance: none;
       }
-      // scss-lint:enable PseudoElement
     }
 
     &__attachment-icon,
@@ -165,16 +184,6 @@
 
     &__heading-text {
       flex-basis: 80%;
-    }
-
-    &__skip-btn-wrapper {
-      position: absolute;
-      top: -49px;
-      right: 16px;
-      display: flex;
-      padding: gutter(12 0 12 12);
-      background-color: $chat-widget-bg-color;
-      border-top-left-radius: 24px;
     }
 
     &__skip-btn {
@@ -223,6 +232,21 @@
         &[type=date] {
           font-size: font-size(body, large);
         }
+      }
+    }
+
+    &--no-padding {
+      padding: 0;
+    }
+
+    &--list-picker-opened {
+      justify-content: flex-start;
+      height: 100%;
+
+      .hs-chat-footer__field {
+        display: flex;
+        align-items: center;
+        height: 100%;
       }
     }
   }

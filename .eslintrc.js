@@ -1,8 +1,7 @@
-{
+module.exports = {
   "plugins": [
     "react",
-    "hs",
-    "compat"
+    "hs"
   ],
   "parserOptions": {
     "ecmaVersion": 6,
@@ -13,7 +12,8 @@
   "env": {
     "browser": true,
     "amd": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
   "globals": {
     "React": true,
@@ -57,7 +57,7 @@
 
     // Best Practices
     "curly": 2,
-    "dot-notation": [2, {"allowKeywords": false}],
+    "dot-notation": [2],
     "dot-location": [2, "property"],
     "eqeqeq": 2,
     "guard-for-in": 2,
@@ -220,9 +220,6 @@
     "react/wrap-multilines": 2,
 
     // Helpshift Specific
-    "hs/func-call-spacing": [2, "always"],
-
-    // Browser compatibility
-    "compat/compat": 2
+    "hs/func-call-spacing": [2, "always"]
   }
 }

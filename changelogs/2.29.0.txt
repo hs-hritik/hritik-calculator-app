@@ -1,0 +1,5 @@
+Branches:
+feature/reset-unread-badge
+
+Changelog:
+Reset local state's unread count on web chat reset

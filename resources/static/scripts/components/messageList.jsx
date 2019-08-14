@@ -7,7 +7,7 @@
 define ("components/messageList",
   [
     "components/message",
-    "components/commons/branding",
+    "components/containers/branding",
     "components/commons/skipButtonWrapper",
     "helpers/message",
     "constants/propTypes",
@@ -15,7 +15,7 @@ define ("components/messageList",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes"
   ],
-  function (Message, Branding, SkipButtonWrapper, messageHelpers, customPropTypes,
+  function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
     chatViewConstants, throttle, classes) {
     "use strict";
 
@@ -214,7 +214,7 @@ define ("components/messageList",
           return null;
         }
         return (
-          <Branding text={this.props.text} />
+          <BrandingContainer />
         );
       },
 

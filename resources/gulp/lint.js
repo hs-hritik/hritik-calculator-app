@@ -7,7 +7,7 @@ const argv = require ("yargs").argv;
 const PATHS = {
   eslint: [
     "static/scripts/**/*.+(js|jsx)",
-    "static/__tests__/src/**/*.+(js|jsx)"
+    "__tests__/**/*.+(js|jsx)"
   ]
 };
 

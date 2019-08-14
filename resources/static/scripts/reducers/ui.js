@@ -95,6 +95,8 @@ define ("reducers/ui",
         conversationsRedactedMsg: "Conversations Redacted",
         pastConversationsLoadingText: "Loading Messages...",
         messageDeleted: "Message Deleted",
+        loadMoreMessagesFailedText: "Couldn't Load Messages.",
+        clickToRetryText: "Click to Retry",
         // We do not want to support i18n for unsupported date input.
         // So the placeholder text will always be in english.
         unsupportedDateInputPlaceholder: "DD/MM/YYYY",
@@ -109,7 +111,9 @@ define ("reducers/ui",
             subtitle: "Unable to reach support"
             // @TODO: Confirm if a CTA is needed.
           }
-        }
+        },
+        searchPlaceholder: "Search",
+        noSearchResultsText: "No results found"
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

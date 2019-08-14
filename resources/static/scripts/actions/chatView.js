@@ -20,6 +20,7 @@ define ("actions/chatView",
     "gunpowder/utils/date",
     "actions/batch",
     "actions/actionCreators",
+    "actions/postSdkMessage",
     "helpers/message",
     "helpers/chatView",
     "helpers/xhr",
@@ -29,23 +30,23 @@ define ("actions/chatView",
     "helpers/analytics",
     "helpers/prepareProcessXhrData",
     "helpers/common",
-    "extras/postSdkMessage",
     "utils/browser",
     "utils/upload"
   ],
   function (store, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS, ACTIVE_VIEW,
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
-    xhr, arrayUtils, dateUtils, batchActions, actionCreators, messageHelpers,
+    xhr, arrayUtils, dateUtils, batchActions, actionCreators, postSdkMessage, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, postSdkMessage,
-    browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, browserUtils, upload) {
 
     "use strict";
 
     const {
       TYPE: MESSAGE_TYPE,
       STATE: MESSAGES_STATE,
-      BODY: MESSAGE_BODY
+      BODY: MESSAGE_BODY,
+      TEXT_INPUT_MESSAGE_TYPES,
+      MESSAGE_ADD_EVENT_TYPES
     } = MESSAGE_CONSTANTS;
 
     const {
@@ -78,12 +79,12 @@ define ("actions/chatView",
     const update = React.addons.update;
 
     const PROCESS = true;
-    const SKIP_PLATFORM_ID = true;
     const ENABLE_FOOTER = true;
     const DISABLE_FOOTER = !ENABLE_FOOTER;
 
     let systemTypingTimerId = null,
         pollingEnabled = false,
+        createPreissueXhr = null,
         fetchMessagesXhr = null,
         fetchMessagesTimer = null,
         lastFetchStartTime = null,
@@ -219,6 +220,17 @@ define ("actions/chatView",
     };
 
     /**
+     * Abort create preissue XHR if it's in progress
+     */
+    const abortCreatePreissueXhr = () => {
+      // Check if preissue XHR is in progress. If so, abort it.
+      if (createPreissueXhr) {
+        createPreissueXhr.abort ();
+        createPreissueXhr = null;
+      }
+    };
+
+    /**
      * Action to set active issue message cursor.
      * @param {Object} msgCursorObj - message cursor object
      * @param {Number} msgCursorObj.cursorTs - unix timestamp of message's creation time
@@ -277,14 +289,16 @@ define ("actions/chatView",
           route: routes.putMessages (domain, activeIssueId, pluralIssueType),
           data: xhrHelpers.getPreparedXhrData ({
             md_state: "read"
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders ()
         });
 
         if (unreadMessageIds.length !== 0) {
           dispatch (setUnreadMessageIds ([]));
-          postSdkMessage.updateUnreadCount (0);
+          dispatch (postSdkMessage.updateUnreadCount (0));
         }
       };
     };
@@ -373,11 +387,13 @@ define ("actions/chatView",
 
     /**
      * Action to set user is redacted
+     * @param {boolean} userIsRedacted - true if the user has to be redacted
      * @returns {Object} - Action
      */
-    const setUserIsRedacted = () => {
+    const setUserIsRedacted = (userIsRedacted) => {
       return {
-        type: ACTION_TYPES.SET_USER_IS_REDACTED
+        type: ACTION_TYPES.SET_USER_IS_REDACTED,
+        userIsRedacted
       };
     };
 
@@ -403,6 +419,21 @@ define ("actions/chatView",
         msgsLoaded
       };
     };
+
+
+    /**
+     * Action to set flag when loading more messages (when the user scrolls up) fails
+     * @param {Boolean} loadingMoreMsgsHasFailed - flag to denote if loading more messages
+     *                                             has failed
+     * @returns {Object} - action
+     */
+    const setLoadingMoreMsgsFailed = (loadingMoreMsgsHasFailed) => {
+      return {
+        type: ACTION_TYPES.SET_LOADING_MORE_MSGS_FAILED,
+        loadingMoreMsgsHasFailed
+      };
+    };
+
 
     /**
      * Handles message input
@@ -847,26 +878,13 @@ define ("actions/chatView",
       const {dispatch, getState} = store;
       const {conversationHasEnded} = config;
       const {
-        appState: {
-          sdkConfigOptions: {
-            initialUserMessage
-          }
-        },
         ui: {
           text
         }
       } = getState ();
       const conversationClosedMsg = conversationHasEnded ? text.conversationClosed : "";
 
-      // If initial user message is set through api, show close conversation footer
-      // Else show start new conversation footer
-      if (initialUserMessage) {
-        // Show closed conversation footer
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.CLOSED));
-      } else {
-        // Show start new conversation footer
-        dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
-      }
+      dispatch (setChatViewFooter (ACTIVE_FOOTER.START_NEW_CONVERSATION));
 
       // Show system info message - This conversation has ended.
       dispatch (createMessage ({
@@ -889,9 +907,17 @@ define ("actions/chatView",
       const {
         appState: {
           issueType,
-          issueState
+          issueState,
+          featuresEnabled: {
+            resolutionQuestion: resolutionQuestionEnabled
+          }
+        },
+        chatView: {
+          issueCursor
         }
       } = getState ();
+
+      let conversationEndEventShouldTrigger = false;
 
       // Do not handle active state as we will wait for user input/bot steps
       if (issueState === ISSUE_STATE.ACTIVE) {
@@ -923,6 +949,8 @@ define ("actions/chatView",
           handleChatEnd ({
             conversationHasEnded: false
           });
+
+          conversationEndEventShouldTrigger = true;
         }
       } else if (issueState === ISSUE_STATE.REJECTED) {
         // Show "Conversation Closed" message and "Start a new conversation"
@@ -930,6 +958,22 @@ define ("actions/chatView",
         handleChatEnd ({
           conversationHasEnded: true
         });
+      }
+
+      // We don't want to retrigger these events when the page is
+      // refreshed. Since, issueCursor would not be 0 when messages are fetched
+      // just after conversation has ended, but will be when messages are fetched
+      // from the start, we use it as a check.
+      if (issueCursor) {
+        if (issueState === ISSUE_STATE.RESOLVED) {
+          dispatch (postSdkMessage.conversationResolvedEvent ());
+        } else if (issueState === ISSUE_STATE.REJECTED) {
+          dispatch (postSdkMessage.conversationRejectedEvent ());
+        }
+
+        if (!resolutionQuestionEnabled || conversationEndEventShouldTrigger) {
+          dispatch (postSdkMessage.conversationEndEvent ());
+        }
       }
     };
 
@@ -1058,11 +1102,12 @@ define ("actions/chatView",
         appState: {
           sdkConfigOptions: {
             initialUserMessage
-          }
+          },
+          minimized
         }
       } = getState ();
 
-      if (initialUserMessage) {
+      if (initialUserMessage && !minimized) {
         dispatch (createPreIssue ());
         preIssueActionTriggered = true;
       }
@@ -1158,12 +1203,48 @@ define ("actions/chatView",
       // If message type is accept first user message (EMPTY_MSG_WITH_TEXT_INPUT)
       // and initialUserMessage is set through api, do not wait for user input
       // Directly send the message as bot response
+      // We reset initial user message once it's passed to bot as we do not want
+      // to reuse same message for more than one conversation.
       if (messageType === MESSAGE_TYPE.EMPTY_MSG_WITH_TEXT_INPUT && initialUserMessage) {
         dispatch (
-          updateReplyText (initialUserMessage)
+          batchActions ([
+            updateReplyText (initialUserMessage),
+            actionCreators.setInitialUserMsg ("")
+          ])
         );
 
         postUserMessage ();
+      }
+    };
+
+    /**
+     * Handle reset initial user message
+     * If the initial user message api is called during on going conversation
+     * then reset the user message.
+     * @param {Object} config
+     * @param {Number} config.issueCursor - issue cursor
+     * @param {Boolean} config.issueIsActive - whether current issue or preIssue active
+     * @param {Boolean} config.isPreIssue - whether current issue type is preIssue
+     */
+    const handleResetInitialUserMessage = (config) => {
+      const {dispatch, getState} = store;
+      const {
+        appState: {
+          sdkConfigOptions: {
+            initialUserMessage
+          }
+        }
+      } = getState ();
+      const {issueCursor, issueIsActive, isPreIssue} = config;
+
+      // Clear user message set through api if
+      // a] This is the first poller call.
+      //    (Here we are assuming the developer has called the api before the poller)
+      // b] If issue type is not preIssue
+      // c] Issue is active (not resolved or rejected)
+      // d] And developer has set initial user message
+      if (!issueCursor && !isPreIssue && issueIsActive && initialUserMessage) {
+        dispatch (actionCreators.setInitialUserMsg (""));
       }
     };
 
@@ -1259,7 +1340,7 @@ define ("actions/chatView",
 
           dispatch (
             batchActions ([
-              toggleConversationsLoader (false),
+              setLoadingMoreMsgsFailed (false),
               addMessages ({
                 messages: linearMsgs,
                 prepend: true
@@ -1272,6 +1353,18 @@ define ("actions/chatView",
             issue: oldestIssue,
             cursorType: CURSOR_TYPES.BACKWARD
           });
+        },
+
+        onFailure: () => {
+          dispatch (
+            setLoadingMoreMsgsFailed (true)
+          );
+        },
+
+        onEnd: () => {
+          dispatch (
+            toggleConversationsLoader (false)
+          );
         }
       });
     };
@@ -1314,7 +1407,8 @@ define ("actions/chatView",
             forward: forwardMessageCursor
           },
           issueCursor,
-          pollerFailureCount: prevPollerFailureCount
+          pollerFailureCount: prevPollerFailureCount,
+          userIsRedacted
         }
       } = store.getState ();
 
@@ -1350,7 +1444,19 @@ define ("actions/chatView",
           // @NOTE - This is to make sure that onEnd is called even if
           // any code in onSuccess results in an Exception.
           try {
+            // Undo updates when the poller fails
+            // 1. Poller succeeded
+            // Refer onEnd callback where this value is used.
             lastPollerCallSucceeded = true;
+
+            // 2. If the poller succeeds, it means that it's a valid user. If
+            // the user was set to be redacted with the previous poller
+            // failure, undo it.
+            // Refer the onFailure callback where the user is redacted.
+            if (userIsRedacted) {
+              dispatch (setUserIsRedacted (false));
+            }
+
             const {
               has_older_messages: hasOlderMsgs,
               issues = [],
@@ -1417,8 +1523,19 @@ define ("actions/chatView",
 
             const isPreIssue = (currentIssueType === ISSUE_TYPE.PRE_ISSUE);
             const internalIssueId = _getIssueId (currentIssue);
+            const issueIsActive = isIssueActive (issueState);
 
-            if (!isIssueActive (issueState)) {
+            dispatch (postSdkMessage.conversationStatusEvent ({
+              open: issueIsActive
+            }));
+
+            handleResetInitialUserMessage ({
+              issueCursor,
+              issueIsActive,
+              isPreIssue
+            });
+
+            if (!issueIsActive) {
               stopPollingForMessages ();
 
               const preIssueActionTriggered = handleCreatePreIssueForInitialUserMessage ({
@@ -1507,6 +1624,7 @@ define ("actions/chatView",
                 messages: processedMessages
               });
             }
+
             handleIssueState ();
 
             dispatch (setIssueCursor (cursor));
@@ -1516,6 +1634,8 @@ define ("actions/chatView",
             analyticsHelpers.flushEvents ();
           } catch (ex) {
             // @TODO - Ideally, this exception should be logged to server.
+            // eslint-disable-next-line
+            console.error ("Something went wrong = ", ex);
           }
         },
         onFailure: (request, statusCode) => {
@@ -1529,7 +1649,7 @@ define ("actions/chatView",
 
           if (response.msg === USER_REDACTION_ERR_MSG &&
             statusCode === USER_REDACTION_ERR_STATUS_CODE) {
-            dispatch (setUserIsRedacted ());
+            dispatch (setUserIsRedacted (true));
           }
         },
         onEnd: () => {
@@ -1583,8 +1703,14 @@ define ("actions/chatView",
                                         currentIssueType === ISSUE_TYPE.ISSUE);
 
       // If preIssue is converted to issue then reset user input and show footer
+      // Also reset initial user message
       if (preIssueConvertedToIssue) {
-        dispatch (resetUserInput ());
+        dispatch (
+          batchActions ([
+            actionCreators.setInitialUserMsg (""),
+            resetUserInput ()
+          ])
+        );
         handleIssueFooterAndTAI (ENABLE_FOOTER);
       }
     };
@@ -1631,7 +1757,7 @@ define ("actions/chatView",
         dispatch (markMessagesSeen ());
       } else {
         dispatch (setUnreadMessageIds (finalUnreadMessageIds));
-        postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length);
+        dispatch (postSdkMessage.updateUnreadCount (finalUnreadMessageIds.length));
       }
 
       // Do not play sound on page load even if there are unread messages
@@ -1765,7 +1891,9 @@ define ("actions/chatView",
 
       xhr ({
         route: routes.postUserReply (domain, activeIssueId, xhrIssueType),
-        data: xhrHelpers.getPreparedXhrData (xhrData, SKIP_PLATFORM_ID),
+        data: xhrHelpers.getPreparedXhrData (xhrData, {
+          skipPlatformId: true
+        }),
         method: "POST",
         headers: xhrHelpers.getCommonHeaders (),
         onSuccess: (response) => {
@@ -1780,6 +1908,22 @@ define ("actions/chatView",
           if (isIssue && !botStepInProgress) {
             dispatch (enableReplyBox ());
           }
+
+          // This response type indicates that the first message from the user was sent.
+          // Trigger conversationStartEvent which, then, can be tracked by the
+          // addEventListener callbacks
+          if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
+            dispatch (postSdkMessage.conversationStartEvent (response.body));
+          }
+
+          if (TEXT_INPUT_MESSAGE_TYPES.indexOf (response.type) !== -1) {
+            dispatch (postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.TEXT, response.body));
+          }
+
+          if (response.type === MESSAGE_TYPE.ACCEPTED) {
+            dispatch (postSdkMessage.conversationEndEvent ());
+          }
+
           dispatch (
             batchActions ([
               addMessages ({
@@ -1860,13 +2004,15 @@ define ("actions/chatView",
           return;
         }
 
-        const validationConfig = chatViewHelpers.getUserInputValidationConfig (
+        const errorMsg = chatViewHelpers.validateUserInput (
           userInput,
           text
         );
 
-        if (validationConfig.errorMsg) {
-          dispatch (updateUserInputData (validationConfig));
+        if (errorMsg) {
+          dispatch (updateUserInputData ({
+            errorMsg
+          }));
           return;
         }
 
@@ -1921,6 +2067,7 @@ define ("actions/chatView",
           ])
         );
         startPollingForMessages ();
+        dispatch (postSdkMessage.conversationReopenedEvent ());
       }
     };
 
@@ -1980,6 +2127,7 @@ define ("actions/chatView",
           appState: {
             domain,
             tags,
+            metadata,
             cif,
             featuresEnabled: {
               greeting: greetingFeatureEnabled
@@ -2007,6 +2155,12 @@ define ("actions/chatView",
           meta.custom_meta = {
             "hs-tags": tags
           };
+        }
+
+        if (metadata && Object.keys (metadata).length) {
+          meta.custom_meta = update (meta.custom_meta, {
+            $merge: metadata
+          });
         }
 
         /**
@@ -2059,7 +2213,7 @@ define ("actions/chatView",
         // value of input disabled is false, in store on page refresh.
         handleIssueFooterAndTAI (DISABLE_FOOTER);
 
-        xhr ({
+        createPreissueXhr = xhr ({
           route: routes.postPreIssue (domain),
           data: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
@@ -2092,6 +2246,11 @@ define ("actions/chatView",
             // analyticsHelpers.track (EVENT.ISSUE_CREATED);
           },
           onFailure: () => {
+            // When start new conversation button is clicked, we clear the current state of the app
+            // (app reset), and it is restored when the preIssue call succeeds and starts polling
+            // for messages. In case of failure, we still need to show the messages, but we don't
+            // need to poll for new ones. Hence, we have fetchMessages () call.
+            handleIssueFooterAndTAI (ENABLE_FOOTER);
             dispatch (batchActions ([
               setChatViewError ({
                 type: ERROR_TYPES.PRE_ISSUE_FAILURE,
@@ -2100,6 +2259,7 @@ define ("actions/chatView",
               }),
               actionCreators.toggleChatViewLoading (false)
             ]));
+            fetchMessages ();
           }
         });
       };
@@ -2331,10 +2491,14 @@ define ("actions/chatView",
           formData: xhrHelpers.getPreparedXhrData ({
             "issue-id": activeIssueId,
             "message-type": MESSAGE_TYPE.ATTACHMENT
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           file: file,
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: (response) => {
+            dispatch (postSdkMessage.messageAddEvent (MESSAGE_ADD_EVENT_TYPES.ATTACHMENT));
+
             // Remove the FE (dummy) attachment message from message list
             // Add new backend message in message list
             handleIssueReopen (issueState);
@@ -2487,6 +2651,7 @@ define ("actions/chatView",
       createPreIssue,
       updateReplyText,
       submitReply,
+      abortCreatePreissueXhr,
       startPollingForMessages,
       stopPollingForMessages,
       addMessages,

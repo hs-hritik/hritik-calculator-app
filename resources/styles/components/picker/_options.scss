@@ -1,0 +1,35 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the picker options component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group picker
+///
+
+@include component(picker-options) {
+  // @NOTE: This is a special color agnostic of the overall color scheme.
+  // This cannot be customized from outside using existing variables.
+  $highlighted-option-background: #f9f9fa;
+  $no-tap-highlight-color: rgba(255, 255, 255, 0);
+
+  .hs-picker-options {
+    width: 100%;
+    margin: 0;
+    list-style: none;
+
+    &__option-item {
+      @include ellipsis;
+      padding: gutter(12 16);
+      cursor: pointer;
+      -webkit-tap-highlight-color: $no-tap-highlight-color;
+
+      &-highlighted {
+        background: $highlighted-option-background;
+      }
+    }
+  }
+}

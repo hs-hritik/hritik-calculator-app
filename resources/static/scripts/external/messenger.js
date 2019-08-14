@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.16.0";
+        PATH = "/html/index.html?v=2.29.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -45,6 +45,7 @@
     BOTTOM_RIGHT: "bottom-right"
   };
 
+  // Local state managed by this script.
   const state = {
     unreadCount: 0,
     widgetOptions: {
@@ -74,7 +75,15 @@
     SDK_RESET: "sdk-reset",
     SDK_UPDATE_UNREAD_COUNT: "sdk-update-unread-count",
     SDK_EVENT_CHAT_END: "sdk-event-chat-end",
+    SDK_EVENT_CONVERSATION_START: "sdk-event-conversation-start",
+    SDK_EVENT_CONVERSATION_END: "sdk-event-conversation-end",
+    SDK_EVENT_CONVERSATION_REOPENED: "sdk-event-conversation-reopened",
+    SDK_EVENT_CONVERSATION_RESOLVED: "sdk-event-conversation-resolved",
+    SDK_EVENT_CONVERSATION_REJECTED: "sdk-event-conversation-rejected",
+    SDK_EVENT_MESSAGE_ADD: "sdk-event-message-add",
+    SDK_EVENT_CONVERSATION_STATUS: "sdk-event-conversation-status",
     SDK_UI_CONFIG_UPDATED: "sdk-ui-config-updated",
+    SDK_EVENT_CSAT_SUBMIT: "sdk-event-csat-submit",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
@@ -83,6 +92,7 @@
     CMD_SET_GREETING_MESSAGE: "cmd-set-greeting-message",
     CMD_SET_LANGUAGE: "cmd-set-language",
     CMD_SET_CIF: "cmd-set-cif",
+    CMD_SET_METADATA: "cmd-set-metadata",
     CMD_REPLACE_CIF: "cmd-replace-cif",
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
@@ -95,8 +105,17 @@
    */
   const SUPPORTED_EVENTS = {
     CHAT_END: "chatEnd",
+    CONVERSATION_START: "conversationStart",
+    MESSAGE_ADD: "messageAdd",
+    CSAT_SUBMIT: "csatSubmit",
+    CONVERSATION_END: "conversationEnd",
+    CONVERSATION_REOPENED: "conversationReopened",
+    CONVERSATION_RESOLVED: "conversationResolved",
+    CONVERSATION_REJECTED: "conversationRejected",
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
-    USER_CHANGED: "userChanged"
+    USER_CHANGED: "userChanged",
+    WIDGET_TOGGLE: "widgetToggle",
+    CONVERSATION_STATUS: "conversationStatus"
   };
 
   // Errors message strings
@@ -165,6 +184,21 @@
 
   const MESSENGER_IFRAME_FULL_SCREEN_STYLES = {
     "position": "fixed",
+    "top": "0px",
+    "left": "0px",
+    "bottom": "0px",
+    "right": "0px",
+    "width": "100%",
+    "height": "100%",
+    "border": "none",
+    "margin": 0,
+    "padding": 0,
+    "overflow": "hidden",
+    "z-index": "9999999"
+  };
+
+  const MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES = {
+    "position": "absolute",
     "top": "0px",
     "left": "0px",
     "bottom": "0px",
@@ -470,6 +504,10 @@
       updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
     }
 
+    callApiEventHandler ("widgetToggle", {
+      visible: state.webChatVisibility.widget === "block"
+    });
+
     // @NOTE - More info on SPA behavior :- https://tinyurl.com/yafecdkv
     // Toggle the visibility of launcher button when showCloseButton is set to false
     if (state.widgetOptions.showLauncher && !state.widgetOptions.showCloseButton) {
@@ -585,6 +623,17 @@
   };
 
   /**
+   * Function to return widget selector DOM
+   * Checks if widget selector is passed in helpshfitConfig
+   * and returns the DOM element else returns null
+   * @returns {(HTMLElement|null)} - Widget selector
+   */
+  const getWidgetSelector = () => {
+    const widgetSelector = win.helpshiftConfig.widgetSelector;
+    return widgetSelector && doc.querySelector (widgetSelector) || null;
+  };
+
+  /**
    * Update web sdk and launcher iframe style
    * @param {Object} config
    */
@@ -594,7 +643,10 @@
     updateWidgetPosition ();
 
     // Set styles for websdk iframe
-    if (config.fullScreen) {
+    const webchatContainer = getWidgetSelector ();
+    if (webchatContainer) {
+      setStyle (webSdkIframe, MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES);
+    } else if (config.fullScreen) {
       setStyle (webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
@@ -869,7 +921,7 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && eventRegister [eventName]) {
+    if (!handlerIsFound && !eventRegister [eventName]) {
       eventRegister [eventName] = {
         eventHasOccured: true,
         data: eventData
@@ -908,7 +960,14 @@
     setDefaultLauncherVisibility ();
 
     webSdkIframe = createWebSdkIframe ();
-    doc.body.appendChild (webSdkIframe);
+
+    const webchatContainer = getWidgetSelector ();
+
+    if (webchatContainer) {
+      webchatContainer.appendChild (webSdkIframe);
+    } else {
+      doc.body.appendChild (webSdkIframe);
+    }
 
     // Start listening to the iframe's messages.
     win.addEventListener ("message", (event) => {
@@ -974,6 +1033,12 @@
           break;
 
         case EVENT_TYPES.SDK_RESET:
+          // Reset unread count of the local state and re-render
+          state.unreadCount = 0;
+          renderUnreadCount ();
+
+          // Call `setConfig` which will ultimately create a preissue and/or
+          // start the poller.
           setConfig ({
             clientConfig: win.helpshiftConfig,
             parentPageInfo,
@@ -984,6 +1049,54 @@
         case EVENT_TYPES.SDK_EVENT_CHAT_END:
           // Call the event handler for chat end event.
           callApiEventHandler (SUPPORTED_EVENTS.CHAT_END);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_START:
+          // Call the event handler for conversation start event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_START, {
+            message: data.message
+          });
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_END:
+          // Call the event handler for conversation end event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_END);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED:
+          // Call the event handler for conversation reopened event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REOPENED);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_RESOLVED:
+          // Call the event handler for conversation resolved event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_RESOLVED);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_REJECTED:
+          // Call the event handler for conversation rejected event.
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REJECTED);
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_MESSAGE_ADD:
+          // Call the event handler for add message
+          callApiEventHandler (SUPPORTED_EVENTS.MESSAGE_ADD, {
+            type: data.type,
+            body: data.body
+          });
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT:
+          // Call the event handler for csat submit event.
+          callApiEventHandler (SUPPORTED_EVENTS.CSAT_SUBMIT, {
+            rating: data.rating,
+            additionalFeedback: data.review
+          });
+          break;
+
+        case EVENT_TYPES.SDK_EVENT_CONVERSATION_STATUS:
+          // Call the event handler for conversation status event
+          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_STATUS, data);
           break;
 
         case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
@@ -1016,7 +1129,8 @@
   const close = () => {
     if (!state.webChatVisibility.hiddenByApi) {
       toggleWebSdkIframe ({
-        minimized: true
+        minimized: true,
+        trigger: TRIGGER.API
       });
     }
   };
@@ -1032,13 +1146,17 @@
     // Save current visibility of webchat (launcher + widget) in state
     // Check for showLauncher widget option as existence of launcher button is
     // dependant on it
-    if (state.widgetOptions.showLauncher) {
+    // If the launcher button is already hidden, don't do anything
+    if (state.widgetOptions.showLauncher && launcherBtn.style.display !== "none") {
       state.webChatVisibility.launcher = launcherBtn.style.display;
       launcherBtn.style.display = "none";
     }
 
-    state.webChatVisibility.widget = webSdkIframe.style.display;
-    webSdkIframe.style.display = "none";
+    // If the webSdkIframe iframe is already hidden, don't do anything
+    if (webSdkIframe.style.display !== "none") {
+      state.webChatVisibility.widget = webSdkIframe.style.display;
+      webSdkIframe.style.display = "none";
+    }
 
     state.webChatVisibility.hiddenByApi = true;
   };
@@ -1199,6 +1317,18 @@
   };
 
   /**
+   * Set custom meta data
+   * @param {Object} metaData - meta data object
+   */
+  const setCustomMetadata = (metadata) => {
+    if (metadata && isObject (metadata)) {
+      _postMessage (EVENT_TYPES.CMD_SET_METADATA, {
+        metadata
+      });
+    }
+  };
+
+  /**
    * Replace custom issue fields
    * @param {Object} cifData - cif data
    */
@@ -1260,6 +1390,7 @@
     addEventListener,
     removeEventListener,
     setCustomIssueFields,
+    setCustomMetadata,
     replaceCustomIssueFields,
     setProactiveChatRules,
     updateUiConfig,

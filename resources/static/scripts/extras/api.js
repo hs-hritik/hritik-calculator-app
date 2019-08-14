@@ -16,16 +16,16 @@ define ("extras/api",
     "actions/actionCreators",
     "actions/csatView",
     "actions/ui",
+    "actions/postSdkMessage",
+    "actions/common",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
-    "helpers/common",
-    "extras/postSdkMessage",
     "gunpowder/utils/object"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    app, analyticsHelpers, lsHelpers, commonHelpers, postSdkMessage, objUtils) {
+    postSdkMessage, commonActions, app, analyticsHelpers, lsHelpers, objUtils) {
     "use strict";
 
     const {
@@ -131,26 +131,26 @@ define ("extras/api",
           } else {
             // Current user and re-engagement users are different.
             // Fire the user changed event.
-            postSdkMessage.userChanged ({
+            dispatch (postSdkMessage.userChanged ({
               originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
               pageUrl: reEngagementData.last_session_url
-            });
+            }));
           }
         } else {
           // Current user is logged in & re-engagement user is anonymous.
           // Fire the user changed event
-          postSdkMessage.userChanged ({
+          dispatch (postSdkMessage.userChanged ({
             originalState: RE_ENGAGEMENT_USER_STATE.ANONYMOUS,
             pageUrl: reEngagementData.last_session_url
-          });
+          }));
         }
       } else if (userWasLoggedIn) {
         // Current user is anonymous and re-engagement users is logged-in user.
         // Fire the user changed event.
-        postSdkMessage.userChanged ({
+        dispatch (postSdkMessage.userChanged ({
           originalState: RE_ENGAGEMENT_USER_STATE.LOGGED_IN,
           pageUrl: reEngagementData.last_session_url
-        });
+        }));
       } else {
         // Current user is anonymous & re-engagement user is also anonymous.
         // Set value in localStorage as anon user id is picked up from the
@@ -237,7 +237,10 @@ define ("extras/api",
           conversationStarted,
           appResetTrigger,
           issueState,
-          issueType
+          issueType,
+          sdkConfigOptions: {
+            initialUserMessage
+          }
         }
       } = store.getState ();
 
@@ -250,10 +253,8 @@ define ("extras/api",
         // mark unread messages as seen.
         store.dispatch (chatViewActions.markMessagesSeen ());
 
-        const preIssueIsRejected = (
-          issueType === ISSUE_TYPE.PRE_ISSUE &&
-          isIssueClosed (issueState)
-        );
+        const issueStateIsClosed = isIssueClosed (issueState);
+        const preIssueIsRejected = issueType === ISSUE_TYPE.PRE_ISSUE && issueStateIsClosed;
         const resetTriggerIsDefault = (appResetTrigger === APP_RESET_TRIGGER.INITIAL);
         // When the end user opens the widget, check if preIssue reset
         // is applicable and if so, handle it. Else, start a conversation, if it
@@ -261,18 +262,30 @@ define ("extras/api",
         if (_shouldPreIssueReset ()) {
           store.dispatch (appStateActions.resetPreIssue ());
         } else if (!conversationStarted) {
-          // This is to handle special case where we get rejected preIssue on
-          // first page load. We will set app trigger as pre issue reset and call
-          // reset method which will create a new preIssue.
-          // NOTE - Resetting preIssue and creating new preIssue should happen in
-          // sequence, but these are two different api calls. So if we call reset
-          // preIssue and the user closes the tab or browser, create new preIssue
-          // request wont be fired and the user will keep seeing reject preIssue.
-          if ((preIssueIsRejected && resetTriggerIsDefault)) {
+          // If initial user message is set through the api and issue state is closed then
+          // start new conversation.
+          if (initialUserMessage && issueStateIsClosed) {
             store.dispatch (
-              appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET)
+              commonActions.reloadApp ({
+                trigger: APP_RESET_TRIGGER.START_NEW_CONVERSATION,
+                loading: true,
+                callback: chatViewActions.stopPollingForMessages
+              })
             );
-            store.dispatch (appStateActions.reset ());
+          } else if ((preIssueIsRejected && resetTriggerIsDefault)) {
+            // This is to handle special case where we get rejected preIssue on
+            // first page load. We will set app trigger as pre issue reset and call
+            // reset method which will create a new preIssue.
+            // NOTE - Resetting preIssue and creating new preIssue should happen in
+            // sequence, but these are two different api calls. So if we call reset
+            // preIssue and the user closes the tab or browser, create new preIssue
+            // request wont be fired and the user will keep seeing reject preIssue.
+            store.dispatch (
+              commonActions.reloadApp ({
+                trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
+                callback: chatViewActions.stopPollingForMessages
+              })
+            );
           } else {
             store.dispatch (appStateActions.startConversation ());
           }
@@ -295,7 +308,7 @@ define ("extras/api",
      */
     const handleInitialUserMsg = ({message}) => {
       // Set initial user message in store
-      store.dispatch (appStateActions.setInitialUserMsg (message));
+      store.dispatch (actionCreators.setInitialUserMsg (message));
     };
 
     const handleApis = (type, data) => {
@@ -318,6 +331,9 @@ define ("extras/api",
         case EVENT_TYPES.CMD_SET_CIF:
           store.dispatch (actionCreators.setCif (data.cifData));
           break;
+        case EVENT_TYPES.CMD_SET_METADATA:
+          store.dispatch (actionCreators.setMetadata (data.metadata));
+          break;
         case EVENT_TYPES.CMD_REPLACE_CIF:
           store.dispatch (appStateActions.replaceCif (data.cifData));
           break;
@@ -334,10 +350,17 @@ define ("extras/api",
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
           break;
         case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
-          store.dispatch (
-            appStateActions.setAppResetTrigger (APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API)
-          );
-          store.dispatch (appStateActions.reset ());
+          store.dispatch (commonActions.reloadApp ({
+            trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
+            callback: () => {
+              // When app reloads/resets with an updated config, stop existing network
+              // calls so that the application's state doesn't get unintended
+              // values due to previous XHRs returning after reset is complete.
+              appStateActions.abortGetConfigXhr ();
+              chatViewActions.stopPollingForMessages ();
+              chatViewActions.abortCreatePreissueXhr ();
+            }
+          }));
           break;
       }
     };

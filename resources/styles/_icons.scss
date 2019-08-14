@@ -4,18 +4,18 @@
 /// Generate icon styles for given selector and icons code set.
 
 
-@import "./data/hesticons-icon-code";
+@import "./hestia/data/hesticons-icon-code";
 
 
 @font-face {
   font-family: "hesticons";
-  src: url("/fonts/hesticons/hesticons.eot?t=20160928");
-  src: url("/fonts/hesticons/hesticons.eot?t=20160928#iefix") format("eot"),
-  url("/fonts/hesticons/hesticons.woff?t=20160928") format("woff"),
-  url("/fonts/hesticons/hesticons.ttf?t=20160928") format("truetype"),
-  url("/fonts/hesticons/hesticons.svg?t=20160928#hesticons") format("svg");
-  font-weight: normal;
   font-style: normal;
+  font-weight: normal;
+  src: url("/fonts/hesticons/hesticons.eot?t=20190314");
+  src: url("/fonts/hesticons/hesticons.eot?t=20190314#iefix") format("eot"),
+    url("/fonts/hesticons/hesticons.woff?t=20190314") format("woff"),
+    url("/fonts/hesticons/hesticons.ttf?t=20190314") format("truetype"),
+    url("/fonts/hesticons/hesticons.svg?t=20190314#hesticons") format("svg");
 }
 
 %ion {

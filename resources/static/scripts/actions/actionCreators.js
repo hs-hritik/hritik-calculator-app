@@ -80,6 +80,19 @@ define ("actions/actionCreators",
     });
 
     /**
+     * Return the action to set metadata
+     * @param {Object} metadata - the metadata object to set
+     * @returns {Object} - the action object
+     */
+    const setMetadata = (metadata) => {
+      return {
+        type: ACTION_TYPES.SET_METADATA,
+        metadata
+      };
+    };
+
+
+    /**
      * Return the action to set tags
      * @param {array} tags - the tags list to set
      * @returns {Object} - the action object
@@ -212,6 +225,51 @@ define ("actions/actionCreators",
       type: ACTION_TYPES.RESET_RE_ENGAGEMENT_ID
     });
 
+    /**
+     * Return action to change list picker toggle state
+     * @param {String} toggleState - Whether the picker is in "closed", "opened" or
+     * "resizing" state
+     * @returns {Object} - the action object
+     */
+    const updateListPickerToggleState = (toggleState) => ({
+      type: ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE,
+      toggleState
+    });
+
+     /**
+     * Action to set conversation ended
+     * @returns {Object} - Action
+     */
+    const setConversationEnded = () => {
+      return {
+        type: ACTION_TYPES.SET_CONVERSATION_ENDED
+      };
+    };
+
+    /**
+     * Action to set app reset trigger
+     * @param {String} value - value of reset trigger
+     * @returns {Object} - Action
+     */
+    const setAppResetTrigger = (value) => {
+      return {
+        type: ACTION_TYPES.SET_APP_RESET_TRIGGER,
+        value
+      };
+    };
+
+    /**
+     * Action to set initial user message in store
+     * @param {String} - message
+     * @returns {Object} - Action
+     */
+    const setInitialUserMsg = (message) => {
+      return {
+        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
+        message
+      };
+    };
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -220,6 +278,7 @@ define ("actions/actionCreators",
       setGreetingMsg,
       setLanguage,
       setCif,
+      setMetadata,
       setTags,
       setSuggestedFaqReadTracked,
       updateReadFaqList,
@@ -231,6 +290,10 @@ define ("actions/actionCreators",
       toggleOnlineStatus,
       setFooterActive,
       setFooterInactive,
-      resetReEngagementId
+      resetReEngagementId,
+      updateListPickerToggleState,
+      setAppResetTrigger,
+      setInitialUserMsg,
+      setConversationEnded
     };
   });

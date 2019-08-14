@@ -1,0 +1,6 @@
+Branches:
+feature/minify-webchatjs
+
+Changelog:
+Uglify external JS files
+Make log statements in Makefile consistent

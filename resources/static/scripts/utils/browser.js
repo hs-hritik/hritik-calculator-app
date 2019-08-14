@@ -44,9 +44,21 @@ function () {
     );
   };
 
+  /**
+   * Returns true if touch events like touchstart etc are supported. We assume
+   * here that if ontouchstart is not undefined, then other events like touchmove,
+   * and touchend will also be not undefined and infer that touch events are
+   * supported.
+   * @returns {Boolean}
+   */
+  const areTouchEventsSupported = () => {
+    return (typeof window.ontouchstart !== "undefined");
+  };
+
   return {
     isMobile,
     getLanguage,
-    isBot
+    isBot,
+    areTouchEventsSupported
   };
 });

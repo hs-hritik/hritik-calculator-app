@@ -18,7 +18,8 @@ define ("reducers/chatView",
     const {
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
-      CURSOR_TYPES
+      CURSOR_TYPES,
+      DEFAULT_LIST_PICKER_TOGGLE_STATE
     } = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_ERROR_STATE = {
@@ -45,7 +46,10 @@ define ("reducers/chatView",
         skipLabel: "",
         skipped: false,
         placeholder: "",
-        errorMsg: ""
+        errorMsg: "",
+        listPicker: {
+          toggleState: DEFAULT_LIST_PICKER_TOGGLE_STATE
+        }
       };
     };
 
@@ -65,6 +69,27 @@ define ("reducers/chatView",
     };
 
     /**
+     * Return a list of messages where existing messages are replaced with redacted messages
+     * @param {Array} existingMessageList - Existing list of messages
+     * @param {Array} newMessageList - message list to search for redacted messages
+     * @returns {Array} updated list of existing messages
+     */
+    const _replaceRedactedMessages = (existingMessageList, newMessageList) => {
+      const redactedMessages = newMessageList.filter ((msg) => msg.redacted);
+      const redactedMessagesIds = redactedMessages.map ((msg) => msg.id);
+
+      return existingMessageList.map ((msg) => {
+        const redactedMsgIndex = redactedMessagesIds.indexOf (msg.id);
+
+        if (redactedMsgIndex === -1) {
+          return msg;
+        }
+
+        return redactedMessages [redactedMsgIndex];
+      });
+    };
+
+    /**
      * Predicate to return whether user input type is default input
      * @param {Object} state - current state
      * @returns {Boolean} - whether current input type is default input
@@ -80,6 +105,7 @@ define ("reducers/chatView",
       systemTyping: false,
       agentTyping: false,
       unreadMessageIds: [],
+      loadingMoreMsgsHasFailed: false,
       botState: {
         botStepInProgress: false,
         botStepMessage: null
@@ -146,7 +172,7 @@ define ("reducers/chatView",
               // Save user entered text for input type default input
               defaultInputValue: {
                 $set: isInputTypeDefault (state) ? action.value :
-                      state.userInput.defaultInputValue
+                  state.userInput.defaultInputValue
               },
               errorMsg: {$set: ""}
             }
@@ -245,9 +271,15 @@ define ("reducers/chatView",
             allMessagesAreLoaded: {$set: action.msgsLoaded}
           });
 
+
+        case ACTION_TYPES.SET_LOADING_MORE_MSGS_FAILED:
+          return update (state, {
+            loadingMoreMsgsHasFailed: {$set: action.loadingMoreMsgsHasFailed}
+          });
+
         case ACTION_TYPES.SET_USER_IS_REDACTED:
           return update (state, {
-            userIsRedacted: {$set: true}
+            userIsRedacted: {$set: action.userIsRedacted}
           });
 
         case ACTION_TYPES.RESET_USER_INPUT_DATA:
@@ -273,14 +305,35 @@ define ("reducers/chatView",
             }
           });
 
+        case ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE:
+          return update (state, {
+            userInput: {
+              listPicker: {
+                toggleState: {$set: action.toggleState}
+              }
+            }
+          });
+
         case ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES:
           return update (state, {
             userIsViewingPastMessages: {$set: action.isViewing}
           });
 
         case ACTION_TYPES.APPEND_MESSAGES:
+          /**
+           * When message is redacted, we get real time update of it in poller.
+           * If message is redacted and if it's id is already present in the message list
+           * then that message is replaced with a message having "message deleted" text.
+           */
+          const updatedExistingMessages = _replaceRedactedMessages (
+            state.messageList,
+            action.messages
+          );
+          const uniqueNewMessages = _getUniqueMessages (state.messageList, action.messages);
+          const messages = updatedExistingMessages.concat (uniqueNewMessages);
+
           return update (state, {
-            messageList: {$push: _getUniqueMessages (state.messageList, action.messages)}
+            messageList: {$set: messages}
           });
 
         case ACTION_TYPES.PREPEND_MESSAGES:

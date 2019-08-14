@@ -14,10 +14,12 @@ define ("components/chatView",
     "constants/propTypes",
     "constants/chatView",
     "components/jumpToLatestBtn",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/constants/widgets/picker"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
-    DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes) {
+    DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
+    LIST_PICKER_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -26,6 +28,9 @@ define ("components/chatView",
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
     const {USER_INPUT_TYPES} = CHAT_VIEW_CONSTANTS;
+    const {
+      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
+    } = LIST_PICKER_CONSTANTS;
 
     return React.createClass ({
       displayName: "ChatView",
@@ -36,6 +41,7 @@ define ("components/chatView",
         isTyping: PropTypes.bool,
         userIsViewingPastMessages: PropTypes.bool,
         minimized: PropTypes.bool,
+        loadingMoreMsgsHasFailed: PropTypes.bool,
         browserIsMobile: PropTypes.bool,
         onMinimizeConversation: PropTypes.func,
         onScrollPastExistingConversation: PropTypes.func,
@@ -46,6 +52,7 @@ define ("components/chatView",
         userInput: USER_INPUT_PROP_TYPE,
         issueIsCreated: PropTypes.bool.isRequired,
         onPillOptionSelect: PropTypes.func.isRequired,
+        onListPickerOptionSelect: PropTypes.func,
         onSkipUserInput: PropTypes.func,
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
@@ -119,12 +126,28 @@ define ("components/chatView",
       _renderLoader () {
         const {
           pastConversationsLoading,
+          loadingMoreMsgsHasFailed,
           text: {
-            pastConversationsLoadingText
+            pastConversationsLoadingText,
+            loadMoreMessagesFailedText,
+            clickToRetryText
           }
         } = this.props;
 
         if (!pastConversationsLoading) {
+          if (loadingMoreMsgsHasFailed) {
+            return (
+              <div className="hs-chat-view__msgs-loader-container">
+                <span className="hs-chat-view__msg-loading-failed-txt">
+                  {loadMoreMessagesFailedText}
+                </span>
+                <a onClick={this.props.onLoadMoreMessages}
+                  className="hs-chat-view__msg-loading-failed-link">
+                  <strong>{clickToRetryText}</strong>
+                </a>
+              </div>
+            );
+          }
           return null;
         }
 
@@ -173,6 +196,27 @@ define ("components/chatView",
       },
 
       /**
+       * Renders the picker overlay if picker is in resizing state
+       */
+      _renderPickerOverlay () {
+        const {
+          userInput: {
+            listPicker: {
+              toggleState
+            }
+          }
+        } = this.props;
+
+        if (toggleState !== LIST_PICKER_TOGGLE_STATES.RESIZING) {
+          return null;
+        }
+
+        return (
+          <div className="hs-list-picker-overlay" />
+        );
+      },
+
+      /**
        * Render view contents
        */
       _renderViewContents () {
@@ -182,6 +226,7 @@ define ("components/chatView",
           showAgentNickname,
           text,
           onPillOptionSelect,
+          onListPickerOptionSelect,
           onRetryAttachmentClick,
           onSuggestedFaqClick,
           onScrollPastExistingConversation,
@@ -191,22 +236,16 @@ define ("components/chatView",
           loading,
           hasFailure,
           pastConversationsLoading,
-          error,
           userIsViewingPastMessages,
-          errorActionHandler,
           botStepInProgress,
           minimized
         } = this.props;
 
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
-        if (loading || (error && error.title)) {
+        if (loading) {
           return (
-            <InfoView loading={loading}
-                      title={error.title}
-                      subtitle={error.subtitle}
-                      actionBtnText={error.cta}
-                      onActionBtnClick={errorActionHandler} />
+            <InfoView loading={loading} />
           );
         }
 
@@ -236,7 +275,9 @@ define ("components/chatView",
                              minimized={minimized} />
                 {this._renderJumpToLatestBtn ()}
               </div>
-              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick} />
+              {this._renderPickerOverlay ()}
+              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick}
+                                       onListPickerOptionSelect={onListPickerOptionSelect} />
             </DnDWrapper>
         );
       },
@@ -254,13 +295,17 @@ define ("components/chatView",
       _onLoadMore () {
         const {
           allMessagesAreLoaded,
-          latestConversationHasLoaded
+          latestConversationHasLoaded,
+          loadingMoreMsgsHasFailed
         } = this.props;
 
         // If conversation history is enabled, we need to load more
         // till all messages have been loaded. When disabled, only the
         // latest conversation needs to load.
-        if (!allMessagesAreLoaded && !latestConversationHasLoaded) {
+        //
+        // If loading messages has failed, we should only allow loading more
+        // messages when "Tap To Retry" is clicked.
+        if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
           this.props.onLoadMoreMessages ();
         }
       },

@@ -6,7 +6,6 @@
 // Global variables and styles
 // - - - - - - - - - - - - - - -
 
-// scss-lint:disable ColorKeyword, ColorVariable, PropertySortOrder
 
 ////
 /// @group global
@@ -59,7 +58,7 @@ $_colors: (
     light: palette(gray, light),
     x-light: palette(gray, x-light),
     white: palette(gray, xx-light)
-   ),
+  ),
   border: (
     dark: palette(gray, dark),
     base: palette(gray),

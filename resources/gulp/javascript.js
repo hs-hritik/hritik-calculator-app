@@ -14,6 +14,7 @@ const concat = require ("gulp-concat");
 const del = require ("del");
 const sri = require ("gulp-sri");
 const fs = require ("fs");
+const uglify = require ("gulp-uglify");
 
 /**
  * Maximum hashes to add to the integrity attribute of script tag.
@@ -34,7 +35,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.16.0";
+const WEB_CHAT_VERSION = "2.29.0";
 
 /**
  * Name of app bundle
@@ -78,6 +79,7 @@ const PATHS = {
     "static/libs/react-redux-min.js",
     "static/libs/require-min.js"
   ],
+
   // This is the source of files to be removed once libs bundle is generated
   // Basically remove all the file inside dist/libs except for libs-min.js
   unwantedLibsSource: [
@@ -125,7 +127,10 @@ const PATHS = {
       },
       dest: "dist/localshiva/html/index.html"
     }
-  }
+  },
+
+  externalJsSrc: "dist/scripts/external/*.js",
+  externalJsDest: "dist/scripts/external/"
 };
 
 /**
@@ -134,6 +139,7 @@ const PATHS = {
 const TEMPLATE_PATHS = {
   LIBS: {
     DEV: `
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/axios.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-with-addons.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-dom.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/redux.js"></script>
@@ -296,6 +302,18 @@ gulp.task ("bundle-libs", function () {
       del (PATHS.unwantedLibsSource);
       console.log ("Libs are bundled");
     }));
+});
+
+/**
+ * Task to minify external JS files. These files are not part of the requirejs
+ * module system, so they don't get minified via r.js optimizer.
+ * Note: The source here is the `dist` directory because the compilation (by babel)
+ * happens before this step and this step just minifies the compiled files.
+ */
+gulp.task ("minify-ext-js", function () {
+  return gulp.src (PATHS.externalJsSrc)
+    .pipe (uglify ())
+    .pipe (gulp.dest (PATHS.externalJsDest));
 });
 
 /**

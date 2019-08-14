@@ -38,6 +38,7 @@ define ("components/containers/chatView",
           loading,
           error,
           userIsViewingPastMessages,
+          loadingMoreMsgsHasFailed,
           pastConversationsLoading,
           latestConversationHasLoaded,
           unreadMessageIds,
@@ -71,6 +72,7 @@ define ("components/containers/chatView",
         error,
         latestConversationHasLoaded,
         userIsViewingPastMessages,
+        loadingMoreMsgsHasFailed,
         unreadCount: unreadMessageIds.length,
         pastConversationsLoading,
         allMessagesAreLoaded,
@@ -106,6 +108,10 @@ define ("components/containers/chatView",
         },
         onSkipUserInput: () => {
           dispatch (chatViewActions.skipUserInput ());
+        },
+        onListPickerOptionSelect: (option) => {
+          dispatch (chatViewActions.setUserSelectedOption (option));
+          dispatch (chatViewActions.submitReply ());
         }
       };
     };

@@ -92,6 +92,7 @@ define ("reducers/appState",
       userName: "",
       userEmail: "",
       userAuthToken: "",
+      phoneNumber: "",
 
       // Backend flag to represent if any issue exists
       issueExists: false,
@@ -113,11 +114,13 @@ define ("reducers/appState",
         agentNickname: false,
         resolutionQuestion: true,
         conversationHistory: true,
-        userAttachments: true
+        userAttachments: true,
+        branding: true
       },
       browserIsMobile: false,
       tags: [],
       cif: {},
+      metadata: {},
       parentPageInfo: {},
       sdkConfigOptions: {
         fullScreen: false,
@@ -171,6 +174,7 @@ define ("reducers/appState",
               userAttachments: {$set: config.allow_user_attachments},
               csatBot: {$set: config.csat_bot_enabled},
               agentNickname: {$set: config.agent_nickname_enabled},
+              branding: {$set: !config.disable_helpshift_branding},
               audioNotifications: {$set: config.audio_notifications_enabled}
             },
             issueExists: {$set: config.issue_exists}
@@ -223,6 +227,7 @@ define ("reducers/appState",
               language,
               domain,
               userId,
+              phoneNumber,
               userName,
               userEmail,
               userAuthToken,
@@ -255,6 +260,7 @@ define ("reducers/appState",
             developerSetLanguage: {$set: language || ""},
             domain: {$set: domain || ""},
             userId: {$set: userId || ""},
+            phoneNumber: {$set: phoneNumber || ""},
             userName: {$set: userName || ""},
             userEmail: {$set: userEmail || ""},
             userAuthToken: {$set: userAuthToken || ""},
@@ -339,6 +345,11 @@ define ("reducers/appState",
             cif: {$merge: action.cif}
           });
 
+        case ACTION_TYPES.SET_METADATA:
+          return update (state, {
+            metadata: {$merge: action.metadata}
+          });
+
         case ACTION_TYPES.REPLACE_CIF:
           return update (state, {
             cif: {$set: action.cif}
@@ -396,8 +407,12 @@ define ("reducers/appState",
           // and appResetTrigger
           return update (INITIAL_STATE, {
             cif: {$set: state.cif},
+            metadata: {$set: state.metadata},
             appResetTrigger: {$set: state.appResetTrigger},
-            minimized: {$set: state.minimized}
+            minimized: {$set: state.minimized},
+            sdkConfigOptions: {
+              initialUserMessage: {$set: state.sdkConfigOptions.initialUserMessage}
+            }
           });
 
         case ACTION_TYPES.SET_FULL_PRIVACY:

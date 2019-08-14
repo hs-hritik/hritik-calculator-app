@@ -1,0 +1,5 @@
+Branches:
+feature/message-redaction-poller-fixes
+
+Changelog:
+Fix poller to accomodate message redaction updates

@@ -26,17 +26,16 @@ define ("actions/appState",
     "actions/ui",
     "actions/batch",
     "actions/actionCreators",
+    "actions/postSdkMessage",
+    "actions/common",
     "utils/browser",
-    "utils/dataType",
-    "extras/postSdkMessage"
+    "utils/dataType"
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
     analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
-    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions,
-    uiActions, batchActions, actionCreators, browserUtils, dataTypeUtils, postSdkMessage) {
+    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions, uiActions,
+    batchActions, actionCreators, postSdkMessage, commonActions, browserUtils, dataTypeUtils) {
     "use strict";
-
-    const SKIP_PLATFORM_ID = true;
 
     const {
       ANON_USER_RESET_TIMEOUT,
@@ -59,6 +58,8 @@ define ("actions/appState",
 
     const isCssVarSupported = (window.CSS && window.CSS.supports &&
                                window.CSS.supports ("--fake-var", 0));
+
+    let getConfigXhr = null;
 
     /**
      * Set the Device id value in the state/localstorage via an action.
@@ -118,16 +119,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set conversation ended
-     * @returns {Object} - Action
-     */
-    const setConversationEnded = () => {
-      return {
-        type: ACTION_TYPES.SET_CONVERSATION_ENDED
-      };
-    };
-
-    /**
      * Either starts a new conversation or handle previous one.
      */
     const startConversation = () => {
@@ -146,37 +137,6 @@ define ("actions/appState",
         // handled on click of 'start new conversation' button which will call reset.
         if (!issueExists) {
           startNewConversation ();
-        }
-      };
-    };
-
-    /**
-     * Action to reset the conversation.
-     * It does the following tasks:
-     * - Stop polling for agent messages.
-     * - Dispatch action to reset the store.
-     * - Post reset message to parent.
-     * - Clear localstorage.
-     * - Minimize widget if options.minimizeMessenger is true.
-     * @param {Object} [options]
-     * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive
-     *                  chat related data or not. By default, they would NOT be reset.
-     * @param {Boolean} [options.minimizeMessenger] - Whether to minimize the widget or not.
-     *                                                Defaults to false.
-     */
-    const reset = (options = {}) => {
-      return (dispatch, getState) => {
-        chatViewActions.stopPollingForMessages ();
-        dispatch (setConversationEnded ());
-        dispatch (actionCreators.reset ());
-        postSdkMessage.reset ();
-        lsHelpers.reset ({
-          resetProactiveChat: options.resetProactiveChat
-        });
-
-        const {minimized} = getState ().appState;
-        if (options.minimizeMessenger && !minimized) {
-          postSdkMessage.toggleMessenger (true);
         }
       };
     };
@@ -402,18 +362,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set app reset trigger
-     * @param {String} value - value of reset trigger
-     * @returns {Object} - Action
-     */
-    const setAppResetTrigger = (value) => {
-      return {
-        type: ACTION_TYPES.SET_APP_RESET_TRIGGER,
-        value
-      };
-    };
-
-    /**
      * Initialize conversation - either enable the chat view or the out of
      * business hours view.
      */
@@ -437,6 +385,12 @@ define ("actions/appState",
           }
         } = getState ();
         const widgetIsOpen = !minimized;
+
+        if (!issueExists) {
+          dispatch (postSdkMessage.conversationStatusEvent ({
+            open: false
+          }));
+        }
 
         // If atleast one issue exists on backend then start the poller.
         // (poller will check for issue state)
@@ -467,7 +421,7 @@ define ("actions/appState",
 
         // The reset trigger is reset to its default value once appropriate
         // action is performed.
-        dispatch (setAppResetTrigger (APP_RESET_TRIGGER.INITIAL));
+        dispatch (actionCreators.setAppResetTrigger (APP_RESET_TRIGGER.INITIAL));
       }
     };
 
@@ -508,7 +462,7 @@ define ("actions/appState",
             setUiConfig (helpshiftConfig);
 
             // Send the config event loaded back to the client
-            postSdkMessage.wmConfig (getClientWmConfig ());
+            dispatch (postSdkMessage.wmConfig (getClientWmConfig ()));
 
             // If widgetShouldAutoOpen is true then reset the value of it to false.
             if (widgetShouldAutoOpen) {
@@ -561,7 +515,7 @@ define ("actions/appState",
       const requestData = xhrHelpers.getPreparedXhrData ();
       requestData.nonce = Date.now ();
 
-      xhr ({
+      getConfigXhr = xhr ({
         route: routes.getWmConfig (domain),
         headers: xhrHelpers.getCommonHeaders (),
         data: requestData,
@@ -691,7 +645,7 @@ define ("actions/appState",
      * This event is used to pass updated launcher styles to messenger js
      */
     const _postUiConfigUpdatedEvent = () => {
-      postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ());
+      store.dispatch (postSdkMessage.uiConfigUpdatedEvent (getLauncherCssConfig ()));
     };
 
     /**
@@ -809,18 +763,6 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set initial user message in store
-     * @param {String} - message
-     * @returns {Object} - Action
-     */
-    const setInitialUserMsg = (message) => {
-      return {
-        type: ACTION_TYPES.SET_INITIAL_USER_MESSAGE,
-        message
-      };
-    };
-
-    /**
      * Action to replace the cifs
      * @param {Object} cif - data of cif
      * @returns {Object} - Action
@@ -910,14 +852,18 @@ define ("actions/appState",
           route: routes.putResetPreIssue (domain, activeIssueId),
           data: xhrHelpers.getPreparedXhrData ({
             state: ISSUE_STATE_RESET
-          }, SKIP_PLATFORM_ID),
+          }, {
+            skipPlatformId: true
+          }),
           method: "PUT",
           headers: xhrHelpers.getCommonHeaders (),
           onEnd: () => {
-            dispatch (setAppResetTrigger (APP_RESET_TRIGGER.PRE_ISSUE_RESET));
             // In both the cases (success and failure), we'll start with a new
             // conversation for the end user.
-            dispatch (reset ());
+            dispatch (commonActions.reloadApp ({
+              trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
+              callback: chatViewActions.stopPollingForMessages
+            }));
           }
         });
       };
@@ -954,14 +900,23 @@ define ("actions/appState",
       windowIsFocused
     });
 
+    /**
+     * Abort get web chat config XHR if it's in progress
+     */
+    const abortGetConfigXhr = () => {
+      // Check if get web chat config xhr is in progress. If so, abort it.
+      if (getConfigXhr) {
+        getConfigXhr.abort ();
+        getConfigXhr = null;
+      }
+    };
+
     return {
       setDeviceId,
       setAnonUserId,
       setClientConfig,
       setWmConfig,
       toggleMinimized,
-      reset,
-      setInitialUserMsg,
       startConversation,
       replaceCif,
       setParentPageInfo,
@@ -970,9 +925,9 @@ define ("actions/appState",
       updateStyles,
       resetPreIssue,
       setConversationStarted,
-      setAppResetTrigger,
       setWidgetShouldAutoOpen,
       setReEngagementId,
-      setWindowIsFocused
+      setWindowIsFocused,
+      abortGetConfigXhr
     };
   });

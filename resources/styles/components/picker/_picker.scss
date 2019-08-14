@@ -1,0 +1,78 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the picker component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group picker
+///
+
+@include component(picker) {
+  $header-opened-bottom-border: var(--hs-form-border-color);
+  $no-search-results-text-color: color(text, light);
+  $no-tap-highlight-color: rgba(255, 255, 255, 0);
+
+  .hs-picker {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+
+    &__header-wrapper {
+      flex: 0 0 auto;
+      padding: gutter(8 12);
+      cursor: pointer;
+      -webkit-tap-highlight-color: $no-tap-highlight-color;
+    }
+
+    &__options-wrapper {
+      display: flex;
+      flex-basis: 100%;
+      overflow-y: hidden;
+    }
+
+    &__no-search-results {
+      flex-basis: 100%;
+      padding: gutter(12 0);
+      color: $no-search-results-text-color;
+      text-align: center;
+    }
+
+    // @TODO: This should come through picker-header. So pass the prop browserIsMobile
+    // to Picker & its children and then set this style in hs-picker-header
+    // JIRA: https://helpshift.atlassian.net/browse/FRON-3988
+    &--mobile {
+      .hs-picker-header__input {
+        // @NOTE - If we want to avoid zoom on focus for iOS devices, we need to
+        // set the font size to 16px
+        font-size: font-size(body, large);
+      }
+    }
+
+    &--opened {
+      overflow-y: auto;
+      // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
+      // and Chrome behave.
+      // Details –
+      // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+
+      .hs-picker__options-wrapper {
+        overflow-y: auto;
+        // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
+        // and Chrome behave.
+        // Details –
+        // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
+        // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+      }
+
+      .hs-picker__header-wrapper {
+        border-bottom: 1px solid $header-opened-bottom-border;
+      }
+    }
+  }
+}

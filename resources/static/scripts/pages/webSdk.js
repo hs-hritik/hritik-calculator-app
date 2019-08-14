@@ -6,11 +6,12 @@
 
 require (
   [
-    "extras/postSdkMessage",
+    "store",
     "extras/api",
-    "extras/globalEvents"
+    "extras/globalEvents",
+    "actions/postSdkMessage"
   ],
-  function (postSdkMessage, api, globalEvents) {
+  function (store, api, globalEvents, postSdkMessage) {
     "use strict";
 
     /**
@@ -37,5 +38,5 @@ require (
 
     globalEvents.addFocusAndBlurEventListener ();
 
-    postSdkMessage.jsLoaded ();
+    store.dispatch (postSdkMessage.jsLoaded ());
   });
