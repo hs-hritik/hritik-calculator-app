@@ -204,8 +204,8 @@
     } (window.location.search.substr (1).split ('&'));
 
     (function () {
-      var PLATFORM_ID = qs ["pid"] || "test_platform_20170901110844149-0319dffe2b25f9c",
-        DOMAIN = qs ["domain"] || "test",
+      var PLATFORM_ID = qs ["pid"] || "infinitelybeta_platform_20181128141122055-bcb9f4c75044d37",
+        DOMAIN = qs ["domain"] || "infinitelybeta",
         USER_ID = qs ["userId"],
         USER_NAME = qs ["userName"],
         USER_EMAIL = qs ["userEmail"],
@@ -213,6 +213,7 @@
         USER_AUTH_TOKEN = qs ["userAuthToken"],
         DEV_LANG = qs ["language"],
         FP = qs ["fullPrivacy"],
+        PHONE_NUMBER = qs ["phoneNumber"],
         CLEAR_ON_LOGIN = qs ["clearAnonymousUserOnLogin"];
 
       // Example :- Pass tags in following way
@@ -233,7 +234,8 @@
         userAuthToken: USER_AUTH_TOKEN || "",
         language: DEV_LANG || "browserDefault",
         fullPrivacy: FP || false,
-        clearAnonymousUserOnLogin: CLEAR_ON_LOGIN || false
+        clearAnonymousUserOnLogin: CLEAR_ON_LOGIN || false,
+        phoneNumber: PHONE_NUMBER || ""
       };
     }) ();
 

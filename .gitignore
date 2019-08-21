@@ -13,3 +13,4 @@ resources/build/
 resources/localhost/
 resources/static/scripts/gunpowder/
 .scannerwork/
+.gitattributes

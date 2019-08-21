@@ -1,0 +1,14 @@
+Branches:
+feature/app-sri
+
+Changelog:
+Add phone number to demo page
+Add phone no without skipping other identifiers
+Fix a typo in the template paths for index.html
+Fix: different sri is generated for app bundle per cloud provider
+Add "sri" task to makefile and integrate it with "dist" task
+Create gulp task "generate-sri" to combine sri related tasks
+Update build tasks to get correct hash
+Add gulp tasks to generate sri and update sri list
+Add placeholder variables for bundle hashes
+Add gulp sri as a dependency

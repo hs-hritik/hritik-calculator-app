@@ -12,12 +12,30 @@ const replace = require ("gulp-replace");
 const runSequence = require ("run-sequence");
 const concat = require ("gulp-concat");
 const del = require ("del");
+const sri = require ("gulp-sri");
+const fs = require ("fs");
 const uglify = require ("gulp-uglify");
 
 /**
- * Webchat version
+ * Maximum hashes to add to the integrity attribute of script tag.
+ * Ideally, there should be only one app and min bundle each in production but
+ * in case of deployments there might be two to three versions of a bundle temporarily.
+ * In this case, the client may request any of these versions, which would fail
+ * the SRI integrity check. Hence, we need to keep three hashes for checking the integrity.
  */
-const WEB_CHAT_VERSION = "2.29.0";
+const MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE = 3;
+
+/**
+ * Maximum number of SRIs to maintain corresponding to a single resource in hs-sri.json.
+ * If a new SRI is generated for a newer version of a resource and max SRI limit
+ * per resource is reached then it pops the oldest SRI and prepends the latest SRI.
+ */
+const MAX_SRI_LIMIT_PER_RESOURCE = 10;
+
+/**
+ * Web Chat version
+ */
+const WEB_CHAT_VERSION = "2.30.0";
 
 /**
  * Name of app bundle
@@ -77,6 +95,40 @@ const PATHS = {
     "!dist/scripts/external/**"
   ],
 
+  // SRI related paths
+  requirePath: {
+    hsSri: "../hs-sri.json",
+    tempSri: "../sri.json"
+  },
+
+  hsSri: "./hs-sri.json",
+  tempSri: "./sri.json",
+
+  // Environment specific SRI related paths
+  sri: {
+    ec2: {
+      source: {
+        app: "dist/ec2/scripts/app-min.js",
+        libs: "dist/ec2/libs/libs-min.js"
+      },
+      dest: "dist/ec2/html/index.html"
+    },
+    azure: {
+      source: {
+        app: "dist/azure/scripts/app-min.js",
+        libs: "dist/azure/libs/libs-min.js"
+      },
+      dest: "dist/azure/html/index.html"
+    },
+    localshiva: {
+      source: {
+        app: "dist/localshiva/scripts/app-min.js",
+        libs: "dist/localshiva/libs/libs-min.js"
+      },
+      dest: "dist/localshiva/html/index.html"
+    }
+  },
+
   externalJsSrc: "dist/scripts/external/*.js",
   externalJsDest: "dist/scripts/external/"
 };
@@ -95,11 +147,13 @@ const TEMPLATE_PATHS = {
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/scripts/requireConfig.js"></script>
     `,
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"></script>`
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
   },
   APP: {
     DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"></script>`
+    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
   }
 };
 
@@ -153,6 +207,17 @@ gulp.task ("babel", function () {
     babelCompile (PATHS.scriptsSrc, PATHS.scriptsDest);
   }
 });
+
+/**
+ * Returns a string by combining the latest three SRI hashes corresponding
+ * to a given path from the hs-sri.json file.
+ * @param {String} path - bundle path from the dist directory
+ * @returns {String} A string of latest three hashes.
+ */
+const getBundleHash = (path) => {
+  const hsSri = require (PATHS.requirePath.hsSri);
+  return hsSri [path].slice (0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join (" ");
+};
 
 /**
  * Production task.
@@ -256,6 +321,111 @@ gulp.task ("minify-ext-js", function () {
  */
 gulp.task ("clean-unwanted-js", function () {
   del (PATHS.unwantedAppSource);
+});
+
+/**
+ * Task to generate sri for libs and app JS bundles
+ */
+gulp.task ("sri", function () {
+  const {
+    sri: {
+      ec2,
+      azure,
+      localshiva
+    }
+  } = PATHS;
+
+  const DEST_PATHS = [
+    ec2.source.app,
+    ec2.source.libs,
+    azure.source.app,
+    azure.source.libs,
+    localshiva.source.app,
+    localshiva.source.libs
+  ];
+
+  return gulp.src (DEST_PATHS)
+    .pipe (sri ({
+      algorithms: ["sha512"]
+    }))
+    .pipe (gulp.dest ("."))
+    .pipe (print (() => console.log ("Temporary resources/sri.json file generated")));
+});
+
+/**
+ * Task to update hs-sri.json file
+ * It checks if newly generated hash for bundles matches with the first three
+ * hashes of the previous versions of the same bundle, if it does then the
+ * latest version is skipped.
+ * This is required because we maintain hashes of last 10 versions corresponding to a file.
+ * But we only add first three versions to the integrity attribute (check getBundleHash function)
+ */
+gulp.task ("update-sri-list", function () {
+  const hsSri = require (PATHS.requirePath.hsSri);
+  const sri = require (PATHS.requirePath.tempSri);
+
+  Object.keys (sri).forEach ((key) => {
+    // If new bundle is added then it won't be present
+    // in hs-sri.json file. So, create a key corresponding
+    // to that file and associate it to empty array.
+    if (!Array.isArray (hsSri [key])) {
+      hsSri [key] = [];
+    }
+
+    // If the sri hash value is present with in first three hash values
+    // then don't add this value otherwise add it.
+    if (hsSri [key].slice (0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).indexOf (sri [key]) !== -1) {
+      return;
+    }
+
+    // Pop the last value if max limit has reached
+    if (hsSri [key].length === MAX_SRI_LIMIT_PER_RESOURCE) {
+      hsSri [key].pop ();
+    }
+
+    // Prepend the latest hash value in the array
+    hsSri [key].unshift (sri [key]);
+  });
+
+  // Write the changes to hs-sri.json file
+  const writeStream = fs.createWriteStream (PATHS.hsSri);
+  writeStream.write (JSON.stringify (hsSri));
+
+  // Delete sri.json temp file
+  fs.unlink (PATHS.tempSri);
+});
+
+gulp.task ("update-ec2-sri", function () {
+  gulp.src (PATHS.sri.ec2.dest)
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.ec2.source.libs), {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.ec2.source.app), {
+        skipBinary: true
+      }))
+      .pipe (gulp.dest ("dist/ec2/html/"));
+});
+
+gulp.task ("update-azure-sri", function () {
+  gulp.src (PATHS.sri.azure.dest)
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.azure.source.libs), {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.azure.source.app), {
+        skipBinary: true
+      }))
+      .pipe (gulp.dest ("dist/azure/html/"));
+});
+
+gulp.task ("update-localshiva-sri", function () {
+  gulp.src (PATHS.sri.localshiva.dest)
+      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.localshiva.source.libs), {
+        skipBinary: true
+      }))
+      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.localshiva.source.app), {
+        skipBinary: true
+      }))
+      .pipe (gulp.dest ("dist/localshiva/html/"));
 });
 
 /**
