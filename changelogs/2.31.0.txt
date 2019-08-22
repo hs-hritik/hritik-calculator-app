@@ -1,0 +1,5 @@
+Branches:
+feature/sri-exclude-azure
+
+Changelog:
+Exclude azure from SRI tasks
