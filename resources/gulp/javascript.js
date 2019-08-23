@@ -35,7 +35,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.30.0";
+const WEB_CHAT_VERSION = "2.31.0";
 
 /**
  * Name of app bundle
@@ -135,6 +135,12 @@ const PATHS = {
 
 /**
  * Paths used in templating
+ * @TODO: Enable SRI for Azure - Use the same PROD path for LIBS and APP for Azure
+ * as for EC2. Move the template strings up, set it to PROD directly and use it (the
+ * same value) for EC2, Azure, and localshiva in the "update-xxx-sri" tasks.
+ * Currently there are different prod paths for EC2 and Azure because we don't support
+ * SRI in Azure. We support SRI for localshiva (sandbox envs), so it's using the
+ * EC2 paths.
  */
 const TEMPLATE_PATHS = {
   LIBS: {
@@ -147,13 +153,21 @@ const TEMPLATE_PATHS = {
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/scripts/requireConfig.js"></script>
     `,
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
-integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
+    PROD: {
+      EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
+      AZURE: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"\
+></script>`
+    }
   },
   APP: {
     DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
-    PROD: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
-integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
+    PROD: {
+      EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
+      AZURE: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"\
+></script>`
+    }
   }
 };
 
@@ -225,10 +239,10 @@ const getBundleHash = (path) => {
  */
 gulp.task ("build-ec2", function () {
   gulp.src (PATHS.ec2Source)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD, {
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
         skipBinary: true
       }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD, {
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
@@ -246,10 +260,10 @@ gulp.task ("build-ec2", function () {
  */
 gulp.task ("build-azure", function () {
   gulp.src (PATHS.azureSource)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD, {
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.AZURE, {
         skipBinary: true
       }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD, {
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.AZURE, {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
@@ -267,10 +281,10 @@ gulp.task ("build-azure", function () {
  */
 gulp.task ("build-localshiva", function () {
   gulp.src (PATHS.localshivaSource)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD, {
+      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
         skipBinary: true
       }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD, {
+      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
         skipBinary: true
       }))
       .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
