@@ -10,12 +10,14 @@ define (
   [
     "store",
     "actions/appState",
-    "actions/chatView"
+    "actions/chatView",
+    "constants/accessibility"
   ],
-  function (store, appStateActions, chatViewActions) {
+  function (store, appStateActions, chatViewActions, axConstants) {
     "use strict";
 
     const {dispatch} = store;
+    const {KEYCODES} = axConstants;
 
     /**
      * Register listener for focus event on window
@@ -37,6 +39,17 @@ define (
     };
 
     /**
+     * Register listener to select the interactive element
+     */
+    const addSelectEventListener = () => {
+      document.addEventListener (("keypress"), (e) => {
+        if (e.keyCode === KEYCODES.ENTER || e.keyCode === KEYCODES.SPACE) {
+          document.activeElement.click ();
+        }
+      });
+    };
+
+    /**
      * Register listeners for focus & blur events on window
      */
     const addFocusAndBlurEventListener = () => {
@@ -45,7 +58,8 @@ define (
     };
 
     return {
-      addFocusAndBlurEventListener
+      addFocusAndBlurEventListener,
+      addSelectEventListener
     };
   }
 );
