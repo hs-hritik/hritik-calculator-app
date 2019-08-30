@@ -12,10 +12,13 @@ define ("components/businessHoursView",
     "components/commons/dndWrapper",
     "constants/businessHoursView",
     "helpers/attachments",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "extras/accessibility",
+    "constants/activeView",
+    "constants/accessibility"
   ],
   function (ViewHeader, BrandingContainer, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
-    attachmentsHelpers, classes) {
+    attachmentsHelpers, classes, ax, activeViewConstants, axConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -35,6 +38,7 @@ define ("components/businessHoursView",
 
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
+    const {DATA_LABELS} = axConstants;
 
     return React.createClass ({
       displayName: "BusinessHoursView",
@@ -127,7 +131,10 @@ define ("components/businessHoursView",
         }
 
         return (
-          <div className="hs-business-hours">
+          <div
+            className="hs-business-hours"
+            data-label={DATA_LABELS.OOBH.WRAPPER}
+            tabIndex="0">
             <div>
               <p className="hs-business-hours__offline-message">
                 {text.businessHoursContactFormMessage}
@@ -164,7 +171,10 @@ define ("components/businessHoursView",
         }
 
         return (
-          <div className="hs-business-hours">
+          <div
+            className="hs-business-hours"
+            data-label={DATA_LABELS.OOBH.OFFLINE_MSG}
+            tabIndex="0">
             <p className={messageClass}>
               {infoMessage}
             </p>
@@ -205,8 +215,10 @@ define ("components/businessHoursView",
 
         return (
           <div className={footerClasses}>
-            <button className="hs-button hs-footer__btn"
+            <button className="hs-button hs-footer__btn "
                     disabled={contactFormDisabled}
+                    data-label={DATA_LABELS.OOBH.FOOTER_BTN}
+                    tabIndex="0"
                     onClick={clickHandler} >
               {btnText}
             </button>
@@ -241,6 +253,8 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
+                     data-label={DATA_LABELS.OOBH.NAME}
+                     tabIndex="0"
                      onChange={this._onNameChange} />
             );
             break;
@@ -254,6 +268,8 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
+                     data-label={DATA_LABELS.OOBH.EMAIL}
+                     tabIndex="0"
                      onChange={this._onEmailChange} />
             );
             break;
@@ -267,6 +283,8 @@ define ("components/businessHoursView",
                         disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
+                        data-label={DATA_LABELS.OOBH.MESSAGE}
+                        tabIndex="0"
                         onChange={this._onMessageChange} />
             );
             break;
@@ -359,6 +377,7 @@ define ("components/businessHoursView",
             <i className="ion-load-b ion--spinning" />
           );
         } else {
+          const dataLabelAttribute = `${DATA_LABELS.OOBH.ATTACHMENT_PREFIX}${id}`;
           const iconClasses = classes (
             "ion-cross",
             "hs-business-hours__small-icon",
@@ -366,7 +385,9 @@ define ("components/businessHoursView",
           );
           iconEl = (
             <i className={iconClasses}
-               onClick={this._onRemoveAttachmentClick.bind (this, id)} />
+               onClick={this._onRemoveAttachmentClick.bind (this, id)}
+               tabIndex="0"
+               data-label={dataLabelAttribute} />
           );
         }
 
@@ -419,7 +440,10 @@ define ("components/businessHoursView",
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid);
 
         return (
-          <div className="hs-business-hours__attachment-placeholder">
+          <div
+            className="hs-business-hours__attachment-placeholder"
+            data-label={DATA_LABELS.OOBH.FILE_SELECT}
+            tabIndex="0">
             <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
@@ -536,6 +560,11 @@ define ("components/businessHoursView",
        */
       _onRemoveAttachmentClick (attachmentId) {
         this.props.onRemoveAttachment (attachmentId);
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.BUSINESS_HOURS);
+        ax.focus ();
       }
     });
   }

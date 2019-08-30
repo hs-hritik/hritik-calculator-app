@@ -10,10 +10,14 @@ define (
     "constants/activeView",
     "constants/accessibility"
   ],
-  function (view, axConstants) {
+  function (activeViewConstants, axConstants) {
     "use strict";
 
-    const {DIRECTIONS} = axConstants;
+    const {
+      DIRECTIONS,
+      DATA_LABEL_SELECTORS,
+      DATA_LABEL_NAME
+    } = axConstants;
 
     /**
      * FocusData is a mapping of view types and the corresponding metaList
@@ -25,32 +29,39 @@ define (
      * the selectors list is populated with the selectors of the dynamically generated elements
      */
     const _focusData = {
-      [view.BUSINESS_HOURS]: {
+      [activeViewConstants.BUSINESS_HOURS]: {
         metaList: [
           {
-            selectors: ["[data-label=hs-business-hours-wrapper]"]
+            name: DATA_LABEL_NAME.OOBH.WRAPPER,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.WRAPPER]
           },
           {
-            selectors: ["[data-label=hs-business-hours-user-name]"]
+            name: DATA_LABEL_NAME.OOBH.NAME,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.NAME]
           },
           {
-            selectors: ["[data-label=hs-business-hours-email]"]
+            name: DATA_LABEL_NAME.OOBH.EMAIL,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.EMAIL]
           },
           {
-            selectors: ["[data-label=hs-business-hours-message]"]
+            name: DATA_LABEL_NAME.OOBH.MESSAGE,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.MSG]
           },
           {
-            name: "file-attachments",
+            name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
             selectors: []
           },
           {
-            selectors: ["[data-label=hs-business-hours-attachment]"]
+            name: DATA_LABEL_NAME.OOBH.FILE_SELECT,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.FILE_SELECT]
           },
           {
-            selectors: ["[data-label=hs-business-hours-footer-btn]"]
+            name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
           },
           {
-            selectors: ["[data-label=web-chat-launcher-btn]"]
+            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.LAUNCHER_BTN]
           }
         ]
       }
@@ -69,10 +80,10 @@ define (
      * FlatListActiveIndices is the mapping of view and active index in that view
      */
     const flatListActiveIndices = {
-      [view.BUSINESS_HOURS]: 0,
-      [view.CHAT]: 0,
-      [view.FAQ]: 0,
-      [view.CSAT]: 0
+      [activeViewConstants.BUSINESS_HOURS]: 0,
+      [activeViewConstants.CHAT]: 0,
+      [activeViewConstants.FAQ]: 0,
+      [activeViewConstants.CSAT]: 0
     };
 
     /**

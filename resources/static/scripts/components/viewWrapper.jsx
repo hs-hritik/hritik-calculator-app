@@ -20,7 +20,7 @@ define ("components/viewWrapper",
 
     const PropTypes = React.PropTypes;
 
-    const KEYCODES = {axConstants};
+    const {KEYCODES} = axConstants;
 
     return React.createClass ({
       displayName: "ViewWrapper",
