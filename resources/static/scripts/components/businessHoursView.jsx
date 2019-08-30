@@ -35,7 +35,7 @@ define ("components/businessHoursView",
       name: PropTypes.string,
       size: PropTypes.number
     });
-
+    const KEYCODES = {axConstants};
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
     const {DATA_LABELS} = axConstants;
@@ -443,11 +443,13 @@ define ("components/businessHoursView",
           <div
             className="hs-business-hours__attachment-placeholder"
             data-label={DATA_LABELS.OOBH.FILE_SELECT}
-            tabIndex="0">
+            tabIndex="0"
+            onKeyDown={this.onKeyDown}>
             <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
                        labelClasses="hs-business-hours__attachment-placeholder-text"
+                       onSaveInputRef={this._saveInputRef}
                        infoText={dndInfoText} />
           </div>
         );
@@ -515,6 +517,27 @@ define ("components/businessHoursView",
             <span>{text}</span>
           </small>
         );
+      },
+
+      _fileInputRef: null,
+
+      /**
+       * Set ref for fileInput component
+       */
+      _saveInputRef (fileInputRef) {
+        this._fileInputRef = fileInputRef;
+      },
+
+      /**
+       * Handler for keyDown event on attachment wrapper
+       * @param {Object} ev - Event for key down
+       */
+      onKeyDown (ev) {
+        if (ev.keyCode === KEYCODES.ENTER || ev.keyCode === KEYCODES.SPACE) {
+          if (this._fileInputRef) {
+            this._fileInputRef.click ();
+          }
+        }
       },
 
       /**

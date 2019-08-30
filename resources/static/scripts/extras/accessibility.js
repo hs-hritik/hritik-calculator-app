@@ -36,6 +36,10 @@ define (
             selectors: [DATA_LABEL_SELECTORS.OOBH.WRAPPER]
           },
           {
+            name: DATA_LABEL_NAME.OOBH.OFFLINE_MSG,
+            selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_OFFLINE_MSG]
+          },
+          {
             name: DATA_LABEL_NAME.OOBH.NAME,
             selectors: [DATA_LABEL_SELECTORS.OOBH.NAME]
           },

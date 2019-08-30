@@ -19,7 +19,8 @@ define ("constants/accessibility",
       DOWN_ARROW: 40,
       RIGHT_ARROW: 39,
       LEFT_ARROW: 37,
-      TAB: 9
+      TAB: 9,
+      SPACE: 32
     };
 
     /**
@@ -53,7 +54,7 @@ define ("constants/accessibility",
         FILE_ATTACHMENTS: "OOBH_FILE_ATTACHMENT",
         FILE_SELECT: "OOBH_FILE_SELECT",
         FOOTER_BTN: "OOBH_FOOTER_BTN",
-        OFFLINE_MSG: "OOBJ_OFFLINEE_MSG"
+        OFFLINE_MSG: "OOBH_OFFLINE_MSG"
       },
       LAUNCHER_BTN: "LAUNCHER_BTN"
     };
