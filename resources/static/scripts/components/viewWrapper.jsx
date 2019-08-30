@@ -10,13 +10,17 @@ define ("components/viewWrapper",
     "components/containers/chatView",
     "components/containers/faqView",
     "components/containers/csatView",
-    "components/containers/businessHoursView"
+    "components/containers/businessHoursView",
+    "extras/accessibility",
+    "constants/accessibility"
   ],
   function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer,
-    BusinessHoursViewContainer) {
+    BusinessHoursViewContainer, ax, axConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+
+    const KEYCODES = {axConstants};
 
     return React.createClass ({
       displayName: "ViewWrapper",
@@ -85,14 +89,24 @@ define ("components/viewWrapper",
         this.props.onToggleOnlineStatus (false);
       },
 
+      _onKeyPress (ev) {
+        if (ev.shiftKey && ev.keyCode === KEYCODES.TAB) {
+          ax.focusPrev ();
+        } else if (ev.keyCode === KEYCODES.TAB) {
+          ax.focusNext ();
+        }
+      },
+
       componentDidMount () {
         window.addEventListener ("online", this._onOnline);
         window.addEventListener ("offline", this._onOffline);
+        window.addEventListener ("keydown", this._onKeyPress);
       },
 
       componentWillUnmount () {
         window.removeEventListener ("online", this._onOnline);
         window.removeEventListener ("offline", this._onOffline);
+        window.removeEventListener ("keydown", this._onKeyPress);
       }
     });
   }
