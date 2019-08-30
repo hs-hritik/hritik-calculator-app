@@ -7,10 +7,13 @@
 define (
   "extras/accessibility",
   [
-    "constants/activeView"
+    "constants/activeView",
+    "constants/accessibility"
   ],
-  function (view) {
+  function (view, axConstants) {
     "use strict";
+
+    const {DIRECTIONS} = axConstants;
 
     /**
      * FocusData is a mapping of view types and the corresponding metaList
@@ -25,29 +28,29 @@ define (
       [view.BUSINESS_HOURS]: {
         metaList: [
           {
-            selectors: ["hs-business-hours-wrapper"]
+            selectors: ["[data-label=hs-business-hours-wrapper]"]
           },
           {
-            selectors: ["hs-business-hours-user-name"]
+            selectors: ["[data-label=hs-business-hours-user-name]"]
           },
           {
-            selectors: ["hs-business-hours-email"]
+            selectors: ["[data-label=hs-business-hours-email]"]
           },
           {
-            selectors: ["hs-business-hours-message"]
+            selectors: ["[data-label=hs-business-hours-message]"]
           },
           {
             name: "file-attachments",
             selectors: []
           },
           {
-            selectors: ["hs-business-hours-attachment"]
+            selectors: ["[data-label=hs-business-hours-attachment]"]
           },
           {
-            selectors: ["hs-business-hours-footer-btn"]
+            selectors: ["[data-label=hs-business-hours-footer-btn]"]
           },
           {
-            selectors: ["web-chat-launcher-btn"]
+            selectors: ["[data-label=web-chat-launcher-btn]"]
           }
         ]
       }
@@ -63,16 +66,71 @@ define (
     let _flatList = [];
 
     /**
+     * FlatListActiveIndices is the mapping of view and active index in that view
+     */
+    const flatListActiveIndices = {
+      [view.BUSINESS_HOURS]: 0,
+      [view.CHAT]: 0,
+      [view.FAQ]: 0,
+      [view.CSAT]: 0
+    };
+
+    /**
      * This function generate the new flatList, whenever any change in focusData obj
      * It concatenate all the selectors list present in metaData list of focusData
      */
     const _generateFlatList = () => {
-      const activeViewData = _focusData[_activeView];
+      const activeViewData = _focusData [_activeView];
       const {metaList} = activeViewData;
 
       _flatList = metaList.reduce ((acc, item) => {
         return acc.concat (item.selectors);
       }, []);
+    };
+
+    /**
+     * This function update the mapping of active view and the active index
+     *
+     * @param {Number} index - Updated index
+     */
+    const _setFlatListActiveIndex = (index) => {
+      flatListActiveIndices [_activeView] = index;
+    };
+
+    /**
+     * Returns currently focused index of the active view
+     */
+    const _getFlatListActiveIndex = () => {
+      return flatListActiveIndices [_activeView];
+    };
+
+    /**
+     * Returns the active selector from the flatList
+     */
+    const _getFlatListActiveSelector = () => {
+      const activeIndex = _getFlatListActiveIndex ();
+
+      return _flatList [activeIndex];
+    };
+
+    /**
+     * Increase the current active view index
+     */
+    const incrementFocusIndex = () => {
+      const activeIndex = _getFlatListActiveIndex ();
+      const newIndex = (activeIndex + 1) % _flatList.length;
+
+      _setFlatListActiveIndex (newIndex);
+    };
+
+    /**
+     * Decrease the current active view index
+     */
+    const decrementFocusIndex = () => {
+      const activeIndex = _getFlatListActiveIndex ();
+      const newIndex = (activeIndex - 1 + _flatList.length) % _flatList.length;
+
+      _setFlatListActiveIndex (newIndex);
     };
 
     /**
@@ -87,16 +145,47 @@ define (
       _generateFlatList ();
     };
 
-    // TODO: Random function detail to avoid error
-    // TODO: Update the function definition when it will be used
-    const focus = () => {
-      const el = document.querySelector (_flatList[0]);
-      el.focus ();
+    /**
+     * This function focus the element at active index
+     * If element is not present in DOM, recursively call focus prev/next on basis of direction
+     *
+     * @param {String} direction - If element is not present,
+     * direction represent to focus prev or next
+     */
+    const focus = (direction = DIRECTIONS.FORWARD) => {
+      const selector = _getFlatListActiveSelector ();
+      const el = document.querySelector (selector);
+
+      if (el) {
+        el.focus ();
+      } else if (direction === DIRECTIONS.FORWARD) {
+        focusNext (direction);
+      } else if (direction === DIRECTIONS.BACKWARD) {
+        focusPrev (direction);
+      }
+    };
+
+    /**
+     * On tab keypress, focus next by increasing the index and focus the active element
+     */
+    const focusNext = (direction = DIRECTIONS.FORWARD) => {
+      incrementFocusIndex ();
+      focus (direction);
+    };
+
+    /**
+     * On shift-tab keypress, focus prev by decreasing the index and focus the active element
+     */
+    const focusPrev = (direction = DIRECTIONS.BACKWARD) => {
+      decrementFocusIndex ();
+      focus (direction);
     };
 
     return {
       setActiveView,
-      focus
+      focus,
+      focusNext,
+      focusPrev
     };
   }
 );
