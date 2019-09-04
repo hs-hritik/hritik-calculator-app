@@ -8,9 +8,10 @@ define (
   "extras/accessibility",
   [
     "constants/activeView",
-    "constants/accessibility"
+    "constants/accessibility",
+    "gunpowder/utils/array"
   ],
-  function (activeViewConstants, axConstants) {
+  function (activeViewConstants, axConstants, arrayUtils) {
     "use strict";
 
     const {
@@ -80,6 +81,8 @@ define (
      */
     let _flatList = [];
 
+    let _delayedFocusIndex = -1;
+
     /**
      * FlatListActiveIndices is the mapping of view and active index in that view
      */
@@ -121,11 +124,52 @@ define (
 
     /**
      * Returns the active selector from the flatList
+     *
+     * @param {Number} index - Index of the selector
      */
-    const _getFlatListActiveSelector = () => {
-      const activeIndex = _getFlatListActiveIndex ();
+    const _getFlatListActiveSelector = (index) => {
+      const activeIndex = index ? index : _getFlatListActiveIndex ();
 
       return _flatList [activeIndex];
+    };
+
+    /**
+     * Return the index of the selector group in metaList
+     *
+     * @param {String} name - Readable name of the selector
+     * @returns {Number} - Index of item from meta list searched using name
+     */
+    const _findMetaListIndexByName = (name) => {
+      const activeViewData = _focusData [_activeView];
+      const {metaList} = activeViewData;
+
+      return arrayUtils.findIndexByKey (metaList, name, "name");
+    };
+
+    /**
+     * Returns meta-list of the current active view
+     *
+     * @returns {Array} - MetaList of the object
+     */
+    const _getActiveViewMetaList = () => {
+      const activeViewData = _focusData [_activeView];
+
+      return activeViewData.metaList;
+    };
+
+    /**
+     * Return the index of the selector in the selectors list
+     *
+     * @param {*} selector - Selector value
+     * @param {*} list - List of selectors
+     * @returns {Number} - Index of the selector in the list
+     */
+    const _findSelectorIndexInMetaList = (selector, list) => {
+      const selectorIndex = arrayUtils.findIndex (list, function (selectorVal) {
+        return (selectorVal === selector);
+      });
+
+      return selectorIndex;
     };
 
     /**
@@ -196,11 +240,83 @@ define (
       focus (direction);
     };
 
+    /**
+     * This function does the following things
+     * - Finds the index of selector group in meta-list
+     * - Appends the selector in the meta-list
+     * - Based on the type of selector group, increment or decrement the current active index
+     * - Regenerates the flat list
+     *
+     * @param {Object} config
+     * @param {String} config.name - Name of the selector category
+     * @param {Boolean} config.selector - Unique selector of an element
+     * @param {String} config.data_label - Data label of the element
+     */
+    const addSelector = (config) => {
+      const {name, selector} = config;
+      const metaList = _getActiveViewMetaList ();
+      const metaListIndex = _findMetaListIndexByName (name);
+
+      metaList [metaListIndex].selectors.push (selector);
+
+      if (config.name === DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS) {
+        incrementFocusIndex ();
+      }
+
+      _generateFlatList ();
+    };
+
+    /**
+     * This function does the following things
+     * - Finds the index of selector group in meta-list
+     * - Find the index of the selector to be removed in the group
+     * - Regenerates the flat list
+     *
+     * @param {Object} config
+     * @param {String} config.name - Name of the selector category
+     * @param {Boolean} [config.selector] - Unique selector of an element
+     */
+    const removeSelector = (config) => {
+      const {selector, name} = config;
+      const metaList = _getActiveViewMetaList ();
+      const index = _findMetaListIndexByName (name);
+      const selectorIndex = _findSelectorIndexInMetaList (selector, metaList[index].selectors);
+
+      metaList[index].selectors.splice (selectorIndex, 1);
+      _generateFlatList ();
+    };
+
+    /**
+     * This function saves the index to be focused later
+     */
+    const delayFocus = () => {
+      _delayedFocusIndex = flatListActiveIndices [_activeView];
+    };
+
+    /**
+     * This function focuses and resets the delayed focus index
+     */
+    const clearDelayFocus = () => {
+      if (_delayedFocusIndex === -1) {
+        return;
+      }
+
+      const selector = _getFlatListActiveSelector (_delayedFocusIndex);
+      const el = document.querySelector (selector);
+
+      el.focus ();
+      _delayedFocusIndex = -1;
+    };
+
     return {
       setActiveView,
-      focus,
       focusNext,
-      focusPrev
+      focusPrev,
+      focus,
+      addSelector,
+      removeSelector,
+      delayFocus,
+      clearDelayFocus
     };
   }
 );

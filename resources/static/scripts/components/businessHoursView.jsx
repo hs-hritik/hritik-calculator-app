@@ -585,6 +585,15 @@ define ("components/businessHoursView",
         this.props.onRemoveAttachment (attachmentId);
       },
 
+      /**
+       * Clear delayed focus on componentDidUpdate to clear batched focus items
+       * Ex - When an attachment is removed, all attachments are re-rendered.
+       * Wait for the dom to update & then focus the next attachment element
+       */
+      componentDidUpdate () {
+        ax.clearDelayFocus ();
+      },
+
       componentDidMount () {
         ax.setActiveView (activeViewConstants.BUSINESS_HOURS);
         ax.focus ();
