@@ -36,6 +36,11 @@
     // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
     -ms-overflow-style: -ms-autohiding-scrollbar;
 
+    &:focus {
+      border: none;
+      outline: 5px auto -webkit-focus-ring-color;
+    }
+
     &__message {
       resize: none;
     }
@@ -49,15 +54,15 @@
       color: $chat-widget-secondary-text-color;
     }
 
+    //TODO: Update this to make it work for all the browsers
     &__form-input {
       color: $form-primary-text-color;
       background-color: $form-bg-color;
       border-color: $form-border-color;
 
       &:focus {
-        color: $form-primary-text-color;
-        background-color: $form-bg-color;
-        border-color: $form-accent-color;
+        border: none;
+        outline: 5px auto -webkit-focus-ring-color;
       }
     }
 
@@ -110,6 +115,11 @@
       background: $form-bg-color;
       border: 1px dashed $form-border-color;
       border-radius: radius();
+
+      &:focus {
+        border: none;
+        outline: 5px auto -webkit-focus-ring-color;
+      }
     }
 
     &__attachment-placeholder-text {

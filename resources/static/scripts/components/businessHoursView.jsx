@@ -35,7 +35,7 @@ define ("components/businessHoursView",
       name: PropTypes.string,
       size: PropTypes.number
     });
-    const KEYCODES = {axConstants};
+    const {KEYCODES} = axConstants;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
     const {DATA_LABELS} = axConstants;
@@ -444,7 +444,7 @@ define ("components/businessHoursView",
             className="hs-business-hours__attachment-placeholder"
             data-label={DATA_LABELS.OOBH.FILE_SELECT}
             tabIndex="0"
-            onKeyDown={this.onKeyDown}>
+            onKeyDown={this._onKeyDown}>
             <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
@@ -532,7 +532,7 @@ define ("components/businessHoursView",
        * Handler for keyDown event on attachment wrapper
        * @param {Object} ev - Event for key down
        */
-      onKeyDown (ev) {
+      _onKeyDown (ev) {
         if (ev.keyCode === KEYCODES.ENTER || ev.keyCode === KEYCODES.SPACE) {
           if (this._fileInputRef) {
             this._fileInputRef.click ();
