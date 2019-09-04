@@ -38,7 +38,7 @@ define ("components/businessHoursView",
     const {KEYCODES} = axConstants;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
-    const {DATA_LABELS} = axConstants;
+    const {DATA_LABELS, OOBH_TYPE} = axConstants;
 
     return React.createClass ({
       displayName: "BusinessHoursView",
@@ -595,7 +595,18 @@ define ("components/businessHoursView",
       },
 
       componentDidMount () {
+        const {
+          offlineBehaviour
+        } = this.props;
+
         ax.setActiveView (activeViewConstants.BUSINESS_HOURS);
+
+        if (offlineBehaviour !== CONTACT_FORM) {
+          ax.replaceMetaList (OOBH_TYPE.OFFLINE_MSG);
+        } else {
+          ax.replaceMetaList (OOBH_TYPE.FORM);
+        }
+
         ax.focus ();
       }
     });

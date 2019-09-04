@@ -260,10 +260,8 @@ define ("reducers/businessHoursView",
 
         case ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT:
           ax.removeSelector ({
-            selector: (
-              `[data-label=${DATA_LABELS.OOBH.OOBH_ATTACHMENT_PREFIX}${action.attachmentId}]`
-            ),
-            name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS
+            name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
+            selector: `[data-label=${DATA_LABELS.OOBH.ATTACHMENT_PREFIX}${action.attachmentId}]`
           });
           ax.delayFocus ();
 

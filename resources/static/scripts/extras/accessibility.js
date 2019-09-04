@@ -17,8 +17,59 @@ define (
     const {
       DIRECTIONS,
       DATA_LABEL_SELECTORS,
-      DATA_LABEL_NAME
+      DATA_LABEL_NAME,
+      OOBH_TYPE
     } = axConstants;
+
+    const OOBH_OFFLINE_META_LIST = [
+      {
+        name: DATA_LABEL_NAME.OOBH.OFFLINE_MSG,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.OFFLINE_MSG]
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
+      },
+      {
+        name: DATA_LABEL_NAME.LAUNCHER_BTN,
+        selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+      }
+    ];
+
+    const OOBH_FORM_META_LIST = [
+      {
+        name: DATA_LABEL_NAME.OOBH.WRAPPER,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_WRAPPER]
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.NAME,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_NAME]
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.EMAIL,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_EMAIL]
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.MESSAGE,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_MSG]
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
+        selectors: []
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.SELECT_FILES,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_SELECT_FILES]
+      },
+      {
+        name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
+      },
+      {
+        name: DATA_LABEL_NAME.LAUNCHER_BTN,
+        selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+      }
+    ];
 
     /**
      * FocusData is a mapping of view types and the corresponding metaList
@@ -31,44 +82,7 @@ define (
      */
     const _focusData = {
       [activeViewConstants.BUSINESS_HOURS]: {
-        metaList: [
-          {
-            name: DATA_LABEL_NAME.OOBH.WRAPPER,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.WRAPPER]
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.OFFLINE_MSG,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_OFFLINE_MSG]
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.NAME,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.NAME]
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.EMAIL,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.EMAIL]
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.MESSAGE,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.MSG]
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
-            selectors: []
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.FILE_SELECT,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.FILE_SELECT]
-          },
-          {
-            name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
-          },
-          {
-            name: DATA_LABEL_NAME.LAUNCHER_BTN,
-            selectors: [DATA_LABEL_SELECTORS.OOBH.LAUNCHER_BTN]
-          }
-        ]
+        metaList: []
       }
     };
 
@@ -241,6 +255,21 @@ define (
     };
 
     /**
+     * This function replace metaList of selectors
+     *
+     * @param {String} type - sub-type of view
+     */
+    const replaceMetaList = (type) => {
+      if (type === OOBH_TYPE.OFFLINE_MSG) {
+        _focusData [_activeView].metaList = OOBH_OFFLINE_META_LIST;
+      } else if (type === OOBH_TYPE.FORM) {
+        _focusData [_activeView].metaList = OOBH_FORM_META_LIST;
+      }
+
+      _generateFlatList ();
+    };
+
+    /**
      * This function does the following things
      * - Finds the index of selector group in meta-list
      * - Appends the selector in the meta-list
@@ -259,7 +288,7 @@ define (
 
       metaList [metaListIndex].selectors.push (selector);
 
-      if (config.name === DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS) {
+      if (name === DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS) {
         incrementFocusIndex ();
       }
 
@@ -282,7 +311,7 @@ define (
       const index = _findMetaListIndexByName (name);
       const selectorIndex = _findSelectorIndexInMetaList (selector, metaList[index].selectors);
 
-      metaList[index].selectors.splice (selectorIndex, 1);
+      metaList [index].selectors.splice (selectorIndex, 1);
       _generateFlatList ();
     };
 
@@ -316,7 +345,8 @@ define (
       addSelector,
       removeSelector,
       delayFocus,
-      clearDelayFocus
+      clearDelayFocus,
+      replaceMetaList
     };
   }
 );

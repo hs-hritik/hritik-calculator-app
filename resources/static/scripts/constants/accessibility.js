@@ -23,6 +23,11 @@ define ("constants/accessibility",
       SPACE: 32
     };
 
+    const OOBH_TYPE = {
+      FORM: "OOBH_FORM",
+      OFFLINE_MSG: "OFFLINE_MSG"
+    };
+
     /**
      * Data label constants are required for unique identification of an UI element
      */
@@ -70,9 +75,9 @@ define ("constants/accessibility",
         MSG: "[data-label=oobh-message]",
         FILE_SELECT: "[data-label=oobh-file-select]",
         FOOTER_BTN: "[data-label=oobh-footer-btn]",
-        OFFLINE_MSG: "[data-label=oobh-offline-msg]",
-        LAUNCHER_BTN: "[data-label=launcher-btn]"
-      }
+        OFFLINE_MSG: "[data-label=oobh-offline-msg]"
+      },
+      LAUNCHER_BTN: "[data-label=launcher-btn]"
     };
 
     return {
@@ -80,7 +85,8 @@ define ("constants/accessibility",
       KEYCODES,
       DATA_LABELS,
       DATA_LABEL_SELECTORS,
-      DATA_LABEL_NAME
+      DATA_LABEL_NAME,
+      OOBH_TYPE
     };
   }
 );

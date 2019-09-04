@@ -14,10 +14,12 @@ define ("actions/businessHours",
     "gunpowder/utils/schema",
     "gunpowder/utils/object",
     "utils/browser",
-    "utils/upload"
+    "utils/upload",
+    "extras/accessibility",
+    "constants/activeView"
   ],
   function (ACTION_TYPES, routes, batchActions, xhrHelpers, prepareProcessXhrDataHelpers, schema,
-    objectUtils, browserUtils, upload) {
+    objectUtils, browserUtils, upload, ax, activeView) {
     "use strict";
 
     const {Input} = schema;
@@ -184,6 +186,8 @@ define ("actions/businessHours",
           formData: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: () => {
+            ax.setActiveView (activeView.BUSINESS_HOURS);
+            ax.delayFocus ();
             dispatch (setBusinessHoursFormSubmitted ());
           },
           onFailure: (failureResponse) => {
