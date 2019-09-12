@@ -42,11 +42,11 @@ define (
      * Register listener to select the interactive element
      */
     const addSelectEventListener = () => {
-      document.addEventListener (("keypress"), (e) => {
+      document.addEventListener ("keypress", (e) => {
         if (e.keyCode === KEYCODES.ENTER || e.keyCode === KEYCODES.SPACE) {
           document.activeElement.click ();
         }
-      });
+      }, false);
     };
 
     /**

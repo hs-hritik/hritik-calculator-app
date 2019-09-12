@@ -38,7 +38,7 @@ define ("components/businessHoursView",
     const {KEYCODES} = axConstants;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
-    const {DATA_LABELS, OOBH_TYPE} = axConstants;
+    const {DATA_LABELS, OOBH_TYPE, DATA_LABEL_SELECTORS} = axConstants;
 
     return React.createClass ({
       displayName: "BusinessHoursView",
@@ -130,11 +130,19 @@ define ("components/businessHoursView",
           return null;
         }
 
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.OOBH.WRAPPER
+          }
+        );
+
         return (
           <div
             className="hs-business-hours"
             data-label={DATA_LABELS.OOBH.WRAPPER}
-            tabIndex="0">
+            tabIndex="0"
+            onFocus={_setAxActiveIndex}
+            onClick={_setAxActiveIndex}>
             <div>
               <p className="hs-business-hours__offline-message">
                 {text.businessHoursContactFormMessage}
@@ -170,11 +178,19 @@ define ("components/businessHoursView",
           messageClass = "hs-business-hours__offline-message";
         }
 
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.OOBH.OFFLINE_MSG
+          }
+        );
+
         return (
           <div
             className="hs-business-hours"
             data-label={DATA_LABELS.OOBH.OFFLINE_MSG}
-            tabIndex="0">
+            tabIndex="0"
+            onFocus={_setAxActiveIndex}
+            onClick={_setAxActiveIndex}>
             <p className={messageClass}>
               {infoMessage}
             </p>
@@ -212,6 +228,11 @@ define ("components/businessHoursView",
         "hs-footer--center-items", {
           "hs-footer--full-screen": allowFullScreen
         });
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN
+          }
+        );
 
         return (
           <div className={footerClasses}>
@@ -219,6 +240,7 @@ define ("components/businessHoursView",
                     disabled={contactFormDisabled}
                     data-label={DATA_LABELS.OOBH.FOOTER_BTN}
                     tabIndex="0"
+                    onFocus={_setAxActiveIndex}
                     onClick={clickHandler} >
               {btnText}
             </button>
@@ -242,6 +264,27 @@ define ("components/businessHoursView",
         let inputEl = null;
         let errorIconEl = null;
         let inputClasses = "";
+        let selectorValue;
+
+        switch (fieldName) {
+          case NAME:
+            selectorValue = DATA_LABEL_SELECTORS.OOBH.NAME;
+            break;
+
+          case EMAIL:
+            selectorValue = DATA_LABEL_SELECTORS.OOBH.EMAIL;
+            break;
+
+          case MESSAGE:
+            selectorValue = DATA_LABEL_SELECTORS.OOBH.MSG;
+            break;
+        }
+
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: selectorValue
+          }
+        );
 
         switch (fieldName) {
           case NAME:
@@ -255,6 +298,8 @@ define ("components/businessHoursView",
                      value={formField.value.value}
                      data-label={DATA_LABELS.OOBH.NAME}
                      tabIndex="0"
+                     onFocus={_setAxActiveIndex}
+                     onClick={_setAxActiveIndex}
                      onChange={this._onNameChange} />
             );
             break;
@@ -270,6 +315,8 @@ define ("components/businessHoursView",
                      value={formField.value.value}
                      data-label={DATA_LABELS.OOBH.EMAIL}
                      tabIndex="0"
+                     onFocus={_setAxActiveIndex}
+                     onClick={_setAxActiveIndex}
                      onChange={this._onEmailChange} />
             );
             break;
@@ -285,6 +332,8 @@ define ("components/businessHoursView",
                         value={formField.value.value}
                         data-label={DATA_LABELS.OOBH.MESSAGE}
                         tabIndex="0"
+                        onFocus={_setAxActiveIndex}
+                        onClick={_setAxActiveIndex}
                         onChange={this._onMessageChange} />
             );
             break;
@@ -383,11 +432,18 @@ define ("components/businessHoursView",
             "hs-business-hours__small-icon",
             "hs-business-hours__remove-icon"
           );
+          const _setAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: `[data-label=${dataLabelAttribute}]`
+            }
+          );
+
           iconEl = (
             <i className={iconClasses}
-               onClick={this._onRemoveAttachmentClick.bind (this, id)}
-               tabIndex="0"
-               data-label={dataLabelAttribute} />
+              tabIndex="0"
+              onFocus= {_setAxActiveIndex}
+              onClick={this._onRemoveAttachmentClick.bind (this, id, dataLabelAttribute)}
+              data-label={dataLabelAttribute} />
           );
         }
 
@@ -438,13 +494,20 @@ define ("components/businessHoursView",
         } = this.props.contactFormDetails.attachmentsMeta;
 
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid);
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.OOBH.SELECT_FILES
+          }
+        );
 
         return (
           <div
             className="hs-business-hours__attachment-placeholder"
             data-label={DATA_LABELS.OOBH.FILE_SELECT}
             tabIndex="0"
-            onKeyDown={this._onKeyDown}>
+            onKeyDown={this._onKeyDown}
+            onFocus={_setAxActiveIndex}
+            onClick={_setAxActiveIndex}>
             <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
@@ -574,6 +637,11 @@ define ("components/businessHoursView",
        * Click handler for 'Send' button
        */
       _onSendButtonClick () {
+        this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN
+          }
+        );
         this.props.onSubmitBusinessHoursContactForm ();
       },
 
@@ -581,8 +649,25 @@ define ("components/businessHoursView",
        * Click handler for 'X' icon of attachment
        * @param {String} attachmentId - attachment id to remove
        */
-      _onRemoveAttachmentClick (attachmentId) {
+      _onRemoveAttachmentClick (attachmentId, dataLabelAttribute) {
+        this._setAxActiveIndex.bind (
+          this, {
+            selector: `[data-label=${dataLabelAttribute}]`
+          }
+        );
         this.props.onRemoveAttachment (attachmentId);
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.name - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      _setAxActiveIndex (config, ev) {
+        ev.stopPropagation ();
+        ax.setActiveIndex (config);
       },
 
       /**

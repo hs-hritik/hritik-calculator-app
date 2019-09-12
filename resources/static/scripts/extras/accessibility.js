@@ -39,27 +39,27 @@ define (
     const OOBH_FORM_META_LIST = [
       {
         name: DATA_LABEL_NAME.OOBH.WRAPPER,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_WRAPPER]
+        selectors: [DATA_LABEL_SELECTORS.OOBH.WRAPPER]
       },
       {
         name: DATA_LABEL_NAME.OOBH.NAME,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_NAME]
+        selectors: [DATA_LABEL_SELECTORS.OOBH.NAME]
       },
       {
         name: DATA_LABEL_NAME.OOBH.EMAIL,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_EMAIL]
+        selectors: [DATA_LABEL_SELECTORS.OOBH.EMAIL]
       },
       {
         name: DATA_LABEL_NAME.OOBH.MESSAGE,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_MSG]
+        selectors: [DATA_LABEL_SELECTORS.OOBH.MSG]
       },
       {
         name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
         selectors: []
       },
       {
-        name: DATA_LABEL_NAME.OOBH.SELECT_FILES,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.OOBH_SELECT_FILES]
+        name: DATA_LABEL_NAME.OOBH.FILE_SELECT,
+        selectors: [DATA_LABEL_SELECTORS.OOBH.FILE_SELECT]
       },
       {
         name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
@@ -174,12 +174,12 @@ define (
     /**
      * Return the index of the selector in the selectors list
      *
-     * @param {*} selector - Selector value
-     * @param {*} list - List of selectors
+     * @param {String} selector - Selector value
+     * @param {Array} list - List of selectors
      * @returns {Number} - Index of the selector in the list
      */
     const _findSelectorIndexInMetaList = (selector, list) => {
-      const selectorIndex = arrayUtils.findIndex (list, function (selectorVal) {
+      const selectorIndex = arrayUtils.findIndex (list, (selectorVal) => {
         return (selectorVal === selector);
       });
 
@@ -267,6 +267,7 @@ define (
       }
 
       _generateFlatList ();
+      _setFlatListActiveIndex (0);
     };
 
     /**
@@ -337,6 +338,25 @@ define (
       _delayedFocusIndex = -1;
     };
 
+    /**
+     * This function update the activeIndex to current focus index in flatList
+     *
+     * @param {String} config.selector - Selector of the current focused element
+     */
+    const setActiveIndex = (config) => {
+      const {selector} = config;
+
+      const index = arrayUtils.findIndex (_flatList, (selectorName) => {
+        if (selector === selectorName) {
+          return true;
+        }
+      });
+
+      if (index !== -1) {
+        _setFlatListActiveIndex (index);
+      }
+    };
+
     return {
       setActiveView,
       focusNext,
@@ -346,7 +366,8 @@ define (
       removeSelector,
       delayFocus,
       clearDelayFocus,
-      replaceMetaList
+      replaceMetaList,
+      setActiveIndex
     };
   }
 );

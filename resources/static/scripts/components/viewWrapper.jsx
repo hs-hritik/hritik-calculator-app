@@ -92,8 +92,10 @@ define ("components/viewWrapper",
       _onKeyPress (ev) {
         if (ev.shiftKey && ev.keyCode === KEYCODES.TAB) {
           ax.focusPrev ();
+          ev.preventDefault ();
         } else if (ev.keyCode === KEYCODES.TAB) {
           ax.focusNext ();
+          ev.preventDefault ();
         }
       },
 

@@ -16,15 +16,17 @@ define ("actions/businessHours",
     "utils/browser",
     "utils/upload",
     "extras/accessibility",
-    "constants/activeView"
+    "constants/activeView",
+    "constants/accessibility"
   ],
   function (ACTION_TYPES, routes, batchActions, xhrHelpers, prepareProcessXhrDataHelpers, schema,
-    objectUtils, browserUtils, upload, ax, activeView) {
+    objectUtils, browserUtils, upload, ax, activeView, axConstant) {
     "use strict";
 
     const {Input} = schema;
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     const {update} = React.addons;
+    const {OOBH_TYPE} = axConstant;
 
     /**
      * Action to set business hours contact form details
@@ -186,7 +188,7 @@ define ("actions/businessHours",
           formData: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: () => {
-            ax.setActiveView (activeView.BUSINESS_HOURS);
+            ax.replaceMetaList (OOBH_TYPE.OFFLINE_MSG);
             ax.delayFocus ();
             dispatch (setBusinessHoursFormSubmitted ());
           },

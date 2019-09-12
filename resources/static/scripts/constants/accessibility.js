@@ -69,15 +69,15 @@ define ("constants/accessibility",
      */
     const DATA_LABEL_SELECTORS = {
       OOBH: {
-        WRAPPER: "[data-label=oobh-wrapper]",
-        NAME: "[data-label=oobh-name]",
-        EMAIL: "[data-label=oobh-email]",
-        MSG: "[data-label=oobh-message]",
-        FILE_SELECT: "[data-label=oobh-file-select]",
-        FOOTER_BTN: "[data-label=oobh-footer-btn]",
-        OFFLINE_MSG: "[data-label=oobh-offline-msg]"
+        WRAPPER: "[data-label=" + DATA_LABELS.OOBH.WRAPPER + "]",
+        NAME: "[data-label=" + DATA_LABELS.OOBH.NAME + "]",
+        EMAIL: "[data-label=" + DATA_LABELS.OOBH.EMAIL + "]",
+        MSG: "[data-label=" + DATA_LABELS.OOBH.MESSAGE + "]",
+        FILE_SELECT: "[data-label=" + DATA_LABELS.OOBH.FILE_SELECT + "]",
+        FOOTER_BTN: "[data-label=" + DATA_LABELS.OOBH.FOOTER_BTN + "]",
+        OFFLINE_MSG: "[data-label=" + DATA_LABELS.OOBH.OFFLINE_MSG + "]"
       },
-      LAUNCHER_BTN: "[data-label=launcher-btn]"
+      LAUNCHER_BTN: "[data-label=" + DATA_LABELS.LAUNCHER_BTN + "]"
     };
 
     return {
