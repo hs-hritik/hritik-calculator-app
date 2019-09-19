@@ -32,7 +32,8 @@ define ("components/replyBox",
         browserIsMobile: PropTypes.bool.isRequired,
         onFooterFocus: PropTypes.func,
         onFooterBlur: PropTypes.func,
-        placeholder: PropTypes.string
+        placeholder: PropTypes.string,
+        dataLabels: PropTypes.object
       },
 
       render () {
@@ -42,7 +43,8 @@ define ("components/replyBox",
           onFooterFocus,
           onFooterBlur,
           className,
-          placeholder
+          placeholder,
+          dataLabels
         } = this.props;
 
         return (
@@ -59,7 +61,8 @@ define ("components/replyBox",
                             disabled={disabled}
                             autoFocus
                             ref={this._saveTextAreaRef}
-                            dir="auto" />
+                            dir="auto"
+                            dataLabels={dataLabels} />
         );
       },
 

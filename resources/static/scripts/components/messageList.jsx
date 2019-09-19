@@ -13,10 +13,11 @@ define ("components/messageList",
     "constants/propTypes",
     "constants/chatView",
     "gunpowder/utils/throttle",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "constants/accessibility"
   ],
   function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
-    chatViewConstants, throttle, classes) {
+    chatViewConstants, throttle, classes, axConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -47,6 +48,7 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
+    const {DATA_LABELS} = axConstants;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -174,7 +176,9 @@ define ("components/messageList",
           return (
             <button key={option.value}
                     onClick={this._onPillOptionClick.bind (this, option)}
-                    className={btnClasses}>
+                    className={btnClasses}
+                    data-label={`${DATA_LABELS.CHAT.OPTION_PILL_PREFIX}${option.value}`}
+                    tabIndex="0">
               {option.label}
             </button>
           );
@@ -198,7 +202,10 @@ define ("components/messageList",
                 {label}
               </strong>
             </small>
-            <div className="hs-message-list__pill-options">
+            <div
+              className="hs-message-list__pill-options"
+              data-label={DATA_LABELS.CHAT.OPTION_PILLS_WRAPPER}
+              tabIndex="0">
               {pillOptionsEl}
             </div>
             {skipBtnWrapperEl}

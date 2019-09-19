@@ -17,11 +17,13 @@ define ("components/chatViewFooter",
     "helpers/common",
     "gunpowder/utils/classes",
     "gunpowder/widgets/picker",
-    "gunpowder/constants/widgets/picker"
+    "gunpowder/constants/widgets/picker",
+    "extras/accessibility",
+    "constants/accessibility"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
-    Picker, LIST_PICKER_CONSTANTS) {
+    Picker, LIST_PICKER_CONSTANTS, ax, axConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -38,6 +40,11 @@ define ("components/chatViewFooter",
     const {
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
+    const {
+      DATA_LABEL_NAME,
+      DATA_LABELS,
+      DATA_LABEL_SELECTORS
+    } = axConstants;
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -336,8 +343,14 @@ define ("components/chatViewFooter",
         // c. There can be label for input type plain text (this layout supports label)
         let inputComponentEl;
         if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
+          const replyBoxDataLabels = {
+            textArea: DATA_LABELS.CHAT.TEXT_AREA
+          };
+
           inputComponentEl = (
-            <ReplyBoxContainer className="hs-chat-footer__text-area" />
+            <ReplyBoxContainer
+              className="hs-chat-footer__text-area"
+              dataLabels={replyBoxDataLabels}/>
           );
         } else {
           const htmlInputType = this._getHtmlInputType (type);
@@ -355,7 +368,9 @@ define ("components/chatViewFooter",
                    onKeyUp={this._onInputFieldKeyUp}
                    onFocus={onFooterFocus}
                    onBlur={onFooterBlur}
-                   autoFocus />
+                   autoFocus
+                   tabIndex="0"
+                   data-label={DATA_LABELS.CHAT.TEXT_FIELD} />
           );
         }
 
@@ -431,6 +446,17 @@ define ("components/chatViewFooter",
           }
         );
 
+        // Data label constants for list picker
+        const pickerDataLabels = {
+          collapsedPickerHeader: DATA_LABELS.CHAT.COLLAPSED_PICKER_HEADER,
+          collapsedPickerBtn: DATA_LABELS.CHAT.COLLAPSED_PICKER_BTN,
+          searchBtn: DATA_LABELS.CHAT.PICKER_SEARCH_BTN,
+          searchInput: DATA_LABELS.CHAT.PICKER_SEARCH_INPUT,
+          backArrow: DATA_LABELS.CHAT.PICKER_BACK_ARROW,
+          clearSearchBtn: DATA_LABELS.CHAT.PICKER_CLEAR_SEARCH_BTN,
+          pickerOptionsWrapper: DATA_LABELS.CHAT.PICKER_OPTIONS_WRAPPER
+        };
+
         return (
           <Picker className={pickerClasses}
                   options={options}
@@ -440,7 +466,9 @@ define ("components/chatViewFooter",
                   headerLabel={headerLabel}
                   searchNoResultsText={searchNoResultsText}
                   minHeight={PICKER_MIN_HEIGHT}
-                  maxHeight={this.state.pickerMaxHeight} />
+                  maxHeight={this.state.pickerMaxHeight}
+                  dataLabels={pickerDataLabels}
+                  clearDelayFocus={ax.clearDelayFocus} />
         );
       },
 
@@ -457,7 +485,11 @@ define ("components/chatViewFooter",
         const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
 
         return (
-          <a className="hs-chat-footer__submit" onClick={onSubmitReply}>
+          <a
+            className="hs-chat-footer__submit"
+            onClick={onSubmitReply}
+            tabIndex="0"
+            data-label={DATA_LABELS.CHAT.SEND_BTN}>
             <i className={iconClasses} />
           </a>
         );
@@ -467,11 +499,16 @@ define ("components/chatViewFooter",
        * Render attachment button
        */
       _renderAttachmentButton () {
+        const fileInputDataLabels = {
+          attachmentBtn: DATA_LABELS.CHAT.ATTACHMENT_BTN
+        };
+
         return (
           <FileInput onChange={this.props.onFilesChange}
                      noPadding
                      labelClasses="hs-chat-footer__attachment-icon"
-                     iconClasses="ion-attachment" />
+                     iconClasses="ion-attachment"
+                     dataLabels={fileInputDataLabels} />
         );
       },
 
@@ -493,7 +530,11 @@ define ("components/chatViewFooter",
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__buttons-wrapper">
-              <button className={btnClasses} onClick={onCloseConversation}>
+              <button
+                className={btnClasses}
+                onClick={onCloseConversation}
+                tabIndex="0"
+                data-label={DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN}>
                 {closeConversationBtn}
               </button>
             </div>
@@ -505,6 +546,10 @@ define ("components/chatViewFooter",
        * Render csat footer
        */
       _renderCsatFooter () {
+        const starRatingDataLabels = {
+          starRatingWrapper: DATA_LABELS.CHAT.STAR_RATING_WRAPPER
+        };
+
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__heading" >
@@ -515,7 +560,8 @@ define ("components/chatViewFooter",
             <div className="hs-chat-footer__csat-footer">
               <StarRating name="csat"
                           value={this.props.rating}
-                          onStarClick={this.props.onStarClick} />
+                          onStarClick={this.props.onStarClick}
+                          dataLabels={starRatingDataLabels} />
             </div>
           </div>
         );
@@ -537,17 +583,24 @@ define ("components/chatViewFooter",
         );
 
         return (
-          <div className="hs-chat-footer">
+          <div
+            className="hs-chat-footer"
+            tabIndex="0"
+            data-label={DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER}>
             <div className="hs-chat-footer__heading" >
               <strong>{text.chatViewConversationResolutionQuestion}</strong>
             </div>
             <div className="hs-chat-footer__buttons-wrapper">
               <button className={btnClasses}
-                      onClick={onRejectResolutionQuestionClick}>
+                      onClick={onRejectResolutionQuestionClick}
+                      tabIndex="0"
+                      data-label={DATA_LABELS.CHAT.SOLUTION_REJECT_BTN}>
                 {text.resolutionQuestionReject}
               </button>
               <button className={btnClasses}
-                      onClick={onAcceptResolutionQuestionClick}>
+                      onClick={onAcceptResolutionQuestionClick}
+                      tabIndex="0"
+                      data-label={DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN}>
                 {text.resolutionQuestionAccept}
               </button>
             </div>
@@ -568,7 +621,11 @@ define ("components/chatViewFooter",
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__buttons-wrapper">
-              <button className={btnClasses} onClick={this.props.onStartNewConversation}>
+              <button
+                className={btnClasses}
+                onClick={this.props.onStartNewConversation}
+                tabIndex="0"
+                data-label={DATA_LABELS.CHAT.NEW_CONVERSATION_BTN}>
                 {this.props.text.chatViewStartNewConversation}
               </button>
             </div>
@@ -689,8 +746,150 @@ define ("components/chatViewFooter",
         return inputPlaceholder;
       },
 
+      /**
+       * Returns array of pills option selectors
+       *
+       * @param {Array} options - Option for option pills
+       * @returns {Array} - Unique selector list of option pills
+       */
+      _getPillsOptionSelectorList (options) {
+        const prefix = DATA_LABELS.CHAT.OPTION_PILL_PREFIX;
+        const optionsSelectorList = [];
+
+        options.forEach ((option) => {
+          const selectors = `[data-label=${prefix}${option.value}]`;
+
+          optionsSelectorList.push (selectors);
+        });
+
+        return optionsSelectorList;
+      },
+
+      /**
+       * This function checks for sub-type of reply footer and
+       * returns corresponding footer selector list
+       *
+       * @param {Object} userInput - Data for footer
+       * @param {String} userInput.type - Type of rply footer
+       * @param {Array} userInput.options - Option list for picker & option pills
+       * @returns {Array} - Reply footer selectors list
+       */
+      _getReplyFooterSelectors (userInput) {
+        const {type} = userInput;
+
+        switch (type) {
+          case USER_INPUT_TYPES.DEFAULT_INPUT:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.DEFAULT_INPUT;
+
+          case USER_INPUT_TYPES.PLAIN_TEXT:
+          case USER_INPUT_TYPES.EMAIL:
+          case USER_INPUT_TYPES.NUMERIC:
+          case USER_INPUT_TYPES.DATE:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.PLAIN_TEXT;
+
+          case USER_INPUT_TYPES.PILL_SELECT:
+            const selectorList = DATA_LABEL_SELECTORS.CHAT.FOOTER.OPTION_PILL;
+            const optionsSelectorList = this._getPillsOptionSelectorList (
+              userInput.options
+            );
+
+            return selectorList.concat (optionsSelectorList);
+
+          case USER_INPUT_TYPES.LIST_PICKER:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.PICKER;
+        }
+      },
+
+      /**
+       * This function checks for the type of footer &
+       * returns corresponding selector list
+       *
+       * @param {String} activeFooter - Type of the footer
+       * @param {Object} userInput - Data for the footer
+       * @returns {Array} - Footer selectors list
+       */
+      _getActiveFooterSelectors (activeFooter, userInput) {
+        switch (activeFooter) {
+          case ACTIVE_FOOTER.REPLY:
+            return this._getReplyFooterSelectors (userInput);
+
+          case ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.RESOLUTION_QUESTION;
+
+          case ACTIVE_FOOTER.SOLUTION_REJECTED:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.SOLUTION_REJECTED;
+
+          case ACTIVE_FOOTER.CSAT:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.CSAT;
+
+          case ACTIVE_FOOTER.START_NEW_CONVERSATION:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.START_NEW_CONVERSATION;
+
+          case ACTIVE_FOOTER.CLOSED:
+            return DATA_LABEL_SELECTORS.CHAT.FOOTER.CLOSED;
+        }
+      },
+
+      /**
+       * This function do following things
+       * - Clear delayed focus on componentDidUpdate to clear batched focus items
+       * - Update the footer object in metaList in Ax module
+       *
+       * @param {Object} - prev props befor update
+       */
       componentDidUpdate (prevProps) {
-        const {browserIsMobile} = this.props;
+        ax.clearDelayFocus ();
+
+        const {browserIsMobile, userInput, activeFooter} = this.props;
+        const activeFooterIsChanged = (activeFooter !== prevProps.activeFooter);
+        const activeFooterIsReply = (activeFooter === ACTIVE_FOOTER.REPLY);
+        const userInputTypeIsChanged = (userInput.type !== prevProps.userInput.type);
+        const userInputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const userInputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
+        const userInputIsSelectOption = (userInputIsPillSelect || userInputIsListPicker);
+        const userInputIsEnterText = (
+          userInput.type === USER_INPUT_TYPES.PLAIN_TEXT ||
+          userInput.type === USER_INPUT_TYPES.EMAIL ||
+          userInput.type === USER_INPUT_TYPES.NUMERIC ||
+          userInput.type === USER_INPUT_TYPES.DATE ||
+          userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT
+        );
+        const selectOptionIsSubmitted = (
+          !userInput.selectedOption &&
+          prevProps.userInput.selectedOption
+        );
+        const textValueIsSubmitted = (
+          !userInput.value &&
+          prevProps.userInput.value
+        );
+        // User input is considered refreshed when selected option or entered value resets to empty
+        const userInputIsRefreshed = !userInputTypeIsChanged && ((
+            userInputIsSelectOption &&
+            selectOptionIsSubmitted
+          ) || (
+            userInputIsEnterText &&
+            textValueIsSubmitted
+        ));
+        let requiredFooterSelectors;
+
+        // When footer changes, reset the active index and focus the first element of footer
+        if (activeFooterIsChanged) {
+          requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
+
+          ax.replaceSelectors ({
+            name: DATA_LABEL_NAME.CHAT.FOOTER,
+            selectors: requiredFooterSelectors
+          });
+          ax.focus ();
+        } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
+          requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
+
+          ax.replaceSelectors ({
+            name: DATA_LABEL_NAME.CHAT.FOOTER,
+            selectors: requiredFooterSelectors
+          });
+          ax.focus ();
+        }
 
         // If user input ref does not exists or browser is mobile, do not focus
         if (!this._userInputRef || browserIsMobile) {
@@ -713,7 +912,30 @@ define ("components/chatViewFooter",
         }
       },
 
+      /**
+       * For first footer push all the selectors in meta-list and focus the first element
+       */
       componentDidMount () {
+        const {activeFooter, userInput, issueIsCreated} = this.props;
+        const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const inputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
+        const isPreIssue = !issueIsCreated;
+        const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
+
+        ax.replaceSelectors ({
+          name: DATA_LABEL_NAME.CHAT.FOOTER,
+          selectors: requiredFooterSelectors
+        });
+
+        // In below cases footer value is null, so delayed the focus when it is render
+        if (!(
+          inputIsPillSelect || ((isPreIssue || inputIsListPicker) && userInput.disabled)
+        )) {
+          ax.focus ();
+        } else {
+          ax.delayFocus ();
+        }
+
         // Calculate the maximum height the picker widget can have.
         const parentNode = document.querySelector (".hs-dnd-wrapper");
         this.setState ({

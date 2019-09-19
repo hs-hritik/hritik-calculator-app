@@ -17,7 +17,8 @@ define ("components/starRating",
         value: PropTypes.number.isRequired,
         editing: PropTypes.bool,
         starCount: PropTypes.number,
-        onStarClick: PropTypes.func
+        onStarClick: PropTypes.func,
+        dataLabels: PropTypes.object
       },
 
       getDefaultProps () {
@@ -34,13 +35,16 @@ define ("components/starRating",
       },
 
       render () {
-        const {editing} = this.props;
+        const {editing, dataLabels} = this.props;
         const starRatingClasses = classes ("hs-star-rating", {
           "hs-star-rating--edit-mode": editing
         });
 
         return (
-          <div className={starRatingClasses}>
+          <div
+            className={starRatingClasses}
+            tabIndex="0"
+            data-label={dataLabels.starRatingWrapper}>
             {this._renderStars ()}
           </div>
         );

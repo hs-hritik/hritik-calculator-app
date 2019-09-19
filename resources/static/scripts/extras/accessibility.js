@@ -83,6 +83,18 @@ define (
     const _focusData = {
       [activeViewConstants.BUSINESS_HOURS]: {
         metaList: []
+      },
+      [activeViewConstants.CHAT] : {
+        metaList: [
+          {
+            name: DATA_LABEL_NAME.CHAT.FOOTER,
+            selectors: []
+          },
+          {
+            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            selectors: []
+          }
+        ]
       }
     };
 
@@ -214,7 +226,6 @@ define (
      */
     const setActiveView = (viewName) => {
       _activeView = viewName;
-
       _generateFlatList ();
     };
 
@@ -334,8 +345,10 @@ define (
       const selector = _getFlatListActiveSelector (_delayedFocusIndex);
       const el = document.querySelector (selector);
 
-      el.focus ();
-      _delayedFocusIndex = -1;
+      if (el) {
+        el.focus ();
+        _delayedFocusIndex = -1;
+      }
     };
 
     /**
@@ -357,6 +370,27 @@ define (
       }
     };
 
+    /**
+     * This function replaces the selector list in meta-list
+     *
+     * @param {String} data.name - Name of the meta-list
+     * @param {Array} data.selectors - Array of selectors
+     */
+    const replaceSelectors = (data) => {
+      if (!data) {
+        return null;
+      }
+
+      const activeViewData = _focusData [_activeView];
+      const {metaList} = activeViewData;
+      const selectorGroupIndex = arrayUtils.findIndexByKey (metaList, data.name, "name");
+
+      metaList[selectorGroupIndex].selectors = data.selectors;
+
+      _generateFlatList ();
+      _setFlatListActiveIndex (0);
+    };
+
     return {
       setActiveView,
       focusNext,
@@ -367,7 +401,8 @@ define (
       delayFocus,
       clearDelayFocus,
       replaceMetaList,
-      setActiveIndex
+      setActiveIndex,
+      replaceSelectors
     };
   }
 );

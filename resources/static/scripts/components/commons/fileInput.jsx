@@ -60,7 +60,12 @@ define ("components/commons/fileInput",
         /*
          * Callback to pass the ref of the file input element
          */
-        onSaveInputRef: PropTypes.func.isRequired
+        onSaveInputRef: PropTypes.func,
+
+        /**
+         * Data label for file input
+         */
+        dataLabels: PropTypes.object
       },
 
       getDefaultProps () {
@@ -83,7 +88,8 @@ define ("components/commons/fileInput",
           noPadding,
           labelClasses,
           accept,
-          onSaveInputRef
+          onSaveInputRef,
+          dataLabels
         } = this.props;
         let infoTextEl = null;
 
@@ -107,7 +113,7 @@ define ("components/commons/fileInput",
         );
 
         return (
-          <div>
+          <div tabIndex="0" data-label={dataLabels.attachmentBtn}>
             <label htmlFor="upload-file" className={fileInputClasses}>
               <i className={primaryIconClasses} />
               {infoTextEl}
