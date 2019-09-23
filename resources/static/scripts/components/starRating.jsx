@@ -5,8 +5,11 @@
  */
 
 define ("components/starRating",
-  ["gunpowder/utils/classes"],
-  function (classes) {
+  [
+    "gunpowder/utils/classes",
+    "constants/keyCodes"
+  ],
+  function (classes, KEYCODE_CONSTANTS) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -30,7 +33,8 @@ define ("components/starRating",
 
       getInitialState () {
         return {
-          hoverValue: 0
+          hoverValue: 0,
+          selectedStarsCount: 0
         };
       },
 
@@ -44,7 +48,8 @@ define ("components/starRating",
           <div
             className={starRatingClasses}
             tabIndex="0"
-            data-label={dataLabels.starRatingWrapper}>
+            data-label={dataLabels.starRatingWrapper}
+            onKeyDown={this._onKeyDown}>
             {this._renderStars ()}
           </div>
         );
@@ -87,6 +92,33 @@ define ("components/starRating",
              key={idx}
              onClick={this._onStarClick.bind (this, idx)} />
         );
+      },
+
+      /**
+       * Decrease/ Increase star rating value on left/right arrow click
+       *
+       * @param {Object} ev - event on star wrapper
+       */
+      _onKeyDown (ev) {
+        const {keyCode} = ev;
+        const {selectedStarsCount} = this.state;
+
+        if (keyCode === KEYCODE_CONSTANTS.LEFT_ARROW && selectedStarsCount > 0) {
+          this.setState ({
+            selectedStarsCount: selectedStarsCount - 1
+          });
+        } else if (keyCode === KEYCODE_CONSTANTS.RIGHT_ARROW && selectedStarsCount < 5) {
+          this.setState ({
+            selectedStarsCount: selectedStarsCount + 1
+          });
+        } else if (
+          keyCode === KEYCODE_CONSTANTS.SPACE ||
+          keyCode === KEYCODE_CONSTANTS.ENTER
+        ) {
+          this._onStarClick (selectedStarsCount);
+        }
+
+        this._updateHoverValue (selectedStarsCount);
       },
 
       /**
