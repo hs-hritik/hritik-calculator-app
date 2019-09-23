@@ -44,6 +44,9 @@ define ("components/containers/viewWrapper",
         },
         onMinimizeConversation: () => {
           dispatch (postSdkMessage.toggleMessenger (true));
+        },
+        onFocusLauncher: () => {
+          dispatch (postSdkMessage.focusLauncher ());
         }
       };
     };

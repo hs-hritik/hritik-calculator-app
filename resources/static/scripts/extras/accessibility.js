@@ -92,9 +92,12 @@ define (
           },
           {
             name: DATA_LABEL_NAME.LAUNCHER_BTN,
-            selectors: []
+            selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
           }
         ]
+      },
+      specialHandlers: {
+
       }
     };
 
@@ -240,7 +243,12 @@ define (
       const selector = _getFlatListActiveSelector ();
       const el = document.querySelector (selector);
 
-      if (el) {
+      if (selector === DATA_LABEL_SELECTORS.LAUNCHER_BTN) {
+        const specialHandlers = _focusData.specialHandlers;
+        const launcherBtnHandlers = specialHandlers [DATA_LABEL_NAME.LAUNCHER_BTN];
+
+        launcherBtnHandlers.forEach ((handler) => handler ());
+      } else if (el) {
         el.focus ();
       } else if (direction === DIRECTIONS.FORWARD) {
         focusNext (direction);
@@ -385,10 +393,38 @@ define (
       const {metaList} = activeViewData;
       const selectorGroupIndex = arrayUtils.findIndexByKey (metaList, data.name, "name");
 
-      metaList[selectorGroupIndex].selectors = data.selectors;
+      metaList [selectorGroupIndex].selectors = data.selectors;
 
       _generateFlatList ();
       _setFlatListActiveIndex (0);
+    };
+
+    /**
+     * Returns the next active selector
+     * @returns {String} - Selector value
+     */
+    const getNextActiveSelector = () => {
+      const activeIndex = (_getFlatListActiveIndex () + 1) % _flatList.length;
+
+      return _flatList [activeIndex];
+    };
+
+    /**
+     * Returns the prev active index
+     * @returns {String} - Selector value
+     */
+    const getPrevActiveSelector = () => {
+      const activeIndex = (_getFlatListActiveIndex () - 1 + _flatList.length) % _flatList.length;
+
+      return _flatList [activeIndex];
+    };
+
+    const init = (data) => {
+      const {specialHandlers} = _focusData;
+
+      data.handlers.forEach ((handlerConfig) => {
+        specialHandlers [handlerConfig.name] = handlerConfig.handlers;
+      });
     };
 
     return {
@@ -402,7 +438,10 @@ define (
       clearDelayFocus,
       replaceMetaList,
       setActiveIndex,
-      replaceSelectors
+      replaceSelectors,
+      getNextActiveSelector,
+      getPrevActiveSelector,
+      init
     };
   }
 );

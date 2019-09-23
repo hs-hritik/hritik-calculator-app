@@ -20,7 +20,7 @@ define ("components/viewWrapper",
 
     const PropTypes = React.PropTypes;
 
-    const {KEYCODES} = axConstants;
+    const {KEYCODES, DATA_LABEL_NAME} = axConstants;
 
     return React.createClass ({
       displayName: "ViewWrapper",
@@ -32,7 +32,8 @@ define ("components/viewWrapper",
           fontFamily: PropTypes.string
         }),
         onToggleOnlineStatus: PropTypes.func.isRequired,
-        onMinimizeConversation: PropTypes.func.isRequired
+        onMinimizeConversation: PropTypes.func.isRequired,
+        onFocusLauncher: PropTypes.func
       },
 
       render () {
@@ -103,6 +104,15 @@ define ("components/viewWrapper",
         window.addEventListener ("online", this._onOnline);
         window.addEventListener ("offline", this._onOffline);
         window.addEventListener ("keydown", this._onKeyPress);
+
+        ax.init ({
+          handlers: [
+            {
+              name: DATA_LABEL_NAME.LAUNCHER_BTN,
+              handlers: [this.props.onFocusLauncher]
+            }
+          ]
+        });
       },
 
       componentWillUnmount () {

@@ -86,6 +86,8 @@
     SDK_EVENT_CSAT_SUBMIT: "sdk-event-csat-submit",
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
+    SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
+    CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
     CMD_SET_INITIAL_USER_MESSAGE: "cmd-set-initial-user-message",
@@ -158,7 +160,8 @@
     "border-radius": "50%",
     "cursor": "pointer",
     "box-sizing": "border-box",
-    "padding": "12px 10px 8px"
+    "padding": "12px 10px 8px",
+    "border": "none"
   };
 
   const MESSENGER_IFRAME_STYLES = {
@@ -263,6 +266,10 @@
                                     L431.957308,66.6346154 Z"/>
                           </g>
                         </svg>`;
+
+  const KEYCODES = {
+    TAB: 9
+  };
 
   // Reference for web sdk iframe.
   let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
@@ -400,7 +407,7 @@
    * @returns {Element} - launcher button div.
    */
   const createLauncherButton = () => {
-    launcherButton = doc.createElement ("a");
+    launcherButton = doc.createElement ("button");
     launcherIconEl = doc.createElement ("span");
     launcherIconEl.innerHTML = MESSENGER_ICON;
 
@@ -713,6 +720,18 @@
       launcherBtn.addEventListener ("click", () => {
         toggleWebSdkIframe ();
       });
+
+      // Event listener for the tab on launcher button to focus next element
+      launcherIframe.contentWindow.document.addEventListener ("keydown", (ev) => {
+        if (ev.shiftKey && ev.keyCode === KEYCODES.TAB) {
+          ev.preventDefault ();
+          _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: false});
+        } else if (ev.keyCode === KEYCODES.TAB) {
+          ev.preventDefault ();
+          _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: true});
+        }
+      });
+
       launcherIframe.contentDocument.body.appendChild (launcherBtn);
 
       markSdkReady ();
@@ -1092,6 +1111,13 @@
             rating: data.rating,
             additionalFeedback: data.review
           });
+          break;
+
+        case EVENT_TYPES.SDK_FOCUS_LAUNCHER:
+          // Call the event handler to focus launcher button
+          if (launcherButton) {
+            launcherButton.focus ();
+          }
           break;
 
         case EVENT_TYPES.SDK_EVENT_CONVERSATION_STATUS:
