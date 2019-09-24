@@ -9,12 +9,18 @@ define ("components/faqView",
   [
     "components/commons/viewHeader",
     "components/containers/branding",
-    "components/infoView"
+    "components/infoView",
+    "extras/accessibility",
+    "constants/accessibility",
+    "constants/activeView",
+    "helpers/common"
   ],
-  function (ViewHeader, BrandingContainer, InfoView) {
+  function (ViewHeader, BrandingContainer, InfoView, ax, axConstants, activeViewConstants,
+    commonHelpers) {
     "use strict";
 
     const {PropTypes} = React;
+    const {DATA_LABELS, DATA_LABEL_NAME} = axConstants;
 
     return React.createClass ({
       displayName: "FaqView",
@@ -43,13 +49,18 @@ define ("components/faqView",
           onMinimizeConversation
         } = this.props;
 
+        const viewHeaderDataLabels = {
+          backBtnDataLabel: DATA_LABELS.FAQ.BACK_BTN
+        };
+
         return (
           <div className="hs-view" style={viewStyles}>
             <ViewHeader title={text.faqViewHeader}
                         showCloseBtn={showCloseButton}
                         showBackBtn={true}
                         onCloseBtnClick={onMinimizeConversation}
-                        onBackBtnClick={onBackBtnClick} />
+                        onBackBtnClick={onBackBtnClick}
+                        dataLabels={viewHeaderDataLabels}/>
             {this._renderViewContents ()}
           </div>
         );
@@ -72,7 +83,10 @@ define ("components/faqView",
 
         /* eslint-disable react/no-danger */
         return (
-          <div className="hs-view__content">
+          <div
+            className="hs-view__content"
+            tabIndex="0"
+            data-label={DATA_LABELS.FAQ.CONTENT_WRAPPER}>
             <div className="hs-faq" dir="auto">
               <h3 className="hs-faq__title" >{title}</h3>
               <div className="hs-faq__body"
@@ -82,6 +96,31 @@ define ("components/faqView",
           </div>
         );
         /* eslint-enable react/no-danger */
+      },
+
+      componentDidUpdate () {
+        const {body} = this.props;
+
+        ax.clearDelayFocus ();
+
+        if (body) {
+          const elements = document.querySelectorAll (".hs-faq__body a");
+          const selectors = [];
+
+          for (let i = 0; i < elements.length; i++) {
+            selectors.push (commonHelpers.getSelectorForElement (elements[i]));
+          }
+
+          ax.replaceSelectors ({
+            name: DATA_LABEL_NAME.FAQ.FAQ_BODY_LINKS,
+            selectors
+          });
+        }
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.FAQ);
+        ax.delayFocus ();
       }
     });
   }

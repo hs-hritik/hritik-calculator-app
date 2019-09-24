@@ -68,6 +68,10 @@ define ("constants/accessibility",
         STAR_RATING_WRAPPER: "star-rating-wrapper",
         FEEDBACK_TEXT_AREA: "additional-feedback-text-area",
         FOOTER_BTN: "footer-btn"
+      },
+      FAQ: {
+        CONTENT_WRAPPER: "content-wrapper",
+        BACK_BTN: "back-btn"
       }
     };
 
@@ -95,6 +99,11 @@ define ("constants/accessibility",
         STAR_RATING_WRAPPER: "STAR_RATING_WRAPPER",
         FEEDBACK_TEXT_AREA: "FEEDBACK_TEXT_AREA",
         FOOTER_BTN: "FOOTER_BTN"
+      },
+      FAQ: {
+        CONTENT_WRAPPER: "CONTENT_WRAPPER",
+        BACK_BTN: "BACK_BTN",
+        FAQ_BODY_LINKS: "FAQ_BODY_LINKS"
       }
     };
 
@@ -208,6 +217,10 @@ define ("constants/accessibility",
         STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CSAT.STAR_RATING_WRAPPER + "]",
         FEEDBACK_TEXT_AREA: "[data-label=" + DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA + "]",
         FOOTER_BTN: "[data-label=" + DATA_LABELS.CSAT.FOOTER_BTN + "]"
+      },
+      FAQ: {
+        CONTENT_WRAPPER: "[data-label=" + DATA_LABELS.FAQ.CONTENT_WRAPPER + "]",
+        BACK_BTN: "[data-label=" + DATA_LABELS.FAQ.BACK_BTN + "]"
       }
     };
 

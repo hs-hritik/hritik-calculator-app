@@ -116,6 +116,26 @@ define (
           }
         ]
       },
+      [activeViewConstants.FAQ] : {
+        metaList: [
+          {
+            name: DATA_LABEL_NAME.FAQ.CONTENT_WRAPPER,
+            selectors: [DATA_LABEL_SELECTORS.FAQ.CONTENT_WRAPPER]
+          },
+          {
+            name: DATA_LABEL_NAME.FAQ.FAQ_BODY_LINKS,
+            selectors: []
+          },
+          {
+            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+          },
+          {
+            name: DATA_LABEL_NAME.FAQ.BACK_BTN,
+            selectors: [DATA_LABEL_SELECTORS.FAQ.BACK_BTN]
+          }
+        ]
+      },
       specialHandlers: {}
     };
 
@@ -151,15 +171,6 @@ define (
       _flatList = metaList.reduce ((acc, item) => {
         return acc.concat (item.selectors);
       }, []);
-    };
-
-    /**
-     * This function update the mapping of active view and the active index
-     *
-     * @param {Number} index - Updated index
-     */
-    const _setFlatListActiveIndex = (index) => {
-      flatListActiveIndices [_activeView] = index;
     };
 
     /**
@@ -220,13 +231,22 @@ define (
     };
 
     /**
+     * This function update the mapping of active view and the active index
+     *
+     * @param {Number} index - Updated index
+     */
+    const setFlatListActiveIndex = (index) => {
+      flatListActiveIndices [_activeView] = index;
+    };
+
+    /**
      * Increase the current active view index
      */
     const incrementFocusIndex = () => {
       const activeIndex = _getFlatListActiveIndex ();
       const newIndex = (activeIndex + 1) % _flatList.length;
 
-      _setFlatListActiveIndex (newIndex);
+      setFlatListActiveIndex (newIndex);
     };
 
     /**
@@ -236,7 +256,7 @@ define (
       const activeIndex = _getFlatListActiveIndex ();
       const newIndex = (activeIndex - 1 + _flatList.length) % _flatList.length;
 
-      _setFlatListActiveIndex (newIndex);
+      setFlatListActiveIndex (newIndex);
     };
 
     /**
@@ -306,7 +326,7 @@ define (
       }
 
       _generateFlatList ();
-      _setFlatListActiveIndex (0);
+      setFlatListActiveIndex (0);
     };
 
     /**
@@ -394,7 +414,7 @@ define (
       });
 
       if (index !== -1) {
-        _setFlatListActiveIndex (index);
+        setFlatListActiveIndex (index);
       }
     };
 
@@ -416,7 +436,6 @@ define (
       metaList [selectorGroupIndex].selectors = data.selectors;
 
       _generateFlatList ();
-      _setFlatListActiveIndex (0);
     };
 
     /**
@@ -461,6 +480,7 @@ define (
       replaceSelectors,
       getNextActiveSelector,
       getPrevActiveSelector,
+      setFlatListActiveIndex,
       init
     };
   }

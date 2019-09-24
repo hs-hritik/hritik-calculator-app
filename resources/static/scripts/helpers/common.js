@@ -338,6 +338,47 @@ define ("helpers/common",
       );
     };
 
+    /**
+     * Returns unique selector of element
+     * Ref - https://stackoverflow.com/questions/5706837/get-unique-selector-of-element-in-jquery
+     *
+     * @param {Object} elem - Element data object
+     * @returns {String} - unique selector of element
+     */
+    const getSelectorForElement = (elem) => {
+      let path;
+
+      while (elem) {
+        let subSelector = elem.localName;
+        if (!subSelector) {
+          break;
+        }
+        subSelector = subSelector.toLowerCase ();
+
+        const parent = elem.parentElement;
+
+        if (parent) {
+          const sameTagSiblings = parent.children;
+          if (sameTagSiblings.length > 1) {
+            let nameCount = 0;
+            const index = [...sameTagSiblings].findIndex ((child) => {
+              if (elem.localName === child.localName) {
+                nameCount++;
+              }
+              return child === elem;
+            }) + 1;
+            if (index > 1 && nameCount > 1) {
+              subSelector += ":nth-child(" + index + ")";
+            }
+          }
+        }
+
+        path = subSelector + (path ? " " + path : "");
+        elem = parent;
+      }
+      return path;
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -352,6 +393,7 @@ define ("helpers/common",
       isDateInputSupported,
       getDateObjectFromString,
       isNumberValid,
-      areMessagesSeen
+      areMessagesSeen,
+      getSelectorForElement
     };
   });
