@@ -9,12 +9,17 @@ define ("components/csatView",
     "gunpowder/utils/classes",
     "components/commons/viewHeader",
     "components/starRating",
-    "components/containers/branding"
+    "components/containers/branding",
+    "constants/accessibility",
+    "extras/accessibility",
+    "constants/activeView"
   ],
-  function (classes, ViewHeader, StarRating, BrandingContainer) {
+  function (classes, ViewHeader, StarRating, BrandingContainer, axConstants, ax,
+    activeViewConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+    const {DATA_LABELS} = axConstants;
 
     return React.createClass ({
       displayName: "CsatView",
@@ -38,7 +43,8 @@ define ("components/csatView",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        csatSaveInProgress: PropTypes.bool
+        csatSaveInProgress: PropTypes.bool,
+        onUpdateStarRating: PropTypes.func
       },
 
       render () {
@@ -69,7 +75,16 @@ define ("components/csatView",
        * Render csat body.
        */
       _renderCsatBody () {
-        const {text, rating, review, csatSaveInProgress} = this.props;
+        const {
+          text,
+          rating,
+          review,
+          csatSaveInProgress,
+          onUpdateStarRating
+        } = this.props;
+        const starRatingDataLabels = {
+          starRatingWrapper: DATA_LABELS.CHAT.STAR_RATING_WRAPPER
+        };
 
         return (
           <div className="hs-csat__form">
@@ -82,7 +97,9 @@ define ("components/csatView",
               <StarRating name="csat"
                           editing={!csatSaveInProgress}
                           value={rating}
-                          onStarClick={this._onStarClick} />
+                          onStarClick={this._onStarClick}
+                          dataLabels={starRatingDataLabels}
+                          onUpdateStarRating={onUpdateStarRating} />
             </div>
             <div className="hs-csat__form-item">
               <small className="hs-csat__form-label">
@@ -93,7 +110,9 @@ define ("components/csatView",
                         disabled={csatSaveInProgress}
                         className="hs-csat__input"
                         onChange={this._onCsatReviewChange}
-                        placeholder={text.csatBotReviewPlaceholder} />
+                        placeholder={text.csatBotReviewPlaceholder}
+                        tabIndex="0"
+                        data-label={DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA} />
             </div>
           </div>
         );
@@ -125,7 +144,9 @@ define ("components/csatView",
             <div className="hs-footer__vertical-items-wrapper">
               <button className={btnClasses}
                       onClick={this.props.onSubmitCsat}
-                      disabled={btnDisabled} >
+                      disabled={btnDisabled}
+                      tabIndex="0"
+                      data-label={DATA_LABELS.CSAT.FOOTER_BTN} >
                 {text.csatBotFormSubmitBtn}
               </button>
             </div>
@@ -146,6 +167,11 @@ define ("components/csatView",
        */
       _onStarClick (value) {
         this.props.onUpdateCsatRating (value);
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.CSAT);
+        ax.focus ();
       }
     });
   }

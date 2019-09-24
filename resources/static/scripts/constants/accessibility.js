@@ -63,6 +63,11 @@ define ("constants/accessibility",
         STAR_RATING_WRAPPER: "star-rating-wrapper",
         NEW_CONVERSATION_BTN: "new-conversation-wrapper",
         CLOSE_CONVERSATION_BTN: "close-conversation-btn"
+      },
+      CSAT: {
+        STAR_RATING_WRAPPER: "star-rating-wrapper",
+        FEEDBACK_TEXT_AREA: "additional-feedback-text-area",
+        FOOTER_BTN: "footer-btn"
       }
     };
 
@@ -84,7 +89,12 @@ define ("constants/accessibility",
       },
       LAUNCHER_BTN: "LAUNCHER_BTN",
       CHAT: {
-        FOOTER: "chat-footer"
+        FOOTER: "FOOTER"
+      },
+      CSAT: {
+        STAR_RATING_WRAPPER: "STAR_RATING_WRAPPER",
+        FEEDBACK_TEXT_AREA: "FEEDBACK_TEXT_AREA",
+        FOOTER_BTN: "FOOTER_BTN"
       }
     };
 
@@ -170,7 +180,34 @@ define ("constants/accessibility",
           CLOSED: [
             FOOTER_SELECTORS.CLOSE_CONVERSATION_BTN
           ]
-        }
+        },
+        TEXT_FIELD: "[data-label=" + DATA_LABELS.CHAT.TEXT_FIELD + "]",
+        TEXT_AREA: "[data-label=" + DATA_LABELS.CHAT.TEXT_AREA + "]",
+        SEND_BTN: "[data-label=" + DATA_LABELS.CHAT.SEND_BTN + "]",
+        ATTACHMENT_BTN: "[data-label=" + DATA_LABELS.CHAT.ATTACHMENT_BTN + "]",
+        OPTION_PILLS_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.OPTION_PILLS_WRAPPER + "]",
+        COLLAPSED_PICKER_HEADER: "[data-label=" + DATA_LABELS.CHAT.COLLAPSED_PICKER_HEADER + "]",
+        PICKER_OPTION_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.PICKER_OPTION_WRAPPER + "]",
+        COLLAPSED_PICKER_BTN: "[data-label=" + DATA_LABELS.CHAT.COLLAPSED_PICKER_BTN + "]",
+        PICKER_SEARCH_BTN: "[data-label=" + DATA_LABELS.CHAT.PICKER_SEARCH_BTN + "]",
+        PICKER_SEARCH_INPUT: "[data-label=" + DATA_LABELS.CHAT.PICKER_SEARCH_INPUT + "]",
+        PICKER_BACK_ARROW: "[data-label=" + DATA_LABELS.CHAT.PICKER_BACK_ARROW + "]",
+        PICKER_CLEAR_SEARCH_BTN: "[data-label=" + DATA_LABELS.CHAT.PICKER_CLEAR_SEARCH_BTN + "]",
+        CONVERSATION_RESOLUTION_WRAPPER: (
+          "[data-label=" +
+          DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER +
+          "]"
+        ),
+        SOLUTION_REJECT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_REJECT_BTN + "]",
+        SOLUTION_ACCEPT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN + "]",
+        STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.STAR_RATING_WRAPPER + "]",
+        NEW_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.NEW_CONVERSATION_BTN + "]",
+        CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]"
+      },
+      CSAT: {
+        STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CSAT.STAR_RATING_WRAPPER + "]",
+        FEEDBACK_TEXT_AREA: "[data-label=" + DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA + "]",
+        FOOTER_BTN: "[data-label=" + DATA_LABELS.CSAT.FOOTER_BTN + "]"
       }
     };
 

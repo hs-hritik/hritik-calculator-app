@@ -19,11 +19,12 @@ define ("components/chatViewFooter",
     "gunpowder/widgets/picker",
     "gunpowder/constants/widgets/picker",
     "extras/accessibility",
-    "constants/accessibility"
+    "constants/accessibility",
+    "constants/activeView"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
-    Picker, LIST_PICKER_CONSTANTS, ax, axConstants) {
+    Picker, LIST_PICKER_CONSTANTS, ax, axConstants, activeViewConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -105,7 +106,9 @@ define ("components/chatViewFooter",
         fullPrivacyEnabled: PropTypes.bool,
         userAttachmentsEnabled: PropTypes.bool,
         onCloseConversation: PropTypes.func.isRequired,
-        botStepInProgress: PropTypes.bool.isRequired
+        botStepInProgress: PropTypes.bool.isRequired,
+        onSelectStarRating: PropTypes.func,
+        onUpdateStarRating: PropTypes.func
       },
       getInitialState () {
         return {
@@ -561,7 +564,9 @@ define ("components/chatViewFooter",
               <StarRating name="csat"
                           value={this.props.rating}
                           onStarClick={this.props.onStarClick}
-                          dataLabels={starRatingDataLabels} />
+                          dataLabels={starRatingDataLabels}
+                          onUpdateStarRating={this.props.onUpdateStarRating}
+                          onSelectStarRating={this.props.onSelectStarRating} />
             </div>
           </div>
         );
@@ -916,6 +921,8 @@ define ("components/chatViewFooter",
        * For first footer push all the selectors in meta-list and focus the first element
        */
       componentDidMount () {
+        ax.setActiveView (activeViewConstants.CHAT);
+
         const {activeFooter, userInput, issueIsCreated} = this.props;
         const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
         const inputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);

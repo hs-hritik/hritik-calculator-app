@@ -4,7 +4,8 @@
   "description": "Helpshift web SDK",
   "scripts": {
     "start": "babel-node resources/static/scripts/main",
-    "test": "jest"
+    "test": "jest",
+    "update-snapshot": "jest --updateSnapshot"
   },
   "repository": {
     "type": "git",

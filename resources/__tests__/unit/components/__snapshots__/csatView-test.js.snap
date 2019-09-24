@@ -36,6 +36,11 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
           className="hs-csat__form-item"
         >
           <StarRating
+            dataLabels={
+              Object {
+                "starRatingWrapper": "star-rating-wrapper",
+              }
+            }
             editing={true}
             name="csat"
             onStarClick={[Function]}
@@ -53,10 +58,12 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
           </small>
           <textarea
             className="hs-csat__input"
+            data-label="additional-feedback-text-area"
             dir="auto"
             disabled={false}
             onChange={[Function]}
             placeholder="MOCK_REVIEW_PLACEHOLDER"
+            tabIndex="0"
             value="MOCK_REVIEW"
           />
         </div>
@@ -70,8 +77,10 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
         >
           <button
             className="hs-button hs-footer__btn"
+            data-label="footer-btn"
             disabled={true}
             onClick={[MockFunction]}
+            tabIndex="0"
           >
             MOCK_FORM_SUBMIT_BUTTON
           </button>

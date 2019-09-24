@@ -21,7 +21,9 @@ define ("components/starRating",
         editing: PropTypes.bool,
         starCount: PropTypes.number,
         onStarClick: PropTypes.func,
-        dataLabels: PropTypes.object
+        dataLabels: PropTypes.object,
+        onUpdateStarRating: PropTypes.func,
+        onSelectStarRating: PropTypes.func
       },
 
       getDefaultProps () {
@@ -33,8 +35,7 @@ define ("components/starRating",
 
       getInitialState () {
         return {
-          hoverValue: 0,
-          selectedStarsCount: 0
+          hoverValue: 0
         };
       },
 
@@ -100,25 +101,17 @@ define ("components/starRating",
        * @param {Object} ev - event on star wrapper
        */
       _onKeyDown (ev) {
+        const {value, onSelectStarRating, onUpdateStarRating} = this.props;
+        const {SPACE, ENTER, RIGHT_ARROW, LEFT_ARROW} = KEYCODE_CONSTANTS;
         const {keyCode} = ev;
-        const {selectedStarsCount} = this.state;
 
-        if (keyCode === KEYCODE_CONSTANTS.LEFT_ARROW && selectedStarsCount > 0) {
-          this.setState ({
-            selectedStarsCount: selectedStarsCount - 1
-          });
-        } else if (keyCode === KEYCODE_CONSTANTS.RIGHT_ARROW && selectedStarsCount < 5) {
-          this.setState ({
-            selectedStarsCount: selectedStarsCount + 1
-          });
-        } else if (
-          keyCode === KEYCODE_CONSTANTS.SPACE ||
-          keyCode === KEYCODE_CONSTANTS.ENTER
-        ) {
-          this._onStarClick (selectedStarsCount);
+        if (keyCode === LEFT_ARROW && value > 1) {
+          onUpdateStarRating (value - 1);
+        } else if (keyCode === RIGHT_ARROW && value < 5) {
+          onUpdateStarRating (value + 1);
+        } else if ((keyCode === SPACE || keyCode === ENTER) && onSelectStarRating) {
+          onSelectStarRating ();
         }
-
-        this._updateHoverValue (selectedStarsCount);
       },
 
       /**

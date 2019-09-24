@@ -96,9 +96,27 @@ define (
           }
         ]
       },
-      specialHandlers: {
-
-      }
+      [activeViewConstants.CSAT] : {
+        metaList: [
+          {
+            name: DATA_LABEL_NAME.CSAT.FEEDBACK_TEXT_AREA,
+            selectors: [DATA_LABEL_SELECTORS.CSAT.FEEDBACK_TEXT_AREA]
+          },
+          {
+            name: DATA_LABEL_NAME.CSAT.FOOTER_BTN,
+            selectors: [DATA_LABEL_SELECTORS.CSAT.FOOTER_BTN]
+          },
+          {
+            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+          },
+          {
+            name: DATA_LABEL_NAME.CSAT.STAR_RATING_WRAPPER,
+            selectors: [DATA_LABEL_SELECTORS.CSAT.STAR_RATING_WRAPPER]
+          }
+        ]
+      },
+      specialHandlers: {}
     };
 
     let _activeView = "";
@@ -247,7 +265,9 @@ define (
         const specialHandlers = _focusData.specialHandlers;
         const launcherBtnHandlers = specialHandlers [DATA_LABEL_NAME.LAUNCHER_BTN];
 
-        launcherBtnHandlers.forEach ((handler) => handler ());
+        if (launcherBtnHandlers) {
+          launcherBtnHandlers.forEach ((handler) => handler ());
+        }
       } else if (el) {
         el.focus ();
       } else if (direction === DIRECTIONS.FORWARD) {
