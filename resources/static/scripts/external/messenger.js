@@ -68,6 +68,13 @@
   // Time interval to wait for existence of document's body (in ms)
   const BODY_WAIT_TIMER = 500;
 
+  // Event types for communication b/w client (this file) and the web chat app (the
+  // iframe).
+  // The events that are triggered by the client are prefixed with `CMD`
+  // and the ones triggered by the web chat app with `SDK`. The events that come
+  // from the web chat app (`SDK_..`) are handled below inside the `init` fn.
+  // Events from the client (`CMD_..`) are sent to web chat via postMessage and
+  // they are handled in api.js.
   const EVENT_TYPES = {
     SDK_JS_LOADED: "sdk-js-loaded",
     SDK_CONFIG_LOADED: "sdk-config-loaded",
@@ -484,17 +491,17 @@
   /**
    * Show/hide web sdk iframe.
    * @param {Object} [config]
-   * @param {boolean} [config.minimized] - Explicitly minimize/maximize the iframe.
+   * @param {boolean} [config.widgetShouldMinimize] - Explicitly minimize/maximize the iframe.
    * @param {boolean} [config.trigger] - Source for the function call - user action, api, etc.
    */
   const toggleWebSdkIframe = (config = {}) => {
-    const currentlyMinimized = webSdkIframe.style.display === "none";
+    const widgetIsMinimized = webSdkIframe.style.display === "none";
 
-    if (currentlyMinimized === config.minimized) {
+    if (widgetIsMinimized === config.widgetShouldMinimize) {
       return;
     }
 
-    if (currentlyMinimized) {
+    if (widgetIsMinimized) {
       webSdkIframe.style.display = "block";
       state.webChatVisibility.widget = "block";
       updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
@@ -518,7 +525,7 @@
     }
 
     _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
-      minimized: !currentlyMinimized,
+      widgetHasMinimized: !widgetIsMinimized,
       trigger: config.trigger
     });
     renderUnreadCount ();
@@ -721,7 +728,7 @@
       // the widget.
       if (config.widgetShouldAutoOpen) {
         toggleWebSdkIframe ({
-          minimized: false
+          widgetShouldMinimize: false
         });
       }
     };
@@ -1018,7 +1025,7 @@
 
         case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
           toggleWebSdkIframe ({
-            minimized: data.minimized
+            widgetShouldMinimize: data.minimized
           });
           break;
 
@@ -1117,7 +1124,7 @@
   const open = () => {
     if (!state.webChatVisibility.hiddenByApi) {
       toggleWebSdkIframe ({
-        minimized: false,
+        widgetShouldMinimize: false,
         trigger: TRIGGER.API
       });
     }
@@ -1129,7 +1136,7 @@
   const close = () => {
     if (!state.webChatVisibility.hiddenByApi) {
       toggleWebSdkIframe ({
-        minimized: true,
+        widgetShouldMinimize: true,
         trigger: TRIGGER.API
       });
     }
