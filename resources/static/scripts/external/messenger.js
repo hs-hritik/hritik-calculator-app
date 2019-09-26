@@ -1033,10 +1033,13 @@
           state.unreadCount = data.count;
           renderUnreadCount ();
 
-          // Call the event handle for new unread messages event.
-          callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
-            unreadCount: data.count
-          });
+          // Call the event handler for new unread messages event if
+          // web chat iframe is not open
+          if (webSdkIframe.style.display === "none") {
+            callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
+              unreadCount: data.count
+            });
+          }
           break;
 
         case EVENT_TYPES.SDK_RESET:
