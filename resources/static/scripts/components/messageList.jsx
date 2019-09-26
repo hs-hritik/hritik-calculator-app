@@ -14,10 +14,12 @@ define ("components/messageList",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes",
-    "constants/accessibility"
+    "constants/accessibility",
+    "extras/accessibility",
+    "helpers/common"
   ],
   function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
-    chatViewConstants, throttle, classes, axConstants) {
+    chatViewConstants, throttle, classes, axConstants, ax, commonHelpers) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -48,7 +50,7 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
-    const {DATA_LABELS} = axConstants;
+    const {DATA_LABELS, DATA_LABEL_NAME} = axConstants;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -187,11 +189,16 @@ define ("components/messageList",
         let skipBtnWrapperEl = null;
 
         if (!required) {
+          const skipBtnDataLabels = {
+            skipBtn: DATA_LABELS.CHAT.SKIP_BTN
+          };
+
           skipBtnWrapperEl = (
             <SkipButtonWrapper label={skipLabel}
                                className="hs-message-list__skip-btn-wrapper"
                                disabled={disabled}
-                               onClick={onSkipUserInput} />
+                               onClick={onSkipUserInput}
+                               dataLabels={skipBtnDataLabels} />
           );
         }
 
@@ -390,6 +397,7 @@ define ("components/messageList",
       componentDidUpdate (prevProps) {
         const {messages, minimized} = this.props;
         const previousMessages = prevProps.messages;
+        const messageListHasBeenUpdated = previousMessages.length !== messages.length;
         let messagesHaveBeenAppended = false;
 
         if (messages.length) {
@@ -426,6 +434,31 @@ define ("components/messageList",
         }
 
         this._handleScrollingToBottom (messages, previousMessages);
+
+        // If message length count is changed and
+        // the count of message link selector in metalist and total links count is different
+        // Update message link selectors in meta list and retain the current focus
+        if (messageListHasBeenUpdated) {
+          const messageListLinks = document.querySelectorAll (".hs-message-list a");
+          const messageListLinksCount = messageListLinks.length;
+          const selectors = [];
+          const axMsgLinkCount = ax.getMetaListSelectorsCount ({
+            name: DATA_LABEL_NAME.CHAT.MESSAGE_LIST
+          });
+
+          if (axMsgLinkCount !== messageListLinksCount) {
+            for (let i = 0; i < messageListLinksCount; i++) {
+              selectors.push (commonHelpers.getSelectorForElement (messageListLinks[i]));
+            }
+
+            ax.saveCurrentFocusedSelector ();
+            ax.replaceSelectors ({
+              name: DATA_LABEL_NAME.CHAT.MESSAGE_LIST,
+              selectors: selectors
+            });
+            ax.focusSavedSelector ();
+          }
+        }
       },
 
       /**

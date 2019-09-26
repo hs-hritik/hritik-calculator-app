@@ -93,6 +93,14 @@ define (
           {
             name: DATA_LABEL_NAME.LAUNCHER_BTN,
             selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+          },
+          {
+            name: DATA_LABEL_NAME.CHAT.MESSAGE_LIST,
+            selectors: []
+          },
+          {
+            name: DATA_LABEL_NAME.CHAT.SKIP_BTN,
+            selectors: [DATA_LABEL_SELECTORS.CHAT.SKIP_BTN]
           }
         ]
       },
@@ -151,6 +159,11 @@ define (
     let _delayedFocusIndex = -1;
 
     /**
+     * Stores active selector value
+     */
+    let _savedSelector;
+
+    /**
      * FlatListActiveIndices is the mapping of view and active index in that view
      */
     const flatListActiveIndices = {
@@ -202,6 +215,17 @@ define (
       const {metaList} = activeViewData;
 
       return arrayUtils.findIndexByKey (metaList, name, "name");
+    };
+
+    /**
+     * Returns the index of selector in flat list
+     *
+     * @param {String} Selector - selector value
+     */
+    const _findFlatListIndexBySelector = (selector) => {
+      return arrayUtils.findIndex (_flatList, (val) => {
+        return val === selector;
+      });
     };
 
     /**
@@ -429,8 +453,7 @@ define (
         return null;
       }
 
-      const activeViewData = _focusData [_activeView];
-      const {metaList} = activeViewData;
+      const metaList = _getActiveViewMetaList ();
       const selectorGroupIndex = arrayUtils.findIndexByKey (metaList, data.name, "name");
 
       metaList [selectorGroupIndex].selectors = data.selectors;
@@ -458,6 +481,44 @@ define (
       return _flatList [activeIndex];
     };
 
+    /**
+     * This function saves currently active selector
+     */
+    const saveCurrentFocusedSelector = () => {
+      _savedSelector = _getFlatListActiveSelector ();
+    };
+
+    /**
+     * Focuses on saved selector and update the active index
+     */
+    const focusSavedSelector = () => {
+      if (_savedSelector) {
+        const selectorIndex = _findFlatListIndexBySelector (_savedSelector);
+
+        if (selectorIndex !== -1) {
+          setFlatListActiveIndex (selectorIndex);
+          _savedSelector = null;
+        }
+      }
+
+      focus ();
+    };
+
+    /**
+     * Returns selectors counts in metaList
+     *
+     * @param {String} config.name - Readable name of the meta-list
+     * @returns {Number} - Count of selectors in the meta list
+     */
+    const getMetaListSelectorsCount = (config) => {
+      const metaList = _getActiveViewMetaList ();
+      const metaListIndex = _findMetaListIndexByName (config.name);
+
+      if (metaListIndex !== -1) {
+        return metaList [metaListIndex].selectors.length;
+      }
+    };
+
     const init = (data) => {
       const {specialHandlers} = _focusData;
 
@@ -481,6 +542,9 @@ define (
       getNextActiveSelector,
       getPrevActiveSelector,
       setFlatListActiveIndex,
+      saveCurrentFocusedSelector,
+      focusSavedSelector,
+      getMetaListSelectorsCount,
       init
     };
   }

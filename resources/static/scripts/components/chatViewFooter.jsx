@@ -186,6 +186,9 @@ define ("components/chatViewFooter",
         let miscActionsWrapper = null;
 
         if (!inputIsListPicker || listPickerIsClosed) {
+          const skipBtnDataLabels = {
+            skipBtn: DATA_LABELS.CHAT.SKIP_BTN
+          };
           let skipBtnWrapperEl = null;
 
           if (!required) {
@@ -194,7 +197,8 @@ define ("components/chatViewFooter",
                 label={skipLabel}
                 className="hs-chat-footer__skip-btn-wrapper"
                 disabled={disabled}
-                onClick={onSkipUserInput} />
+                onClick={onSkipUserInput}
+                dataLabels={skipBtnDataLabels} />
             );
           }
 
@@ -885,6 +889,7 @@ define ("components/chatViewFooter",
             name: DATA_LABEL_NAME.CHAT.FOOTER,
             selectors: requiredFooterSelectors
           });
+          ax.setFlatListActiveIndex (0);
           ax.focus ();
         } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
           requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
@@ -893,6 +898,7 @@ define ("components/chatViewFooter",
             name: DATA_LABEL_NAME.CHAT.FOOTER,
             selectors: requiredFooterSelectors
           });
+          ax.setFlatListActiveIndex (0);
           ax.focus ();
         }
 

@@ -62,7 +62,8 @@ define ("constants/accessibility",
         SOLUTION_ACCEPT_BTN: "solution-accept-btn",
         STAR_RATING_WRAPPER: "star-rating-wrapper",
         NEW_CONVERSATION_BTN: "new-conversation-wrapper",
-        CLOSE_CONVERSATION_BTN: "close-conversation-btn"
+        CLOSE_CONVERSATION_BTN: "close-conversation-btn",
+        SKIP_BTN: "skip-btn"
       },
       CSAT: {
         STAR_RATING_WRAPPER: "star-rating-wrapper",
@@ -93,7 +94,9 @@ define ("constants/accessibility",
       },
       LAUNCHER_BTN: "LAUNCHER_BTN",
       CHAT: {
-        FOOTER: "FOOTER"
+        FOOTER: "FOOTER",
+        MESSAGE_LIST: "MESSAGE_LIST",
+        SKIP_BTN: "SKIP_BTN"
       },
       CSAT: {
         STAR_RATING_WRAPPER: "STAR_RATING_WRAPPER",
@@ -211,7 +214,8 @@ define ("constants/accessibility",
         SOLUTION_ACCEPT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN + "]",
         STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.STAR_RATING_WRAPPER + "]",
         NEW_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.NEW_CONVERSATION_BTN + "]",
-        CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]"
+        CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]",
+        SKIP_BTN: "[data-label=" + DATA_LABELS.CHAT.SKIP_BTN + "]"
       },
       CSAT: {
         STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CSAT.STAR_RATING_WRAPPER + "]",
