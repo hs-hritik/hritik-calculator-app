@@ -134,6 +134,8 @@ define ("reducers/appState",
       analytics: {
         suggestedFaqReadTracked: false
       },
+      // footerIsActive is used to udpate the UI of the footer by adding a border
+      // to it.
       footerIsActive: false,
       postChatFeatures: {
         resolutionQuestionCompleted: false,

@@ -223,12 +223,12 @@ define ("extras/api",
      * not mounted already and post sdk initialized event.
      * Dispatch the action to update the messenger-minimized flag and mark messages seen.
      * @param {Object} config
-     * @param {boolean} config.minimized - If the web chat widget is in minimized state.
+     * @param {boolean} config.widgetHasMinimized - If the web chat widget is in minimized state.
      * @param {boolean} [config.trigger] - Source that triggered the function
      *    call - user action, api, etc.
      */
-    const handleMessengerToggle = ({minimized, trigger}) => {
-      store.dispatch (appStateActions.toggleMinimized (minimized));
+    const handleMessengerToggle = ({widgetHasMinimized, trigger}) => {
+      store.dispatch (appStateActions.toggleMinimized (widgetHasMinimized));
       // If the messenger is maximized and
       // the React app is not mounted already, mount it.
       // Let the client know that the app is mounted.
@@ -244,7 +244,7 @@ define ("extras/api",
         }
       } = store.getState ();
 
-      if (!minimized) {
+      if (!widgetHasMinimized) {
         if (!app.isMounted ()) {
           app.init ();
         }

@@ -29,6 +29,7 @@ define ("components/containers/chatViewFooter",
     const mapStateToProps = (state) => {
       const {
         appState: {
+          minimized: widgetIsMinimized,
           activeIssueId,
           issueType,
           footerIsActive,
@@ -83,6 +84,7 @@ define ("components/containers/chatViewFooter",
       }
 
       return {
+        widgetIsMinimized,
         rating,
         activeFooter: activeFooter,
         issueIsCreated: commonHelpers.isIssueCreated ({
