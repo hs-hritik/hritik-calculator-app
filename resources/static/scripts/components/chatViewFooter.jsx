@@ -44,7 +44,8 @@ define ("components/chatViewFooter",
     const {
       DATA_LABEL_NAME,
       DATA_LABELS,
-      DATA_LABEL_SELECTORS
+      DATA_LABEL_SELECTORS,
+      FOOTER_SELECTORS
     } = axConstants;
 
     return React.createClass ({
@@ -186,19 +187,26 @@ define ("components/chatViewFooter",
         let miscActionsWrapper = null;
 
         if (!inputIsListPicker || listPickerIsClosed) {
-          const skipBtnDataLabels = {
-            skipBtn: DATA_LABELS.CHAT.SKIP_BTN
-          };
           let skipBtnWrapperEl = null;
 
           if (!required) {
+            const _setAxActiveIndex = this._setAxActiveIndex.bind (
+              this, {
+                selector: FOOTER_SELECTORS.SKIP_BTN
+              }
+            );
+            const skipBtnDataLabels = {
+              skipBtn: DATA_LABELS.CHAT.SKIP_BTN
+            };
+
             skipBtnWrapperEl = (
               <SkipButtonWrapper
                 label={skipLabel}
                 className="hs-chat-footer__skip-btn-wrapper"
                 disabled={disabled}
                 onClick={onSkipUserInput}
-                dataLabels={skipBtnDataLabels} />
+                dataLabels={skipBtnDataLabels}
+                onFocus={_setAxActiveIndex} />
             );
           }
 
@@ -357,11 +365,21 @@ define ("components/chatViewFooter",
           inputComponentEl = (
             <ReplyBoxContainer
               className="hs-chat-footer__text-area"
-              dataLabels={replyBoxDataLabels}/>
+              dataLabels={replyBoxDataLabels} />
           );
         } else {
           const htmlInputType = this._getHtmlInputType (type);
           const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
+          const _setAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: FOOTER_SELECTORS.TEXT_FIELD
+            }
+          );
+
+          const _onFooterFocus = () => {
+            onFooterFocus ();
+            _setAxActiveIndex ();
+          };
 
           inputComponentEl = (
             <input className="hs-chat-footer__text-field"
@@ -373,11 +391,12 @@ define ("components/chatViewFooter",
                    placeholder={inputPlaceholder}
                    onChange={this._onInputFieldValueChange}
                    onKeyUp={this._onInputFieldKeyUp}
-                   onFocus={onFooterFocus}
+                   onFocus={_onFooterFocus}
                    onBlur={onFooterBlur}
                    autoFocus
                    tabIndex="0"
-                   data-label={DATA_LABELS.CHAT.TEXT_FIELD} />
+                   data-label={DATA_LABELS.CHAT.TEXT_FIELD}
+                   onClick={_setAxActiveIndex} />
           );
         }
 
@@ -453,17 +472,6 @@ define ("components/chatViewFooter",
           }
         );
 
-        // Data label constants for list picker
-        const pickerDataLabels = {
-          collapsedPickerHeader: DATA_LABELS.CHAT.COLLAPSED_PICKER_HEADER,
-          collapsedPickerBtn: DATA_LABELS.CHAT.COLLAPSED_PICKER_BTN,
-          searchBtn: DATA_LABELS.CHAT.PICKER_SEARCH_BTN,
-          searchInput: DATA_LABELS.CHAT.PICKER_SEARCH_INPUT,
-          backArrow: DATA_LABELS.CHAT.PICKER_BACK_ARROW,
-          clearSearchBtn: DATA_LABELS.CHAT.PICKER_CLEAR_SEARCH_BTN,
-          pickerOptionsWrapper: DATA_LABELS.CHAT.PICKER_OPTIONS_WRAPPER
-        };
-
         return (
           <Picker className={pickerClasses}
                   options={options}
@@ -473,9 +481,7 @@ define ("components/chatViewFooter",
                   headerLabel={headerLabel}
                   searchNoResultsText={searchNoResultsText}
                   minHeight={PICKER_MIN_HEIGHT}
-                  maxHeight={this.state.pickerMaxHeight}
-                  dataLabels={pickerDataLabels}
-                  clearDelayFocus={ax.clearDelayFocus} />
+                  maxHeight={this.state.pickerMaxHeight} />
         );
       },
 
@@ -490,13 +496,24 @@ define ("components/chatViewFooter",
           onSubmitReply
         } = this.props;
         const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.SEND_BTN
+          }
+        );
+
+        const _onSubmitReply = () => {
+          onSubmitReply ();
+          _setAxActiveIndex ();
+        };
 
         return (
           <a
             className="hs-chat-footer__submit"
-            onClick={onSubmitReply}
+            onClick={_onSubmitReply}
             tabIndex="0"
-            data-label={DATA_LABELS.CHAT.SEND_BTN}>
+            data-label={DATA_LABELS.CHAT.SEND_BTN}
+            onFocus={_setAxActiveIndex}>
             <i className={iconClasses} />
           </a>
         );
@@ -509,13 +526,26 @@ define ("components/chatViewFooter",
         const fileInputDataLabels = {
           attachmentBtn: DATA_LABELS.CHAT.ATTACHMENT_BTN
         };
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.ATTACHMENT_BTN
+          }
+        );
 
         return (
-          <FileInput onChange={this.props.onFilesChange}
-                     noPadding
-                     labelClasses="hs-chat-footer__attachment-icon"
-                     iconClasses="ion-attachment"
-                     dataLabels={fileInputDataLabels} />
+          <div
+            onKeyDown={this._onFileInputKeyDown}
+            data-label={DATA_LABELS.CHAT.ATTACHMENT_BTN}
+            tabIndex="0"
+            onFocus={_setAxActiveIndex}>
+            <FileInput
+              onChange={this.props.onFilesChange}
+              noPadding
+              labelClasses="hs-chat-footer__attachment-icon"
+              iconClasses="ion-attachment"
+              dataLabels={fileInputDataLabels}
+              onSaveInputRef={this._saveInputRef} />
+          </div>
         );
       },
 
@@ -534,12 +564,19 @@ define ("components/chatViewFooter",
           "hs-footer__btn"
         );
 
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.CLOSE_CONVERSATION_BTN
+          }
+        );
+
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__buttons-wrapper">
               <button
                 className={btnClasses}
                 onClick={onCloseConversation}
+                onFocus={_setAxActiveIndex}
                 tabIndex="0"
                 data-label={DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN}>
                 {closeConversationBtn}
@@ -591,25 +628,47 @@ define ("components/chatViewFooter",
           "hs-chat-footer__button"
         );
 
+        const _setConversationResolutionWrapperAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.CONVERSATION_RESOLUTION_WRAPPER
+          }
+        );
+
+        const _setRejectResolutionAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.SOLUTION_REJECT_BTN
+          }
+        );
+
+        const _setAcceptResolutionAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.SOLUTION_ACCEPT_BTN
+          }
+        );
+
         return (
           <div
             className="hs-chat-footer"
             tabIndex="0"
-            data-label={DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER}>
+            data-label={DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER}
+            onClick={_setConversationResolutionWrapperAxActiveIndex}
+            onFocus={_setConversationResolutionWrapperAxActiveIndex}>
             <div className="hs-chat-footer__heading" >
               <strong>{text.chatViewConversationResolutionQuestion}</strong>
             </div>
             <div className="hs-chat-footer__buttons-wrapper">
               <button className={btnClasses}
                       onClick={onRejectResolutionQuestionClick}
-                      tabIndex="0"
-                      data-label={DATA_LABELS.CHAT.SOLUTION_REJECT_BTN}>
+                      onFocus={_setRejectResolutionAxActiveIndex}
+                      data-label={DATA_LABELS.CHAT.SOLUTION_REJECT_BTN}
+                      tabIndex="0">
                 {text.resolutionQuestionReject}
               </button>
               <button className={btnClasses}
                       onClick={onAcceptResolutionQuestionClick}
-                      tabIndex="0"
-                      data-label={DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN}>
+                      onFocus={_setAcceptResolutionAxActiveIndex}
+                      data-label={DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN}
+                      tabIndex="0">
                 {text.resolutionQuestionAccept}
               </button>
             </div>
@@ -626,6 +685,11 @@ define ("components/chatViewFooter",
           "hs-button--hollow",
           "hs-chat-footer__button"
         );
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.NEW_CONVERSATION_BTN
+          }
+        );
 
         return (
           <div className="hs-chat-footer">
@@ -633,6 +697,7 @@ define ("components/chatViewFooter",
               <button
                 className={btnClasses}
                 onClick={this.props.onStartNewConversation}
+                onFocus={_setAxActiveIndex}
                 tabIndex="0"
                 data-label={DATA_LABELS.CHAT.NEW_CONVERSATION_BTN}>
                 {this.props.text.chatViewStartNewConversation}
@@ -679,6 +744,28 @@ define ("components/chatViewFooter",
         }
 
         return [headingEl, labelEl];
+      },
+
+      _fileInputRef: null,
+
+      /**
+       * Set ref for fileInput component
+       */
+      _saveInputRef (fileInputRef) {
+        this._fileInputRef = fileInputRef;
+      },
+
+      /**
+       * Handler for keyDown event on attachment wrapper
+       * @param {Object} ev - Event for key down
+       */
+      _onFileInputKeyDown (ev) {
+        if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
+          if (this._fileInputRef) {
+            this._fileInputRef.click ();
+            ax.setActiveIndex ({selector: FOOTER_SELECTORS.ATTACHMENT_BTN});
+          }
+        }
       },
 
       /**
@@ -837,6 +924,16 @@ define ("components/chatViewFooter",
           case ACTIVE_FOOTER.CLOSED:
             return DATA_LABEL_SELECTORS.CHAT.FOOTER.CLOSED;
         }
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       */
+      _setAxActiveIndex (config) {
+        ax.setActiveIndex (config);
       },
 
       /**

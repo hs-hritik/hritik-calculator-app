@@ -12,10 +12,12 @@ define ("components/message",
     "helpers/attachments",
     "gunpowder/utils/date",
     "gunpowder/utils/classes",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "helpers/common",
+    "extras/accessibility"
   ],
   function (customPropTypes, MESSAGE_CONSTANTS, ERROR_CONSTANTS, attachmentsHelpers,
-    dateUtils, classes, objUtils) {
+    dateUtils, classes, objUtils, commonHelper, ax) {
     "use strict";
 
     const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
@@ -89,7 +91,7 @@ define ("components/message",
         );
 
         return (
-          <div className={msgClasses}>
+          <div className={msgClasses} onClick={this._onMsgClick}>
             {this._renderMessage ()}
             {this._renderAttachmentErrors ()}
             {this._renderMessageDetails ()}
@@ -287,9 +289,10 @@ define ("components/message",
           const {id, language} = faq;
           return (
             <a key={faq.id}
-                  className="hs-message__suggested-faq"
-                  dir="auto"
-                  onClick={onSuggestedFaqClick.bind (this, id, language)}>
+               className="hs-message__suggested-faq"
+               dir="auto"
+               onClick={onSuggestedFaqClick.bind (this, id, language)}
+               tabIndex="0">
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
             </a>
@@ -559,6 +562,13 @@ define ("components/message",
         );
       },
 
+      _onMsgClick (event) {
+        const selector = commonHelper.getSelectorForElement (event.target);
+
+        ax.setActiveIndex ({
+          selector: selector
+        });
+      },
       /**
        * Get agent nickname.
        */

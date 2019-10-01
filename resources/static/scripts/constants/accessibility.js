@@ -131,7 +131,8 @@ define ("constants/accessibility",
       SOLUTION_ACCEPT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN + "]",
       STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.STAR_RATING_WRAPPER + "]",
       NEW_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.NEW_CONVERSATION_BTN + "]",
-      CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]"
+      CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]",
+      SKIP_BTN: "[data-label=" + DATA_LABELS.CHAT.SKIP_BTN + "]"
     };
 
     /**
@@ -192,30 +193,7 @@ define ("constants/accessibility",
           CLOSED: [
             FOOTER_SELECTORS.CLOSE_CONVERSATION_BTN
           ]
-        },
-        TEXT_FIELD: "[data-label=" + DATA_LABELS.CHAT.TEXT_FIELD + "]",
-        TEXT_AREA: "[data-label=" + DATA_LABELS.CHAT.TEXT_AREA + "]",
-        SEND_BTN: "[data-label=" + DATA_LABELS.CHAT.SEND_BTN + "]",
-        ATTACHMENT_BTN: "[data-label=" + DATA_LABELS.CHAT.ATTACHMENT_BTN + "]",
-        OPTION_PILLS_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.OPTION_PILLS_WRAPPER + "]",
-        COLLAPSED_PICKER_HEADER: "[data-label=" + DATA_LABELS.CHAT.COLLAPSED_PICKER_HEADER + "]",
-        PICKER_OPTION_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.PICKER_OPTION_WRAPPER + "]",
-        COLLAPSED_PICKER_BTN: "[data-label=" + DATA_LABELS.CHAT.COLLAPSED_PICKER_BTN + "]",
-        PICKER_SEARCH_BTN: "[data-label=" + DATA_LABELS.CHAT.PICKER_SEARCH_BTN + "]",
-        PICKER_SEARCH_INPUT: "[data-label=" + DATA_LABELS.CHAT.PICKER_SEARCH_INPUT + "]",
-        PICKER_BACK_ARROW: "[data-label=" + DATA_LABELS.CHAT.PICKER_BACK_ARROW + "]",
-        PICKER_CLEAR_SEARCH_BTN: "[data-label=" + DATA_LABELS.CHAT.PICKER_CLEAR_SEARCH_BTN + "]",
-        CONVERSATION_RESOLUTION_WRAPPER: (
-          "[data-label=" +
-          DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER +
-          "]"
-        ),
-        SOLUTION_REJECT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_REJECT_BTN + "]",
-        SOLUTION_ACCEPT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN + "]",
-        STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.STAR_RATING_WRAPPER + "]",
-        NEW_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.NEW_CONVERSATION_BTN + "]",
-        CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]",
-        SKIP_BTN: "[data-label=" + DATA_LABELS.CHAT.SKIP_BTN + "]"
+        }
       },
       CSAT: {
         STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CSAT.STAR_RATING_WRAPPER + "]",
@@ -234,7 +212,8 @@ define ("constants/accessibility",
       DATA_LABELS,
       DATA_LABEL_SELECTORS,
       DATA_LABEL_NAME,
-      OOBH_TYPE
+      OOBH_TYPE,
+      FOOTER_SELECTORS
     };
   }
 );

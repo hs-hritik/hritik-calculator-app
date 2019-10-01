@@ -39,7 +39,12 @@ define ("components/commons/skipButtonWrapper",
         /**
          * Data label for skip button
          */
-        dataLabels: PropTypes.string
+        dataLabels: PropTypes.object,
+
+        /**
+         * Focus handler for skip button
+         */
+        onFocus: PropTypes.func
       },
 
       render () {
@@ -48,7 +53,8 @@ define ("components/commons/skipButtonWrapper",
           label,
           onClick,
           disabled,
-          dataLabels
+          dataLabels,
+          onFocus
         } = this.props;
 
         const skipBtnClasses = classes (
@@ -64,7 +70,8 @@ define ("components/commons/skipButtonWrapper",
                     onClick={onClick}
                     disabled={disabled}
                     tabIndex="0"
-                    data-label={dataLabels.skipBtn}>
+                    data-label={dataLabels.skipBtn}
+                    onFocus={onFocus}>
               {label}
             </button>
           </div>

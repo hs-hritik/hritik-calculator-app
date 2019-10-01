@@ -18,7 +18,8 @@ define (
       DIRECTIONS,
       DATA_LABEL_SELECTORS,
       DATA_LABEL_NAME,
-      OOBH_TYPE
+      OOBH_TYPE,
+      FOOTER_SELECTORS
     } = axConstants;
 
     const OOBH_OFFLINE_META_LIST = [
@@ -100,7 +101,7 @@ define (
           },
           {
             name: DATA_LABEL_NAME.CHAT.SKIP_BTN,
-            selectors: [DATA_LABEL_SELECTORS.CHAT.SKIP_BTN]
+            selectors: [FOOTER_SELECTORS.SKIP_BTN]
           }
         ]
       },

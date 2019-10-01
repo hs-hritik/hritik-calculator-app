@@ -50,7 +50,7 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
-    const {DATA_LABELS, DATA_LABEL_NAME} = axConstants;
+    const {DATA_LABELS, DATA_LABEL_NAME, FOOTER_SELECTORS} = axConstants;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -175,12 +175,19 @@ define ("components/messageList",
           "hs-message-list__pill-option"
         );
         const pillOptionsEl = options.map ((option) => {
+          const setPillAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: `[data-label=${DATA_LABELS.CHAT.OPTION_PILL_PREFIX}${option.value}]`
+            }
+          );
+
           return (
             <button key={option.value}
                     onClick={this._onPillOptionClick.bind (this, option)}
                     className={btnClasses}
                     data-label={`${DATA_LABELS.CHAT.OPTION_PILL_PREFIX}${option.value}`}
-                    tabIndex="0">
+                    tabIndex="0"
+                    onFocus={setPillAxActiveIndex}>
               {option.label}
             </button>
           );
@@ -189,6 +196,11 @@ define ("components/messageList",
         let skipBtnWrapperEl = null;
 
         if (!required) {
+          const setAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: FOOTER_SELECTORS.SKIP_BTN
+            }
+          );
           const skipBtnDataLabels = {
             skipBtn: DATA_LABELS.CHAT.SKIP_BTN
           };
@@ -198,9 +210,16 @@ define ("components/messageList",
                                className="hs-message-list__skip-btn-wrapper"
                                disabled={disabled}
                                onClick={onSkipUserInput}
-                               dataLabels={skipBtnDataLabels} />
+                               dataLabels={skipBtnDataLabels}
+                               onFocus={setAxActiveIndex} />
           );
         }
+
+        const setPillWrapperAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: FOOTER_SELECTORS.OPTION_PILLS_WRAPPER
+          }
+        );
 
         return (
           <div className="hs-message-list__pills-container">
@@ -212,7 +231,9 @@ define ("components/messageList",
             <div
               className="hs-message-list__pill-options"
               data-label={DATA_LABELS.CHAT.OPTION_PILLS_WRAPPER}
-              tabIndex="0">
+              tabIndex="0"
+              onClick={setPillWrapperAxActiveIndex}
+              onFocus={setPillWrapperAxActiveIndex}>
               {pillOptionsEl}
             </div>
             {skipBtnWrapperEl}
@@ -392,6 +413,18 @@ define ("components/messageList",
         if (newUserMessageIsAdded || (newAgentMessageIsAdded && !userIsViewingPastMessages)) {
           this._scrollToBottom ();
         }
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      _setAxActiveIndex (config, ev) {
+        ev.stopPropagation ();
+        ax.setActiveIndex (config);
       },
 
       componentDidUpdate (prevProps) {

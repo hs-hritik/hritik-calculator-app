@@ -19,7 +19,7 @@ define ("components/csatView",
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const {DATA_LABELS} = axConstants;
+    const {DATA_LABELS, DATA_LABEL_SELECTORS} = axConstants;
 
     return React.createClass ({
       displayName: "CsatView",
@@ -82,6 +82,11 @@ define ("components/csatView",
           csatSaveInProgress,
           onUpdateStarRating
         } = this.props;
+        const setTextAreaAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.CSAT.FEEDBACK_TEXT_AREA
+          }
+        );
         const starRatingDataLabels = {
           starRatingWrapper: DATA_LABELS.CHAT.STAR_RATING_WRAPPER
         };
@@ -112,7 +117,9 @@ define ("components/csatView",
                         onChange={this._onCsatReviewChange}
                         placeholder={text.csatBotReviewPlaceholder}
                         tabIndex="0"
-                        data-label={DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA} />
+                        data-label={DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA}
+                        onFocus={setTextAreaAxActiveIndex}
+                        onClick={setTextAreaAxActiveIndex} />
             </div>
           </div>
         );
@@ -138,6 +145,11 @@ define ("components/csatView",
             "hs-footer--full-screen": allowFullScreen
           }
         );
+        const setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.CSAT.FOOTER_BTN
+          }
+        );
 
         return (
           <div className={footerClasses}>
@@ -146,7 +158,8 @@ define ("components/csatView",
                       onClick={this.props.onSubmitCsat}
                       disabled={btnDisabled}
                       tabIndex="0"
-                      data-label={DATA_LABELS.CSAT.FOOTER_BTN} >
+                      data-label={DATA_LABELS.CSAT.FOOTER_BTN}
+                      onFocus={setAxActiveIndex} >
                 {text.csatBotFormSubmitBtn}
               </button>
             </div>
@@ -167,6 +180,18 @@ define ("components/csatView",
        */
       _onStarClick (value) {
         this.props.onUpdateCsatRating (value);
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      _setAxActiveIndex (config, ev) {
+        ev.stopPropagation ();
+        ax.setActiveIndex (config);
       },
 
       componentDidMount () {

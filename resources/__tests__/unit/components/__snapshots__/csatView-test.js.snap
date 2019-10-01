@@ -62,6 +62,8 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
             dir="auto"
             disabled={false}
             onChange={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
             placeholder="MOCK_REVIEW_PLACEHOLDER"
             tabIndex="0"
             value="MOCK_REVIEW"
@@ -80,6 +82,7 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
             data-label="footer-btn"
             disabled={true}
             onClick={[MockFunction]}
+            onFocus={[Function]}
             tabIndex="0"
           >
             MOCK_FORM_SUBMIT_BUTTON

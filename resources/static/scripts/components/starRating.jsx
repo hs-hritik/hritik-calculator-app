@@ -7,12 +7,15 @@
 define ("components/starRating",
   [
     "gunpowder/utils/classes",
-    "constants/keyCodes"
+    "constants/keyCodes",
+    "constants/accessibility",
+    "extras/accessibility"
   ],
-  function (classes, KEYCODE_CONSTANTS) {
+  function (classes, KEYCODE_CONSTANTS, axConstants, ax) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+    const {DATA_LABEL_SELECTORS} = axConstants;
 
     return React.createClass ({
       displayName: "StarRating",
@@ -40,16 +43,26 @@ define ("components/starRating",
       },
 
       render () {
-        const {editing, dataLabels} = this.props;
+        const {
+          editing,
+          dataLabels
+        } = this.props;
         const starRatingClasses = classes ("hs-star-rating", {
           "hs-star-rating--edit-mode": editing
         });
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.CSAT.STAR_RATING_WRAPPER
+          }
+        );
 
         return (
           <div
             className={starRatingClasses}
             tabIndex="0"
             data-label={dataLabels.starRatingWrapper}
+            onClick={_setAxActiveIndex}
+            onFocus={_setAxActiveIndex}
             onKeyDown={this._onKeyDown}>
             {this._renderStars ()}
           </div>
@@ -93,6 +106,18 @@ define ("components/starRating",
              key={idx}
              onClick={this._onStarClick.bind (this, idx)} />
         );
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.name - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      _setAxActiveIndex (config, ev) {
+        ev.stopPropagation ();
+        ax.setActiveIndex (config);
       },
 
       /**

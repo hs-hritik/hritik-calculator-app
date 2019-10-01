@@ -20,7 +20,11 @@ define ("components/faqView",
     "use strict";
 
     const {PropTypes} = React;
-    const {DATA_LABELS, DATA_LABEL_NAME} = axConstants;
+    const {
+      DATA_LABELS,
+      DATA_LABEL_NAME,
+      DATA_LABEL_SELECTORS
+    } = axConstants;
 
     return React.createClass ({
       displayName: "FaqView",
@@ -81,21 +85,49 @@ define ("components/faqView",
           );
         }
 
+        const _setWrapperAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.FAQ.CONTENT_WRAPPER
+          }
+        );
+
         /* eslint-disable react/no-danger */
         return (
           <div
             className="hs-view__content"
             tabIndex="0"
-            data-label={DATA_LABELS.FAQ.CONTENT_WRAPPER}>
+            data-label={DATA_LABELS.FAQ.CONTENT_WRAPPER}
+            onClick={_setWrapperAxActiveIndex}>
             <div className="hs-faq" dir="auto">
               <h3 className="hs-faq__title" >{title}</h3>
               <div className="hs-faq__body"
-                    dangerouslySetInnerHTML={{__html: body}} />
+                    dangerouslySetInnerHTML={{__html: body}}
+                    onClick={this._onFaqBodyClick} />
             </div>
             <BrandingContainer />
           </div>
         );
         /* eslint-enable react/no-danger */
+      },
+
+      _onFaqBodyClick (event) {
+        const selector = commonHelpers.getSelectorForElement (event.target);
+
+        ax.setActiveIndex ({
+          selector: selector
+        });
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      _setAxActiveIndex (config, ev) {
+        ev.stopPropagation ();
+        ax.setActiveIndex (config);
       },
 
       componentDidUpdate () {
