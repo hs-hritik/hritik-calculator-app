@@ -24,7 +24,7 @@ define ("reducers/businessHoursView",
       ATTACHMENT_OPERATIONS,
       BUSINESS_HOURS_ALLOWED_REMOVE_COUNT
     } = ATTACHMENT_CONSTANTS;
-    const {DATA_LABELS, DATA_LABEL_NAME} = axConstants;
+    const {DATA_LABELS, META_LIST_ITEM_NAME} = axConstants;
 
     const INITIAL_STATE = {
       businessHoursEnabled: false,
@@ -83,7 +83,7 @@ define ("reducers/businessHoursView",
         const id = uuidGenerator ();
 
         ax.addSelector ({
-          name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
+          name: META_LIST_ITEM_NAME.OOBH.FILE_ATTACHMENTS,
           selector: `[data-label=${DATA_LABELS.OOBH.ATTACHMENT_PREFIX}${id}]`
         });
 
@@ -260,7 +260,7 @@ define ("reducers/businessHoursView",
 
         case ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT:
           ax.removeSelector ({
-            name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
+            name: META_LIST_ITEM_NAME.OOBH.FILE_ATTACHMENTS,
             selector: `[data-label=${DATA_LABELS.OOBH.ATTACHMENT_PREFIX}${action.attachmentId}]`
           });
           ax.delayFocus ();

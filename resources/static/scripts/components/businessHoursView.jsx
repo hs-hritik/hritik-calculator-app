@@ -15,10 +15,11 @@ define ("components/businessHoursView",
     "gunpowder/utils/classes",
     "extras/accessibility",
     "constants/activeView",
-    "constants/accessibility"
+    "constants/accessibility",
+    "constants/keyCodes"
   ],
   function (ViewHeader, BrandingContainer, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
-    attachmentsHelpers, classes, ax, activeViewConstants, axConstants) {
+    attachmentsHelpers, classes, ax, activeViewConstants, axConstants, KEY_CODES) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -35,10 +36,9 @@ define ("components/businessHoursView",
       name: PropTypes.string,
       size: PropTypes.number
     });
-    const {KEYCODES} = axConstants;
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
-    const {DATA_LABELS, OOBH_TYPE, DATA_LABEL_SELECTORS} = axConstants;
+    const {DATA_LABELS, OOBH_SUBVIEW, DATA_LABEL_SELECTORS} = axConstants;
 
     return React.createClass ({
       displayName: "BusinessHoursView",
@@ -215,10 +215,19 @@ define ("components/businessHoursView",
         } = this.props;
 
         let btnText, clickHandler;
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN
+          }
+        );
+
         if ((offlineBehaviour === CONTACT_FORM && contactFormSubmitted) ||
              offlineBehaviour === OFFLINE_MESSAGE) {
           btnText = text.closeConversationBtn;
-          clickHandler = onMinimizeConversation;
+          clickHandler = () => {
+            onMinimizeConversation ();
+            _setAxActiveIndex ();
+          };
         } else {
           btnText = text.businessHoursSubmitBtn;
           clickHandler = this._onSendButtonClick;
@@ -228,11 +237,6 @@ define ("components/businessHoursView",
         "hs-footer--center-items", {
           "hs-footer--full-screen": allowFullScreen
         });
-        const _setAxActiveIndex = this._setAxActiveIndex.bind (
-          this, {
-            selector: DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN
-          }
-        );
 
         return (
           <div className={footerClasses}>
@@ -596,7 +600,7 @@ define ("components/businessHoursView",
        * @param {Object} ev - Event for key down
        */
       _onKeyDown (ev) {
-        if (ev.keyCode === KEYCODES.ENTER || ev.keyCode === KEYCODES.SPACE) {
+        if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
           if (this._fileInputRef) {
             this._fileInputRef.click ();
           }
@@ -687,9 +691,9 @@ define ("components/businessHoursView",
         ax.setActiveView (activeViewConstants.BUSINESS_HOURS);
 
         if (offlineBehaviour !== CONTACT_FORM) {
-          ax.replaceMetaList (OOBH_TYPE.OFFLINE_MSG);
+          ax.replaceMetaList (OOBH_SUBVIEW.OFFLINE_MSG);
         } else {
-          ax.replaceMetaList (OOBH_TYPE.FORM);
+          ax.replaceMetaList (OOBH_SUBVIEW.FORM);
         }
 
         ax.focus ();

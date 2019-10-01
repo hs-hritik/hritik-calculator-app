@@ -22,7 +22,7 @@ define ("components/faqView",
     const {PropTypes} = React;
     const {
       DATA_LABELS,
-      DATA_LABEL_NAME,
+      META_LIST_ITEM_NAME,
       DATA_LABEL_SELECTORS
     } = axConstants;
 
@@ -144,7 +144,7 @@ define ("components/faqView",
           }
 
           ax.replaceSelectors ({
-            name: DATA_LABEL_NAME.FAQ.FAQ_BODY_LINKS,
+            name: META_LIST_ITEM_NAME.FAQ.FAQ_BODY_LINKS,
             selectors
           });
         }

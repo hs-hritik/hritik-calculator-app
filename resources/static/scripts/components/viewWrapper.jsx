@@ -12,15 +12,16 @@ define ("components/viewWrapper",
     "components/containers/csatView",
     "components/containers/businessHoursView",
     "extras/accessibility",
-    "constants/accessibility"
+    "constants/accessibility",
+    "constants/keyCodes"
   ],
   function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer,
-    BusinessHoursViewContainer, ax, axConstants) {
+    BusinessHoursViewContainer, ax, axConstants, KEY_CODES) {
     "use strict";
 
     const PropTypes = React.PropTypes;
 
-    const {KEYCODES, DATA_LABEL_NAME} = axConstants;
+    const {META_LIST_ITEM_NAME} = axConstants;
 
     return React.createClass ({
       displayName: "ViewWrapper",
@@ -91,10 +92,10 @@ define ("components/viewWrapper",
       },
 
       _onKeyPress (ev) {
-        if (ev.shiftKey && ev.keyCode === KEYCODES.TAB) {
+        if (ev.shiftKey && ev.keyCode === KEY_CODES.TAB) {
           ax.focusPrev ();
           ev.preventDefault ();
-        } else if (ev.keyCode === KEYCODES.TAB) {
+        } else if (ev.keyCode === KEY_CODES.TAB) {
           ax.focusNext ();
           ev.preventDefault ();
         }
@@ -108,7 +109,7 @@ define ("components/viewWrapper",
         ax.init ({
           handlers: [
             {
-              name: DATA_LABEL_NAME.LAUNCHER_BTN,
+              name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
               handlers: [this.props.onFocusLauncher]
             }
           ]

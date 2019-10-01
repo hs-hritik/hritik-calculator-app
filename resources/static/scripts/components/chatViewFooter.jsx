@@ -42,7 +42,7 @@ define ("components/chatViewFooter",
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
     const {
-      DATA_LABEL_NAME,
+      META_LIST_ITEM_NAME,
       DATA_LABELS,
       DATA_LABEL_SELECTORS,
       FOOTER_SELECTORS
@@ -983,7 +983,7 @@ define ("components/chatViewFooter",
           requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
           ax.replaceSelectors ({
-            name: DATA_LABEL_NAME.CHAT.FOOTER,
+            name: META_LIST_ITEM_NAME.CHAT.FOOTER,
             selectors: requiredFooterSelectors
           });
           ax.setFlatListActiveIndex (0);
@@ -992,7 +992,7 @@ define ("components/chatViewFooter",
           requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
 
           ax.replaceSelectors ({
-            name: DATA_LABEL_NAME.CHAT.FOOTER,
+            name: META_LIST_ITEM_NAME.CHAT.FOOTER,
             selectors: requiredFooterSelectors
           });
           ax.setFlatListActiveIndex (0);
@@ -1033,7 +1033,7 @@ define ("components/chatViewFooter",
         const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
         ax.replaceSelectors ({
-          name: DATA_LABEL_NAME.CHAT.FOOTER,
+          name: META_LIST_ITEM_NAME.CHAT.FOOTER,
           selectors: requiredFooterSelectors
         });
 

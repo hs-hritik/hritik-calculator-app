@@ -11,13 +11,12 @@ define (
     "store",
     "actions/appState",
     "actions/chatView",
-    "constants/accessibility"
+    "constants/keyCodes"
   ],
-  function (store, appStateActions, chatViewActions, axConstants) {
+  function (store, appStateActions, chatViewActions, KEY_CODES) {
     "use strict";
 
     const {dispatch} = store;
-    const {KEYCODES} = axConstants;
 
     /**
      * Register listener for focus event on window
@@ -43,7 +42,7 @@ define (
      */
     const addSelectEventListener = () => {
       document.addEventListener ("keypress", (e) => {
-        if (e.keyCode === KEYCODES.ENTER || e.keyCode === KEYCODES.SPACE) {
+        if (e.keyCode === KEY_CODES.ENTER || e.keyCode === KEY_CODES.SPACE) {
           document.activeElement.click ();
         }
       }, false);

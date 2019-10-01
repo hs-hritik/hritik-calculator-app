@@ -13,17 +13,7 @@ define ("constants/accessibility",
       BACKWARD: "backward"
     };
 
-    const KEYCODES = {
-      ENTER: 13,
-      UP_ARROW: 38,
-      DOWN_ARROW: 40,
-      RIGHT_ARROW: 39,
-      LEFT_ARROW: 37,
-      TAB: 9,
-      SPACE: 32
-    };
-
-    const OOBH_TYPE = {
+    const OOBH_SUBVIEW = {
       FORM: "OOBH_FORM",
       OFFLINE_MSG: "OFFLINE_MSG"
     };
@@ -81,7 +71,7 @@ define ("constants/accessibility",
      * Ex- While adding a selector, we need the data-label name to find
      * the selectors list in meta-list
      */
-    const DATA_LABEL_NAME = {
+    const META_LIST_ITEM_NAME = {
       OOBH: {
         WRAPPER: "OOBH_WRAPPER",
         NAME: "OOBH_NAME",
@@ -208,11 +198,10 @@ define ("constants/accessibility",
 
     return {
       DIRECTIONS,
-      KEYCODES,
       DATA_LABELS,
       DATA_LABEL_SELECTORS,
-      DATA_LABEL_NAME,
-      OOBH_TYPE,
+      META_LIST_ITEM_NAME,
+      OOBH_SUBVIEW,
       FOOTER_SELECTORS
     };
   }

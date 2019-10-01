@@ -26,7 +26,7 @@ define ("actions/businessHours",
     const {Input} = schema;
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     const {update} = React.addons;
-    const {OOBH_TYPE} = axConstant;
+    const {OOBH_SUBVIEW} = axConstant;
 
     /**
      * Action to set business hours contact form details
@@ -188,7 +188,7 @@ define ("actions/businessHours",
           formData: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: () => {
-            ax.replaceMetaList (OOBH_TYPE.OFFLINE_MSG);
+            ax.replaceMetaList (OOBH_SUBVIEW.OFFLINE_MSG);
             ax.delayFocus ();
             dispatch (setBusinessHoursFormSubmitted ());
           },

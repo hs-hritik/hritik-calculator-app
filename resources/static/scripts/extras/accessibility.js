@@ -17,57 +17,57 @@ define (
     const {
       DIRECTIONS,
       DATA_LABEL_SELECTORS,
-      DATA_LABEL_NAME,
-      OOBH_TYPE,
+      META_LIST_ITEM_NAME,
+      OOBH_SUBVIEW,
       FOOTER_SELECTORS
     } = axConstants;
 
     const OOBH_OFFLINE_META_LIST = [
       {
-        name: DATA_LABEL_NAME.OOBH.OFFLINE_MSG,
+        name: META_LIST_ITEM_NAME.OOBH.OFFLINE_MSG,
         selectors: [DATA_LABEL_SELECTORS.OOBH.OFFLINE_MSG]
       },
       {
-        name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
+        name: META_LIST_ITEM_NAME.OOBH.FOOTER_BTN,
         selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
       },
       {
-        name: DATA_LABEL_NAME.LAUNCHER_BTN,
+        name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
         selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
       }
     ];
 
     const OOBH_FORM_META_LIST = [
       {
-        name: DATA_LABEL_NAME.OOBH.WRAPPER,
+        name: META_LIST_ITEM_NAME.OOBH.WRAPPER,
         selectors: [DATA_LABEL_SELECTORS.OOBH.WRAPPER]
       },
       {
-        name: DATA_LABEL_NAME.OOBH.NAME,
+        name: META_LIST_ITEM_NAME.OOBH.NAME,
         selectors: [DATA_LABEL_SELECTORS.OOBH.NAME]
       },
       {
-        name: DATA_LABEL_NAME.OOBH.EMAIL,
+        name: META_LIST_ITEM_NAME.OOBH.EMAIL,
         selectors: [DATA_LABEL_SELECTORS.OOBH.EMAIL]
       },
       {
-        name: DATA_LABEL_NAME.OOBH.MESSAGE,
+        name: META_LIST_ITEM_NAME.OOBH.MESSAGE,
         selectors: [DATA_LABEL_SELECTORS.OOBH.MSG]
       },
       {
-        name: DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS,
+        name: META_LIST_ITEM_NAME.OOBH.FILE_ATTACHMENTS,
         selectors: []
       },
       {
-        name: DATA_LABEL_NAME.OOBH.FILE_SELECT,
+        name: META_LIST_ITEM_NAME.OOBH.FILE_SELECT,
         selectors: [DATA_LABEL_SELECTORS.OOBH.FILE_SELECT]
       },
       {
-        name: DATA_LABEL_NAME.OOBH.FOOTER_BTN,
+        name: META_LIST_ITEM_NAME.OOBH.FOOTER_BTN,
         selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
       },
       {
-        name: DATA_LABEL_NAME.LAUNCHER_BTN,
+        name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
         selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
       }
     ];
@@ -88,19 +88,19 @@ define (
       [activeViewConstants.CHAT] : {
         metaList: [
           {
-            name: DATA_LABEL_NAME.CHAT.FOOTER,
+            name: META_LIST_ITEM_NAME.CHAT.FOOTER,
             selectors: []
           },
           {
-            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
             selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
           },
           {
-            name: DATA_LABEL_NAME.CHAT.MESSAGE_LIST,
+            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           },
           {
-            name: DATA_LABEL_NAME.CHAT.SKIP_BTN,
+            name: META_LIST_ITEM_NAME.CHAT.SKIP_BTN,
             selectors: [FOOTER_SELECTORS.SKIP_BTN]
           }
         ]
@@ -108,19 +108,19 @@ define (
       [activeViewConstants.CSAT] : {
         metaList: [
           {
-            name: DATA_LABEL_NAME.CSAT.FEEDBACK_TEXT_AREA,
+            name: META_LIST_ITEM_NAME.CSAT.FEEDBACK_TEXT_AREA,
             selectors: [DATA_LABEL_SELECTORS.CSAT.FEEDBACK_TEXT_AREA]
           },
           {
-            name: DATA_LABEL_NAME.CSAT.FOOTER_BTN,
+            name: META_LIST_ITEM_NAME.CSAT.FOOTER_BTN,
             selectors: [DATA_LABEL_SELECTORS.CSAT.FOOTER_BTN]
           },
           {
-            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
             selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
           },
           {
-            name: DATA_LABEL_NAME.CSAT.STAR_RATING_WRAPPER,
+            name: META_LIST_ITEM_NAME.CSAT.STAR_RATING_WRAPPER,
             selectors: [DATA_LABEL_SELECTORS.CSAT.STAR_RATING_WRAPPER]
           }
         ]
@@ -128,19 +128,19 @@ define (
       [activeViewConstants.FAQ] : {
         metaList: [
           {
-            name: DATA_LABEL_NAME.FAQ.CONTENT_WRAPPER,
+            name: META_LIST_ITEM_NAME.FAQ.CONTENT_WRAPPER,
             selectors: [DATA_LABEL_SELECTORS.FAQ.CONTENT_WRAPPER]
           },
           {
-            name: DATA_LABEL_NAME.FAQ.FAQ_BODY_LINKS,
+            name: META_LIST_ITEM_NAME.FAQ.FAQ_BODY_LINKS,
             selectors: []
           },
           {
-            name: DATA_LABEL_NAME.LAUNCHER_BTN,
+            name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
             selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
           },
           {
-            name: DATA_LABEL_NAME.FAQ.BACK_BTN,
+            name: META_LIST_ITEM_NAME.FAQ.BACK_BTN,
             selectors: [DATA_LABEL_SELECTORS.FAQ.BACK_BTN]
           }
         ]
@@ -308,7 +308,7 @@ define (
 
       if (selector === DATA_LABEL_SELECTORS.LAUNCHER_BTN) {
         const specialHandlers = _focusData.specialHandlers;
-        const launcherBtnHandlers = specialHandlers [DATA_LABEL_NAME.LAUNCHER_BTN];
+        const launcherBtnHandlers = specialHandlers [META_LIST_ITEM_NAME.LAUNCHER_BTN];
 
         if (launcherBtnHandlers) {
           launcherBtnHandlers.forEach ((handler) => handler ());
@@ -344,9 +344,9 @@ define (
      * @param {String} type - sub-type of view
      */
     const replaceMetaList = (type) => {
-      if (type === OOBH_TYPE.OFFLINE_MSG) {
+      if (type === OOBH_SUBVIEW.OFFLINE_MSG) {
         _focusData [_activeView].metaList = OOBH_OFFLINE_META_LIST;
-      } else if (type === OOBH_TYPE.FORM) {
+      } else if (type === OOBH_SUBVIEW.FORM) {
         _focusData [_activeView].metaList = OOBH_FORM_META_LIST;
       }
 
@@ -373,7 +373,7 @@ define (
 
       metaList [metaListIndex].selectors.push (selector);
 
-      if (name === DATA_LABEL_NAME.OOBH.FILE_ATTACHMENTS) {
+      if (name === META_LIST_ITEM_NAME.OOBH.FILE_ATTACHMENTS) {
         incrementFocusIndex ();
       }
 

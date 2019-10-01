@@ -50,7 +50,7 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
-    const {DATA_LABELS, DATA_LABEL_NAME, FOOTER_SELECTORS} = axConstants;
+    const {DATA_LABELS, META_LIST_ITEM_NAME, FOOTER_SELECTORS} = axConstants;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -476,7 +476,7 @@ define ("components/messageList",
           const messageListLinksCount = messageListLinks.length;
           const selectors = [];
           const axMsgLinkCount = ax.getMetaListSelectorsCount ({
-            name: DATA_LABEL_NAME.CHAT.MESSAGE_LIST
+            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST
           });
 
           if (axMsgLinkCount !== messageListLinksCount) {
@@ -486,7 +486,7 @@ define ("components/messageList",
 
             ax.saveCurrentFocusedSelector ();
             ax.replaceSelectors ({
-              name: DATA_LABEL_NAME.CHAT.MESSAGE_LIST,
+              name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
               selectors: selectors
             });
             ax.focusSavedSelector ();

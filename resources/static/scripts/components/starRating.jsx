@@ -11,7 +11,7 @@ define ("components/starRating",
     "constants/accessibility",
     "extras/accessibility"
   ],
-  function (classes, KEYCODE_CONSTANTS, axConstants, ax) {
+  function (classes, KEY_CODES, axConstants, ax) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -127,7 +127,7 @@ define ("components/starRating",
        */
       _onKeyDown (ev) {
         const {value, onSelectStarRating, onUpdateStarRating} = this.props;
-        const {SPACE, ENTER, RIGHT_ARROW, LEFT_ARROW} = KEYCODE_CONSTANTS;
+        const {SPACE, ENTER, RIGHT_ARROW, LEFT_ARROW} = KEY_CODES;
         const {keyCode} = ev;
 
         if (keyCode === LEFT_ARROW && value > 1) {
