@@ -39,7 +39,9 @@ define ("components/commons/skipButtonWrapper",
         /**
          * Data label for skip button
          */
-        dataLabels: PropTypes.object,
+        dataLabels: PropTypes.shape ({
+          skipBtn: PropTypes.string
+        }),
 
         /**
          * Focus handler for skip button

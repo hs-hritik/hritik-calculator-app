@@ -36,6 +36,10 @@
       flex-direction: column;
       height: 100%;
       overflow-y: auto;
+
+      &:focus {
+        outline-offset: -3px;
+      }
     }
 
     &__scroll-wrapper {
