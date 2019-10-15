@@ -161,7 +161,8 @@
     "cursor": "pointer",
     "box-sizing": "border-box",
     "padding": "12px 10px 8px",
-    "border": "none"
+    "border": "none",
+    "outline-offset": "-3px"
   };
 
   const MESSENGER_IFRAME_STYLES = {
@@ -376,11 +377,13 @@
       setStyle (launcherBtn, {
         padding: "16px"
       });
+      launcherBtn.setAttribute ("aria-label", "Close chat");
     } else {
       launcherIconEl.innerHTML = MESSENGER_ICON;
       setStyle (launcherBtn, {
         padding: "12px 10px 8px"
       });
+      launcherBtn.setAttribute ("aria-label", "Open chat");
     }
   };
 
@@ -408,6 +411,7 @@
    */
   const createLauncherButton = () => {
     launcherButton = doc.createElement ("button");
+    launcherButton.setAttribute ("aria-label", "Open chat");
     launcherIconEl = doc.createElement ("span");
     launcherIconEl.innerHTML = MESSENGER_ICON;
 
@@ -714,6 +718,11 @@
       const metaTag = doc.createElement ("meta");
       metaTag.setAttribute ("charset", "utf-8");
       launcherIframe.contentDocument.head.appendChild (metaTag);
+
+      // Append title tag to iframe's head.
+      const titleTag = doc.createElement ("title");
+      titleTag.innerText = "Support Web Chat Launcher";
+      launcherIframe.contentDocument.head.appendChild (titleTag);
 
       // Append launcher button to iframe's body.
       launcherBtn = createLauncherButton ();
@@ -1043,6 +1052,14 @@
 
         case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
+
+          if (state.unreadCount) {
+            launcherButton.setAttribute (
+              "aria-label",
+              "Open chat, " + state.unreadCount + " new messages from support"
+            );
+          }
+
           renderUnreadCount ();
 
           // Call the event handle for new unread messages event.
