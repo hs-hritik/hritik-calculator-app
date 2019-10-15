@@ -523,9 +523,6 @@ define ("components/chatViewFooter",
        * Render attachment button
        */
       _renderAttachmentButton () {
-        const fileInputDataLabels = {
-          attachmentBtn: DATA_LABELS.CHAT.ATTACHMENT_BTN
-        };
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
             selector: FOOTER_SELECTORS.ATTACHMENT_BTN
@@ -543,8 +540,7 @@ define ("components/chatViewFooter",
               noPadding
               labelClasses="hs-chat-footer__attachment-icon"
               iconClasses="ion-attachment"
-              dataLabels={fileInputDataLabels}
-              onSaveInputRef={this._saveInputRef} />
+              onSaveInputRef={this._saveInputRef}/>
           </div>
         );
       },

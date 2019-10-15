@@ -38,7 +38,7 @@
 
     &:focus {
       border: none;
-      outline: 5px auto -webkit-focus-ring-color;
+      outline-offset: -3px;
     }
 
     &__message {
@@ -62,7 +62,6 @@
 
       &:focus {
         border: none;
-        outline: 5px auto -webkit-focus-ring-color;
       }
     }
 
@@ -100,8 +99,9 @@
     }
 
     &__small-icon {
-      padding-right: gutter(4);
+      margin-right: gutter(4);
       font-size: font-size(body, small);
+      outline-offset: 3px;
     }
 
     &__remove-icon {
