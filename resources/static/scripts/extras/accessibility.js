@@ -520,6 +520,37 @@ define (
       }
     };
 
+    const _backupSelectors = {};
+
+    /**
+     * This function takes backup of the selectors
+     *
+     * @param {String} selectorGroupName - Name of the selectors category
+     */
+    const backupSelectors = (selectorGroupName) => {
+      if (!selectorGroupName) {
+        return;
+      }
+
+      const metaList = _getActiveViewMetaList ();
+      const selectorGroupIndex = _findMetaListIndexByName (selectorGroupName);
+
+      _backupSelectors [selectorGroupName] = metaList [selectorGroupIndex].selectors;
+    };
+
+    /**
+     * This function returns the backed up selectors for a given group
+     *
+     * @param {String} selectorGroupName - Readable name of the meta-list
+     */
+    const restoreSelectors = (selectorGroupName) => {
+      if (!selectorGroupName) {
+        return;
+      }
+
+      return _backupSelectors [selectorGroupName];
+    };
+
     const init = (data) => {
       const {specialHandlers} = _focusData;
 
@@ -546,6 +577,8 @@ define (
       saveCurrentFocusedSelector,
       focusSavedSelector,
       getMetaListSelectorsCount,
+      backupSelectors,
+      restoreSelectors,
       init
     };
   }

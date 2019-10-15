@@ -793,6 +793,20 @@ define ("components/chatViewFooter",
        * @param {String} toggleState - Toggle state of the Picker
        */
       _onPickerToggleStateChange (toggleState) {
+        if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
+          ax.backupSelectors (META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST);
+          ax.replaceSelectors ({
+            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
+            selectors: []
+          });
+        } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
+          const backedupSelectors = ax.restoreSelectors (META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST);
+
+          ax.replaceSelectors ({
+            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
+            selectors: backedupSelectors
+          });
+        }
         this.props.onListPickerToggleStateChange (toggleState);
       },
 
