@@ -9,9 +9,7 @@ define ("components/starRating",
   function (classes) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "StarRating",
       propTypes: {
         value: PropTypes.number.isRequired,

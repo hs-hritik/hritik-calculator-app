@@ -13,12 +13,10 @@ define ("components/replyBox",
   function (KEY_CODES, objectUtils, TextareaAutosize) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
     const TEXT_AREA_MIN_ROWS = 1,
           TEXT_AREA_MAX_ROWS = 5;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ReplyBox",
       propTypes: {
         /**

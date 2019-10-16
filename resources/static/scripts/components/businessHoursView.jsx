@@ -18,7 +18,6 @@ define ("components/businessHoursView",
     attachmentsHelpers, classes) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const FORM_FIELD_PROP_TYPE = PropTypes.shape ({
       enabled: PropTypes.bool,
       value: PropTypes.shape ({
@@ -36,7 +35,7 @@ define ("components/businessHoursView",
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "BusinessHoursView",
       propTypes: {
         showCloseButton: PropTypes.bool.isRequired,

@@ -8,9 +8,7 @@ define ("components/commons/branding",
   function () {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "Branding",
       propTypes: {
         hide: PropTypes.bool,

@@ -12,7 +12,6 @@ define (
   function (LIST_PICKER_CONSTANTS) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;

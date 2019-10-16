@@ -16,9 +16,7 @@ define ("components/viewWrapper",
     BusinessHoursViewContainer) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ViewWrapper",
       propTypes: {
         activeView: PropTypes.string.isRequired,

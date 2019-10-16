@@ -14,9 +14,7 @@ define ("components/faqView",
   function (ViewHeader, BrandingContainer, InfoView) {
     "use strict";
 
-    const {PropTypes} = React;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "FaqView",
       propTypes: {
         title: PropTypes.string,

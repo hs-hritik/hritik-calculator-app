@@ -22,7 +22,6 @@ define ("components/chatView",
     LIST_PICKER_CONSTANTS) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       MESSAGE_PROP_TYPE,
       USER_INPUT_PROP_TYPE
@@ -32,7 +31,7 @@ define ("components/chatView",
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ChatView",
       propTypes: {
         messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,

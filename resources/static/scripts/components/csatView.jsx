@@ -14,9 +14,7 @@ define ("components/csatView",
   function (classes, ViewHeader, StarRating, BrandingContainer) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "CsatView",
       propTypes: {
         rating: PropTypes.number.isRequired,

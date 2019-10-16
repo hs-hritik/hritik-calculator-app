@@ -21,7 +21,9 @@ module.exports = {
     "Redux": true,
     "ReactRedux": true,
     "Helpshift": true,
-    "ReduxThunk": true
+    "ReduxThunk": true,
+    "createReactClass": true,
+    "PropTypes": true
   },
   "rules": {
     // Check ESLint documentation (http://eslint.org/docs/rules/<a-specific-rule>)

@@ -19,7 +19,7 @@ define ("components/app",
     /**
      * Main wrapper component for React application.
      */
-    const App = React.createClass ({
+    const App = createReactClass ({
       displayName: "App",
 
       render () {

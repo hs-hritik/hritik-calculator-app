@@ -24,7 +24,6 @@ define ("components/chatViewFooter",
     Picker, LIST_PICKER_CONSTANTS) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
@@ -39,7 +38,7 @@ define ("components/chatViewFooter",
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ChatViewFooter",
       propTypes: {
         widgetIsMinimized: PropTypes.bool,

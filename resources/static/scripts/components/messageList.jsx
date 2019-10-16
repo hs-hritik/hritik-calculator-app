@@ -19,7 +19,6 @@ define ("components/messageList",
     chatViewConstants, throttle, classes) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       MESSAGE_PROP_TYPE,
       USER_INPUT_PROP_TYPE
@@ -48,7 +47,7 @@ define ("components/messageList",
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "MessageList",
       propTypes: {
         messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,

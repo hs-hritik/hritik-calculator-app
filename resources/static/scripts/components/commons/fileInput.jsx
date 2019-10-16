@@ -14,9 +14,7 @@ define ("components/commons/fileInput",
                            ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
                            ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csvm, .mp4";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "FileInput",
       propTypes: {
         /**
