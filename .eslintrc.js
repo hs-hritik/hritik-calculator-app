@@ -1,6 +1,7 @@
 module.exports = {
   "plugins": [
     "react",
+    "react-hooks",
     "hs"
   ],
   "parserOptions": {
@@ -220,6 +221,10 @@ module.exports = {
       }
     }],
     "react/wrap-multilines": 2,
+
+    // https://www.npmjs.com/package/eslint-plugin-react-hooks
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
 
     // Helpshift Specific
     "hs/func-call-spacing": [2, "always"]

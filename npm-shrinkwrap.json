@@ -1817,6 +1817,11 @@
         }
       }
     },
+    "eslint-plugin-react-hooks": {
+      "version": "2.1.2",
+      "from": "eslint-plugin-react-hooks@2.1.2",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-2.1.2.tgz"
+    },
     "espree": {
       "version": "3.5.4",
       "from": "espree@>=3.4.0 <4.0.0",
