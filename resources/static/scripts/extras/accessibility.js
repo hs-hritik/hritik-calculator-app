@@ -16,59 +16,58 @@ define (
 
     const {
       DIRECTIONS,
-      DATA_LABEL_SELECTORS,
-      META_LIST_ITEM_NAME,
+      METALIST_GROUP_NAME,
       OOBH_SUBVIEW,
-      FOOTER_SELECTORS
+      METALIST_ITEMS
     } = axConstants;
 
     const OOBH_OFFLINE_META_LIST = [
       {
-        name: META_LIST_ITEM_NAME.OOBH.OFFLINE_MSG,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.OFFLINE_MSG]
+        name: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
+        selectors: [METALIST_ITEMS.OOBH.OFFLINE_MSG.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.FOOTER_BTN,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
+        name: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+        selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
-        selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+        name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+        selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
       }
     ];
 
     const OOBH_FORM_META_LIST = [
       {
-        name: META_LIST_ITEM_NAME.OOBH.WRAPPER,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.WRAPPER]
+        name: METALIST_GROUP_NAME.OOBH.WRAPPER,
+        selectors: [METALIST_ITEMS.OOBH.WRAPPER.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.NAME,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.NAME]
+        name: METALIST_GROUP_NAME.OOBH.NAME,
+        selectors: [METALIST_ITEMS.OOBH.NAME.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.EMAIL,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.EMAIL]
+        name: METALIST_GROUP_NAME.OOBH.EMAIL,
+        selectors: [METALIST_ITEMS.OOBH.EMAIL.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.MESSAGE,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.MSG]
+        name: METALIST_GROUP_NAME.OOBH.MESSAGE,
+        selectors: [METALIST_ITEMS.OOBH.MESSAGE.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.FILE_ATTACHMENTS,
+        name: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
         selectors: []
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.FILE_SELECT,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.FILE_SELECT]
+        name: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
+        selectors: [METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.OOBH.FOOTER_BTN,
-        selectors: [DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN]
+        name: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+        selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
       },
       {
-        name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
-        selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+        name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+        selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
       }
     ];
 
@@ -88,60 +87,60 @@ define (
       [activeViewConstants.CHAT] : {
         metaList: [
           {
-            name: META_LIST_ITEM_NAME.CHAT.FOOTER,
+            name: METALIST_GROUP_NAME.CHAT.FOOTER,
             selectors: []
           },
           {
-            name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
-            selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+            name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+            selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
-            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
+            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           },
           {
-            name: META_LIST_ITEM_NAME.CHAT.SKIP_BTN,
-            selectors: [FOOTER_SELECTORS.SKIP_BTN]
+            name: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+            selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
           }
         ]
       },
       [activeViewConstants.CSAT] : {
         metaList: [
           {
-            name: META_LIST_ITEM_NAME.CSAT.FEEDBACK_TEXT_AREA,
-            selectors: [DATA_LABEL_SELECTORS.CSAT.FEEDBACK_TEXT_AREA]
+            name: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
+            selectors: [METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.SELECTOR]
           },
           {
-            name: META_LIST_ITEM_NAME.CSAT.FOOTER_BTN,
-            selectors: [DATA_LABEL_SELECTORS.CSAT.FOOTER_BTN]
+            name: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
+            selectors: [METALIST_ITEMS.CSAT.FOOTER_BTN.SELECTOR]
           },
           {
-            name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
-            selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+            name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+            selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
-            name: META_LIST_ITEM_NAME.CSAT.STAR_RATING_WRAPPER,
-            selectors: [DATA_LABEL_SELECTORS.CSAT.STAR_RATING_WRAPPER]
+            name: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
+            selectors: [METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR]
           }
         ]
       },
       [activeViewConstants.FAQ] : {
         metaList: [
           {
-            name: META_LIST_ITEM_NAME.FAQ.CONTENT_WRAPPER,
-            selectors: [DATA_LABEL_SELECTORS.FAQ.CONTENT_WRAPPER]
+            name: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
+            selectors: [METALIST_ITEMS.FAQ.CONTENT_WRAPPER.SELECTOR]
           },
           {
-            name: META_LIST_ITEM_NAME.FAQ.FAQ_BODY_LINKS,
+            name: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
             selectors: []
           },
           {
-            name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
-            selectors: [DATA_LABEL_SELECTORS.LAUNCHER_BTN]
+            name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+            selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
-            name: META_LIST_ITEM_NAME.FAQ.BACK_BTN,
-            selectors: [DATA_LABEL_SELECTORS.FAQ.BACK_BTN]
+            name: METALIST_GROUP_NAME.FAQ.BACK_BTN,
+            selectors: [METALIST_ITEMS.FAQ.BACK_BTN.SELECTOR]
           }
         ]
       },
@@ -306,9 +305,9 @@ define (
       const selector = _getFlatListActiveSelector ();
       const el = document.querySelector (selector);
 
-      if (selector === DATA_LABEL_SELECTORS.LAUNCHER_BTN) {
+      if (selector === METALIST_ITEMS.LAUNCHER_BTN.SELECTOR) {
         const specialHandlers = _focusData.specialHandlers;
-        const launcherBtnHandlers = specialHandlers [META_LIST_ITEM_NAME.LAUNCHER_BTN];
+        const launcherBtnHandlers = specialHandlers [METALIST_GROUP_NAME.LAUNCHER_BTN];
 
         if (launcherBtnHandlers) {
           launcherBtnHandlers.forEach ((handler) => handler ());
@@ -373,7 +372,7 @@ define (
 
       metaList [metaListIndex].selectors.push (selector);
 
-      if (name === META_LIST_ITEM_NAME.OOBH.FILE_ATTACHMENTS) {
+      if (name === METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS) {
         incrementFocusIndex ();
       }
 

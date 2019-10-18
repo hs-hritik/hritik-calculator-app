@@ -38,7 +38,7 @@ define ("components/businessHoursView",
     });
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
     const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
-    const {DATA_LABELS, OOBH_SUBVIEW, DATA_LABEL_SELECTORS} = axConstants;
+    const {METALIST_ITEMS, OOBH_SUBVIEW} = axConstants;
 
     return React.createClass ({
       displayName: "BusinessHoursView",
@@ -132,14 +132,14 @@ define ("components/businessHoursView",
 
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.OOBH.WRAPPER
+            selector: METALIST_ITEMS.OOBH.WRAPPER.SELECTOR
           }
         );
 
         return (
           <div
             className="hs-business-hours"
-            data-label={DATA_LABELS.OOBH.WRAPPER}
+            data-label={METALIST_ITEMS.OOBH.WRAPPER.DATA_LABEL}
             tabIndex="0"
             onFocus={_setAxActiveIndex}
             onClick={_setAxActiveIndex}>
@@ -180,14 +180,14 @@ define ("components/businessHoursView",
 
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.OOBH.OFFLINE_MSG
+            selector: METALIST_ITEMS.OOBH.OFFLINE_MSG.SELECTOR
           }
         );
 
         return (
           <div
             className="hs-business-hours"
-            data-label={DATA_LABELS.OOBH.OFFLINE_MSG}
+            data-label={METALIST_ITEMS.OOBH.OFFLINE_MSG.DATA_LABEL}
             tabIndex="0"
             onFocus={_setAxActiveIndex}
             onClick={_setAxActiveIndex}>
@@ -217,7 +217,7 @@ define ("components/businessHoursView",
         let btnText, clickHandler;
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN
+            selector: METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR
           }
         );
 
@@ -242,7 +242,7 @@ define ("components/businessHoursView",
           <div className={footerClasses}>
             <button className="hs-button hs-footer__btn "
                     disabled={contactFormDisabled}
-                    data-label={DATA_LABELS.OOBH.FOOTER_BTN}
+                    data-label={METALIST_ITEMS.OOBH.FOOTER_BTN.DATA_LABEL}
                     tabIndex="0"
                     onFocus={_setAxActiveIndex}
                     onClick={clickHandler} >
@@ -272,15 +272,15 @@ define ("components/businessHoursView",
 
         switch (fieldName) {
           case NAME:
-            selectorValue = DATA_LABEL_SELECTORS.OOBH.NAME;
+            selectorValue = METALIST_ITEMS.OOBH.NAME.SELECTOR;
             break;
 
           case EMAIL:
-            selectorValue = DATA_LABEL_SELECTORS.OOBH.EMAIL;
+            selectorValue = METALIST_ITEMS.OOBH.EMAIL.SELECTOR;
             break;
 
           case MESSAGE:
-            selectorValue = DATA_LABEL_SELECTORS.OOBH.MSG;
+            selectorValue = METALIST_ITEMS.OOBH.MSG.SELECTOR;
             break;
         }
 
@@ -300,7 +300,7 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
-                     data-label={DATA_LABELS.OOBH.NAME}
+                     data-label={METALIST_ITEMS.OOBH.NAME.DATA_LABEL}
                      tabIndex="0"
                      onFocus={_setAxActiveIndex}
                      onClick={_setAxActiveIndex}
@@ -317,7 +317,7 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
-                     data-label={DATA_LABELS.OOBH.EMAIL}
+                     data-label={METALIST_ITEMS.OOBH.EMAIL.DATA_LABEL}
                      tabIndex="0"
                      onFocus={_setAxActiveIndex}
                      onClick={_setAxActiveIndex}
@@ -334,7 +334,7 @@ define ("components/businessHoursView",
                         disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
-                        data-label={DATA_LABELS.OOBH.MESSAGE}
+                        data-label={METALIST_ITEMS.OOBH.MESSAGE.DATA_LABEL}
                         tabIndex="0"
                         onFocus={_setAxActiveIndex}
                         onClick={_setAxActiveIndex}
@@ -430,7 +430,7 @@ define ("components/businessHoursView",
             <i className="ion-load-b ion--spinning" />
           );
         } else {
-          const dataLabelAttribute = `${DATA_LABELS.OOBH.ATTACHMENT_PREFIX}${id}`;
+          const dataLabelAttribute = `${METALIST_ITEMS.OOBH.ATTACHMENT_PREFIX.DATA_LABEL}${id}`;
           const iconClasses = classes (
             "ion-cross",
             "hs-business-hours__small-icon",
@@ -500,14 +500,14 @@ define ("components/businessHoursView",
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid);
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.OOBH.SELECT_FILES
+            selector: METALIST_ITEMS.OOBH.SELECT_FILES.SELECTOR
           }
         );
 
         return (
           <div
             className="hs-business-hours__attachment-placeholder"
-            data-label={DATA_LABELS.OOBH.FILE_SELECT}
+            data-label={METALIST_ITEMS.OOBH.FILE_SELECT.DATA_LABEL}
             tabIndex="0"
             onKeyDown={this._onKeyDown}
             onFocus={_setAxActiveIndex}
@@ -643,7 +643,7 @@ define ("components/businessHoursView",
       _onSendButtonClick () {
         this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.OOBH.FOOTER_BTN
+            selector: METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR
           }
         );
         this.props.onSubmitBusinessHoursContactForm ();

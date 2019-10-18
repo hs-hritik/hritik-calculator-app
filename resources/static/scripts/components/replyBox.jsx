@@ -19,7 +19,7 @@ define ("components/replyBox",
 
     const TEXT_AREA_MIN_ROWS = 1,
           TEXT_AREA_MAX_ROWS = 5;
-    const {FOOTER_SELECTORS} = axConstants;
+    const {METALIST_ITEMS} = axConstants;
 
     return React.createClass ({
       displayName: "ReplyBox",
@@ -87,7 +87,9 @@ define ("components/replyBox",
        * Handler for reply text area change event.
        */
       _onReplyTextChange (ev) {
-        ax.setActiveIndex ({selector: FOOTER_SELECTORS.TEXT_AREA});
+        ax.setActiveIndex ({
+          selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
+        });
         this.props.onChangeReplyBoxValue (ev.target.value);
       },
 
@@ -95,7 +97,9 @@ define ("components/replyBox",
        * Handler for reply text area focus event
        */
       _onFocusTextArea () {
-        ax.setActiveIndex ({selector: FOOTER_SELECTORS.TEXT_AREA});
+        ax.setActiveIndex ({
+          selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
+        });
         this.props.onFooterFocus ();
       },
 
@@ -103,7 +107,9 @@ define ("components/replyBox",
        * Click handler for reply text area focus event
        */
       _onClickTextArea () {
-        ax.setActiveIndex ({selector: FOOTER_SELECTORS.TEXT_AREA});
+        ax.setActiveIndex ({
+          selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
+        });
       },
 
       /**

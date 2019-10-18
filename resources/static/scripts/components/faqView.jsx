@@ -21,9 +21,8 @@ define ("components/faqView",
 
     const {PropTypes} = React;
     const {
-      DATA_LABELS,
-      META_LIST_ITEM_NAME,
-      DATA_LABEL_SELECTORS
+      METALIST_ITEMS,
+      METALIST_GROUP_NAME
     } = axConstants;
 
     return React.createClass ({
@@ -54,7 +53,7 @@ define ("components/faqView",
         } = this.props;
 
         const viewHeaderDataLabels = {
-          backBtnDataLabel: DATA_LABELS.FAQ.BACK_BTN
+          backBtnDataLabel: METALIST_ITEMS.FAQ.BACK_BTN.DATA_LABEL
         };
 
         return (
@@ -87,7 +86,7 @@ define ("components/faqView",
 
         const _setWrapperAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.FAQ.CONTENT_WRAPPER
+            selector: METALIST_ITEMS.FAQ.CONTENT_WRAPPER.SELECTOR
           }
         );
 
@@ -96,7 +95,7 @@ define ("components/faqView",
           <div
             className="hs-view__content"
             tabIndex="0"
-            data-label={DATA_LABELS.FAQ.CONTENT_WRAPPER}
+            data-label={METALIST_ITEMS.FAQ.CONTENT_WRAPPER.DATA_LABEL}
             onClick={_setWrapperAxActiveIndex}>
             <div className="hs-faq" dir="auto">
               <h3 className="hs-faq__title" >{title}</h3>
@@ -144,7 +143,7 @@ define ("components/faqView",
           }
 
           ax.replaceSelectors ({
-            name: META_LIST_ITEM_NAME.FAQ.FAQ_BODY_LINKS,
+            name: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
             selectors
           });
         }

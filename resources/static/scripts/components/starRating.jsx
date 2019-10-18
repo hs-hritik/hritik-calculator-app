@@ -15,7 +15,7 @@ define ("components/starRating",
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const {DATA_LABEL_SELECTORS} = axConstants;
+    const {METALIST_ITEMS} = axConstants;
 
     return React.createClass ({
       displayName: "StarRating",
@@ -52,7 +52,7 @@ define ("components/starRating",
         });
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.CSAT.STAR_RATING_WRAPPER
+            selector: METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR
           }
         );
 

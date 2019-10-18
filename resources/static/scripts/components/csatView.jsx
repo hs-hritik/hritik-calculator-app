@@ -19,7 +19,7 @@ define ("components/csatView",
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const {DATA_LABELS, DATA_LABEL_SELECTORS} = axConstants;
+    const {METALIST_ITEMS} = axConstants;
 
     return React.createClass ({
       displayName: "CsatView",
@@ -84,11 +84,11 @@ define ("components/csatView",
         } = this.props;
         const setTextAreaAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.CSAT.FEEDBACK_TEXT_AREA
+            selector: METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.SELECTOR
           }
         );
         const starRatingDataLabels = {
-          starRatingWrapper: DATA_LABELS.CHAT.STAR_RATING_WRAPPER
+          starRatingWrapper: METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.DATA_LABEL
         };
 
         return (
@@ -117,7 +117,7 @@ define ("components/csatView",
                         onChange={this._onCsatReviewChange}
                         placeholder={text.csatBotReviewPlaceholder}
                         tabIndex="0"
-                        data-label={DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA}
+                        data-label={METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.DATA_LABEL}
                         onFocus={setTextAreaAxActiveIndex}
                         onClick={setTextAreaAxActiveIndex} />
             </div>
@@ -147,7 +147,7 @@ define ("components/csatView",
         );
         const setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: DATA_LABEL_SELECTORS.CSAT.FOOTER_BTN
+            selector: METALIST_ITEMS.CSAT.FOOTER_BTN.SELECTOR
           }
         );
 
@@ -158,7 +158,7 @@ define ("components/csatView",
                       onClick={this.props.onSubmitCsat}
                       disabled={btnDisabled}
                       tabIndex="0"
-                      data-label={DATA_LABELS.CSAT.FOOTER_BTN}
+                      data-label={METALIST_ITEMS.CSAT.FOOTER_BTN.DATA_LABEL}
                       onFocus={setAxActiveIndex} >
                 {text.csatBotFormSubmitBtn}
               </button>

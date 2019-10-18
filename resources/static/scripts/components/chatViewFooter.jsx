@@ -42,10 +42,9 @@ define ("components/chatViewFooter",
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
     const {
-      META_LIST_ITEM_NAME,
-      DATA_LABELS,
-      DATA_LABEL_SELECTORS,
-      FOOTER_SELECTORS
+      METALIST_GROUP_NAME,
+      METALIST_ITEMS,
+      FOOTER_SELECTORS_LIST_MAP
     } = axConstants;
 
     return React.createClass ({
@@ -192,11 +191,11 @@ define ("components/chatViewFooter",
           if (!required) {
             const _setAxActiveIndex = this._setAxActiveIndex.bind (
               this, {
-                selector: FOOTER_SELECTORS.SKIP_BTN
+                selector: METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR
               }
             );
             const skipBtnDataLabels = {
-              skipBtn: DATA_LABELS.CHAT.SKIP_BTN
+              skipBtn: METALIST_ITEMS.CHAT.SKIP_BTN.DATA_LABEL
             };
 
             skipBtnWrapperEl = (
@@ -359,7 +358,7 @@ define ("components/chatViewFooter",
         let inputComponentEl;
         if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
           const replyBoxDataLabels = {
-            textArea: DATA_LABELS.CHAT.TEXT_AREA
+            textArea: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.DATA_LABEL
           };
 
           inputComponentEl = (
@@ -372,7 +371,7 @@ define ("components/chatViewFooter",
           const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
           const _setAxActiveIndex = this._setAxActiveIndex.bind (
             this, {
-              selector: FOOTER_SELECTORS.TEXT_FIELD
+              selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.SELECTOR
             }
           );
 
@@ -395,7 +394,7 @@ define ("components/chatViewFooter",
                    onBlur={onFooterBlur}
                    autoFocus
                    tabIndex="0"
-                   data-label={DATA_LABELS.CHAT.TEXT_FIELD}
+                   data-label={METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.DATA_LABEL}
                    onClick={_setAxActiveIndex} />
           );
         }
@@ -498,7 +497,7 @@ define ("components/chatViewFooter",
         const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.SEND_BTN
+            selector: METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR
           }
         );
 
@@ -512,7 +511,7 @@ define ("components/chatViewFooter",
             className="hs-chat-footer__submit"
             onClick={_onSubmitReply}
             tabIndex="0"
-            data-label={DATA_LABELS.CHAT.SEND_BTN}
+            data-label={METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.DATA_LABEL}
             onFocus={_setAxActiveIndex}>
             <i className={iconClasses} />
           </a>
@@ -525,14 +524,14 @@ define ("components/chatViewFooter",
       _renderAttachmentButton () {
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.ATTACHMENT_BTN
+            selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
           }
         );
 
         return (
           <div
             onKeyDown={this._onFileInputKeyDown}
-            data-label={DATA_LABELS.CHAT.ATTACHMENT_BTN}
+            data-label={METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.DATA_LABEL}
             tabIndex="0"
             onFocus={_setAxActiveIndex}>
             <FileInput
@@ -562,7 +561,7 @@ define ("components/chatViewFooter",
 
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.CLOSE_CONVERSATION_BTN
+            selector: METALIST_ITEMS.CHAT.FOOTER.CLOSE_CONVERSATION_BTN.SELECTOR
           }
         );
 
@@ -574,7 +573,7 @@ define ("components/chatViewFooter",
                 onClick={onCloseConversation}
                 onFocus={_setAxActiveIndex}
                 tabIndex="0"
-                data-label={DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN}>
+                data-label={METALIST_ITEMS.CHAT.FOOTER.CLOSE_CONVERSATION_BTN.DATA_LABEL}>
                 {closeConversationBtn}
               </button>
             </div>
@@ -587,7 +586,7 @@ define ("components/chatViewFooter",
        */
       _renderCsatFooter () {
         const starRatingDataLabels = {
-          starRatingWrapper: DATA_LABELS.CHAT.STAR_RATING_WRAPPER
+          starRatingWrapper: METALIST_ITEMS.CHAT.FOOTER.STAR_RATING_WRAPPER.DATA_LABEL
         };
 
         return (
@@ -626,19 +625,19 @@ define ("components/chatViewFooter",
 
         const _setConversationResolutionWrapperAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.CONVERSATION_RESOLUTION_WRAPPER
+            selector: METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.SELECTOR
           }
         );
 
         const _setRejectResolutionAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.SOLUTION_REJECT_BTN
+            selector: METALIST_ITEMS.CHAT.FOOTER.SOLUTION_REJECT_BTN.SELECTOR
           }
         );
 
         const _setAcceptResolutionAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.SOLUTION_ACCEPT_BTN
+            selector: METALIST_ITEMS.CHAT.FOOTER.SOLUTION_ACCEPT_BTN.SELECTOR
           }
         );
 
@@ -646,7 +645,7 @@ define ("components/chatViewFooter",
           <div
             className="hs-chat-footer"
             tabIndex="0"
-            data-label={DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER}
+            data-label={METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.DATA_LABEL}
             onClick={_setConversationResolutionWrapperAxActiveIndex}
             onFocus={_setConversationResolutionWrapperAxActiveIndex}>
             <div className="hs-chat-footer__heading" >
@@ -656,14 +655,14 @@ define ("components/chatViewFooter",
               <button className={btnClasses}
                       onClick={onRejectResolutionQuestionClick}
                       onFocus={_setRejectResolutionAxActiveIndex}
-                      data-label={DATA_LABELS.CHAT.SOLUTION_REJECT_BTN}
+                      data-label={METALIST_ITEMS.CHAT.FOOTER.SOLUTION_REJECT_BTN.DATA_LABEL}
                       tabIndex="0">
                 {text.resolutionQuestionReject}
               </button>
               <button className={btnClasses}
                       onClick={onAcceptResolutionQuestionClick}
                       onFocus={_setAcceptResolutionAxActiveIndex}
-                      data-label={DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN}
+                      data-label={METALIST_ITEMS.CHAT.FOOTER.SOLUTION_ACCEPT_BTN.DATA_LABEL}
                       tabIndex="0">
                 {text.resolutionQuestionAccept}
               </button>
@@ -683,7 +682,7 @@ define ("components/chatViewFooter",
         );
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.NEW_CONVERSATION_BTN
+            selector: METALIST_ITEMS.CHAT.FOOTER.NEW_CONVERSATION_BTN.SELECTOR
           }
         );
 
@@ -695,7 +694,7 @@ define ("components/chatViewFooter",
                 onClick={this.props.onStartNewConversation}
                 onFocus={_setAxActiveIndex}
                 tabIndex="0"
-                data-label={DATA_LABELS.CHAT.NEW_CONVERSATION_BTN}>
+                data-label={METALIST_ITEMS.CHAT.FOOTER.NEW_CONVERSATION_BTN.DATA_LABEL}>
                 {this.props.text.chatViewStartNewConversation}
               </button>
             </div>
@@ -759,7 +758,7 @@ define ("components/chatViewFooter",
         if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
           if (this._fileInputRef) {
             this._fileInputRef.click ();
-            ax.setActiveIndex ({selector: FOOTER_SELECTORS.ATTACHMENT_BTN});
+            ax.setActiveIndex ({selector: METALIST_ITEMS.ATTACHMENT_BTN});
           }
         }
       },
@@ -790,16 +789,16 @@ define ("components/chatViewFooter",
        */
       _onPickerToggleStateChange (toggleState) {
         if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
-          ax.backupSelectors (META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST);
+          ax.backupSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
           ax.replaceSelectors ({
-            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
+            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           });
         } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
-          const backedupSelectors = ax.restoreSelectors (META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST);
+          const backedupSelectors = ax.restoreSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
 
           ax.replaceSelectors ({
-            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
+            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: backedupSelectors
           });
         }
@@ -859,7 +858,7 @@ define ("components/chatViewFooter",
        * @returns {Array} - Unique selector list of option pills
        */
       _getPillsOptionSelectorList (options) {
-        const prefix = DATA_LABELS.CHAT.OPTION_PILL_PREFIX;
+        const prefix = METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL;
         const optionsSelectorList = [];
 
         options.forEach ((option) => {
@@ -885,16 +884,16 @@ define ("components/chatViewFooter",
 
         switch (type) {
           case USER_INPUT_TYPES.DEFAULT_INPUT:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.DEFAULT_INPUT;
+            return FOOTER_SELECTORS_LIST_MAP.DEFAULT_INPUT;
 
           case USER_INPUT_TYPES.PLAIN_TEXT:
           case USER_INPUT_TYPES.EMAIL:
           case USER_INPUT_TYPES.NUMERIC:
           case USER_INPUT_TYPES.DATE:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.PLAIN_TEXT;
+            return FOOTER_SELECTORS_LIST_MAP.PLAIN_TEXT;
 
           case USER_INPUT_TYPES.PILL_SELECT:
-            const selectorList = DATA_LABEL_SELECTORS.CHAT.FOOTER.OPTION_PILL;
+            const selectorList = FOOTER_SELECTORS_LIST_MAP.OPTION_PILL;
             const optionsSelectorList = this._getPillsOptionSelectorList (
               userInput.options
             );
@@ -902,7 +901,8 @@ define ("components/chatViewFooter",
             return selectorList.concat (optionsSelectorList);
 
           case USER_INPUT_TYPES.LIST_PICKER:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.PICKER;
+            return;
+
         }
       },
 
@@ -920,19 +920,19 @@ define ("components/chatViewFooter",
             return this._getReplyFooterSelectors (userInput);
 
           case ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.RESOLUTION_QUESTION;
+            return FOOTER_SELECTORS_LIST_MAP.RESOLUTION_QUESTION;
 
           case ACTIVE_FOOTER.SOLUTION_REJECTED:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.SOLUTION_REJECTED;
+            return FOOTER_SELECTORS_LIST_MAP.SOLUTION_REJECTED;
 
           case ACTIVE_FOOTER.CSAT:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.CSAT;
+            return FOOTER_SELECTORS_LIST_MAP.CSAT;
 
           case ACTIVE_FOOTER.START_NEW_CONVERSATION:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.START_NEW_CONVERSATION;
+            return FOOTER_SELECTORS_LIST_MAP.START_NEW_CONVERSATION;
 
           case ACTIVE_FOOTER.CLOSED:
-            return DATA_LABEL_SELECTORS.CHAT.FOOTER.CLOSED;
+            return FOOTER_SELECTORS_LIST_MAP.CLOSE_CONVERSATION;
         }
       },
 
@@ -993,7 +993,7 @@ define ("components/chatViewFooter",
           requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
           ax.replaceSelectors ({
-            name: META_LIST_ITEM_NAME.CHAT.FOOTER,
+            name: METALIST_GROUP_NAME.CHAT.FOOTER,
             selectors: requiredFooterSelectors
           });
           ax.setFlatListActiveIndex (0);
@@ -1002,7 +1002,7 @@ define ("components/chatViewFooter",
           requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
 
           ax.replaceSelectors ({
-            name: META_LIST_ITEM_NAME.CHAT.FOOTER,
+            name: METALIST_GROUP_NAME.CHAT.FOOTER,
             selectors: requiredFooterSelectors
           });
           ax.setFlatListActiveIndex (0);
@@ -1043,7 +1043,7 @@ define ("components/chatViewFooter",
         const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
         ax.replaceSelectors ({
-          name: META_LIST_ITEM_NAME.CHAT.FOOTER,
+          name: METALIST_GROUP_NAME.CHAT.FOOTER,
           selectors: requiredFooterSelectors
         });
 

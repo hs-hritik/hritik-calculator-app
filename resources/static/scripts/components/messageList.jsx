@@ -50,7 +50,7 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
-    const {DATA_LABELS, META_LIST_ITEM_NAME, FOOTER_SELECTORS} = axConstants;
+    const {METALIST_ITEMS, METALIST_GROUP_NAME} = axConstants;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -175,9 +175,13 @@ define ("components/messageList",
           "hs-message-list__pill-option"
         );
         const pillOptionsEl = options.map ((option) => {
+          const pillDataLabel = (
+            METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL +
+            option.value
+          );
           const setPillAxActiveIndex = this._setAxActiveIndex.bind (
             this, {
-              selector: `[data-label=${DATA_LABELS.CHAT.OPTION_PILL_PREFIX}${option.value}]`
+              selector: `[data-label=${pillDataLabel}]`
             }
           );
 
@@ -185,7 +189,7 @@ define ("components/messageList",
             <button key={option.value}
                     onClick={this._onPillOptionClick.bind (this, option)}
                     className={btnClasses}
-                    data-label={`${DATA_LABELS.CHAT.OPTION_PILL_PREFIX}${option.value}`}
+                    data-label={pillDataLabel}
                     tabIndex="0"
                     onFocus={setPillAxActiveIndex}>
               {option.label}
@@ -198,11 +202,11 @@ define ("components/messageList",
         if (!required) {
           const setAxActiveIndex = this._setAxActiveIndex.bind (
             this, {
-              selector: FOOTER_SELECTORS.SKIP_BTN
+              selector: METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR
             }
           );
           const skipBtnDataLabels = {
-            skipBtn: DATA_LABELS.CHAT.SKIP_BTN
+            skipBtn: METALIST_ITEMS.CHAT.SKIP_BTN.DATA_LABEL
           };
 
           skipBtnWrapperEl = (
@@ -217,7 +221,7 @@ define ("components/messageList",
 
         const setPillWrapperAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: FOOTER_SELECTORS.OPTION_PILLS_WRAPPER
+            selector: METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.SELECTOR
           }
         );
 
@@ -230,7 +234,7 @@ define ("components/messageList",
             </small>
             <div
               className="hs-message-list__pill-options"
-              data-label={DATA_LABELS.CHAT.OPTION_PILLS_WRAPPER}
+              data-label={METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.DATA_LABEL}
               tabIndex="0"
               onClick={setPillWrapperAxActiveIndex}
               onFocus={setPillWrapperAxActiveIndex}>
@@ -476,7 +480,7 @@ define ("components/messageList",
           const messageListLinksCount = messageListLinks.length;
           const selectors = [];
           const axMsgLinkCount = ax.getMetaListSelectorsCount ({
-            name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST
+            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
           });
 
           if (axMsgLinkCount !== messageListLinksCount) {
@@ -486,7 +490,7 @@ define ("components/messageList",
 
             ax.saveCurrentFocusedSelector ();
             ax.replaceSelectors ({
-              name: META_LIST_ITEM_NAME.CHAT.MESSAGE_LIST,
+              name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
               selectors: selectors
             });
             ax.focusSavedSelector ();

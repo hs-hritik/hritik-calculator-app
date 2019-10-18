@@ -21,7 +21,7 @@ define ("components/viewWrapper",
 
     const PropTypes = React.PropTypes;
 
-    const {META_LIST_ITEM_NAME} = axConstants;
+    const {METALIST_GROUP_NAME} = axConstants;
 
     return React.createClass ({
       displayName: "ViewWrapper",
@@ -109,7 +109,7 @@ define ("components/viewWrapper",
         ax.init ({
           handlers: [
             {
-              name: META_LIST_ITEM_NAME.LAUNCHER_BTN,
+              name: METALIST_GROUP_NAME.LAUNCHER_BTN,
               handlers: [this.props.onFocusLauncher]
             }
           ]

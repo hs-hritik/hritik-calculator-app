@@ -19,59 +19,11 @@ define ("constants/accessibility",
     };
 
     /**
-     * Data label constants are required for unique identification of an UI element
-     */
-    const DATA_LABELS = {
-      OOBH: {
-        WRAPPER: "oobh-wrapper",
-        NAME: "oobh-name",
-        EMAIL: "oobh-email",
-        MESSAGE: "oobh-message",
-        ATTACHMENT_PREFIX: "oobh-attachment-",
-        FILE_SELECT: "oobh-file-select",
-        FOOTER_BTN: "oobh-footer-btn",
-        OFFLINE_MSG: "oobh-offline-msg"
-      },
-      LAUNCHER_BTN: "launcher-btn",
-      CHAT: {
-        TEXT_FIELD: "chat-footer-text-field",
-        TEXT_AREA: "chat-footer-text-area",
-        SEND_BTN: "chat-footer-send-btn",
-        ATTACHMENT_BTN: "chat-footer-attachment-btn",
-        OPTION_PILLS_WRAPPER: "chat-footer-option-pills-wrapper",
-        OPTION_PILL_PREFIX: "option-pills-option-",
-        COLLAPSED_PICKER_HEADER: "list-picker-collapsed-header",
-        PICKER_OPTIONS_WRAPPER: "list-picker-options-wrapper",
-        COLLAPSED_PICKER_BTN: "list-picker-collapsed-btn",
-        PICKER_SEARCH_BTN: "list-picker-search-btn",
-        PICKER_SEARCH_INPUT: "list-picker-search-input",
-        PICKER_BACK_ARROW: "list-picker-back-arrow",
-        PICKER_CLEAR_SEARCH_BTN: "list-picker-clear-search-btn",
-        CONVERSATION_RESOLUTION_WRAPPER: "conversation-resolution-wrapper",
-        SOLUTION_REJECT_BTN: "solution-reject-btn",
-        SOLUTION_ACCEPT_BTN: "solution-accept-btn",
-        STAR_RATING_WRAPPER: "star-rating-wrapper",
-        NEW_CONVERSATION_BTN: "new-conversation-wrapper",
-        CLOSE_CONVERSATION_BTN: "close-conversation-btn",
-        SKIP_BTN: "skip-btn"
-      },
-      CSAT: {
-        STAR_RATING_WRAPPER: "star-rating-wrapper",
-        FEEDBACK_TEXT_AREA: "additional-feedback-text-area",
-        FOOTER_BTN: "footer-btn"
-      },
-      FAQ: {
-        CONTENT_WRAPPER: "content-wrapper",
-        BACK_BTN: "back-btn"
-      }
-    };
-
-    /**
-     * The data label name is required to identify the selectors by readable names
-     * Ex- While adding a selector, we need the data-label name to find
+     * The meta list group name is required to identify the selectors by readable names
+     * Ex- While adding a selector, we need the meta list group name to find
      * the selectors list in meta-list
      */
-    const META_LIST_ITEM_NAME = {
+    const METALIST_GROUP_NAME = {
       OOBH: {
         WRAPPER: "OOBH_WRAPPER",
         NAME: "OOBH_NAME",
@@ -100,109 +52,241 @@ define ("constants/accessibility",
       }
     };
 
-    // @TODO: Restructure the constants
-    const FOOTER_SELECTORS = {
-      TEXT_FIELD: "[data-label=" + DATA_LABELS.CHAT.TEXT_FIELD + "]",
-      TEXT_AREA: "[data-label=" + DATA_LABELS.CHAT.TEXT_AREA + "]",
-      SEND_BTN: "[data-label=" + DATA_LABELS.CHAT.SEND_BTN + "]",
-      ATTACHMENT_BTN: "[data-label=" + DATA_LABELS.CHAT.ATTACHMENT_BTN + "]",
-      OPTION_PILLS_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.OPTION_PILLS_WRAPPER + "]",
-      COLLAPSED_PICKER_HEADER: "[data-label=" + DATA_LABELS.CHAT.COLLAPSED_PICKER_HEADER + "]",
-      PICKER_OPTIONS_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.PICKER_OPTIONS_WRAPPER + "]",
-      COLLAPSED_PICKER_BTN: "[data-label=" + DATA_LABELS.CHAT.COLLAPSED_PICKER_BTN + "]",
-      PICKER_SEARCH_BTN: "[data-label=" + DATA_LABELS.CHAT.PICKER_SEARCH_BTN + "]",
-      PICKER_SEARCH_INPUT: "[data-label=" + DATA_LABELS.CHAT.PICKER_SEARCH_INPUT + "]",
-      PICKER_BACK_ARROW: "[data-label=" + DATA_LABELS.CHAT.PICKER_BACK_ARROW + "]",
-      PICKER_CLEAR_SEARCH_BTN: "[data-label=" + DATA_LABELS.CHAT.PICKER_CLEAR_SEARCH_BTN + "]",
-      CONVERSATION_RESOLUTION_WRAPPER: (
-        "[data-label=" + DATA_LABELS.CHAT.CONVERSATION_RESOLUTION_WRAPPER + "]"
-      ),
-      SOLUTION_REJECT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_REJECT_BTN + "]",
-      SOLUTION_ACCEPT_BTN: "[data-label=" + DATA_LABELS.CHAT.SOLUTION_ACCEPT_BTN + "]",
-      STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CHAT.STAR_RATING_WRAPPER + "]",
-      NEW_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.NEW_CONVERSATION_BTN + "]",
-      CLOSE_CONVERSATION_BTN: "[data-label=" + DATA_LABELS.CHAT.CLOSE_CONVERSATION_BTN + "]",
-      SKIP_BTN: "[data-label=" + DATA_LABELS.CHAT.SKIP_BTN + "]"
-    };
-
-    /**
-     * These selectors will bee used in meta-list
-     * Selectors are used to focus on an element present in flat-list.
-     */
-    // @TODO: Flaten and restructure the chat footer object
-    const DATA_LABEL_SELECTORS = {
-      OOBH: {
-        WRAPPER: "[data-label=" + DATA_LABELS.OOBH.WRAPPER + "]",
-        NAME: "[data-label=" + DATA_LABELS.OOBH.NAME + "]",
-        EMAIL: "[data-label=" + DATA_LABELS.OOBH.EMAIL + "]",
-        MSG: "[data-label=" + DATA_LABELS.OOBH.MESSAGE + "]",
-        FILE_SELECT: "[data-label=" + DATA_LABELS.OOBH.FILE_SELECT + "]",
-        FOOTER_BTN: "[data-label=" + DATA_LABELS.OOBH.FOOTER_BTN + "]",
-        OFFLINE_MSG: "[data-label=" + DATA_LABELS.OOBH.OFFLINE_MSG + "]"
+    const METALIST_ITEMS = {
+      LAUNCHER_BTN: {
+        NAME: METALIST_GROUP_NAME.LAUNCHER_BTN,
+        DATA_LABEL: "launcher-btn",
+        SELECTOR: "[data-label=launcher-btn]"
       },
-      LAUNCHER_BTN: "[data-label=" + DATA_LABELS.LAUNCHER_BTN + "]",
+      OOBH: {
+        WRAPPER: {
+          NAME: METALIST_GROUP_NAME.OOBH.WRAPPER,
+          DATA_LABEL: "oobh-wrapper",
+          SELECTOR: "[data-label=oobh-wrapper]"
+        },
+        NAME: {
+          NAME: METALIST_GROUP_NAME.OOBH.NAME,
+          DATA_LABEL: "oobh-name",
+          SELECTOR: "[data-label=oobh-name]"
+        },
+        EMAIL: {
+          NAME: METALIST_GROUP_NAME.OOBH.EMAIL,
+          DATA_LABEL: "oobh-email",
+          SELECTOR: "[data-label=oobh-email]"
+        },
+        MESSAGE: {
+          NAME: METALIST_GROUP_NAME.OOBH.MESSAGE,
+          DATA_LABEL: "oobh-message",
+          SELECTOR: "[data-label=oobh-message]"
+        },
+        ATTACHMENT_PREFIX: {
+          DATA_LABEL: "oobh-attachment-"
+        },
+        FILE_ATTACHMENTS: {
+          NAME: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS
+        },
+        FILE_SELECT: {
+          NAME: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
+          DATA_LABEL: "oobh-file-select",
+          SELECTOR: "[data-label=oobh-file-select]"
+        },
+        FOOTER_BTN: {
+          NAME: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+          DATA_LABEL: "oobh-footer-btn",
+          SELECTOR: "[data-label=oobh-footer-btn]"
+        },
+        OFFLINE_MSG: {
+          NAME: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
+          DATA_LABEL: "oobh-offline-msg",
+          SELECTOR: "[data-label=oobh-offline-msg]"
+        }
+      },
       CHAT: {
+        MESSAGE_LIST: {
+          NAME: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
+        },
+        SKIP_BTN: {
+          NAME: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+          DATA_LABEL: "skip-btn",
+          SELECTOR: "[data-label=skip-btn]"
+        },
         FOOTER: {
-          DEFAULT_INPUT: [
-            FOOTER_SELECTORS.TEXT_AREA,
-            FOOTER_SELECTORS.SEND_BTN,
-            FOOTER_SELECTORS.ATTACHMENT_BTN
-          ],
-          PLAIN_TEXT: [
-            FOOTER_SELECTORS.TEXT_FIELD,
-            FOOTER_SELECTORS.SEND_BTN
-          ],
-          OPTION_PILL: [
-            FOOTER_SELECTORS.OPTION_PILLS_WRAPPER
-          ],
-          PICKER:[
-            FOOTER_SELECTORS.COLLAPSED_PICKER_HEADER,
-            FOOTER_SELECTORS.COLLAPSED_PICKER_BTN,
-            FOOTER_SELECTORS.PICKER_BACK_ARROW,
-            FOOTER_SELECTORS.PICKER_SEARCH_BTN,
-            FOOTER_SELECTORS.PICKER_SEARCH_INPUT,
-            FOOTER_SELECTORS.PICKER_CLEAR_SEARCH_BTN,
-            FOOTER_SELECTORS.PICKER_OPTIONS_WRAPPER
-          ],
-          RESOLUTION_QUESTION: [
-            FOOTER_SELECTORS.CONVERSATION_RESOLUTION_WRAPPER,
-            FOOTER_SELECTORS.SOLUTION_REJECT_BTN,
-            FOOTER_SELECTORS.SOLUTION_ACCEPT_BTN
-          ],
-          SOLUTION_REJECTED: [
-            FOOTER_SELECTORS.TEXT_AREA,
-            FOOTER_SELECTORS.SEND_BTN,
-            FOOTER_SELECTORS.ATTACHMENT_BTN
-          ],
-          CSAT: [
-            FOOTER_SELECTORS.STAR_RATING_WRAPPER
-          ],
-          START_NEW_CONVERSATION: [
-            FOOTER_SELECTORS.NEW_CONVERSATION_BTN
-          ],
-          CLOSED: [
-            FOOTER_SELECTORS.CLOSE_CONVERSATION_BTN
-          ]
+          TEXT_FIELD: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "chat-footer-text-field",
+            SELECTOR: "[data-label=chat-footer-text-field]"
+          },
+          TEXT_AREA: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "chat-footer-text-area",
+            SELECTOR: "[data-label=chat-footer-text-area]"
+          },
+          SEND_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "chat-footer-send-btn",
+            SELECTOR: "[data-label=chat-footer-send-btn]"
+          },
+          ATTACHMENT_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "chat-footer-attachment-btn",
+            SELECTOR: "[data-label=chat-footer-attachment-btn]"
+          },
+          OPTION_PILLS_WRAPPER: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "chat-footer-option-pills-wrapper",
+            SELECTOR: "[data-label=chat-footer-option-pills-wrapper]"
+          },
+          OPTION_PILL_PREFIX: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "option-pills-option-"
+          },
+          COLLAPSED_PICKER_HEADER: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-collapsed-header",
+            SELECTOR: "[data-label=list-picker-collapsed-header]"
+          },
+          PICKER_OPTIONS_WRAPPER: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-options-wrapper",
+            SELECTOR: "[data-label=list-picker-options-wrapper]"
+          },
+          COLLAPSED_PICKER_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-collapsed-btn",
+            SELECTOR: "[data-label=list-picker-collapsed-btn]"
+          },
+          PICKER_SEARCH_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-search-btn",
+            SELECTOR: "[data-label=list-picker-search-btn]"
+          },
+          PICKER_SEARCH_INPUT: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-search-input",
+            SELECTOR: "[data-label=list-picker-search-input]"
+          },
+          PICKER_BACK_ARROW: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-back-arrow",
+            SELECTOR: "[data-label=list-picker-back-arrow]"
+          },
+          PICKER_CLEAR_SEARCH_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "list-picker-clear-search-btn",
+            SELECTOR: "[data-label=list-picker-clear-search-btn]"
+          },
+          CONVERSATION_RESOLUTION_WRAPPER: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "conversation-resolution-wrapper",
+            SELECTOR: "[data-label=conversation-resolution-wrapper]"
+          },
+          SOLUTION_REJECT_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "solution-reject-btn",
+            SELECTOR: "[data-label=solution-reject-btn]"
+          },
+          SOLUTION_ACCEPT_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "solution-accept-btn",
+            SELECTOR: "[data-label=solution-accept-btn]"
+          },
+          STAR_RATING_WRAPPER: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "star-rating-wrapper",
+            SELECTOR: "[data-label=star-rating-wrapper]"
+          },
+          NEW_CONVERSATION_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "new-conversation-wrapper",
+            SELECTOR: "[data-label=new-conversation-wrapper]"
+          },
+          CLOSE_CONVERSATION_BTN: {
+            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            DATA_LABEL: "close-conversation-btn",
+            SELECTOR: "[data-label=close-conversation-btn]"
+          }
         }
       },
       CSAT: {
-        STAR_RATING_WRAPPER: "[data-label=" + DATA_LABELS.CSAT.STAR_RATING_WRAPPER + "]",
-        FEEDBACK_TEXT_AREA: "[data-label=" + DATA_LABELS.CSAT.FEEDBACK_TEXT_AREA + "]",
-        FOOTER_BTN: "[data-label=" + DATA_LABELS.CSAT.FOOTER_BTN + "]"
+        STAR_RATING_WRAPPER: {
+          NAME: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
+          DATA_LABEL: "star-rating-wrapper",
+          SELECTOR: "[data-label=star-rating-wrapper]"
+        },
+        FEEDBACK_TEXT_AREA: {
+          NAME: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
+          DATA_LABEL: "additional-feedback-text-area",
+          SELECTOR: "[data-label=additional-feedback-text-area]"
+        },
+        FOOTER_BTN: {
+          NAME: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
+          DATA_LABEL: "footer-btn",
+          SELECTOR: "[data-label=footer-btn]"
+        }
       },
       FAQ: {
-        CONTENT_WRAPPER: "[data-label=" + DATA_LABELS.FAQ.CONTENT_WRAPPER + "]",
-        BACK_BTN: "[data-label=" + DATA_LABELS.FAQ.BACK_BTN + "]"
+        CONTENT_WRAPPER: {
+          NAME: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
+          DATA_LABEL: "content-wrapper",
+          SELECTOR: "[data-label=content-wrapper]"
+        },
+        BACK_BTN: {
+          NAME: METALIST_GROUP_NAME.FAQ.BACK_BTN,
+          DATA_LABEL: "back-btn",
+          SELECTOR: "[data-label=back-btn]"
+        },
+        FAQ_BODY_LINKS: {
+          NAME: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS
+        }
       }
+    };
+
+    /**
+     * This is a map of selectors list for different footers
+     * For easy use in views/components, pre composing this list
+     * Directly pick items from this map and
+     * use it in views/components to replace footer selectors.
+     */
+    const FOOTER_SELECTORS_LIST_MAP = {
+      DEFAULT_INPUT : [
+        METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
+      ],
+      PLAIN_TEXT : [
+        METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR
+      ],
+      OPTION_PILL : [
+        METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.SELECTOR
+      ],
+      RESOLUTION_QUESTION : [
+        METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.SOLUTION_REJECT_BTN.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.SOLUTION_ACCEPT_BTN.SELECTOR
+      ],
+      SOLUTION_REJECTED : [
+        METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR,
+        METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
+      ],
+      CSAT : [
+        METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR
+      ],
+      START_NEW_CONVERSATION : [
+        METALIST_ITEMS.CHAT.FOOTER.NEW_CONVERSATION_BTN.SELECTOR
+      ],
+      CLOSE_CONVERSATION : [
+        METALIST_ITEMS.CHAT.FOOTER.CLOSE_CONVERSATION_BTN.SELECTOR
+      ]
     };
 
     return {
       DIRECTIONS,
-      DATA_LABELS,
-      DATA_LABEL_SELECTORS,
-      META_LIST_ITEM_NAME,
+      METALIST_GROUP_NAME,
       OOBH_SUBVIEW,
-      FOOTER_SELECTORS
+      METALIST_ITEMS,
+      FOOTER_SELECTORS_LIST_MAP
     };
   }
 );
