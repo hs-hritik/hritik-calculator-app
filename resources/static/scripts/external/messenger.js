@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.32.0";
+        PATH = "/html/index.html?v=2.33.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -1033,13 +1033,9 @@
           state.unreadCount = data.count;
           renderUnreadCount ();
 
-          // Call the event handler for new unread messages event if
-          // web chat iframe is not open
-          if (webSdkIframe.style.display === "none") {
-            callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
-              unreadCount: data.count
-            });
-          }
+          callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
+            unreadCount: data.count
+          });
           break;
 
         case EVENT_TYPES.SDK_RESET:

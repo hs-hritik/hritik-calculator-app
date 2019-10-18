@@ -293,13 +293,14 @@ define ("actions/chatView",
             skipPlatformId: true
           }),
           method: "PUT",
-          headers: xhrHelpers.getCommonHeaders ()
+          headers: xhrHelpers.getCommonHeaders (),
+          onSuccess: () => {
+            if (unreadMessageIds.length !== 0) {
+              dispatch (setUnreadMessageIds ([]));
+              dispatch (postSdkMessage.updateUnreadCount (0));
+            }
+          }
         });
-
-        if (unreadMessageIds.length !== 0) {
-          dispatch (setUnreadMessageIds ([]));
-          dispatch (postSdkMessage.updateUnreadCount (0));
-        }
       };
     };
 

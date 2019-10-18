@@ -1,0 +1,5 @@
+Branches:
+feature/unread-message-event
+
+Changelog:
+Fire unread message event irrespective of widget state
