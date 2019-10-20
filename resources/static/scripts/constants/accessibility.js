@@ -140,41 +140,6 @@ define ("constants/accessibility",
             NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "option-pills-option-"
           },
-          COLLAPSED_PICKER_HEADER: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-collapsed-header",
-            SELECTOR: "[data-label=list-picker-collapsed-header]"
-          },
-          PICKER_OPTIONS_WRAPPER: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-options-wrapper",
-            SELECTOR: "[data-label=list-picker-options-wrapper]"
-          },
-          COLLAPSED_PICKER_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-collapsed-btn",
-            SELECTOR: "[data-label=list-picker-collapsed-btn]"
-          },
-          PICKER_SEARCH_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-search-btn",
-            SELECTOR: "[data-label=list-picker-search-btn]"
-          },
-          PICKER_SEARCH_INPUT: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-search-input",
-            SELECTOR: "[data-label=list-picker-search-input]"
-          },
-          PICKER_BACK_ARROW: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-back-arrow",
-            SELECTOR: "[data-label=list-picker-back-arrow]"
-          },
-          PICKER_CLEAR_SEARCH_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
-            DATA_LABEL: "list-picker-clear-search-btn",
-            SELECTOR: "[data-label=list-picker-clear-search-btn]"
-          },
           CONVERSATION_RESOLUTION_WRAPPER: {
             NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "conversation-resolution-wrapper",

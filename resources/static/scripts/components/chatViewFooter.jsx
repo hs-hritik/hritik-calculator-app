@@ -480,7 +480,9 @@ define ("components/chatViewFooter",
                   headerLabel={headerLabel}
                   searchNoResultsText={searchNoResultsText}
                   minHeight={PICKER_MIN_HEIGHT}
-                  maxHeight={this.state.pickerMaxHeight} />
+                  maxHeight={this.state.pickerMaxHeight}
+                  accessibility={true}
+                  onFocusableItemsChange={this._onFocusItemsChanged} />
         );
       },
 
@@ -741,6 +743,43 @@ define ("components/chatViewFooter",
         return [headingEl, labelEl];
       },
 
+      /**
+       * Support accessiblity depends on toggle state
+       * 1) Depending on the toggleState, backup or restore selectors
+       * 2) Replace the footer selectors
+       * 3) Focus the element of the picker
+       * @param {String} toggleState - Whether the picker is in "closed", "opened" state
+       * @param {Array} selectors - List of current visible selectors
+       * @param {String} firstFocusItem - To be focused selector
+       */
+      _onFocusItemsChanged (toggleState, selectors, firstFocusItem) {
+        if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
+          ax.backupSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
+          ax.replaceSelectors ({
+            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+            selectors: []
+          });
+        } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
+          const backedupSelectors = ax.restoreSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
+
+          if (backedupSelectors) {
+            ax.replaceSelectors ({
+              name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+              selectors: backedupSelectors
+            });
+          }
+        }
+
+        ax.replaceSelectors ({
+          name: METALIST_GROUP_NAME.CHAT.FOOTER,
+          selectors: selectors
+        });
+
+        ax.setActiveIndex ({selector: firstFocusItem});
+        ax.delayFocus ();
+        ax.clearDelayFocus ();
+      },
+
       _fileInputRef: null,
 
       /**
@@ -788,20 +827,6 @@ define ("components/chatViewFooter",
        * @param {String} toggleState - Toggle state of the Picker
        */
       _onPickerToggleStateChange (toggleState) {
-        if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
-          ax.backupSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
-          ax.replaceSelectors ({
-            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
-            selectors: []
-          });
-        } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
-          const backedupSelectors = ax.restoreSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
-
-          ax.replaceSelectors ({
-            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
-            selectors: backedupSelectors
-          });
-        }
         this.props.onListPickerToggleStateChange (toggleState);
       },
 
@@ -992,21 +1017,25 @@ define ("components/chatViewFooter",
         if (activeFooterIsChanged) {
           requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
-          ax.replaceSelectors ({
-            name: METALIST_GROUP_NAME.CHAT.FOOTER,
-            selectors: requiredFooterSelectors
-          });
-          ax.setFlatListActiveIndex (0);
-          ax.focus ();
+          if (requiredFooterSelectors) {
+            ax.replaceSelectors ({
+              name: METALIST_GROUP_NAME.CHAT.FOOTER,
+              selectors: requiredFooterSelectors
+            });
+            ax.setFlatListActiveIndex (0);
+            ax.focus ();
+          }
         } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
           requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
 
-          ax.replaceSelectors ({
-            name: METALIST_GROUP_NAME.CHAT.FOOTER,
-            selectors: requiredFooterSelectors
-          });
-          ax.setFlatListActiveIndex (0);
-          ax.focus ();
+          if (requiredFooterSelectors) {
+            ax.replaceSelectors ({
+              name: METALIST_GROUP_NAME.CHAT.FOOTER,
+              selectors: requiredFooterSelectors
+            });
+            ax.setFlatListActiveIndex (0);
+            ax.focus ();
+          }
         }
 
         // If user input ref does not exists or browser is mobile, do not focus
