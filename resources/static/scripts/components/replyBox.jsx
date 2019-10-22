@@ -36,7 +36,7 @@ define ("components/replyBox",
         onFooterFocus: PropTypes.func,
         onFooterBlur: PropTypes.func,
         placeholder: PropTypes.string,
-        dataLabels: PropTypes.object,
+        dataLabel: PropTypes.string,
         onClick: PropTypes.func
       },
 
@@ -47,7 +47,7 @@ define ("components/replyBox",
           onFooterBlur,
           className,
           placeholder,
-          dataLabels
+          dataLabel
         } = this.props;
 
         return (
@@ -66,7 +66,7 @@ define ("components/replyBox",
                             autoFocus
                             ref={this._saveTextAreaRef}
                             dir="auto"
-                            dataLabels={dataLabels} />
+                            dataLabel={dataLabel} />
         );
       },
 

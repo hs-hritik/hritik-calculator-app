@@ -357,14 +357,20 @@ define ("components/chatViewFooter",
         // c. There can be label for input type plain text (this layout supports label)
         let inputComponentEl;
         if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
-          const replyBoxDataLabels = {
-            textArea: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.DATA_LABEL
-          };
+          const {
+            CHAT: {
+              FOOTER: {
+                TEXT_AREA:{
+                  DATA_LABEL: replyBoxDataLabel
+                }
+              }
+            }
+          } = METALIST_ITEMS;
 
           inputComponentEl = (
             <ReplyBoxContainer
               className="hs-chat-footer__text-area"
-              dataLabels={replyBoxDataLabels} />
+              dataLabel={replyBoxDataLabel} />
           );
         } else {
           const htmlInputType = this._getHtmlInputType (type);
