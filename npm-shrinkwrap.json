@@ -167,9 +167,9 @@
       "resolved": "https://registry.npmjs.org/@gulp-sourcemaps/map-sources/-/map-sources-1.0.0.tgz"
     },
     "@helpshiftdev/gunpowder": {
-      "version": "1.0.27",
-      "from": "@helpshiftdev/gunpowder@1.0.27",
-      "resolved": "https://registry.npmjs.org/@helpshiftdev/gunpowder/-/gunpowder-1.0.27.tgz"
+      "version": "2.0.0",
+      "from": "@helpshiftdev/gunpowder@2.0.0",
+      "resolved": "https://registry.npmjs.org/@helpshiftdev/gunpowder/-/gunpowder-2.0.0.tgz"
     },
     "@mrmlnc/readdir-enhanced": {
       "version": "2.2.1",
