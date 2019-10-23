@@ -8,9 +8,10 @@
 define ("components/app",
   [
     "store",
-    "components/containers/viewWrapper"
+    "components/containers/viewWrapper",
+    "utils/logReactError"
   ],
-  function (store, ViewWrapperContainer) {
+  function (store, ViewWrapperContainer, logReactError) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
@@ -24,6 +25,24 @@ define ("components/app",
 
       render () {
         return (<ViewWrapperContainer />);
+      },
+
+      /**
+       * React method used to log error in any child component. This is a
+       * temporary implementation which will be replaced with adequate error
+       * boundaries.
+       * @TODO: Replace this method with an error boundary when react is
+       * updated to v16.
+       */
+      unstable_handleError (error) {
+        try {
+          logReactError (error);
+        } catch (e) {
+          /* eslint-disable no-console */
+          console.error ("There was an error while logging from React error boundary: ", e);
+          console.error ("The error from React is: ", error);
+          /* eslint-enable no-console */
+        }
       },
 
       componentDidMount () {

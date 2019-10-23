@@ -1,5 +1,5 @@
 /**
- * Util to log React 16 render error
+ * Util to log React 16 render error. This method has been copied from moby.
  * @author Nachiket Kakatkar <nachiket@helpshift.com>
  * @created Sep 16, 2019
  */
@@ -23,9 +23,9 @@ define (
     /**
      * Creates error info and fires dummy XHR for logging render error thrown
      * by a React component
-     * @param {object} error - The error object passed by componentDidCatch
-     * method of the React component
-     * @param {object} info - The info object passed by componentDidCatch
+     * @param {object} error - The error object passed by componentDidCatch or
+     * unstable_handleError method of the React component
+     * @param {object} [info] - The info object passed by componentDidCatch
      * method of the React component
      */
     return (error, info) => {
@@ -77,26 +77,17 @@ define (
         componentStackStr = "No component stack";
       }
 
-      let profileId;
-      if (window.HS) {
-        profileId = window.HS.profileId;
-      } else if (window.HSM) {
-        profileId = window.HSM.profileId;
-      } else {
-        profileId = "No profileId";
-      }
-
       xhr ({
         // Note: This is a dummy XHR route which is expected to be logged
         // in the nginx logs. The params in the GET request will be used to
         // determine the source of the error, through Kibana logs
         route: "/xhr/react-error-boundary/",
         data: {
+          project: "webchat",
           version: LOG_VERSION,
           message: errorMsg,
           error: errorStackStr,
-          component: componentStackStr,
-          profileId
+          component: componentStackStr
         }
       });
 
