@@ -113,7 +113,12 @@ define ("reducers/ui",
           }
         },
         searchPlaceholder: "Search",
-        noSearchResultsText: "No results found"
+        noSearchResultsText: "No results found",
+        ariaLabels: {
+          removeAttachment: "Remove attached file icon",
+          addedAttachmentPrefix: "Attachment",
+          attachFiles: "Attach Files"
+        }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

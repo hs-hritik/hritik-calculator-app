@@ -56,7 +56,12 @@ define ("components/businessHoursView",
           businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
           attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
-          dndInfoText: PropTypes.string.isRequired
+          dndInfoText: PropTypes.string.isRequired,
+          ariaLabels: PropTypes.shape ({
+            removeAttachment: PropTypes.string,
+            addedAttachmentPrefix: PropTypes.string,
+            attachFiles: PropTypes.string
+          })
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
           name: FORM_FIELD_PROP_TYPE,
@@ -258,6 +263,7 @@ define ("components/businessHoursView",
        */
       _renderFormField (fieldName) {
         const formField = this.props.contactFormDetails [fieldName];
+        const formFieldsIsValid = !!formField.value.errorMsg;
 
         if (!formField.enabled) {
           return null;
@@ -280,7 +286,7 @@ define ("components/businessHoursView",
             break;
 
           case MESSAGE:
-            selectorValue = METALIST_ITEMS.OOBH.MSG.SELECTOR;
+            selectorValue = METALIST_ITEMS.OOBH.MESSAGE.SELECTOR;
             break;
         }
 
@@ -304,7 +310,9 @@ define ("components/businessHoursView",
                      tabIndex="0"
                      onFocus={_setAxActiveIndex}
                      onClick={_setAxActiveIndex}
-                     onChange={this._onNameChange} />
+                     onChange={this._onNameChange}
+                     aria-required={true}
+                     aria-invalid={formFieldsIsValid} />
             );
             break;
 
@@ -312,7 +320,7 @@ define ("components/businessHoursView",
             formFieldLabel = text.businessHoursEmailLabel;
             inputClasses = "hs-form-field__input hs-business-hours__form-input";
             inputEl = (
-              <input type="text"
+              <input type="email"
                      disabled={contactFormDisabled}
                      className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
@@ -321,7 +329,9 @@ define ("components/businessHoursView",
                      tabIndex="0"
                      onFocus={_setAxActiveIndex}
                      onClick={_setAxActiveIndex}
-                     onChange={this._onEmailChange} />
+                     onChange={this._onEmailChange}
+                     aria-required={true}
+                     aria-invalid={formFieldsIsValid} />
             );
             break;
 
@@ -338,7 +348,9 @@ define ("components/businessHoursView",
                         tabIndex="0"
                         onFocus={_setAxActiveIndex}
                         onClick={_setAxActiveIndex}
-                        onChange={this._onMessageChange} />
+                        onChange={this._onMessageChange}
+                        aria-required={true}
+                        aria-invalid={formFieldsIsValid} />
             );
             break;
         }
@@ -357,7 +369,7 @@ define ("components/businessHoursView",
 
         return (
           <div className={formFieldClasses}>
-            <div className="hs-form-field__label hs-business-hours__form-label">
+            <div className="hs-form-field__label hs-business-hours__form-label" aria-hidden={true}>
               {formFieldLabel}
             </div>
             {inputEl}
@@ -420,7 +432,7 @@ define ("components/businessHoursView",
        * @param {Object} attachment - attachment object
        */
       _renderAttachment (attachment) {
-        const {submitInProgress} = this.props;
+        const {submitInProgress, text} = this.props;
         const {id, name, size, attachmentHasError} = attachment;
         let iconEl = null;
         let attachmentErrorEl = null;
@@ -447,7 +459,9 @@ define ("components/businessHoursView",
               tabIndex="0"
               onFocus= {_setAxActiveIndex}
               onClick={this._onRemoveAttachmentClick.bind (this, id, dataLabelAttribute)}
-              data-label={dataLabelAttribute} />
+              data-label={dataLabelAttribute}
+              aria-label={text.ariaLabels.removeAttachment}
+              role="button" />
           );
         }
 
@@ -468,15 +482,22 @@ define ("components/businessHoursView",
             "hs-business-hours__attachment-with-error": attachmentHasError
           }
         );
+        const ariaLabelText = `${text.ariaLabels.addedAttachmentPrefix}, ${name}, ${size}`;
 
         return ([
           (<div className={attachmentClasses} key={id}>
-            <div className="hs-business-hours__attachment-details-wrapper">
+            <div
+              className="hs-business-hours__attachment-details-wrapper"
+              aria-label={ariaLabelText}>
               <i className="ion-attachment" />
-              <span className="hs-business-hours__attachment-name">
+              <span
+                className="hs-business-hours__attachment-name"
+                aria-hidden={true}>
                 {formattedName}
               </span>
-              <span className="hs-business-hours__attachment-size" >
+              <span
+                className="hs-business-hours__attachment-size"
+                aria-hidden={true}>
                 ({formattedSize})
               </span>
             </div>
@@ -490,7 +511,7 @@ define ("components/businessHoursView",
        * Render placeholder attachment layout
        */
       _renderPlaceholderAttachment () {
-        const {onFilesChange, text: {dndInfoText}} = this.props;
+        const {onFilesChange, text: {dndInfoText, ariaLabels}} = this.props;
         const {
           limitHasExceeded,
           sizeHasExceeded,
@@ -500,7 +521,7 @@ define ("components/businessHoursView",
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid);
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
-            selector: METALIST_ITEMS.OOBH.SELECT_FILES.SELECTOR
+            selector: METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR
           }
         );
 
@@ -511,7 +532,9 @@ define ("components/businessHoursView",
             tabIndex="0"
             onKeyDown={this._onKeyDown}
             onFocus={_setAxActiveIndex}
-            onClick={_setAxActiveIndex}>
+            onClick={_setAxActiveIndex}
+            role="button"
+            aria-label={ariaLabels.attachFiles}>
             <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
