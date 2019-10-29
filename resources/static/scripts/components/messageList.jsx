@@ -227,7 +227,7 @@ define ("components/messageList",
 
         return (
           <div className="hs-message-list__pills-container">
-            <small>
+            <small aria-hidden={true}>
               <strong className="hs-message-list__pill-heading">
                 {label}
               </strong>
@@ -237,7 +237,8 @@ define ("components/messageList",
               data-label={METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.DATA_LABEL}
               tabIndex="0"
               onClick={setPillWrapperAxActiveIndex}
-              onFocus={setPillWrapperAxActiveIndex}>
+              onFocus={setPillWrapperAxActiveIndex}
+              aria-label={label}>
               {pillOptionsEl}
             </div>
             {skipBtnWrapperEl}

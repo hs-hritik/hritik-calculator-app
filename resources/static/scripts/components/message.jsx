@@ -52,7 +52,15 @@ define ("components/message",
           attachmentFileSizeError: PropTypes.string.isRequired,
           attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
-          attachmentUploadingStatus: PropTypes.string.isRequired
+          attachmentUploadingStatus: PropTypes.string.isRequired,
+          ariaLabels: PropTypes.shape ({
+            supportMsg: PropTypes.string,
+            sentBy: PropTypes.string,
+            sentAt: PropTypes.string,
+            userMessage: PropTypes.string,
+            openFile: PropTypes.string,
+            attachmentUploading: PropTypes.string
+          })
         }).isRequired
       },
 
@@ -72,7 +80,8 @@ define ("components/message",
       },
 
       render () {
-        const {isCustomerMsg, type, states} = this.props.message;
+        const {isCustomerMsg, type, states, body} = this.props.message;
+        const {ariaLabels} = this.props.text;
 
         if (type === MESSAGE_TYPE.CHAT_SEPARATOR) {
           return this._renderChatSeparator ();
@@ -89,9 +98,27 @@ define ("components/message",
             "hs-message--error": states && states.error
           }
         );
+        const time = this._getHumanReadableTime ();
+        let msgBubbleAriaLabel;
+
+        if (!isCustomerMsg) {
+          const agentName = this._getAgentNickname ();
+
+          msgBubbleAriaLabel = `${ariaLabels.supportMsg}, ${body}, `;
+
+          if (agentName) {
+            msgBubbleAriaLabel += `${ariaLabels.sentBy} ${agentName} at ${time}`;
+          } else {
+            msgBubbleAriaLabel += `at ${time}`;
+          }
+        } else if (states.uploadInProgress) {
+          msgBubbleAriaLabel = ariaLabels.attachmentUploading;
+        } else {
+          msgBubbleAriaLabel = `${ariaLabels.userMessage}, ${body}, ${ariaLabels.sentAt} ${time}`;
+        }
 
         return (
-          <div className={msgClasses} onClick={this._onMsgClick}>
+          <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgBubbleAriaLabel}>
             {this._renderMessage ()}
             {this._renderAttachmentErrors ()}
             {this._renderMessageDetails ()}
@@ -103,7 +130,7 @@ define ("components/message",
        * Render the message according to its type.
        */
       _renderMessage () {
-        const {type} = this.props.message;
+        const {type, attachments, suggestedFaqs} = this.props.message;
         let messageItemEl = null;
 
         // @NOTE - All bot messages (except faqs) and user response messages
@@ -138,9 +165,11 @@ define ("components/message",
             break;
         }
 
+        const ariaContainerIsHidden = !(suggestedFaqs || attachments);
+
         if (messageItemEl) {
           return (
-            <div className="hs-message__item-wrapper">
+            <div className="hs-message__item-wrapper" aria-hidden={ariaContainerIsHidden}>
               {messageItemEl}
             </div>
           );
@@ -237,10 +266,17 @@ define ("components/message",
         const formattedFileName = attachmentsHelpers.getFormattedFileName (
           attachment.fileName
         );
+        const {text} = this.props;
         const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
+        const attachmentAriaLabel = `${text.ariaLabels.openFile}, ${formattedFileName}`;
 
         return (
-          <div key={index} className="hs-attachment" onClick={clickHandler}>
+          <div
+            key={index}
+            className="hs-attachment"
+            onClick={clickHandler}
+            aria-label={attachmentAriaLabel}
+            role="button">
             <i className="ion-attachment" />
             <div className="hs-attachment__info-wrapper">
               <small title={attachment.fileName}>
@@ -292,7 +328,9 @@ define ("components/message",
                className="hs-message__suggested-faq"
                dir="auto"
                onClick={onSuggestedFaqClick.bind (this, id, language)}
-               tabIndex="0">
+               tabIndex="0"
+               aria-label={faq.title}
+               role="button">
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
             </a>
@@ -474,7 +512,8 @@ define ("components/message",
        */
       _renderNonPreviewableAttachment () {
         const {name, iconClasses, onClick, url} = this._attachmentRenderConfig;
-
+        const {text} = this.props;
+        const formatedFileName = attachmentsHelpers.getFormattedFileName (name);
         let wrapperClickHandler;
 
         if (!this.props.message.isSystemMsg) {
@@ -483,8 +522,13 @@ define ("components/message",
           wrapperClickHandler = onClick;
         }
 
+        const attachmentAriaLabel = text.ariaLabels.openFile + ", " + formatedFileName;
         return (
-          <div className="hs-message__user-attachment" onClick={wrapperClickHandler}>
+          <div
+            className="hs-message__user-attachment"
+            onClick={wrapperClickHandler}
+            aria-label={attachmentAriaLabel}
+            role="button">
             <i className={iconClasses} />
             <span title={name}>{attachmentsHelpers.getFormattedFileName (name)}</span>
           </div>
@@ -556,7 +600,7 @@ define ("components/message",
         }
 
         return (
-          <div className="hs-message__details">
+          <div className="hs-message__details" aria-hidden={true}>
             {details}
           </div>
         );

@@ -119,7 +119,13 @@ define ("reducers/ui",
           addedAttachmentPrefix: "Attachment",
           attachFiles: "Attach Files",
           faqViewHeader: "Go back to conversation",
-          loading: "Loading"
+          loading: "Loading",
+          supportMsg: "Message from Support",
+          sentBy: "Sent by",
+          sentAt: "Sent at",
+          userMessage: "Your message",
+          openFile: "Open file",
+          attachmentUploading: "Your attachment, Uploading"
         }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
