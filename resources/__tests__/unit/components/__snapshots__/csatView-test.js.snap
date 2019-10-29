@@ -52,11 +52,13 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
           className="hs-csat__form-item"
         >
           <small
+            aria-hidden="true"
             className="hs-csat__form-label"
           >
             MOCK_REVIEW_TITLE
           </small>
           <textarea
+            aria-label="MOCK_REVIEW_TITLE"
             className="hs-csat__input"
             data-label="additional-feedback-text-area"
             dir="auto"
@@ -78,6 +80,7 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
           className="hs-footer__vertical-items-wrapper"
         >
           <button
+            aria-label="MOCK_FORM_SUBMIT_BUTTON"
             className="hs-button hs-footer__btn"
             data-label="footer-btn"
             disabled={true}

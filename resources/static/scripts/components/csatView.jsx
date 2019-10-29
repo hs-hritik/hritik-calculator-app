@@ -107,7 +107,7 @@ define ("components/csatView",
                           onUpdateStarRating={onUpdateStarRating} />
             </div>
             <div className="hs-csat__form-item">
-              <small className="hs-csat__form-label">
+              <small className="hs-csat__form-label" aria-hidden="true">
                 {text.csatBotReviewTitle}
               </small>
               <textarea value={review}
@@ -119,7 +119,8 @@ define ("components/csatView",
                         tabIndex="0"
                         data-label={METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.DATA_LABEL}
                         onFocus={setTextAreaAxActiveIndex}
-                        onClick={setTextAreaAxActiveIndex} />
+                        onClick={setTextAreaAxActiveIndex}
+                        aria-label={text.csatBotReviewTitle} />
             </div>
           </div>
         );
@@ -159,7 +160,8 @@ define ("components/csatView",
                       disabled={btnDisabled}
                       tabIndex="0"
                       data-label={METALIST_ITEMS.CSAT.FOOTER_BTN.DATA_LABEL}
-                      onFocus={setAxActiveIndex} >
+                      onFocus={setAxActiveIndex}
+                      aria-label={text.csatBotFormSubmitBtn} >
                 {text.csatBotFormSubmitBtn}
               </button>
             </div>

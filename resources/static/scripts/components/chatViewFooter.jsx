@@ -325,7 +325,9 @@ define ("components/chatViewFooter",
           },
           onFooterFocus,
           onFooterBlur,
-          browserIsMobile
+          browserIsMobile,
+          activeFooter,
+          text
         } = this.props;
         const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
         const listPickerIsOpened = (
@@ -366,11 +368,17 @@ define ("components/chatViewFooter",
               }
             }
           } = METALIST_ITEMS;
+          let ariaLabel;
+
+          if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+            ariaLabel = text.chatViewIssueRejectionQuestion;
+          }
 
           inputComponentEl = (
             <ReplyBoxContainer
               className="hs-chat-footer__text-area"
-              dataLabel={replyBoxDataLabel} />
+              dataLabel={replyBoxDataLabel}
+              ariaLabel={ariaLabel} />
           );
         } else {
           const htmlInputType = this._getHtmlInputType (type);
@@ -597,15 +605,18 @@ define ("components/chatViewFooter",
         const starRatingDataLabels = {
           starRatingWrapper: METALIST_ITEMS.CHAT.FOOTER.STAR_RATING_WRAPPER.DATA_LABEL
         };
+        const csatBotRequestMessage = this.props.text.csatBotRequestMsg;
 
         return (
           <div className="hs-chat-footer">
-            <div className="hs-chat-footer__heading" >
-              <strong className="hs-chat-footer__heading-text" >
-                {this.props.text.csatBotRequestMsg}
+            <div className="hs-chat-footer__heading" aria-hidden={true}>
+              <strong className="hs-chat-footer__heading-text">
+                {csatBotRequestMessage}
               </strong>
             </div>
-            <div className="hs-chat-footer__csat-footer">
+            <div
+              className="hs-chat-footer__csat-footer"
+              aria-label={csatBotRequestMessage}>
               <StarRating name="csat"
                           value={this.props.rating}
                           onStarClick={this.props.onStarClick}
@@ -656,7 +667,8 @@ define ("components/chatViewFooter",
             tabIndex="0"
             data-label={METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.DATA_LABEL}
             onClick={_setConversationResolutionWrapperAxActiveIndex}
-            onFocus={_setConversationResolutionWrapperAxActiveIndex}>
+            onFocus={_setConversationResolutionWrapperAxActiveIndex}
+            aria-label={text.chatViewConversationResolutionQuestion}>
             <div className="hs-chat-footer__heading" >
               <strong>{text.chatViewConversationResolutionQuestion}</strong>
             </div>
@@ -665,14 +677,16 @@ define ("components/chatViewFooter",
                       onClick={onRejectResolutionQuestionClick}
                       onFocus={_setRejectResolutionAxActiveIndex}
                       data-label={METALIST_ITEMS.CHAT.FOOTER.SOLUTION_REJECT_BTN.DATA_LABEL}
-                      tabIndex="0">
+                      tabIndex="0"
+                      aria-label={text.resolutionQuestionReject}>
                 {text.resolutionQuestionReject}
               </button>
               <button className={btnClasses}
                       onClick={onAcceptResolutionQuestionClick}
                       onFocus={_setAcceptResolutionAxActiveIndex}
                       data-label={METALIST_ITEMS.CHAT.FOOTER.SOLUTION_ACCEPT_BTN.DATA_LABEL}
-                      tabIndex="0">
+                      tabIndex="0"
+                      aria-label={text.resolutionQuestionAccept}>
                 {text.resolutionQuestionAccept}
               </button>
             </div>
@@ -741,7 +755,10 @@ define ("components/chatViewFooter",
         // displaying question when resolution is rejected by the user.
         if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
           headingEl = (
-            <strong key="heading" className="hs-chat-footer__heading hs-chat-footer__reply-heading">
+            <strong
+              key="heading"
+              className="hs-chat-footer__heading hs-chat-footer__reply-heading"
+              aria-hidden={true}>
               {chatViewIssueRejectionQuestion}
             </strong>
           );

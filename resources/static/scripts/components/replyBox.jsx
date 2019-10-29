@@ -37,7 +37,8 @@ define ("components/replyBox",
         onFooterBlur: PropTypes.func,
         placeholder: PropTypes.string,
         dataLabel: PropTypes.string,
-        onClick: PropTypes.func
+        onClick: PropTypes.func,
+        ariaLabel: PropTypes.string
       },
 
       render () {
@@ -47,7 +48,8 @@ define ("components/replyBox",
           onFooterBlur,
           className,
           placeholder,
-          dataLabel
+          dataLabel,
+          ariaLabel
         } = this.props;
 
         return (
@@ -66,7 +68,8 @@ define ("components/replyBox",
                             autoFocus
                             ref={this._saveTextAreaRef}
                             dir="auto"
-                            dataLabel={dataLabel} />
+                            dataLabel={dataLabel}
+                            ariaLabel={ariaLabel} />
         );
       },
 

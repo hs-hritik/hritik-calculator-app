@@ -104,7 +104,8 @@ define ("components/starRating",
              onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
              onMouseLeave={this._onStarMouseLeave}
              key={idx}
-             onClick={this._onStarClick.bind (this, idx)} />
+             onClick={this._onStarClick.bind (this, idx)}
+             role="button" />
         );
       },
 
