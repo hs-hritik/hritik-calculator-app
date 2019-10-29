@@ -488,7 +488,8 @@ define ("components/chatViewFooter",
                   minHeight={PICKER_MIN_HEIGHT}
                   maxHeight={this.state.pickerMaxHeight}
                   accessibility={true}
-                  onFocusableItemsChange={this._onFocusItemsChanged} />
+                  onFocusableItemsChange={this._onFocusItemsChanged}
+                  onFocusChange={this._onPickerFocusChange} />
         );
       },
 
@@ -747,6 +748,16 @@ define ("components/chatViewFooter",
         }
 
         return [headingEl, labelEl];
+      },
+
+      /**
+       * This Handler is called on focus or click event on picker element
+       * It calls ax function to update active index
+       *
+       * @param {String} config.selector - Current focused element selector
+       */
+      _onPickerFocusChange (config) {
+        ax.setActiveIndex (config);
       },
 
       /**
