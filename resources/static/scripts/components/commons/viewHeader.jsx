@@ -21,7 +21,8 @@ define ("components/commons/viewHeader",
         onCloseBtnClick: PropTypes.func,
         dataLabels: PropTypes.shape ({
           backBtnDataLabel: PropTypes.string
-        })
+        }),
+        ariaLabel: PropTypes.string
       },
 
       render () {
@@ -37,7 +38,7 @@ define ("components/commons/viewHeader",
        * Render title text and the back button if required
        */
       _renderTitle () {
-        const {dataLabels} = this.props;
+        const {dataLabels, ariaLabel} = this.props;
         const titleText = (
           <span>{this.props.title}</span>
         );
@@ -51,7 +52,9 @@ define ("components/commons/viewHeader",
             className="hs-header__link"
             onClick={this._onBackBtnClick}
             tabIndex="0"
-            data-label={dataLabels.backBtnDataLabel}>
+            data-label={dataLabels.backBtnDataLabel}
+            aria-label={ariaLabel}
+            role="button">
             <i className="ion-chevron-left hs-header__back-icon" />
             {titleText}
           </a>

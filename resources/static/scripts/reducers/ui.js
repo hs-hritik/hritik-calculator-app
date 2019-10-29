@@ -117,7 +117,9 @@ define ("reducers/ui",
         ariaLabels: {
           removeAttachment: "Remove attached file icon",
           addedAttachmentPrefix: "Attachment",
-          attachFiles: "Attach Files"
+          attachFiles: "Attach Files",
+          faqViewHeader: "Go back to conversation",
+          loading: "Loading"
         }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {

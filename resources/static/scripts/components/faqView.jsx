@@ -36,7 +36,11 @@ define ("components/faqView",
         onBackBtnClick: PropTypes.func.isRequired,
         onMinimizeConversation: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          faqViewHeader: PropTypes.string.isRequired
+          faqViewHeader: PropTypes.string.isRequired,
+          ariaLabels: PropTypes.shape ({
+            loading: PropTypes.string,
+            faqViewHeader: PropTypes.string
+          })
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
@@ -63,7 +67,8 @@ define ("components/faqView",
                         showBackBtn={true}
                         onCloseBtnClick={onMinimizeConversation}
                         onBackBtnClick={onBackBtnClick}
-                        dataLabels={viewHeaderDataLabels}/>
+                        dataLabels={viewHeaderDataLabels}
+                        ariaLabel={text.ariaLabels.faqViewHeader}/>
             {this._renderViewContents ()}
           </div>
         );
@@ -74,13 +79,15 @@ define ("components/faqView",
           title,
           body,
           loading,
-          errorMsg
+          errorMsg,
+          text
         } = this.props;
 
         if (loading || errorMsg) {
           return (
             <InfoView loading={loading}
-                      title={errorMsg} />
+                      title={errorMsg}
+                      ariaLabel={text.ariaLabels.loading} />
           );
         }
 
