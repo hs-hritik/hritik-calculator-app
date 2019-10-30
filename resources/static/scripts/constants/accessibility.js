@@ -54,28 +54,28 @@ define ("constants/accessibility",
 
     const METALIST_ITEMS = {
       LAUNCHER_BTN: {
-        NAME: METALIST_GROUP_NAME.LAUNCHER_BTN,
+        GROUP: METALIST_GROUP_NAME.LAUNCHER_BTN,
         DATA_LABEL: "launcher-btn",
         SELECTOR: "[data-label=launcher-btn]"
       },
       OOBH: {
         WRAPPER: {
-          NAME: METALIST_GROUP_NAME.OOBH.WRAPPER,
+          GROUP: METALIST_GROUP_NAME.OOBH.WRAPPER,
           DATA_LABEL: "oobh-wrapper",
           SELECTOR: "[data-label=oobh-wrapper]"
         },
         NAME: {
-          NAME: METALIST_GROUP_NAME.OOBH.NAME,
+          GROUP: METALIST_GROUP_NAME.OOBH.NAME,
           DATA_LABEL: "oobh-name",
           SELECTOR: "[data-label=oobh-name]"
         },
         EMAIL: {
-          NAME: METALIST_GROUP_NAME.OOBH.EMAIL,
+          GROUP: METALIST_GROUP_NAME.OOBH.EMAIL,
           DATA_LABEL: "oobh-email",
           SELECTOR: "[data-label=oobh-email]"
         },
         MESSAGE: {
-          NAME: METALIST_GROUP_NAME.OOBH.MESSAGE,
+          GROUP: METALIST_GROUP_NAME.OOBH.MESSAGE,
           DATA_LABEL: "oobh-message",
           SELECTOR: "[data-label=oobh-message]"
         },
@@ -83,90 +83,90 @@ define ("constants/accessibility",
           DATA_LABEL: "oobh-attachment-"
         },
         FILE_ATTACHMENTS: {
-          NAME: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS
+          GROUP: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS
         },
         FILE_SELECT: {
-          NAME: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
+          GROUP: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
           DATA_LABEL: "oobh-file-select",
           SELECTOR: "[data-label=oobh-file-select]"
         },
         FOOTER_BTN: {
-          NAME: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+          GROUP: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
           DATA_LABEL: "oobh-footer-btn",
           SELECTOR: "[data-label=oobh-footer-btn]"
         },
         OFFLINE_MSG: {
-          NAME: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
+          GROUP: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
           DATA_LABEL: "oobh-offline-msg",
           SELECTOR: "[data-label=oobh-offline-msg]"
         }
       },
       CHAT: {
         MESSAGE_LIST: {
-          NAME: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
+          GROUP: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
         },
         SKIP_BTN: {
-          NAME: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+          GROUP: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
           DATA_LABEL: "skip-btn",
           SELECTOR: "[data-label=skip-btn]"
         },
         FOOTER: {
           TEXT_FIELD: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "chat-footer-text-field",
             SELECTOR: "[data-label=chat-footer-text-field]"
           },
           TEXT_AREA: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "chat-footer-text-area",
             SELECTOR: "[data-label=chat-footer-text-area]"
           },
           SEND_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "chat-footer-send-btn",
             SELECTOR: "[data-label=chat-footer-send-btn]"
           },
           ATTACHMENT_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "chat-footer-attachment-btn",
             SELECTOR: "[data-label=chat-footer-attachment-btn]"
           },
           OPTION_PILLS_WRAPPER: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "chat-footer-option-pills-wrapper",
             SELECTOR: "[data-label=chat-footer-option-pills-wrapper]"
           },
           OPTION_PILL_PREFIX: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "option-pills-option-"
           },
           CONVERSATION_RESOLUTION_WRAPPER: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "conversation-resolution-wrapper",
             SELECTOR: "[data-label=conversation-resolution-wrapper]"
           },
           SOLUTION_REJECT_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "solution-reject-btn",
             SELECTOR: "[data-label=solution-reject-btn]"
           },
           SOLUTION_ACCEPT_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "solution-accept-btn",
             SELECTOR: "[data-label=solution-accept-btn]"
           },
           STAR_RATING_WRAPPER: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "star-rating-wrapper",
             SELECTOR: "[data-label=star-rating-wrapper]"
           },
           NEW_CONVERSATION_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "new-conversation-wrapper",
             SELECTOR: "[data-label=new-conversation-wrapper]"
           },
           CLOSE_CONVERSATION_BTN: {
-            NAME: METALIST_GROUP_NAME.CHAT.FOOTER,
+            GROUP: METALIST_GROUP_NAME.CHAT.FOOTER,
             DATA_LABEL: "close-conversation-btn",
             SELECTOR: "[data-label=close-conversation-btn]"
           }
@@ -174,34 +174,34 @@ define ("constants/accessibility",
       },
       CSAT: {
         STAR_RATING_WRAPPER: {
-          NAME: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
+          GROUP: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
           DATA_LABEL: "star-rating-wrapper",
           SELECTOR: "[data-label=star-rating-wrapper]"
         },
         FEEDBACK_TEXT_AREA: {
-          NAME: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
+          GROUP: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
           DATA_LABEL: "additional-feedback-text-area",
           SELECTOR: "[data-label=additional-feedback-text-area]"
         },
         FOOTER_BTN: {
-          NAME: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
+          GROUP: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
           DATA_LABEL: "footer-btn",
           SELECTOR: "[data-label=footer-btn]"
         }
       },
       FAQ: {
         CONTENT_WRAPPER: {
-          NAME: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
+          GROUP: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
           DATA_LABEL: "content-wrapper",
           SELECTOR: "[data-label=content-wrapper]"
         },
         BACK_BTN: {
-          NAME: METALIST_GROUP_NAME.FAQ.BACK_BTN,
+          GROUP: METALIST_GROUP_NAME.FAQ.BACK_BTN,
           DATA_LABEL: "back-btn",
           SELECTOR: "[data-label=back-btn]"
         },
         FAQ_BODY_LINKS: {
-          NAME: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS
+          GROUP: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS
         }
       }
     };

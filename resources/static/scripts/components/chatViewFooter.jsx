@@ -834,7 +834,7 @@ define ("components/chatViewFooter",
         if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
           ax.backupSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
           ax.replaceSelectors ({
-            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           });
         } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
@@ -842,14 +842,14 @@ define ("components/chatViewFooter",
 
           if (backedupSelectors) {
             ax.replaceSelectors ({
-              name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+              group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
               selectors: backedupSelectors
             });
           }
         }
 
         ax.replaceSelectors ({
-          name: METALIST_GROUP_NAME.CHAT.FOOTER,
+          group: METALIST_GROUP_NAME.CHAT.FOOTER,
           selectors: selectors
         });
 
@@ -1097,7 +1097,7 @@ define ("components/chatViewFooter",
 
           if (requiredFooterSelectors) {
             ax.replaceSelectors ({
-              name: METALIST_GROUP_NAME.CHAT.FOOTER,
+              group: METALIST_GROUP_NAME.CHAT.FOOTER,
               selectors: requiredFooterSelectors
             });
             ax.setFlatListActiveIndex (0);
@@ -1108,7 +1108,7 @@ define ("components/chatViewFooter",
 
           if (requiredFooterSelectors) {
             ax.replaceSelectors ({
-              name: METALIST_GROUP_NAME.CHAT.FOOTER,
+              group: METALIST_GROUP_NAME.CHAT.FOOTER,
               selectors: requiredFooterSelectors
             });
             ax.setFlatListActiveIndex (0);
@@ -1150,7 +1150,7 @@ define ("components/chatViewFooter",
         const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
         ax.replaceSelectors ({
-          name: METALIST_GROUP_NAME.CHAT.FOOTER,
+          group: METALIST_GROUP_NAME.CHAT.FOOTER,
           selectors: requiredFooterSelectors
         });
 

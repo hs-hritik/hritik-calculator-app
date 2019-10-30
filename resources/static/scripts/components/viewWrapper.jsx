@@ -113,7 +113,7 @@ define ("components/viewWrapper",
         ax.init ({
           handlers: [
             {
-              name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+              group: METALIST_GROUP_NAME.LAUNCHER_BTN,
               handlers: [this.props.onFocusLauncher]
             }
           ]

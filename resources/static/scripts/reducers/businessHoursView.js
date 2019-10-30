@@ -83,7 +83,7 @@ define ("reducers/businessHoursView",
         const id = uuidGenerator ();
 
         ax.addSelector ({
-          name: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
+          group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
           selector: `[data-label=${METALIST_ITEMS.OOBH.ATTACHMENT_PREFIX.DATA_LABEL}${id}]`
         });
 
@@ -263,7 +263,7 @@ define ("reducers/businessHoursView",
             METALIST_ITEMS.OOBH.ATTACHMENT_PREFIX.DATA_LABEL + action.attachmentId
           );
           ax.removeSelector ({
-            name: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
+            group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
             selector: `[data-label=${attachmentPrefix}]`
           });
           ax.delayFocus ();

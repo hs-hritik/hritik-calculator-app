@@ -23,50 +23,50 @@ define (
 
     const OOBH_OFFLINE_META_LIST = [
       {
-        name: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
+        group: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
         selectors: [METALIST_ITEMS.OOBH.OFFLINE_MSG.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+        group: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
         selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+        group: METALIST_GROUP_NAME.LAUNCHER_BTN,
         selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
       }
     ];
 
     const OOBH_FORM_META_LIST = [
       {
-        name: METALIST_GROUP_NAME.OOBH.WRAPPER,
+        group: METALIST_GROUP_NAME.OOBH.WRAPPER,
         selectors: [METALIST_ITEMS.OOBH.WRAPPER.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.NAME,
+        group: METALIST_GROUP_NAME.OOBH.NAME,
         selectors: [METALIST_ITEMS.OOBH.NAME.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.EMAIL,
+        group: METALIST_GROUP_NAME.OOBH.EMAIL,
         selectors: [METALIST_ITEMS.OOBH.EMAIL.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.MESSAGE,
+        group: METALIST_GROUP_NAME.OOBH.MESSAGE,
         selectors: [METALIST_ITEMS.OOBH.MESSAGE.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
+        group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
         selectors: []
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
+        group: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
         selectors: [METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+        group: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
         selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
       },
       {
-        name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+        group: METALIST_GROUP_NAME.LAUNCHER_BTN,
         selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
       }
     ];
@@ -87,19 +87,19 @@ define (
       [activeViewConstants.CHAT] : {
         metaList: [
           {
-            name: METALIST_GROUP_NAME.CHAT.FOOTER,
+            group: METALIST_GROUP_NAME.CHAT.FOOTER,
             selectors: []
           },
           {
-            name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+            group: METALIST_GROUP_NAME.LAUNCHER_BTN,
             selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
-            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           },
           {
-            name: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+            group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
             selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
           }
         ]
@@ -107,19 +107,19 @@ define (
       [activeViewConstants.CSAT] : {
         metaList: [
           {
-            name: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
+            group: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
             selectors: [METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.SELECTOR]
           },
           {
-            name: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
+            group: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
             selectors: [METALIST_ITEMS.CSAT.FOOTER_BTN.SELECTOR]
           },
           {
-            name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+            group: METALIST_GROUP_NAME.LAUNCHER_BTN,
             selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
-            name: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
+            group: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
             selectors: [METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR]
           }
         ]
@@ -127,19 +127,19 @@ define (
       [activeViewConstants.FAQ] : {
         metaList: [
           {
-            name: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
+            group: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
             selectors: [METALIST_ITEMS.FAQ.CONTENT_WRAPPER.SELECTOR]
           },
           {
-            name: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
+            group: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
             selectors: []
           },
           {
-            name: METALIST_GROUP_NAME.LAUNCHER_BTN,
+            group: METALIST_GROUP_NAME.LAUNCHER_BTN,
             selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
-            name: METALIST_GROUP_NAME.FAQ.BACK_BTN,
+            group: METALIST_GROUP_NAME.FAQ.BACK_BTN,
             selectors: [METALIST_ITEMS.FAQ.BACK_BTN.SELECTOR]
           }
         ]
@@ -207,14 +207,14 @@ define (
     /**
      * Return the index of the selector group in metaList
      *
-     * @param {String} name - Readable name of the selector
-     * @returns {Number} - Index of item from meta list searched using name
+     * @param {String} group - Readable name of the selector
+     * @returns {Number} - Index of item from meta list searched using group
      */
-    const _findMetaListIndexByName = (name) => {
+    const _findMetaListIndexByGroupName = (group) => {
       const activeViewData = _focusData [_activeView];
       const {metaList} = activeViewData;
 
-      return arrayUtils.findIndexByKey (metaList, name, "name");
+      return arrayUtils.findIndexByKey (metaList, group, "group");
     };
 
     /**
@@ -361,18 +361,18 @@ define (
      * - Regenerates the flat list
      *
      * @param {Object} config
-     * @param {String} config.name - Name of the selector category
+     * @param {String} config.group - Name of the selector category
      * @param {Boolean} config.selector - Unique selector of an element
      * @param {String} config.data_label - Data label of the element
      */
     const addSelector = (config) => {
-      const {name, selector} = config;
+      const {group, selector} = config;
       const metaList = _getActiveViewMetaList ();
-      const metaListIndex = _findMetaListIndexByName (name);
+      const metaListIndex = _findMetaListIndexByGroupName (group);
 
       metaList [metaListIndex].selectors.push (selector);
 
-      if (name === METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS) {
+      if (group === METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS) {
         incrementFocusIndex ();
       }
 
@@ -386,13 +386,13 @@ define (
      * - Regenerates the flat list
      *
      * @param {Object} config
-     * @param {String} config.name - Name of the selector category
+     * @param {String} config.group - Name of the selector category
      * @param {Boolean} [config.selector] - Unique selector of an element
      */
     const removeSelector = (config) => {
-      const {selector, name} = config;
+      const {selector, group} = config;
       const metaList = _getActiveViewMetaList ();
-      const index = _findMetaListIndexByName (name);
+      const index = _findMetaListIndexByGroupName (group);
       const selectorIndex = _findSelectorIndexInMetaList (selector, metaList[index].selectors);
 
       metaList [index].selectors.splice (selectorIndex, 1);
@@ -445,7 +445,7 @@ define (
     /**
      * This function replaces the selector list in meta-list
      *
-     * @param {String} data.name - Name of the meta-list
+     * @param {String} data.group - Identifier of the meta-list
      * @param {Array} data.selectors - Array of selectors
      */
     const replaceSelectors = (data) => {
@@ -454,7 +454,7 @@ define (
       }
 
       const metaList = _getActiveViewMetaList ();
-      const selectorGroupIndex = arrayUtils.findIndexByKey (metaList, data.name, "name");
+      const selectorGroupIndex = arrayUtils.findIndexByKey (metaList, data.group, "group");
 
       metaList [selectorGroupIndex].selectors = data.selectors;
 
@@ -507,12 +507,12 @@ define (
     /**
      * Returns selectors counts in metaList
      *
-     * @param {String} config.name - Readable name of the meta-list
+     * @param {String} config.group - Readable name of the meta-list
      * @returns {Number} - Count of selectors in the meta list
      */
     const getMetaListSelectorsCount = (config) => {
       const metaList = _getActiveViewMetaList ();
-      const metaListIndex = _findMetaListIndexByName (config.name);
+      const metaListIndex = _findMetaListIndexByGroupName (config.group);
 
       if (metaListIndex !== -1) {
         return metaList [metaListIndex].selectors.length;
@@ -532,7 +532,7 @@ define (
       }
 
       const metaList = _getActiveViewMetaList ();
-      const selectorGroupIndex = _findMetaListIndexByName (selectorGroupName);
+      const selectorGroupIndex = _findMetaListIndexByGroupName (selectorGroupName);
 
       _backupSelectors [selectorGroupName] = metaList [selectorGroupIndex].selectors;
     };
@@ -554,7 +554,7 @@ define (
       const {specialHandlers} = _focusData;
 
       data.handlers.forEach ((handlerConfig) => {
-        specialHandlers [handlerConfig.name] = handlerConfig.handlers;
+        specialHandlers [handlerConfig.group] = handlerConfig.handlers;
       });
     };
 

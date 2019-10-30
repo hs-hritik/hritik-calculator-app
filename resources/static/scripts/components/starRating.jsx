@@ -113,7 +113,7 @@ define ("components/starRating",
        * This function is called on focus or click event on element
        * It calls ax function to update active index
        *
-       * @param {Object} config.name - Selector value
+       * @param {Object} config.selector - Selector value
        * @param {Object} ev - Click or focus event object
        */
       _setAxActiveIndex (config, ev) {

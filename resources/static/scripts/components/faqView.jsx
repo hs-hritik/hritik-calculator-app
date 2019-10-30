@@ -150,7 +150,7 @@ define ("components/faqView",
           }
 
           ax.replaceSelectors ({
-            name: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
+            group: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
             selectors
           });
         }

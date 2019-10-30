@@ -483,7 +483,7 @@ define ("components/messageList",
           const messageListLinksCount = messageListLinks.length;
           const selectors = [];
           const axMsgLinkCount = ax.getMetaListSelectorsCount ({
-            name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
+            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
           });
 
           if (axMsgLinkCount !== messageListLinksCount) {
@@ -493,7 +493,7 @@ define ("components/messageList",
 
             ax.saveCurrentFocusedSelector ();
             ax.replaceSelectors ({
-              name: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+              group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
               selectors: selectors
             });
             ax.focusSavedSelector ();
