@@ -101,6 +101,10 @@ define ("components/viewWrapper",
         }
       },
 
+      componentWillMount () {
+        ax.setActiveView (this.props.activeView);
+      },
+
       componentDidMount () {
         window.addEventListener ("online", this._onOnline);
         window.addEventListener ("offline", this._onOffline);
