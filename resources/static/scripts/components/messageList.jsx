@@ -134,9 +134,11 @@ define ("components/messageList",
         if (!this.props.isTyping) {
           return null;
         }
-
+        const {text} = this.props;
         return (
-          <div className="hs-message-list__typing-indicator">
+          <div
+            className="hs-message-list__typing-indicator"
+            aria-label={text.ariaLabels.typingIndicator}>
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-1" />
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-2" />
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-3" />

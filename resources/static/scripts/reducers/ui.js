@@ -125,7 +125,12 @@ define ("reducers/ui",
           sentAt: "Sent at",
           userMessage: "Your message",
           openFile: "Open file",
-          attachmentUploading: "Your attachment, Uploading"
+          attachmentUploading: "Your attachment, Uploading",
+          sendMessage: "Send Message",
+          send: "Send",
+          jumpToLatestBtn: "Jump to latest message",
+          typingIndicator: "Support is typing",
+          conversationClosedLine: "Conversation closed"
         }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {

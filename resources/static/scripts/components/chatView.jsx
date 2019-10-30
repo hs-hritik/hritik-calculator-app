@@ -59,7 +59,10 @@ define ("components/chatView",
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired,
-          pastConversationsLoadingText: PropTypes.string.isRequired
+          pastConversationsLoadingText: PropTypes.string.isRequired,
+          ariaLabels: PropTypes.shape ({
+            jumpToLatestBtn: PropTypes.string
+          })
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
@@ -160,9 +163,11 @@ define ("components/chatView",
         );
 
         return (
-          <div className="hs-chat-view__msgs-loader-container">
-            <i className={loaderClasses} />
-            <span>{pastConversationsLoadingText}</span>
+          <div
+            className="hs-chat-view__msgs-loader-container"
+            aria-label={pastConversationsLoadingText}>
+            <i className={loaderClasses} aria-hidden={true} />
+            <span aria-hidden={true}>{pastConversationsLoadingText}</span>
           </div>
         );
       },
@@ -177,7 +182,8 @@ define ("components/chatView",
           unreadCount,
           userInput: {
             type
-          }
+          },
+          text
         } = this.props;
 
         const showUnreadIndicator = unreadCount > 0;
@@ -189,7 +195,8 @@ define ("components/chatView",
               <JumpToLatestBtn
                 show={userIsViewingPastMessages}
                 showUnreadIndicator={showUnreadIndicator}
-                onClick={this._onJumpBtnClick} />
+                onClick={this._onJumpBtnClick}
+                ariaLabel={text.ariaLabels.jumpToLatestBtn} />
             </div>
           );
         }

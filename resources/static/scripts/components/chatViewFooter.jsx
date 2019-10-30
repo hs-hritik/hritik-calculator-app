@@ -94,7 +94,13 @@ define ("components/chatViewFooter",
           chatViewStartNewConversation: PropTypes.string.isRequired,
           retryBtn: PropTypes.string.isRequired,
           searchPlaceholder: PropTypes.string,
-          noSearchResultsText: PropTypes.string
+          noSearchResultsText: PropTypes.string,
+          ariaLabels: PropTypes.shape ({
+            sendMessage: PropTypes.string,
+            send: PropTypes.string,
+            attachFiles: PropTypes.string,
+            jumpToLatestBtn: PropTypes.string
+          })
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -133,7 +139,8 @@ define ("components/chatViewFooter",
             }
           },
           issueIsCreated,
-          onSkipUserInput
+          onSkipUserInput,
+          text
         } = this.props;
 
         const showUnreadIndicator = unreadCount > 0;
@@ -142,7 +149,8 @@ define ("components/chatViewFooter",
             <JumpToLatestBtn
               show={userIsViewingPastMessages}
               showUnreadIndicator={showUnreadIndicator}
-              onClick={this.props.onJumpBtnClick} />
+              onClick={this.props.onJumpBtnClick}
+              ariaLabel={text.ariaLabels.jumpToLatestBtn} />
           </div>
         );
 
@@ -393,6 +401,7 @@ define ("components/chatViewFooter",
             onFooterFocus ();
             _setAxActiveIndex ();
           };
+          const inputIsInvalid = !!errorMsg;
 
           inputComponentEl = (
             <input className="hs-chat-footer__text-field"
@@ -409,7 +418,9 @@ define ("components/chatViewFooter",
                    autoFocus
                    tabIndex="0"
                    data-label={METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.DATA_LABEL}
-                   onClick={_setAxActiveIndex} />
+                   onClick={_setAxActiveIndex}
+                   aria-invalid={inputIsInvalid}
+                   aria-required={true} />
           );
         }
 
@@ -507,9 +518,14 @@ define ("components/chatViewFooter",
       _renderSendButton () {
         const {
           userInput: {
-            errorMsg
+            errorMsg,
+            disabled: userInputIsDisabled,
+            type
           },
-          onSubmitReply
+          onSubmitReply,
+          text: {
+            ariaLabels
+          }
         } = this.props;
         const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
@@ -522,6 +538,15 @@ define ("components/chatViewFooter",
           onSubmitReply ();
           _setAxActiveIndex ();
         };
+        const htmlInputType = this._getHtmlInputType (type);
+        const fieldIsInvalid = !!errorMsg;
+        let inputAriaLabel = ariaLabels.sendMessage;
+
+        // If input type is date, set aria-label to send
+        // Otherwise, set aria-label to send message
+        if (htmlInputType === HTML_INPUT_TYPES.DATE) {
+          inputAriaLabel = ariaLabels.send;
+        }
 
         return (
           <a
@@ -529,7 +554,11 @@ define ("components/chatViewFooter",
             onClick={_onSubmitReply}
             tabIndex="0"
             data-label={METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.DATA_LABEL}
-            onFocus={_setAxActiveIndex}>
+            onFocus={_setAxActiveIndex}
+            aria-label={inputAriaLabel}
+            role="button"
+            aria-disabled={userInputIsDisabled}
+            aria-invalid={fieldIsInvalid}>
             <i className={iconClasses} />
           </a>
         );
@@ -539,6 +568,7 @@ define ("components/chatViewFooter",
        * Render attachment button
        */
       _renderAttachmentButton () {
+        const {text} = this.props;
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
             selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
@@ -550,7 +580,9 @@ define ("components/chatViewFooter",
             onKeyDown={this._onFileInputKeyDown}
             data-label={METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.DATA_LABEL}
             tabIndex="0"
-            onFocus={_setAxActiveIndex}>
+            onFocus={_setAxActiveIndex}
+            aria-label={text.ariaLabels.attachFiles}
+            role="button">
             <FileInput
               onChange={this.props.onFilesChange}
               noPadding

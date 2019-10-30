@@ -59,7 +59,8 @@ define ("components/message",
             sentAt: PropTypes.string,
             userMessage: PropTypes.string,
             openFile: PropTypes.string,
-            attachmentUploading: PropTypes.string
+            attachmentUploading: PropTypes.string,
+            conversationClosedLine: PropTypes.string
           })
         }).isRequired
       },
@@ -131,6 +132,9 @@ define ("components/message",
        */
       _renderMessage () {
         const {type, attachments, suggestedFaqs} = this.props.message;
+        // Vo reads inside the msg bubble div, if any attachment or faq inside the body
+        // Otherwise inner div is hidden to avoid repetition during voice over
+        const ariaContainerIsHidden = !(suggestedFaqs || attachments);
         let messageItemEl = null;
 
         // @NOTE - All bot messages (except faqs) and user response messages
@@ -164,8 +168,6 @@ define ("components/message",
             messageItemEl = this._renderAttachmentMessage ();
             break;
         }
-
-        const ariaContainerIsHidden = !(suggestedFaqs || attachments);
 
         if (messageItemEl) {
           return (
@@ -540,12 +542,15 @@ define ("components/message",
        */
       _renderChatSeparator () {
         const {hr, timestamp, infoText} = this.props.message;
+        const {ariaLabels} = this.props.text;
 
         let hrEl, timestampEl, infoTextEl;
 
         if (hr) {
           // horizontal line separating conversations
-          hrEl = (<div className="hs-message__hr" />);
+          hrEl = (
+            <div className="hs-message__hr" aria-label={ariaLabels.conversationClosedLine} />
+          );
         }
 
         if (timestamp) {
