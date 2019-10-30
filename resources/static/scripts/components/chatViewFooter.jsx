@@ -99,7 +99,11 @@ define ("components/chatViewFooter",
             sendMessage: PropTypes.string,
             send: PropTypes.string,
             attachFiles: PropTypes.string,
-            jumpToLatestBtn: PropTypes.string
+            jumpToLatestBtn: PropTypes.string,
+            optionsList: PropTypes.string,
+            clearSearchInput: PropTypes.string,
+            searchList: PropTypes.string,
+            closeSearch: PropTypes.string
           })
         }).isRequired,
         footerIsActive: PropTypes.bool,
@@ -481,7 +485,8 @@ define ("components/chatViewFooter",
           onListPickerOptionSelect,
           text: {
             searchPlaceholder,
-            noSearchResultsText: searchNoResultsText
+            noSearchResultsText: searchNoResultsText,
+            ariaLabels
           },
           browserIsMobile
         } = this.props;
@@ -495,6 +500,12 @@ define ("components/chatViewFooter",
             "hs-picker--mobile": browserIsMobile
           }
         );
+        const pickerAriaLabels = {
+          optionsList: ariaLabels.optionsList,
+          clearSearchInput: ariaLabels.clearSearchInput,
+          searchList: ariaLabels.searchList,
+          closeSearch: ariaLabels.closeSearch
+        };
 
         return (
           <Picker className={pickerClasses}
@@ -508,7 +519,8 @@ define ("components/chatViewFooter",
                   maxHeight={this.state.pickerMaxHeight}
                   accessibility={true}
                   onFocusableItemsChange={this._onFocusItemsChanged}
-                  onFocusChange={this._onPickerFocusChange} />
+                  onFocusChange={this._onPickerFocusChange}
+                  ariaLabels={pickerAriaLabels} />
         );
       },
 

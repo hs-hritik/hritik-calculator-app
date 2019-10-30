@@ -130,7 +130,11 @@ define ("reducers/ui",
           send: "Send",
           jumpToLatestBtn: "Jump to latest message",
           typingIndicator: "Support is typing",
-          conversationClosedLine: "Conversation closed"
+          conversationClosedLine: "Conversation closed",
+          optionsList: "Options List",
+          clearSearchInput: "Clear search input",
+          searchList: "Search list",
+          closeSearch: "Close Search"
         }
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
