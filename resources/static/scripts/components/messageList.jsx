@@ -505,6 +505,19 @@ define ("components/messageList",
        * Scroll the bottom when the component is mounted.
        */
       componentDidMount () {
+        const messageListLinks = document.querySelectorAll (".hs-message-list a");
+        const messageListLinksCount = messageListLinks.length;
+        const selectors = [];
+
+        for (let i = 0; i < messageListLinksCount; i++) {
+          selectors.push (commonHelpers.getSelectorForElement (messageListLinks[i]));
+        }
+
+        ax.replaceSelectors ({
+          group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+          selectors: selectors
+        });
+
         // @TODO :- Remove throttling logic as the image will have fixed width
         // and height. We will not require bottom scrolling logic then.
         // Also we will need to fix the width and height of image container
