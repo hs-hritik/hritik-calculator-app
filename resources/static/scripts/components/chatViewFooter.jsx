@@ -517,7 +517,7 @@ define ("components/chatViewFooter",
                   searchNoResultsText={searchNoResultsText}
                   minHeight={PICKER_MIN_HEIGHT}
                   maxHeight={this.state.pickerMaxHeight}
-                  accessibility={true}
+                  axIsSupported={true}
                   onFocusableItemsChange={this._onFocusItemsChanged}
                   onFocusChange={this._onPickerFocusChange}
                   ariaLabels={pickerAriaLabels} />
