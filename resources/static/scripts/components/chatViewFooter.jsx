@@ -1045,8 +1045,13 @@ define ("components/chatViewFooter",
        * It calls ax function to update active index
        *
        * @param {Object} config.selector - Selector value
+       * @param {Object} ev - Click/Focus event
        */
-      _setAxActiveIndex (config) {
+      _setAxActiveIndex (config, ev) {
+        if (ev) {
+          ev.stopPropagation ();
+        }
+
         ax.setActiveIndex (config);
       },
 
