@@ -741,9 +741,13 @@
       launcherIframe.contentWindow.document.addEventListener ("keydown", (ev) => {
         if (ev.shiftKey && ev.keyCode === KEYCODES.TAB) {
           ev.preventDefault ();
+          launcherIframe.blur ();
+          webSdkIframe.focus ();
           _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: false});
         } else if (ev.keyCode === KEYCODES.TAB) {
           ev.preventDefault ();
+          launcherIframe.blur ();
+          webSdkIframe.focus ();
           _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: true});
         }
       });
@@ -1138,6 +1142,9 @@
 
         case EVENT_TYPES.SDK_FOCUS_LAUNCHER:
           // Call the event handler to focus launcher button
+          webSdkIframe.blur ();
+          launcherIframe.focus ();
+
           if (launcherButton) {
             launcherButton.focus ();
           }
