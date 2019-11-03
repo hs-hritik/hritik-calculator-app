@@ -434,6 +434,25 @@ define ("components/messageList",
         ax.setActiveIndex (config);
       },
 
+      /**
+       * Generate selectors list for anchor tags in message list
+       *
+       * @returns {Array} - An array of selectors strings
+       */
+      _getLinkSelectors () {
+        const messageListLinks = document.querySelectorAll (".hs-message-list a");
+        const messageListLinksCount = messageListLinks.length;
+        const selectors = [];
+        const messageList = document.querySelector (".hs-message-list");
+
+        for (let i = 0; i < messageListLinksCount; i++) {
+          const selector = commonHelpers.getSelectorForElement (messageListLinks[i], messageList);
+          selectors.push (".hs-message-list " + selector);
+        }
+
+        return selectors;
+      },
+
       componentDidUpdate (prevProps) {
         const {messages, minimized} = this.props;
         const previousMessages = prevProps.messages;
@@ -475,29 +494,15 @@ define ("components/messageList",
 
         this._handleScrollingToBottom (messages, previousMessages);
 
-        // If message length count is changed and
-        // the count of message link selector in metalist and total links count is different
-        // Update message link selectors in meta list and retain the current focus
+        // If message length count is changed then
+        // update message link selectors in meta list and retain the current focus
         if (messageListHasBeenUpdated) {
-          const messageListLinks = document.querySelectorAll (".hs-message-list a");
-          const messageListLinksCount = messageListLinks.length;
-          const selectors = [];
-          const axMsgLinkCount = ax.getMetaListSelectorsCount ({
-            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
+          ax.saveCurrentFocusedSelector ();
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+            selectors: this._getLinkSelectors ()
           });
-
-          if (axMsgLinkCount !== messageListLinksCount) {
-            for (let i = 0; i < messageListLinksCount; i++) {
-              selectors.push (commonHelpers.getSelectorForElement (messageListLinks[i]));
-            }
-
-            ax.saveCurrentFocusedSelector ();
-            ax.replaceSelectors ({
-              group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
-              selectors: selectors
-            });
-            ax.focusSavedSelector ();
-          }
+          ax.focusSavedSelector ();
         }
       },
 
@@ -505,17 +510,9 @@ define ("components/messageList",
        * Scroll the bottom when the component is mounted.
        */
       componentDidMount () {
-        const messageListLinks = document.querySelectorAll (".hs-message-list a");
-        const messageListLinksCount = messageListLinks.length;
-        const selectors = [];
-
-        for (let i = 0; i < messageListLinksCount; i++) {
-          selectors.push (commonHelpers.getSelectorForElement (messageListLinks[i]));
-        }
-
         ax.replaceSelectors ({
           group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
-          selectors: selectors
+          selectors: this._getLinkSelectors ()
         });
 
         // @TODO :- Remove throttling logic as the image will have fixed width

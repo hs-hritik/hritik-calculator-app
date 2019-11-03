@@ -504,21 +504,6 @@ define (
       focus ();
     };
 
-    /**
-     * Returns selectors counts in metaList
-     *
-     * @param {String} config.group - Readable name of the meta-list
-     * @returns {Number} - Count of selectors in the meta list
-     */
-    const getMetaListSelectorsCount = (config) => {
-      const metaList = _getActiveViewMetaList ();
-      const metaListIndex = _findMetaListIndexByGroupName (config.group);
-
-      if (metaListIndex !== -1) {
-        return metaList [metaListIndex].selectors.length;
-      }
-    };
-
     const _backupSelectors = {};
 
     /**
@@ -575,7 +560,6 @@ define (
       setFlatListActiveIndex,
       saveCurrentFocusedSelector,
       focusSavedSelector,
-      getMetaListSelectorsCount,
       backupSelectors,
       restoreSelectors,
       init
