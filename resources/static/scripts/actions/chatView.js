@@ -1990,6 +1990,7 @@ define ("actions/chatView",
         const {
           appState: {
             activeIssueId,
+            issueType,
             issueState
           },
           chatView: {
@@ -2041,13 +2042,35 @@ define ("actions/chatView",
           value: trimmedValue
         }));
 
-        postUserMessage ({
-          onSuccess: () => {
-            handleIssueReopen (issueState);
-            dispatch (updateReplyText (""));
-            audioHelpers.playSend ();
-          }
-        });
+        // If the issue type is not "initial" i.e. an issue / a preissue has been
+        // created
+        // Send the user message to the backend.
+        // Else if the issue type is "initial" i.e. an issue / a preissue
+        // hasn't been created yet and
+        // the initial user message is not set yet (via the API)
+        // Set the initial user message in the state and
+        // Create the preIssue (the create preIssue fn uses the initial user message
+        // set in the state).
+        if (issueType !== ISSUE_TYPE.INITIAL) {
+          postUserMessage ({
+            onSuccess: () => {
+              handleIssueReopen (issueState);
+              dispatch (updateReplyText (""));
+              audioHelpers.playSend ();
+            }
+          });
+        } else {
+          // @TODO: Lazy Preissue Creation
+          // 1. This sets the initial user message under sdkConfigOptions in
+          // the appState. Consider moving it out of this object. For now, the
+          // create preIssue fn is going to use this value. Fix in the next commits.
+          // 2. Add a check so that the initial user message is added only if it's
+          // not present already. For the initial user message added via the API,
+          // createPreIssue should be called as soon as the reply box is enabled.
+          // This flow (submitReply) won't be invoked in that case.
+          dispatch (actionCreators.setInitialUserMsg (trimmedValue));
+          dispatch (createPreIssue ());
+        }
       };
     };
 
@@ -2136,7 +2159,10 @@ define ("actions/chatView",
             fullPrivacyEnabled,
             developerSetLanguage,
             userName,
-            userId
+            userId,
+            sdkConfigOptions: {
+              initialUserMessage
+            }
           },
           ui: {
             text: {
@@ -2208,7 +2234,11 @@ define ("actions/chatView",
           xhrData.user_id = userId;
         }
 
-        dispatch (actionCreators.toggleChatViewLoading (true));
+        // If initial user message is present in the state, send it with the
+        // create preissue API request.
+        if (initialUserMessage) {
+          xhrData.user_message = initialUserMessage;
+        }
 
         // We need to hide footer while creating preIssue because the default
         // value of input disabled is false, in store on page refresh.
@@ -2651,6 +2681,7 @@ define ("actions/chatView",
     return {
       createPreIssue,
       updateReplyText,
+      enableReplyBox,
       submitReply,
       abortCreatePreissueXhr,
       startPollingForMessages,

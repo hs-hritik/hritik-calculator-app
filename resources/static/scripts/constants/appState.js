@@ -12,12 +12,19 @@ define ("constants/appState",
     const WEB_CHAT_VERSION = "2.33.0";
 
     const ISSUE_STATE = {
+      // "na" (not applicable) represents the issue state value in the state when
+      // no preissue or issue has been created yet. This is the default value
+      // of the issue state.
+      NA: "na",
       ACTIVE: "active",
       RESOLVED: "resolved",
       REJECTED: "rejected"
     };
 
     const ISSUE_TYPE = {
+      // "initial" represents the issue type value in the state when no preissue
+      // or issue has been created yet. This is the default value of issue type.
+      INITIAL: "initial",
       ISSUE: "issue",
       PRE_ISSUE: "preissue"
     };

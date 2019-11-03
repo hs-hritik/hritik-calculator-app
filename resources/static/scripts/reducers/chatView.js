@@ -137,7 +137,7 @@ define ("reducers/chatView",
       pollerFailureCount: 0,
       isCsatSubmitted: false,
       readFaqList: [],
-      loading: true,
+      loading: false,
       // This represents the error in the whole chat view
       // @TODO: Move the error handling to the error reducer.
       error: INITIAL_ERROR_STATE
@@ -322,7 +322,7 @@ define ("reducers/chatView",
         case ACTION_TYPES.APPEND_MESSAGES:
           /**
            * When message is redacted, we get real time update of it in poller.
-           * If message is redacted and if it's id is already present in the message list
+           * If message is redacted and if its id is already present in the message list
            * then that message is replaced with a message having "message deleted" text.
            */
           const updatedExistingMessages = _replaceRedactedMessages (

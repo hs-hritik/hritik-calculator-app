@@ -96,11 +96,13 @@ define ("reducers/appState",
 
       // Backend flag to represent if any issue exists
       issueExists: false,
-      // Type of issue can either be a. issue b. preissue
-      issueType: ISSUE_TYPE.PRE_ISSUE,
-      // Issue state can be either a. active b. resolved c. rejected
-      // It's applicable for both issue types (issue and preissue)
-      issueState: ISSUE_STATE.ACTIVE,
+      // Issue type can take one of these three values - initial (no issue/preissue
+      // has been created yet), preissue, and issue.
+      issueType: ISSUE_TYPE.INITIAL,
+      // Issue state can take one of these values - na (no issue/preissue
+      // has been created yet), active, resolved, rejected.
+      // na is for the initial issue type, other states for preissue and issue.
+      issueState: ISSUE_STATE.NA,
       activeIssueId: "",
       internalIssueId: "",
 

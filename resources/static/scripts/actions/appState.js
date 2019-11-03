@@ -392,7 +392,7 @@ define ("actions/appState",
           }));
         }
 
-        // If atleast one issue exists on backend then start the poller.
+        // If at least one issue exists on backend then start the poller.
         // (poller will check for issue state)
         // Else start a new conversation by creating new preIssue.
 
@@ -408,6 +408,9 @@ define ("actions/appState",
         // Then explicitly create a new preIssue.
         // OR
         // If issue exists for a user, then start the poller.
+        // Note - For the other app reset trigger i.e. INITIAL, don't do anything.
+        // INITIAL means that the app hasn't reset via any of the other triggers.
+        // `handleMessengerToggle` in `api.js`.
         if (
           (appResetTrigger === APP_RESET_TRIGGER.PRE_ISSUE_RESET && widgetIsOpen) ||
           (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) ||
@@ -736,9 +739,10 @@ define ("actions/appState",
     };
 
     /**
-     * Action to start new conversation.
-     * Creates preIssue (or issue, for out of business hours) on the backend
-     * @returns {Function} - action.
+     * Action to start a new conversation.
+     * A new conversation is started by -
+     * adding the greeting message to the message list, if applicable, and
+     * enabling the reply box
      */
     const startNewConversation = () => {
       // This is applicable only for chat view (in business hours). For out of business hours
@@ -746,7 +750,9 @@ define ("actions/appState",
       // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (setConversationStarted ());
-        store.dispatch (chatViewActions.createPreIssue ());
+        // @TODO: Lazy Preissue Creation
+        // Add greeting message if the feature is enabled.
+        store.dispatch (chatViewActions.enableReplyBox ());
       }
     };
 
@@ -924,7 +930,6 @@ define ("actions/appState",
       executeProactiveChatRules,
       updateStyles,
       resetPreIssue,
-      setConversationStarted,
       setWidgetShouldAutoOpen,
       setReEngagementId,
       setWindowIsFocused,

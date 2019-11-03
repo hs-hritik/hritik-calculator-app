@@ -273,13 +273,13 @@ define ("extras/api",
               })
             );
           } else if ((preIssueIsRejected && resetTriggerIsDefault)) {
-            // This is to handle special case where we get rejected preIssue on
-            // first page load. We will set app trigger as pre issue reset and call
-            // reset method which will create a new preIssue.
+            // This is to handle a special case where we get rejected preIssue on
+            // first page load. We will set app reset trigger as pre issue reset
+            // and call reset method which will create a new preIssue.
             // NOTE - Resetting preIssue and creating new preIssue should happen in
             // sequence, but these are two different api calls. So if we call reset
             // preIssue and the user closes the tab or browser, create new preIssue
-            // request wont be fired and the user will keep seeing reject preIssue.
+            // request won't be fired and the user will keep seeing the rejected preIssue.
             store.dispatch (
               commonActions.reloadApp ({
                 trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
