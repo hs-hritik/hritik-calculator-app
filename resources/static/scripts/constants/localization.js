@@ -59,7 +59,23 @@ define ("constants/localization",
       "connecting_text": "connectingText",
       "system_error": "unknownErrorReconnecting",
       "search_placeholder": "searchPlaceholder",
-      "no_search_results": "noSearchResultsText"
+      "no_search_results": "noSearchResultsText",
+      "nbh_remove_attachment_vo": "ariaLabelsRemoveAttachment",
+      "nbh_attachment_vo": "ariaLabelAddedAttachmentPrefix",
+      "nbh_attach_files_vo":"ariaLabelAttachFiles",
+      "back_button_vo": "ariaLabelFaqViewHeader",
+      "loading_vo": "ariaLabelLoading",
+      "support_message_name_time_vo": "ariaLabelSupportMsgAgentName",
+      "support_message_time_vo": "ariaLabelSupportMsgMissingAgentName",
+      "user_message_time_vo": "ariaLabelUserMessage",
+      "user_attachment_uploading_vo": "ariaLabelAttachmentUploading",
+      "open_attachment_vo": "ariaLabelOpenFile",
+      "reply_send_button_vo": "ariaLabelSendMessage",
+      "jump_latest_message_vo": "ariaLabelJumpToLatestBtn",
+      "support_typing_vo": "ariaLabelTypingIndicator",
+      "clear_search_vo": "ariaLabelClearSearchInput",
+      "list_picker_search_list_vo": "ariaLabelSearchList",
+      "collapse_search_vo": "ariaLabelCloseSearch"
     };
 
     return {

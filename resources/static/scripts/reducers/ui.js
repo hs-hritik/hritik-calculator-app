@@ -43,6 +43,7 @@ define ("reducers/ui",
 
     const INITIAL_STATE = {
       // @TODO: Remove after integrating it with backend
+      // @TODO: Add ariaLabelOptionsList translations
       text: {
         chatViewHeader: "Chat with us",
         chatViewConversationResolutionQuestion: "Did we answer all your questions?",
@@ -114,28 +115,29 @@ define ("reducers/ui",
         },
         searchPlaceholder: "Search",
         noSearchResultsText: "No results found",
-        ariaLabels: {
-          removeAttachment: "Remove attached file icon",
-          addedAttachmentPrefix: "Attachment",
-          attachFiles: "Attach Files",
-          faqViewHeader: "Go back to conversation",
-          loading: "Loading",
-          supportMsg: "Message from Support",
-          sentBy: "Sent by",
-          sentAt: "Sent at",
-          userMessage: "Your message",
-          openFile: "Open file",
-          attachmentUploading: "Your attachment, Uploading",
-          sendMessage: "Send Message",
-          send: "Send",
-          jumpToLatestBtn: "Jump to latest message",
-          typingIndicator: "Support is typing",
-          conversationClosedLine: "Conversation closed",
-          optionsList: "Options List",
-          clearSearchInput: "Clear search input",
-          searchList: "Search list",
-          closeSearch: "Close Search"
-        }
+        ariaLabelsRemoveAttachment: "Remove attachment",
+        ariaLabelAddedAttachmentPrefix: "Attachment, {{file_name}}",
+        ariaLabelAttachFiles: "Attach Files",
+        ariaLabelFaqViewHeader: "Go back to conversation",
+        ariaLabelLoading: "Loading...",
+        ariaLabelSupportMsgAgentName: (
+          "Message from Support, {{message}}, " +
+          "Sent by {{agent_name}} at {{time_and_date}}"
+        ),
+        ariaLabelSupportMsgMissingAgentName: (
+          "Message from Support, {{message}}, " +
+          "Sent at {{time_and_date}}"
+        ),
+        ariaLabelUserMessage: "Your message, {{message}}, Sent at {{time_and_date}}",
+        ariaLabelAttachmentUploading: "Your attachment, Uploading",
+        ariaLabelOpenFile: "Open file, {{file_name}}",
+        ariaLabelSendMessage: "Send message",
+        ariaLabelJumpToLatestBtn: "Jump to latest message",
+        ariaLabelTypingIndicator: "Support is typing",
+        ariaLabelClearSearchInput: "Clear text",
+        ariaLabelSearchList: "Search list",
+        ariaLabelCloseSearch: "Close Search",
+        ariaLabelOptionsList: "Options List"
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

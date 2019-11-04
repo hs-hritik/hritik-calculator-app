@@ -53,15 +53,12 @@ define ("components/message",
           attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
           attachmentUploadingStatus: PropTypes.string.isRequired,
-          ariaLabels: PropTypes.shape ({
-            supportMsg: PropTypes.string,
-            sentBy: PropTypes.string,
-            sentAt: PropTypes.string,
-            userMessage: PropTypes.string,
-            openFile: PropTypes.string,
-            attachmentUploading: PropTypes.string,
-            conversationClosedLine: PropTypes.string
-          })
+          ariaLabelSupportMsgAgentName: PropTypes.string,
+          ariaLabelSupportMsgMissingAgentName: PropTypes.string,
+          ariaLabelAttachmentUploading: PropTypes.string,
+          ariaLabelUserMessage: PropTypes.string,
+          conversationClosed: PropTypes.string,
+          ariaLabelOpenFile: PropTypes.string
         }).isRequired
       },
 
@@ -82,7 +79,12 @@ define ("components/message",
 
       render () {
         const {isCustomerMsg, type, states, body} = this.props.message;
-        const {ariaLabels} = this.props.text;
+        const {
+          ariaLabelSupportMsgAgentName,
+          ariaLabelSupportMsgMissingAgentName,
+          ariaLabelAttachmentUploading,
+          ariaLabelUserMessage
+        } = this.props.text;
 
         if (type === MESSAGE_TYPE.CHAT_SEPARATOR) {
           return this._renderChatSeparator ();
@@ -100,26 +102,49 @@ define ("components/message",
           }
         );
         const time = this._getHumanReadableTime ();
-        let msgBubbleAriaLabel;
+        let msgLabel;
 
         if (!isCustomerMsg) {
           const agentName = this._getAgentNickname ();
 
-          msgBubbleAriaLabel = `${ariaLabels.supportMsg}, ${body}, `;
-
           if (agentName) {
-            msgBubbleAriaLabel += `${ariaLabels.sentBy} ${agentName} at ${time}`;
+            msgLabel = ariaLabelSupportMsgAgentName.replace (
+              "{{message}}",
+              body
+            );
+            msgLabel = msgLabel.replace (
+              "{{agent_name}}",
+              agentName
+            );
+            msgLabel = msgLabel.replace (
+              "{{time_and_date}}",
+              time
+            );
           } else {
-            msgBubbleAriaLabel += `at ${time}`;
+            msgLabel = ariaLabelSupportMsgMissingAgentName.replace (
+              "{{message}}",
+              body
+            );
+            msgLabel = msgLabel.replace (
+              "{{time_and_date}}",
+              time
+              );
           }
         } else if (states.uploadInProgress) {
-          msgBubbleAriaLabel = ariaLabels.attachmentUploading;
+          msgLabel = ariaLabelAttachmentUploading;
         } else {
-          msgBubbleAriaLabel = `${ariaLabels.userMessage}, ${body}, ${ariaLabels.sentAt} ${time}`;
+          msgLabel = ariaLabelUserMessage.replace (
+            "{{message}}",
+            body
+          );
+          msgLabel = msgLabel.replace (
+            "{{time_and_date}}",
+            time
+          );
         }
 
         return (
-          <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgBubbleAriaLabel}>
+          <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel}>
             {this._renderMessage ()}
             {this._renderAttachmentErrors ()}
             {this._renderMessageDetails ()}
@@ -270,7 +295,10 @@ define ("components/message",
         );
         const {text} = this.props;
         const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
-        const attachmentAriaLabel = `${text.ariaLabels.openFile}, ${formattedFileName}`;
+        const attachmentAriaLabel = text.ariaLabelOpenFile (
+          "{{file_name}}",
+          formattedFileName
+        );
 
         return (
           <div
@@ -514,7 +542,7 @@ define ("components/message",
        */
       _renderNonPreviewableAttachment () {
         const {name, iconClasses, onClick, url} = this._attachmentRenderConfig;
-        const {text} = this.props;
+        const {ariaLabelOpenFile} = this.props.text;
         const formatedFileName = attachmentsHelpers.getFormattedFileName (name);
         let wrapperClickHandler;
 
@@ -524,7 +552,11 @@ define ("components/message",
           wrapperClickHandler = onClick;
         }
 
-        const attachmentAriaLabel = text.ariaLabels.openFile + ", " + formatedFileName;
+        const attachmentAriaLabel = ariaLabelOpenFile.replace (
+          "{{file_name}}",
+          formatedFileName
+        );
+
         return (
           <div
             className="hs-message__user-attachment"
@@ -542,14 +574,13 @@ define ("components/message",
        */
       _renderChatSeparator () {
         const {hr, timestamp, infoText} = this.props.message;
-        const {ariaLabels} = this.props.text;
-
+        const {text} = this.props;
         let hrEl, timestampEl, infoTextEl;
 
         if (hr) {
           // horizontal line separating conversations
           hrEl = (
-            <div className="hs-message__hr" aria-label={ariaLabels.conversationClosedLine} />
+            <div className="hs-message__hr" aria-label={text.conversationClosed} />
           );
         }
 

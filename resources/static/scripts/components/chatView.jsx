@@ -60,9 +60,7 @@ define ("components/chatView",
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired,
           pastConversationsLoadingText: PropTypes.string.isRequired,
-          ariaLabels: PropTypes.shape ({
-            jumpToLatestBtn: PropTypes.string
-          })
+          ariaLabelJumpToLatestBtn: PropTypes.string
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
@@ -196,7 +194,7 @@ define ("components/chatView",
                 show={userIsViewingPastMessages}
                 showUnreadIndicator={showUnreadIndicator}
                 onClick={this._onJumpBtnClick}
-                ariaLabel={text.ariaLabels.jumpToLatestBtn} />
+                ariaLabel={text.ariaLabelJumpToLatestBtn} />
             </div>
           );
         }

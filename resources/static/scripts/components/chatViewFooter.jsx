@@ -96,16 +96,13 @@ define ("components/chatViewFooter",
           retryBtn: PropTypes.string.isRequired,
           searchPlaceholder: PropTypes.string,
           noSearchResultsText: PropTypes.string,
-          ariaLabels: PropTypes.shape ({
-            sendMessage: PropTypes.string,
-            send: PropTypes.string,
-            attachFiles: PropTypes.string,
-            jumpToLatestBtn: PropTypes.string,
-            optionsList: PropTypes.string,
-            clearSearchInput: PropTypes.string,
-            searchList: PropTypes.string,
-            closeSearch: PropTypes.string
-          })
+          ariaLabelSendMessage: PropTypes.string,
+          ariaLabelJumpToLatestBtn: PropTypes.string,
+          ariaLabelClearSearchInput: PropTypes.string,
+          ariaLabelOptionsList: PropTypes.string,
+          ariaLabelSearchList: PropTypes.string,
+          ariaLabelCloseSearch: PropTypes.string,
+          ariaLabelAttachFiles: PropTypes.string
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -155,7 +152,7 @@ define ("components/chatViewFooter",
               show={userIsViewingPastMessages}
               showUnreadIndicator={showUnreadIndicator}
               onClick={this.props.onJumpBtnClick}
-              ariaLabel={text.ariaLabels.jumpToLatestBtn} />
+              ariaLabel={text.ariaLabelJumpToLatestBtn} />
           </div>
         );
 
@@ -487,7 +484,10 @@ define ("components/chatViewFooter",
           text: {
             searchPlaceholder,
             noSearchResultsText: searchNoResultsText,
-            ariaLabels
+            ariaLabelClearSearchInput,
+            ariaLabelOptionsList,
+            ariaLabelSearchList,
+            ariaLabelCloseSearch
           },
           browserIsMobile
         } = this.props;
@@ -502,10 +502,10 @@ define ("components/chatViewFooter",
           }
         );
         const pickerAriaLabels = {
-          optionsList: ariaLabels.optionsList,
-          clearSearchInput: ariaLabels.clearSearchInput,
-          searchList: ariaLabels.searchList,
-          closeSearch: ariaLabels.closeSearch
+          optionsList: ariaLabelOptionsList,
+          clearSearchInput: ariaLabelClearSearchInput,
+          searchList: ariaLabelSearchList,
+          closeSearch: ariaLabelCloseSearch
         };
 
         return (
@@ -532,12 +532,11 @@ define ("components/chatViewFooter",
         const {
           userInput: {
             errorMsg,
-            disabled: userInputIsDisabled,
-            type
+            disabled: userInputIsDisabled
           },
           onSubmitReply,
           text: {
-            ariaLabels
+            ariaLabelSendMessage
           }
         } = this.props;
         const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
@@ -551,15 +550,8 @@ define ("components/chatViewFooter",
           onSubmitReply ();
           _setAxActiveIndex ();
         };
-        const htmlInputType = this._getHtmlInputType (type);
         const fieldIsInvalid = !!errorMsg;
-        let inputAriaLabel = ariaLabels.sendMessage;
-
-        // If input type is date, set aria-label to send
-        // Otherwise, set aria-label to send message
-        if (htmlInputType === HTML_INPUT_TYPES.DATE) {
-          inputAriaLabel = ariaLabels.send;
-        }
+        const inputAriaLabel = ariaLabelSendMessage;
 
         return (
           <a
@@ -594,7 +586,7 @@ define ("components/chatViewFooter",
             data-label={METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.DATA_LABEL}
             tabIndex="0"
             onFocus={_setAxActiveIndex}
-            aria-label={text.ariaLabels.attachFiles}
+            aria-label={text.ariaLabelAttachFiles}
             role="button">
             <FileInput
               onChange={this.props.onFilesChange}

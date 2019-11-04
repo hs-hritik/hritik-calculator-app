@@ -138,7 +138,7 @@ define ("components/messageList",
         return (
           <div
             className="hs-message-list__typing-indicator"
-            aria-label={text.ariaLabels.typingIndicator}>
+            aria-label={text.ariaLabelTypingIndicator}>
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-1" />
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-2" />
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-3" />

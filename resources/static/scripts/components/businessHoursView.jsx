@@ -57,11 +57,9 @@ define ("components/businessHoursView",
           attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired,
-          ariaLabels: PropTypes.shape ({
-            removeAttachment: PropTypes.string,
-            addedAttachmentPrefix: PropTypes.string,
-            attachFiles: PropTypes.string
-          })
+          ariaLabelsRemoveAttachment: PropTypes.string,
+          ariaLabelAddedAttachmentPrefix: PropTypes.string,
+          ariaLabelAttachFiles: PropTypes.string
         }).isRequired,
         contactFormDetails: PropTypes.shape ({
           name: FORM_FIELD_PROP_TYPE,
@@ -432,7 +430,13 @@ define ("components/businessHoursView",
        * @param {Object} attachment - attachment object
        */
       _renderAttachment (attachment) {
-        const {submitInProgress, text} = this.props;
+        const {
+          submitInProgress,
+          text: {
+            ariaLabelsRemoveAttachment,
+            ariaLabelAddedAttachmentPrefix
+          }
+        } = this.props;
         const {id, name, size, attachmentHasError} = attachment;
         let iconEl = null;
         let attachmentErrorEl = null;
@@ -460,7 +464,7 @@ define ("components/businessHoursView",
               onFocus= {_setAxActiveIndex}
               onClick={this._onRemoveAttachmentClick.bind (this, id, dataLabelAttribute)}
               data-label={dataLabelAttribute}
-              aria-label={text.ariaLabels.removeAttachment}
+              aria-label={ariaLabelsRemoveAttachment}
               role="button" />
           );
         }
@@ -482,7 +486,10 @@ define ("components/businessHoursView",
             "hs-business-hours__attachment-with-error": attachmentHasError
           }
         );
-        const ariaLabelText = `${text.ariaLabels.addedAttachmentPrefix}, ${name}, ${size}`;
+        const ariaLabelText = ariaLabelAddedAttachmentPrefix.replace (
+          "{{file_name}}",
+          `, ${name}, ${size}`
+        );
 
         return ([
           (<div className={attachmentClasses} key={id}>
@@ -511,7 +518,13 @@ define ("components/businessHoursView",
        * Render placeholder attachment layout
        */
       _renderPlaceholderAttachment () {
-        const {onFilesChange, text: {dndInfoText, ariaLabels}} = this.props;
+        const {
+          onFilesChange,
+          text: {
+            dndInfoText,
+            ariaLabelAttachFiles
+          }
+        } = this.props;
         const {
           limitHasExceeded,
           sizeHasExceeded,
@@ -534,7 +547,7 @@ define ("components/businessHoursView",
             onFocus={_setAxActiveIndex}
             onClick={_setAxActiveIndex}
             role="button"
-            aria-label={ariaLabels.attachFiles}>
+            aria-label={ariaLabelAttachFiles}>
             <FileInput iconClasses="ion-attachment"
                        disabled={fileInputIsDisabled}
                        onChange={onFilesChange}
