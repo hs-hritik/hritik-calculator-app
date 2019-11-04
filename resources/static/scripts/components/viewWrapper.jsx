@@ -34,7 +34,9 @@ define ("components/viewWrapper",
         }),
         onToggleOnlineStatus: PropTypes.func.isRequired,
         onMinimizeConversation: PropTypes.func.isRequired,
-        onFocusLauncher: PropTypes.func
+        onFocusLauncher: PropTypes.func,
+        onKeyPress: PropTypes.func.isRequired,
+        onClick: PropTypes.func.isRequired
       },
 
       render () {
@@ -94,11 +96,24 @@ define ("components/viewWrapper",
       _onKeyPress (ev) {
         if (ev.shiftKey && ev.keyCode === KEY_CODES.TAB) {
           ax.focusPrev ();
+          this.props.onKeyPress ({
+            keyboardInteractionIsActive: true
+          });
           ev.preventDefault ();
         } else if (ev.keyCode === KEY_CODES.TAB) {
           ax.focusNext ();
+          this.props.onKeyPress ({
+            keyboardInteractionIsActive: true
+          });
           ev.preventDefault ();
         }
+      },
+
+      // Set keyboard interaction is active flag to false on click
+      _onClick () {
+        this.props.onClick ({
+          keyboardInteractionIsActive: false
+        });
       },
 
       componentWillMount () {
@@ -109,6 +124,7 @@ define ("components/viewWrapper",
         window.addEventListener ("online", this._onOnline);
         window.addEventListener ("offline", this._onOffline);
         window.addEventListener ("keydown", this._onKeyPress);
+        window.addEventListener ("click", this._onClick);
 
         ax.init ({
           handlers: [
@@ -124,6 +140,7 @@ define ("components/viewWrapper",
         window.removeEventListener ("online", this._onOnline);
         window.removeEventListener ("offline", this._onOffline);
         window.removeEventListener ("keydown", this._onKeyPress);
+        window.removeEventListener ("click", this._onClick);
       }
     });
   }
