@@ -13,10 +13,11 @@ define ("components/faqView",
     "extras/accessibility",
     "constants/accessibility",
     "constants/activeView",
-    "helpers/common"
+    "helpers/common",
+    "gunpowder/utils/classes"
   ],
   function (ViewHeader, BrandingContainer, InfoView, ax, axConstants, activeViewConstants,
-    commonHelpers) {
+    commonHelpers, classes) {
     "use strict";
 
     const {PropTypes} = React;
@@ -42,7 +43,8 @@ define ("components/faqView",
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       render () {
@@ -51,15 +53,20 @@ define ("components/faqView",
           onBackBtnClick,
           viewStyles,
           showCloseButton,
-          onMinimizeConversation
+          onMinimizeConversation,
+          keyboardInteractionIsActive
         } = this.props;
 
         const viewHeaderDataLabels = {
           backBtnDataLabel: METALIST_ITEMS.FAQ.BACK_BTN.DATA_LABEL
         };
 
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
+
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ViewHeader title={text.faqViewHeader}
                         showCloseBtn={showCloseButton}
                         showBackBtn={true}

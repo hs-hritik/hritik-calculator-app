@@ -83,7 +83,8 @@ define ("components/chatView",
           cta: PropTypes.string
         }),
         errorActionHandler: PropTypes.func,
-        botStepInProgress: PropTypes.bool
+        botStepInProgress: PropTypes.bool,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       getInitialState () {
@@ -98,7 +99,8 @@ define ("components/chatView",
           onMinimizeConversation,
           text,
           viewStyles,
-          minimized
+          minimized,
+          keyboardInteractionIsActive
         } = this.props;
 
         // In certain cases, Safari ignores scroll events on
@@ -113,7 +115,8 @@ define ("components/chatView",
         // Therefore, we assign a special class whenever the chat window
         // is maximized to trigger reflow.
         const viewClasses = classes ("hs-view", {
-          "hs-view--safari-fix": !minimized
+          "hs-view--safari-fix": !minimized,
+          "outline-hidden": !keyboardInteractionIsActive
         });
 
         return (

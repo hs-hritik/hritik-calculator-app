@@ -85,7 +85,8 @@ define ("components/businessHoursView",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        fullPrivacyEnabled: PropTypes.bool
+        fullPrivacyEnabled: PropTypes.bool,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
       render () {
         const {
@@ -95,14 +96,18 @@ define ("components/businessHoursView",
           onFilesChange,
           contactFormDetails,
           viewStyles,
-          fullPrivacyEnabled
+          fullPrivacyEnabled,
+          keyboardInteractionIsActive
         } = this.props;
 
         const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
         const attachmentIsEnabled = featureIsEnabled && !fullPrivacyEnabled;
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
 
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ViewHeader title={text.businessHoursViewHeader}
                         showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />

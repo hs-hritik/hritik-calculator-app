@@ -54,5 +54,11 @@
       // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
       -ms-overflow-style: -ms-autohiding-scrollbar;
     }
+
+    // Fix it - This is a temporary solution to hide the outline keyborad
+    // interaction.
+    &.outline-hidden *:focus {
+      outline-width: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
   }
 }

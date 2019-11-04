@@ -2,7 +2,7 @@
 
 exports[`CsatView should render correctly (snapshot) 1`] = `
 <div
-  className="hs-view"
+  className="hs-view outline-hidden"
   style={
     Object {
       "fontFamily": "MOCK_FONT_FAMILY",

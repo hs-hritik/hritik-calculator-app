@@ -32,6 +32,7 @@ define ("components/viewWrapper",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
+        keyboardInteractionIsActive: PropTypes.bool.isRequired,
         onToggleOnlineStatus: PropTypes.func.isRequired,
         onMinimizeConversation: PropTypes.func.isRequired,
         onFocusLauncher: PropTypes.func,
@@ -50,14 +51,16 @@ define ("components/viewWrapper",
         const {
           allowFullScreen,
           viewStyles,
-          showCloseButton
+          showCloseButton,
+          keyboardInteractionIsActive
         } = this.props;
 
         const commonProps = {
           allowFullScreen,
           onMinimizeConversation: this._onMinimizeConversation,
           viewStyles,
-          showCloseButton
+          showCloseButton,
+          keyboardInteractionIsActive
         };
 
         switch (this.props.activeView) {

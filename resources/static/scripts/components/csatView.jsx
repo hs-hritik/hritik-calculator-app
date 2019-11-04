@@ -44,7 +44,8 @@ define ("components/csatView",
           fontFamily: PropTypes.string
         }),
         csatSaveInProgress: PropTypes.bool,
-        onUpdateStarRating: PropTypes.func
+        onUpdateStarRating: PropTypes.func,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       render () {
@@ -52,11 +53,16 @@ define ("components/csatView",
           text,
           showCloseButton,
           onMinimizeConversation,
-          viewStyles
+          viewStyles,
+          keyboardInteractionIsActive
         } = this.props;
 
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
+
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ViewHeader title={text.csatViewHeader}
                         showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />
