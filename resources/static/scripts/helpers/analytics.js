@@ -12,7 +12,6 @@ define ("helpers/analytics",
     "constants/businessHoursView",
     "store",
     "helpers/xhr",
-    "helpers/localStorage",
     "helpers/common",
     "gunpowder/utils/xhr",
     "gunpowder/utils/object",
@@ -20,7 +19,7 @@ define ("helpers/analytics",
     "actions/actionCreators"
   ],
   function (analyticsConstants, routes, appStateConstants, businessHoursConstants,
-    store, xhrHelpers, lsHelpers, commonHelpers, xhr, objUtils,
+    store, xhrHelpers, commonHelpers, xhr, objUtils,
     browserUtils, actionCreators) {
     "use strict";
 

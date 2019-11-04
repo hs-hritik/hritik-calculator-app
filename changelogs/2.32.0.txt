@@ -1,0 +1,8 @@
+Branches:
+feature/notification-and-attachment
+
+Changelog:
+Focus on the user input footer when widget opens
+Fire newUnreadMessages event conditionally
+Add support for .docx attachment
+Rename `minimized` to clearer identifiers

@@ -50,6 +50,7 @@ define ("components/chatViewFooter",
     return React.createClass ({
       displayName: "ChatViewFooter",
       propTypes: {
+        widgetIsMinimized: PropTypes.bool,
         activeFooter: PropTypes.string.isRequired,
         rating: PropTypes.number,
         browserIsMobile: PropTypes.bool,
@@ -1124,15 +1125,20 @@ define ("components/chatViewFooter",
         const {
           userInput: {
             disabled: prevInputDisabled
-          }
+          },
+          widgetIsMinimized: widgetWasMinimized
         } = prevProps;
         const {
           userInput: {
             disabled: currentInputDisabled
-          }
+          },
+          widgetIsMinimized
         } = this.props;
 
-        if (prevInputDisabled && !currentInputDisabled) {
+        if (
+          (prevInputDisabled && !currentInputDisabled) ||
+          (widgetWasMinimized && !widgetIsMinimized)
+        ) {
           this._userInputRef.focus ();
         }
       },

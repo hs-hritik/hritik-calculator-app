@@ -115,6 +115,25 @@ gulp.task ("build-localhost", function () {
     "replace-localhost", "copy-webchat", "copy-demo");
 });
 
+/**
+ * Combined tasks for generating sri for JS bundles and updating
+ * the hs-sri.json file.
+ *
+ * @NOTE: We are not generating SRI for Azure right now. This is because our Azure
+ * CDN account doesn't support caching based on request headers which is required
+ * for loading CORS requests.
+ * More details can be found at https://helpshift.atlassian.net/browse/ONCALL-4197
+ *
+ * @TODO: Enable SRI for Azure - In order to enable SRI for Azure add
+ * "update-azure-sri" task here. Like -
+ * runSequence ("sri", "update-sri-list", "update-ec2-sri", "update-azure-sri",
+ *   "update-localshiva-sri");
+ */
+gulp.task ("generate-sri", function () {
+  console.log ("Generating & Embedding environment specific SRI for JS bundles");
+  runSequence ("sri", "update-sri-list", "update-ec2-sri", "update-localshiva-sri");
+});
+
 gulp.task ("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);
 gulp.task ("default", ["watch"]);
 gulp.task ("lint", ["sass:lint", "eslint"]);

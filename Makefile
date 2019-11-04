@@ -110,9 +110,16 @@ bundle-libs:
 # a part of the dependency tree of the app's entry point (pages/webSdk). Also,
 # these files are not supposed to be bundled together.
 minify-ext-js:
+	@echo ">> Starting task: $@"
 	@echo "Bundling external JS files"
 	@cd resources && $(GULP) minify-ext-js
-	@echo "------Done------"
+	@echo ">> Finished task: $@"
+
+sri:
+	@echo ">> Starting task: $@"
+	@echo "Starting SRI related tasks"
+	@cd resources && $(GULP) generate-sri
+	@echo ">> Finished task: $@"
 
 # The dist task is to compile and compress resources and
 # copy them to the `dist` directory.
@@ -124,7 +131,7 @@ minify-ext-js:
 dist: prepare-dist npminstall \
 	styles gunpowder reactjs copy-html-libs \
 	bundle-js bundle-libs minify-ext-js \
-	prepare-subdir ec2 azure localshiva \
+	prepare-subdir ec2 azure localshiva sri \
 	clean-subdir
 
 # The distdev task is to npm install resources and call the gulp task to
