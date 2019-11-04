@@ -60,7 +60,8 @@
       launcher: "block",
       widget: "none",
       hiddenByApi: false
-    }
+    },
+    translations: {}
   };
 
   const INIT = "init";
@@ -384,13 +385,13 @@
       setStyle (launcherBtn, {
         padding: "16px"
       });
-      launcherBtn.setAttribute ("aria-label", "Close chat");
+      launcherBtn.setAttribute ("aria-label", state.translations.ariaCloseWcLabel);
     } else {
       launcherIconEl.innerHTML = MESSENGER_ICON;
       setStyle (launcherBtn, {
         padding: "12px 10px 8px"
       });
-      launcherBtn.setAttribute ("aria-label", "Open chat");
+      launcherBtn.setAttribute ("aria-label", state.translations.ariaOpenWcLabel);
     }
   };
 
@@ -418,7 +419,7 @@
    */
   const createLauncherButton = () => {
     launcherButton = doc.createElement ("button");
-    launcherButton.setAttribute ("aria-label", "Open chat");
+    launcherButton.setAttribute ("aria-label", state.translations.ariaOpenWcLabel);
     launcherIconEl = doc.createElement ("span");
     launcherIconEl.innerHTML = MESSENGER_ICON;
 
@@ -697,6 +698,7 @@
 
     saveConfigOptionsInState (config);
     updateIframeStyles (config);
+    state.translations = config.translations;
 
     const launcherHidden = !state.widgetOptions.showLauncher;
     // If the launcher iframe is hidden by the widget config options
@@ -1065,10 +1067,14 @@
           state.unreadCount = data.count;
 
           if (state.unreadCount) {
-            launcherButton.setAttribute (
-              "aria-label",
-              "Open chat, " + state.unreadCount + " new messages from support"
+            let ariaLabel = state.translations.ariaOpenWcLabel + ", ";
+
+            ariaLabel += state.translations.ariaUnseenMsgCountBadge.replace (
+              "{{num}}",
+              state.unreadCount
             );
+
+            launcherButton.setAttribute ("aria-label", ariaLabel);
           }
 
           renderUnreadCount ();

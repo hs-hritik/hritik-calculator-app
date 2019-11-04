@@ -75,7 +75,10 @@ define ("constants/localization",
       "support_typing_vo": "ariaLabelTypingIndicator",
       "clear_search_vo": "ariaLabelClearSearchInput",
       "list_picker_search_list_vo": "ariaLabelSearchList",
-      "collapse_search_vo": "ariaLabelCloseSearch"
+      "collapse_search_vo": "ariaLabelCloseSearch",
+      "open_chat_vo": "ariaLabelOpenChat",
+      "close_chat_vo": "ariaLabelCloseChat",
+      "launcher_badge_count_vo": "ariaLabelLauncherBtnBadge"
     };
 
     return {

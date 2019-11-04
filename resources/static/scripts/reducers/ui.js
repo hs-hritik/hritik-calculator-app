@@ -137,7 +137,10 @@ define ("reducers/ui",
         ariaLabelClearSearchInput: "Clear text",
         ariaLabelSearchList: "Search list",
         ariaLabelCloseSearch: "Close Search",
-        ariaLabelOptionsList: "Options List"
+        ariaLabelOptionsList: "Options List",
+        ariaLabelOpenChat: "Open Chat",
+        ariaLabelCloseChat: "Close chat",
+        ariaLabelLauncherBtnBadge: "{{num}} new messages from Support"
       },
       uiConfig: DEFAULT_UI_CONFIG.reduce ((obj, config) => {
         // First elem in config is flattened ui config options (keys)

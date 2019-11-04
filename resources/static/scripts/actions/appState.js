@@ -561,6 +561,13 @@ define ("actions/appState",
           sdkConfigOptions: {
             fullScreen
           }
+        },
+        ui: {
+          text: {
+            ariaLabelOpenChat,
+            ariaLabelCloseChat,
+            ariaLabelLauncherBtnBadge
+          }
         }
       } = store.getState ();
       const hideWidget = commonHelpers.isWidgetHiddenOutOfBusinessHours ();
@@ -569,7 +576,12 @@ define ("actions/appState",
         widgetEnabled: wcEnabled && !hideWidget,
         cssConfig: getLauncherCssConfig (),
         fullScreen,
-        widgetShouldAutoOpen
+        widgetShouldAutoOpen,
+        translations: {
+          ariaOpenWcLabel: ariaLabelOpenChat,
+          ariaCloseWcLabel: ariaLabelCloseChat,
+          ariaWcBadgeLabel: ariaLabelLauncherBtnBadge
+        }
       };
     };
 
