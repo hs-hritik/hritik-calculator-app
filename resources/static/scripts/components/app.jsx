@@ -8,9 +8,13 @@
 define ("components/app",
   [
     "store",
-    "components/containers/viewWrapper"
+    "components/containers/viewWrapper",
+    "gunpowder/widgets/errorBoundary",
+    "components/errors/appError",
+    "utils/logReactError"
   ],
-  function (store, ViewWrapperContainer) {
+  function (store, ViewWrapperContainer, ErrorBoundary, AppError,
+    logReactError) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
@@ -36,13 +40,26 @@ define ("components/app",
     });
 
     /**
+     * Handle errors in error boundary
+     * @param {Object} error - Error thrown by react
+     * @param {Object} info - Additional info about error
+     */
+    const handleError = (error, info) => {
+      logReactError (error, info);
+    };
+
+    /**
      * Render app.
      */
     const init = () => {
       ReactDOM.render (
-        <Provider store={store}>
-          <App />
-        </Provider>,
+        <ErrorBoundary
+          fallbackComponent={<AppError />}
+          onError={handleError}>
+          <Provider store={store}>
+            <App />
+          </Provider>
+        </ErrorBoundary>,
         document.getElementById ("app")
       );
     };
