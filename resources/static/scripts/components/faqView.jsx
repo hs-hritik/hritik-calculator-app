@@ -9,10 +9,41 @@ define ("components/faqView",
   [
     "components/commons/viewHeader",
     "components/containers/branding",
-    "components/infoView"
+    "components/infoView",
+    "gunpowder/widgets/errorBoundary",
+    "components/errors/appError",
+    "utils/logReactError"
   ],
-  function (ViewHeader, BrandingContainer, InfoView) {
+  function (ViewHeader, BrandingContainer, InfoView, ErrorBoundary, AppError,
+    logReactError) {
     "use strict";
+
+    const ViewContents = ({title, body, loading, errorMsg}) => {
+      if (loading || errorMsg) {
+        return (
+          <InfoView loading={loading} title={errorMsg} />
+        );
+      }
+
+      /* eslint-disable react/no-danger */
+      return (
+        <div className="hs-view__content">
+          <div className="hs-faq" dir="auto">
+            <h3 className="hs-faq__title" >{title}</h3>
+            <div className="hs-faq__body" dangerouslySetInnerHTML={{__html: body}} />
+          </div>
+          <BrandingContainer />
+        </div>
+      );
+      /* eslint-enable react/no-danger */
+    };
+
+    ViewContents.propTypes = {
+      title: PropTypes.string,
+      body: PropTypes.string,
+      loading: PropTypes.bool,
+      errorMsg: PropTypes.string
+    };
 
     return createReactClass ({
       displayName: "FaqView",
@@ -38,7 +69,11 @@ define ("components/faqView",
           onBackBtnClick,
           viewStyles,
           showCloseButton,
-          onMinimizeConversation
+          onMinimizeConversation,
+          title,
+          body,
+          loading,
+          errorMsg
         } = this.props;
 
         return (
@@ -48,38 +83,26 @@ define ("components/faqView",
                         showBackBtn={true}
                         onCloseBtnClick={onMinimizeConversation}
                         onBackBtnClick={onBackBtnClick} />
-            {this._renderViewContents ()}
+            <ErrorBoundary
+              fallbackComponent={<AppError />}
+              onError={this._handleError}>
+              <ViewContents
+                title={title}
+                body={body}
+                errorMsg={errorMsg}
+                loading={loading} />
+            </ErrorBoundary>
           </div>
         );
       },
 
-      _renderViewContents () {
-        const {
-          title,
-          body,
-          loading,
-          errorMsg
-        } = this.props;
-
-        if (loading || errorMsg) {
-          return (
-            <InfoView loading={loading}
-                      title={errorMsg} />
-          );
-        }
-
-        /* eslint-disable react/no-danger */
-        return (
-          <div className="hs-view__content">
-            <div className="hs-faq" dir="auto">
-              <h3 className="hs-faq__title" >{title}</h3>
-              <div className="hs-faq__body"
-                    dangerouslySetInnerHTML={{__html: body}} />
-            </div>
-            <BrandingContainer />
-          </div>
-        );
-        /* eslint-enable react/no-danger */
+      /**
+       * Handle errors in error boundary
+       * @param {Object} error - Error thrown by react
+       * @param {Object} info - Additional info about error
+       */
+      _handleError (error, info) {
+        logReactError (error, info);
       }
     });
   }
