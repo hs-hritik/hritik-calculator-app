@@ -61,7 +61,7 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
           />
         </div>
       </div>
-      <Connect(Branding) />
+      <WithErrorBoundary(Connect(Branding)) />
       <div
         className="hs-footer hs-footer--center-items"
       >

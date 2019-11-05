@@ -6,9 +6,11 @@
 
 define ("components/containers/branding",
   [
-    "components/commons/branding"
+    "gunpowder/utils/withErrorBoundary",
+    "components/commons/branding",
+    "utils/logReactError"
   ],
-  function (Branding) {
+  function (withErrorBoundary, Branding, logReactError) {
     "use strict";
 
     const mapStateToProps = (state) => {
@@ -29,6 +31,16 @@ define ("components/containers/branding",
       };
     };
 
-    return ReactRedux.connect (mapStateToProps) (Branding);
+    const connectedComponent = ReactRedux.connect (mapStateToProps) (Branding);
+    const fallbackComponent = null;
+    const handleError = (error, info) => {
+      logReactError (error, info);
+    };
+
+    return withErrorBoundary (
+      connectedComponent,
+      fallbackComponent,
+      handleError
+    );
   }
 );
