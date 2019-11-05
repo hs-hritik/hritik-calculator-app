@@ -1069,7 +1069,7 @@
           if (state.unreadCount) {
             let ariaLabel = state.translations.ariaOpenWcLabel + ", ";
 
-            ariaLabel += state.translations.ariaUnseenMsgCountBadge.replace (
+            ariaLabel += state.translations.ariaWcBadgeLabel.replace (
               "{{num}}",
               state.unreadCount
             );
