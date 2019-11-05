@@ -1,0 +1,29 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for Error messages
+// - - - - - - - - - - - - - - -
+
+///
+/// @group Errors
+///
+
+@include component(app-error) {
+  $chat-widget-bg: color(bg, lightgray);
+  $instructions-color: color(text, light);
+
+  .hs-app-error {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    background: $chat-widget-bg;
+
+    &__instructions {
+      color: $instructions-color;
+    }
+  }
+}
