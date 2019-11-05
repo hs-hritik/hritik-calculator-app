@@ -202,6 +202,7 @@ module.exports = {
         "propTypes",
         "getDefaultProps",
         "getInitialState",
+        "constructor",
         "render",
         "/_render.+$/",
         "everything-else",
