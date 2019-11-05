@@ -997,7 +997,7 @@ define ("components/chatViewFooter",
             return selectorList.concat (optionsSelectorList);
 
           case USER_INPUT_TYPES.LIST_PICKER:
-            return;
+            return [];
 
         }
       },
@@ -1152,10 +1152,12 @@ define ("components/chatViewFooter",
         const isPreIssue = !issueIsCreated;
         const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
-        ax.replaceSelectors ({
-          group: METALIST_GROUP_NAME.CHAT.FOOTER,
-          selectors: requiredFooterSelectors
-        });
+        if (requiredFooterSelectors && requiredFooterSelectors.length) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.FOOTER,
+            selectors: requiredFooterSelectors
+          });
+        }
 
         // In below cases footer value is null, so delayed the focus when it is render
         if (!(
