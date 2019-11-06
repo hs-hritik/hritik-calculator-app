@@ -1409,7 +1409,8 @@ define ("actions/chatView",
           },
           issueCursor,
           pollerFailureCount: prevPollerFailureCount,
-          userIsRedacted
+          userIsRedacted,
+          localGreetingMessageId
         }
       } = store.getState ();
 
@@ -1593,7 +1594,8 @@ define ("actions/chatView",
 
               // Only set the backward cursor when initial issues are being
               // fetched, not when updates for issues are being received.
-              //
+              // Also, remove the greeting message added by the client side logic
+              // (local greeting message) with the first poller response.
               // Note: This works because issueCursor is not set before
               // the first call.
               if (!issueCursor) {
@@ -1607,6 +1609,8 @@ define ("actions/chatView",
                   issue: oldestIssue,
                   cursorType: CURSOR_TYPES.BACKWARD
                 });
+
+                dispatch (removeMessage (localGreetingMessageId));
               }
 
               if (isPreIssue) {
@@ -2678,6 +2682,55 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Return the action to set the local greeting message id in the state
+     * @param {string} - message id
+     * @returns {Object} - the action object
+     */
+    const saveLocalGreetingMessageId = (id) => {
+      return {
+        type: ACTION_TYPES.SET_LOCAL_GREETING_MESSAGE_ID,
+        id
+      };
+    };
+
+    /**
+     * Create greeting message and add it to the message list. Check if this
+     * feature is enabled before doing so.
+     */
+    const addGreetingMessage = () => {
+      return (dispatch, getState) => {
+        const {
+          appState: {
+            featuresEnabled: {
+              greeting: greetingMessageFeatureIsEnabled
+            }
+          },
+          ui: {
+            text: {
+              greetingMsg: greetingMessageBody
+            }
+          }
+        } = getState ();
+
+        if (!greetingMessageFeatureIsEnabled) {
+          return;
+        }
+
+        dispatch (createMessage ({
+          type: MESSAGE_TYPE.TEXT,
+          messageConfig: {
+            body: greetingMessageBody,
+            isCustomerMsg: false,
+            isGreetingMessage: true
+          },
+          onAddMessage: (localGreetingMessage) => {
+            dispatch (saveLocalGreetingMessageId (localGreetingMessage.id));
+          }
+        }));
+      };
+    };
+
     return {
       createPreIssue,
       updateReplyText,
@@ -2704,6 +2757,7 @@ define ("actions/chatView",
       updateUserInputData,
       setUserSelectedOption,
       handleErrorAction,
-      skipUserInput
+      skipUserInput,
+      addGreetingMessage
     };
   });

@@ -750,8 +750,7 @@ define ("actions/appState",
       // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours ()) {
         store.dispatch (setConversationStarted ());
-        // @TODO: Lazy Preissue Creation
-        // Add greeting message if the feature is enabled.
+        store.dispatch (chatViewActions.addGreetingMessage ());
         store.dispatch (chatViewActions.enableReplyBox ());
       }
     };

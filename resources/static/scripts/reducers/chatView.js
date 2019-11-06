@@ -140,7 +140,8 @@ define ("reducers/chatView",
       loading: false,
       // This represents the error in the whole chat view
       // @TODO: Move the error handling to the error reducer.
-      error: INITIAL_ERROR_STATE
+      error: INITIAL_ERROR_STATE,
+      localGreetingMessageId: ""
     };
 
     /**
@@ -407,6 +408,11 @@ define ("reducers/chatView",
             botState: {
               botStepMessage: {$set: action.message}
             }
+          });
+
+        case ACTION_TYPES.SET_LOCAL_GREETING_MESSAGE_ID:
+          return update (state, {
+            localGreetingMessageId: {$set: action.id}
           });
 
         case ACTION_TYPES.RESET:
