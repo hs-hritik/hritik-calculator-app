@@ -82,6 +82,35 @@ define ("actions/appState",
     };
 
     /**
+     * Set the analytics session id value in the state/localstorage via an action.
+     * If a value is present in the localstorage, keep using the same value.
+     * This value is used with the payload of all the anaytics events fired by
+     * web chat.
+     */
+    const setAnalyticsSessionId = () => {
+      return (dispatch) => {
+        let sessionId = lsHelpers.getAnalyticsSessionId ();
+
+        // Create a new session id if one doesn't exist already.
+        // Set it in the local storage.
+        if (!sessionId) {
+          sessionId = getUuid ();
+        }
+
+        dispatch (setAnalyticsSessionIdValue (sessionId));
+      };
+    };
+
+    /**
+     * Update the analytics session id value with a new uuid.
+     */
+    const updateAnalyticsSessionId = () => {
+      return (dispatch) => {
+        dispatch (setAnalyticsSessionIdValue (getUuid ()));
+      };
+    };
+
+    /**
      * Set user identifier for anon user in state and localstorage.
      * Checks localstorage if an anon user id already exists.
      * If it does, it gets the value from the ls and sets it in the
@@ -190,6 +219,16 @@ define ("actions/appState",
      */
     const setDeviceIdValue = (id) => ({
       type: ACTION_TYPES.SET_DEVICE_ID,
+      id
+    });
+
+    /**
+     * Action to analytics session id.
+     * @param {string} id - session id
+     * @returns {Object}
+     */
+    const setAnalyticsSessionIdValue = (id) => ({
+      type: ACTION_TYPES.SET_ANALYTICS_SESSION_ID,
       id
     });
 
@@ -386,6 +425,14 @@ define ("actions/appState",
         } = getState ();
         const widgetIsOpen = !minimized;
 
+        // If the app reset trigger is the start new conversation button, update
+        // the analytics session id with a new value.
+        // @TODO: Lazy Preissue Creation
+        // Check if this can be directly used with startNewConversation fn.
+        // if (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) {
+        //   dispatch (updateAnalyticsSessionId ());
+        // }
+
         if (!issueExists) {
           dispatch (postSdkMessage.conversationStatusEvent ({
             open: false
@@ -417,6 +464,7 @@ define ("actions/appState",
           (appResetTrigger === APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API &&
            widgetIsOpen && !issueExists)
         ) {
+          dispatch (updateAnalyticsSessionId ());
           startNewConversation ();
         } else if (issueExists) {
           chatViewActions.startPollingForMessages ();
@@ -918,6 +966,7 @@ define ("actions/appState",
 
     return {
       setDeviceId,
+      setAnalyticsSessionId,
       setAnonUserId,
       setClientConfig,
       setWmConfig,

@@ -80,6 +80,10 @@ define ("extras/lsMiddleware",
           }
           break;
 
+        case ACTION_TYPES.SET_ANALYTICS_SESSION_ID:
+          lsHelpers.setAnalyticsSessionId (action.id);
+          break;
+
         case ACTION_TYPES.SET_RE_ENGAGEMENT_ID:
           lsHelpers.setReEngagementId (action.id);
           break;

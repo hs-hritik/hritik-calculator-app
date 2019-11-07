@@ -134,6 +134,7 @@ define ("reducers/appState",
       conversationStarted: false,
       proactiveChatRules: [],
       analytics: {
+        sessionId: "",
         suggestedFaqReadTracked: false
       },
       // footerIsActive is used to udpate the UI of the footer by adding a border
@@ -197,6 +198,13 @@ define ("reducers/appState",
         case ACTION_TYPES.SET_DEVICE_ID:
           return update (state, {
             deviceId: {$set: action.id}
+          });
+
+        case ACTION_TYPES.SET_ANALYTICS_SESSION_ID:
+          return update (state, {
+            analytics: {
+              sessionId: {$set: action.id}
+            }
           });
 
         case ACTION_TYPES.SET_ANON_USER_ID:

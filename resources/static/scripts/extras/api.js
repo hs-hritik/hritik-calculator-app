@@ -190,6 +190,7 @@ define ("extras/api",
       dispatch (appStateActions.setParentPageInfo (parentPageInfo));
       dispatch (appStateActions.setClientConfig (clientConfig));
       dispatch (appStateActions.setDeviceId ());
+      dispatch (appStateActions.setAnalyticsSessionId ());
       dispatch (appStateActions.setAnonUserId ());
       dispatch (appStateActions.setWmConfig ({
         trigger,

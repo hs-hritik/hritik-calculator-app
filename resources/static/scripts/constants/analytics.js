@@ -24,6 +24,7 @@ define ("constants/analytics",
       // The PAYLOAD_EVENT constant is to be used with the tracking XHR's payload.
       PAYLOAD_EVENT: {
         ID: "id",
+        SESSION_ID: "acid",
         TIMESTAMP: "timestamp",
         LANGUAGE: "ln",
         DEV_SET_LANGUAGE: "dln",
