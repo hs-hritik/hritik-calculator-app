@@ -100,7 +100,7 @@ define (
           },
           {
             group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
-            selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
+            selectors: []
           }
         ]
       },

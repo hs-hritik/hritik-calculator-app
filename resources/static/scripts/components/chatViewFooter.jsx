@@ -954,14 +954,22 @@ define ("components/chatViewFooter",
        * @returns {Array} - Unique selector list of option pills
        */
       _getPillsOptionSelectorList (options) {
+        const {
+          userInput
+        } = this.props;
         const prefix = METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL;
         const optionsSelectorList = [];
+        const pillIsSkipable = !userInput.required;
 
         options.forEach ((option) => {
           const selectors = `[data-label=${prefix}${option.value}]`;
 
           optionsSelectorList.push (selectors);
         });
+
+        if (pillIsSkipable) {
+          optionsSelectorList.push (METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR);
+        }
 
         return optionsSelectorList;
       },
@@ -1064,6 +1072,9 @@ define ("components/chatViewFooter",
         const userInputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
         const userInputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
         const userInputIsSelectOption = (userInputIsPillSelect || userInputIsListPicker);
+        const listPickerIsClosed = (
+          userInput.listPicker.toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED
+        );
         const userInputIsEnterText = (
           userInput.type === USER_INPUT_TYPES.PLAIN_TEXT ||
           userInput.type === USER_INPUT_TYPES.EMAIL ||
@@ -1087,7 +1098,25 @@ define ("components/chatViewFooter",
             userInputIsEnterText &&
             textValueIsSubmitted
         ));
+        const userInputIsSkipable = !userInput.required;
         let requiredFooterSelectors;
+
+        // Add skip selector when footer is not required and footer type is not pills
+        // Otherwise empty skip selectors list
+        if (
+          ((!userInputIsListPicker || listPickerIsClosed) && userInputIsSkipable) &&
+          !userInputIsPillSelect
+        ) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+            selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
+          });
+        } else {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+            selectors: []
+          });
+        }
 
         // When footer changes, reset the active index and focus the first element of footer
         if (activeFooterIsChanged) {
