@@ -232,9 +232,9 @@ define ("components/businessHoursView",
         if ((offlineBehaviour === CONTACT_FORM && contactFormSubmitted) ||
              offlineBehaviour === OFFLINE_MESSAGE) {
           btnText = text.closeConversationBtn;
-          clickHandler = () => {
+          clickHandler = (ev) => {
+            _setAxActiveIndex (ev);
             onMinimizeConversation ();
-            _setAxActiveIndex ();
           };
         } else {
           btnText = text.businessHoursSubmitBtn;
