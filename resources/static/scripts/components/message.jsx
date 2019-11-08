@@ -295,7 +295,7 @@ define ("components/message",
         );
         const {text} = this.props;
         const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
-        const attachmentAriaLabel = text.ariaLabelOpenFile (
+        const attachmentAriaLabel = text.ariaLabelOpenFile.replace (
           "{{file_name}}",
           formattedFileName
         );
