@@ -1122,7 +1122,7 @@ define ("components/chatViewFooter",
         if (activeFooterIsChanged) {
           requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
-          if (requiredFooterSelectors) {
+          if (requiredFooterSelectors && requiredFooterSelectors.length) {
             ax.replaceSelectors ({
               group: METALIST_GROUP_NAME.CHAT.FOOTER,
               selectors: requiredFooterSelectors
@@ -1133,7 +1133,7 @@ define ("components/chatViewFooter",
         } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
           requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
 
-          if (requiredFooterSelectors) {
+          if (requiredFooterSelectors && requiredFooterSelectors.length) {
             ax.replaceSelectors ({
               group: METALIST_GROUP_NAME.CHAT.FOOTER,
               selectors: requiredFooterSelectors
