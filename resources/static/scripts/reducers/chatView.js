@@ -416,6 +416,13 @@ define ("reducers/chatView",
           });
 
         case ACTION_TYPES.RESET:
+          // Don't reset the message list based on the flag passed with the action
+          if (action.options && action.options.messageListShouldNotReset) {
+            return update (INITIAL_STATE, {
+              messageList: {$set: state.messageList}
+            });
+          }
+
           return INITIAL_STATE;
 
         default:

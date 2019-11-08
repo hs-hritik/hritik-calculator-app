@@ -43,10 +43,13 @@ define ("actions/actionCreators",
 
     /**
      * Return action to reset state
+     * @param {Object} - options - An object with helper data for the reset action
+     * @param {boolean} - [options.messageListShouldNotReset]
      * @returns {Object} - the action object
      */
-    const reset = () => ({
-      type: ACTION_TYPES.RESET
+    const reset = (options) => ({
+      type: ACTION_TYPES.RESET,
+      options
     });
 
     /**
