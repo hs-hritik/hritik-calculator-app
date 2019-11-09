@@ -50,7 +50,8 @@ define ("actions/appState",
         HEADER_TEXT_COLOR,
         BASE_COLOR,
         INITIAL_SECONDARY_BG_COLOR,
-        INITIAL_SECONDARY_TEXT_COLOR
+        INITIAL_SECONDARY_TEXT_COLOR,
+        BASE_FOCUS_RING_COLOR
       },
       SHADES
     } = UI_CONFIG_CONSTANTS;
@@ -531,6 +532,7 @@ define ("actions/appState",
     const getLauncherCssConfig = () => {
       const {ui: {uiConfig}} = store.getState ();
       const launcherBgColor = uiConfig [HEADER_BG_COLOR].value;
+      const focusRingColor = uiConfig [BASE_FOCUS_RING_COLOR].value;
 
       return {
         // Set to launcher icon background
@@ -544,7 +546,9 @@ define ("actions/appState",
         // Set to unread count background
         notificationBgColor: uiConfig [INITIAL_SECONDARY_BG_COLOR].value,
         // Set to unread count text i.e. unread count number
-        notificationTextColor: uiConfig [INITIAL_SECONDARY_TEXT_COLOR].value
+        notificationTextColor: uiConfig [INITIAL_SECONDARY_TEXT_COLOR].value,
+        // Set launcher focus outline color
+        focusRingColor
       };
     };
 

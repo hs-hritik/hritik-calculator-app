@@ -170,7 +170,10 @@
     "box-sizing": "border-box",
     "padding": "12px 10px 8px",
     "border": "none",
-    "outline-offset": "-3px"
+    "outline-offset": "-4px",
+    "outline-width": "0",
+    "outline-style": "solid",
+    "outline-color": "rgba(0, 103, 244, .4)"
   };
 
   const MESSENGER_IFRAME_STYLES = {
@@ -442,6 +445,18 @@
       });
     });
 
+    launcherButton.addEventListener ("focus", () => {
+      setStyle (launcherButton, {
+        outlineWidth: "4px"
+      });
+    });
+
+    launcherButton.addEventListener ("blur", () => {
+      setStyle (launcherButton, {
+        outlineWidth: "0"
+      });
+    });
+
     setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherButton;
   };
@@ -604,10 +619,12 @@
       launcherBgColor,
       launcherTextColor,
       notificationBgColor,
-      notificationTextColor
+      notificationTextColor,
+      focusRingColor
     } = state.cssConfig;
 
     LAUNCHER_BUTTON_WRAPPER_STYLES.background = launcherBgColor;
+    LAUNCHER_BUTTON_WRAPPER_STYLES.outlineColor = focusRingColor;
 
     UNREAD_COUNT_STYLES.background = notificationBgColor;
     UNREAD_COUNT_STYLES.color = notificationTextColor;

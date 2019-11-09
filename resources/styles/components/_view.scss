@@ -55,6 +55,14 @@
       -ms-overflow-style: -ms-autohiding-scrollbar;
     }
 
+    // Fix it - This is temporary solution as it does not follow BEM
+    & *:focus {
+      outline-offset: -2px;
+      outline-width: 4px;
+      outline-style: solid;
+      outline-color: var(--hs-base-focus-ring-color);
+    }
+
     // Fix it - This is a temporary solution to hide the outline keyborad
     // interaction.
     &.outline-hidden *:focus {
