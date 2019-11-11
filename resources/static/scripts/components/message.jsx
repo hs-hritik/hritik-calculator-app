@@ -643,7 +643,11 @@ define ("components/message",
       },
 
       _onMsgClick (event) {
-        const selector = commonHelper.getSelectorForElement (event.target);
+        const messageList = document.querySelector (".hs-message-list");
+        const selector = (
+          ".hs-message-list " +
+          commonHelper.getSelectorForElement (event.target, messageList)
+        );
 
         ax.setActiveIndex ({
           selector: selector
