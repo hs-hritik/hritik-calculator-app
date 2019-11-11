@@ -61,7 +61,8 @@
       widget: "none",
       hiddenByApi: false
     },
-    translations: {}
+    translations: {},
+    mouseInteraction: false
   };
 
   const INIT = "init";
@@ -446,6 +447,10 @@
     });
 
     launcherButton.addEventListener ("focus", () => {
+      if (state.mouseInteraction) {
+        state.mouseInteraction = false;
+        return;
+      }
       setStyle (launcherButton, {
         outlineWidth: "4px"
       });
@@ -455,6 +460,10 @@
       setStyle (launcherButton, {
         outlineWidth: "0"
       });
+    });
+
+    launcherButton.addEventListener ("mousedown", () => {
+      state.mouseInteraction = true;
     });
 
     setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
