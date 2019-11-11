@@ -37,6 +37,7 @@ define ("constants/accessibility",
       LAUNCHER_BTN: "LAUNCHER_BTN",
       CHAT: {
         FOOTER: "FOOTER",
+        MSGS_SCROLL_WRAPPER: "MSGS_SCROLL_WRAPPER",
         MESSAGE_LIST: "MESSAGE_LIST",
         SKIP_BTN: "SKIP_BTN"
       },
@@ -102,6 +103,11 @@ define ("constants/accessibility",
         }
       },
       CHAT: {
+        MSGS_SCROLL_WRAPPER: {
+          GROUP: METALIST_GROUP_NAME.CHAT.MSGS_SCROLL_WRAPPER,
+          DATA_LABEL: "msg-list-wrapper",
+          SELECTOR: "[data-label=msg-list-wrapper]"
+        },
         MESSAGE_LIST: {
           GROUP: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST
         },

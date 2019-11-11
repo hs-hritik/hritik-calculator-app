@@ -95,6 +95,10 @@ define (
             selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
           },
           {
+            group: METALIST_GROUP_NAME.CHAT.MSGS_SCROLL_WRAPPER,
+            selectors: [METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.SELECTOR]
+          },
+          {
             group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           },

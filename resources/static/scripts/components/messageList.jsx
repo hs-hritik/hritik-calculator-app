@@ -83,7 +83,9 @@ define ("components/messageList",
         return (
           <div ref={this._refCallback}
                className="hs-view__scroll-wrapper"
-               onScroll={this._eventPresistedScroll}>
+               onScroll={this._eventPresistedScroll}
+               data-label={METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.DATA_LABEL}
+               tabIndex="0">
             <div className="hs-message-list" >
               {this._renderMessages ()}
               {this._renderTypingIndicator ()}
