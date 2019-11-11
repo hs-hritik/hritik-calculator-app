@@ -6,13 +6,69 @@
 
 define ("components/csatView",
   [
-    "gunpowder/utils/classes",
     "components/commons/viewHeader",
-    "components/starRating",
-    "components/containers/branding"
+    "components/csatViewBody",
+    "components/csatViewFooter",
+    "components/containers/branding",
+    "gunpowder/widgets/errorBoundary",
+    "components/errors/appError",
+    "utils/logReactError"
   ],
-  function (classes, ViewHeader, StarRating, BrandingContainer) {
+  function (ViewHeader, CsatViewBody, CsatViewFooter, BrandingContainer, ErrorBoundary,
+    AppError, logReactError) {
     "use strict";
+
+    const TEXT_PROP_TYPE = PropTypes.shape ({
+      csatViewHeader: PropTypes.string.isRequired,
+      csatBotRequestMsg: PropTypes.string.isRequired,
+      csatBotResponseMsg: PropTypes.string.isRequired,
+      csatBotFormSubmitBtn: PropTypes.string.isRequired,
+      csatBotReviewPlaceholder: PropTypes.string.isRequired,
+      csatBotReviewTitle: PropTypes.string.isRequired
+    }).isRequired;
+
+    const CsatViewContents = ({
+      text,
+      rating,
+      review,
+      csatSaveInProgress,
+      allowFullScreen,
+      onStarClick,
+      onCsatReviewChange,
+      onSubmitCsat
+    }) => (
+      <div className="hs-view__content">
+        <div className="hs-csat">
+          <CsatViewBody
+            csatBotRequestMsg={text.csatBotRequestMsg}
+            csatBotReviewTitle={text.csatBotRequestMsg}
+            csatBotReviewPlaceholder={text.csatBotReviewPlaceholder}
+            rating={rating}
+            review={review}
+            csatSaveInProgress={csatSaveInProgress}
+            onStarClick={onStarClick}
+            onCsatReviewChange={onCsatReviewChange} />
+          <BrandingContainer />
+          <CsatViewFooter
+            rating={rating}
+            csatSaveInProgress={csatSaveInProgress}
+            allowFullScreen={allowFullScreen}
+            submitBtnText={text.csatBotFormSubmitBtn}
+            onSubmitCsat={onSubmitCsat} />
+        </div>
+      </div>
+    );
+
+    CsatViewContents.propTypes = {
+      text: TEXT_PROP_TYPE,
+      rating: PropTypes.number.isRequired,
+      review: PropTypes.string,
+      csatSaveInProgress: PropTypes.bool,
+      allowFullScreen: PropTypes.bool,
+      onStarClick: PropTypes.func.isRequired,
+      onCsatReviewChange: PropTypes.func.isRequired,
+      onSubmitCsat: PropTypes.func.isRequired
+    };
 
     return createReactClass ({
       displayName: "CsatView",
@@ -25,14 +81,7 @@ define ("components/csatView",
         onSubmitCsat: PropTypes.func.isRequired,
         onUpdateCsatRating: PropTypes.func.isRequired,
         onUpdateCsatReview: PropTypes.func.isRequired,
-        text: PropTypes.shape ({
-          csatViewHeader: PropTypes.string.isRequired,
-          csatBotRequestMsg: PropTypes.string.isRequired,
-          csatBotResponseMsg: PropTypes.string.isRequired,
-          csatBotFormSubmitBtn: PropTypes.string.isRequired,
-          csatBotReviewPlaceholder: PropTypes.string.isRequired,
-          csatBotReviewTitle: PropTypes.string.isRequired
-        }).isRequired,
+        text: TEXT_PROP_TYPE,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
@@ -44,91 +93,42 @@ define ("components/csatView",
           text,
           showCloseButton,
           onMinimizeConversation,
-          viewStyles
+          viewStyles,
+          rating,
+          review,
+          csatSaveInProgress,
+          onSubmitCsat
         } = this.props;
 
         return (
           <div className="hs-view" style={viewStyles}>
-            <ViewHeader title={text.csatViewHeader}
-                        showCloseBtn={showCloseButton}
-                        onCloseBtnClick={onMinimizeConversation} />
-            <div className="hs-view__content">
-              <div className="hs-csat">
-                {this._renderCsatBody ()}
-                <BrandingContainer />
-                {this._renderCsatFooter ()}
-              </div>
-            </div>
+            <ViewHeader
+              title={text.csatViewHeader}
+              showCloseBtn={showCloseButton}
+              onCloseBtnClick={onMinimizeConversation} />
+            <ErrorBoundary
+              fallbackComponent={<AppError />}
+              onError={this._handleError}>
+              <CsatViewContents
+                text={text}
+                rating={rating}
+                review={review}
+                csatSaveInProgress={csatSaveInProgress}
+                onStarClick={this._onStarClick}
+                onCsatReviewChange={this._onCsatReviewChange}
+                onSubmitCsat={onSubmitCsat} />
+            </ErrorBoundary>
           </div>
         );
       },
 
       /**
-       * Render csat body.
+       * Handle errors in error boundary
+       * @param {Object} error - Error thrown by react
+       * @param {Object} info - Additional info about error
        */
-      _renderCsatBody () {
-        const {text, rating, review, csatSaveInProgress} = this.props;
-
-        return (
-          <div className="hs-csat__form">
-            <div className="hs-csat__form-item">
-              <h3 className="hs-csat__heading">
-                {text.csatBotRequestMsg}
-              </h3>
-            </div>
-            <div className="hs-csat__form-item">
-              <StarRating name="csat"
-                          editing={!csatSaveInProgress}
-                          value={rating}
-                          onStarClick={this._onStarClick} />
-            </div>
-            <div className="hs-csat__form-item">
-              <small className="hs-csat__form-label">
-                {text.csatBotReviewTitle}
-              </small>
-              <textarea value={review}
-                        dir="auto"
-                        disabled={csatSaveInProgress}
-                        className="hs-csat__input"
-                        onChange={this._onCsatReviewChange}
-                        placeholder={text.csatBotReviewPlaceholder} />
-            </div>
-          </div>
-        );
-      },
-
-      /**
-       * Render csat footer.
-       */
-      _renderCsatFooter () {
-        const {
-          text,
-          rating,
-          allowFullScreen,
-          csatSaveInProgress
-        } = this.props;
-        const btnClasses = classes (
-          "hs-button",
-          "hs-footer__btn"
-        );
-        const btnDisabled = (rating === 0) || csatSaveInProgress;
-        const footerClasses = classes ("hs-footer",
-          "hs-footer--center-items", {
-            "hs-footer--full-screen": allowFullScreen
-          }
-        );
-
-        return (
-          <div className={footerClasses}>
-            <div className="hs-footer__vertical-items-wrapper">
-              <button className={btnClasses}
-                      onClick={this.props.onSubmitCsat}
-                      disabled={btnDisabled} >
-                {text.csatBotFormSubmitBtn}
-              </button>
-            </div>
-          </div>
-        );
+      _handleError (error, info) {
+        logReactError (error, info);
       },
 
       /**

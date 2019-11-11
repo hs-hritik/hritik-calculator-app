@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CsatView should render correctly (snapshot) 1`] = `
+<div
+  className="hs-footer hs-footer--center-items"
+>
+  <div
+    className="hs-footer__vertical-items-wrapper"
+  >
+    <button
+      className="hs-button hs-footer__btn"
+      disabled={true}
+      onClick={[MockFunction]}
+    >
+      MOCK_FORM_SUBMIT_BUTTON
+    </button>
+  </div>
+</div>
+`;
