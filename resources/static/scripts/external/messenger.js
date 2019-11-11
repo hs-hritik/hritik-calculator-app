@@ -758,12 +758,14 @@
 
       // Event listener for the tab on launcher button to focus next element
       launcherIframe.contentWindow.document.addEventListener ("keydown", (ev) => {
-        if (ev.shiftKey && ev.keyCode === KEYCODES.TAB) {
+        const widgetIsMinimized = webSdkIframe.style.display === "none";
+
+        if (ev.shiftKey && ev.keyCode === KEYCODES.TAB && !widgetIsMinimized) {
           ev.preventDefault ();
           launcherIframe.blur ();
           webSdkIframe.focus ();
           _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: false});
-        } else if (ev.keyCode === KEYCODES.TAB) {
+        } else if (ev.keyCode === KEYCODES.TAB && !widgetIsMinimized) {
           ev.preventDefault ();
           launcherIframe.blur ();
           webSdkIframe.focus ();
