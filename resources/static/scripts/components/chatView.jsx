@@ -16,11 +16,14 @@ define ("components/chatView",
     "components/jumpToLatestBtn",
     "gunpowder/utils/classes",
     "gunpowder/constants/widgets/picker",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "gunpowder/widgets/errorBoundary",
+    "components/errors/appError",
+    "utils/logReactError"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
-    LIST_PICKER_CONSTANTS, objUtils) {
+    LIST_PICKER_CONSTANTS, objUtils, ErrorBoundary, AppError, logReactError) {
     "use strict";
 
     const {
@@ -353,25 +356,33 @@ define ("components/chatView",
         } = this.props;
 
         return (
-          <ChatViewContents
-            messages={messages}
-            onSuggestedFaqClick={onSuggestedFaqClick}
-            showAgentNickname={showAgentNickname}
-            isTyping={isTyping}
-            userIsViewingPastMessages={userIsViewingPastMessages}
-            minimized={minimized}
-            loadingMoreMsgsHasFailed={loadingMoreMsgsHasFailed}
-            onScrollPastExistingConversation={onScrollPastExistingConversation}
-            onLoadMoreMessages={onLoadMoreMessages}
-            onFilesDrop={onFilesDrop}
-            onRetryAttachmentClick={onRetryAttachmentClick}
-            userInput={userInput}
-            issueIsCreated={issueIsCreated}
-            onPillOptionSelect={onPillOptionSelect}
-            onListPickerOptionSelect={onListPickerOptionSelect}
-            onSkipUserInput={onSkipUserInput}
-            text={text} />
+          <ErrorBoundary
+            fallbackComponent={<AppError />}
+            onError={this._handleChatViewError}>
+            <ChatViewContents
+              messages={messages}
+              onSuggestedFaqClick={onSuggestedFaqClick}
+              showAgentNickname={showAgentNickname}
+              isTyping={isTyping}
+              userIsViewingPastMessages={userIsViewingPastMessages}
+              minimized={minimized}
+              loadingMoreMsgsHasFailed={loadingMoreMsgsHasFailed}
+              onScrollPastExistingConversation={onScrollPastExistingConversation}
+              onLoadMoreMessages={onLoadMoreMessages}
+              onFilesDrop={onFilesDrop}
+              onRetryAttachmentClick={onRetryAttachmentClick}
+              userInput={userInput}
+              issueIsCreated={issueIsCreated}
+              onPillOptionSelect={onPillOptionSelect}
+              onListPickerOptionSelect={onListPickerOptionSelect}
+              onSkipUserInput={onSkipUserInput}
+              text={text} />
+          </ErrorBoundary>
         );
+      },
+
+      _handleChatViewError (error, info) {
+        logReactError (error, info);
       }
     });
   }
