@@ -50,9 +50,11 @@ define ("components/containers/faqView",
     const mapDispatchToProps = (dispatch) => {
       return {
         onBackBtnClick: () => {
-          ax.setFlatListActiveIndex (0);
-          ax.setActiveView (ACTIVE_VIEW.CHAT);
-          dispatch (chatViewActions.switchToChatView ());
+          setTimeout (() => {
+            ax.setFlatListActiveIndex (0);
+            ax.setActiveView (ACTIVE_VIEW.CHAT);
+            dispatch (chatViewActions.switchToChatView ());
+          }, 0);
         }
       };
     };
