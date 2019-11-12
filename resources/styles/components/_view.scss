@@ -36,6 +36,10 @@
       flex-direction: column;
       height: 100%;
       overflow-y: auto;
+
+      &:focus {
+        outline-offset: -3px;
+      }
     }
 
     &__scroll-wrapper {
@@ -49,6 +53,20 @@
       // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
       // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
       -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+
+    // Fix it - This is temporary solution as it does not follow BEM
+    & *:focus {
+      outline-offset: -2px;
+      outline-width: 4px;
+      outline-style: solid;
+      outline-color: var(--hs-base-focus-ring-color);
+    }
+
+    // Fix it - This is a temporary solution to hide the outline keyborad
+    // interaction.
+    &.outline-hidden *:focus {
+      outline-width: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

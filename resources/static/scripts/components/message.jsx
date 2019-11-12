@@ -12,10 +12,12 @@ define ("components/message",
     "helpers/attachments",
     "gunpowder/utils/date",
     "gunpowder/utils/classes",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "helpers/common",
+    "extras/accessibility"
   ],
   function (customPropTypes, MESSAGE_CONSTANTS, ERROR_CONSTANTS, attachmentsHelpers,
-    dateUtils, classes, objUtils) {
+    dateUtils, classes, objUtils, commonHelper, ax) {
     "use strict";
 
     const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
@@ -50,7 +52,13 @@ define ("components/message",
           attachmentFileSizeError: PropTypes.string.isRequired,
           attachmentFileTypeError: PropTypes.string.isRequired,
           attachmentDefaultError: PropTypes.string.isRequired,
-          attachmentUploadingStatus: PropTypes.string.isRequired
+          attachmentUploadingStatus: PropTypes.string.isRequired,
+          ariaLabelSupportMsgAgentName: PropTypes.string,
+          ariaLabelSupportMsgMissingAgentName: PropTypes.string,
+          ariaLabelAttachmentUploading: PropTypes.string,
+          ariaLabelUserMessage: PropTypes.string,
+          conversationClosed: PropTypes.string,
+          ariaLabelOpenFile: PropTypes.string
         }).isRequired
       },
 
@@ -70,7 +78,13 @@ define ("components/message",
       },
 
       render () {
-        const {isCustomerMsg, type, states} = this.props.message;
+        const {isCustomerMsg, type, states, body} = this.props.message;
+        const {
+          ariaLabelSupportMsgAgentName,
+          ariaLabelSupportMsgMissingAgentName,
+          ariaLabelAttachmentUploading,
+          ariaLabelUserMessage
+        } = this.props.text;
 
         if (type === MESSAGE_TYPE.CHAT_SEPARATOR) {
           return this._renderChatSeparator ();
@@ -87,9 +101,50 @@ define ("components/message",
             "hs-message--error": states && states.error
           }
         );
+        const time = this._getHumanReadableTime ();
+        let msgLabel;
+
+        if (!isCustomerMsg) {
+          const agentName = this._getAgentNickname ();
+
+          if (agentName) {
+            msgLabel = ariaLabelSupportMsgAgentName.replace (
+              "{{message}}",
+              body
+            );
+            msgLabel = msgLabel.replace (
+              "{{agent_name}}",
+              agentName
+            );
+            msgLabel = msgLabel.replace (
+              "{{time_and_date}}",
+              time
+            );
+          } else {
+            msgLabel = ariaLabelSupportMsgMissingAgentName.replace (
+              "{{message}}",
+              body
+            );
+            msgLabel = msgLabel.replace (
+              "{{time_and_date}}",
+              time
+              );
+          }
+        } else if (states.uploadInProgress) {
+          msgLabel = ariaLabelAttachmentUploading;
+        } else {
+          msgLabel = ariaLabelUserMessage.replace (
+            "{{message}}",
+            body
+          );
+          msgLabel = msgLabel.replace (
+            "{{time_and_date}}",
+            time
+          );
+        }
 
         return (
-          <div className={msgClasses}>
+          <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel}>
             {this._renderMessage ()}
             {this._renderAttachmentErrors ()}
             {this._renderMessageDetails ()}
@@ -101,7 +156,10 @@ define ("components/message",
        * Render the message according to its type.
        */
       _renderMessage () {
-        const {type} = this.props.message;
+        const {type, attachments, suggestedFaqs} = this.props.message;
+        // Vo reads inside the msg bubble div, if any attachment or faq inside the body
+        // Otherwise inner div is hidden to avoid repetition during voice over
+        const ariaContainerIsHidden = !(suggestedFaqs || attachments);
         let messageItemEl = null;
 
         // @NOTE - All bot messages (except faqs) and user response messages
@@ -138,7 +196,7 @@ define ("components/message",
 
         if (messageItemEl) {
           return (
-            <div className="hs-message__item-wrapper">
+            <div className="hs-message__item-wrapper" aria-hidden={ariaContainerIsHidden}>
               {messageItemEl}
             </div>
           );
@@ -235,10 +293,20 @@ define ("components/message",
         const formattedFileName = attachmentsHelpers.getFormattedFileName (
           attachment.fileName
         );
+        const {text} = this.props;
         const clickHandler = this._onAttachmentClick.bind (this, attachment.url);
+        const attachmentAriaLabel = text.ariaLabelOpenFile.replace (
+          "{{file_name}}",
+          formattedFileName
+        );
 
         return (
-          <div key={index} className="hs-attachment" onClick={clickHandler}>
+          <div
+            key={index}
+            className="hs-attachment"
+            onClick={clickHandler}
+            aria-label={attachmentAriaLabel}
+            role="button">
             <i className="ion-attachment" />
             <div className="hs-attachment__info-wrapper">
               <small title={attachment.fileName}>
@@ -286,13 +354,16 @@ define ("components/message",
         return suggestedFaqs.map ((faq) => {
           const {id, language} = faq;
           return (
-            <span key={faq.id}
-                  className="hs-message__suggested-faq"
-                  dir="auto"
-                  onClick={onSuggestedFaqClick.bind (this, id, language)}>
+            <a key={faq.id}
+               className="hs-message__suggested-faq"
+               dir="auto"
+               onClick={onSuggestedFaqClick.bind (this, id, language)}
+               tabIndex="0"
+               aria-label={faq.title}
+               role="button">
               {faq.title}
               <i className="ion-chevron-right hs-message__suggested-faq-icon" />
-            </span>
+            </a>
           );
         });
       },
@@ -471,7 +542,8 @@ define ("components/message",
        */
       _renderNonPreviewableAttachment () {
         const {name, iconClasses, onClick, url} = this._attachmentRenderConfig;
-
+        const {ariaLabelOpenFile} = this.props.text;
+        const formatedFileName = attachmentsHelpers.getFormattedFileName (name);
         let wrapperClickHandler;
 
         if (!this.props.message.isSystemMsg) {
@@ -480,8 +552,17 @@ define ("components/message",
           wrapperClickHandler = onClick;
         }
 
+        const attachmentAriaLabel = ariaLabelOpenFile.replace (
+          "{{file_name}}",
+          formatedFileName
+        );
+
         return (
-          <div className="hs-message__user-attachment" onClick={wrapperClickHandler}>
+          <div
+            className="hs-message__user-attachment"
+            onClick={wrapperClickHandler}
+            aria-label={attachmentAriaLabel}
+            role="button">
             <i className={iconClasses} />
             <span title={name}>{attachmentsHelpers.getFormattedFileName (name)}</span>
           </div>
@@ -493,12 +574,14 @@ define ("components/message",
        */
       _renderChatSeparator () {
         const {hr, timestamp, infoText} = this.props.message;
-
+        const {text} = this.props;
         let hrEl, timestampEl, infoTextEl;
 
         if (hr) {
           // horizontal line separating conversations
-          hrEl = (<div className="hs-message__hr" />);
+          hrEl = (
+            <div className="hs-message__hr" aria-label={text.conversationClosed} />
+          );
         }
 
         if (timestamp) {
@@ -553,12 +636,23 @@ define ("components/message",
         }
 
         return (
-          <div className="hs-message__details">
+          <div className="hs-message__details" aria-hidden={true}>
             {details}
           </div>
         );
       },
 
+      _onMsgClick (event) {
+        const messageList = document.querySelector (".hs-message-list");
+        const selector = (
+          ".hs-message-list " +
+          commonHelper.getSelectorForElement (event.target, messageList)
+        );
+
+        ax.setActiveIndex ({
+          selector: selector
+        });
+      },
       /**
        * Get agent nickname.
        */

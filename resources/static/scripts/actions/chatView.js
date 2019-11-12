@@ -31,13 +31,14 @@ define ("actions/chatView",
     "helpers/prepareProcessXhrData",
     "helpers/common",
     "utils/browser",
-    "utils/upload"
+    "utils/upload",
+    "extras/accessibility"
   ],
   function (store, ACTION_TYPES, routes, CHAT_VIEW_CONSTANTS, ACTIVE_VIEW,
     MESSAGE_CONSTANTS, APP_STATE_CONSTANTS, ERROR_CONSTANTS, analyticsConstants,
     xhr, arrayUtils, dateUtils, batchActions, actionCreators, postSdkMessage, messageHelpers,
     chatViewHelpers, xhrHelpers, audioHelpers, liveUpdatesHelpers, attachmentsHelpers,
-    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, browserUtils, upload) {
+    analyticsHelpers, prepareProcessXhrDataHelpers, commonHelpers, browserUtils, upload, ax) {
 
     "use strict";
 
@@ -312,6 +313,7 @@ define ("actions/chatView",
     const switchToChatView = () => {
       return (dispatch) => {
         store.dispatch (markMessagesSeen ());
+        ax.setFlatListActiveIndex (0);
         dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CHAT));
       };
     };

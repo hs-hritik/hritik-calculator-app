@@ -9,12 +9,22 @@ define ("components/faqView",
   [
     "components/commons/viewHeader",
     "components/containers/branding",
-    "components/infoView"
+    "components/infoView",
+    "extras/accessibility",
+    "constants/accessibility",
+    "constants/activeView",
+    "helpers/common",
+    "gunpowder/utils/classes"
   ],
-  function (ViewHeader, BrandingContainer, InfoView) {
+  function (ViewHeader, BrandingContainer, InfoView, ax, axConstants, activeViewConstants,
+    commonHelpers, classes) {
     "use strict";
 
     const {PropTypes} = React;
+    const {
+      METALIST_ITEMS,
+      METALIST_GROUP_NAME
+    } = axConstants;
 
     return React.createClass ({
       displayName: "FaqView",
@@ -27,11 +37,14 @@ define ("components/faqView",
         onBackBtnClick: PropTypes.func.isRequired,
         onMinimizeConversation: PropTypes.func.isRequired,
         text: PropTypes.shape ({
-          faqViewHeader: PropTypes.string.isRequired
+          faqViewHeader: PropTypes.string.isRequired,
+          ariaLabelLoading: PropTypes.string,
+          ariaLabelFaqViewHeader: PropTypes.string
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
-        })
+        }),
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       render () {
@@ -40,16 +53,27 @@ define ("components/faqView",
           onBackBtnClick,
           viewStyles,
           showCloseButton,
-          onMinimizeConversation
+          onMinimizeConversation,
+          keyboardInteractionIsActive
         } = this.props;
 
+        const viewHeaderDataLabels = {
+          backBtnDataLabel: METALIST_ITEMS.FAQ.BACK_BTN.DATA_LABEL
+        };
+
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
+
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ViewHeader title={text.faqViewHeader}
                         showCloseBtn={showCloseButton}
                         showBackBtn={true}
                         onCloseBtnClick={onMinimizeConversation}
-                        onBackBtnClick={onBackBtnClick} />
+                        onBackBtnClick={onBackBtnClick}
+                        dataLabels={viewHeaderDataLabels}
+                        ariaLabel={text.ariaLabelFaqViewHeader}/>
             {this._renderViewContents ()}
           </div>
         );
@@ -60,28 +84,84 @@ define ("components/faqView",
           title,
           body,
           loading,
-          errorMsg
+          errorMsg,
+          text
         } = this.props;
 
         if (loading || errorMsg) {
           return (
             <InfoView loading={loading}
-                      title={errorMsg} />
+                      title={errorMsg}
+                      ariaLabel={text.ariaLabelLoading} />
           );
         }
 
+        const _setWrapperAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.FAQ.CONTENT_WRAPPER.SELECTOR
+          }
+        );
+
         /* eslint-disable react/no-danger */
         return (
-          <div className="hs-view__content">
+          <div
+            className="hs-view__content"
+            tabIndex="0"
+            data-label={METALIST_ITEMS.FAQ.CONTENT_WRAPPER.DATA_LABEL}
+            onClick={_setWrapperAxActiveIndex}>
             <div className="hs-faq" dir="auto">
               <h3 className="hs-faq__title" >{title}</h3>
               <div className="hs-faq__body"
-                    dangerouslySetInnerHTML={{__html: body}} />
+                    dangerouslySetInnerHTML={{__html: body}}
+                    onClick={this._onFaqBodyClick} />
             </div>
             <BrandingContainer />
           </div>
         );
         /* eslint-enable react/no-danger */
+      },
+
+      _onFaqBodyClick (event) {
+        const selector = commonHelpers.getSelectorForElement (event.target);
+
+        ax.setActiveIndex ({
+          selector: selector
+        });
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       */
+      _setAxActiveIndex (config) {
+        ax.setActiveIndex (config);
+      },
+
+      componentDidUpdate () {
+        const {body} = this.props;
+
+        ax.clearDelayFocus ();
+
+        if (body) {
+          const elements = document.querySelectorAll (".hs-faq__body a");
+          const selectors = [];
+
+          for (let i = 0; i < elements.length; i++) {
+            selectors.push (commonHelpers.getSelectorForElement (elements[i]));
+          }
+
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
+            selectors
+          });
+        }
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.FAQ);
+        ax.delayFocus ();
       }
     });
   }
