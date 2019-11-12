@@ -18,6 +18,9 @@ define ("components/businessHoursView",
     attachmentsHelpers, classes) {
     "use strict";
 
+    const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
+    const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
+
     const FORM_FIELD_PROP_TYPE = PropTypes.shape ({
       enabled: PropTypes.bool,
       value: PropTypes.shape ({
@@ -26,90 +29,63 @@ define ("components/businessHoursView",
         validations: PropTypes.array
       }).isRequired
     }).isRequired;
+
     const ATTACHMENT_PROP_TYPE = PropTypes.shape ({
       id: PropTypes.string,
       name: PropTypes.string,
       size: PropTypes.number
     });
 
-    const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
-    const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
+    const TEXT_PROP_TYPE = PropTypes.shape ({
+      closeConversationBtn: PropTypes.string.isRequired,
+      businessHoursSubmitBtn: PropTypes.string.isRequired,
+      businessHoursViewHeader: PropTypes.string.isRequired,
+      businessHoursContactFormMessage: PropTypes.string.isRequired,
+      businessHoursOfflineMessage: PropTypes.string.isRequired,
+      businessHoursThankYouMessage: PropTypes.string.isRequired,
+      businessHoursAttachmentsLimitExceedMsg: PropTypes.string.isRequired,
+      businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
+      attachmentFileTypeError: PropTypes.string.isRequired,
+      attachmentDefaultError: PropTypes.string.isRequired,
+      dndInfoText: PropTypes.string.isRequired
+    }).isRequired;
 
-    return createReactClass ({
-      displayName: "BusinessHoursView",
-      propTypes: {
-        showCloseButton: PropTypes.bool.isRequired,
-        allowFullScreen: PropTypes.bool,
-        text: PropTypes.shape ({
-          closeConversationBtn: PropTypes.string.isRequired,
-          businessHoursSubmitBtn: PropTypes.string.isRequired,
-          businessHoursViewHeader: PropTypes.string.isRequired,
-          businessHoursContactFormMessage: PropTypes.string.isRequired,
-          businessHoursOfflineMessage: PropTypes.string.isRequired,
-          businessHoursThankYouMessage: PropTypes.string.isRequired,
-          businessHoursAttachmentsLimitExceedMsg: PropTypes.string.isRequired,
-          businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
-          attachmentFileTypeError: PropTypes.string.isRequired,
-          attachmentDefaultError: PropTypes.string.isRequired,
-          dndInfoText: PropTypes.string.isRequired
-        }).isRequired,
-        contactFormDetails: PropTypes.shape ({
-          name: FORM_FIELD_PROP_TYPE,
-          email: FORM_FIELD_PROP_TYPE,
-          message: FORM_FIELD_PROP_TYPE,
-          attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
-          attachmentsMeta: PropTypes.shape ({
-            featureIsEnabled: PropTypes.bool,
-            limitHasExceeded: PropTypes.bool,
-            sizeHasExceeded: PropTypes.bool,
-            attachmentsAreInvalid: PropTypes.bool
-          }).isRequired
-        }).isRequired,
-        offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
-        onMinimizeConversation: PropTypes.func.isRequired,
-        onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
-        onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
-        onFilesChange: PropTypes.func.isRequired,
-        onRemoveAttachment: PropTypes.func.isRequired,
-        contactFormSubmitted: PropTypes.bool.isRequired,
-        contactFormDisabled: PropTypes.bool.isRequired,
-        submitInProgress: PropTypes.bool.isRequired,
-        viewStyles: PropTypes.shape ({
-          fontFamily: PropTypes.string
-        }),
-        fullPrivacyEnabled: PropTypes.bool
-      },
+    const CONTACT_FORM_DETAILS_PROP_TYPE = PropTypes.shape ({
+      name: FORM_FIELD_PROP_TYPE,
+      email: FORM_FIELD_PROP_TYPE,
+      message: FORM_FIELD_PROP_TYPE,
+      attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
+      attachmentsMeta: PropTypes.shape ({
+        featureIsEnabled: PropTypes.bool,
+        limitHasExceeded: PropTypes.bool,
+        sizeHasExceeded: PropTypes.bool,
+        attachmentsAreInvalid: PropTypes.bool
+      }).isRequired
+    }).isRequired;
+
+    const OFFLINE_BEHAVIOUR_PROP_TYPE = PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]);
+
+    class BusinessHoursViewContents extends React.PureComponent {
+      constructor (props) {
+        super (props);
+      }
+
       render () {
-        const {
-          text,
-          showCloseButton,
-          onMinimizeConversation,
-          onFilesChange,
-          contactFormDetails,
-          viewStyles,
-          fullPrivacyEnabled
-        } = this.props;
-
-        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
-        const attachmentIsEnabled = featureIsEnabled && !fullPrivacyEnabled;
+        const {text, onFilesChange, attachmentIsEnabled} = this.props;
 
         return (
-          <div className="hs-view" style={viewStyles}>
-            <ViewHeader title={text.businessHoursViewHeader}
-                        showCloseBtn={showCloseButton}
-                        onCloseBtnClick={onMinimizeConversation} />
-              <div className="hs-view__content">
-                <DnDWrapper dragInfoText={text.dndInfoText}
-                            onDrop={onFilesChange}
-                            enabled={attachmentIsEnabled} >
-                  {this._renderContactForm ()}
-                  {this._renderOfflineMessage ()}
-                  {this._renderFooter ()}
-                </DnDWrapper>
-              </div>
+          <div className="hs-view__content">
+            <DnDWrapper
+              dragInfoText={text.dndInfoText}
+              onDrop={onFilesChange}
+              enabled={attachmentIsEnabled} >
+              {this._renderContactForm ()}
+              {this._renderOfflineMessage ()}
+              {this._renderFooter ()}
+            </DnDWrapper>
           </div>
         );
-      },
+      }
 
       /**
        * Render business hours contact form
@@ -139,7 +115,7 @@ define ("components/businessHoursView",
             </div>
           </div>
         );
-      },
+      }
 
       /**
        * Render offline message
@@ -172,7 +148,7 @@ define ("components/businessHoursView",
             </div>
           </div>
         );
-      },
+      }
 
       /**
        * Render footer with button
@@ -194,7 +170,7 @@ define ("components/businessHoursView",
           clickHandler = onMinimizeConversation;
         } else {
           btnText = text.businessHoursSubmitBtn;
-          clickHandler = this._onSendButtonClick;
+          clickHandler = this.props.onSendButtonClick;
         }
 
         const footerClasses = classes ("hs-footer",
@@ -211,7 +187,7 @@ define ("components/businessHoursView",
             </button>
           </div>
         );
-      },
+      }
 
       /**
        * Render formfield
@@ -240,7 +216,7 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
-                     onChange={this._onNameChange} />
+                     onChange={this.props.onNameChange} />
             );
             break;
 
@@ -253,7 +229,7 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
-                     onChange={this._onEmailChange} />
+                     onChange={this.props.onEmailChange} />
             );
             break;
 
@@ -266,7 +242,7 @@ define ("components/businessHoursView",
                         disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
-                        onChange={this._onMessageChange} />
+                        onChange={this.props.onMessageChange} />
             );
             break;
         }
@@ -292,7 +268,7 @@ define ("components/businessHoursView",
             {errorIconEl}
           </div>
         );
-      },
+      }
 
       /**
        * Render attachments
@@ -316,7 +292,10 @@ define ("components/businessHoursView",
         let attachmentsWrapperEl = null;
 
         if (attachments.length) {
-          const attachmentsEl = attachments.map (this._renderAttachment);
+          const attachmentsEl = attachments.map (
+            (attachment) => this._renderAttachment (attachment)
+          );
+
           const {
             limitHasExceeded,
             sizeHasExceeded,
@@ -341,7 +320,7 @@ define ("components/businessHoursView",
             {this._renderPlaceholderAttachment ()}
           </div>
         );
-      },
+      }
 
       /**
        * Render attachment
@@ -365,7 +344,7 @@ define ("components/businessHoursView",
           );
           iconEl = (
             <i className={iconClasses}
-               onClick={this._onRemoveAttachmentClick.bind (this, id)} />
+               onClick={() => this.props.onRemoveAttachmentClick (id)} />
           );
         }
 
@@ -402,7 +381,7 @@ define ("components/businessHoursView",
           </div>),
           attachmentErrorEl
         ]);
-      },
+      }
 
       /**
        * Render placeholder attachment layout
@@ -426,7 +405,7 @@ define ("components/businessHoursView",
                        infoText={dndInfoText} />
           </div>
         );
-      },
+      }
 
       /**
        * Render attachment file limit error
@@ -477,7 +456,7 @@ define ("components/businessHoursView",
             {invalidTypeInfoTextEl}
           </div>
         );
-      },
+      }
 
       /**
        * Render attachment error
@@ -489,6 +468,94 @@ define ("components/businessHoursView",
             <i className="ion-alert-circled hs-business-hours__small-icon" />
             <span>{text}</span>
           </small>
+        );
+      }
+    }
+
+    BusinessHoursViewContents.propTypes = {
+      text: TEXT_PROP_TYPE,
+      onFilesChange: PropTypes.func.isRequired,
+      attachmentIsEnabled: PropTypes.bool.isRequired,
+      offlineBehaviour: OFFLINE_BEHAVIOUR_PROP_TYPE,
+      contactFormSubmitted: PropTypes.bool.isRequired,
+      contactFormDisabled: PropTypes.bool.isRequired,
+      allowFullScreen: PropTypes.bool,
+      onMinimizeConversation: PropTypes.func.isRequired,
+      contactFormDetails: CONTACT_FORM_DETAILS_PROP_TYPE,
+      fullPrivacyEnabled: PropTypes.bool,
+      submitInProgress: PropTypes.bool.isRequired,
+      onSendButtonClick: PropTypes.func.isRequired,
+      onNameChange: PropTypes.func.isRequired,
+      onEmailChange: PropTypes.func.isRequired,
+      onMessageChange: PropTypes.func.isRequired,
+      onRemoveAttachmentClick: PropTypes.func.isRequired
+    };
+
+    return createReactClass ({
+      displayName: "BusinessHoursView",
+      propTypes: {
+        showCloseButton: PropTypes.bool.isRequired,
+        allowFullScreen: PropTypes.bool,
+        text: TEXT_PROP_TYPE,
+        contactFormDetails: CONTACT_FORM_DETAILS_PROP_TYPE,
+        offlineBehaviour: OFFLINE_BEHAVIOUR_PROP_TYPE,
+        onMinimizeConversation: PropTypes.func.isRequired,
+        onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
+        onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
+        onFilesChange: PropTypes.func.isRequired,
+        onRemoveAttachment: PropTypes.func.isRequired,
+        contactFormSubmitted: PropTypes.bool.isRequired,
+        contactFormDisabled: PropTypes.bool.isRequired,
+        submitInProgress: PropTypes.bool.isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        }),
+        fullPrivacyEnabled: PropTypes.bool
+      },
+
+      render () {
+        const {
+          text,
+          showCloseButton,
+          onMinimizeConversation,
+          onFilesChange,
+          contactFormDetails,
+          viewStyles,
+          fullPrivacyEnabled,
+          offlineBehaviour,
+          contactFormSubmitted,
+          contactFormDisabled,
+          allowFullScreen,
+          submitInProgress
+        } = this.props;
+
+        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
+        const attachmentIsEnabled = featureIsEnabled && !fullPrivacyEnabled;
+
+        return (
+          <div className="hs-view" style={viewStyles}>
+            <ViewHeader
+              title={text.businessHoursViewHeader}
+              showCloseBtn={showCloseButton}
+              onCloseBtnClick={onMinimizeConversation} />
+            <BusinessHoursViewContents
+              text={text}
+              attachmentIsEnabled={attachmentIsEnabled}
+              onFilesChange={onFilesChange}
+              offlineBehaviour={offlineBehaviour}
+              contactFormSubmitted={contactFormSubmitted}
+              contactFormDisabled={contactFormDisabled}
+              allowFullScreen={allowFullScreen}
+              onMinimizeConversation={onMinimizeConversation}
+              contactFormDetails={contactFormDetails}
+              fullPrivacyEnabled={fullPrivacyEnabled}
+              submitInProgress={submitInProgress}
+              onSendButtonClick={this._onSendButtonClick}
+              onNameChange={this._onNameChange}
+              onMessageChange={this._onMessageChange}
+              onEmailChange={this._onEmailChange}
+              onRemoveAttachmentClick={this._onRemoveAttachmentClick} />
+          </div>
         );
       },
 
