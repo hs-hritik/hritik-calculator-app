@@ -15,11 +15,12 @@ define ("components/chatView",
     "constants/chatView",
     "components/jumpToLatestBtn",
     "gunpowder/utils/classes",
-    "gunpowder/constants/widgets/picker"
+    "gunpowder/constants/widgets/picker",
+    "gunpowder/utils/object"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
-    LIST_PICKER_CONSTANTS) {
+    LIST_PICKER_CONSTANTS, objUtils) {
     "use strict";
 
     const {
@@ -31,96 +32,113 @@ define ("components/chatView",
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
 
-    return createReactClass ({
-      displayName: "ChatView",
-      propTypes: {
-        messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,
-        onSuggestedFaqClick: PropTypes.func,
-        showAgentNickname: PropTypes.bool,
-        isTyping: PropTypes.bool,
-        userIsViewingPastMessages: PropTypes.bool,
-        minimized: PropTypes.bool,
-        loadingMoreMsgsHasFailed: PropTypes.bool,
-        browserIsMobile: PropTypes.bool,
-        onMinimizeConversation: PropTypes.func,
-        onScrollPastExistingConversation: PropTypes.func,
-        onLoadMoreMessages: PropTypes.func,
-        showCloseButton: PropTypes.bool.isRequired,
-        onFilesDrop: PropTypes.func.isRequired,
-        onRetryAttachmentClick: PropTypes.func.isRequired,
-        userInput: USER_INPUT_PROP_TYPE,
-        issueIsCreated: PropTypes.bool.isRequired,
-        onPillOptionSelect: PropTypes.func.isRequired,
-        onListPickerOptionSelect: PropTypes.func,
-        onSkipUserInput: PropTypes.func,
-        text: PropTypes.shape ({
-          chatViewHeader: PropTypes.string.isRequired,
-          dndInfoText: PropTypes.string.isRequired,
-          pastConversationsLoadingText: PropTypes.string.isRequired
-        }).isRequired,
-        viewStyles: PropTypes.shape ({
-          fontFamily: PropTypes.string
-        }),
-        loading: PropTypes.bool,
-        pastConversationsLoading: PropTypes.bool,
-        allMessagesAreLoaded: PropTypes.bool,
-        latestConversationHasLoaded: PropTypes.bool,
-        unreadCount: PropTypes.number,
-        /**
-         * If chat view footer has any failure
-         */
-        hasFailure: PropTypes.bool,
-        error: PropTypes.shape ({
-          // Error title
-          title: PropTypes.string.isRequired,
-          // Error subtitle
-          subtitle: PropTypes.string,
-          // Call to action text for the error. eg. Retry
-          cta: PropTypes.string
-        }),
-        errorActionHandler: PropTypes.func,
-        botStepInProgress: PropTypes.bool
-      },
+    const CHAT_VIEW_COMMON_PROPS = {
+      messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,
+      onSuggestedFaqClick: PropTypes.func,
+      showAgentNickname: PropTypes.bool,
+      isTyping: PropTypes.bool,
+      userIsViewingPastMessages: PropTypes.bool,
+      minimized: PropTypes.bool,
+      loadingMoreMsgsHasFailed: PropTypes.bool,
+      onScrollPastExistingConversation: PropTypes.func,
+      onLoadMoreMessages: PropTypes.func,
+      onFilesDrop: PropTypes.func.isRequired,
+      onRetryAttachmentClick: PropTypes.func.isRequired,
+      userInput: USER_INPUT_PROP_TYPE,
+      issueIsCreated: PropTypes.bool.isRequired,
+      onPillOptionSelect: PropTypes.func.isRequired,
+      onListPickerOptionSelect: PropTypes.func,
+      onSkipUserInput: PropTypes.func,
+      text: PropTypes.shape ({
+        chatViewHeader: PropTypes.string.isRequired,
+        dndInfoText: PropTypes.string.isRequired,
+        pastConversationsLoadingText: PropTypes.string.isRequired
+      }).isRequired,
+      loading: PropTypes.bool,
+      pastConversationsLoading: PropTypes.bool,
+      allMessagesAreLoaded: PropTypes.bool,
+      latestConversationHasLoaded: PropTypes.bool,
+      unreadCount: PropTypes.number,
+      /**
+       * If chat view footer has any failure
+       */
+      hasFailure: PropTypes.bool,
+      botStepInProgress: PropTypes.bool
+    };
 
-      getInitialState () {
-        return {
-          showJumpToLatestBtn: false
-        };
-      },
+    class ChatViewContents extends React.PureComponent {
+      constructor (props) {
+        super (props);
+        this._msgListRef = React.createRef ();
+
+        this._onLoadMore = this._onLoadMore.bind (this);
+        this._onFilesDrop = this._onFilesDrop.bind (this);
+        this._onJumpBtnClick = this._onJumpBtnClick.bind (this);
+      }
 
       render () {
         const {
-          showCloseButton,
-          onMinimizeConversation,
+          messages,
+          isTyping,
+          showAgentNickname,
           text,
-          viewStyles,
+          onPillOptionSelect,
+          onListPickerOptionSelect,
+          onRetryAttachmentClick,
+          onSuggestedFaqClick,
+          onScrollPastExistingConversation,
+          onSkipUserInput,
+          userInput,
+          issueIsCreated,
+          loading,
+          hasFailure,
+          pastConversationsLoading,
+          userIsViewingPastMessages,
+          botStepInProgress,
           minimized
         } = this.props;
 
-        // In certain cases, Safari ignores scroll events on
-        // the web chat window, making it impossible to scroll through
-        // the messages. This usually happens after toggling the
-        // web chat launcher.
-        //
-        // The root cause is not known but it was found that the
-        // problem is fixed when reflow/repaint is triggered on the
-        // Webchat component.
-        //
-        // Therefore, we assign a special class whenever the chat window
-        // is maximized to trigger reflow.
-        const viewClasses = classes ("hs-view", {
-          "hs-view--safari-fix": !minimized
-        });
+        const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
+
+        if (loading) {
+          return (
+            <InfoView loading={loading} />
+          );
+        }
 
         return (
-          <div className={viewClasses} style={viewStyles}>
-            <ViewHeader title={text.chatViewHeader}
-                        showCloseBtn={showCloseButton}
-                        onCloseBtnClick={onMinimizeConversation} />
-            {this._renderViewContents ()}
-          </div>
+          <DnDWrapper
+            onDrop={this._onFilesDrop}
+            dragInfoText={text.dndInfoText}
+            enabled={dragAndDropEnabled}>
+            {this._renderLoader ()}
+            <div className="hs-view__content">
+              <MessageList
+                messages={messages}
+                isTyping={isTyping}
+                showAgentNickname={showAgentNickname}
+                text={text}
+                pastConversationsLoading={pastConversationsLoading}
+                onPillOptionSelect={onPillOptionSelect}
+                onRetryAttachmentClick={onRetryAttachmentClick}
+                onSuggestedFaqClick={onSuggestedFaqClick}
+                onSkipUserInput={onSkipUserInput}
+                hasFailure={hasFailure}
+                userInput={userInput}
+                userIsViewingPastMessages={userIsViewingPastMessages}
+                onScrollPastExistingConversation={onScrollPastExistingConversation}
+                onLoadMore={this._onLoadMore}
+                ref={this._msgListRef}
+                minimized={minimized} />
+              {this._renderJumpToLatestBtn ()}
+            </div>
+            {this._renderPickerOverlay ()}
+            <ChatViewFooterContainer
+              onJumpBtnClick={this._onJumpBtnClick}
+              onListPickerOptionSelect={onListPickerOptionSelect} />
+          </DnDWrapper>
         );
-      },
+      }
 
       _renderLoader () {
         const {
@@ -162,7 +180,7 @@ define ("components/chatView",
             <span>{pastConversationsLoadingText}</span>
           </div>
         );
-      },
+      }
 
       /**
        * Render jump to latest button when input pills are rendered
@@ -192,7 +210,7 @@ define ("components/chatView",
         }
 
         return null;
-      },
+      }
 
       /**
        * Renders the picker overlay if picker is in resizing state
@@ -213,89 +231,26 @@ define ("components/chatView",
         return (
           <div className="hs-list-picker-overlay" />
         );
-      },
-
-      /**
-       * Render view contents
-       */
-      _renderViewContents () {
-        const {
-          messages,
-          isTyping,
-          showAgentNickname,
-          text,
-          onPillOptionSelect,
-          onListPickerOptionSelect,
-          onRetryAttachmentClick,
-          onSuggestedFaqClick,
-          onScrollPastExistingConversation,
-          onSkipUserInput,
-          userInput,
-          issueIsCreated,
-          loading,
-          hasFailure,
-          pastConversationsLoading,
-          userIsViewingPastMessages,
-          botStepInProgress,
-          minimized
-        } = this.props;
-
-        const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
-
-        if (loading) {
-          return (
-            <InfoView loading={loading} />
-          );
-        }
-
-        return (
-          <DnDWrapper onDrop={this._onFilesDrop}
-                      dragInfoText={text.dndInfoText}
-                      enabled={dragAndDropEnabled}>
-              {this._renderLoader ()}
-              <div className="hs-view__content">
-                <MessageList messages={messages}
-                             isTyping={isTyping}
-                             showAgentNickname={showAgentNickname}
-                             text={text}
-                             pastConversationsLoading={pastConversationsLoading}
-                             onPillOptionSelect={onPillOptionSelect}
-                             onRetryAttachmentClick={onRetryAttachmentClick}
-                             onSuggestedFaqClick={onSuggestedFaqClick}
-                             onSkipUserInput={onSkipUserInput}
-                             hasFailure={hasFailure}
-                             userInput={userInput}
-                             userIsViewingPastMessages={userIsViewingPastMessages}
-                             onScrollPastExistingConversation={
-                               onScrollPastExistingConversation
-                             }
-                             onLoadMore={this._onLoadMore}
-                             ref={this._setMsgListRef}
-                             minimized={minimized} />
-                {this._renderJumpToLatestBtn ()}
-              </div>
-              {this._renderPickerOverlay ()}
-              <ChatViewFooterContainer onJumpBtnClick={this._onJumpBtnClick}
-                                       onListPickerOptionSelect={onListPickerOptionSelect} />
-            </DnDWrapper>
-        );
-      },
-
-      _msgListRef: null,
+      }
 
       _onJumpBtnClick () {
-        this._msgListRef._animatedScrollToBottom ();
-      },
+        this._msgListRef.current._animatedScrollToBottom ();
+      }
 
-      _setMsgListRef (ref) {
-        this._msgListRef = ref;
-      },
+      /**
+       * Handler for files dropped event
+       * @param {Object} - files list array like object
+       */
+      _onFilesDrop (files) {
+        this.props.onFilesDrop (files);
+      }
 
       _onLoadMore () {
         const {
           allMessagesAreLoaded,
           latestConversationHasLoaded,
-          loadingMoreMsgsHasFailed
+          loadingMoreMsgsHasFailed,
+          onLoadMoreMessages
         } = this.props;
 
         // If conversation history is enabled, we need to load more
@@ -305,16 +260,118 @@ define ("components/chatView",
         // If loading messages has failed, we should only allow loading more
         // messages when "Tap To Retry" is clicked.
         if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
-          this.props.onLoadMoreMessages ();
+          onLoadMoreMessages ();
         }
+      }
+    }
+
+    ChatViewContents.propTypes = CHAT_VIEW_COMMON_PROPS;
+
+    return createReactClass ({
+      displayName: "ChatView",
+      propTypes: objUtils.shallowMerge ({
+        onMinimizeConversation: PropTypes.func,
+        showCloseButton: PropTypes.bool.isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        }),
+        // @TODO: Confirm whether these props can be removed. They are not being
+        // used anywhere
+        error: PropTypes.shape ({
+          // Error title
+          title: PropTypes.string.isRequired,
+          // Error subtitle
+          subtitle: PropTypes.string,
+          // Call to action text for the error. eg. Retry
+          cta: PropTypes.string
+        }),
+        errorActionHandler: PropTypes.func,
+        browserIsMobile: PropTypes.bool
+        // End @TODO
+      }, CHAT_VIEW_COMMON_PROPS),
+
+      getInitialState () {
+        return {
+          showJumpToLatestBtn: false
+        };
       },
 
-      /**
-       * Handler for files dropped event
-       * @param {Object} - files list array like object
-       */
-      _onFilesDrop (files) {
-        this.props.onFilesDrop (files);
+      render () {
+        const {
+          showCloseButton,
+          onMinimizeConversation,
+          text,
+          viewStyles,
+          minimized
+        } = this.props;
+
+        // In certain cases, Safari ignores scroll events on
+        // the web chat window, making it impossible to scroll through
+        // the messages. This usually happens after toggling the
+        // web chat launcher.
+        //
+        // The root cause is not known but it was found that the
+        // problem is fixed when reflow/repaint is triggered on the
+        // Webchat component.
+        //
+        // Therefore, we assign a special class whenever the chat window
+        // is maximized to trigger reflow.
+        const viewClasses = classes ("hs-view", {
+          "hs-view--safari-fix": !minimized
+        });
+
+        return (
+          <div className={viewClasses} style={viewStyles}>
+            <ViewHeader
+              title={text.chatViewHeader}
+              showCloseBtn={showCloseButton}
+              onCloseBtnClick={onMinimizeConversation} />
+            {this._renderViewContents ()}
+          </div>
+        );
+      },
+
+      _renderViewContents () {
+        const {
+          messages,
+          onSuggestedFaqClick,
+          showAgentNickname,
+          isTyping,
+          userIsViewingPastMessages,
+          minimized,
+          loadingMoreMsgsHasFailed,
+          onScrollPastExistingConversation,
+          onLoadMoreMessages,
+          onRetryAttachmentClick,
+          userInput,
+          issueIsCreated,
+          onPillOptionSelect,
+          onListPickerOptionSelect,
+          onSkipUserInput,
+          onFilesDrop,
+          text
+        } = this.props;
+
+        return (
+          <ChatViewContents
+            messages={messages}
+            onSuggestedFaqClick={onSuggestedFaqClick}
+            showAgentNickname={showAgentNickname}
+            isTyping={isTyping}
+            userIsViewingPastMessages={userIsViewingPastMessages}
+            minimized={minimized}
+            loadingMoreMsgsHasFailed={loadingMoreMsgsHasFailed}
+            onScrollPastExistingConversation={onScrollPastExistingConversation}
+            onLoadMoreMessages={onLoadMoreMessages}
+            onFilesDrop={onFilesDrop}
+            onRetryAttachmentClick={onRetryAttachmentClick}
+            userInput={userInput}
+            issueIsCreated={issueIsCreated}
+            onPillOptionSelect={onPillOptionSelect}
+            onListPickerOptionSelect={onListPickerOptionSelect}
+            onSkipUserInput={onSkipUserInput}
+            text={text} />
+        );
       }
     });
   }
