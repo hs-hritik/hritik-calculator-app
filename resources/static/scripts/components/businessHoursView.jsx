@@ -12,10 +12,13 @@ define ("components/businessHoursView",
     "components/commons/dndWrapper",
     "constants/businessHoursView",
     "helpers/attachments",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/widgets/errorBoundary",
+    "components/errors/appError",
+    "utils/logReactError"
   ],
   function (ViewHeader, BrandingContainer, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
-    attachmentsHelpers, classes) {
+    attachmentsHelpers, classes, ErrorBoundary, AppError, logReactError) {
     "use strict";
 
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
@@ -538,23 +541,27 @@ define ("components/businessHoursView",
               title={text.businessHoursViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation} />
-            <BusinessHoursViewContents
-              text={text}
-              attachmentIsEnabled={attachmentIsEnabled}
-              onFilesChange={onFilesChange}
-              offlineBehaviour={offlineBehaviour}
-              contactFormSubmitted={contactFormSubmitted}
-              contactFormDisabled={contactFormDisabled}
-              allowFullScreen={allowFullScreen}
-              onMinimizeConversation={onMinimizeConversation}
-              contactFormDetails={contactFormDetails}
-              fullPrivacyEnabled={fullPrivacyEnabled}
-              submitInProgress={submitInProgress}
-              onSendButtonClick={this._onSendButtonClick}
-              onNameChange={this._onNameChange}
-              onMessageChange={this._onMessageChange}
-              onEmailChange={this._onEmailChange}
-              onRemoveAttachmentClick={this._onRemoveAttachmentClick} />
+            <ErrorBoundary
+              fallbackComponent={<AppError />}
+              onError={this._handleViewContentsError}>
+              <BusinessHoursViewContents
+                text={text}
+                attachmentIsEnabled={attachmentIsEnabled}
+                onFilesChange={onFilesChange}
+                offlineBehaviour={offlineBehaviour}
+                contactFormSubmitted={contactFormSubmitted}
+                contactFormDisabled={contactFormDisabled}
+                allowFullScreen={allowFullScreen}
+                onMinimizeConversation={onMinimizeConversation}
+                contactFormDetails={contactFormDetails}
+                fullPrivacyEnabled={fullPrivacyEnabled}
+                submitInProgress={submitInProgress}
+                onSendButtonClick={this._onSendButtonClick}
+                onNameChange={this._onNameChange}
+                onMessageChange={this._onMessageChange}
+                onEmailChange={this._onEmailChange}
+                onRemoveAttachmentClick={this._onRemoveAttachmentClick} />
+            </ErrorBoundary>
           </div>
         );
       },
@@ -602,6 +609,10 @@ define ("components/businessHoursView",
        */
       _onRemoveAttachmentClick (attachmentId) {
         this.props.onRemoveAttachment (attachmentId);
+      },
+
+      _handleViewContentsError (error, info) {
+        logReactError (error, info);
       }
     });
   }
