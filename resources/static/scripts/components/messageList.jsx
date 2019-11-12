@@ -230,19 +230,20 @@ define ("components/messageList",
         );
 
         return (
-          <div className="hs-message-list__pills-container">
+          <div
+            className="hs-message-list__pills-container"
+            data-label={METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.DATA_LABEL}
+            tabIndex="0"
+            onClick={setPillWrapperAxActiveIndex}
+            onFocus={setPillWrapperAxActiveIndex}
+            aria-label={label}>
             <small aria-hidden={true}>
               <strong className="hs-message-list__pill-heading">
                 {label}
               </strong>
             </small>
             <div
-              className="hs-message-list__pill-options"
-              data-label={METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.DATA_LABEL}
-              tabIndex="0"
-              onClick={setPillWrapperAxActiveIndex}
-              onFocus={setPillWrapperAxActiveIndex}
-              aria-label={label}>
+              className="hs-message-list__pill-options">
               {pillOptionsEl}
             </div>
             {skipBtnWrapperEl}
