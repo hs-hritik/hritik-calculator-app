@@ -50,7 +50,11 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
-    const {METALIST_ITEMS, METALIST_GROUP_NAME} = axConstants;
+    const {
+      METALIST_ITEMS,
+      METALIST_GROUP_NAME,
+      FOOTER_SELECTORS_LIST_MAP
+    } = axConstants;
 
     return React.createClass ({
       displayName: "MessageList",
@@ -76,7 +80,11 @@ define ("components/messageList",
         /**
          * If chat view footer has any failure
          */
-        hasFailure: PropTypes.bool
+        hasFailure: PropTypes.bool,
+        /**
+         * Current active footer
+         */
+        activeFooter: PropTypes.string
       },
 
       render () {
@@ -154,14 +162,12 @@ define ("components/messageList",
       _renderPillOptions () {
         const {
           userInput: {
-            type,
             options,
             label,
             disabled,
             required,
             skipLabel
           },
-          hasFailure,
           onSkipUserInput
         } = this.props;
 
@@ -169,7 +175,7 @@ define ("components/messageList",
         // here directly, and render the pill select options inside the chat view footer.
         // This will avoid passing the props like userInput, hasFailure to the
         // MessageList component.
-        if (hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled) {
+        if (!this._arePillsRendered ()) {
           return null;
         }
 
@@ -463,11 +469,92 @@ define ("components/messageList",
         return selectors;
       },
 
+      /**
+       * Returns array of pills option selectors
+       *
+       * @param {Array} options - Option for option pills
+       * @returns {Array} - Unique selector list of option pills
+       */
+      _getPillsOptionSelectorList (options) {
+        const {
+          userInput
+        } = this.props;
+        const prefix = METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL;
+        const pillIsSkipable = !userInput.required;
+
+        const optionsSelectorList = options.map ((option) => {
+          return `[data-label=${prefix}${option.value}]`;
+        });
+
+        if (pillIsSkipable) {
+          optionsSelectorList.push (METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR);
+        }
+
+        return optionsSelectorList;
+      },
+
+      /**
+       * Return true when picker is rendered in DOM
+       */
+      _arePillsRendered () {
+        const {
+          userInput: {
+            type,
+            disabled
+          },
+          hasFailure
+        } = this.props;
+
+        return !(hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled);
+      },
+
+      /**
+       * Replace footer selectors in meta list
+       */
+      setFooterSelectors () {
+        const {
+          userInput: {
+            options
+          }
+        } = this.props;
+
+        const optionsSelectorList = this._getPillsOptionSelectorList (options);
+
+        if (optionsSelectorList.length) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.FOOTER,
+            selectors: [].concat (FOOTER_SELECTORS_LIST_MAP.OPTION_PILL, optionsSelectorList)
+          });
+          ax.setFlatListActiveIndex (0);
+          ax.focus ();
+        }
+      },
+
       componentDidUpdate (prevProps) {
-        const {messages, minimized} = this.props;
+        const {messages, minimized, userInput} = this.props;
         const previousMessages = prevProps.messages;
         const messageListHasBeenUpdated = previousMessages.length !== messages.length;
+        const userInputTypeIsChanged = (userInput.type !== prevProps.userInput.type);
+        const userInputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const selectOptionIsSubmitted = (
+          !userInput.selectedOption &&
+          !!prevProps.userInput.selectedOption
+        );
+        // User input is considered refreshed when selected option or
+        // entered value resets to empty
+        const pillOptionsIsRefreshed = !userInputTypeIsChanged && (
+          userInputIsPillSelect &&
+          selectOptionIsSubmitted
+        );
         let messagesHaveBeenAppended = false;
+
+        // If option pills is rendered and the currently rendered pill render for the
+        // first time, add pill selector in ax meta list
+        if (this._arePillsRendered ()) {
+          if (userInputIsPillSelect && (userInputTypeIsChanged || pillOptionsIsRefreshed)) {
+            this.setFooterSelectors ();
+          }
+        }
 
         if (messages.length) {
           messagesHaveBeenAppended = (
@@ -522,6 +609,11 @@ define ("components/messageList",
           selectors: this._getLinkSelectors ()
         });
 
+        // While component mount for the first time or refreshed
+        // If picker is rendered, add pills selectors in ax meta list
+        if (this._arePillsRendered ()) {
+          this.setFooterSelectors ();
+        }
         // @TODO :- Remove throttling logic as the image will have fixed width
         // and height. We will not require bottom scrolling logic then.
         // Also we will need to fix the width and height of image container

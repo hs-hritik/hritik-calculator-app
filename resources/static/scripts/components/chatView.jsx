@@ -84,7 +84,8 @@ define ("components/chatView",
         }),
         errorActionHandler: PropTypes.func,
         botStepInProgress: PropTypes.bool,
-        keyboardInteractionIsActive: PropTypes.bool.isRequired
+        keyboardInteractionIsActive: PropTypes.bool.isRequired,
+        activeFooter: PropTypes.string
       },
 
       getInitialState () {
@@ -248,7 +249,8 @@ define ("components/chatView",
           pastConversationsLoading,
           userIsViewingPastMessages,
           botStepInProgress,
-          minimized
+          minimized,
+          activeFooter
         } = this.props;
 
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -282,7 +284,8 @@ define ("components/chatView",
                              }
                              onLoadMore={this._onLoadMore}
                              ref={this._setMsgListRef}
-                             minimized={minimized} />
+                             minimized={minimized}
+                             activeFooter={activeFooter} />
                 {this._renderJumpToLatestBtn ()}
               </div>
               {this._renderPickerOverlay ()}
