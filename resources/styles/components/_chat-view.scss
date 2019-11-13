@@ -14,6 +14,7 @@
 
   $loader-color: color(primary);
   $subtitle-color: color(text, light);
+  $footer-error-icon-color: color(error, text);
 
   .hs-chat-view {
 
@@ -44,6 +45,18 @@
       height: 28px;
       font-size: icon-size(xxx-large);
       color: $loader-color;
+    }
+
+    &__footer-error {
+      display: flex;
+      align-items: center;
+      margin: gutter();
+
+      &-icon {
+        margin-right: gutter(12);
+        font-size: icon-size(large);
+        color: $footer-error-icon-color;
+      }
     }
   }
 }

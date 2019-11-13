@@ -69,6 +69,19 @@ define ("components/chatView",
       botStepInProgress: PropTypes.bool
     };
 
+    /**
+     * Fallback component for Chat View Footer. This will be rendered when
+     * Chat View Footer fails to render
+     */
+    const FooterFallback = () => (
+      <div className="hs-chat-view__footer-error">
+        <i className="hs-chat-view__footer-error-icon ion-alert-circled" />
+        <div>
+          Something went wrong. Please refresh the page or try again later.
+        </div>
+      </div>
+    );
+
     class ChatViewContents extends React.PureComponent {
       constructor (props) {
         super (props);
@@ -136,9 +149,13 @@ define ("components/chatView",
               {this._renderJumpToLatestBtn ()}
             </div>
             {this._renderPickerOverlay ()}
-            <ChatViewFooterContainer
-              onJumpBtnClick={this._onJumpBtnClick}
-              onListPickerOptionSelect={onListPickerOptionSelect} />
+            <ErrorBoundary
+              fallbackComponent={<FooterFallback />}
+              onError={this._handleFooterError}>
+              <ChatViewFooterContainer
+                onJumpBtnClick={this._onJumpBtnClick}
+                onListPickerOptionSelect={onListPickerOptionSelect} />
+            </ErrorBoundary>
           </DnDWrapper>
         );
       }
@@ -265,6 +282,15 @@ define ("components/chatView",
         if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
           onLoadMoreMessages ();
         }
+      }
+
+      /**
+       * Handle error thrown in Chat View Footer
+       * @param {object} error - Error object
+       * @param {object} info - Additional info including stack trace
+       */
+      _handleFooterError (error, info) {
+        logReactError (error, info);
       }
     }
 
