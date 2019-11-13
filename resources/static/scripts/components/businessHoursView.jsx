@@ -149,8 +149,7 @@ define ("components/businessHoursView",
             className="hs-business-hours"
             data-label={METALIST_ITEMS.OOBH.WRAPPER.DATA_LABEL}
             tabIndex="0"
-            onFocus={_setAxActiveIndex}
-            onClick={_setAxActiveIndex}>
+            onFocus={_setAxActiveIndex}>
             <div>
               <p className="hs-business-hours__offline-message">
                 {text.businessHoursContactFormMessage}
@@ -681,25 +680,24 @@ define ("components/businessHoursView",
       /**
        * Click handler for 'Send' button
        */
-      _onSendButtonClick () {
-        this._setAxActiveIndex.bind (
-          this, {
-            selector: METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR
-          }
-        );
+      _onSendButtonClick (ev) {
+        this._setAxActiveIndex ({
+          selector: METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR
+        }, ev);
         this.props.onSubmitBusinessHoursContactForm ();
       },
 
       /**
        * Click handler for 'X' icon of attachment
        * @param {String} attachmentId - attachment id to remove
+       * @param {String} dataLabelAttribute - attachment data label
+       * @param {Object} ev - Click event object
        */
-      _onRemoveAttachmentClick (attachmentId, dataLabelAttribute) {
-        this._setAxActiveIndex.bind (
-          this, {
-            selector: `[data-label=${dataLabelAttribute}]`
-          }
-        );
+      _onRemoveAttachmentClick (attachmentId, dataLabelAttribute, ev) {
+        this._setAxActiveIndex ({
+          selector: `[data-label=${dataLabelAttribute}]`
+        }, ev);
+
         this.props.onRemoveAttachment (attachmentId);
       },
 
@@ -711,7 +709,15 @@ define ("components/businessHoursView",
        * @param {Object} ev - Click or focus event object
        */
       _setAxActiveIndex (config, ev) {
-        ev.stopPropagation ();
+        // When the user click on an interactive element, event propagates
+        // to global event, which sets the keyboardInteractionIsActive flag
+        // to false which hides the focus outline. In case of focus event, if we
+        // do not stop the propagation of the event, then the parent component
+        // will listen to it and also set its ax active index.
+        if (ev && ev.type !== "click") {
+          ev.stopPropagation ();
+        }
+
         ax.setActiveIndex (config);
       },
 

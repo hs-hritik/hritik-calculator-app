@@ -195,10 +195,8 @@ define ("components/csatView",
        * It calls ax function to update active index
        *
        * @param {Object} config.selector - Selector value
-       * @param {Object} ev - Click or focus event object
        */
-      _setAxActiveIndex (config, ev) {
-        ev.stopPropagation ();
+      _setAxActiveIndex (config) {
         ax.setActiveIndex (config);
       },
 

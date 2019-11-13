@@ -703,7 +703,6 @@ define ("components/chatViewFooter",
             className="hs-chat-footer"
             tabIndex="0"
             data-label={METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.DATA_LABEL}
-            onClick={_setConversationResolutionWrapperAxActiveIndex}
             onFocus={_setConversationResolutionWrapperAxActiveIndex}
             aria-label={text.chatViewConversationResolutionQuestion}>
             <div className="hs-chat-footer__heading" >
@@ -1048,7 +1047,12 @@ define ("components/chatViewFooter",
        * @param {Object} ev - Click/Focus event
        */
       _setAxActiveIndex (config, ev) {
-        if (ev) {
+        // When the user click on an interactive element, event propagates
+        // to global event, which sets the keyboardInteractionIsActive flag
+        // to false which hides the focus outline. In case of focus event, if we
+        // do not stop the propagation of the event, then the parent component
+        // will listen to it and also set its ax active index.
+        if (ev && ev.type !== "click") {
           ev.stopPropagation ();
         }
 

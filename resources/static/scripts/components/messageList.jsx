@@ -433,7 +433,14 @@ define ("components/messageList",
        * @param {Object} ev - Click or focus event object
        */
       _setAxActiveIndex (config, ev) {
-        ev.stopPropagation ();
+        // When the user click on an interactive element, a global event
+        // is there to stop the focus. In the case of focus event, the event
+        // goes to its direct parent which set its active index, So it is required to
+        // stop propagation to its direct parent
+        if (ev && ev.type !== "click") {
+          ev.stopPropagation ();
+        }
+
         ax.setActiveIndex (config);
       },
 
