@@ -1,0 +1,4 @@
+Changelog:
+Fix flickering of outline on launcher button
+Remove unused function in ax
+Allow click event to propagate to topmost parent.
