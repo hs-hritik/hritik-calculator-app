@@ -13,7 +13,7 @@
 @include component(picker-options) {
   // @NOTE: This is a special color agnostic of the overall color scheme.
   // This cannot be customized from outside using existing variables.
-  $highlighted-option-background: #f9f9fa;
+  $highlighted-option-background: #EAECEC;
   $no-tap-highlight-color: rgba(255, 255, 255, 0);
 
   .hs-picker-options {

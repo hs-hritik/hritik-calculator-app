@@ -17,10 +17,11 @@ define ("actions/csatView",
     "constants/analytics",
     "helpers/xhr",
     "helpers/analytics",
-    "axios"
+    "axios",
+    "extras/accessibility"
   ],
   function (store, actionCreator, chatViewActions, batchActions, postSdkMessage, ACTION_TYPES,
-    routes, ACTIVE_VIEW, analyticsConstants, xhrHelpers, analyticsHelpers, axios) {
+    routes, ACTIVE_VIEW, analyticsConstants, xhrHelpers, analyticsHelpers, axios, ax) {
     "use strict";
 
     const {EVENT} = analyticsConstants;
@@ -86,6 +87,7 @@ define ("actions/csatView",
             }));
           })
           .finally (() => {
+            ax.setActiveView (ACTIVE_VIEW.CHAT);
             dispatch (
               batchActions ([
                 actionCreator.updateActiveView (ACTIVE_VIEW.CHAT),

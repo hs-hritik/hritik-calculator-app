@@ -270,6 +270,18 @@ define ("actions/actionCreators",
       };
     };
 
+    /**
+     * Action to set keyboard interaction is active/inactive flag in the state
+     * @param {boolean} - active
+     * @returns {Object} - Action
+     */
+    const setKeyboardInteractionIsActive = (active) => {
+      return {
+        type: ACTION_TYPES.SET_KEYBOARD_INTERACTION_IS_ACTIVE,
+        active
+      };
+    };
+
     return {
       updateActiveView,
       toggleAgentTyping,
@@ -294,6 +306,7 @@ define ("actions/actionCreators",
       updateListPickerToggleState,
       setAppResetTrigger,
       setInitialUserMsg,
-      setConversationEnded
+      setConversationEnded,
+      setKeyboardInteractionIsActive
     };
   });

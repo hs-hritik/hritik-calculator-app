@@ -15,11 +15,13 @@ define ("components/chatView",
     "constants/chatView",
     "components/jumpToLatestBtn",
     "gunpowder/utils/classes",
-    "gunpowder/constants/widgets/picker"
+    "gunpowder/constants/widgets/picker",
+    "extras/accessibility",
+    "constants/activeView"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
-    LIST_PICKER_CONSTANTS) {
+    LIST_PICKER_CONSTANTS, ax, activeViewConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -57,7 +59,8 @@ define ("components/chatView",
         text: PropTypes.shape ({
           chatViewHeader: PropTypes.string.isRequired,
           dndInfoText: PropTypes.string.isRequired,
-          pastConversationsLoadingText: PropTypes.string.isRequired
+          pastConversationsLoadingText: PropTypes.string.isRequired,
+          ariaLabelJumpToLatestBtn: PropTypes.string
         }).isRequired,
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
@@ -80,7 +83,8 @@ define ("components/chatView",
           cta: PropTypes.string
         }),
         errorActionHandler: PropTypes.func,
-        botStepInProgress: PropTypes.bool
+        botStepInProgress: PropTypes.bool,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       getInitialState () {
@@ -95,7 +99,8 @@ define ("components/chatView",
           onMinimizeConversation,
           text,
           viewStyles,
-          minimized
+          minimized,
+          keyboardInteractionIsActive
         } = this.props;
 
         // In certain cases, Safari ignores scroll events on
@@ -110,7 +115,8 @@ define ("components/chatView",
         // Therefore, we assign a special class whenever the chat window
         // is maximized to trigger reflow.
         const viewClasses = classes ("hs-view", {
-          "hs-view--safari-fix": !minimized
+          "hs-view--safari-fix": !minimized,
+          "outline-hidden": !keyboardInteractionIsActive
         });
 
         return (
@@ -158,9 +164,11 @@ define ("components/chatView",
         );
 
         return (
-          <div className="hs-chat-view__msgs-loader-container">
-            <i className={loaderClasses} />
-            <span>{pastConversationsLoadingText}</span>
+          <div
+            className="hs-chat-view__msgs-loader-container"
+            aria-label={pastConversationsLoadingText}>
+            <i className={loaderClasses} aria-hidden={true} />
+            <span aria-hidden={true}>{pastConversationsLoadingText}</span>
           </div>
         );
       },
@@ -175,7 +183,8 @@ define ("components/chatView",
           unreadCount,
           userInput: {
             type
-          }
+          },
+          text
         } = this.props;
 
         const showUnreadIndicator = unreadCount > 0;
@@ -187,7 +196,8 @@ define ("components/chatView",
               <JumpToLatestBtn
                 show={userIsViewingPastMessages}
                 showUnreadIndicator={showUnreadIndicator}
-                onClick={this._onJumpBtnClick} />
+                onClick={this._onJumpBtnClick}
+                ariaLabel={text.ariaLabelJumpToLatestBtn} />
             </div>
           );
         }
@@ -316,6 +326,10 @@ define ("components/chatView",
        */
       _onFilesDrop (files) {
         this.props.onFilesDrop (files);
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.CHAT);
       }
     });
   }

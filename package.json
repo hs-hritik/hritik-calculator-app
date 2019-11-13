@@ -1,10 +1,11 @@
 {
   "name": "mirkwood",
-  "version": "2.33.0",
+  "version": "2.34.0",
   "description": "Helpshift web SDK",
   "scripts": {
     "start": "babel-node resources/static/scripts/main",
-    "test": "jest"
+    "test": "jest",
+    "update-snapshot": "jest --updateSnapshot"
   },
   "repository": {
     "type": "git",
@@ -15,7 +16,7 @@
   ],
   "author": "Helpshift",
   "dependencies": {
-    "@helpshiftdev/gunpowder": "^1.0.25",
+    "@helpshiftdev/gunpowder": "^1.0.28",
     "axios": "https://registry.npmjs.org/axios/-/axios-0.19.0.tgz",
     "axios-mock-adapter": "^1.16.0",
     "babel-cli": "^6.24.1",

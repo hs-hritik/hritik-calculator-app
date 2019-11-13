@@ -1,6 +1,6 @@
 {
   "name": "mirkwood",
-  "version": "2.29.0",
+  "version": "2.33.0",
   "dependencies": {
     "@babel/code-frame": {
       "version": "7.5.5",
@@ -167,9 +167,9 @@
       "resolved": "https://registry.npmjs.org/@gulp-sourcemaps/map-sources/-/map-sources-1.0.0.tgz"
     },
     "@helpshiftdev/gunpowder": {
-      "version": "1.0.26",
-      "from": "@helpshiftdev/gunpowder@>=1.0.25 <2.0.0",
-      "resolved": "https://registry.npmjs.org/@helpshiftdev/gunpowder/-/gunpowder-1.0.26.tgz"
+      "version": "1.0.28",
+      "from": "@helpshiftdev/gunpowder@1.0.28",
+      "resolved": "https://registry.npmjs.org/@helpshiftdev/gunpowder/-/gunpowder-1.0.28.tgz"
     },
     "@mrmlnc/readdir-enhanced": {
       "version": "2.2.1",

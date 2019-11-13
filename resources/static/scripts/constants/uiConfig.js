@@ -14,6 +14,7 @@ define ("constants/uiConfig",
     // Colors map like we maintain in global scss
     const COLORS = {
       PRIMARY: "#43BF6C",
+      HIGHLIGHT: "rgba(0, 103, 244, .4)",
       TRANSPARENT: "transparent",
       BLACK: {
         BASE: "#576066",
@@ -58,6 +59,7 @@ define ("constants/uiConfig",
       BASE_FONT: "global.fontFamily",
       BASE_COLOR_DARK: `${DERIVED_ID}.global.colorDark`,
       BASE_COLOR_LIGHT: `${DERIVED_ID}.global.colorLightD`,
+      BASE_FOCUS_RING_COLOR: "global.focusRingColor",
 
       // Initial Set (widget/launcher set)
       INITIAL_PRIMARY_BG_COLOR: "widgetFrame.primaryBgColor",
@@ -136,6 +138,11 @@ define ("constants/uiConfig",
         FLATTENED_UI_CONFIG.BASE_FONT,
         "--hs-base-font",
         ""
+      ],
+      [
+        FLATTENED_UI_CONFIG.BASE_FOCUS_RING_COLOR,
+        "--hs-base-focus-ring-color",
+        COLORS.HIGHLIGHT
       ],
       [
         FLATTENED_UI_CONFIG.INITIAL_PRIMARY_BG_COLOR,
