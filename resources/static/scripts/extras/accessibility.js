@@ -163,11 +163,6 @@ define (
     let _delayedFocusIndex = -1;
 
     /**
-     * Stores active selector value
-     */
-    let _savedSelector;
-
-    /**
      * FlatListActiveIndices is the mapping of view and active index in that view
      */
     const flatListActiveIndices = {
@@ -219,17 +214,6 @@ define (
       const {metaList} = activeViewData;
 
       return arrayUtils.findIndexByKey (metaList, group, "group");
-    };
-
-    /**
-     * Returns the index of selector in flat list
-     *
-     * @param {String} Selector - selector value
-     */
-    const _findFlatListIndexBySelector = (selector) => {
-      return arrayUtils.findIndex (_flatList, (val) => {
-        return val === selector;
-      });
     };
 
     /**
@@ -485,29 +469,6 @@ define (
       return _flatList [activeIndex];
     };
 
-    /**
-     * This function saves currently active selector
-     */
-    const saveCurrentFocusedSelector = () => {
-      _savedSelector = _getFlatListActiveSelector ();
-    };
-
-    /**
-     * Focuses on saved selector and update the active index
-     */
-    const focusSavedSelector = () => {
-      if (_savedSelector) {
-        const selectorIndex = _findFlatListIndexBySelector (_savedSelector);
-
-        if (selectorIndex !== -1) {
-          setFlatListActiveIndex (selectorIndex);
-          _savedSelector = null;
-        }
-      }
-
-      focus ();
-    };
-
     const _backupSelectors = {};
 
     /**
@@ -562,8 +523,6 @@ define (
       getNextActiveSelector,
       getPrevActiveSelector,
       setFlatListActiveIndex,
-      saveCurrentFocusedSelector,
-      focusSavedSelector,
       backupSelectors,
       restoreSelectors,
       init

@@ -504,15 +504,12 @@ define ("components/messageList",
 
         this._handleScrollingToBottom (messages, previousMessages);
 
-        // If message length count is changed then
-        // update message link selectors in meta list and retain the current focus
+        // If message length count is changed then update message link selectors in meta list
         if (messageListHasBeenUpdated) {
-          ax.saveCurrentFocusedSelector ();
           ax.replaceSelectors ({
             group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: this._getLinkSelectors ()
           });
-          ax.focusSavedSelector ();
         }
       },
 
