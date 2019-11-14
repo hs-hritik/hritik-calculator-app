@@ -703,7 +703,6 @@ define ("components/chatViewFooter",
             className="hs-chat-footer"
             tabIndex="0"
             data-label={METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.DATA_LABEL}
-            onClick={_setConversationResolutionWrapperAxActiveIndex}
             onFocus={_setConversationResolutionWrapperAxActiveIndex}
             aria-label={text.chatViewConversationResolutionQuestion}>
             <div className="hs-chat-footer__heading" >
@@ -947,32 +946,6 @@ define ("components/chatViewFooter",
         return inputPlaceholder;
       },
 
-      /**
-       * Returns array of pills option selectors
-       *
-       * @param {Array} options - Option for option pills
-       * @returns {Array} - Unique selector list of option pills
-       */
-      _getPillsOptionSelectorList (options) {
-        const {
-          userInput
-        } = this.props;
-        const prefix = METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL;
-        const optionsSelectorList = [];
-        const pillIsSkipable = !userInput.required;
-
-        options.forEach ((option) => {
-          const selectors = `[data-label=${prefix}${option.value}]`;
-
-          optionsSelectorList.push (selectors);
-        });
-
-        if (pillIsSkipable) {
-          optionsSelectorList.push (METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR);
-        }
-
-        return optionsSelectorList;
-      },
 
       /**
        * This function checks for sub-type of reply footer and
@@ -997,12 +970,7 @@ define ("components/chatViewFooter",
             return FOOTER_SELECTORS_LIST_MAP.PLAIN_TEXT;
 
           case USER_INPUT_TYPES.PILL_SELECT:
-            const selectorList = FOOTER_SELECTORS_LIST_MAP.OPTION_PILL;
-            const optionsSelectorList = this._getPillsOptionSelectorList (
-              userInput.options
-            );
-
-            return selectorList.concat (optionsSelectorList);
+            return [];
 
           case USER_INPUT_TYPES.LIST_PICKER:
             return [];
@@ -1048,11 +1016,31 @@ define ("components/chatViewFooter",
        * @param {Object} ev - Click/Focus event
        */
       _setAxActiveIndex (config, ev) {
-        if (ev) {
+        // When the user click on an interactive element, event propagates
+        // to global event, which sets the keyboardInteractionIsActive flag
+        // to false which hides the focus outline. In case of focus event, if we
+        // do not stop the propagation of the event, then the parent component
+        // will listen to it and also set its ax active index.
+        if (ev && ev.type !== "click") {
           ev.stopPropagation ();
         }
 
         ax.setActiveIndex (config);
+      },
+
+      /**
+       * Returns true if footer is rendered
+       */
+      _isFooterRendered () {
+        const {userInput, issueIsCreated} = this.props;
+        const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const inputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
+        const isPreIssue = !issueIsCreated;
+
+        return !(
+          inputIsPillSelect ||
+          ((isPreIssue || inputIsListPicker) && userInput.disabled)
+        );
       },
 
       /**
@@ -1101,45 +1089,44 @@ define ("components/chatViewFooter",
         const userInputIsSkipable = !userInput.required;
         let requiredFooterSelectors;
 
-        // Add skip selector when footer is not required and footer type is not pills
-        // Otherwise empty skip selectors list
-        if (
-          ((!userInputIsListPicker || listPickerIsClosed) && userInputIsSkipable) &&
-          !userInputIsPillSelect
-        ) {
-          ax.replaceSelectors ({
-            group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
-            selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
-          });
-        } else {
-          ax.replaceSelectors ({
-            group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
-            selectors: []
-          });
-        }
+        if (this._isFooterRendered ()) {
+          // Add skip selector when footer is not required and footer type is not pills
+          // Otherwise empty skip selectors list
+          if ((!userInputIsListPicker || listPickerIsClosed) && userInputIsSkipable) {
+            ax.replaceSelectors ({
+              group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+              selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
+            });
+          } else {
+            ax.replaceSelectors ({
+              group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+              selectors: []
+            });
+          }
 
         // When footer changes, reset the active index and focus the first element of footer
-        if (activeFooterIsChanged) {
-          requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
+          if (activeFooterIsChanged) {
+            requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
-          if (requiredFooterSelectors && requiredFooterSelectors.length) {
-            ax.replaceSelectors ({
-              group: METALIST_GROUP_NAME.CHAT.FOOTER,
-              selectors: requiredFooterSelectors
-            });
-            ax.setFlatListActiveIndex (0);
-            ax.focus ();
-          }
-        } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
-          requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
+            if (requiredFooterSelectors && requiredFooterSelectors.length) {
+              ax.replaceSelectors ({
+                group: METALIST_GROUP_NAME.CHAT.FOOTER,
+                selectors: requiredFooterSelectors
+              });
+              ax.setFlatListActiveIndex (0);
+              ax.focus ();
+            }
+          } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
+            requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
 
-          if (requiredFooterSelectors && requiredFooterSelectors.length) {
-            ax.replaceSelectors ({
-              group: METALIST_GROUP_NAME.CHAT.FOOTER,
-              selectors: requiredFooterSelectors
-            });
-            ax.setFlatListActiveIndex (0);
-            ax.focus ();
+            if (requiredFooterSelectors && requiredFooterSelectors.length) {
+              ax.replaceSelectors ({
+                group: METALIST_GROUP_NAME.CHAT.FOOTER,
+                selectors: requiredFooterSelectors
+              });
+              ax.setFlatListActiveIndex (0);
+              ax.focus ();
+            }
           }
         }
 
@@ -1175,26 +1162,20 @@ define ("components/chatViewFooter",
       componentDidMount () {
         ax.setActiveView (activeViewConstants.CHAT);
 
-        const {activeFooter, userInput, issueIsCreated} = this.props;
-        const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
-        const inputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
-        const isPreIssue = !issueIsCreated;
-        const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
+        const {activeFooter, userInput} = this.props;
 
-        if (requiredFooterSelectors && requiredFooterSelectors.length) {
-          ax.replaceSelectors ({
-            group: METALIST_GROUP_NAME.CHAT.FOOTER,
-            selectors: requiredFooterSelectors
-          });
-        }
+        // In footer is rendered add active footer selectors in meta list
+        if (this._isFooterRendered ()) {
+          const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
 
-        // In below cases footer value is null, so delayed the focus when it is render
-        if (!(
-          inputIsPillSelect || ((isPreIssue || inputIsListPicker) && userInput.disabled)
-        )) {
+          if (requiredFooterSelectors && requiredFooterSelectors.length) {
+            ax.replaceSelectors ({
+              group: METALIST_GROUP_NAME.CHAT.FOOTER,
+              selectors: requiredFooterSelectors
+            });
+          }
+
           ax.focus ();
-        } else {
-          ax.delayFocus ();
         }
 
         // Calculate the maximum height the picker widget can have.
