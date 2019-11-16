@@ -11,9 +11,9 @@ define (
 
     const AppError = () => (
       <div className="hs-app-error">
-        <div>Something went wrong!</div>
+        <div>Something went wrong.</div>
         <div className="hs-app-error__instructions">
-          Please refresh the page or try again later.
+          Please try reloading.
         </div>
       </div>
     );
