@@ -13,10 +13,11 @@ define ("components/messageList",
     "constants/propTypes",
     "constants/chatView",
     "gunpowder/utils/throttle",
-    "gunpowder/utils/classes"
+    "gunpowder/utils/classes",
+    "gunpowder/widgets/errorBoundary"
   ],
   function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
-    chatViewConstants, throttle, classes) {
+    chatViewConstants, throttle, classes, ErrorBoundary) {
     "use strict";
 
     const {
@@ -71,7 +72,12 @@ define ("components/messageList",
         /**
          * If chat view footer has any failure
          */
-        hasFailure: PropTypes.bool
+        hasFailure: PropTypes.bool,
+
+        /**
+         * Callback that gets called whenever a message fails to render
+         */
+        onMessageError: PropTypes.func
       },
 
       render () {
@@ -109,15 +115,20 @@ define ("components/messageList",
           }
 
           return (
-              <Message message={message}
-                       key={message.id}
-                       isLastMessage={messages.length === (index + 1)}
-                       isLastMessageInGroup={isLastMessageInGroup}
-                       showAgentNickname={this.props.showAgentNickname}
-                       text={this.props.text}
-                       onImageLoad={this._onImageAttachmentLoad}
-                       onRetryAttachmentClick={this.props.onRetryAttachmentClick}
-                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+            <ErrorBoundary
+              key={message.id}
+              fallbackComponent={null}
+              onError={this.props.onMessageError}>
+              <Message
+                message={message}
+                isLastMessage={messages.length === (index + 1)}
+                isLastMessageInGroup={isLastMessageInGroup}
+                showAgentNickname={this.props.showAgentNickname}
+                text={this.props.text}
+                onImageLoad={this._onImageAttachmentLoad}
+                onRetryAttachmentClick={this.props.onRetryAttachmentClick}
+                onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+            </ErrorBoundary>
           );
         });
       },

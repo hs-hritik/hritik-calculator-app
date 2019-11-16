@@ -19,11 +19,13 @@ define ("components/chatView",
     "gunpowder/utils/object",
     "gunpowder/widgets/errorBoundary",
     "components/errors/appError",
-    "utils/logReactError"
+    "utils/logReactError",
+    "components/errors/nonBlockingError"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
-    LIST_PICKER_CONSTANTS, objUtils, ErrorBoundary, AppError, logReactError) {
+    LIST_PICKER_CONSTANTS, objUtils, ErrorBoundary, AppError, logReactError,
+    NonBlockingError) {
     "use strict";
 
     const {
@@ -69,18 +71,6 @@ define ("components/chatView",
       botStepInProgress: PropTypes.bool
     };
 
-    /**
-     * Fallback component for Chat View Footer. This will be rendered when
-     * Chat View Footer fails to render
-     */
-    const FooterFallback = () => (
-      <div className="hs-chat-view__footer-error">
-        <i className="hs-chat-view__footer-error-icon ion-alert-circled" />
-        <div>
-          Something went wrong. Please refresh the page or try again later.
-        </div>
-      </div>
-    );
 
     class ChatViewContents extends React.PureComponent {
       constructor (props) {
@@ -145,13 +135,14 @@ define ("components/chatView",
                 onScrollPastExistingConversation={onScrollPastExistingConversation}
                 onLoadMore={this._onLoadMore}
                 ref={this._msgListRef}
-                minimized={minimized} />
+                minimized={minimized}
+                onMessageError={this.props.onError} />
               {this._renderJumpToLatestBtn ()}
             </div>
             {this._renderPickerOverlay ()}
             <ErrorBoundary
-              fallbackComponent={<FooterFallback />}
-              onError={this._handleFooterError}>
+              fallbackComponent={null}
+              onError={this.props.onError}>
               <ChatViewFooterContainer
                 onJumpBtnClick={this._onJumpBtnClick}
                 onListPickerOptionSelect={onListPickerOptionSelect} />
@@ -283,18 +274,11 @@ define ("components/chatView",
           onLoadMoreMessages ();
         }
       }
-
-      /**
-       * Handle error thrown in Chat View Footer
-       * @param {object} error - Error object
-       * @param {object} info - Additional info including stack trace
-       */
-      _handleFooterError (error, info) {
-        logReactError (error, info);
-      }
     }
 
-    ChatViewContents.propTypes = CHAT_VIEW_COMMON_PROPS;
+    ChatViewContents.propTypes = objUtils.shallowMerge ({
+      onError: PropTypes.func.isRequired
+    }, CHAT_VIEW_COMMON_PROPS);
 
     return createReactClass ({
       displayName: "ChatView",
@@ -321,7 +305,8 @@ define ("components/chatView",
 
       getInitialState () {
         return {
-          showJumpToLatestBtn: false
+          showJumpToLatestBtn: false,
+          showError: false
         };
       },
 
@@ -355,6 +340,7 @@ define ("components/chatView",
               title={text.chatViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation} />
+            {this._renderError ()}
             {this._renderViewContents ()}
           </div>
         );
@@ -402,13 +388,35 @@ define ("components/chatView",
               onPillOptionSelect={onPillOptionSelect}
               onListPickerOptionSelect={onListPickerOptionSelect}
               onSkipUserInput={onSkipUserInput}
-              text={text} />
+              text={text}
+              onError={this._handleChatViewContentsError} />
           </ErrorBoundary>
         );
       },
 
+      _renderError () {
+        if (!this.state.showError) {
+          return null;
+        }
+
+        return (
+          <NonBlockingError />
+        );
+      },
+
+      _handleChatViewContentsError (error, info) {
+        logReactError (error, info);
+        this._showNonBlockingError ();
+      },
+
       _handleChatViewError (error, info) {
         logReactError (error, info);
+      },
+
+      _showNonBlockingError () {
+        this.setState ({
+          showError: true
+        });
       }
     });
   }
