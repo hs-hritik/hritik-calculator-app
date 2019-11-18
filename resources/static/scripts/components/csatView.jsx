@@ -10,13 +10,12 @@ define ("components/csatView",
     "components/csatViewBody",
     "components/csatViewFooter",
     "components/containers/branding",
-    "gunpowder/widgets/errorBoundary",
+    "components/errorBoundaryWithLogging",
     "components/errors/appError",
-    "utils/logReactError",
     "components/errors/nonBlockingError"
   ],
-  function (ViewHeader, CsatViewBody, CsatViewFooter, BrandingContainer, ErrorBoundary,
-    AppError, logReactError, NonBlockingError) {
+  function (ViewHeader, CsatViewBody, CsatViewFooter, BrandingContainer, ErrorBoundaryWithLogging,
+    AppError, NonBlockingError) {
     "use strict";
 
     const TEXT_PROP_TYPE = PropTypes.shape ({
@@ -109,15 +108,13 @@ define ("components/csatView",
 
         return (
           <div className="hs-view" style={viewStyles}>
-            <ErrorBoundary
-              fallbackComponent={this._renderHeaderFallback ()}
-              onError={this._handleHeaderError}>
+            <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback ()}>
               <ViewHeader
                 title={text.csatViewHeader}
                 showCloseBtn={showCloseButton}
                 onCloseBtnClick={onMinimizeConversation} />
-            </ErrorBoundary>
-            <ErrorBoundary
+            </ErrorBoundaryWithLogging>
+            <ErrorBoundaryWithLogging
               fallbackComponent={<AppError />}
               onError={this._handleViewContentsError}>
               <CsatViewContents
@@ -128,7 +125,7 @@ define ("components/csatView",
                 onStarClick={this._onStarClick}
                 onCsatReviewChange={this._onCsatReviewChange}
                 onSubmitCsat={onSubmitCsat} />
-            </ErrorBoundary>
+            </ErrorBoundaryWithLogging>
           </div>
         );
       },
@@ -143,21 +140,15 @@ define ("components/csatView",
         );
       },
 
-      _handleHeaderError (error, info) {
-        logReactError (error, info);
-      },
-
       /**
        * Handle errors in error boundary
        * @param {Object} error - Error thrown by react
        * @param {Object} info - Additional info about error
        */
-      _handleViewContentsError (error, info) {
+      _handleViewContentsError () {
         this.setState ({
           blockingErrorIsVisible: true
         });
-
-        logReactError (error, info);
       },
 
       /**

@@ -14,10 +14,10 @@ define ("components/messageList",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes",
-    "gunpowder/widgets/errorBoundary"
+    "components/errorBoundaryWithLogging"
   ],
   function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
-    chatViewConstants, throttle, classes, ErrorBoundary) {
+    chatViewConstants, throttle, classes, ErrorBoundaryWithLogging) {
     "use strict";
 
     const {
@@ -115,9 +115,8 @@ define ("components/messageList",
           }
 
           return (
-            <ErrorBoundary
+            <ErrorBoundaryWithLogging
               key={message.id}
-              fallbackComponent={null}
               onError={this.props.onMessageError}>
               <Message
                 message={message}
@@ -128,7 +127,7 @@ define ("components/messageList",
                 onImageLoad={this._onImageAttachmentLoad}
                 onRetryAttachmentClick={this.props.onRetryAttachmentClick}
                 onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
-            </ErrorBoundary>
+            </ErrorBoundaryWithLogging>
           );
         });
       },

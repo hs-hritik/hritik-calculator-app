@@ -17,14 +17,13 @@ define ("components/chatView",
     "gunpowder/utils/classes",
     "gunpowder/constants/widgets/picker",
     "gunpowder/utils/object",
-    "gunpowder/widgets/errorBoundary",
+    "components/errorBoundaryWithLogging",
     "components/errors/appError",
-    "utils/logReactError",
     "components/errors/nonBlockingError"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
-    LIST_PICKER_CONSTANTS, objUtils, ErrorBoundary, AppError, logReactError,
+    LIST_PICKER_CONSTANTS, objUtils, ErrorBoundaryWithLogging, AppError,
     NonBlockingError) {
     "use strict";
 
@@ -140,13 +139,11 @@ define ("components/chatView",
               {this._renderJumpToLatestBtn ()}
             </div>
             {this._renderPickerOverlay ()}
-            <ErrorBoundary
-              fallbackComponent={null}
-              onError={this.props.onError}>
+            <ErrorBoundaryWithLogging onError={this.props.onError}>
               <ChatViewFooterContainer
                 onJumpBtnClick={this._onJumpBtnClick}
                 onListPickerOptionSelect={onListPickerOptionSelect} />
-            </ErrorBoundary>
+            </ErrorBoundaryWithLogging>
           </DnDWrapper>
         );
       }
@@ -368,9 +365,7 @@ define ("components/chatView",
         } = this.props;
 
         return (
-          <ErrorBoundary
-            fallbackComponent={<AppError />}
-            onError={this._handleChatViewError}>
+          <ErrorBoundaryWithLogging fallbackComponent={<AppError />}>
             <ChatViewContents
               messages={messages}
               onSuggestedFaqClick={onSuggestedFaqClick}
@@ -390,7 +385,7 @@ define ("components/chatView",
               onSkipUserInput={onSkipUserInput}
               text={text}
               onError={this._handleChatViewContentsError} />
-          </ErrorBoundary>
+          </ErrorBoundaryWithLogging>
         );
       },
 
@@ -404,13 +399,8 @@ define ("components/chatView",
         );
       },
 
-      _handleChatViewContentsError (error, info) {
-        logReactError (error, info);
+      _handleChatViewContentsError () {
         this._showNonBlockingError ();
-      },
-
-      _handleChatViewError (error, info) {
-        logReactError (error, info);
       },
 
       _showNonBlockingError () {

@@ -10,13 +10,12 @@ define ("components/faqView",
     "components/commons/viewHeader",
     "components/containers/branding",
     "components/infoView",
-    "gunpowder/widgets/errorBoundary",
+    "components/errorBoundaryWithLogging",
     "components/errors/appError",
-    "utils/logReactError",
     "components/errors/nonBlockingError"
   ],
-  function (ViewHeader, BrandingContainer, InfoView, ErrorBoundary, AppError,
-    logReactError, NonBlockingError) {
+  function (ViewHeader, BrandingContainer, InfoView, ErrorBoundaryWithLogging,
+    AppError, NonBlockingError) {
     "use strict";
 
     const ViewContents = ({title, body, loading, errorMsg}) => {
@@ -85,17 +84,15 @@ define ("components/faqView",
 
         return (
           <div className="hs-view" style={viewStyles}>
-            <ErrorBoundary
-              fallbackComponent={this._renderFallbackComponent ()}
-              onError={this._handleHeaderError}>
+            <ErrorBoundaryWithLogging fallbackComponent={this._renderFallbackComponent ()}>
               <ViewHeader
                 title={text.faqViewHeader}
                 showCloseBtn={showCloseButton}
                 showBackBtn={true}
                 onCloseBtnClick={onMinimizeConversation}
                 onBackBtnClick={onBackBtnClick} />
-            </ErrorBoundary>
-            <ErrorBoundary
+            </ErrorBoundaryWithLogging>
+            <ErrorBoundaryWithLogging
               fallbackComponent={<AppError />}
               onError={this._handleViewContentsError}>
               <ViewContents
@@ -103,7 +100,7 @@ define ("components/faqView",
                 body={body}
                 errorMsg={errorMsg}
                 loading={loading} />
-            </ErrorBoundary>
+            </ErrorBoundaryWithLogging>
           </div>
         );
       },
@@ -123,12 +120,10 @@ define ("components/faqView",
        * @param {Object} error - Error thrown by react
        * @param {Object} info - Additional info about error
        */
-      _handleViewContentsError (error, info) {
+      _handleViewContentsError () {
         this.setState ({
           blockingErrorIsShown: true
         });
-
-        logReactError (error, info);
       }
     });
   }

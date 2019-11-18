@@ -9,17 +9,16 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
     }
   }
 >
-  <ErrorBoundary
+  <ErrorBoundaryWithLogging
     fallbackComponent={<NonBlockingError />}
-    onError={[Function]}
   >
     <ViewHeader
       onCloseBtnClick={[MockFunction]}
       showCloseBtn={false}
       title="MOCK_VIEW_HEADER"
     />
-  </ErrorBoundary>
-  <ErrorBoundary
+  </ErrorBoundaryWithLogging>
+  <ErrorBoundaryWithLogging
     fallbackComponent={<AppError />}
     onError={[Function]}
   >
@@ -41,6 +40,6 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
         }
       }
     />
-  </ErrorBoundary>
+  </ErrorBoundaryWithLogging>
 </div>
 `;

@@ -13,13 +13,12 @@ define ("components/businessHoursView",
     "constants/businessHoursView",
     "helpers/attachments",
     "gunpowder/utils/classes",
-    "gunpowder/widgets/errorBoundary",
+    "components/errorBoundaryWithLogging",
     "components/errors/appError",
-    "utils/logReactError",
     "components/errors/nonBlockingError"
   ],
   function (ViewHeader, BrandingContainer, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
-    attachmentsHelpers, classes, ErrorBoundary, AppError, logReactError, NonBlockingError) {
+    attachmentsHelpers, classes, ErrorBoundaryWithLogging, AppError, NonBlockingError) {
     "use strict";
 
     const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
@@ -544,15 +543,13 @@ define ("components/businessHoursView",
 
         return (
           <div className="hs-view" style={viewStyles}>
-            <ErrorBoundary
-              fallbackComponent={this._renderHeaderFallback ()}
-              onError={this._handleHeaderError}>
+            <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback ()}>
               <ViewHeader
                 title={text.businessHoursViewHeader}
                 showCloseBtn={showCloseButton}
                 onCloseBtnClick={onMinimizeConversation} />
-            </ErrorBoundary>
-            <ErrorBoundary
+            </ErrorBoundaryWithLogging>
+            <ErrorBoundaryWithLogging
               fallbackComponent={<AppError />}
               onError={this._handleViewContentsError}>
               <BusinessHoursViewContents
@@ -572,7 +569,7 @@ define ("components/businessHoursView",
                 onMessageChange={this._onMessageChange}
                 onEmailChange={this._onEmailChange}
                 onRemoveAttachmentClick={this._onRemoveAttachmentClick} />
-            </ErrorBoundary>
+            </ErrorBoundaryWithLogging>
           </div>
         );
       },
@@ -622,16 +619,10 @@ define ("components/businessHoursView",
         this.props.onRemoveAttachment (attachmentId);
       },
 
-      _handleHeaderError (error, info) {
-        logReactError (error, info);
-      },
-
-      _handleViewContentsError (error, info) {
+      _handleViewContentsError () {
         this.setState ({
           blockingErrorIsVisible: true
         });
-
-        logReactError (error, info);
       },
 
       _renderHeaderFallback () {
