@@ -9,11 +9,16 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
     }
   }
 >
-  <ViewHeader
-    onCloseBtnClick={[MockFunction]}
-    showCloseBtn={false}
-    title="MOCK_VIEW_HEADER"
-  />
+  <ErrorBoundary
+    fallbackComponent={<NonBlockingError />}
+    onError={[Function]}
+  >
+    <ViewHeader
+      onCloseBtnClick={[MockFunction]}
+      showCloseBtn={false}
+      title="MOCK_VIEW_HEADER"
+    />
+  </ErrorBoundary>
   <ErrorBoundary
     fallbackComponent={<AppError />}
     onError={[Function]}
