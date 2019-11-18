@@ -12,7 +12,7 @@ define ("reducers/csatView",
     const update = React.addons.update;
 
     const INITIAL_STATE = {
-      rating: 0,
+      rating: 3,
       review: "",
       csatSaveInProgress: false
     };

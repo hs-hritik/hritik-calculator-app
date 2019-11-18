@@ -37,6 +37,7 @@ require (
     window.addEventListener ("message", onMessage, false);
 
     globalEvents.addFocusAndBlurEventListener ();
+    globalEvents.addSelectEventListener ();
 
     store.dispatch (postSdkMessage.jsLoaded ());
   });

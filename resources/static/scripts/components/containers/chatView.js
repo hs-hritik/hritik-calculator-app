@@ -45,7 +45,8 @@ define ("components/containers/chatView",
           allMessagesAreLoaded,
           botState: {
             botStepInProgress
-          }
+          },
+          activeFooter
         },
         ui: {
           text
@@ -76,7 +77,8 @@ define ("components/containers/chatView",
         unreadCount: unreadMessageIds.length,
         pastConversationsLoading,
         allMessagesAreLoaded,
-        botStepInProgress
+        botStepInProgress,
+        activeFooter
       };
     };
 

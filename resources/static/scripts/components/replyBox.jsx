@@ -8,15 +8,18 @@ define ("components/replyBox",
   [
     "constants/keyCodes",
     "gunpowder/utils/object",
-    "gunpowder/widgets/textareaAutosize"
+    "gunpowder/widgets/textareaAutosize",
+    "extras/accessibility",
+    "constants/accessibility"
   ],
-  function (KEY_CODES, objectUtils, TextareaAutosize) {
+  function (KEY_CODES, objectUtils, TextareaAutosize, ax, axConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
 
     const TEXT_AREA_MIN_ROWS = 1,
           TEXT_AREA_MAX_ROWS = 5;
+    const {METALIST_ITEMS} = axConstants;
 
     return React.createClass ({
       displayName: "ReplyBox",
@@ -32,25 +35,30 @@ define ("components/replyBox",
         browserIsMobile: PropTypes.bool.isRequired,
         onFooterFocus: PropTypes.func,
         onFooterBlur: PropTypes.func,
-        placeholder: PropTypes.string
+        placeholder: PropTypes.string,
+        dataLabel: PropTypes.string,
+        onClick: PropTypes.func,
+        ariaLabel: PropTypes.string
       },
 
       render () {
         const {
           value,
           disabled,
-          onFooterFocus,
           onFooterBlur,
           className,
-          placeholder
+          placeholder,
+          dataLabel,
+          ariaLabel
         } = this.props;
 
         return (
           <TextareaAutosize value={value}
                             className={className}
                             onKeyDown={this._onReplyTextKeyDown}
+                            onClick={this._onClickTextArea}
                             onChange={this._onReplyTextChange}
-                            onFocus={onFooterFocus}
+                            onFocus={this._onFocusTextArea}
                             onBlur={onFooterBlur}
                             minRows={TEXT_AREA_MIN_ROWS}
                             maxRows={TEXT_AREA_MAX_ROWS}
@@ -59,7 +67,9 @@ define ("components/replyBox",
                             disabled={disabled}
                             autoFocus
                             ref={this._saveTextAreaRef}
-                            dir="auto" />
+                            dir="auto"
+                            dataLabel={dataLabel}
+                            ariaLabel={ariaLabel} />
         );
       },
 
@@ -80,7 +90,29 @@ define ("components/replyBox",
        * Handler for reply text area change event.
        */
       _onReplyTextChange (ev) {
+        ax.setActiveIndex ({
+          selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
+        });
         this.props.onChangeReplyBoxValue (ev.target.value);
+      },
+
+      /**
+       * Handler for reply text area focus event
+       */
+      _onFocusTextArea () {
+        ax.setActiveIndex ({
+          selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
+        });
+        this.props.onFooterFocus ();
+      },
+
+      /**
+       * Click handler for reply text area focus event
+       */
+      _onClickTextArea () {
+        ax.setActiveIndex ({
+          selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
+        });
       },
 
       /**

@@ -14,15 +14,19 @@ define ("actions/businessHours",
     "gunpowder/utils/schema",
     "gunpowder/utils/object",
     "utils/browser",
-    "utils/upload"
+    "utils/upload",
+    "extras/accessibility",
+    "constants/activeView",
+    "constants/accessibility"
   ],
   function (ACTION_TYPES, routes, batchActions, xhrHelpers, prepareProcessXhrDataHelpers, schema,
-    objectUtils, browserUtils, upload) {
+    objectUtils, browserUtils, upload, ax, activeView, axConstant) {
     "use strict";
 
     const {Input} = schema;
     const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
     const {update} = React.addons;
+    const {OOBH_SUBVIEW} = axConstant;
 
     /**
      * Action to set business hours contact form details
@@ -184,6 +188,8 @@ define ("actions/businessHours",
           formData: xhrHelpers.getPreparedXhrData (xhrData),
           headers: xhrHelpers.getCommonHeaders (),
           onSuccess: () => {
+            ax.replaceMetaList (OOBH_SUBVIEW.OFFLINE_MSG);
+            ax.delayFocus ();
             dispatch (setBusinessHoursFormSubmitted ());
           },
           onFailure: (failureResponse) => {

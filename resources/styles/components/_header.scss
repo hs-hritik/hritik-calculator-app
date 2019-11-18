@@ -30,6 +30,10 @@
       display: flex;
       align-items: center;
       color: $header-text-color;
+
+      &:focus {
+        outline-offset: 2px;
+      }
     }
 
     &__back-icon {

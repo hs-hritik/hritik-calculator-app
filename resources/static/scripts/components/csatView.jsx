@@ -9,12 +9,17 @@ define ("components/csatView",
     "gunpowder/utils/classes",
     "components/commons/viewHeader",
     "components/starRating",
-    "components/containers/branding"
+    "components/containers/branding",
+    "constants/accessibility",
+    "extras/accessibility",
+    "constants/activeView"
   ],
-  function (classes, ViewHeader, StarRating, BrandingContainer) {
+  function (classes, ViewHeader, StarRating, BrandingContainer, axConstants, ax,
+    activeViewConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
+    const {METALIST_ITEMS} = axConstants;
 
     return React.createClass ({
       displayName: "CsatView",
@@ -38,7 +43,9 @@ define ("components/csatView",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        csatSaveInProgress: PropTypes.bool
+        csatSaveInProgress: PropTypes.bool,
+        onUpdateStarRating: PropTypes.func,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       render () {
@@ -46,11 +53,16 @@ define ("components/csatView",
           text,
           showCloseButton,
           onMinimizeConversation,
-          viewStyles
+          viewStyles,
+          keyboardInteractionIsActive
         } = this.props;
 
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
+
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ViewHeader title={text.csatViewHeader}
                         showCloseBtn={showCloseButton}
                         onCloseBtnClick={onMinimizeConversation} />
@@ -69,7 +81,21 @@ define ("components/csatView",
        * Render csat body.
        */
       _renderCsatBody () {
-        const {text, rating, review, csatSaveInProgress} = this.props;
+        const {
+          text,
+          rating,
+          review,
+          csatSaveInProgress,
+          onUpdateStarRating
+        } = this.props;
+        const setTextAreaAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.SELECTOR
+          }
+        );
+        const starRatingDataLabels = {
+          starRatingWrapper: METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.DATA_LABEL
+        };
 
         return (
           <div className="hs-csat__form">
@@ -82,10 +108,12 @@ define ("components/csatView",
               <StarRating name="csat"
                           editing={!csatSaveInProgress}
                           value={rating}
-                          onStarClick={this._onStarClick} />
+                          onStarClick={this._onStarClick}
+                          dataLabels={starRatingDataLabels}
+                          onUpdateStarRating={onUpdateStarRating} />
             </div>
             <div className="hs-csat__form-item">
-              <small className="hs-csat__form-label">
+              <small className="hs-csat__form-label" aria-hidden="true">
                 {text.csatBotReviewTitle}
               </small>
               <textarea value={review}
@@ -93,7 +121,12 @@ define ("components/csatView",
                         disabled={csatSaveInProgress}
                         className="hs-csat__input"
                         onChange={this._onCsatReviewChange}
-                        placeholder={text.csatBotReviewPlaceholder} />
+                        placeholder={text.csatBotReviewPlaceholder}
+                        tabIndex="0"
+                        data-label={METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.DATA_LABEL}
+                        onFocus={setTextAreaAxActiveIndex}
+                        onClick={setTextAreaAxActiveIndex}
+                        aria-label={text.csatBotReviewTitle} />
             </div>
           </div>
         );
@@ -119,13 +152,22 @@ define ("components/csatView",
             "hs-footer--full-screen": allowFullScreen
           }
         );
+        const setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CSAT.FOOTER_BTN.SELECTOR
+          }
+        );
 
         return (
           <div className={footerClasses}>
             <div className="hs-footer__vertical-items-wrapper">
               <button className={btnClasses}
                       onClick={this.props.onSubmitCsat}
-                      disabled={btnDisabled} >
+                      disabled={btnDisabled}
+                      tabIndex="0"
+                      data-label={METALIST_ITEMS.CSAT.FOOTER_BTN.DATA_LABEL}
+                      onFocus={setAxActiveIndex}
+                      aria-label={text.csatBotFormSubmitBtn} >
                 {text.csatBotFormSubmitBtn}
               </button>
             </div>
@@ -146,6 +188,21 @@ define ("components/csatView",
        */
       _onStarClick (value) {
         this.props.onUpdateCsatRating (value);
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       */
+      _setAxActiveIndex (config) {
+        ax.setActiveIndex (config);
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.CSAT);
+        ax.focus ();
       }
     });
   }
