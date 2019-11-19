@@ -79,6 +79,9 @@ define (
      * For elements that are static, the selectors list contain only one item.
      * For elements that are dynamically generated (attachments, messages, etc),
      * the selectors list is populated with the selectors of the dynamically generated elements
+     * In future if any new view is added, it is required to add the corresponding metalist in
+     * "_removeLauncherBtnSelectors" function which remove the launcher button group,
+     * when launcher button is hidden
      */
     const _focusData = {
       [activeViewConstants.BUSINESS_HOURS]: {
@@ -500,10 +503,54 @@ define (
       return _backupSelectors [selectorGroupName];
     };
 
+    /**
+     * This function remove the group object in the metaList
+     *
+     * @param {Array} config.metaList - List of objects containing group name &
+     * selectors of the particular group
+     * @param {String} config.group - Name of the group
+     */
+    const _removeMetaListGroup = (config) => {
+      const {
+        metaList,
+        group
+      } = config;
+      const index = arrayUtils.findIndexByKey (metaList, group, "group");
+
+      if (index !== -1) {
+        metaList.splice (index, 1);
+      }
+    };
+
+    /**
+     * Remove launcher button group object from all the metaList,
+     * when launcher button is hidden
+     */
+    const _removeLauncherBtnSelectors = () => {
+      const metaLists = [
+        _focusData.CHAT.metaList,
+        _focusData.CSAT.metaList,
+        _focusData.FAQ.metaList,
+        OOBH_FORM_META_LIST,
+        OOBH_OFFLINE_META_LIST
+      ];
+      const group = METALIST_GROUP_NAME.LAUNCHER_BTN;
+
+      metaLists.forEach ((metaList) => {
+        _removeMetaListGroup ({metaList, group});
+      });
+    };
+
     const init = (data) => {
+      const {showLauncher, handlers} = data;
       const {specialHandlers} = _focusData;
 
-      data.handlers.forEach ((handlerConfig) => {
+      // If launcher button is hidden, remove launcher button group in all views metaList
+      if (!showLauncher) {
+        _removeLauncherBtnSelectors ();
+      }
+
+      handlers.forEach ((handlerConfig) => {
         specialHandlers [handlerConfig.group] = handlerConfig.handlers;
       });
     };
