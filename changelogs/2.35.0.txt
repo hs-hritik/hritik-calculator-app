@@ -1,0 +1,8 @@
+Branches:
+feature/cti-integration-sprint-6
+feature/temp-logging
+
+Changelog:
+Send anon user id only if phone num is not present
+Add logging to app
+Copy error logging utility from moby
