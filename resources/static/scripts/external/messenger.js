@@ -1094,14 +1094,13 @@
         case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
 
-          if (state.unreadCount) {
+          if (launcherButton && state.unreadCount) {
             let ariaLabel = state.translations.ariaOpenWcLabel + ", ";
 
             ariaLabel += state.translations.ariaWcBadgeLabel.replace (
               "{{num}}",
               state.unreadCount
             );
-
             launcherButton.setAttribute ("aria-label", ariaLabel);
           }
 
