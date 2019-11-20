@@ -121,18 +121,9 @@ define ("components/viewWrapper",
       },
 
       componentWillMount () {
-        ax.setActiveView (this.props.activeView);
-      },
-
-      componentDidMount () {
         const {
           showLauncher
         } = this.props;
-
-        window.addEventListener ("online", this._onOnline);
-        window.addEventListener ("offline", this._onOffline);
-        window.addEventListener ("keydown", this._onKeyPress);
-        window.addEventListener ("click", this._onClick);
 
         ax.init ({
           showLauncher,
@@ -143,6 +134,14 @@ define ("components/viewWrapper",
             }
           ]
         });
+        ax.setActiveView (this.props.activeView);
+      },
+
+      componentDidMount () {
+        window.addEventListener ("online", this._onOnline);
+        window.addEventListener ("offline", this._onOffline);
+        window.addEventListener ("keydown", this._onKeyPress);
+        window.addEventListener ("click", this._onClick);
       },
 
       componentWillUnmount () {
