@@ -378,7 +378,7 @@
    * @param {String} icon - the icon that needs to be set
    */
   const updateLauncherBtnIcon = (icon) => {
-    if (!launcherIframe) {
+    if (!launcherIframe || !launcherIconEl || !launcherBtn) {
       return;
     }
 
