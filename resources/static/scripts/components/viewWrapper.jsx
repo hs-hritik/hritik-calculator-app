@@ -37,7 +37,8 @@ define ("components/viewWrapper",
         onMinimizeConversation: PropTypes.func.isRequired,
         onFocusLauncher: PropTypes.func,
         onKeyPress: PropTypes.func.isRequired,
-        onClick: PropTypes.func.isRequired
+        onClick: PropTypes.func.isRequired,
+        showLauncher: PropTypes.bool
       },
 
       render () {
@@ -120,6 +121,19 @@ define ("components/viewWrapper",
       },
 
       componentWillMount () {
+        const {
+          showLauncher
+        } = this.props;
+
+        ax.init ({
+          showLauncher,
+          handlers: [
+            {
+              group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+              handlers: [this.props.onFocusLauncher]
+            }
+          ]
+        });
         ax.setActiveView (this.props.activeView);
       },
 
@@ -128,15 +142,6 @@ define ("components/viewWrapper",
         window.addEventListener ("offline", this._onOffline);
         window.addEventListener ("keydown", this._onKeyPress);
         window.addEventListener ("click", this._onClick);
-
-        ax.init ({
-          handlers: [
-            {
-              group: METALIST_GROUP_NAME.LAUNCHER_BTN,
-              handlers: [this.props.onFocusLauncher]
-            }
-          ]
-        });
       },
 
       componentWillUnmount () {

@@ -46,6 +46,10 @@ define ("components/chatViewFooter",
       METALIST_ITEMS,
       FOOTER_SELECTORS_LIST_MAP
     } = axConstants;
+    const FOOTER_SELECTORS_TYPES = {
+      REPLY_FOOTER: "reply",
+      ACTIVE_FOOTER: "active_footer"
+    };
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -1030,9 +1034,11 @@ define ("components/chatViewFooter",
 
       /**
        * Returns true if footer is rendered
+       *
+       * @param {Object} config - Previous or current props object
        */
-      _isFooterRendered () {
-        const {userInput, issueIsCreated} = this.props;
+      _isFooterRendered (config = this.props) {
+        const {userInput, issueIsCreated} = config;
         const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
         const inputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
         const isPreIssue = !issueIsCreated;
@@ -1041,6 +1047,32 @@ define ("components/chatViewFooter",
           inputIsPillSelect ||
           ((isPreIssue || inputIsListPicker) && userInput.disabled)
         );
+      },
+
+      /**
+       * This function replace new footer selectors in metaList
+       * Checks for footer selectors type and accordingly generates the selectors
+       *
+       * @param {String} footerSelectorsType - Either reply or active footer type
+       */
+      _replaceAxFooterSelectors (footerSelectorsType = FOOTER_SELECTORS_TYPES.ACTIVE_FOOTER) {
+        const {activeFooter, userInput} = this.props;
+        let requiredFooterSelectors;
+
+        if (footerSelectorsType === FOOTER_SELECTORS_TYPES.ACTIVE_FOOTER) {
+          requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
+        } else {
+          requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
+        }
+
+        if (requiredFooterSelectors && requiredFooterSelectors.length) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.FOOTER,
+            selectors: requiredFooterSelectors
+          });
+          ax.setFlatListActiveIndex (0);
+          ax.focus ();
+        }
       },
 
       /**
@@ -1087,9 +1119,11 @@ define ("components/chatViewFooter",
             textValueIsSubmitted
         ));
         const userInputIsSkipable = !userInput.required;
-        let requiredFooterSelectors;
 
         if (this._isFooterRendered ()) {
+          if (!this._isFooterRendered (prevProps)) {
+            this._replaceAxFooterSelectors ();
+          }
           // Add skip selector when footer is not required and footer type is not pills
           // Otherwise empty skip selectors list
           if ((!userInputIsListPicker || listPickerIsClosed) && userInputIsSkipable) {
@@ -1104,29 +1138,11 @@ define ("components/chatViewFooter",
             });
           }
 
-        // When footer changes, reset the active index and focus the first element of footer
+          // When footer changes, reset the active index and focus the first element of footer
           if (activeFooterIsChanged) {
-            requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
-
-            if (requiredFooterSelectors && requiredFooterSelectors.length) {
-              ax.replaceSelectors ({
-                group: METALIST_GROUP_NAME.CHAT.FOOTER,
-                selectors: requiredFooterSelectors
-              });
-              ax.setFlatListActiveIndex (0);
-              ax.focus ();
-            }
+            this._replaceAxFooterSelectors ();
           } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
-            requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
-
-            if (requiredFooterSelectors && requiredFooterSelectors.length) {
-              ax.replaceSelectors ({
-                group: METALIST_GROUP_NAME.CHAT.FOOTER,
-                selectors: requiredFooterSelectors
-              });
-              ax.setFlatListActiveIndex (0);
-              ax.focus ();
-            }
+            this._replaceAxFooterSelectors (FOOTER_SELECTORS_TYPES.REPLY);
           }
         }
 
@@ -1162,20 +1178,9 @@ define ("components/chatViewFooter",
       componentDidMount () {
         ax.setActiveView (activeViewConstants.CHAT);
 
-        const {activeFooter, userInput} = this.props;
-
         // In footer is rendered add active footer selectors in meta list
         if (this._isFooterRendered ()) {
-          const requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
-
-          if (requiredFooterSelectors && requiredFooterSelectors.length) {
-            ax.replaceSelectors ({
-              group: METALIST_GROUP_NAME.CHAT.FOOTER,
-              selectors: requiredFooterSelectors
-            });
-          }
-
-          ax.focus ();
+          this._replaceAxFooterSelectors ();
         }
 
         // Calculate the maximum height the picker widget can have.
