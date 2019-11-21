@@ -580,10 +580,29 @@
    */
   const updateWidgetPosition = () => {
     switch (state.widgetOptions.position) {
+      case WIDGET_POSITIONS.BOTTOM_RIGHT:
+        LAUNCHER_IFRAME_STYLES.top = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = "28px";
+        LAUNCHER_IFRAME_STYLES.left = "auto";
+        LAUNCHER_IFRAME_STYLES.right = "28px";
+
+        MESSENGER_IFRAME_STYLES.top = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = "100px";
+        MESSENGER_IFRAME_STYLES.left = "auto";
+        MESSENGER_IFRAME_STYLES.right = "28px";
+
+        UNREAD_COUNT_STYLES.right = "4px";
+        UNREAD_COUNT_STYLES.left = "auto";
+        break;
+
       case WIDGET_POSITIONS.BOTTOM_LEFT:
+        LAUNCHER_IFRAME_STYLES.top = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = "28px";
         LAUNCHER_IFRAME_STYLES.left = "28px";
         LAUNCHER_IFRAME_STYLES.right = "auto";
 
+        MESSENGER_IFRAME_STYLES.top = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = "100px";
         MESSENGER_IFRAME_STYLES.left = "28px";
         MESSENGER_IFRAME_STYLES.right = "auto";
 
@@ -593,14 +612,14 @@
 
       case WIDGET_POSITIONS.TOP_LEFT:
         LAUNCHER_IFRAME_STYLES.top = "28px";
-        LAUNCHER_IFRAME_STYLES.right = "auto";
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
         LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.right = "auto";
 
         MESSENGER_IFRAME_STYLES.top = "100px";
-        MESSENGER_IFRAME_STYLES.right = "auto";
         MESSENGER_IFRAME_STYLES.bottom = "auto";
         MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
         UNREAD_COUNT_STYLES.right = "auto";
@@ -608,16 +627,22 @@
 
       case WIDGET_POSITIONS.TOP_RIGHT:
         LAUNCHER_IFRAME_STYLES.top = "28px";
-        LAUNCHER_IFRAME_STYLES.right = "28px";
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
         LAUNCHER_IFRAME_STYLES.left = "auto";
+        LAUNCHER_IFRAME_STYLES.right = "28px";
 
         MESSENGER_IFRAME_STYLES.top = "100px";
-        MESSENGER_IFRAME_STYLES.right = "28px";
         MESSENGER_IFRAME_STYLES.bottom = "auto";
         MESSENGER_IFRAME_STYLES.left = "auto";
+        MESSENGER_IFRAME_STYLES.right = "28px";
+
+        UNREAD_COUNT_STYLES.right = "4px";
+        UNREAD_COUNT_STYLES.left = "auto";
         break;
     }
+
+    setStyle (launcherIframe, LAUNCHER_IFRAME_STYLES);
+    setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
   };
 
   /**
