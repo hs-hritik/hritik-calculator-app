@@ -676,6 +676,14 @@
                    LAUNCHER_ICON.MESSENGER : LAUNCHER_ICON.CLOSE;
       updateLauncherBtnIcon (icon);
     }
+
+    // We need to destory the launcher iframe if showLauncher widget option is
+    // set to false. We need this in scenario where, initially the launcher is
+    // visible, widget loads and at later point developer sets showLauncher
+    // to false and calls updateHelpshiftConfig.
+    if (launcherIframe && !state.widgetOptions.showLauncher) {
+      destroyLauncherIframe ();
+    }
   };
 
   /**
