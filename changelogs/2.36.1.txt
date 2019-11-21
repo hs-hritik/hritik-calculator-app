@@ -1,0 +1,3 @@
+Changelog:
+Add correct values to reset min & max width/height
+Fix mobile devices not displaying full screen
