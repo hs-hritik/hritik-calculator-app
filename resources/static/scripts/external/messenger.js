@@ -207,9 +207,9 @@
     "left": "0px",
     "bottom": "0px",
     "right": "0px",
-    "min-height": "none",
+    "min-height": "0",
     "max-height": "none",
-    "min-width": "none",
+    "min-width": "0",
     "max-width": "none",
     "width": "100%",
     "height": "100%",
@@ -217,7 +217,8 @@
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999"
+    "z-index": "9999999",
+    "border-radius": "0"
   };
 
   const MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES = {
