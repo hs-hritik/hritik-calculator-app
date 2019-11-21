@@ -690,6 +690,8 @@
     // Full screen option is calculated by widget iframe depending on screens
     // resolution
     state.widgetOptions.fullScreen = config.fullScreen;
+    // Save transaltions in state
+    state.translations = config.translations;
   };
 
   /**
@@ -750,7 +752,6 @@
     processWidgetOptions ();
     saveConfigOptionsInState (config);
     updateIframeStyles (config);
-    state.translations = config.translations;
 
     const launcherHidden = !state.widgetOptions.showLauncher;
     // If the launcher iframe is hidden by the widget config options
