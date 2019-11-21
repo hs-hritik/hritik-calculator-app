@@ -706,14 +706,10 @@
   };
 
   /**
-   * Update web sdk and launcher iframe style
+   * Function to update messenger iframe styles
    * @param {Object} config
    */
-  const updateIframeStyles = (config) => {
-    // Set styles for launcher iframe
-    updateLauncherStyles ();
-    updateWidgetPosition ();
-
+  const updateMessengerStyles = (config) => {
     // Set styles for websdk iframe
     const webchatContainer = getWidgetSelector ();
     if (webchatContainer) {
@@ -723,7 +719,12 @@
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
     }
+  };
 
+  /**
+   * Function to update z index of both the iframes
+   */
+  const updateIframeZIndexes = () => {
     // Update z-index of the web chat iframe if it was passed with helpshfitConfig
     // The client (via helpshiftConfig) can set the z-index value of the launcher
     // iframe. We derive the z-index value for the chat widget iframe by incrementing
@@ -733,7 +734,22 @@
       setStyle (webSdkIframe, {
         zIndex: state.widgetOptions.zIndex + 10
       });
+
+      setStyle (launcherIframe, {
+        zIndex: state.widgetOptions.zIndex
+      });
     }
+  };
+
+  /**
+   * Update web sdk and launcher iframe style
+   * @param {Object} config
+   */
+  const updateIframeStyles = (config) => {
+    updateLauncherStyles ();
+    updateMessengerStyles (config);
+    updateWidgetPosition ();
+    updateIframeZIndexes ();
   };
 
   /**
