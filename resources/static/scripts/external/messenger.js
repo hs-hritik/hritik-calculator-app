@@ -45,6 +45,9 @@
     BOTTOM_RIGHT: "bottom-right"
   };
 
+  // This is the default gap of iframes from the edge
+  const DEFAULT_FRAME_OFFSET = "28px";
+
   // Local state managed by this script.
   const state = {
     unreadCount: 0,
@@ -579,17 +582,20 @@
    * Update widget position
    */
   const updateWidgetPosition = () => {
+    const webSdkIframeOffset = !state.widgetOptions.showLauncher ?
+      DEFAULT_FRAME_OFFSET : "100px";
+
     switch (state.widgetOptions.position) {
       case WIDGET_POSITIONS.BOTTOM_RIGHT:
         LAUNCHER_IFRAME_STYLES.top = "auto";
-        LAUNCHER_IFRAME_STYLES.bottom = "28px";
+        LAUNCHER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.left = "auto";
-        LAUNCHER_IFRAME_STYLES.right = "28px";
+        LAUNCHER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
 
         MESSENGER_IFRAME_STYLES.top = "auto";
-        MESSENGER_IFRAME_STYLES.bottom = "100px";
+        MESSENGER_IFRAME_STYLES.bottom = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.left = "auto";
-        MESSENGER_IFRAME_STYLES.right = "28px";
+        MESSENGER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
 
         UNREAD_COUNT_STYLES.right = "4px";
         UNREAD_COUNT_STYLES.left = "auto";
@@ -597,13 +603,13 @@
 
       case WIDGET_POSITIONS.BOTTOM_LEFT:
         LAUNCHER_IFRAME_STYLES.top = "auto";
-        LAUNCHER_IFRAME_STYLES.bottom = "28px";
-        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.right = "auto";
 
         MESSENGER_IFRAME_STYLES.top = "auto";
-        MESSENGER_IFRAME_STYLES.bottom = "100px";
-        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.bottom = webSdkIframeOffset;
+        MESSENGER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
@@ -611,14 +617,14 @@
         break;
 
       case WIDGET_POSITIONS.TOP_LEFT:
-        LAUNCHER_IFRAME_STYLES.top = "28px";
+        LAUNCHER_IFRAME_STYLES.top = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
-        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.right = "auto";
 
-        MESSENGER_IFRAME_STYLES.top = "100px";
+        MESSENGER_IFRAME_STYLES.top = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.bottom = "auto";
-        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
@@ -626,15 +632,15 @@
         break;
 
       case WIDGET_POSITIONS.TOP_RIGHT:
-        LAUNCHER_IFRAME_STYLES.top = "28px";
+        LAUNCHER_IFRAME_STYLES.top = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
         LAUNCHER_IFRAME_STYLES.left = "auto";
-        LAUNCHER_IFRAME_STYLES.right = "28px";
+        LAUNCHER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
 
-        MESSENGER_IFRAME_STYLES.top = "100px";
+        MESSENGER_IFRAME_STYLES.top = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.bottom = "auto";
         MESSENGER_IFRAME_STYLES.left = "auto";
-        MESSENGER_IFRAME_STYLES.right = "28px";
+        MESSENGER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
 
         UNREAD_COUNT_STYLES.right = "4px";
         UNREAD_COUNT_STYLES.left = "auto";
@@ -972,7 +978,7 @@
       // @NOTE - We are modifying the style in style constant as opposed to using
       // setStyle method because the launcher is not present at this point in time.
       // Also changing the constant will not have side effect as it expected behavior.
-      MESSENGER_IFRAME_STYLES.bottom = "28px";
+      MESSENGER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
     }
   };
 
