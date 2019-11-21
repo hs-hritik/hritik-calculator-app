@@ -747,6 +747,7 @@
       return;
     }
 
+    processWidgetOptions ();
     saveConfigOptionsInState (config);
     updateIframeStyles (config);
     state.translations = config.translations;
