@@ -22,7 +22,8 @@ define ("components/containers/viewWrapper",
           activeView,
           showHeaderCloseButton,
           sdkConfigOptions: {
-            fullScreen: allowFullScreen
+            fullScreen: allowFullScreen,
+            showLauncher
           },
           keyboardInteractionIsActive
         }
@@ -35,7 +36,8 @@ define ("components/containers/viewWrapper",
         viewStyles: {
           fontFamily: state.ui.uiConfig [BASE_FONT].value
         },
-        keyboardInteractionIsActive
+        keyboardInteractionIsActive,
+        showLauncher
       };
     };
 

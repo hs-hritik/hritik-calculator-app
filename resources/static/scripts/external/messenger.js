@@ -17,7 +17,7 @@
         PROTOCOL = `${urlParts [0]}://`,
         PLAT_ID = win.helpshiftConfig.platformId,
         HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.35.0";
+        PATH = "/html/index.html?v=2.36.2";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -44,6 +44,9 @@
     BOTTOM_LEFT: "bottom-left",
     BOTTOM_RIGHT: "bottom-right"
   };
+
+  // This is the default gap of iframes from the edge
+  const DEFAULT_FRAME_OFFSET = "28px";
 
   // Local state managed by this script.
   const state = {
@@ -204,13 +207,18 @@
     "left": "0px",
     "bottom": "0px",
     "right": "0px",
+    "min-height": "0",
+    "max-height": "none",
+    "min-width": "0",
+    "max-width": "none",
     "width": "100%",
     "height": "100%",
     "border": "none",
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999"
+    "z-index": "9999999",
+    "border-radius": "0"
   };
 
   const MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES = {
@@ -219,6 +227,10 @@
     "left": "0px",
     "bottom": "0px",
     "right": "0px",
+    "min-height": "0",
+    "max-height": "none",
+    "min-width": "0",
+    "max-width": "none",
     "width": "100%",
     "height": "100%",
     "border": "none",
@@ -378,7 +390,7 @@
    * @param {String} icon - the icon that needs to be set
    */
   const updateLauncherBtnIcon = (icon) => {
-    if (!launcherIframe) {
+    if (!launcherIframe || !launcherIconEl || !launcherBtn) {
       return;
     }
 
@@ -579,12 +591,34 @@
    * Update widget position
    */
   const updateWidgetPosition = () => {
+    const webSdkIframeOffset = !state.widgetOptions.showLauncher ?
+      DEFAULT_FRAME_OFFSET : "100px";
+
     switch (state.widgetOptions.position) {
+      case WIDGET_POSITIONS.BOTTOM_RIGHT:
+        LAUNCHER_IFRAME_STYLES.top = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.left = "auto";
+        LAUNCHER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
+
+        MESSENGER_IFRAME_STYLES.top = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = webSdkIframeOffset;
+        MESSENGER_IFRAME_STYLES.left = "auto";
+        MESSENGER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
+
+        UNREAD_COUNT_STYLES.right = "4px";
+        UNREAD_COUNT_STYLES.left = "auto";
+        break;
+
       case WIDGET_POSITIONS.BOTTOM_LEFT:
-        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.top = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.right = "auto";
 
-        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.top = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = webSdkIframeOffset;
+        MESSENGER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
@@ -592,32 +626,38 @@
         break;
 
       case WIDGET_POSITIONS.TOP_LEFT:
-        LAUNCHER_IFRAME_STYLES.top = "28px";
-        LAUNCHER_IFRAME_STYLES.right = "auto";
+        LAUNCHER_IFRAME_STYLES.top = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
-        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.right = "auto";
 
-        MESSENGER_IFRAME_STYLES.top = "100px";
-        MESSENGER_IFRAME_STYLES.right = "auto";
+        MESSENGER_IFRAME_STYLES.top = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.bottom = "auto";
-        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
+        MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
         UNREAD_COUNT_STYLES.right = "auto";
         break;
 
       case WIDGET_POSITIONS.TOP_RIGHT:
-        LAUNCHER_IFRAME_STYLES.top = "28px";
-        LAUNCHER_IFRAME_STYLES.right = "28px";
+        LAUNCHER_IFRAME_STYLES.top = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
         LAUNCHER_IFRAME_STYLES.left = "auto";
+        LAUNCHER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
 
-        MESSENGER_IFRAME_STYLES.top = "100px";
-        MESSENGER_IFRAME_STYLES.right = "28px";
+        MESSENGER_IFRAME_STYLES.top = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.bottom = "auto";
         MESSENGER_IFRAME_STYLES.left = "auto";
+        MESSENGER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
+
+        UNREAD_COUNT_STYLES.right = "4px";
+        UNREAD_COUNT_STYLES.left = "auto";
         break;
     }
+
+    setStyle (launcherIframe, LAUNCHER_IFRAME_STYLES);
+    setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
   };
 
   /**
@@ -651,6 +691,14 @@
                    LAUNCHER_ICON.MESSENGER : LAUNCHER_ICON.CLOSE;
       updateLauncherBtnIcon (icon);
     }
+
+    // We need to destory the launcher iframe if showLauncher widget option is
+    // set to false. We need this in scenario where, initially the launcher is
+    // visible, widget loads and at later point developer sets showLauncher
+    // to false and calls updateHelpshiftConfig.
+    if (launcherIframe && !state.widgetOptions.showLauncher) {
+      destroyLauncherIframe ();
+    }
   };
 
   /**
@@ -665,6 +713,8 @@
     // Full screen option is calculated by widget iframe depending on screens
     // resolution
     state.widgetOptions.fullScreen = config.fullScreen;
+    // Save transaltions in state
+    state.translations = config.translations;
   };
 
   /**
@@ -679,14 +729,10 @@
   };
 
   /**
-   * Update web sdk and launcher iframe style
+   * Function to update messenger iframe styles
    * @param {Object} config
    */
-  const updateIframeStyles = (config) => {
-    // Set styles for launcher iframe
-    updateLauncherStyles ();
-    updateWidgetPosition ();
-
+  const updateMessengerStyles = (config) => {
     // Set styles for websdk iframe
     const webchatContainer = getWidgetSelector ();
     if (webchatContainer) {
@@ -696,7 +742,12 @@
     } else {
       setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
     }
+  };
 
+  /**
+   * Function to update z index of both the iframes
+   */
+  const updateIframeZIndexes = () => {
     // Update z-index of the web chat iframe if it was passed with helpshfitConfig
     // The client (via helpshiftConfig) can set the z-index value of the launcher
     // iframe. We derive the z-index value for the chat widget iframe by incrementing
@@ -706,7 +757,22 @@
       setStyle (webSdkIframe, {
         zIndex: state.widgetOptions.zIndex + 10
       });
+
+      setStyle (launcherIframe, {
+        zIndex: state.widgetOptions.zIndex
+      });
     }
+  };
+
+  /**
+   * Update web sdk and launcher iframe style
+   * @param {Object} config
+   */
+  const updateIframeStyles = (config) => {
+    updateLauncherStyles ();
+    updateWidgetPosition ();
+    updateMessengerStyles (config);
+    updateIframeZIndexes ();
   };
 
   /**
@@ -722,9 +788,9 @@
       return;
     }
 
+    processWidgetOptions ();
     saveConfigOptionsInState (config);
     updateIframeStyles (config);
-    state.translations = config.translations;
 
     const launcherHidden = !state.widgetOptions.showLauncher;
     // If the launcher iframe is hidden by the widget config options
@@ -921,7 +987,7 @@
       // @NOTE - We are modifying the style in style constant as opposed to using
       // setStyle method because the launcher is not present at this point in time.
       // Also changing the constant will not have side effect as it expected behavior.
-      MESSENGER_IFRAME_STYLES.bottom = "28px";
+      MESSENGER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
     }
   };
 
@@ -1094,14 +1160,13 @@
         case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
           state.unreadCount = data.count;
 
-          if (state.unreadCount) {
+          if (launcherButton && state.unreadCount) {
             let ariaLabel = state.translations.ariaOpenWcLabel + ", ";
 
             ariaLabel += state.translations.ariaWcBadgeLabel.replace (
               "{{num}}",
               state.unreadCount
             );
-
             launcherButton.setAttribute ("aria-label", ariaLabel);
           }
 
