@@ -304,7 +304,8 @@ define ("components/chatView",
       getInitialState () {
         return {
           showJumpToLatestBtn: false,
-          showError: false
+          showNonBlockingError: false,
+          blockingErrorIsVisible: false
         };
       },
 
@@ -334,11 +335,13 @@ define ("components/chatView",
 
         return (
           <div className={viewClasses} style={viewStyles}>
-            <ViewHeader
-              title={text.chatViewHeader}
-              showCloseBtn={showCloseButton}
-              onCloseBtnClick={onMinimizeConversation} />
-            {this._renderError ()}
+            <ErrorBoundaryWithLogging onError={this._showNonBlockingError}>
+              <ViewHeader
+                title={text.chatViewHeader}
+                showCloseBtn={showCloseButton}
+                onCloseBtnClick={onMinimizeConversation} />
+            </ErrorBoundaryWithLogging>
+            {this._renderNonBlockingError ()}
             {this._renderViewContents ()}
           </div>
         );
@@ -366,7 +369,9 @@ define ("components/chatView",
         } = this.props;
 
         return (
-          <ErrorBoundaryWithLogging fallbackComponent={<AppError />}>
+          <ErrorBoundaryWithLogging
+            fallbackComponent={<AppError />}
+            onError={this._handleContentsError}>
             <ChatViewContents
               messages={messages}
               onSuggestedFaqClick={onSuggestedFaqClick}
@@ -391,8 +396,8 @@ define ("components/chatView",
         );
       },
 
-      _renderError () {
-        if (!this.state.showError) {
+      _renderNonBlockingError () {
+        if (this.state.blockingErrorIsVisible || !this.state.showNonBlockingError) {
           return null;
         }
 
@@ -401,9 +406,15 @@ define ("components/chatView",
         );
       },
 
+      _handleContentsError () {
+        this.setState ({
+          blockingErrorIsVisible: true
+        });
+      },
+
       _showNonBlockingError () {
         this.setState ({
-          showError: true
+          showNonBlockingError: true
         });
       }
     });
