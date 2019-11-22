@@ -135,11 +135,11 @@ define ("components/chatView",
                 onLoadMore={this._onLoadMore}
                 ref={this._msgListRef}
                 minimized={minimized}
-                onMessageError={this.props.onError} />
+                onMessageError={this.props.onMessageError} />
               {this._renderJumpToLatestBtn ()}
             </div>
             {this._renderPickerOverlay ()}
-            <ErrorBoundaryWithLogging onError={this.props.onError}>
+            <ErrorBoundaryWithLogging onError={this.props.onFooterError}>
               <ChatViewFooterContainer
                 onJumpBtnClick={this._onJumpBtnClick}
                 onListPickerOptionSelect={onListPickerOptionSelect} />
@@ -274,7 +274,8 @@ define ("components/chatView",
     }
 
     ChatViewContents.propTypes = objUtils.shallowMerge ({
-      onError: PropTypes.func.isRequired
+      onMessageError: PropTypes.func.isRequired,
+      onFooterError: PropTypes.func.isRequired
     }, CHAT_VIEW_COMMON_PROPS);
 
     return createReactClass ({
@@ -384,7 +385,8 @@ define ("components/chatView",
               onListPickerOptionSelect={onListPickerOptionSelect}
               onSkipUserInput={onSkipUserInput}
               text={text}
-              onError={this._handleChatViewContentsError} />
+              onMessageError={this._showNonBlockingError}
+              onFooterError={this._showNonBlockingError} />
           </ErrorBoundaryWithLogging>
         );
       },
@@ -397,10 +399,6 @@ define ("components/chatView",
         return (
           <NonBlockingError />
         );
-      },
-
-      _handleChatViewContentsError () {
-        this._showNonBlockingError ();
       },
 
       _showNonBlockingError () {
