@@ -17,9 +17,17 @@ define ("helpers/attachments",
       UNITS_LIST,
       MAX_CHAR_LIMIT,
       MAX_EXTENSION_LIMIT,
-      ELLIPSIS_LENGTH,
-      SUPPORTED_MIME_TYPES
+      ELLIPSIS_LENGTH
     } = ATTACHMENT_CONSTANTS;
+    let supportedMimeTypes;
+
+    /**
+     * Set attachment mime types supported
+     * @param {Object[]} mimeTypes - Supported mime types
+     */
+    const setSupportedMimeTypes = (mimeTypes) => {
+      supportedMimeTypes = mimeTypes;
+    };
 
     /**
      * Converts bytes to object containing size and unit
@@ -78,7 +86,7 @@ define ("helpers/attachments",
       const greaterThanMb = UNITS_LIST.indexOf (converted.unit) > indexOfMb;
 
       if ((converted.unit === UNITS.MB && converted.size >= MAX_FILE_SIZE) ||
-           greaterThanMb) {
+      greaterThanMb) {
         return false;
       }
 
@@ -102,7 +110,7 @@ define ("helpers/attachments",
         return true;
       }
 
-      return SUPPORTED_MIME_TYPES.indexOf (type) > -1;
+      return supportedMimeTypes.indexOf (type) > -1;
     };
 
     /**
@@ -144,7 +152,8 @@ define ("helpers/attachments",
       isAttachmentsNumberValid,
       isAttachmentsSizeValid,
       isAttachmentTypeValid,
-      getFormattedFileName
+      getFormattedFileName,
+      setSupportedMimeTypes
     };
   }
 );

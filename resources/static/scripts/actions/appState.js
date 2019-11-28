@@ -19,6 +19,7 @@ define ("actions/appState",
     "helpers/ui",
     "helpers/analytics",
     "helpers/common",
+    "helpers/attachments",
     "gunpowder/utils/xhr",
     "gunpowder/utils/uuid",
     "store",
@@ -33,8 +34,9 @@ define ("actions/appState",
   ],
   function (ACTION_TYPES, routes, APP_STATE_CONSTANTS, UI_CONFIG_CONSTANTS,
     analyticsConstants, ACTIVE_VIEW, xhrHelpers, lsHelpers, audioHelpers, proactiveChatHelpers,
-    uiHelpers, analyticsHelpers, commonHelpers, xhr, getUuid, store, chatViewActions, uiActions,
-    batchActions, actionCreators, postSdkMessage, commonActions, browserUtils, dataTypeUtils) {
+    uiHelpers, analyticsHelpers, commonHelpers, attachmentsHelper, xhr, getUuid, store,
+    chatViewActions, uiActions, batchActions, actionCreators, postSdkMessage, commonActions,
+    browserUtils, dataTypeUtils) {
     "use strict";
 
     const {
@@ -442,6 +444,7 @@ define ("actions/appState",
 
         getWmConfig (domain, {
           onSuccess: (response) => {
+            attachmentsHelper.setSupportedMimeTypes (response.allowed_mime_types);
             dispatch (
               batchActions ([
                 // Set the config values to the store
