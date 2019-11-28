@@ -14,12 +14,17 @@ define ("components/containers/businessHoursView",
 
     const mapStateToProps = (state) => {
       const {
-        contactFormDetails,
-        offlineBehaviour,
-        contactFormDisabled,
-        contactFormSubmitted,
-        submitInProgress
-      } = state.businessHoursViewState;
+        businessHoursViewState: {
+          contactFormDetails,
+          offlineBehaviour,
+          contactFormDisabled,
+          contactFormSubmitted,
+          submitInProgress
+        },
+        appState: {
+          allowedFileTypes
+        }
+      } = state;
 
       return {
         contactFormDetails,
@@ -28,7 +33,8 @@ define ("components/containers/businessHoursView",
         contactFormDisabled,
         contactFormSubmitted,
         submitInProgress,
-        fullPrivacyEnabled: state.appState.fullPrivacyEnabled
+        fullPrivacyEnabled: state.appState.fullPrivacyEnabled,
+        allowedFileTypes
       };
     };
 

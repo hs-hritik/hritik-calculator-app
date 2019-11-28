@@ -38,7 +38,8 @@ define ("components/containers/chatViewFooter",
           browserIsMobile,
           featuresEnabled: {
             userAttachments: userAttachmentsEnabled
-          }
+          },
+          allowedFileTypes
         },
         chatView: {
           userInput,
@@ -100,7 +101,8 @@ define ("components/containers/chatViewFooter",
         unreadCount: unreadMessageIds.length,
         failureConfig,
         botStepInProgress,
-        browserIsMobile
+        browserIsMobile,
+        allowedFileTypes
       };
     };
 

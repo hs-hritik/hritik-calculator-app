@@ -86,7 +86,8 @@ define ("components/businessHoursView",
           fontFamily: PropTypes.string
         }),
         fullPrivacyEnabled: PropTypes.bool,
-        keyboardInteractionIsActive: PropTypes.bool.isRequired
+        keyboardInteractionIsActive: PropTypes.bool.isRequired,
+        allowedFileTypes: PropTypes.string.isRequired
       },
       render () {
         const {
@@ -527,7 +528,8 @@ define ("components/businessHoursView",
           text: {
             dndInfoText,
             ariaLabelAttachFiles
-          }
+          },
+          allowedFileTypes
         } = this.props;
         const {
           limitHasExceeded,
@@ -557,7 +559,8 @@ define ("components/businessHoursView",
                        onChange={onFilesChange}
                        labelClasses="hs-business-hours__attachment-placeholder-text"
                        onSaveInputRef={this._saveInputRef}
-                       infoText={dndInfoText} />
+                       infoText={dndInfoText}
+                       accept={allowedFileTypes} />
           </div>
         );
       },
