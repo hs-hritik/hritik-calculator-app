@@ -260,13 +260,15 @@ define ("actions/businessHours",
 
     /**
      * Action to set attachment error
-     * @param {Number} attachmentIndex - attachment index
+     * @param {number} attachmentIndex - attachment index
+     * @param {number} errorCode - file upload error code
      * @returns {Object} - Action
      */
-    const setAttachmentError = (attachmentIndex) => {
+    const setAttachmentError = (attachmentIndex, errorCode) => {
       return {
         type: ACTION_TYPES.SET_BUSINESS_HOURS_ATTACHMENT_ERROR,
-        attachmentIndex
+        attachmentIndex,
+        errorCode
       };
     };
 
@@ -280,7 +282,7 @@ define ("actions/businessHours",
 
       attachments.forEach ((attachment, index) => {
         if (attachment.error) {
-          errorAttachmentsActions.push (setAttachmentError (index));
+          errorAttachmentsActions.push (setAttachmentError (index, attachment.errorCode));
         }
       });
 
