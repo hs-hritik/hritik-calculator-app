@@ -15,13 +15,13 @@ define ("components/chatView",
     "constants/chatView",
     "components/jumpToLatestBtn",
     "gunpowder/utils/classes",
-    "gunpowder/constants/widgets/picker",
+    "gunpowder/constants/widgets/dragIt",
     "extras/accessibility",
     "constants/activeView"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
-    LIST_PICKER_CONSTANTS, ax, activeViewConstants) {
+    dragItConstants, ax, activeViewConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -30,9 +30,7 @@ define ("components/chatView",
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
     const {USER_INPUT_TYPES} = CHAT_VIEW_CONSTANTS;
-    const {
-      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
-    } = LIST_PICKER_CONSTANTS;
+    const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
 
     return React.createClass ({
       displayName: "ChatView",
@@ -213,12 +211,12 @@ define ("components/chatView",
         const {
           userInput: {
             listPicker: {
-              toggleState
+              navigationState
             }
           }
         } = this.props;
 
-        if (toggleState !== LIST_PICKER_TOGGLE_STATES.RESIZING) {
+        if (navigationState !== LIST_PICKER_NAVIGATION_STATES.RESIZING) {
           return null;
         }
 

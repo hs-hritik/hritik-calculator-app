@@ -226,14 +226,14 @@ define ("actions/actionCreators",
     });
 
     /**
-     * Return action to change list picker toggle state
-     * @param {String} toggleState - Whether the picker is in "closed", "opened" or
+     * Return action to change list picker navigation state
+     * @param {String} navigationState - Whether the picker is in "closed", "opened" or
      * "resizing" state
      * @returns {Object} - the action object
      */
-    const updateListPickerToggleState = (toggleState) => ({
-      type: ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE,
-      toggleState
+    const updateListPickerNavigationState = (navigationState) => ({
+      type: ACTION_TYPES.UPDATE_LIST_PICKER_NAVIGATION_STATE,
+      navigationState
     });
 
      /**
@@ -303,7 +303,7 @@ define ("actions/actionCreators",
       setFooterActive,
       setFooterInactive,
       resetReEngagementId,
-      updateListPickerToggleState,
+      updateListPickerNavigationState,
       setAppResetTrigger,
       setInitialUserMsg,
       setConversationEnded,

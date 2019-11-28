@@ -19,7 +19,7 @@ define ("reducers/chatView",
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
       CURSOR_TYPES,
-      DEFAULT_LIST_PICKER_TOGGLE_STATE
+      DEFAULT_LIST_PICKER_NAVIGATION_STATE
     } = CHAT_VIEW_CONSTANTS;
 
     const INITIAL_ERROR_STATE = {
@@ -48,7 +48,7 @@ define ("reducers/chatView",
         placeholder: "",
         errorMsg: "",
         listPicker: {
-          toggleState: DEFAULT_LIST_PICKER_TOGGLE_STATE
+          navigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE
         }
       };
     };
@@ -305,11 +305,11 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE:
+        case ACTION_TYPES.UPDATE_LIST_PICKER_NAVIGATION_STATE:
           return update (state, {
             userInput: {
               listPicker: {
-                toggleState: {$set: action.toggleState}
+                navigationState: {$set: action.navigationState}
               }
             }
           });

@@ -7,14 +7,12 @@
 define (
   "constants/chatView",
   [
-    "gunpowder/constants/widgets/picker"
+    "gunpowder/constants/widgets/dragIt"
   ],
-  function (LIST_PICKER_CONSTANTS) {
+  function (dragItConstants) {
     "use strict";
 
-    const {
-      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
-    } = LIST_PICKER_CONSTANTS;
+    const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
 
     const ACTIVE_FOOTER = {
       REPLY: "REPLY",
@@ -72,7 +70,7 @@ define (
     const USER_REDACTION_ERR_MSG = "User Not Found";
     const USER_REDACTION_ERR_STATUS_CODE = 404;
 
-    const DEFAULT_LIST_PICKER_TOGGLE_STATE = LIST_PICKER_TOGGLE_STATES.CLOSED;
+    const DEFAULT_LIST_PICKER_NAVIGATION_STATE = LIST_PICKER_NAVIGATION_STATES.CLOSED;
 
     return {
       ACTIVE_FOOTER,
@@ -87,6 +85,6 @@ define (
       PICKER_INPUT_THRESHOLD: 5,
       OPTIONS_INPUT_TYPES,
       PICKER_MIN_HEIGHT: 112, // px
-      DEFAULT_LIST_PICKER_TOGGLE_STATE
+      DEFAULT_LIST_PICKER_NAVIGATION_STATE
     };
   });

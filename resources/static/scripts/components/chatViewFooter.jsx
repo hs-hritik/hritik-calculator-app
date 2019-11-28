@@ -17,14 +17,15 @@ define ("components/chatViewFooter",
     "helpers/common",
     "gunpowder/utils/classes",
     "gunpowder/widgets/picker",
-    "gunpowder/constants/widgets/picker",
+    "gunpowder/constants/widgets/dragIt",
     "extras/accessibility",
     "constants/accessibility",
-    "constants/activeView"
+    "constants/activeView",
+    "gunpowder/widgets/dragIt"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
-    Picker, LIST_PICKER_CONSTANTS, ax, axConstants, activeViewConstants) {
+    Picker, dragItConstants, ax, axConstants, activeViewConstants, dragIt) {
     "use strict";
 
     const PropTypes = React.PropTypes;
@@ -38,9 +39,7 @@ define ("components/chatViewFooter",
       USER_INPUT_PROP_TYPE
     } = customPropTypes;
 
-    const {
-      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
-    } = LIST_PICKER_CONSTANTS;
+    const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
     const {
       METALIST_GROUP_NAME,
       METALIST_ITEMS,
@@ -50,6 +49,8 @@ define ("components/chatViewFooter",
       REPLY_FOOTER: "reply",
       ACTIVE_FOOTER: "active_footer"
     };
+
+    const DraggablePicker = dragIt (Picker);
 
     return React.createClass ({
       displayName: "ChatViewFooter",
@@ -87,7 +88,7 @@ define ("components/chatViewFooter",
         onRejectResolutionQuestionClick: PropTypes.func.isRequired,
         onStartNewConversation: PropTypes.func.isRequired,
         onStarClick: PropTypes.func.isRequired,
-        onListPickerToggleStateChange: PropTypes.func,
+        onListPickerNavigationStateChange: PropTypes.func,
         onListPickerOptionSelect: PropTypes.func.isRequired,
         text: PropTypes.shape ({
           resolutionQuestionAccept: PropTypes.string.isRequired,
@@ -141,7 +142,7 @@ define ("components/chatViewFooter",
             required,
             skipLabel,
             listPicker: {
-              toggleState: listPickerToggleState
+              navigationState: listPickerNavigationState
             }
           },
           issueIsCreated,
@@ -174,10 +175,10 @@ define ("components/chatViewFooter",
         const inputIsPillSelect = (type === USER_INPUT_TYPES.PILL_SELECT);
         const inputIsListPicker = (type === USER_INPUT_TYPES.LIST_PICKER);
         const listPickerIsClosed = (
-          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.CLOSED
+          listPickerNavigationState === LIST_PICKER_NAVIGATION_STATES.CLOSED
         );
         const listPickerIsOpened = (
-          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED
+          listPickerNavigationState === LIST_PICKER_NAVIGATION_STATES.OPENED
         );
 
         const isPreIssue = !issueIsCreated;
@@ -334,7 +335,7 @@ define ("components/chatViewFooter",
             errorMsg,
             disabled,
             listPicker: {
-              toggleState: listPickerToggleState
+              navigationState: listPickerNavigationState
             }
           },
           onFooterFocus,
@@ -345,7 +346,7 @@ define ("components/chatViewFooter",
         } = this.props;
         const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
         const listPickerIsOpened = (
-          listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED
+          listPickerNavigationState === LIST_PICKER_NAVIGATION_STATES.OPENED
         );
         const footerClasses = classes (
           "hs-chat-footer", {
@@ -513,19 +514,20 @@ define ("components/chatViewFooter",
         };
 
         return (
-          <Picker className={pickerClasses}
-                  options={options}
-                  onToggleStateChange={this._onPickerToggleStateChange}
-                  onSelect={onListPickerOptionSelect}
-                  searchPlaceholder={searchPlaceholder}
-                  headerLabel={headerLabel}
-                  searchNoResultsText={searchNoResultsText}
-                  minHeight={PICKER_MIN_HEIGHT}
-                  maxHeight={this.state.pickerMaxHeight}
-                  axIsSupported={true}
-                  onFocusableItemsChange={this._onFocusItemsChanged}
-                  onFocusChange={this._onPickerFocusChange}
-                  ariaLabels={pickerAriaLabels} />
+          <DraggablePicker
+            className={pickerClasses}
+            options={options}
+            onNavigationStateChange={this._onPickerNavigationStateChange}
+            onSelect={onListPickerOptionSelect}
+            searchPlaceholder={searchPlaceholder}
+            headerLabel={headerLabel}
+            searchNoResultsText={searchNoResultsText}
+            minHeight={PICKER_MIN_HEIGHT}
+            maxHeight={this.state.pickerMaxHeight}
+            axIsSupported={true}
+            onFocusableItemsChange={this._onFocusItemsChanged}
+            onFocusChange={this._onPickerFocusChange}
+            ariaLabels={pickerAriaLabels} />
         );
       },
 
@@ -819,21 +821,21 @@ define ("components/chatViewFooter",
 
       /**
        * Support accessiblity depends on toggle state
-       * 1) Depending on the toggleState, backup or restore selectors
+       * 1) Depending on the navigationState, backup or restore selectors
        * 2) Replace the footer selectors
        * 3) Focus the element of the picker
-       * @param {String} toggleState - Whether the picker is in "closed", "opened" state
+       * @param {String} navigationState - Whether the picker is in "closed", "opened" state
        * @param {Array} selectors - List of current visible selectors
        * @param {String} firstFocusItem - To be focused selector
        */
-      _onFocusItemsChanged (toggleState, selectors, firstFocusItem) {
-        if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
+      _onFocusItemsChanged (navigationState, selectors, firstFocusItem) {
+        if (navigationState === LIST_PICKER_NAVIGATION_STATES.OPENED) {
           ax.backupSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
           ax.replaceSelectors ({
             group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
             selectors: []
           });
-        } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
+        } else if (navigationState === LIST_PICKER_NAVIGATION_STATES.CLOSED) {
           const backedupSelectors = ax.restoreSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
 
           if (backedupSelectors) {
@@ -897,11 +899,11 @@ define ("components/chatViewFooter",
       },
 
       /**
-       * Handle change in toggle state of the Picker
-       * @param {String} toggleState - Toggle state of the Picker
+       * Handle change in navigation state of the Picker
+       * @param {String} navigationState - Navigate state of the Picker
        */
-      _onPickerToggleStateChange (toggleState) {
-        this.props.onListPickerToggleStateChange (toggleState);
+      _onPickerNavigationStateChange (navigationState) {
+        this.props.onListPickerNavigationStateChange (navigationState);
       },
 
       /**
@@ -1093,7 +1095,7 @@ define ("components/chatViewFooter",
         const userInputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
         const userInputIsSelectOption = (userInputIsPillSelect || userInputIsListPicker);
         const listPickerIsClosed = (
-          userInput.listPicker.toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED
+          userInput.listPicker.navigationState === LIST_PICKER_NAVIGATION_STATES.CLOSED
         );
         const userInputIsEnterText = (
           userInput.type === USER_INPUT_TYPES.PLAIN_TEXT ||

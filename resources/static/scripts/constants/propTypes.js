@@ -7,15 +7,13 @@
 define (
   "constants/propTypes",
   [
-    "gunpowder/constants/widgets/picker"
+    "gunpowder/constants/widgets/dragIt"
   ],
-  function (LIST_PICKER_CONSTANTS) {
+  function (dragItConstants) {
     "use strict";
 
     const PropTypes = React.PropTypes;
-    const {
-      TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
-    } = LIST_PICKER_CONSTANTS;
+    const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
 
     const MESSAGE_PROP_TYPE = PropTypes.shape ({
       id: PropTypes.string.isRequired,
@@ -52,10 +50,10 @@ define (
       placeholder: PropTypes.string,
       errorMsg: PropTypes.string,
       listPicker: PropTypes.shape ({
-        toggleState: PropTypes.oneOf ([
-          LIST_PICKER_TOGGLE_STATES.CLOSED,
-          LIST_PICKER_TOGGLE_STATES.OPENED,
-          LIST_PICKER_TOGGLE_STATES.RESIZING
+        navigationState: PropTypes.oneOf ([
+          LIST_PICKER_NAVIGATION_STATES.CLOSED,
+          LIST_PICKER_NAVIGATION_STATES.OPENED,
+          LIST_PICKER_NAVIGATION_STATES.RESIZING
         ])
       })
     });
