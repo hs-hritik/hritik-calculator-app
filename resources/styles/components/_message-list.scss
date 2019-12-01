@@ -92,6 +92,7 @@
       // @NOTE - In order for flex wrap to work on IE, we need to set explicit
       // width to the container so that child items get correctly wrapped
       width: 100%;
+      outline: none;
     }
 
     &__pill-option {

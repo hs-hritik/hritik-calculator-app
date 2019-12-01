@@ -19,12 +19,14 @@ define ("components/chatView",
     "gunpowder/utils/object",
     "components/errorBoundaryWithLogging",
     "components/errors/appError",
-    "components/errors/nonBlockingError"
+    "components/errors/nonBlockingError",
+    "extras/accessibility",
+    "constants/activeView"
   ],
   function (MessageList, ChatViewFooterContainer, InfoView, ViewHeader,
     DnDWrapper, customPropTypes, CHAT_VIEW_CONSTANTS, JumpToLatestBtn, classes,
     LIST_PICKER_CONSTANTS, objUtils, ErrorBoundaryWithLogging, AppError,
-    NonBlockingError) {
+    NonBlockingError, ax, activeViewConstants) {
     "use strict";
 
     const {
@@ -70,7 +72,6 @@ define ("components/chatView",
       botStepInProgress: PropTypes.bool
     };
 
-
     class ChatViewContents extends React.PureComponent {
       constructor (props) {
         super (props);
@@ -100,7 +101,9 @@ define ("components/chatView",
           pastConversationsLoading,
           userIsViewingPastMessages,
           botStepInProgress,
-          minimized
+          minimized,
+          onMessageError,
+          onFooterError
         } = this.props;
 
         const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -135,11 +138,11 @@ define ("components/chatView",
                 onLoadMore={this._onLoadMore}
                 ref={this._msgListRef}
                 minimized={minimized}
-                onMessageError={this.props.onMessageError} />
+                onMessageError={onMessageError} />
               {this._renderJumpToLatestBtn ()}
             </div>
             {this._renderPickerOverlay ()}
-            <ErrorBoundaryWithLogging onError={this.props.onFooterError}>
+            <ErrorBoundaryWithLogging onError={onFooterError}>
               <ChatViewFooterContainer
                 onJumpBtnClick={this._onJumpBtnClick}
                 onListPickerOptionSelect={onListPickerOptionSelect} />
@@ -183,9 +186,11 @@ define ("components/chatView",
         );
 
         return (
-          <div className="hs-chat-view__msgs-loader-container">
-            <i className={loaderClasses} />
-            <span>{pastConversationsLoadingText}</span>
+          <div
+            className="hs-chat-view__msgs-loader-container"
+            aria-label={pastConversationsLoadingText}>
+            <i className={loaderClasses} aria-hidden={true} />
+            <span aria-hidden={true}>{pastConversationsLoadingText}</span>
           </div>
         );
       }
@@ -200,7 +205,8 @@ define ("components/chatView",
           unreadCount,
           userInput: {
             type
-          }
+          },
+          text
         } = this.props;
 
         const showUnreadIndicator = unreadCount > 0;
@@ -212,7 +218,8 @@ define ("components/chatView",
               <JumpToLatestBtn
                 show={userIsViewingPastMessages}
                 showUnreadIndicator={showUnreadIndicator}
-                onClick={this._onJumpBtnClick} />
+                onClick={this._onJumpBtnClick}
+                ariaLabel={text.ariaLabelJumpToLatestBtn} />
             </div>
           );
         }
@@ -286,8 +293,6 @@ define ("components/chatView",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        // @TODO: Confirm whether these props can be removed. They are not being
-        // used anywhere
         error: PropTypes.shape ({
           // Error title
           title: PropTypes.string.isRequired,
@@ -297,8 +302,9 @@ define ("components/chatView",
           cta: PropTypes.string
         }),
         errorActionHandler: PropTypes.func,
-        browserIsMobile: PropTypes.bool
-        // End @TODO
+        botStepInProgress: PropTypes.bool,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired,
+        activeFooter: PropTypes.string
       }, CHAT_VIEW_COMMON_PROPS),
 
       getInitialState () {
@@ -315,7 +321,8 @@ define ("components/chatView",
           onMinimizeConversation,
           text,
           viewStyles,
-          minimized
+          minimized,
+          keyboardInteractionIsActive
         } = this.props;
 
         // In certain cases, Safari ignores scroll events on
@@ -330,7 +337,8 @@ define ("components/chatView",
         // Therefore, we assign a special class whenever the chat window
         // is maximized to trigger reflow.
         const viewClasses = classes ("hs-view", {
-          "hs-view--safari-fix": !minimized
+          "hs-view--safari-fix": !minimized,
+          "outline-hidden": !keyboardInteractionIsActive
         });
 
         return (
@@ -365,7 +373,14 @@ define ("components/chatView",
           onListPickerOptionSelect,
           onSkipUserInput,
           onFilesDrop,
-          text
+          text,
+          botStepInProgress,
+          hasFailure,
+          unreadCount,
+          latestConversationHasLoaded,
+          allMessagesAreLoaded,
+          pastConversationsLoading,
+          loading
         } = this.props;
 
         return (
@@ -391,7 +406,14 @@ define ("components/chatView",
               onSkipUserInput={onSkipUserInput}
               text={text}
               onMessageError={this._showNonBlockingError}
-              onFooterError={this._showNonBlockingError} />
+              onFooterError={this._showNonBlockingError}
+              botStepInProgress={botStepInProgress}
+              hasFailure={hasFailure}
+              unreadCount={unreadCount}
+              latestConversationHasLoaded={latestConversationHasLoaded}
+              allMessagesAreLoaded={allMessagesAreLoaded}
+              pastConversationsLoading={pastConversationsLoading}
+              loading={loading} />
           </ErrorBoundaryWithLogging>
         );
       },
@@ -416,6 +438,18 @@ define ("components/chatView",
         this.setState ({
           showNonBlockingError: true
         });
+      },
+
+      /**
+       * Handler for files dropped event
+       * @param {Object} - files list array like object
+       */
+      _onFilesDrop (files) {
+        this.props.onFilesDrop (files);
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.CHAT);
       }
     });
   }

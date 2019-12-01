@@ -33,6 +33,9 @@ define ("components/containers/csatView",
         },
         onUpdateCsatReview: (review) => {
           dispatch (csatViewActions.updateCsatReview (review));
+        },
+        onUpdateStarRating: (rating) => {
+          dispatch (csatViewActions.updateCsatRating (rating));
         }
       };
     };

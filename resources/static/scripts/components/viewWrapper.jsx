@@ -10,11 +10,16 @@ define ("components/viewWrapper",
     "components/containers/chatView",
     "components/containers/faqView",
     "components/containers/csatView",
-    "components/containers/businessHoursView"
+    "components/containers/businessHoursView",
+    "extras/accessibility",
+    "constants/accessibility",
+    "constants/keyCodes"
   ],
   function (ACTIVE_VIEW, ChatViewContainer, FaqViewContainer, CsatViewContainer,
-    BusinessHoursViewContainer) {
+    BusinessHoursViewContainer, ax, axConstants, KEY_CODES) {
     "use strict";
+
+    const {METALIST_GROUP_NAME} = axConstants;
 
     return createReactClass ({
       displayName: "ViewWrapper",
@@ -25,8 +30,13 @@ define ("components/viewWrapper",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
+        keyboardInteractionIsActive: PropTypes.bool.isRequired,
         onToggleOnlineStatus: PropTypes.func.isRequired,
-        onMinimizeConversation: PropTypes.func.isRequired
+        onMinimizeConversation: PropTypes.func.isRequired,
+        onFocusLauncher: PropTypes.func,
+        onKeyPress: PropTypes.func.isRequired,
+        onClick: PropTypes.func.isRequired,
+        showLauncher: PropTypes.bool
       },
 
       render () {
@@ -40,14 +50,16 @@ define ("components/viewWrapper",
         const {
           allowFullScreen,
           viewStyles,
-          showCloseButton
+          showCloseButton,
+          keyboardInteractionIsActive
         } = this.props;
 
         const commonProps = {
           allowFullScreen,
           onMinimizeConversation: this._onMinimizeConversation,
           viewStyles,
-          showCloseButton
+          showCloseButton,
+          keyboardInteractionIsActive
         };
 
         switch (this.props.activeView) {
@@ -83,14 +95,58 @@ define ("components/viewWrapper",
         this.props.onToggleOnlineStatus (false);
       },
 
+      _onKeyPress (ev) {
+        if (ev.shiftKey && ev.keyCode === KEY_CODES.TAB) {
+          ax.focusPrev ();
+          this.props.onKeyPress ({
+            keyboardInteractionIsActive: true
+          });
+          ev.preventDefault ();
+        } else if (ev.keyCode === KEY_CODES.TAB) {
+          ax.focusNext ();
+          this.props.onKeyPress ({
+            keyboardInteractionIsActive: true
+          });
+          ev.preventDefault ();
+        }
+      },
+
+      // Set keyboard interaction is active flag to false on click
+      _onClick () {
+        this.props.onClick ({
+          keyboardInteractionIsActive: false
+        });
+      },
+
+      componentWillMount () {
+        const {
+          showLauncher
+        } = this.props;
+
+        ax.init ({
+          showLauncher,
+          handlers: [
+            {
+              group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+              handlers: [this.props.onFocusLauncher]
+            }
+          ]
+        });
+        ax.setActiveView (this.props.activeView);
+      },
+
       componentDidMount () {
         window.addEventListener ("online", this._onOnline);
         window.addEventListener ("offline", this._onOffline);
+        window.addEventListener ("keydown", this._onKeyPress);
+        window.addEventListener ("click", this._onClick);
       },
 
       componentWillUnmount () {
         window.removeEventListener ("online", this._onOnline);
         window.removeEventListener ("offline", this._onOffline);
+        window.removeEventListener ("keydown", this._onKeyPress);
+        window.removeEventListener ("click", this._onClick);
       }
     });
   }

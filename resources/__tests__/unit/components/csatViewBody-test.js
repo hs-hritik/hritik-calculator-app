@@ -15,7 +15,9 @@ const setup = () => {
     review: "MOCK_REVIEW",
     csatSaveInProgress: false,
     onCsatReviewChange: jest.fn (),
-    onStarClick: jest.fn ()
+    onStarClick: jest.fn (),
+    setAxActiveIndex: jest.fn (),
+    onUpdateStarRating: jest.fn ()
   };
 
   const enzymeWrapper = shallow (<CsatViewBody {...props} />);

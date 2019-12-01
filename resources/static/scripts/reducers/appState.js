@@ -146,7 +146,8 @@ define ("reducers/appState",
       // User re-engagement related intial values
       widgetShouldAutoOpen: false,
       reEngagementId: "",
-      windowIsFocused: false
+      windowIsFocused: false,
+      keyboardInteractionIsActive: false
     };
 
     return (state = INITIAL_STATE, action) => {
@@ -425,6 +426,11 @@ define ("reducers/appState",
         case ACTION_TYPES.TOGGLE_ONLINE_STATUS:
           return update (state, {
             online: {$set: action.online}
+          });
+
+        case ACTION_TYPES.SET_KEYBOARD_INTERACTION_IS_ACTIVE:
+          return update (state, {
+            keyboardInteractionIsActive: {$set: action.active}
           });
 
         default:

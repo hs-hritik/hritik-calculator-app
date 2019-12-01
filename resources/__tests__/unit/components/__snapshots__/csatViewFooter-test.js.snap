@@ -8,9 +8,13 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
     className="hs-footer__vertical-items-wrapper"
   >
     <button
+      aria-label="MOCK_FORM_SUBMIT_BUTTON"
       className="hs-button hs-footer__btn"
+      data-label="footer-btn"
       disabled={true}
       onClick={[MockFunction]}
+      onFocus={[Function]}
+      tabIndex="0"
     >
       MOCK_FORM_SUBMIT_BUTTON
     </button>

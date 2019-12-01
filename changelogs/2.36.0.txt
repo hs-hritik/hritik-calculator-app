@@ -1,0 +1,16 @@
+Branches:
+feature/fix-HSBUG-59
+
+Changelog:
+Offset websdk iframe when launcher is hidden
+Add loader when update HS config is called
+Destroy launcher if showLauncher is false
+Update z-index of launcher iframe
+Save translations in saveConfigOptionsInState
+Process new widget options on update HS config
+Update visual styles in updateWidgetPosition
+Add validations while updating launcher styles
+Fix missing focus when CHAT view page is reloaded
+Move ax init func to componentWillMount in viewWrapper
+Conditionally add unread count aria-label
+Conditionally remove launcher button group

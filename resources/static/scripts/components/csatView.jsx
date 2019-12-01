@@ -12,10 +12,13 @@ define ("components/csatView",
     "components/containers/branding",
     "components/errorBoundaryWithLogging",
     "components/errors/appError",
-    "components/errors/nonBlockingError"
+    "components/errors/nonBlockingError",
+    "extras/accessibility",
+    "constants/activeView",
+    "gunpowder/utils/classes"
   ],
   function (ViewHeader, CsatViewBody, CsatViewFooter, BrandingContainer, ErrorBoundaryWithLogging,
-    AppError, NonBlockingError) {
+    AppError, NonBlockingError, ax, activeViewConstants, classes) {
     "use strict";
 
     const TEXT_PROP_TYPE = PropTypes.shape ({
@@ -35,7 +38,9 @@ define ("components/csatView",
       allowFullScreen,
       onStarClick,
       onCsatReviewChange,
-      onSubmitCsat
+      onSubmitCsat,
+      setAxActiveIndex,
+      onUpdateStarRating
     }) => (
       <div className="hs-view__content">
         <div className="hs-csat">
@@ -47,14 +52,17 @@ define ("components/csatView",
             review={review}
             csatSaveInProgress={csatSaveInProgress}
             onStarClick={onStarClick}
-            onCsatReviewChange={onCsatReviewChange} />
+            onCsatReviewChange={onCsatReviewChange}
+            setAxActiveIndex={setAxActiveIndex}
+            onUpdateStarRating={onUpdateStarRating} />
           <BrandingContainer />
           <CsatViewFooter
             rating={rating}
             csatSaveInProgress={csatSaveInProgress}
             allowFullScreen={allowFullScreen}
             submitBtnText={text.csatBotFormSubmitBtn}
-            onSubmitCsat={onSubmitCsat} />
+            onSubmitCsat={onSubmitCsat}
+            setAxActiveIndex={setAxActiveIndex} />
         </div>
       </div>
     );
@@ -67,7 +75,9 @@ define ("components/csatView",
       allowFullScreen: PropTypes.bool,
       onStarClick: PropTypes.func.isRequired,
       onCsatReviewChange: PropTypes.func.isRequired,
-      onSubmitCsat: PropTypes.func.isRequired
+      onSubmitCsat: PropTypes.func.isRequired,
+      setAxActiveIndex: PropTypes.func.isRequired,
+      onUpdateStarRating: PropTypes.func
     };
 
     return createReactClass ({
@@ -85,7 +95,9 @@ define ("components/csatView",
         viewStyles: PropTypes.shape ({
           fontFamily: PropTypes.string
         }),
-        csatSaveInProgress: PropTypes.bool
+        csatSaveInProgress: PropTypes.bool,
+        onUpdateStarRating: PropTypes.func,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
       },
 
       getInitialState () {
@@ -103,11 +115,17 @@ define ("components/csatView",
           rating,
           review,
           csatSaveInProgress,
-          onSubmitCsat
+          onSubmitCsat,
+          keyboardInteractionIsActive,
+          onUpdateStarRating
         } = this.props;
 
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
+
         return (
-          <div className="hs-view" style={viewStyles}>
+          <div className={viewClasses} style={viewStyles}>
             <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback ()}>
               <ViewHeader
                 title={text.csatViewHeader}
@@ -124,7 +142,9 @@ define ("components/csatView",
                 csatSaveInProgress={csatSaveInProgress}
                 onStarClick={this._onStarClick}
                 onCsatReviewChange={this._onCsatReviewChange}
-                onSubmitCsat={onSubmitCsat} />
+                onSubmitCsat={onSubmitCsat}
+                setAxActiveIndex={this._setAxActiveIndex}
+                onUpdateStarRating={onUpdateStarRating} />
             </ErrorBoundaryWithLogging>
           </div>
         );
@@ -164,6 +184,21 @@ define ("components/csatView",
        */
       _onStarClick (value) {
         this.props.onUpdateCsatRating (value);
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       */
+      _setAxActiveIndex (config) {
+        ax.setActiveIndex (config);
+      },
+
+      componentDidMount () {
+        ax.setActiveView (activeViewConstants.CSAT);
+        ax.focus ();
       }
     });
   }

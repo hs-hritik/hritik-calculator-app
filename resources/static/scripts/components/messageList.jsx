@@ -14,10 +14,14 @@ define ("components/messageList",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes",
-    "components/errorBoundaryWithLogging"
+    "components/errorBoundaryWithLogging",
+    "constants/accessibility",
+    "extras/accessibility",
+    "helpers/common"
   ],
   function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
-    chatViewConstants, throttle, classes, ErrorBoundaryWithLogging) {
+    chatViewConstants, throttle, classes, ErrorBoundaryWithLogging, axConstants, ax,
+    commonHelpers) {
     "use strict";
 
     const {
@@ -47,6 +51,11 @@ define ("components/messageList",
     // At what positioning from the top, should more messages
     // be loaded?
     const LOAD_MORE_SCROLL_THRESHOLD = 500;
+    const {
+      METALIST_ITEMS,
+      METALIST_GROUP_NAME,
+      FOOTER_SELECTORS_LIST_MAP
+    } = axConstants;
 
     return createReactClass ({
       displayName: "MessageList",
@@ -84,7 +93,9 @@ define ("components/messageList",
         return (
           <div ref={this._refCallback}
                className="hs-view__scroll-wrapper"
-               onScroll={this._eventPresistedScroll}>
+               onScroll={this._eventPresistedScroll}
+               data-label={METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.DATA_LABEL}
+               tabIndex="0">
             <div className="hs-message-list" >
               {this._renderMessages ()}
               {this._renderTypingIndicator ()}
@@ -139,9 +150,11 @@ define ("components/messageList",
         if (!this.props.isTyping) {
           return null;
         }
-
+        const {text} = this.props;
         return (
-          <div className="hs-message-list__typing-indicator">
+          <div
+            className="hs-message-list__typing-indicator"
+            aria-label={text.ariaLabelTypingIndicator}>
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-1" />
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-2" />
             <div className="hs-message-list__typing-dot hs-message-list__typing-anim-3" />
@@ -155,14 +168,12 @@ define ("components/messageList",
       _renderPillOptions () {
         const {
           userInput: {
-            type,
             options,
             label,
             disabled,
             required,
             skipLabel
           },
-          hasFailure,
           onSkipUserInput
         } = this.props;
 
@@ -170,7 +181,7 @@ define ("components/messageList",
         // here directly, and render the pill select options inside the chat view footer.
         // This will avoid passing the props like userInput, hasFailure to the
         // MessageList component.
-        if (hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled) {
+        if (!this._arePillsRendered ()) {
           return null;
         }
 
@@ -180,10 +191,23 @@ define ("components/messageList",
           "hs-message-list__pill-option"
         );
         const pillOptionsEl = options.map ((option) => {
+          const pillDataLabel = (
+            METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL +
+            option.value
+          );
+          const setPillAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: `[data-label=${pillDataLabel}]`
+            }
+          );
+
           return (
             <button key={option.value}
                     onClick={this._onPillOptionClick.bind (this, option)}
-                    className={btnClasses}>
+                    className={btnClasses}
+                    data-label={pillDataLabel}
+                    tabIndex="0"
+                    onFocus={setPillAxActiveIndex}>
               {option.label}
             </button>
           );
@@ -192,22 +216,46 @@ define ("components/messageList",
         let skipBtnWrapperEl = null;
 
         if (!required) {
+          const setAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR
+            }
+          );
+          const skipBtnDataLabels = {
+            skipBtn: METALIST_ITEMS.CHAT.SKIP_BTN.DATA_LABEL
+          };
+
           skipBtnWrapperEl = (
             <SkipButtonWrapper label={skipLabel}
                                className="hs-message-list__skip-btn-wrapper"
                                disabled={disabled}
-                               onClick={onSkipUserInput} />
+                               onClick={onSkipUserInput}
+                               dataLabels={skipBtnDataLabels}
+                               onFocus={setAxActiveIndex} />
           );
         }
 
+        const setPillWrapperAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.SELECTOR
+          }
+        );
+
         return (
-          <div className="hs-message-list__pills-container">
-            <small>
+          <div
+            className="hs-message-list__pills-container"
+            data-label={METALIST_ITEMS.CHAT.FOOTER.OPTION_PILLS_WRAPPER.DATA_LABEL}
+            tabIndex="0"
+            onClick={setPillWrapperAxActiveIndex}
+            onFocus={setPillWrapperAxActiveIndex}
+            aria-label={label}>
+            <small aria-hidden={true}>
               <strong className="hs-message-list__pill-heading">
                 {label}
               </strong>
             </small>
-            <div className="hs-message-list__pill-options">
+            <div
+              className="hs-message-list__pill-options">
               {pillOptionsEl}
             </div>
             {skipBtnWrapperEl}
@@ -389,10 +437,130 @@ define ("components/messageList",
         }
       },
 
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      _setAxActiveIndex (config, ev) {
+        // When the user click on an interactive element, a global event
+        // is there to stop the focus. In the case of focus event, the event
+        // goes to its direct parent which set its active index, So it is required to
+        // stop propagation to its direct parent
+        if (ev && ev.type !== "click") {
+          ev.stopPropagation ();
+        }
+
+        ax.setActiveIndex (config);
+      },
+
+      /**
+       * Generate selectors list for anchor tags in message list
+       *
+       * @returns {Array} - An array of selectors strings
+       */
+      _getLinkSelectors () {
+        const messageListLinks = document.querySelectorAll (".hs-message-list a");
+        const messageListLinksCount = messageListLinks.length;
+        const selectors = [];
+        const messageList = document.querySelector (".hs-message-list");
+
+        for (let i = 0; i < messageListLinksCount; i++) {
+          const selector = commonHelpers.getSelectorForElement (messageListLinks[i], messageList);
+          selectors.push (".hs-message-list " + selector);
+        }
+
+        return selectors;
+      },
+
+      /**
+       * Returns array of pills option selectors
+       *
+       * @param {Array} options - Option for option pills
+       * @returns {Array} - Unique selector list of option pills
+       */
+      _getPillsOptionSelectorList (options) {
+        const {
+          userInput
+        } = this.props;
+        const prefix = METALIST_ITEMS.CHAT.FOOTER.OPTION_PILL_PREFIX.DATA_LABEL;
+        const pillIsSkipable = !userInput.required;
+
+        const optionsSelectorList = options.map ((option) => {
+          return `[data-label=${prefix}${option.value}]`;
+        });
+
+        if (pillIsSkipable) {
+          optionsSelectorList.push (METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR);
+        }
+
+        return optionsSelectorList;
+      },
+
+      /**
+       * Return true when picker is rendered in DOM
+       */
+      _arePillsRendered () {
+        const {
+          userInput: {
+            type,
+            disabled
+          },
+          hasFailure
+        } = this.props;
+
+        return !(hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled);
+      },
+
+      /**
+       * Replace footer selectors in meta list
+       */
+      setFooterSelectors () {
+        const {
+          userInput: {
+            options
+          }
+        } = this.props;
+
+        const optionsSelectorList = this._getPillsOptionSelectorList (options);
+
+        if (optionsSelectorList.length) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.FOOTER,
+            selectors: [].concat (FOOTER_SELECTORS_LIST_MAP.OPTION_PILL, optionsSelectorList)
+          });
+          ax.setFlatListActiveIndex (0);
+          ax.focus ();
+        }
+      },
+
       componentDidUpdate (prevProps) {
-        const {messages, minimized} = this.props;
+        const {messages, minimized, userInput} = this.props;
         const previousMessages = prevProps.messages;
+        const messageListHasBeenUpdated = previousMessages.length !== messages.length;
+        const userInputTypeIsChanged = (userInput.type !== prevProps.userInput.type);
+        const userInputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const selectOptionIsSubmitted = (
+          !userInput.selectedOption &&
+          !!prevProps.userInput.selectedOption
+        );
+        // User input is considered refreshed when selected option or
+        // entered value resets to empty
+        const pillOptionsIsRefreshed = !userInputTypeIsChanged && (
+          userInputIsPillSelect &&
+          selectOptionIsSubmitted
+        );
         let messagesHaveBeenAppended = false;
+
+        // If option pills is rendered and the currently rendered pill render for the
+        // first time, add pill selector in ax meta list
+        if (this._arePillsRendered ()) {
+          if (userInputIsPillSelect && (userInputTypeIsChanged || pillOptionsIsRefreshed)) {
+            this.setFooterSelectors ();
+          }
+        }
 
         if (messages.length) {
           messagesHaveBeenAppended = (
@@ -428,12 +596,30 @@ define ("components/messageList",
         }
 
         this._handleScrollingToBottom (messages, previousMessages);
+
+        // If message length count is changed then update message link selectors in meta list
+        if (messageListHasBeenUpdated) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+            selectors: this._getLinkSelectors ()
+          });
+        }
       },
 
       /**
        * Scroll the bottom when the component is mounted.
        */
       componentDidMount () {
+        ax.replaceSelectors ({
+          group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+          selectors: this._getLinkSelectors ()
+        });
+
+        // While component mount for the first time or refreshed
+        // If picker is rendered, add pills selectors in ax meta list
+        if (this._arePillsRendered ()) {
+          this.setFooterSelectors ();
+        }
         // @TODO :- Remove throttling logic as the image will have fixed width
         // and height. We will not require bottom scrolling logic then.
         // Also we will need to fix the width and height of image container

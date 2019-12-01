@@ -10,10 +10,12 @@ define ("reducers/businessHoursView",
     "constants/businessHoursView",
     "constants/attachments",
     "helpers/attachments",
-    "gunpowder/utils/uuid"
+    "gunpowder/utils/uuid",
+    "extras/accessibility",
+    "constants/accessibility"
   ],
   function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS, ATTACHMENT_CONSTANTS,
-    attachmentsHelper, uuidGenerator) {
+    attachmentsHelper, uuidGenerator, ax, axConstants) {
     "use strict";
 
     const update = React.addons.update;
@@ -22,6 +24,7 @@ define ("reducers/businessHoursView",
       ATTACHMENT_OPERATIONS,
       BUSINESS_HOURS_ALLOWED_REMOVE_COUNT
     } = ATTACHMENT_CONSTANTS;
+    const {METALIST_ITEMS, METALIST_GROUP_NAME} = axConstants;
 
     const INITIAL_STATE = {
       businessHoursEnabled: false,
@@ -77,8 +80,15 @@ define ("reducers/businessHoursView",
 
       for (let i = 0; i < files.length; i++) {
         const file = files [i];
+        const id = uuidGenerator ();
+
+        ax.addSelector ({
+          group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
+          selector: `[data-label=${METALIST_ITEMS.OOBH.ATTACHMENT_PREFIX.DATA_LABEL}${id}]`
+        });
+
         processedAttachments.push ({
-          id: uuidGenerator (),
+          id: id,
           name: file.name,
           size: file.size,
           // file is DOM object and saved in store as we want to send raw file
@@ -249,6 +259,15 @@ define ("reducers/businessHoursView",
           });
 
         case ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT:
+          const attachmentPrefix = (
+            METALIST_ITEMS.OOBH.ATTACHMENT_PREFIX.DATA_LABEL + action.attachmentId
+          );
+          ax.removeSelector ({
+            group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
+            selector: `[data-label=${attachmentPrefix}]`
+          });
+          ax.delayFocus ();
+
           const filteredAttachments = _getFilteredAttachments (
             state.contactFormDetails.attachments, action.attachmentId
           );

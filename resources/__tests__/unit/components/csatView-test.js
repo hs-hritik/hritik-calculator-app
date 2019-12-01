@@ -33,7 +33,8 @@ const setup = () => {
     viewStyles: {
       fontFamily: "MOCK_FONT_FAMILY"
     },
-    csatSaveInProgress: false
+    csatSaveInProgress: false,
+    keyboardInteractionIsActive: false
   };
 
   const enzymeWrapper = shallow (<CsatView {...props} />);

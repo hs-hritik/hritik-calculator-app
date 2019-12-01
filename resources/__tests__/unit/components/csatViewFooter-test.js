@@ -12,7 +12,8 @@ const setup = () => {
     csatSaveInProgress: false,
     allowFullScreen: false,
     submitBtnText: "MOCK_FORM_SUBMIT_BUTTON",
-    onSubmitCsat: jest.fn ()
+    onSubmitCsat: jest.fn (),
+    setAxActiveIndex: jest.fn ()
   };
 
   const enzymeWrapper = shallow (<CsatViewFooter {...props} />);

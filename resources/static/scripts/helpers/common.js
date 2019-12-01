@@ -338,6 +338,54 @@ define ("helpers/common",
       );
     };
 
+    /**
+     * Returns unique selector of element
+     * Ref - https://stackoverflow.com/questions/5706837/get-unique-selector-of-element-in-jquery
+     * Added extra attribute to define target parent
+     *
+     * @param {Object} elem - Element data object
+     * @param {Object} targerParent - Element of target parent
+     * @returns {String} - unique selector of element
+     */
+    const getSelectorForElement = (elem, targerParent) => {
+      let path;
+
+      while (elem) {
+        let subSelector = elem.localName;
+        if (!subSelector) {
+          break;
+        }
+        subSelector = subSelector.toLowerCase ();
+
+        const parent = elem.parentElement;
+
+        if (parent) {
+          const sameTagSiblings = parent.children;
+          if (sameTagSiblings.length > 1) {
+            let nameCount = 0;
+            const index = [...sameTagSiblings].findIndex ((child) => {
+              if (elem.localName === child.localName) {
+                nameCount++;
+              }
+              return child === elem;
+            }) + 1;
+            if (index > 1 && nameCount > 1) {
+              subSelector += ":nth-child(" + index + ")";
+            }
+          }
+        }
+
+        path = subSelector + (path ? " " + path : "");
+
+        // Stop adding parents selectors after reaching the target parent
+        if (targerParent && parent === targerParent) {
+          break;
+        }
+        elem = parent;
+      }
+      return path;
+    };
+
     return {
       isOutOfBusinessHours,
       isWidgetHiddenOutOfBusinessHours,
@@ -352,6 +400,7 @@ define ("helpers/common",
       isDateInputSupported,
       getDateObjectFromString,
       isNumberValid,
-      areMessagesSeen
+      areMessagesSeen,
+      getSelectorForElement
     };
   });

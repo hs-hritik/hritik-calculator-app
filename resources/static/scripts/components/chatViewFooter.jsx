@@ -17,11 +17,14 @@ define ("components/chatViewFooter",
     "helpers/common",
     "gunpowder/utils/classes",
     "gunpowder/widgets/picker",
-    "gunpowder/constants/widgets/picker"
+    "gunpowder/constants/widgets/picker",
+    "extras/accessibility",
+    "constants/accessibility",
+    "constants/activeView"
   ],
   function (StarRating, JumpToLatestBtn, ReplyBoxContainer, FileInput, SkipButtonWrapper,
     CHAT_VIEW_CONSTANTS, KEY_CODES, customPropTypes, commonHelpers, classes,
-    Picker, LIST_PICKER_CONSTANTS) {
+    Picker, LIST_PICKER_CONSTANTS, ax, axConstants, activeViewConstants) {
     "use strict";
 
     const {
@@ -37,6 +40,15 @@ define ("components/chatViewFooter",
     const {
       TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES
     } = LIST_PICKER_CONSTANTS;
+    const {
+      METALIST_GROUP_NAME,
+      METALIST_ITEMS,
+      FOOTER_SELECTORS_LIST_MAP
+    } = axConstants;
+    const FOOTER_SELECTORS_TYPES = {
+      REPLY_FOOTER: "reply",
+      ACTIVE_FOOTER: "active_footer"
+    };
 
     return createReactClass ({
       displayName: "ChatViewFooter",
@@ -86,7 +98,14 @@ define ("components/chatViewFooter",
           chatViewStartNewConversation: PropTypes.string.isRequired,
           retryBtn: PropTypes.string.isRequired,
           searchPlaceholder: PropTypes.string,
-          noSearchResultsText: PropTypes.string
+          noSearchResultsText: PropTypes.string,
+          ariaLabelSendMessage: PropTypes.string,
+          ariaLabelJumpToLatestBtn: PropTypes.string,
+          ariaLabelClearSearchInput: PropTypes.string,
+          ariaLabelOptionsList: PropTypes.string,
+          ariaLabelSearchList: PropTypes.string,
+          ariaLabelCloseSearch: PropTypes.string,
+          ariaLabelAttachFiles: PropTypes.string
         }).isRequired,
         footerIsActive: PropTypes.bool,
         onFooterFocus: PropTypes.func,
@@ -98,7 +117,9 @@ define ("components/chatViewFooter",
         fullPrivacyEnabled: PropTypes.bool,
         userAttachmentsEnabled: PropTypes.bool,
         onCloseConversation: PropTypes.func.isRequired,
-        botStepInProgress: PropTypes.bool.isRequired
+        botStepInProgress: PropTypes.bool.isRequired,
+        onSelectStarRating: PropTypes.func,
+        onUpdateStarRating: PropTypes.func
       },
       getInitialState () {
         return {
@@ -123,7 +144,8 @@ define ("components/chatViewFooter",
             }
           },
           issueIsCreated,
-          onSkipUserInput
+          onSkipUserInput,
+          text
         } = this.props;
 
         const showUnreadIndicator = unreadCount > 0;
@@ -132,7 +154,8 @@ define ("components/chatViewFooter",
             <JumpToLatestBtn
               show={userIsViewingPastMessages}
               showUnreadIndicator={showUnreadIndicator}
-              onClick={this.props.onJumpBtnClick} />
+              onClick={this.props.onJumpBtnClick}
+              ariaLabel={text.ariaLabelJumpToLatestBtn} />
           </div>
         );
 
@@ -179,12 +202,23 @@ define ("components/chatViewFooter",
           let skipBtnWrapperEl = null;
 
           if (!required) {
+            const _setAxActiveIndex = this._setAxActiveIndex.bind (
+              this, {
+                selector: METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR
+              }
+            );
+            const skipBtnDataLabels = {
+              skipBtn: METALIST_ITEMS.CHAT.SKIP_BTN.DATA_LABEL
+            };
+
             skipBtnWrapperEl = (
               <SkipButtonWrapper
                 label={skipLabel}
                 className="hs-chat-footer__skip-btn-wrapper"
                 disabled={disabled}
-                onClick={onSkipUserInput} />
+                onClick={onSkipUserInput}
+                dataLabels={skipBtnDataLabels}
+                onFocus={_setAxActiveIndex} />
             );
           }
 
@@ -304,7 +338,9 @@ define ("components/chatViewFooter",
           },
           onFooterFocus,
           onFooterBlur,
-          browserIsMobile
+          browserIsMobile,
+          activeFooter,
+          text
         } = this.props;
         const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
         const listPickerIsOpened = (
@@ -336,12 +372,41 @@ define ("components/chatViewFooter",
         // c. There can be label for input type plain text (this layout supports label)
         let inputComponentEl;
         if (type === USER_INPUT_TYPES.DEFAULT_INPUT) {
+          const {
+            CHAT: {
+              FOOTER: {
+                TEXT_AREA:{
+                  DATA_LABEL: replyBoxDataLabel
+                }
+              }
+            }
+          } = METALIST_ITEMS;
+          let ariaLabel;
+
+          if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+            ariaLabel = text.chatViewIssueRejectionQuestion;
+          }
+
           inputComponentEl = (
-            <ReplyBoxContainer className="hs-chat-footer__text-area" />
+            <ReplyBoxContainer
+              className="hs-chat-footer__text-area"
+              dataLabel={replyBoxDataLabel}
+              ariaLabel={ariaLabel} />
           );
         } else {
           const htmlInputType = this._getHtmlInputType (type);
           const inputPlaceholder = this._getInputPlaceholder (htmlInputType);
+          const _setAxActiveIndex = this._setAxActiveIndex.bind (
+            this, {
+              selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.SELECTOR
+            }
+          );
+
+          const _onFooterFocus = () => {
+            onFooterFocus ();
+            _setAxActiveIndex ();
+          };
+          const inputIsInvalid = !!errorMsg;
 
           inputComponentEl = (
             <input className="hs-chat-footer__text-field"
@@ -353,9 +418,14 @@ define ("components/chatViewFooter",
                    placeholder={inputPlaceholder}
                    onChange={this._onInputFieldValueChange}
                    onKeyUp={this._onInputFieldKeyUp}
-                   onFocus={onFooterFocus}
+                   onFocus={_onFooterFocus}
                    onBlur={onFooterBlur}
-                   autoFocus />
+                   autoFocus
+                   tabIndex="0"
+                   data-label={METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.DATA_LABEL}
+                   onClick={_setAxActiveIndex}
+                   aria-invalid={inputIsInvalid}
+                   aria-required={true} />
           );
         }
 
@@ -416,7 +486,11 @@ define ("components/chatViewFooter",
           onListPickerOptionSelect,
           text: {
             searchPlaceholder,
-            noSearchResultsText: searchNoResultsText
+            noSearchResultsText: searchNoResultsText,
+            ariaLabelClearSearchInput,
+            ariaLabelOptionsList,
+            ariaLabelSearchList,
+            ariaLabelCloseSearch
           },
           browserIsMobile
         } = this.props;
@@ -430,6 +504,12 @@ define ("components/chatViewFooter",
             "hs-picker--mobile": browserIsMobile
           }
         );
+        const pickerAriaLabels = {
+          optionsList: ariaLabelOptionsList,
+          clearSearchInput: ariaLabelClearSearchInput,
+          searchList: ariaLabelSearchList,
+          closeSearch: ariaLabelCloseSearch
+        };
 
         return (
           <Picker className={pickerClasses}
@@ -440,7 +520,11 @@ define ("components/chatViewFooter",
                   headerLabel={headerLabel}
                   searchNoResultsText={searchNoResultsText}
                   minHeight={PICKER_MIN_HEIGHT}
-                  maxHeight={this.state.pickerMaxHeight} />
+                  maxHeight={this.state.pickerMaxHeight}
+                  axIsSupported={true}
+                  onFocusableItemsChange={this._onFocusItemsChanged}
+                  onFocusChange={this._onPickerFocusChange}
+                  ariaLabels={pickerAriaLabels} />
         );
       },
 
@@ -450,14 +534,39 @@ define ("components/chatViewFooter",
       _renderSendButton () {
         const {
           userInput: {
-            errorMsg
+            errorMsg,
+            disabled: userInputIsDisabled
           },
-          onSubmitReply
+          onSubmitReply,
+          text: {
+            ariaLabelSendMessage
+          }
         } = this.props;
         const iconClasses = !errorMsg ? "ion-send" : "ion-alert-circled";
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR
+          }
+        );
+
+        const _onSubmitReply = () => {
+          onSubmitReply ();
+          _setAxActiveIndex ();
+        };
+        const fieldIsInvalid = !!errorMsg;
+        const inputAriaLabel = ariaLabelSendMessage;
 
         return (
-          <a className="hs-chat-footer__submit" onClick={onSubmitReply}>
+          <a
+            className="hs-chat-footer__submit"
+            onClick={_onSubmitReply}
+            tabIndex="0"
+            data-label={METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.DATA_LABEL}
+            onFocus={_setAxActiveIndex}
+            aria-label={inputAriaLabel}
+            role="button"
+            aria-disabled={userInputIsDisabled}
+            aria-invalid={fieldIsInvalid}>
             <i className={iconClasses} />
           </a>
         );
@@ -467,11 +576,28 @@ define ("components/chatViewFooter",
        * Render attachment button
        */
       _renderAttachmentButton () {
+        const {text} = this.props;
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
+          }
+        );
+
         return (
-          <FileInput onChange={this.props.onFilesChange}
-                     noPadding
-                     labelClasses="hs-chat-footer__attachment-icon"
-                     iconClasses="ion-attachment" />
+          <div
+            onKeyDown={this._onFileInputKeyDown}
+            data-label={METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.DATA_LABEL}
+            tabIndex="0"
+            onFocus={_setAxActiveIndex}
+            aria-label={text.ariaLabelAttachFiles}
+            role="button">
+            <FileInput
+              onChange={this.props.onFilesChange}
+              noPadding
+              labelClasses="hs-chat-footer__attachment-icon"
+              iconClasses="ion-attachment"
+              onSaveInputRef={this._saveInputRef}/>
+          </div>
         );
       },
 
@@ -490,10 +616,21 @@ define ("components/chatViewFooter",
           "hs-footer__btn"
         );
 
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.CLOSE_CONVERSATION_BTN.SELECTOR
+          }
+        );
+
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__buttons-wrapper">
-              <button className={btnClasses} onClick={onCloseConversation}>
+              <button
+                className={btnClasses}
+                onClick={onCloseConversation}
+                onFocus={_setAxActiveIndex}
+                tabIndex="0"
+                data-label={METALIST_ITEMS.CHAT.FOOTER.CLOSE_CONVERSATION_BTN.DATA_LABEL}>
                 {closeConversationBtn}
               </button>
             </div>
@@ -505,17 +642,27 @@ define ("components/chatViewFooter",
        * Render csat footer
        */
       _renderCsatFooter () {
+        const starRatingDataLabels = {
+          starRatingWrapper: METALIST_ITEMS.CHAT.FOOTER.STAR_RATING_WRAPPER.DATA_LABEL
+        };
+        const csatBotRequestMessage = this.props.text.csatBotRequestMsg;
+
         return (
           <div className="hs-chat-footer">
-            <div className="hs-chat-footer__heading" >
-              <strong className="hs-chat-footer__heading-text" >
-                {this.props.text.csatBotRequestMsg}
+            <div className="hs-chat-footer__heading" aria-hidden={true}>
+              <strong className="hs-chat-footer__heading-text">
+                {csatBotRequestMessage}
               </strong>
             </div>
-            <div className="hs-chat-footer__csat-footer">
+            <div
+              className="hs-chat-footer__csat-footer"
+              aria-label={csatBotRequestMessage}>
               <StarRating name="csat"
                           value={this.props.rating}
-                          onStarClick={this.props.onStarClick} />
+                          onStarClick={this.props.onStarClick}
+                          dataLabels={starRatingDataLabels}
+                          onUpdateStarRating={this.props.onUpdateStarRating}
+                          onSelectStarRating={this.props.onSelectStarRating} />
             </div>
           </div>
         );
@@ -536,18 +683,49 @@ define ("components/chatViewFooter",
           "hs-chat-footer__button"
         );
 
+        const _setConversationResolutionWrapperAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.SELECTOR
+          }
+        );
+
+        const _setRejectResolutionAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.SOLUTION_REJECT_BTN.SELECTOR
+          }
+        );
+
+        const _setAcceptResolutionAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.SOLUTION_ACCEPT_BTN.SELECTOR
+          }
+        );
+
         return (
-          <div className="hs-chat-footer">
+          <div
+            className="hs-chat-footer"
+            tabIndex="0"
+            data-label={METALIST_ITEMS.CHAT.FOOTER.CONVERSATION_RESOLUTION_WRAPPER.DATA_LABEL}
+            onFocus={_setConversationResolutionWrapperAxActiveIndex}
+            aria-label={text.chatViewConversationResolutionQuestion}>
             <div className="hs-chat-footer__heading" >
               <strong>{text.chatViewConversationResolutionQuestion}</strong>
             </div>
             <div className="hs-chat-footer__buttons-wrapper">
               <button className={btnClasses}
-                      onClick={onRejectResolutionQuestionClick}>
+                      onClick={onRejectResolutionQuestionClick}
+                      onFocus={_setRejectResolutionAxActiveIndex}
+                      data-label={METALIST_ITEMS.CHAT.FOOTER.SOLUTION_REJECT_BTN.DATA_LABEL}
+                      tabIndex="0"
+                      aria-label={text.resolutionQuestionReject}>
                 {text.resolutionQuestionReject}
               </button>
               <button className={btnClasses}
-                      onClick={onAcceptResolutionQuestionClick}>
+                      onClick={onAcceptResolutionQuestionClick}
+                      onFocus={_setAcceptResolutionAxActiveIndex}
+                      data-label={METALIST_ITEMS.CHAT.FOOTER.SOLUTION_ACCEPT_BTN.DATA_LABEL}
+                      tabIndex="0"
+                      aria-label={text.resolutionQuestionAccept}>
                 {text.resolutionQuestionAccept}
               </button>
             </div>
@@ -564,11 +742,21 @@ define ("components/chatViewFooter",
           "hs-button--hollow",
           "hs-chat-footer__button"
         );
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CHAT.FOOTER.NEW_CONVERSATION_BTN.SELECTOR
+          }
+        );
 
         return (
           <div className="hs-chat-footer">
             <div className="hs-chat-footer__buttons-wrapper">
-              <button className={btnClasses} onClick={this.props.onStartNewConversation}>
+              <button
+                className={btnClasses}
+                onClick={this.props.onStartNewConversation}
+                onFocus={_setAxActiveIndex}
+                tabIndex="0"
+                data-label={METALIST_ITEMS.CHAT.FOOTER.NEW_CONVERSATION_BTN.DATA_LABEL}>
                 {this.props.text.chatViewStartNewConversation}
               </button>
             </div>
@@ -606,13 +794,85 @@ define ("components/chatViewFooter",
         // displaying question when resolution is rejected by the user.
         if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
           headingEl = (
-            <strong key="heading" className="hs-chat-footer__heading hs-chat-footer__reply-heading">
+            <strong
+              key="heading"
+              className="hs-chat-footer__heading hs-chat-footer__reply-heading"
+              aria-hidden={true}>
               {chatViewIssueRejectionQuestion}
             </strong>
           );
         }
 
         return [headingEl, labelEl];
+      },
+
+      /**
+       * This Handler is called on focus or click event on picker element
+       * It calls ax function to update active index
+       *
+       * @param {String} config.selector - Current focused element selector
+       */
+      _onPickerFocusChange (config) {
+        ax.setActiveIndex (config);
+      },
+
+      /**
+       * Support accessiblity depends on toggle state
+       * 1) Depending on the toggleState, backup or restore selectors
+       * 2) Replace the footer selectors
+       * 3) Focus the element of the picker
+       * @param {String} toggleState - Whether the picker is in "closed", "opened" state
+       * @param {Array} selectors - List of current visible selectors
+       * @param {String} firstFocusItem - To be focused selector
+       */
+      _onFocusItemsChanged (toggleState, selectors, firstFocusItem) {
+        if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
+          ax.backupSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+            selectors: []
+          });
+        } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
+          const backedupSelectors = ax.restoreSelectors (METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
+
+          if (backedupSelectors) {
+            ax.replaceSelectors ({
+              group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+              selectors: backedupSelectors
+            });
+          }
+        }
+
+        ax.replaceSelectors ({
+          group: METALIST_GROUP_NAME.CHAT.FOOTER,
+          selectors: selectors
+        });
+
+        ax.setActiveIndex ({selector: firstFocusItem});
+        ax.delayFocus ();
+        ax.clearDelayFocus ();
+      },
+
+      _fileInputRef: null,
+
+      /**
+       * Set ref for fileInput component
+       */
+      _saveInputRef (fileInputRef) {
+        this._fileInputRef = fileInputRef;
+      },
+
+      /**
+       * Handler for keyDown event on attachment wrapper
+       * @param {Object} ev - Event for key down
+       */
+      _onFileInputKeyDown (ev) {
+        if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
+          if (this._fileInputRef) {
+            this._fileInputRef.click ();
+            ax.setActiveIndex ({selector: METALIST_ITEMS.ATTACHMENT_BTN});
+          }
+        }
       },
 
       /**
@@ -689,8 +949,201 @@ define ("components/chatViewFooter",
         return inputPlaceholder;
       },
 
+
+      /**
+       * This function checks for sub-type of reply footer and
+       * returns corresponding footer selector list
+       *
+       * @param {Object} userInput - Data for footer
+       * @param {String} userInput.type - Type of rply footer
+       * @param {Array} userInput.options - Option list for picker & option pills
+       * @returns {Array} - Reply footer selectors list
+       */
+      _getReplyFooterSelectors (userInput) {
+        const {type} = userInput;
+
+        switch (type) {
+          case USER_INPUT_TYPES.DEFAULT_INPUT:
+            return FOOTER_SELECTORS_LIST_MAP.DEFAULT_INPUT;
+
+          case USER_INPUT_TYPES.PLAIN_TEXT:
+          case USER_INPUT_TYPES.EMAIL:
+          case USER_INPUT_TYPES.NUMERIC:
+          case USER_INPUT_TYPES.DATE:
+            return FOOTER_SELECTORS_LIST_MAP.PLAIN_TEXT;
+
+          case USER_INPUT_TYPES.PILL_SELECT:
+            return [];
+
+          case USER_INPUT_TYPES.LIST_PICKER:
+            return [];
+
+        }
+      },
+
+      /**
+       * This function checks for the type of footer &
+       * returns corresponding selector list
+       *
+       * @param {String} activeFooter - Type of the footer
+       * @param {Object} userInput - Data for the footer
+       * @returns {Array} - Footer selectors list
+       */
+      _getActiveFooterSelectors (activeFooter, userInput) {
+        switch (activeFooter) {
+          case ACTIVE_FOOTER.REPLY:
+            return this._getReplyFooterSelectors (userInput);
+
+          case ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION:
+            return FOOTER_SELECTORS_LIST_MAP.RESOLUTION_QUESTION;
+
+          case ACTIVE_FOOTER.SOLUTION_REJECTED:
+            return FOOTER_SELECTORS_LIST_MAP.SOLUTION_REJECTED;
+
+          case ACTIVE_FOOTER.CSAT:
+            return FOOTER_SELECTORS_LIST_MAP.CSAT;
+
+          case ACTIVE_FOOTER.START_NEW_CONVERSATION:
+            return FOOTER_SELECTORS_LIST_MAP.START_NEW_CONVERSATION;
+
+          case ACTIVE_FOOTER.CLOSED:
+            return FOOTER_SELECTORS_LIST_MAP.CLOSE_CONVERSATION;
+        }
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       * @param {Object} ev - Click/Focus event
+       */
+      _setAxActiveIndex (config, ev) {
+        // When the user click on an interactive element, event propagates
+        // to global event, which sets the keyboardInteractionIsActive flag
+        // to false which hides the focus outline. In case of focus event, if we
+        // do not stop the propagation of the event, then the parent component
+        // will listen to it and also set its ax active index.
+        if (ev && ev.type !== "click") {
+          ev.stopPropagation ();
+        }
+
+        ax.setActiveIndex (config);
+      },
+
+      /**
+       * Returns true if footer is rendered
+       *
+       * @param {Object} config - Previous or current props object
+       */
+      _isFooterRendered (config = this.props) {
+        const {userInput, issueIsCreated} = config;
+        const inputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const inputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
+        const isPreIssue = !issueIsCreated;
+
+        return !(
+          inputIsPillSelect ||
+          ((isPreIssue || inputIsListPicker) && userInput.disabled)
+        );
+      },
+
+      /**
+       * This function replace new footer selectors in metaList
+       * Checks for footer selectors type and accordingly generates the selectors
+       *
+       * @param {String} footerSelectorsType - Either reply or active footer type
+       */
+      _replaceAxFooterSelectors (footerSelectorsType = FOOTER_SELECTORS_TYPES.ACTIVE_FOOTER) {
+        const {activeFooter, userInput} = this.props;
+        let requiredFooterSelectors;
+
+        if (footerSelectorsType === FOOTER_SELECTORS_TYPES.ACTIVE_FOOTER) {
+          requiredFooterSelectors = this._getActiveFooterSelectors (activeFooter, userInput);
+        } else {
+          requiredFooterSelectors = this._getReplyFooterSelectors (userInput);
+        }
+
+        if (requiredFooterSelectors && requiredFooterSelectors.length) {
+          ax.replaceSelectors ({
+            group: METALIST_GROUP_NAME.CHAT.FOOTER,
+            selectors: requiredFooterSelectors
+          });
+          ax.setFlatListActiveIndex (0);
+          ax.focus ();
+        }
+      },
+
+      /**
+       * This function do following things
+       * - Clear delayed focus on componentDidUpdate to clear batched focus items
+       * - Update the footer object in metaList in Ax module
+       *
+       * @param {Object} - prev props befor update
+       */
       componentDidUpdate (prevProps) {
-        const {browserIsMobile} = this.props;
+        ax.clearDelayFocus ();
+
+        const {browserIsMobile, userInput, activeFooter} = this.props;
+        const activeFooterIsChanged = (activeFooter !== prevProps.activeFooter);
+        const activeFooterIsReply = (activeFooter === ACTIVE_FOOTER.REPLY);
+        const userInputTypeIsChanged = (userInput.type !== prevProps.userInput.type);
+        const userInputIsPillSelect = (userInput.type === USER_INPUT_TYPES.PILL_SELECT);
+        const userInputIsListPicker = (userInput.type === USER_INPUT_TYPES.LIST_PICKER);
+        const userInputIsSelectOption = (userInputIsPillSelect || userInputIsListPicker);
+        const listPickerIsClosed = (
+          userInput.listPicker.toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED
+        );
+        const userInputIsEnterText = (
+          userInput.type === USER_INPUT_TYPES.PLAIN_TEXT ||
+          userInput.type === USER_INPUT_TYPES.EMAIL ||
+          userInput.type === USER_INPUT_TYPES.NUMERIC ||
+          userInput.type === USER_INPUT_TYPES.DATE ||
+          userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT
+        );
+        const selectOptionIsSubmitted = (
+          !userInput.selectedOption &&
+          prevProps.userInput.selectedOption
+        );
+        const textValueIsSubmitted = (
+          !userInput.value &&
+          prevProps.userInput.value
+        );
+        // User input is considered refreshed when selected option or entered value resets to empty
+        const userInputIsRefreshed = !userInputTypeIsChanged && ((
+            userInputIsSelectOption &&
+            selectOptionIsSubmitted
+          ) || (
+            userInputIsEnterText &&
+            textValueIsSubmitted
+        ));
+        const userInputIsSkipable = !userInput.required;
+
+        if (this._isFooterRendered ()) {
+          if (!this._isFooterRendered (prevProps)) {
+            this._replaceAxFooterSelectors ();
+          }
+          // Add skip selector when footer is not required and footer type is not pills
+          // Otherwise empty skip selectors list
+          if ((!userInputIsListPicker || listPickerIsClosed) && userInputIsSkipable) {
+            ax.replaceSelectors ({
+              group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+              selectors: [METALIST_ITEMS.CHAT.SKIP_BTN.SELECTOR]
+            });
+          } else {
+            ax.replaceSelectors ({
+              group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+              selectors: []
+            });
+          }
+
+          // When footer changes, reset the active index and focus the first element of footer
+          if (activeFooterIsChanged) {
+            this._replaceAxFooterSelectors ();
+          } else if (activeFooterIsReply && (userInputTypeIsChanged || userInputIsRefreshed)) {
+            this._replaceAxFooterSelectors (FOOTER_SELECTORS_TYPES.REPLY);
+          }
+        }
 
         // If user input ref does not exists or browser is mobile, do not focus
         if (!this._userInputRef || browserIsMobile) {
@@ -718,7 +1171,17 @@ define ("components/chatViewFooter",
         }
       },
 
+      /**
+       * For first footer push all the selectors in meta-list and focus the first element
+       */
       componentDidMount () {
+        ax.setActiveView (activeViewConstants.CHAT);
+
+        // In footer is rendered add active footer selectors in meta list
+        if (this._isFooterRendered ()) {
+          this._replaceAxFooterSelectors ();
+        }
+
         // Calculate the maximum height the picker widget can have.
         const parentNode = document.querySelector (".hs-dnd-wrapper");
         this.setState ({

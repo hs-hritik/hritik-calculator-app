@@ -21,11 +21,14 @@ define ("extras/api",
     "components/app",
     "helpers/analytics",
     "helpers/localStorage",
-    "gunpowder/utils/object"
+    "gunpowder/utils/object",
+    "extras/accessibility",
+    "constants/accessibility"
   ],
   function (store, EVENT_TYPES, APP_STATE_CONSTANTS, ACTIVE_VIEW, analyticsConstants,
     appStateActions, chatViewActions, actionCreators, csatViewActions, uiActions,
-    postSdkMessage, commonActions, app, analyticsHelpers, lsHelpers, objUtils) {
+    postSdkMessage, commonActions, app, analyticsHelpers, lsHelpers, objUtils, ax,
+    axConstants) {
     "use strict";
 
     const {
@@ -48,6 +51,7 @@ define ("extras/api",
       LOGGED_IN: "logged-in",
       ANONYMOUS: "anonymous"
     };
+    const {DIRECTIONS} = axConstants;
 
     /**
      * Check if preIssue reset is applicable.
@@ -346,12 +350,29 @@ define ("extras/api",
           store.dispatch (uiActions.setDeveloperUiConfig (data.uiConfig));
           appStateActions.updateStyles ();
           break;
+        case EVENT_TYPES.CMD_FOCUS_WEBCHAT:
+          let selector;
+          let direction;
+
+          if (data.forward) {
+            selector = ax.getNextActiveSelector ();
+            direction = DIRECTIONS.FORWARD;
+          } else {
+            selector = ax.getPrevActiveSelector ();
+            direction = DIRECTIONS.BACKWARD;
+          }
+          ax.setActiveIndex ({
+            selector: selector
+          });
+          ax.focus (direction);
+          break;
         case EVENT_TYPES.CMD_SET_FULL_PRIVACY:
           store.dispatch (actionCreators.setFullPrivacy (data.enabled));
           break;
         case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
           store.dispatch (commonActions.reloadApp ({
             trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
+            loading: true,
             callback: () => {
               // When app reloads/resets with an updated config, stop existing network
               // calls so that the application's state doesn't get unintended

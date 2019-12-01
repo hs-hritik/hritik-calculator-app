@@ -10,7 +10,7 @@ import ACTION_TYPES from "../../../static/scripts/constants/actionTypes";
 describe ("csatView reducer", () => {
   // Initial state as in the reducer
   const INITIAL_STATE = {
-    rating: 0,
+    rating: 3,
     review: "",
     csatSaveInProgress: false
   };

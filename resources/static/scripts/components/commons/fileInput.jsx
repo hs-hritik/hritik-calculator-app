@@ -53,7 +53,12 @@ define ("components/commons/fileInput",
         /**
          * Label classes
          */
-        labelClasses: PropTypes.string
+        labelClasses: PropTypes.string,
+
+        /*
+         * Callback to pass the ref of the file input element
+         */
+        onSaveInputRef: PropTypes.func
       },
 
       getDefaultProps () {
@@ -75,7 +80,8 @@ define ("components/commons/fileInput",
           disabled,
           noPadding,
           labelClasses,
-          accept
+          accept,
+          onSaveInputRef
         } = this.props;
         let infoTextEl = null;
 
@@ -111,6 +117,7 @@ define ("components/commons/fileInput",
                    accept={accept}
                    disabled={disabled}
                    className="hs-file-input__file"
+                   ref={onSaveInputRef}
                    onChange={this._onFilesChange} />
           </div>
         );

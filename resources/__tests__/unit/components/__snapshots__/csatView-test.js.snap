@@ -2,7 +2,7 @@
 
 exports[`CsatView should render correctly (snapshot) 1`] = `
 <div
-  className="hs-view"
+  className="hs-view outline-hidden"
   style={
     Object {
       "fontFamily": "MOCK_FONT_FAMILY",
@@ -29,6 +29,7 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
       onSubmitCsat={[MockFunction]}
       rating={0}
       review="MOCK_REVIEW"
+      setAxActiveIndex={[Function]}
       text={
         Object {
           "csatBotFormSubmitBtn": "MOCK_FORM_SUBMIT_BUTTON",

@@ -19,7 +19,8 @@ define ("components/infoView",
         subtitle: PropTypes.string,
         loading: PropTypes.bool,
         actionBtnText: PropTypes.string,
-        onActionBtnClick: PropTypes.func
+        onActionBtnClick: PropTypes.func,
+        ariaLabel: PropTypes.string
       },
 
       render () {
@@ -97,7 +98,7 @@ define ("components/infoView",
         );
 
         return (
-          <div>
+          <div aria-label={this.props.ariaLabel}>
             <i className={loaderClasses} />
           </div>
         );

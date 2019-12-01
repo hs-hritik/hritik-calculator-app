@@ -5,9 +5,16 @@
  */
 
 define ("components/starRating",
-  ["gunpowder/utils/classes"],
-  function (classes) {
+  [
+    "gunpowder/utils/classes",
+    "constants/keyCodes",
+    "constants/accessibility",
+    "extras/accessibility"
+  ],
+  function (classes, KEY_CODES, axConstants, ax) {
     "use strict";
+
+    const {METALIST_ITEMS} = axConstants;
 
     return createReactClass ({
       displayName: "StarRating",
@@ -15,7 +22,10 @@ define ("components/starRating",
         value: PropTypes.number.isRequired,
         editing: PropTypes.bool,
         starCount: PropTypes.number,
-        onStarClick: PropTypes.func
+        onStarClick: PropTypes.func,
+        dataLabels: PropTypes.object,
+        onUpdateStarRating: PropTypes.func,
+        onSelectStarRating: PropTypes.func
       },
 
       getDefaultProps () {
@@ -32,13 +42,27 @@ define ("components/starRating",
       },
 
       render () {
-        const {editing} = this.props;
+        const {
+          editing,
+          dataLabels
+        } = this.props;
         const starRatingClasses = classes ("hs-star-rating", {
           "hs-star-rating--edit-mode": editing
         });
+        const _setAxActiveIndex = this._setAxActiveIndex.bind (
+          this, {
+            selector: METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR
+          }
+        );
 
         return (
-          <div className={starRatingClasses}>
+          <div
+            className={starRatingClasses}
+            tabIndex="0"
+            data-label={dataLabels.starRatingWrapper}
+            onClick={_setAxActiveIndex}
+            onFocus={_setAxActiveIndex}
+            onKeyDown={this._onKeyDown}>
             {this._renderStars ()}
           </div>
         );
@@ -79,8 +103,38 @@ define ("components/starRating",
              onMouseEnter={this._onStarMouseEnter.bind (this, idx)}
              onMouseLeave={this._onStarMouseLeave}
              key={idx}
-             onClick={this._onStarClick.bind (this, idx)} />
+             onClick={this._onStarClick.bind (this, idx)}
+             role="button" />
         );
+      },
+
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       *
+       * @param {Object} config.selector - Selector value
+       */
+      _setAxActiveIndex (config) {
+        ax.setActiveIndex (config);
+      },
+
+      /**
+       * Decrease/ Increase star rating value on left/right arrow click
+       *
+       * @param {Object} ev - event on star wrapper
+       */
+      _onKeyDown (ev) {
+        const {value, onSelectStarRating, onUpdateStarRating} = this.props;
+        const {SPACE, ENTER, RIGHT_ARROW, LEFT_ARROW} = KEY_CODES;
+        const {keyCode} = ev;
+
+        if (keyCode === LEFT_ARROW && value > 1) {
+          onUpdateStarRating (value - 1);
+        } else if (keyCode === RIGHT_ARROW && value < 5) {
+          onUpdateStarRating (value + 1);
+        } else if ((keyCode === SPACE || keyCode === ENTER) && onSelectStarRating) {
+          onSelectStarRating ();
+        }
       },
 
       /**
