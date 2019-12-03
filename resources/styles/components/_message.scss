@@ -34,6 +34,7 @@
   $form-bg-color: var(--hs-form-bg-color);
   $form-accent-color: var(--hs-form-accent-color);
   $form-accent-color-light: var(--hs-form-accent-color-light);
+  $form-border-color: var(--hs-form-border-color);
 
   .hs-message {
     align-self: flex-start;
@@ -86,22 +87,26 @@
     &__suggested-faqs {
       display: flex;
       flex-direction: column;
-      margin-top: gutter(6);
+      margin: gutter(4 0);
+      background-color: $form-bg-color;
+      border: 1px solid $form-border-color;
+      border-radius: radius();
     }
 
     &__suggested-faq {
       display: flex;
       justify-content: space-between;
       padding: gutter(12);
-      margin: gutter(4 0);
       color: $form-accent-color;
       cursor: pointer;
-      background-color: $form-bg-color;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid $form-border-color;
 
       &:hover {
         color: $form-accent-color-light;
+      }
+
+      &:last-child {
+        border: none;
       }
     }
 

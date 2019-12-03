@@ -291,8 +291,8 @@ define("components/message", [
       }
 
       return (
-        <div className="hs-message__item">
-          {body}
+        <div>
+          <div className="hs-message__item">{body}</div>
           <div className="hs-message__suggested-faqs">{this._renderFaqs()}</div>
         </div>
       );
