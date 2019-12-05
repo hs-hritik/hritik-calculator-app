@@ -80,6 +80,15 @@ define ("components/businessHoursView",
     class BusinessHoursViewContents extends React.PureComponent {
       constructor (props) {
         super (props);
+        this._fileInputRef = null;
+        this._onKeyDown = this._onKeyDown.bind (this);
+
+        /**
+         * Set ref for fileInput component
+         */
+        this._saveInputRef = (fileInputRef) => {
+          this._fileInputRef = fileInputRef;
+        };
       }
 
       render () {
@@ -612,6 +621,18 @@ define ("components/businessHoursView",
           </small>
         );
       }
+
+      /**
+       * Handler for keyDown event on attachment wrapper
+       * @param {Object} ev - Event for key down
+       */
+      _onKeyDown (ev) {
+        if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
+          if (this._fileInputRef) {
+            this._fileInputRef.click ();
+          }
+        }
+      }
     }
 
     BusinessHoursViewContents.propTypes = {
@@ -724,27 +745,6 @@ define ("components/businessHoursView",
             </ErrorBoundaryWithLogging>
           </div>
         );
-      },
-
-      _fileInputRef: null,
-
-      /**
-       * Set ref for fileInput component
-       */
-      _saveInputRef (fileInputRef) {
-        this._fileInputRef = fileInputRef;
-      },
-
-      /**
-       * Handler for keyDown event on attachment wrapper
-       * @param {Object} ev - Event for key down
-       */
-      _onKeyDown (ev) {
-        if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
-          if (this._fileInputRef) {
-            this._fileInputRef.click ();
-          }
-        }
       },
 
       /**
