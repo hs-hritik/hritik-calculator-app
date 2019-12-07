@@ -4,13 +4,11 @@ module.exports = {
     "stylelint-declaration-use-variable"
   ],
   "rules": {
-    "indentation": 2,
     "declaration-block-no-duplicate-properties": true,
     "declaration-no-important": true,
     "color-no-invalid-hex": true,
     "color-hex-length": "short",
     "max-nesting-depth": 6,
-    "string-quotes": "double",
     "selector-pseudo-element-colon-notation": "double",
     "declaration-block-no-shorthand-property-overrides": true,
     "length-zero-no-unit": true,
@@ -27,7 +25,6 @@ module.exports = {
         "deg": ["transform"]
       }
     }],
-    "no-extra-semicolons": true,
     "function-linear-gradient-no-nonstandard-direction": true,
     "order/properties-order": [
       "position",
