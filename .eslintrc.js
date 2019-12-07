@@ -2,7 +2,6 @@ module.exports = {
   "plugins": [
     "react",
     "react-hooks",
-    "hs"
   ],
   "parserOptions": {
     "ecmaVersion": 6,
@@ -225,9 +224,6 @@ module.exports = {
 
     // https://www.npmjs.com/package/eslint-plugin-react-hooks
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
-
-    // Helpshift Specific
-    "hs/func-call-spacing": [2, "always"]
+    "react-hooks/exhaustive-deps": "warn"
   }
 }
