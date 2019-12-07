@@ -196,7 +196,6 @@ module.exports = {
         ignoreValues: ["transparent", "inherit", "initial", "unset"]
       }
     ]],
-    "max-nesting-depth": 5,
 
     // Pattern for our implementation of hyphenated_BEM
     // https://github.com/bjankord/stylelint-config-sass-guidelines/issues/20#issuecomment-349972873
