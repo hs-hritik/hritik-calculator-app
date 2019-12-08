@@ -1,6 +1,7 @@
 module.exports = {
-  plugins: ["stylelint-order", "stylelint-declaration-use-variable"],
+  plugins: ["stylelint-order", "stylelint-declaration-use-variable", "stylelint-prettier"],
   rules: {
+    "prettier/prettier": true,
     "declaration-block-no-duplicate-properties": true,
     "declaration-no-important": true,
     "color-no-invalid-hex": true,
