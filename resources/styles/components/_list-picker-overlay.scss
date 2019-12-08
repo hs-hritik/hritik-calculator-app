@@ -12,7 +12,7 @@
 
 @include component(list-picker-overlay) {
   $bg: color(bg, x-dark);
-  $opacity: .20;
+  $opacity: 0.2;
 
   .hs-list-picker-overlay {
     position: absolute;

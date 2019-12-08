@@ -11,7 +11,6 @@
 ///
 
 @include component(csat) {
-
   $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
   $form-bg-color: var(--hs-form-bg-color);
   $form-border-color: var(--hs-form-border-color);
@@ -55,7 +54,7 @@
       }
 
       &[disabled] {
-        opacity: .4;
+        opacity: 0.4;
       }
     }
   }

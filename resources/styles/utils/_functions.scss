@@ -60,7 +60,7 @@
 }
 
 @function shade-max() {
-  @return max(f-map(shade-count, $_palettes)...);
+  @return max(f-map(shade-count, $_palettes) ...);
 }
 
 /// Get a palette's shade from $_palettes map
@@ -170,7 +170,7 @@
     }
 
     @if type-of($element) == "number" {
-      @error "line-height() only accepts: #{$valid-keys} as an argument. Was `#{$element}`."
+      @error "line-height() only accepts: #{$valid-keys} as an argument. Was `#{$element}`.";
     }
   }
 }
@@ -206,7 +206,7 @@
     @return _add-px($value);
   }
 
-  @if type-of($value) == "list"  {
+  @if type-of($value) == "list" {
     $gutter: false;
 
     @each $v in $value {
@@ -257,7 +257,6 @@
     }
 
     @if $warn-gutter != false and length($warn-gutter) > 0 {
-
       @if length($warn-gutter) == 1 {
         $warning-message: "Gutter #{$warn-gutter} in gutter(#{$val}) is not a multiple of gutter base (#{$base}).";
       } @else {
@@ -298,7 +297,7 @@
 //
 // @author: Bhargava Chowdary M <bhargava@helpshift.com>
 @function _remove-px($value) {
-  @if not (unitless($value)) {
+  @if not(unitless($value)) {
     @return $value / 1px;
   }
 
@@ -333,7 +332,6 @@
     }
 
     @return $radii;
-
   } @else {
     @if map-has-key($_radius, $val) {
       @return _add-px(map-fetch($_radius, $val));
@@ -353,13 +351,12 @@
 
   $val: _remove-px($val);
 
-  @if not (($val == $large) or ($val == $base) or ($val == $small) or ($val == 0)){
+  @if not(($val == $large) or ($val == $base) or ($val == $small) or ($val == 0)) {
     @return false;
   } @else {
     @return true;
   }
 }
-
 
 /// Get the z-index value of an element
 ///
@@ -377,7 +374,6 @@
 @function z($keys...) {
   @return z-index($keys...);
 }
-
 
 /// Get the width of an element from the global widths map
 ///
