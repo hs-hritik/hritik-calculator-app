@@ -1,9 +1,6 @@
 module.exports = {
-  "plugins": [
-    "stylelint-order",
-    "stylelint-declaration-use-variable"
-  ],
-  "rules": {
+  plugins: ["stylelint-order", "stylelint-declaration-use-variable"],
+  rules: {
     "declaration-block-no-duplicate-properties": true,
     "declaration-no-important": true,
     "color-no-invalid-hex": true,
@@ -12,19 +9,22 @@ module.exports = {
     "selector-pseudo-element-colon-notation": "double",
     "declaration-block-no-shorthand-property-overrides": true,
     "length-zero-no-unit": true,
-    "unit-whitelist": [["px", "%", "s", "vh", "deg"], {
-      "ignoreProperties": {
-        "px": ["border", "width", "height", "margin", "top"],
-        "%": ["width", "height", "top"],
-        "vh": ["width", "height"],
-        "vw": ["width", "height"],
-        "vmin": ["width", "height"],
-        "vmax": ["width", "height"],
-        "em": ["top"],
-        "rem": ["margin"],
-        "deg": ["transform"]
+    "unit-whitelist": [
+      ["px", "%", "s", "vh", "deg"],
+      {
+        ignoreProperties: {
+          "px": ["border", "width", "height", "margin", "top"],
+          "%": ["width", "height", "top"],
+          "vh": ["width", "height"],
+          "vw": ["width", "height"],
+          "vmin": ["width", "height"],
+          "vmax": ["width", "height"],
+          "em": ["top"],
+          "rem": ["margin"],
+          "deg": ["transform"]
+        }
       }
-    }],
+    ],
     "function-linear-gradient-no-nonstandard-direction": true,
     "order/properties-order": [
       "position",
@@ -189,32 +189,46 @@ module.exports = {
       "unicode-bidi",
       "speak"
     ],
-    "sh-waqar/declaration-use-variable": [[
-      "/color/",
-      "font",
-      {
-        ignoreValues: ["transparent", "inherit", "initial", "unset"]
-      }
-    ]],
+    "sh-waqar/declaration-use-variable": [
+      [
+        "/color/",
+        "font",
+        {
+          ignoreValues: ["transparent", "inherit", "initial", "unset"]
+        }
+      ]
+    ],
 
     // Pattern for our implementation of hyphenated_BEM
     // https://github.com/bjankord/stylelint-config-sass-guidelines/issues/20#issuecomment-349972873
-    "selector-class-pattern": ["^(?:(?:hs)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:__[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?$", {
-      severity: "warning"
-    }],
+    "selector-class-pattern": [
+      "^(?:(?:hs)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:__[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?$",
+      {
+        severity: "warning"
+      }
+    ],
 
     // Disallow vendor prefixes
-    "property-no-vendor-prefix": [true, {
-      severity: "warning"
-    }],
+    "property-no-vendor-prefix": [
+      true,
+      {
+        severity: "warning"
+      }
+    ],
     "value-no-vendor-prefix": true,
-    "selector-no-vendor-prefix": [true, {
-      "severity": "warning"
-    }],
+    "selector-no-vendor-prefix": [
+      true,
+      {
+        severity: "warning"
+      }
+    ],
     "at-rule-no-vendor-prefix": true,
-    "media-feature-name-no-vendor-prefix": [true, {
-      "severity": "warning"
-    }],
+    "media-feature-name-no-vendor-prefix": [
+      true,
+      {
+        severity: "warning"
+      }
+    ],
 
     // Disallow unknown properties, values etc.
     "property-no-unknown": true,
@@ -222,9 +236,12 @@ module.exports = {
     "selector-type-no-unknown": true,
     "selector-pseudo-class-no-unknown": true,
     "selector-pseudo-element-no-unknown": true,
-    "media-feature-name-no-unknown": [true, {
-      "severity": "warning"
-    }],
+    "media-feature-name-no-unknown": [
+      true,
+      {
+        severity: "warning"
+      }
+    ],
     "no-unknown-animations": true
   }
-}
+};
