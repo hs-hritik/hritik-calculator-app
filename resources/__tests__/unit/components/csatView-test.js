@@ -18,10 +18,10 @@ const setup = () => {
     review: "MOCK_REVIEW",
     showCloseButton: false,
     allowFullScreen: false,
-    onMinimizeConversation: jest.fn (),
-    onSubmitCsat: jest.fn (),
-    onUpdateCsatRating: jest.fn (),
-    onUpdateCsatReview: jest.fn (),
+    onMinimizeConversation: jest.fn(),
+    onSubmitCsat: jest.fn(),
+    onUpdateCsatRating: jest.fn(),
+    onUpdateCsatReview: jest.fn(),
     text: {
       csatViewHeader: "MOCK_VIEW_HEADER",
       csatBotRequestMsg: "MOCK_REQUEST_MESSAGE",
@@ -37,7 +37,7 @@ const setup = () => {
     keyboardInteractionIsActive: false
   };
 
-  const enzymeWrapper = shallow (<CsatView {...props} />);
+  const enzymeWrapper = shallow(<CsatView {...props} />);
 
   return {
     props,
@@ -45,23 +45,23 @@ const setup = () => {
   };
 };
 
-describe ("CsatView", () => {
-  it ("should render correctly (snapshot)", () => {
-    const {props} = setup ();
-    const tree = shallow (<CsatView {...props} />);
+describe("CsatView", () => {
+  it("should render correctly (snapshot)", () => {
+    const {props} = setup();
+    const tree = shallow(<CsatView {...props} />);
 
-    expect (toJson (tree)).toMatchSnapshot ();
+    expect(toJson(tree)).toMatchSnapshot();
   });
 
-  it ("should render self and subcomponents", () => {
-    const {enzymeWrapper} = setup ();
+  it("should render self and subcomponents", () => {
+    const {enzymeWrapper} = setup();
 
     // Test the wrapper div
-    expect (enzymeWrapper.first ("div").hasClass ("hs-view")).toBe (true);
+    expect(enzymeWrapper.first("div").hasClass("hs-view")).toBe(true);
 
     // Test ViewHeader child component
-    const viewHeaderProps = enzymeWrapper.find ("ViewHeader").props ();
-    expect (viewHeaderProps.title).toBe ("MOCK_VIEW_HEADER");
-    expect (viewHeaderProps.showCloseBtn).toBe (false);
+    const viewHeaderProps = enzymeWrapper.find("ViewHeader").props();
+    expect(viewHeaderProps.title).toBe("MOCK_VIEW_HEADER");
+    expect(viewHeaderProps.showCloseBtn).toBe(false);
   });
 });

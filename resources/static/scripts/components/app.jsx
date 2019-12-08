@@ -5,63 +5,60 @@
  * @created May 31, 2017
  */
 
-define ("components/app",
-  [
-    "store",
-    "components/containers/viewWrapper",
-    "components/errorBoundaryWithLogging",
-    "components/errors/appError"
-  ],
-  function (store, ViewWrapperContainer, ErrorBoundaryWithLogging, AppError) {
-    "use strict";
+define("components/app", [
+  "store",
+  "components/containers/viewWrapper",
+  "components/errorBoundaryWithLogging",
+  "components/errors/appError"
+], function(store, ViewWrapperContainer, ErrorBoundaryWithLogging, AppError) {
+  "use strict";
 
-    const Provider = ReactRedux.Provider;
-    let _isAppMounted = false;
+  const Provider = ReactRedux.Provider;
+  let _isAppMounted = false;
 
-    /**
-     * Main wrapper component for React application.
-     */
-    const App = createReactClass ({
-      displayName: "App",
+  /**
+   * Main wrapper component for React application.
+   */
+  const App = createReactClass({
+    displayName: "App",
 
-      render () {
-        return (<ViewWrapperContainer />);
-      },
+    render() {
+      return <ViewWrapperContainer />;
+    },
 
-      componentDidMount () {
-        _isAppMounted = true;
-      },
+    componentDidMount() {
+      _isAppMounted = true;
+    },
 
-      componentWillUnmount () {
-        _isAppMounted = false;
-      }
-    });
+    componentWillUnmount() {
+      _isAppMounted = false;
+    }
+  });
 
-    /**
-     * Render app.
-     */
-    const init = () => {
-      ReactDOM.render (
-        <ErrorBoundaryWithLogging fallbackComponent={<AppError />}>
-          <Provider store={store}>
-            <App />
-          </Provider>
-        </ErrorBoundaryWithLogging>,
-        document.getElementById ("app")
-      );
-    };
+  /**
+   * Render app.
+   */
+  const init = () => {
+    ReactDOM.render(
+      <ErrorBoundaryWithLogging fallbackComponent={<AppError />}>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </ErrorBoundaryWithLogging>,
+      document.getElementById("app")
+    );
+  };
 
-    /**
-     * Unmount app.
-     */
-    const unmount = () => {
-      ReactDOM.unmountComponentAtNode (document.getElementById ("app"));
-    };
+  /**
+   * Unmount app.
+   */
+  const unmount = () => {
+    ReactDOM.unmountComponentAtNode(document.getElementById("app"));
+  };
 
-    return {
-      isMounted: () => _isAppMounted,
-      init,
-      unmount
-    };
-  }
-);
+  return {
+    isMounted: () => _isAppMounted,
+    init,
+    unmount
+  };
+});

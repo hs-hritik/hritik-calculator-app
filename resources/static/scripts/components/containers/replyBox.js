@@ -4,67 +4,53 @@
  * @created June 13, 2017
  */
 
-define ("components/containers/replyBox",
-  [
-    "components/replyBox",
-    "actions/chatView",
-    "actions/actionCreators",
-    "helpers/common"
-  ],
-  function (ReplyBox, chatViewActions, actionCreators, commonHelpers) {
-    "use strict";
+define("components/containers/replyBox", [
+  "components/replyBox",
+  "actions/chatView",
+  "actions/actionCreators",
+  "helpers/common"
+], function(ReplyBox, chatViewActions, actionCreators, commonHelpers) {
+  "use strict";
 
-    const mapStateToProps = (state) => {
-      const {
-        chatView: {
-          userInput: {
-            value,
-            disabled,
-            placeholder: userInputPlaceholder
-          }
-        },
-        appState: {
-          minimized,
-          activeIssueId,
-          browserIsMobile,
-          issueType
-        },
-        ui: {
-          text
-        }
-      } = state;
+  const mapStateToProps = (state) => {
+    const {
+      chatView: {
+        userInput: {value, disabled, placeholder: userInputPlaceholder}
+      },
+      appState: {minimized, activeIssueId, browserIsMobile, issueType},
+      ui: {text}
+    } = state;
 
-      return {
-        value,
-        disabled,
-        placeholder: userInputPlaceholder || text.replyBtnPlaceholder,
-        widgetIsOpened: !minimized,
-        text,
-        issueIsCreated: commonHelpers.isIssueCreated ({
-          activeIssueId,
-          issueType
-        }),
-        browserIsMobile
-      };
+    return {
+      value,
+      disabled,
+      placeholder: userInputPlaceholder || text.replyBtnPlaceholder,
+      widgetIsOpened: !minimized,
+      text,
+      issueIsCreated: commonHelpers.isIssueCreated({
+        activeIssueId,
+        issueType
+      }),
+      browserIsMobile
     };
+  };
 
-    const mapDispatchToProps = (dispatch) => {
-      return {
-        onChangeReplyBoxValue: (value) => {
-          dispatch (chatViewActions.updateReplyText (value));
-        },
-        onSubmitReply: () => {
-          dispatch (chatViewActions.submitReply ());
-        },
-        onFooterFocus: () => {
-          dispatch (actionCreators.setFooterActive ());
-        },
-        onFooterBlur: () => {
-          dispatch (actionCreators.setFooterInactive ());
-        }
-      };
+  const mapDispatchToProps = (dispatch) => {
+    return {
+      onChangeReplyBoxValue: (value) => {
+        dispatch(chatViewActions.updateReplyText(value));
+      },
+      onSubmitReply: () => {
+        dispatch(chatViewActions.submitReply());
+      },
+      onFooterFocus: () => {
+        dispatch(actionCreators.setFooterActive());
+      },
+      onFooterBlur: () => {
+        dispatch(actionCreators.setFooterInactive());
+      }
     };
+  };
 
-    return ReactRedux.connect (mapStateToProps, mapDispatchToProps) (ReplyBox);
-  }
-);
+  return ReactRedux.connect(mapStateToProps, mapDispatchToProps)(ReplyBox);
+});

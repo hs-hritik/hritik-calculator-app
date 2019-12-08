@@ -4,28 +4,26 @@
  * @created Aug 16, 2017
  */
 
-define ("helpers/liveUpdates",
-  [
-    "store",
-    "constants/routes",
-    "gunpowder/utils/xhr",
-    "gunpowder/utils/pubsub",
-    "actions/actionCreators",
-    "helpers/xhr",
-    "utils/liveUpdates"
-  ],
-function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUtil) {
+define("helpers/liveUpdates", [
+  "store",
+  "constants/routes",
+  "gunpowder/utils/xhr",
+  "gunpowder/utils/pubsub",
+  "actions/actionCreators",
+  "helpers/xhr",
+  "utils/liveUpdates"
+], function(store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUtil) {
   "use strict";
 
   const AGENT_ACTIVITY_EVENT_NAME = "live:agent_type_activity",
-        AGENT_ACTIVITY_ACTIONS = {
-          START: "start",
-          STOP: "stop"
-        };
+    AGENT_ACTIVITY_ACTIONS = {
+      START: "start",
+      STOP: "stop"
+    };
 
   let subscribedToLiveUpdates = false,
-      agentActivityListener = null,
-      agentActivityTimer = null;
+    agentActivityListener = null,
+    agentActivityTimer = null;
 
   /**
    * Opens a new web socket connection.
@@ -36,22 +34,22 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
       return;
     }
 
-    const {platformId, domain} = store.getState ().appState;
+    const {platformId, domain} = store.getState().appState;
 
-    xhr ({
-      route: routes.getWsConfig (domain),
-      headers: xhrHelpers.getCommonHeaders (),
+    xhr({
+      route: routes.getWsConfig(domain),
+      headers: xhrHelpers.getCommonHeaders(),
       data: {
         "platform-id": platformId
       },
       onSuccess: (response) => {
         subscribedToLiveUpdates = true;
 
-        const token = encodeURIComponent (response.token),
-              {endpoint} = response;
+        const token = encodeURIComponent(response.token),
+          {endpoint} = response;
 
-        const wsRoute = routes.webSocket (domain, platformId, endpoint, token);
-        liveUpdatesUtil.init (wsRoute);
+        const wsRoute = routes.webSocket(domain, platformId, endpoint, token);
+        liveUpdatesUtil.init(wsRoute);
       }
     });
   };
@@ -62,10 +60,8 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
    */
   const getAgentActivityTopic = () => {
     const {
-      appState: {
-        internalIssueId
-      }
-    } = store.getState ();
+      appState: {internalIssueId}
+    } = store.getState();
 
     return `agent_type_act.issue.${internalIssueId}`;
   };
@@ -74,14 +70,14 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
    * Subscribe to agent activity topic.
    */
   const subscribeAgentActivityTopic = () => {
-    liveUpdatesUtil.subscribe (getAgentActivityTopic ());
+    liveUpdatesUtil.subscribe(getAgentActivityTopic());
   };
 
   /**
    * Unsubscribe from agent activity topic.
    */
   const unsubscribeAgentActivityTopic = () => {
-    liveUpdatesUtil.unsubscribe (getAgentActivityTopic ());
+    liveUpdatesUtil.unsubscribe(getAgentActivityTopic());
   };
 
   /**
@@ -89,24 +85,23 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
    * Dispatch actions to start/stop agent typing.
    */
   const attachAgentActivityListener = () => {
-    agentActivityListener = pubsub.on (AGENT_ACTIVITY_EVENT_NAME, (ev) => {
+    agentActivityListener = pubsub.on(AGENT_ACTIVITY_EVENT_NAME, (ev) => {
       const {action, ttl} = ev.message;
 
       if (agentActivityTimer) {
-        window.clearTimeout (agentActivityTimer);
+        window.clearTimeout(agentActivityTimer);
       }
 
       if (action === AGENT_ACTIVITY_ACTIONS.START) {
-        store.dispatch (actionCreators.toggleAgentTyping (true));
+        store.dispatch(actionCreators.toggleAgentTyping(true));
 
         // Start timer to stop agent activity after ttl.
-        agentActivityTimer = window.setTimeout (() => {
-          store.dispatch (actionCreators.toggleAgentTyping (false));
+        agentActivityTimer = window.setTimeout(() => {
+          store.dispatch(actionCreators.toggleAgentTyping(false));
           agentActivityTimer = null;
         }, ttl * 1000);
-
       } else if (action === AGENT_ACTIVITY_ACTIONS.STOP) {
-        store.dispatch (actionCreators.toggleAgentTyping (false));
+        store.dispatch(actionCreators.toggleAgentTyping(false));
       }
     });
   };
@@ -116,7 +111,7 @@ function (store, routes, xhr, pubsub, actionCreators, xhrHelpers, liveUpdatesUti
    */
   const detachAgentActivityListener = () => {
     if (agentActivityListener) {
-      agentActivityListener.detach ();
+      agentActivityListener.detach();
       agentActivityListener = null;
     }
   };
