@@ -14,12 +14,12 @@ const PATHS = {
   styles: {
     src: "styles/**/*.scss",
     dest: "dist/css",
-    lint: ["styles/**/*.scss", "!styles/vendor/**/*.scss", "!docs/**/*"]
+    lint: ["styles/**/*.scss", "!styles/vendor/**/*.scss", "!docs/**/*", "!styles/hestia/**/*"]
   },
   stylesDev: {
     src: "styles/**/*.scss",
     dest: "localhost/css",
-    lint: ["styles/**/*.scss", "!styles/vendor/**/*.scss", "!docs/**/*"]
+    lint: ["styles/**/*.scss", "!styles/vendor/**/*.scss", "!docs/**/*", "!styles/hestia/**/*"]
   }
 };
 
