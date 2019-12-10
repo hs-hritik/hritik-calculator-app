@@ -11,7 +11,7 @@
 ///
 
 @include component(header) {
-  $padding: gutter(12);
+  $padding: gutter(16 20);
   $bg-color: var(--hs-header-bg-color);
   $header-text-color: var(--hs-header-text-color);
 

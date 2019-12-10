@@ -14,15 +14,16 @@ define ("components/messageList",
     "constants/chatView",
     "gunpowder/utils/throttle",
     "gunpowder/utils/classes",
+    "components/errorBoundaryWithLogging",
     "constants/accessibility",
     "extras/accessibility",
     "helpers/common"
   ],
   function (Message, BrandingContainer, SkipButtonWrapper, messageHelpers, customPropTypes,
-    chatViewConstants, throttle, classes, axConstants, ax, commonHelpers) {
+    chatViewConstants, throttle, classes, ErrorBoundaryWithLogging, axConstants, ax,
+    commonHelpers) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       MESSAGE_PROP_TYPE,
       USER_INPUT_PROP_TYPE
@@ -56,7 +57,7 @@ define ("components/messageList",
       FOOTER_SELECTORS_LIST_MAP
     } = axConstants;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "MessageList",
       propTypes: {
         messages: PropTypes.arrayOf (MESSAGE_PROP_TYPE).isRequired,
@@ -81,10 +82,11 @@ define ("components/messageList",
          * If chat view footer has any failure
          */
         hasFailure: PropTypes.bool,
+
         /**
-         * Current active footer
+         * Callback that gets called whenever a message fails to render
          */
-        activeFooter: PropTypes.string
+        onMessageError: PropTypes.func
       },
 
       render () {
@@ -124,15 +126,19 @@ define ("components/messageList",
           }
 
           return (
-              <Message message={message}
-                       key={message.id}
-                       isLastMessage={messages.length === (index + 1)}
-                       isLastMessageInGroup={isLastMessageInGroup}
-                       showAgentNickname={this.props.showAgentNickname}
-                       text={this.props.text}
-                       onImageLoad={this._onImageAttachmentLoad}
-                       onRetryAttachmentClick={this.props.onRetryAttachmentClick}
-                       onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+            <ErrorBoundaryWithLogging
+              key={message.id}
+              onError={this.props.onMessageError}>
+              <Message
+                message={message}
+                isLastMessage={messages.length === (index + 1)}
+                isLastMessageInGroup={isLastMessageInGroup}
+                showAgentNickname={this.props.showAgentNickname}
+                text={this.props.text}
+                onImageLoad={this._onImageAttachmentLoad}
+                onRetryAttachmentClick={this.props.onRetryAttachmentClick}
+                onSuggestedFaqClick={this.props.onSuggestedFaqClick} />
+            </ErrorBoundaryWithLogging>
           );
         });
       },

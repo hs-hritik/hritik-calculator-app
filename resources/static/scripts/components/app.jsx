@@ -9,9 +9,10 @@ define ("components/app",
   [
     "store",
     "components/containers/viewWrapper",
-    "utils/logReactError"
+    "components/errorBoundaryWithLogging",
+    "components/errors/appError"
   ],
-  function (store, ViewWrapperContainer, logReactError) {
+  function (store, ViewWrapperContainer, ErrorBoundaryWithLogging, AppError) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
@@ -20,29 +21,11 @@ define ("components/app",
     /**
      * Main wrapper component for React application.
      */
-    const App = React.createClass ({
+    const App = createReactClass ({
       displayName: "App",
 
       render () {
         return (<ViewWrapperContainer />);
-      },
-
-      /**
-       * React method used to log error in any child component. This is a
-       * temporary implementation which will be replaced with adequate error
-       * boundaries.
-       * @TODO: Replace this method with an error boundary when react is
-       * updated to v16.
-       */
-      unstable_handleError (error) {
-        try {
-          logReactError (error);
-        } catch (e) {
-          /* eslint-disable no-console */
-          console.error ("There was an error while logging from React error boundary: ", e);
-          console.error ("The error from React is: ", error);
-          /* eslint-enable no-console */
-        }
       },
 
       componentDidMount () {
@@ -59,9 +42,11 @@ define ("components/app",
      */
     const init = () => {
       ReactDOM.render (
-        <Provider store={store}>
-          <App />
-        </Provider>,
+        <ErrorBoundaryWithLogging fallbackComponent={<AppError />}>
+          <Provider store={store}>
+            <App />
+          </Provider>
+        </ErrorBoundaryWithLogging>,
         document.getElementById ("app")
       );
     };
