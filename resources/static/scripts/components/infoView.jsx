@@ -12,9 +12,7 @@ define ("components/infoView",
   function (classes) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "InfoView",
       propTypes: {
         title: PropTypes.string,

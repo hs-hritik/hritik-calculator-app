@@ -29,9 +29,7 @@ define ("components/message",
 
     const AGENT_NAME_SEPARATOR = ", ";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "Message",
       propTypes: {
         message: customPropTypes.MESSAGE_PROP_TYPE,

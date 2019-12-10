@@ -27,7 +27,6 @@ define ("components/chatViewFooter",
     Picker, LIST_PICKER_CONSTANTS, ax, axConstants, activeViewConstants) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
@@ -51,7 +50,7 @@ define ("components/chatViewFooter",
       ACTIVE_FOOTER: "active_footer"
     };
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ChatViewFooter",
       propTypes: {
         widgetIsMinimized: PropTypes.bool,

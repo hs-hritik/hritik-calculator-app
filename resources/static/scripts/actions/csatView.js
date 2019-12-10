@@ -87,6 +87,7 @@ define ("actions/csatView",
             }));
           })
           .finally (() => {
+            ax.setFlatListActiveIndex (0);
             ax.setActiveView (ACTIVE_VIEW.CHAT);
             dispatch (
               batchActions ([

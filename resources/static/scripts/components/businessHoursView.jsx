@@ -13,16 +13,23 @@ define ("components/businessHoursView",
     "constants/businessHoursView",
     "helpers/attachments",
     "gunpowder/utils/classes",
+    "components/errorBoundaryWithLogging",
+    "components/errors/appError",
+    "components/errors/nonBlockingError",
     "extras/accessibility",
     "constants/activeView",
     "constants/accessibility",
     "constants/keyCodes"
   ],
   function (ViewHeader, BrandingContainer, FileInput, DnDWrapper, BUSINESS_HOURS_CONTANTS,
-    attachmentsHelpers, classes, ax, activeViewConstants, axConstants, KEY_CODES) {
+    attachmentsHelpers, classes, ErrorBoundaryWithLogging, AppError, NonBlockingError, ax,
+    activeViewConstants, axConstants, KEY_CODES) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
+    const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
+    const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
+    const {METALIST_ITEMS, OOBH_SUBVIEW} = axConstants;
+
     const FORM_FIELD_PROP_TYPE = PropTypes.shape ({
       enabled: PropTypes.bool,
       value: PropTypes.shape ({
@@ -31,98 +38,75 @@ define ("components/businessHoursView",
         validations: PropTypes.array
       }).isRequired
     }).isRequired;
+
     const ATTACHMENT_PROP_TYPE = PropTypes.shape ({
       id: PropTypes.string,
       name: PropTypes.string,
       size: PropTypes.number
     });
-    const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONTANTS.CONTACT_FORM_FIELDS;
-    const {CONTACT_FORM, OFFLINE_MESSAGE} = BUSINESS_HOURS_CONTANTS.OFFLINE_BEHAVIOUR;
-    const {METALIST_ITEMS, OOBH_SUBVIEW} = axConstants;
 
-    return React.createClass ({
-      displayName: "BusinessHoursView",
-      propTypes: {
-        showCloseButton: PropTypes.bool.isRequired,
-        allowFullScreen: PropTypes.bool,
-        text: PropTypes.shape ({
-          closeConversationBtn: PropTypes.string.isRequired,
-          businessHoursSubmitBtn: PropTypes.string.isRequired,
-          businessHoursViewHeader: PropTypes.string.isRequired,
-          businessHoursContactFormMessage: PropTypes.string.isRequired,
-          businessHoursOfflineMessage: PropTypes.string.isRequired,
-          businessHoursThankYouMessage: PropTypes.string.isRequired,
-          businessHoursAttachmentsLimitExceedMsg: PropTypes.string.isRequired,
-          businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
-          attachmentFileTypeError: PropTypes.string.isRequired,
-          attachmentDefaultError: PropTypes.string.isRequired,
-          dndInfoText: PropTypes.string.isRequired,
-          ariaLabelsRemoveAttachment: PropTypes.string,
-          ariaLabelAddedAttachmentPrefix: PropTypes.string,
-          ariaLabelAttachFiles: PropTypes.string
-        }).isRequired,
-        contactFormDetails: PropTypes.shape ({
-          name: FORM_FIELD_PROP_TYPE,
-          email: FORM_FIELD_PROP_TYPE,
-          message: FORM_FIELD_PROP_TYPE,
-          attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
-          attachmentsMeta: PropTypes.shape ({
-            featureIsEnabled: PropTypes.bool,
-            limitHasExceeded: PropTypes.bool,
-            sizeHasExceeded: PropTypes.bool,
-            attachmentsAreInvalid: PropTypes.bool
-          }).isRequired
-        }).isRequired,
-        offlineBehaviour: PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]),
-        onMinimizeConversation: PropTypes.func.isRequired,
-        onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
-        onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
-        onFilesChange: PropTypes.func.isRequired,
-        onRemoveAttachment: PropTypes.func.isRequired,
-        contactFormSubmitted: PropTypes.bool.isRequired,
-        contactFormDisabled: PropTypes.bool.isRequired,
-        submitInProgress: PropTypes.bool.isRequired,
-        viewStyles: PropTypes.shape ({
-          fontFamily: PropTypes.string
-        }),
-        fullPrivacyEnabled: PropTypes.bool,
-        keyboardInteractionIsActive: PropTypes.bool.isRequired
-      },
+    const TEXT_PROP_TYPE = PropTypes.shape ({
+      closeConversationBtn: PropTypes.string.isRequired,
+      businessHoursSubmitBtn: PropTypes.string.isRequired,
+      businessHoursViewHeader: PropTypes.string.isRequired,
+      businessHoursContactFormMessage: PropTypes.string.isRequired,
+      businessHoursOfflineMessage: PropTypes.string.isRequired,
+      businessHoursThankYouMessage: PropTypes.string.isRequired,
+      businessHoursAttachmentsLimitExceedMsg: PropTypes.string.isRequired,
+      businessHoursAttachmentsSizeExceedMsg: PropTypes.string.isRequired,
+      attachmentFileTypeError: PropTypes.string.isRequired,
+      attachmentDefaultError: PropTypes.string.isRequired,
+      dndInfoText: PropTypes.string.isRequired,
+      ariaLabelsRemoveAttachment: PropTypes.string,
+      ariaLabelAddedAttachmentPrefix: PropTypes.string,
+      ariaLabelAttachFiles: PropTypes.string
+    }).isRequired;
+
+    const CONTACT_FORM_DETAILS_PROP_TYPE = PropTypes.shape ({
+      name: FORM_FIELD_PROP_TYPE,
+      email: FORM_FIELD_PROP_TYPE,
+      message: FORM_FIELD_PROP_TYPE,
+      attachments: PropTypes.arrayOf (ATTACHMENT_PROP_TYPE).isRequired,
+      attachmentsMeta: PropTypes.shape ({
+        featureIsEnabled: PropTypes.bool,
+        limitHasExceeded: PropTypes.bool,
+        sizeHasExceeded: PropTypes.bool,
+        attachmentsAreInvalid: PropTypes.bool
+      }).isRequired
+    }).isRequired;
+
+    const OFFLINE_BEHAVIOUR_PROP_TYPE = PropTypes.oneOf ([CONTACT_FORM, OFFLINE_MESSAGE]);
+
+    class BusinessHoursViewContents extends React.PureComponent {
+      constructor (props) {
+        super (props);
+        this._fileInputRef = null;
+        this._onKeyDown = this._onKeyDown.bind (this);
+
+        /**
+         * Set ref for fileInput component
+         */
+        this._saveInputRef = (fileInputRef) => {
+          this._fileInputRef = fileInputRef;
+        };
+      }
+
       render () {
-        const {
-          text,
-          showCloseButton,
-          onMinimizeConversation,
-          onFilesChange,
-          contactFormDetails,
-          viewStyles,
-          fullPrivacyEnabled,
-          keyboardInteractionIsActive
-        } = this.props;
-
-        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
-        const attachmentIsEnabled = featureIsEnabled && !fullPrivacyEnabled;
-        const viewClasses = classes ("hs-view", {
-          "outline-hidden": !keyboardInteractionIsActive
-        });
+        const {text, onFilesChange, attachmentIsEnabled} = this.props;
 
         return (
-          <div className={viewClasses} style={viewStyles}>
-            <ViewHeader title={text.businessHoursViewHeader}
-                        showCloseBtn={showCloseButton}
-                        onCloseBtnClick={onMinimizeConversation} />
-              <div className="hs-view__content">
-                <DnDWrapper dragInfoText={text.dndInfoText}
-                            onDrop={onFilesChange}
-                            enabled={attachmentIsEnabled} >
-                  {this._renderContactForm ()}
-                  {this._renderOfflineMessage ()}
-                  {this._renderFooter ()}
-                </DnDWrapper>
-              </div>
+          <div className="hs-view__content">
+            <DnDWrapper
+              dragInfoText={text.dndInfoText}
+              onDrop={onFilesChange}
+              enabled={attachmentIsEnabled} >
+              {this._renderContactForm ()}
+              {this._renderOfflineMessage ()}
+              {this._renderFooter ()}
+            </DnDWrapper>
           </div>
         );
-      },
+      }
 
       /**
        * Render business hours contact form
@@ -131,15 +115,16 @@ define ("components/businessHoursView",
         const {
           text,
           offlineBehaviour,
-          contactFormSubmitted
+          contactFormSubmitted,
+          setAxActiveIndex
         } = this.props;
 
         if (offlineBehaviour !== CONTACT_FORM || contactFormSubmitted) {
           return null;
         }
 
-        const _setAxActiveIndex = this._setAxActiveIndex.bind (
-          this, {
+        const _setAxActiveIndex = setAxActiveIndex.bind (
+          null, {
             selector: METALIST_ITEMS.OOBH.WRAPPER.SELECTOR
           }
         );
@@ -162,13 +147,13 @@ define ("components/businessHoursView",
             </div>
           </div>
         );
-      },
+      }
 
       /**
        * Render offline message
        */
       _renderOfflineMessage () {
-        const {offlineBehaviour, contactFormSubmitted, text} = this.props;
+        const {offlineBehaviour, contactFormSubmitted, text, setAxActiveIndex} = this.props;
 
         if (offlineBehaviour !== OFFLINE_MESSAGE && !contactFormSubmitted) {
           return null;
@@ -185,8 +170,8 @@ define ("components/businessHoursView",
           messageClass = "hs-business-hours__offline-message";
         }
 
-        const _setAxActiveIndex = this._setAxActiveIndex.bind (
-          this, {
+        const _setAxActiveIndex = setAxActiveIndex.bind (
+          null, {
             selector: METALIST_ITEMS.OOBH.OFFLINE_MSG.SELECTOR
           }
         );
@@ -206,7 +191,7 @@ define ("components/businessHoursView",
             </div>
           </div>
         );
-      },
+      }
 
       /**
        * Render footer with button
@@ -218,12 +203,13 @@ define ("components/businessHoursView",
           onMinimizeConversation,
           contactFormDisabled,
           offlineBehaviour,
-          allowFullScreen
+          allowFullScreen,
+          setAxActiveIndex
         } = this.props;
 
         let btnText, clickHandler;
-        const _setAxActiveIndex = this._setAxActiveIndex.bind (
-          this, {
+        const _setAxActiveIndex = setAxActiveIndex.bind (
+          null, {
             selector: METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR
           }
         );
@@ -237,7 +223,7 @@ define ("components/businessHoursView",
           };
         } else {
           btnText = text.businessHoursSubmitBtn;
-          clickHandler = this._onSendButtonClick;
+          clickHandler = this.props.onSendButtonClick;
         }
 
         const footerClasses = classes ("hs-footer",
@@ -257,7 +243,7 @@ define ("components/businessHoursView",
             </button>
           </div>
         );
-      },
+      }
 
       /**
        * Render formfield
@@ -271,7 +257,7 @@ define ("components/businessHoursView",
           return null;
         }
 
-        const {text, contactFormDisabled} = this.props;
+        const {text, contactFormDisabled, setAxActiveIndex} = this.props;
         let formFieldLabel = "";
         let inputEl = null;
         let errorIconEl = null;
@@ -292,8 +278,8 @@ define ("components/businessHoursView",
             break;
         }
 
-        const _setAxActiveIndex = this._setAxActiveIndex.bind (
-          this, {
+        const _setAxActiveIndex = setAxActiveIndex.bind (
+          null, {
             selector: selectorValue
           }
         );
@@ -308,11 +294,11 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursNamePlaceholder}
                      value={formField.value.value}
+                     onChange={this.props.onNameChange}
                      data-label={METALIST_ITEMS.OOBH.NAME.DATA_LABEL}
                      tabIndex="0"
                      onFocus={_setAxActiveIndex}
                      onClick={_setAxActiveIndex}
-                     onChange={this._onNameChange}
                      aria-required={true}
                      aria-invalid={formFieldsIsValid} />
             );
@@ -327,11 +313,11 @@ define ("components/businessHoursView",
                      className={inputClasses}
                      placeholder={text.businessHoursEmailPlaceholder}
                      value={formField.value.value}
+                     onChange={this.props.onEmailChange}
                      data-label={METALIST_ITEMS.OOBH.EMAIL.DATA_LABEL}
                      tabIndex="0"
                      onFocus={_setAxActiveIndex}
                      onClick={_setAxActiveIndex}
-                     onChange={this._onEmailChange}
                      aria-required={true}
                      aria-invalid={formFieldsIsValid} />
             );
@@ -346,11 +332,11 @@ define ("components/businessHoursView",
                         disabled={contactFormDisabled}
                         placeholder={text.businessHoursMessagePlaceholder}
                         value={formField.value.value}
+                        onChange={this.props.onMessageChange}
                         data-label={METALIST_ITEMS.OOBH.MESSAGE.DATA_LABEL}
                         tabIndex="0"
                         onFocus={_setAxActiveIndex}
                         onClick={_setAxActiveIndex}
-                        onChange={this._onMessageChange}
                         aria-required={true}
                         aria-invalid={formFieldsIsValid} />
             );
@@ -378,7 +364,7 @@ define ("components/businessHoursView",
             {errorIconEl}
           </div>
         );
-      },
+      }
 
       /**
        * Render attachments
@@ -402,7 +388,10 @@ define ("components/businessHoursView",
         let attachmentsWrapperEl = null;
 
         if (attachments.length) {
-          const attachmentsEl = attachments.map (this._renderAttachment);
+          const attachmentsEl = attachments.map (
+            (attachment) => this._renderAttachment (attachment)
+          );
+
           const {
             limitHasExceeded,
             sizeHasExceeded,
@@ -427,7 +416,7 @@ define ("components/businessHoursView",
             {this._renderPlaceholderAttachment ()}
           </div>
         );
-      },
+      }
 
       /**
        * Render attachment
@@ -439,8 +428,11 @@ define ("components/businessHoursView",
           text: {
             ariaLabelsRemoveAttachment,
             ariaLabelAddedAttachmentPrefix
-          }
+          },
+          onRemoveAttachmentClick,
+          setAxActiveIndex
         } = this.props;
+
         const {id, name, size, attachmentHasError} = attachment;
         let iconEl = null;
         let attachmentErrorEl = null;
@@ -456,17 +448,19 @@ define ("components/businessHoursView",
             "hs-business-hours__small-icon",
             "hs-business-hours__remove-icon"
           );
-          const _setAxActiveIndex = this._setAxActiveIndex.bind (
-            this, {
+
+          const _setAxActiveIndex = setAxActiveIndex.bind (
+            null, {
               selector: `[data-label=${dataLabelAttribute}]`
             }
           );
 
           iconEl = (
-            <i className={iconClasses}
+            <i
+              className={iconClasses}
+              onClick={() => onRemoveAttachmentClick (id, dataLabelAttribute)}
               tabIndex="0"
               onFocus= {_setAxActiveIndex}
-              onClick={this._onRemoveAttachmentClick.bind (this, id, dataLabelAttribute)}
               data-label={dataLabelAttribute}
               aria-label={ariaLabelsRemoveAttachment}
               role="button" />
@@ -516,7 +510,7 @@ define ("components/businessHoursView",
           </div>),
           attachmentErrorEl
         ]);
-      },
+      }
 
       /**
        * Render placeholder attachment layout
@@ -527,8 +521,10 @@ define ("components/businessHoursView",
           text: {
             dndInfoText,
             ariaLabelAttachFiles
-          }
+          },
+          setAxActiveIndex
         } = this.props;
+
         const {
           limitHasExceeded,
           sizeHasExceeded,
@@ -536,8 +532,8 @@ define ("components/businessHoursView",
         } = this.props.contactFormDetails.attachmentsMeta;
 
         const fileInputIsDisabled = (limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid);
-        const _setAxActiveIndex = this._setAxActiveIndex.bind (
-          this, {
+        const _setAxActiveIndex = setAxActiveIndex.bind (
+          null, {
             selector: METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR
           }
         );
@@ -560,7 +556,7 @@ define ("components/businessHoursView",
                        infoText={dndInfoText} />
           </div>
         );
-      },
+      }
 
       /**
        * Render attachment file limit error
@@ -611,7 +607,7 @@ define ("components/businessHoursView",
             {invalidTypeInfoTextEl}
           </div>
         );
-      },
+      }
 
       /**
        * Render attachment error
@@ -624,16 +620,7 @@ define ("components/businessHoursView",
             <span>{text}</span>
           </small>
         );
-      },
-
-      _fileInputRef: null,
-
-      /**
-       * Set ref for fileInput component
-       */
-      _saveInputRef (fileInputRef) {
-        this._fileInputRef = fileInputRef;
-      },
+      }
 
       /**
        * Handler for keyDown event on attachment wrapper
@@ -645,6 +632,119 @@ define ("components/businessHoursView",
             this._fileInputRef.click ();
           }
         }
+      }
+    }
+
+    BusinessHoursViewContents.propTypes = {
+      text: TEXT_PROP_TYPE,
+      onFilesChange: PropTypes.func.isRequired,
+      attachmentIsEnabled: PropTypes.bool.isRequired,
+      offlineBehaviour: OFFLINE_BEHAVIOUR_PROP_TYPE,
+      contactFormSubmitted: PropTypes.bool.isRequired,
+      contactFormDisabled: PropTypes.bool.isRequired,
+      allowFullScreen: PropTypes.bool,
+      onMinimizeConversation: PropTypes.func.isRequired,
+      contactFormDetails: CONTACT_FORM_DETAILS_PROP_TYPE,
+      fullPrivacyEnabled: PropTypes.bool,
+      submitInProgress: PropTypes.bool.isRequired,
+      onSendButtonClick: PropTypes.func.isRequired,
+      onNameChange: PropTypes.func.isRequired,
+      onEmailChange: PropTypes.func.isRequired,
+      onMessageChange: PropTypes.func.isRequired,
+      onRemoveAttachmentClick: PropTypes.func.isRequired,
+      /**
+       * This function is called on focus or click event on element
+       * It calls ax function to update active index
+       * @param {Object} config.name - Selector value
+       * @param {Object} ev - Click or focus event object
+       */
+      setAxActiveIndex: PropTypes.func.isRequired
+    };
+
+    return createReactClass ({
+      displayName: "BusinessHoursView",
+      propTypes: {
+        showCloseButton: PropTypes.bool.isRequired,
+        allowFullScreen: PropTypes.bool,
+        text: TEXT_PROP_TYPE,
+        contactFormDetails: CONTACT_FORM_DETAILS_PROP_TYPE,
+        offlineBehaviour: OFFLINE_BEHAVIOUR_PROP_TYPE,
+        onMinimizeConversation: PropTypes.func.isRequired,
+        onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
+        onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
+        onFilesChange: PropTypes.func.isRequired,
+        onRemoveAttachment: PropTypes.func.isRequired,
+        contactFormSubmitted: PropTypes.bool.isRequired,
+        contactFormDisabled: PropTypes.bool.isRequired,
+        submitInProgress: PropTypes.bool.isRequired,
+        viewStyles: PropTypes.shape ({
+          fontFamily: PropTypes.string
+        }),
+        fullPrivacyEnabled: PropTypes.bool,
+        keyboardInteractionIsActive: PropTypes.bool.isRequired
+      },
+
+      getInitialState () {
+        return {
+          blockingErrorIsVisible: false
+        };
+      },
+
+      render () {
+        const {
+          text,
+          showCloseButton,
+          onMinimizeConversation,
+          onFilesChange,
+          contactFormDetails,
+          viewStyles,
+          fullPrivacyEnabled,
+          offlineBehaviour,
+          contactFormSubmitted,
+          contactFormDisabled,
+          allowFullScreen,
+          submitInProgress,
+          keyboardInteractionIsActive
+        } = this.props;
+
+        const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
+        const attachmentIsEnabled = featureIsEnabled && !fullPrivacyEnabled;
+        const viewClasses = classes ("hs-view", {
+          "outline-hidden": !keyboardInteractionIsActive
+        });
+
+        return (
+          <div className={viewClasses} style={viewStyles}>
+            <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback ()}>
+              <ViewHeader
+                title={text.businessHoursViewHeader}
+                showCloseBtn={showCloseButton}
+                onCloseBtnClick={onMinimizeConversation} />
+            </ErrorBoundaryWithLogging>
+            <ErrorBoundaryWithLogging
+              fallbackComponent={<AppError />}
+              onError={this._handleViewContentsError}>
+              <BusinessHoursViewContents
+                text={text}
+                attachmentIsEnabled={attachmentIsEnabled}
+                onFilesChange={onFilesChange}
+                offlineBehaviour={offlineBehaviour}
+                contactFormSubmitted={contactFormSubmitted}
+                contactFormDisabled={contactFormDisabled}
+                allowFullScreen={allowFullScreen}
+                onMinimizeConversation={onMinimizeConversation}
+                contactFormDetails={contactFormDetails}
+                fullPrivacyEnabled={fullPrivacyEnabled}
+                submitInProgress={submitInProgress}
+                onSendButtonClick={this._onSendButtonClick}
+                onNameChange={this._onNameChange}
+                onMessageChange={this._onMessageChange}
+                onEmailChange={this._onEmailChange}
+                onRemoveAttachmentClick={this._onRemoveAttachmentClick}
+                setAxActiveIndex={this._setAxActiveIndex} />
+            </ErrorBoundaryWithLogging>
+          </div>
+        );
       },
 
       /**
@@ -699,6 +799,22 @@ define ("components/businessHoursView",
         }, ev);
 
         this.props.onRemoveAttachment (attachmentId);
+      },
+
+      _handleViewContentsError () {
+        this.setState ({
+          blockingErrorIsVisible: true
+        });
+      },
+
+      _renderHeaderFallback () {
+        if (this.state.blockingErrorIsVisible) {
+          return null;
+        }
+
+        return (
+          <NonBlockingError />
+        );
       },
 
       /**
