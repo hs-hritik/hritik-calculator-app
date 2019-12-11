@@ -1,0 +1,33 @@
+Branches:
+feature/react-upgrade
+
+Changelog:
+Fix auto submit CSAT form
+Fix: Add attachments in out of business hours using keyboard
+Update paddings to match design mocks
+Show non blocking error in chat view header's error boundary
+Refactor: Have separate error handlers for chatview message and footer
+Create wrapper component around ErrorBoundary
+Render non blocking error if FaqView's header has any error
+Wrap CsatView & BusinessHoursView's Header with Error Boundary
+Add error boundary around messages & footer
+Add component to render non blocking error
+Add error boundary around Chat View Footer
+Add error boundary around chat view
+Create React component for chat view body
+Add error boundary around business hours view body
+Create React component for business hours body
+Add error boundary to CSAT view
+Add error boundary to FaqView's body
+Add error boundary around Branding component
+Update gunpowder to v2.0.1
+Add error boundary around app
+Add component to render application errors
+Add error logging utility
+Update eslint sort-comp rule
+Update gunpowder version
+Add eslint rules for react hooks
+Update redux and react-redux
+Update list of initialization dependencies
+Update test setup and react globals
+Update React to 16.10.2
