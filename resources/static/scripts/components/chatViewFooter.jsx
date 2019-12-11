@@ -28,7 +28,6 @@ define ("components/chatViewFooter",
     Picker, dragItConstants, ax, axConstants, activeViewConstants, dragIt) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {
       ACTIVE_FOOTER,
       USER_INPUT_TYPES,
@@ -52,7 +51,7 @@ define ("components/chatViewFooter",
 
     const DraggablePicker = dragIt (Picker);
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ChatViewFooter",
       propTypes: {
         widgetIsMinimized: PropTypes.bool,

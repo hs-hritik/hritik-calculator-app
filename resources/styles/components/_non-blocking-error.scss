@@ -1,0 +1,27 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for Error messages
+// - - - - - - - - - - - - - - -
+
+///
+/// @group Errors
+///
+
+@include component(non-blocking-error) {
+  $error-color: color(error, text);
+
+  .hs-non-blocking-error {
+    display: flex;
+    align-items: center;
+    padding: gutter(8 20);
+    color: $error-color;
+    background: rgba($error-color, .15);
+
+    &__icon {
+      margin-right: gutter(4);
+    }
+  }
+}

@@ -19,11 +19,9 @@ define ("components/viewWrapper",
     BusinessHoursViewContainer, ax, axConstants, KEY_CODES) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
     const {METALIST_GROUP_NAME} = axConstants;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ViewWrapper",
       propTypes: {
         activeView: PropTypes.string.isRequired,

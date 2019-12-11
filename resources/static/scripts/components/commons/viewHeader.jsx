@@ -9,9 +9,7 @@ define ("components/commons/viewHeader",
   function () {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ViewHeader",
       propTypes: {
         title: PropTypes.string.isRequired,

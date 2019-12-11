@@ -14,10 +14,9 @@ define ("components/starRating",
   function (classes, KEY_CODES, axConstants, ax) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {METALIST_ITEMS} = axConstants;
 
-    return React.createClass ({
+    return createReactClass ({
       displayName: "StarRating",
       propTypes: {
         value: PropTypes.number.isRequired,

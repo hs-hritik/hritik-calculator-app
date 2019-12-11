@@ -9,90 +9,38 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
     }
   }
 >
-  <ViewHeader
-    onCloseBtnClick={[MockFunction]}
-    showCloseBtn={false}
-    title="MOCK_VIEW_HEADER"
-  />
-  <div
-    className="hs-view__content"
+  <ErrorBoundaryWithLogging
+    fallbackComponent={<NonBlockingError />}
   >
-    <div
-      className="hs-csat"
-    >
-      <div
-        className="hs-csat__form"
-      >
-        <div
-          className="hs-csat__form-item"
-        >
-          <h3
-            className="hs-csat__heading"
-          >
-            MOCK_REQUEST_MESSAGE
-          </h3>
-        </div>
-        <div
-          className="hs-csat__form-item"
-        >
-          <StarRating
-            dataLabels={
-              Object {
-                "starRatingWrapper": "star-rating-wrapper",
-              }
-            }
-            editing={true}
-            name="csat"
-            onStarClick={[Function]}
-            starCount={5}
-            value={0}
-          />
-        </div>
-        <div
-          className="hs-csat__form-item"
-        >
-          <small
-            aria-hidden="true"
-            className="hs-csat__form-label"
-          >
-            MOCK_REVIEW_TITLE
-          </small>
-          <textarea
-            aria-label="MOCK_REVIEW_TITLE"
-            className="hs-csat__input"
-            data-label="additional-feedback-text-area"
-            dir="auto"
-            disabled={false}
-            onChange={[Function]}
-            onClick={[Function]}
-            onFocus={[Function]}
-            placeholder="MOCK_REVIEW_PLACEHOLDER"
-            tabIndex="0"
-            value="MOCK_REVIEW"
-          />
-        </div>
-      </div>
-      <Connect(Branding) />
-      <div
-        className="hs-footer hs-footer--center-items"
-      >
-        <div
-          className="hs-footer__vertical-items-wrapper"
-        >
-          <button
-            aria-label="MOCK_FORM_SUBMIT_BUTTON"
-            className="hs-button hs-footer__btn"
-            data-label="footer-btn"
-            disabled={true}
-            onClick={[MockFunction]}
-            onFocus={[Function]}
-            tabIndex="0"
-          >
-            MOCK_FORM_SUBMIT_BUTTON
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <ViewHeader
+      onCloseBtnClick={[MockFunction]}
+      showCloseBtn={false}
+      title="MOCK_VIEW_HEADER"
+    />
+  </ErrorBoundaryWithLogging>
+  <ErrorBoundaryWithLogging
+    fallbackComponent={<AppError />}
+    onError={[Function]}
+  >
+    <CsatViewContents
+      csatSaveInProgress={false}
+      onCsatReviewChange={[Function]}
+      onStarClick={[Function]}
+      onSubmitCsat={[MockFunction]}
+      rating={0}
+      review="MOCK_REVIEW"
+      setAxActiveIndex={[Function]}
+      text={
+        Object {
+          "csatBotFormSubmitBtn": "MOCK_FORM_SUBMIT_BUTTON",
+          "csatBotRequestMsg": "MOCK_REQUEST_MESSAGE",
+          "csatBotResponseMsg": "MOCK_RESPONSE_MESSAGE",
+          "csatBotReviewPlaceholder": "MOCK_REVIEW_PLACEHOLDER",
+          "csatBotReviewTitle": "MOCK_REVIEW_TITLE",
+          "csatViewHeader": "MOCK_VIEW_HEADER",
+        }
+      }
+    />
+  </ErrorBoundaryWithLogging>
 </div>
 `;

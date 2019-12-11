@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CsatViewBody should render correctly (snapshot) 1`] = `
+<div
+  className="hs-csat__form"
+>
+  <div
+    className="hs-csat__form-item"
+  >
+    <h3
+      className="hs-csat__heading"
+    >
+      MOCK_REQUEST_MESSAGE
+    </h3>
+  </div>
+  <div
+    className="hs-csat__form-item"
+  >
+    <StarRating
+      dataLabels={
+        Object {
+          "starRatingWrapper": "star-rating-wrapper",
+        }
+      }
+      editing={true}
+      name="csat"
+      onStarClick={[MockFunction]}
+      onUpdateStarRating={[MockFunction]}
+      starCount={5}
+      value={0}
+    />
+  </div>
+  <div
+    className="hs-csat__form-item"
+  >
+    <small
+      aria-hidden="true"
+      className="hs-csat__form-label"
+    >
+      MOCK_REVIEW_TITLE
+    </small>
+    <textarea
+      aria-label="MOCK_REVIEW_TITLE"
+      className="hs-csat__input"
+      data-label="additional-feedback-text-area"
+      dir="auto"
+      disabled={false}
+      onChange={[MockFunction]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      placeholder="MOCK_REVIEW_PLACEHOLDER"
+      tabIndex="0"
+      value="MOCK_REVIEW"
+    />
+  </div>
+</div>
+`;

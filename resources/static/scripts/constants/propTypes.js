@@ -12,7 +12,6 @@ define (
   function (dragItConstants) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
     const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
 
     const MESSAGE_PROP_TYPE = PropTypes.shape ({

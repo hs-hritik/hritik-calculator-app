@@ -1,6 +1,7 @@
 module.exports = {
   "plugins": [
     "react",
+    "react-hooks",
     "hs"
   ],
   "parserOptions": {
@@ -21,7 +22,9 @@ module.exports = {
     "Redux": true,
     "ReactRedux": true,
     "Helpshift": true,
-    "ReduxThunk": true
+    "ReduxThunk": true,
+    "createReactClass": true,
+    "PropTypes": true
   },
   "rules": {
     // Check ESLint documentation (http://eslint.org/docs/rules/<a-specific-rule>)
@@ -199,6 +202,7 @@ module.exports = {
         "propTypes",
         "getDefaultProps",
         "getInitialState",
+        "constructor",
         "render",
         "/_render.+$/",
         "everything-else",
@@ -218,6 +222,10 @@ module.exports = {
       }
     }],
     "react/wrap-multilines": 2,
+
+    // https://www.npmjs.com/package/eslint-plugin-react-hooks
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
 
     // Helpshift Specific
     "hs/func-call-spacing": [2, "always"]
