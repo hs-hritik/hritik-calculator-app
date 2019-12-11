@@ -14,9 +14,7 @@ define ("components/commons/fileInput",
                            ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
                            ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csvm, .mp4";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "FileInput",
       propTypes: {
         /**
@@ -55,7 +53,12 @@ define ("components/commons/fileInput",
         /**
          * Label classes
          */
-        labelClasses: PropTypes.string
+        labelClasses: PropTypes.string,
+
+        /*
+         * Callback to pass the ref of the file input element
+         */
+        onSaveInputRef: PropTypes.func
       },
 
       getDefaultProps () {
@@ -77,7 +80,8 @@ define ("components/commons/fileInput",
           disabled,
           noPadding,
           labelClasses,
-          accept
+          accept,
+          onSaveInputRef
         } = this.props;
         let infoTextEl = null;
 
@@ -113,6 +117,7 @@ define ("components/commons/fileInput",
                    accept={accept}
                    disabled={disabled}
                    className="hs-file-input__file"
+                   ref={onSaveInputRef}
                    onChange={this._onFilesChange} />
           </div>
         );

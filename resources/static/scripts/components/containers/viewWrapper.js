@@ -22,8 +22,10 @@ define ("components/containers/viewWrapper",
           activeView,
           showHeaderCloseButton,
           sdkConfigOptions: {
-            fullScreen: allowFullScreen
-          }
+            fullScreen: allowFullScreen,
+            showLauncher
+          },
+          keyboardInteractionIsActive
         }
       } = state;
 
@@ -33,7 +35,9 @@ define ("components/containers/viewWrapper",
         showCloseButton: showHeaderCloseButton,
         viewStyles: {
           fontFamily: state.ui.uiConfig [BASE_FONT].value
-        }
+        },
+        keyboardInteractionIsActive,
+        showLauncher
       };
     };
 
@@ -44,6 +48,19 @@ define ("components/containers/viewWrapper",
         },
         onMinimizeConversation: () => {
           dispatch (postSdkMessage.toggleMessenger (true));
+        },
+        onFocusLauncher: () => {
+          dispatch (postSdkMessage.focusLauncher ());
+        },
+        onKeyPress: ({keyboardInteractionIsActive}) => {
+          dispatch (actionCreators.setKeyboardInteractionIsActive (
+            keyboardInteractionIsActive
+          ));
+        },
+        onClick: ({keyboardInteractionIsActive}) => {
+          dispatch (actionCreators.setKeyboardInteractionIsActive (
+            keyboardInteractionIsActive
+          ));
         }
       };
     };

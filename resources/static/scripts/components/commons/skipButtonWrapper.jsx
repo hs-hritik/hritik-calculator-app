@@ -11,9 +11,7 @@ define ("components/commons/skipButtonWrapper",
   function (classes) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "SkipButtonWrapper",
       propTypes: {
         /**
@@ -34,7 +32,19 @@ define ("components/commons/skipButtonWrapper",
         /**
          * Whether skip button is disabled
          */
-        disabled: PropTypes.bool
+        disabled: PropTypes.bool,
+
+        /**
+         * Data label for skip button
+         */
+        dataLabels: PropTypes.shape ({
+          skipBtn: PropTypes.string
+        }),
+
+        /**
+         * Focus handler for skip button
+         */
+        onFocus: PropTypes.func
       },
 
       render () {
@@ -42,7 +52,9 @@ define ("components/commons/skipButtonWrapper",
           className,
           label,
           onClick,
-          disabled
+          disabled,
+          dataLabels,
+          onFocus
         } = this.props;
 
         const skipBtnClasses = classes (
@@ -56,7 +68,10 @@ define ("components/commons/skipButtonWrapper",
           <div className={className}>
             <button className={skipBtnClasses}
                     onClick={onClick}
-                    disabled={disabled}>
+                    disabled={disabled}
+                    tabIndex="0"
+                    data-label={dataLabels.skipBtn}
+                    onFocus={onFocus}>
               {label}
             </button>
           </div>

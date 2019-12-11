@@ -35,7 +35,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.33.0";
+const WEB_CHAT_VERSION = "2.37.0";
 
 /**
  * Name of app bundle
@@ -73,8 +73,12 @@ const PATHS = {
   // @NOTE - Any new file added to libs folder will not be automatically minified
   // You will have to add it explicity to following array.
   bundleLibsSource: [
-    "static/libs/react-with-addons-min.js",
+    "static/libs/react-min.js",
+    "static/libs/react-pure-render-mixin-fake.js",
     "static/libs/react-dom-min.js",
+    "static/libs/react-addons-update-min.js",
+    "static/libs/prop-types-min.js",
+    "static/libs/create-react-class-min.js",
     "static/libs/redux-min.js",
     "static/libs/react-redux-min.js",
     "static/libs/require-min.js"
@@ -146,8 +150,12 @@ const TEMPLATE_PATHS = {
   LIBS: {
     DEV: `
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/axios.js"></script>
-    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-with-addons.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-pure-render-mixin-fake.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-dom.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-addons-update.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/prop-types.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/create-react-class.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/redux.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-redux.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/require.js"></script>

@@ -9,7 +9,7 @@ define ("constants/appState",
     "use strict";
 
     // Version of web chat (the SDK, should not be confused with the API version)
-    const WEB_CHAT_VERSION = "2.33.0";
+    const WEB_CHAT_VERSION = "2.37.0";
 
     const ISSUE_STATE = {
       // "na" (not applicable) represents the issue state value in the state when

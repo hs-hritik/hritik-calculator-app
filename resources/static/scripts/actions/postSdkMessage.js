@@ -288,6 +288,18 @@ define ("actions/postSdkMessage",
       };
     };
 
+    /**
+     * Post sdk event to focus on webchat launcher btn
+     */
+    const focusLauncher = () => {
+      return (dispatch, getState) => {
+        postMessage ({
+          type: EVENT_TYPES.SDK_FOCUS_LAUNCHER,
+          parentPageOrigin: _getParentPageOrigin (getState)
+        });
+      };
+    };
+
     return {
       toggleMessenger,
       reset,
@@ -305,7 +317,8 @@ define ("actions/postSdkMessage",
       userChanged,
       messageAddEvent,
       csatSubmitEvent,
-      conversationStatusEvent
+      conversationStatusEvent,
+      focusLauncher
     };
   }
 );

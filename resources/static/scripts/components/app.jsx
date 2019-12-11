@@ -8,9 +8,11 @@
 define ("components/app",
   [
     "store",
-    "components/containers/viewWrapper"
+    "components/containers/viewWrapper",
+    "components/errorBoundaryWithLogging",
+    "components/errors/appError"
   ],
-  function (store, ViewWrapperContainer) {
+  function (store, ViewWrapperContainer, ErrorBoundaryWithLogging, AppError) {
     "use strict";
 
     const Provider = ReactRedux.Provider;
@@ -19,7 +21,7 @@ define ("components/app",
     /**
      * Main wrapper component for React application.
      */
-    const App = React.createClass ({
+    const App = createReactClass ({
       displayName: "App",
 
       render () {
@@ -40,9 +42,11 @@ define ("components/app",
      */
     const init = () => {
       ReactDOM.render (
-        <Provider store={store}>
-          <App />
-        </Provider>,
+        <ErrorBoundaryWithLogging fallbackComponent={<AppError />}>
+          <Provider store={store}>
+            <App />
+          </Provider>
+        </ErrorBoundaryWithLogging>,
         document.getElementById ("app")
       );
     };

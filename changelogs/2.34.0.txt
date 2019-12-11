@@ -1,0 +1,70 @@
+Branches:
+feature/webchat-accessibility
+
+Changelog:
+Remove focus on link while clicking outside on FAQ view
+Switch to chat view after existing events are flushed
+Remove outline on text area
+Apply focus for input type pill options including skip button
+Remove focus on launcher button, when launcher button is clicked
+Bug Fix: WCAX-69- Tab/Shift-tab interaction on closed launcher btn
+Fix link sequence after link in CHAT view is clicked
+Add focus on message scroll wrapper
+Reset active index on back btn click in FAQ view
+Add customizable key for focus color
+Add check for footer selector length when footer changed
+Fix focus order of skip button
+Fix error - 'stopPropagation' of undefined
+Fix agent attachment aria label
+Bug fix: WCAX-62 Fix typo error
+Hide focus outline when keyboard shortcuts are not used
+Add keyboardInteractionIsActive in the state
+Fix - Missing focus on picker header
+Add static aria labels at launcher button
+Restore the old business hours css
+Add translations for aria attributes
+Set ax active view on back link click in FAQ view
+Change gunpowder version for accessibility changes
+Fix link focus in message list on new messages load
+Fix - Focus from one iframe to another iframe in firefox doesn't work
+Set ax active view on csat submit
+Fix - On tab focus retains twice on an element
+Update option highlight color in picker
+Rename picker accessibility prop to axIsSupported
+Add msg links selectors into meta list
+Fix style of picker options wrapper
+Rename name param in ax function to group
+Fix error - Active view not available on refresh
+Pass aria labels to picker component
+Add static aria labels to UI items in chat view
+Add static vo labels for messages in chat view
+Add static vo labels for FAQ view
+Add static vo labels for CSAT footer and CSAT view
+Support the keyboard ax on clicking any element or auto focus in picker
+Add aria attribute to support ax in OOBH form
+Fix prop of reply box component
+Support keyboard Ax for picker
+Restructure the accessibility constants file
+Remove dataLabel and tabIndex from fileInput
+Fix focus style for chat, faq view
+Fix focus style of OOBH view
+Add title and aria-label for iframes.
+Add functions to backup & restore selectors in metaList
+Rename accessibility constants
+Update active index on click or focus in chat, csat & faq view
+Add messages link in meta list for chat view
+Add keyboard accessibility support for FAQ view
+Add keyboard accessibility support for CSAT view
+Highlight star rating using left/right arrow keys
+Add support to focus launcher button
+Add selectors for different chat view footer in metaList
+Update the activeIndex on focus or click
+Handles view change from oobh-form to offline-msg
+Handle add & remove file attachments
+Add css for focus elememt in oobh view
+Add support for global key code enter & space
+Add support for refs callback in fileInput
+Add unique selector for interactive elem in OOBH
+Add keyboard eventListener on viewWrapper
+Implement focus, focusNext, focusPrev in ax module
+Create the Ax module

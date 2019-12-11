@@ -8,9 +8,11 @@
 define ("components/containers/faqView",
   [
     "components/faqView",
-    "actions/chatView"
+    "actions/chatView",
+    "extras/accessibility",
+    "constants/activeView"
   ],
-  function (FaqView, chatViewActions) {
+  function (FaqView, chatViewActions, ax, ACTIVE_VIEW) {
     "use strict";
 
     const mapStateToProps = (state) => {
@@ -48,7 +50,11 @@ define ("components/containers/faqView",
     const mapDispatchToProps = (dispatch) => {
       return {
         onBackBtnClick: () => {
-          dispatch (chatViewActions.switchToChatView ());
+          setTimeout (() => {
+            ax.setFlatListActiveIndex (0);
+            ax.setActiveView (ACTIVE_VIEW.CHAT);
+            dispatch (chatViewActions.switchToChatView ());
+          }, 0);
         }
       };
     };

@@ -12,16 +12,15 @@ define ("components/infoView",
   function (classes) {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "InfoView",
       propTypes: {
         title: PropTypes.string,
         subtitle: PropTypes.string,
         loading: PropTypes.bool,
         actionBtnText: PropTypes.string,
-        onActionBtnClick: PropTypes.func
+        onActionBtnClick: PropTypes.func,
+        ariaLabel: PropTypes.string
       },
 
       render () {
@@ -99,7 +98,7 @@ define ("components/infoView",
         );
 
         return (
-          <div>
+          <div aria-label={this.props.ariaLabel}>
             <i className={loaderClasses} />
           </div>
         );

@@ -113,6 +113,12 @@ define ("components/containers/chatViewFooter",
           dispatch (csatViewActions.updateCsatRating (updatedRating));
           dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
         },
+        onUpdateStarRating: (updatedRating) => {
+          dispatch (csatViewActions.updateCsatRating (updatedRating));
+        },
+        onSelectStarRating: () => {
+          dispatch (actionCreators.updateActiveView (ACTIVE_VIEW.CSAT));
+        },
         onFooterFocus: () => {
           dispatch (actionCreators.setFooterActive ());
         },

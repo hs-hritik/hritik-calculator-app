@@ -9,16 +9,18 @@ define ("components/commons/viewHeader",
   function () {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-
-    return React.createClass ({
+    return createReactClass ({
       displayName: "ViewHeader",
       propTypes: {
         title: PropTypes.string.isRequired,
         showBackBtn: PropTypes.bool,
         showCloseBtn: PropTypes.bool,
         onBackBtnClick: PropTypes.func,
-        onCloseBtnClick: PropTypes.func
+        onCloseBtnClick: PropTypes.func,
+        dataLabels: PropTypes.shape ({
+          backBtnDataLabel: PropTypes.string
+        }),
+        ariaLabel: PropTypes.string
       },
 
       render () {
@@ -34,6 +36,7 @@ define ("components/commons/viewHeader",
        * Render title text and the back button if required
        */
       _renderTitle () {
+        const {dataLabels, ariaLabel} = this.props;
         const titleText = (
           <span>{this.props.title}</span>
         );
@@ -43,7 +46,13 @@ define ("components/commons/viewHeader",
         }
 
         return (
-          <a className="hs-header__link" onClick={this._onBackBtnClick}>
+          <a
+            className="hs-header__link"
+            onClick={this._onBackBtnClick}
+            tabIndex="0"
+            data-label={dataLabels.backBtnDataLabel}
+            aria-label={ariaLabel}
+            role="button">
             <i className="ion-chevron-left hs-header__back-icon" />
             {titleText}
           </a>

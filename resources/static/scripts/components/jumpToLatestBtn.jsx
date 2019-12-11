@@ -8,15 +8,15 @@ define ("components/jumpToLatestBtn",
   function () {
     "use strict";
 
-    const PropTypes = React.PropTypes;
-    return React.createClass ({
+    return createReactClass ({
       displayName: "JumpToLatestBtn",
       propTypes: {
         show: PropTypes.bool,
         skipBtnIsRendered: PropTypes.bool,
         chatFooterIsHidden: PropTypes.bool,
         showUnreadIndicator: PropTypes.bool,
-        onClick: PropTypes.func
+        onClick: PropTypes.func,
+        ariaLabel: PropTypes.string
       },
 
       getDefaultProps () {
@@ -29,7 +29,8 @@ define ("components/jumpToLatestBtn",
         const {
           show,
           showUnreadIndicator,
-          onClick
+          onClick,
+          ariaLabel
         } = this.props;
 
         if (!show) {
@@ -40,7 +41,7 @@ define ("components/jumpToLatestBtn",
           (<span className="hs-jump-to-latest__unread-icon" />) : null;
 
         return (
-          <div className="hs-jump-to-latest" onClick={onClick}>
+          <div className="hs-jump-to-latest" onClick={onClick} aria-label={ariaLabel}>
             <i className="ion-chevron-right hs-jump-to-latest__icon" />
             {unreadIndicatorEl}
           </div>
