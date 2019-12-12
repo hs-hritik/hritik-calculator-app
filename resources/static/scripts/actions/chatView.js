@@ -2126,25 +2126,6 @@ define ("actions/chatView",
     };
 
     /**
-     * Action to reset chat view error.
-     * @returns {Object} - action
-     */
-    const resetChatViewError = () => {
-      return {
-        type: ACTION_TYPES.RESET_CHAT_VIEW_ERROR
-      };
-    };
-
-    /**
-     * Action to update user's last activity time
-     */
-    const updateUserLastActivityTime = () => {
-      return {
-        type: ACTION_TYPES.UPDATE_USER_LAT
-      };
-    };
-
-    /**
      * Create pre-issue on backend.
      */
     const createPreIssue = () => {
@@ -2262,17 +2243,9 @@ define ("actions/chatView",
             const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
               response.preissue_id : response.issue_id;
 
-            dispatch (
-              batchActions ([
-                setActiveIssueId (newIssueId),
-                actionCreators.setInternalIssueId (internalId),
-                updateIssueState (ISSUE_STATE.ACTIVE),
-                setChatViewFooter (ACTIVE_FOOTER.REPLY),
-                updateUserLastActivityTime ()
-              ])
-            );
+            dispatch (issueCreated ({newIssueId, internalId}));
+
             startPollingForMessages ();
-            dispatch (resetChatViewError ());
 
             // Track the issue created event.
             // @TODO: Confirm if issue created event has to be tracked from Web Chat.
@@ -2682,7 +2655,7 @@ define ("actions/chatView",
 
     /**
      * Return the action to set the local greeting message id in the state
-     * @param {string} - message id
+     * @param {string} id - message id
      * @returns {Object} - the action object
      */
     const saveLocalGreetingMessageId = (id) => {
@@ -2695,6 +2668,7 @@ define ("actions/chatView",
     /**
      * Create greeting message and add it to the message list. Check if this
      * feature is enabled before doing so.
+     * @returns {Object} - the action object
      */
     const addGreetingMessage = () => {
       return (dispatch, getState) => {
@@ -2729,6 +2703,20 @@ define ("actions/chatView",
       };
     };
 
+    /**
+     * Return the action to be dispatched when an issue/preissue is created.
+     * @param {string} newIssueId
+     * @param {string} internalId - internal issue id
+     * @returns {Object} - the action object
+     */
+    const issueCreated = (newIssueId, internalId) => {
+      return {
+        type: ACTION_TYPES.ISSUE_CREATED,
+        activeIssueId: newIssueId,
+        internalIssueId: internalId
+      };
+    };
+
     return {
       createPreIssue,
       updateReplyText,
@@ -2738,9 +2726,6 @@ define ("actions/chatView",
       startPollingForMessages,
       stopPollingForMessages,
       addMessages,
-      setActiveIssueId,
-      setChatViewFooter,
-      updateIssueState,
       markMessagesSeen,
       handleScrollPastExistingConversation,
       switchToChatView,

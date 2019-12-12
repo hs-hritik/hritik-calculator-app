@@ -48,7 +48,7 @@ define ("extras/lsMiddleware",
           }
           break;
 
-        case ACTION_TYPES.UPDATE_USER_LAT:
+        case ACTION_TYPES.ISSUE_CREATED:
           throttledSetLastActivityTime ();
           break;
 

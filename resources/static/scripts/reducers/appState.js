@@ -294,6 +294,14 @@ define ("reducers/appState",
                                    {$set: showCloseButton}
           });
 
+        case ACTION_TYPES.ISSUE_CREATED:
+          const {activeIssueId, internalIssueId} = action;
+          return update (state, {
+            activeIssueId: {$set: activeIssueId},
+            internalIssueId: {$set: internalIssueId},
+            issueState: {$set: ISSUE_STATE.ACTIVE}
+          });
+
         case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
           return update (state, {
             activeIssueId: {$set: action.id}

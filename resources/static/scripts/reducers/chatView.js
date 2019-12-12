@@ -166,6 +166,21 @@ define ("reducers/chatView",
           }
           return update (state, updateObj);
 
+        case ACTION_TYPES.ISSUE_CREATED:
+          // When an issue is created, reset userInput and chat view error
+          // @TODO: Check if the footer needs to be updated.
+          return update (state, {
+            userInput: {
+              value: {$set: ""},
+              // Save user entered text for input type default input
+              defaultInputValue: {
+                $set: isInputTypeDefault (state) ? "" : state.userInput.defaultInputValue
+              },
+              errorMsg: {$set: ""}
+            },
+            error: {$set: INITIAL_ERROR_STATE}
+          });
+
         case ACTION_TYPES.UPDATE_REPLY_TEXT:
           return update (state, {
             userInput: {
@@ -389,11 +404,6 @@ define ("reducers/chatView",
         case ACTION_TYPES.SET_CHAT_VIEW_ERROR:
           return update (state, {
             error: {$set: action.error}
-          });
-
-        case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
-          return update (state, {
-            error: {$set: INITIAL_ERROR_STATE}
           });
 
         case ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS:
