@@ -6,11 +6,11 @@
  * @Contributor Prajwalit Bhopale <prajwalit@helpshift.com>
  */
 
-const gulp = require ("gulp");
-const requireDir = require ("require-dir");
-const runSequence = require ("run-sequence");
+const gulp = require("gulp");
+const requireDir = require("require-dir");
+const runSequence = require("run-sequence");
 
-requireDir ("./gulp");
+requireDir("./gulp");
 
 const PATHS = {
   htmlSrc: "static/**/*.html",
@@ -27,8 +27,8 @@ const PATHS = {
 /**
  * Lists all the possible commands
  */
-gulp.task ("ls", function () {
-  console.log (`\
+gulp.task("ls", function() {
+  console.log(`\
 
     NOTE - [Production] denotes that the task runs for production builds and should be
     updated with caution.
@@ -67,52 +67,57 @@ gulp.task ("ls", function () {
 /**
  * Copy HTML files from source dir (workspace) to destination dir (server)
  */
-gulp.task ("html", () => {
-  return gulp.src (PATHS.htmlSrc)
-    .pipe (gulp.dest (PATHS.localhostDest));
+gulp.task("html", () => {
+  return gulp.src(PATHS.htmlSrc).pipe(gulp.dest(PATHS.localhostDest));
 });
 
 /**
  * Watch HTML files
  */
-gulp.task ("html:watch", () => {
-  gulp.watch (PATHS.htmlSrc, () => {
-    runSequence ("html", "replace-localhost", "copy-demo");
+gulp.task("html:watch", () => {
+  gulp.watch(PATHS.htmlSrc, () => {
+    runSequence("html", "replace-localhost", "copy-demo");
   });
 });
 
 /**
  * Copy font files from source dir (workspace) to destination dir (server)
  */
-gulp.task ("fonts", () => {
-  return gulp.src (PATHS.fontsSrc)
-    .pipe (gulp.dest (PATHS.fontsDest));
+gulp.task("fonts", () => {
+  return gulp.src(PATHS.fontsSrc).pipe(gulp.dest(PATHS.fontsDest));
 });
 
 /**
  * Copy assets from source dir (workspace) to destination dir (server)
  */
-gulp.task ("assets", () => {
-  return gulp.src (PATHS.assetsSrc)
-    .pipe (gulp.dest (PATHS.assetsDest));
+gulp.task("assets", () => {
+  return gulp.src(PATHS.assetsSrc).pipe(gulp.dest(PATHS.assetsDest));
 });
 
 /**
  * Local server specific task.
  * Copy the demo entry point HTML to a destination
  */
-gulp.task ("copy-demo", () => {
-  return gulp.src (PATHS.demoSrc)
-    .pipe (gulp.dest (PATHS.demoDest));
+gulp.task("copy-demo", () => {
+  return gulp.src(PATHS.demoSrc).pipe(gulp.dest(PATHS.demoDest));
 });
 
 /**
  * Combined tasks to prepare resources for local development
  */
-gulp.task ("build-localhost", function () {
-  console.log ("Preparing resources for local env");
-  runSequence ("html", "sass:styles", "libs", "fonts", "assets", "scripts",
-    "replace-localhost", "copy-webchat", "copy-demo");
+gulp.task("build-localhost", function() {
+  console.log("Preparing resources for local env");
+  runSequence(
+    "html",
+    "sass:styles",
+    "libs",
+    "fonts",
+    "assets",
+    "scripts",
+    "replace-localhost",
+    "copy-webchat",
+    "copy-demo"
+  );
 });
 
 /**
@@ -129,11 +134,11 @@ gulp.task ("build-localhost", function () {
  * runSequence ("sri", "update-sri-list", "update-ec2-sri", "update-azure-sri",
  *   "update-localshiva-sri");
  */
-gulp.task ("generate-sri", function () {
-  console.log ("Generating & Embedding environment specific SRI for JS bundles");
-  runSequence ("sri", "update-sri-list", "update-ec2-sri", "update-localshiva-sri");
+gulp.task("generate-sri", function() {
+  console.log("Generating & Embedding environment specific SRI for JS bundles");
+  runSequence("sri", "update-sri-list", "update-ec2-sri", "update-localshiva-sri");
 });
 
-gulp.task ("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);
-gulp.task ("default", ["watch"]);
-gulp.task ("lint", ["sass:lint", "eslint"]);
+gulp.task("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);
+gulp.task("default", ["watch"]);
+gulp.task("lint", ["sass:lint", "eslint"]);

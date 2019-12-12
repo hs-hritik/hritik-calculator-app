@@ -4,40 +4,38 @@
  * @created May 31, 2017
  */
 
-require (
-  [
-    "store",
-    "extras/api",
-    "extras/globalEvents",
-    "actions/postSdkMessage"
-  ],
-  function (store, api, globalEvents, postSdkMessage) {
-    "use strict";
+require(["store", "extras/api", "extras/globalEvents", "actions/postSdkMessage"], function(
+  store,
+  api,
+  globalEvents,
+  postSdkMessage
+) {
+  "use strict";
 
-    /**
-     * Receive Message and take required action.
-     * @param {Event} event
-     */
-    const onMessage = (event) => {
-      let type, data;
+  /**
+   * Receive Message and take required action.
+   * @param {Event} event
+   */
+  const onMessage = (event) => {
+    let type, data;
 
-      try {
-        const eventData = JSON.parse (event.data);
-        type = eventData.type;
-        data = eventData.data;
-      } catch (exception) {
-        // We are not handling any kind of exception if data parsing fails
-      } finally {
-        if (type) {
-          api.handle (type, data);
-        }
+    try {
+      const eventData = JSON.parse(event.data);
+      type = eventData.type;
+      data = eventData.data;
+    } catch (exception) {
+      // We are not handling any kind of exception if data parsing fails
+    } finally {
+      if (type) {
+        api.handle(type, data);
       }
-    };
+    }
+  };
 
-    window.addEventListener ("message", onMessage, false);
+  window.addEventListener("message", onMessage, false);
 
-    globalEvents.addFocusAndBlurEventListener ();
-    globalEvents.addSelectEventListener ();
+  globalEvents.addFocusAndBlurEventListener();
+  globalEvents.addSelectEventListener();
 
-    store.dispatch (postSdkMessage.jsLoaded ());
-  });
+  store.dispatch(postSdkMessage.jsLoaded());
+});

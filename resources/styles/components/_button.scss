@@ -18,7 +18,6 @@ $hs-button-line-height: 1;
 /// @type Number
 $hs-button-icon-only-line-height: 0;
 
-
 /// Default fill for buttons. Can either be `solid` or `hollow`.
 /// @type Keyword
 $hs-button-fill: solid;
@@ -29,29 +28,29 @@ $hs-button-bg: (
   solid: (
     base: (
       primary: color(primary),
-      secondary: color(secondary),
+      secondary: color(secondary)
     ),
     hover: (
       primary: color(primary, light),
-      secondary: color(secondary, dark),
+      secondary: color(secondary, dark)
     ),
     active: (
       primary: color(primary, dark),
-      secondary: color(secondary, dark),
+      secondary: color(secondary, dark)
     )
   ),
   hollow: (
     base: (
       primary: transparent,
-      secondary: transparent,
+      secondary: transparent
     ),
-    hover:(
+    hover: (
       primary: color(primary, light),
-      secondary: color(secondary, light),
+      secondary: color(secondary, light)
     ),
     active: (
       primary: color(primary, dark),
-      secondary: color(secondary, light),
+      secondary: color(secondary, light)
     )
   )
 );
@@ -61,12 +60,12 @@ $hs-button-bg: (
 $hs-button-colors: (
   solid: (
     primary: color(text, white),
-    secondary: color(text, white),
+    secondary: color(text, white)
   ),
   hollow: (
     primary: color(primary),
-    secondary: color(secondary),
-  ),
+    secondary: color(secondary)
+  )
 );
 
 /// Font sizes for buttons.
@@ -95,7 +94,7 @@ $hs-button-font-sizes: (
     icon: 16px,
     icon-only: 20px,
     icon-dropdown: 4px
-  ),
+  )
 );
 
 /// Paddings for all button sizes.
@@ -104,27 +103,27 @@ $hs-button-paddings: (
   base: (
     normal: 12px 20px,
     icon: 12px,
-    icon-only: 5px,
+    icon-only: 5px
   ),
   small: (
     normal: 8px 16px,
     icon: 12px,
-    icon-only: 3px,
+    icon-only: 3px
   ),
   x-small: (
     normal: 7px 12px,
     icon: 8px,
-    icon-only: 1px,
+    icon-only: 1px
   ),
   xx-small: (
     normal: 5px 8px,
     icon: 4px,
-    icon-only: 1px,
+    icon-only: 1px
   )
 );
 
 /// Box Shadow for buttons on Hover and Active states
-$hs-button-box-shadow: rgba(0, 0, 0, .15) 0 1px 4px;
+$hs-button-box-shadow: rgba(0, 0, 0, 0.15) 0 1px 4px;
 
 /// Border radius for base and small buttons
 /// @type Number
@@ -136,7 +135,7 @@ $hs-button-radius-small: radius(small);
 
 /// opacity for a disabled button.
 /// @type List
-$hs-button-disabled-opacity: .5;
+$hs-button-disabled-opacity: 0.5;
 
 /// Add base styles for buttons
 /// @param {Keyword} $size [base] - Size of the button to add styles for.
@@ -177,7 +176,7 @@ $hs-button-disabled-opacity: .5;
     border-radius: $hs-button-radius-small;
   }
 
-  transition: background-color .125s ease-out;
+  transition: background-color 0.125s ease-out;
   -moz-appearance: none;
   -webkit-appearance: none;
 }
@@ -303,7 +302,6 @@ $hs-button-disabled-opacity: .5;
 }
 
 @include component(button, $include-typography-styles: false) {
-
   .hs-button {
     @include button;
 
@@ -404,7 +402,7 @@ $hs-button-disabled-opacity: .5;
         &.hs-button--dropdown {
           [class*="ion-"],
           .hs-button__icon {
-            margin-top: $_icon-font-size * -.5;
+            margin-top: $_icon-font-size * -0.5;
             font-size: $_icon-font-size;
           }
         }
@@ -438,8 +436,8 @@ $hs-button-disabled-opacity: .5;
         // hs-button--dropdown
         &.hs-button--dropdown.hs-button--dropdown {
           .hs-button__icon {
-            margin-top: gutter($_icon-dropdown-size * -.5);
-            margin-right: gutter($_icon-dropdown-size * .5);
+            margin-top: gutter($_icon-dropdown-size * -0.5);
+            margin-right: gutter($_icon-dropdown-size * 0.5);
 
             &::after {
               border-style: inset;

@@ -4,15 +4,13 @@
  * @created July 26, 2017
  */
 
-define ("actions/batch",
-  ["constants/actionTypes"],
-  function (ACTION_TYPES) {
-    "use strict";
+define("actions/batch", ["constants/actionTypes"], function(ACTION_TYPES) {
+  "use strict";
 
-    return (actions) => {
-      return {
-        type: ACTION_TYPES.BATCH_ACTIONS,
-        actions
-      };
+  return (actions) => {
+    return {
+      type: ACTION_TYPES.BATCH_ACTIONS,
+      actions
     };
-  });
+  };
+});

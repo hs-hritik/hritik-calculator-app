@@ -9,7 +9,7 @@
  * @created Sep 10, 2018
  */
 
-(function (win, doc) {
+(function(win, doc) {
   "use strict";
 
   const AUI_PREFIX = "hsft_anon_";
@@ -33,16 +33,17 @@
   const _localUrlSearchParams = () => {
     // To see railroad diagram of the following reg exp visit:
     // https://regexper.com/#%2F%28%5B%5E%26%3D%5D%2B%29%3D%3F%28%5B%5E%26%5D*%29%2Fg
-    const regex = /([^&=]+)=?([^&]*)/g, store = {};
+    const regex = /([^&=]+)=?([^&]*)/g,
+      store = {};
     let match;
     let haystack = window.location.search;
 
-    haystack = haystack.substring (haystack.indexOf ("?") + 1, haystack.length);
-    match = regex.exec (haystack);
+    haystack = haystack.substring(haystack.indexOf("?") + 1, haystack.length);
+    match = regex.exec(haystack);
 
     while (match) {
-      store [decodeURIComponent (match [1])] = decodeURIComponent (match [2]);
-      match = regex.exec (haystack);
+      store[decodeURIComponent(match[1])] = decodeURIComponent(match[2]);
+      match = regex.exec(haystack);
     }
 
     return {
@@ -52,11 +53,10 @@
        * @returns {String} value - value from the store
        */
       get: (key) => {
-        return store [key];
+        return store[key];
       }
     };
   };
-
 
   /**
    * Post message to the re-engagement iframe.
@@ -69,10 +69,13 @@
    * @param {Object} data - data for the message
    */
   const _postMessage = (iframe, targetUrl, type, data) => {
-    iframe.contentWindow.postMessage (JSON.stringify ({
-      type,
-      data
-    }), targetUrl);
+    iframe.contentWindow.postMessage(
+      JSON.stringify({
+        type,
+        data
+      }),
+      targetUrl
+    );
   };
 
   /**
@@ -84,11 +87,11 @@
     const qs = [];
 
     for (const key in obj) {
-      if (obj.hasOwnProperty (key)) {
-        qs.push (encodeURIComponent (key) + "=" + encodeURIComponent (obj [key]));
+      if (obj.hasOwnProperty(key)) {
+        qs.push(encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]));
       }
     }
-    return qs.join ("&");
+    return qs.join("&");
   };
 
   /**
@@ -103,30 +106,28 @@
    * @returns {XMLHttpRequest Object} xhr
    */
   const sendXhr = (params = {}) => {
-    const xhr = new XMLHttpRequest ();
+    const xhr = new XMLHttpRequest();
     let {data} = params;
     const {url, onSuccess} = params;
     const method = "POST";
 
     if (data) {
-      data = queryStringify (data);
+      data = queryStringify(data);
     }
 
-    xhr.open (method, url, true);
+    xhr.open(method, url, true);
 
-    xhr.setRequestHeader ("Content-Type", "application/x-www-form-urlencoded");
-    xhr.setRequestHeader ("X-Requested-With", "XMLHttpRequest");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
     // Handling success callback only as the XHR is expected to fail silently
-    xhr.onreadystatechange = function () {
-      if ((xhr.readyState === 4) &&
-          (xhr.status >= 200 && xhr.status < 300) &&
-          onSuccess) {
-        onSuccess (JSON.parse (xhr.responseText), xhr, xhr.status);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300 && onSuccess) {
+        onSuccess(JSON.parse(xhr.responseText), xhr, xhr.status);
       }
     };
 
-    xhr.send (data);
+    xhr.send(data);
     return xhr;
   };
 
@@ -137,7 +138,7 @@
    * @retruns {Object} XMLHttpRequest
    */
   const getReEnagementConfig = (data = {}, onSuccess) => {
-    return sendXhr ({
+    return sendXhr({
       url: ENV_API_ROOT + GET_USER_CONFIG_URL,
       data,
       onSuccess
@@ -150,7 +151,7 @@
    * @returns {Element} - re-engagement iframe
    */
   const createReEngagementIframe = (src) => {
-    const iframe = doc.createElement ("iframe");
+    const iframe = doc.createElement("iframe");
 
     iframe.id = "hs-re-engagement-iframe";
     iframe.src = src;
@@ -163,7 +164,7 @@
    * @params {String} redirectText - localised redirection text to be displayed
    */
   const showRedirectingText = (redirectText) => {
-    doc.querySelector (".js-redirection-text").innerText = `${redirectText}...`;
+    doc.querySelector(".js-redirection-text").innerText = `${redirectText}...`;
   };
 
   /**
@@ -193,7 +194,7 @@
    * @returns {Boolean}
    */
   const _isUserAnonymous = (id = "") => {
-    return (id.indexOf (AUI_PREFIX) === 0);
+    return id.indexOf(AUI_PREFIX) === 0;
   };
 
   /**
@@ -208,92 +209,99 @@
     // If URLSearchParams constructor is not present then use
     // _localUrlSearchParams.
     if (window.URLSearchParams) {
-      urlParams = new URLSearchParams (win.location.search);
+      urlParams = new URLSearchParams(win.location.search);
     } else {
-      urlParams = _localUrlSearchParams ();
+      urlParams = _localUrlSearchParams();
     }
 
-    const link = urlParams.get ("link");
-    const redirectText = urlParams.get ("redirect_text");
+    const link = urlParams.get("link");
+    const redirectText = urlParams.get("redirect_text");
 
     // Shows the localised "Redirecting to" proceeded by the channel name.
-    showRedirectingText (redirectText);
+    showRedirectingText(redirectText);
 
     /*
      * Get re-engagement config from backend & on success of the XHR
      * create & append re-engagement iframe to the body.
      */
-    getReEnagementConfig ({
-      link
-    }, (response) => {
-      let redirectionLink;
+    getReEnagementConfig(
+      {
+        link
+      },
+      (response) => {
+        let redirectionLink;
 
-      // 1. If user is logged-in & custom URL is provided then redirect to
-      // the provided custom URL.
-      // 2. If user is logged-in & custom URL is not provided then redirect to
-      // the last session URL.
-      // 3. If user is anonymous then redirect to last session URL.
-      if (response.custom_url && !_isUserAnonymous (response.uid)) {
-        redirectionLink = response.custom_url;
-      } else {
-        redirectionLink = response.last_session_url;
-      }
+        // 1. If user is logged-in & custom URL is provided then redirect to
+        // the provided custom URL.
+        // 2. If user is logged-in & custom URL is not provided then redirect to
+        // the last session URL.
+        // 3. If user is anonymous then redirect to last session URL.
+        if (response.custom_url && !_isUserAnonymous(response.uid)) {
+          redirectionLink = response.custom_url;
+        } else {
+          redirectionLink = response.last_session_url;
+        }
 
-      if (response.expired_link) {
-        // If link has expired then redirect to provided URL.
-        // Webchat will consider this user as new anonymous user
-        // unless user logs-in into the system.
-        win.location.href = redirectionLink;
-        return;
-      }
-
-      response = _getProcessedResponse (response);
-
-      // On dev env, this gets replaced by a localhost URL.
-      // See babel tasks in resources/gulp/javascript.js
-      const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
-      const urlParts = WEB_CHAT_ROOT.split ("://"),
-            PROTOCOL = `${urlParts [0]}://`,
-            PLAT_ID = response.pid,
-            HOST = urlParts [1],
-            PATH = "/html/re-engagement.html";
-
-      // Truncate platform id to a fixed length (24 in this implementation).
-      // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
-      // Part 1 - First split plat id by "_platform_" and slice the first part by 8
-      // chars -> get the first 8 chars of the domain. "testdoma" in this case.
-      // Part 2 - Then slice the plat id from the end by 16 chars -> get a unique
-      // part of the platform id. "-0319dffe2b25f9c" in this case.
-      const TRUNCATED_PLAT_ID = PLAT_ID.split ("_platform_") [0].slice (0, 8) + PLAT_ID.slice (-16);
-
-      const DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
-      const IFRAME_SRC = `${DOMAIN}${PATH}`;
-
-      const iframe = createReEngagementIframe (IFRAME_SRC);
-      doc.body.appendChild (iframe);
-
-      win.addEventListener ("message", (ev) => {
-        let type;
-
-        try {
-          const eventData = JSON.parse (ev.data);
-          type = eventData.type;
-        } catch (exception) {
+        if (response.expired_link) {
+          // If link has expired then redirect to provided URL.
+          // Webchat will consider this user as new anonymous user
+          // unless user logs-in into the system.
+          win.location.href = redirectionLink;
           return;
         }
 
-        if (type === MESSAGE_TYPES.SDK_IFRAME_LOADED) {
-          // Post message to iframe with XHR response.
-          // This will set the local storage values for the truncate_pid.hs.com
-          _postMessage (iframe, IFRAME_SRC, MESSAGE_TYPES.CMD_SET_LS, response);
-        } else if (type === MESSAGE_TYPES.SDK_SET_LS_DONE) {
-          // If post message is successful then redirect to the brand's domain
-          win.location.href = redirectionLink;
-        }
-      }, false);
-    });
+        response = _getProcessedResponse(response);
+
+        // On dev env, this gets replaced by a localhost URL.
+        // See babel tasks in resources/gulp/javascript.js
+        const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
+        const urlParts = WEB_CHAT_ROOT.split("://"),
+          PROTOCOL = `${urlParts[0]}://`,
+          PLAT_ID = response.pid,
+          HOST = urlParts[1],
+          PATH = "/html/re-engagement.html";
+
+        // Truncate platform id to a fixed length (24 in this implementation).
+        // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
+        // Part 1 - First split plat id by "_platform_" and slice the first part by 8
+        // chars -> get the first 8 chars of the domain. "testdoma" in this case.
+        // Part 2 - Then slice the plat id from the end by 16 chars -> get a unique
+        // part of the platform id. "-0319dffe2b25f9c" in this case.
+        const TRUNCATED_PLAT_ID = PLAT_ID.split("_platform_")[0].slice(0, 8) + PLAT_ID.slice(-16);
+
+        const DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
+        const IFRAME_SRC = `${DOMAIN}${PATH}`;
+
+        const iframe = createReEngagementIframe(IFRAME_SRC);
+        doc.body.appendChild(iframe);
+
+        win.addEventListener(
+          "message",
+          (ev) => {
+            let type;
+
+            try {
+              const eventData = JSON.parse(ev.data);
+              type = eventData.type;
+            } catch (exception) {
+              return;
+            }
+
+            if (type === MESSAGE_TYPES.SDK_IFRAME_LOADED) {
+              // Post message to iframe with XHR response.
+              // This will set the local storage values for the truncate_pid.hs.com
+              _postMessage(iframe, IFRAME_SRC, MESSAGE_TYPES.CMD_SET_LS, response);
+            } else if (type === MESSAGE_TYPES.SDK_SET_LS_DONE) {
+              // If post message is successful then redirect to the brand's domain
+              win.location.href = redirectionLink;
+            }
+          },
+          false
+        );
+      }
+    );
   };
 
   // Initializes the redirection process
-  init ();
-}) (window, document);
+  init();
+})(window, document);

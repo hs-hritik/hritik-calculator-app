@@ -10,7 +10,7 @@
 /// @group Animation
 ////
 
-$duration: .25s;
+$duration: 0.25s;
 $delay: 0s;
 $function: ease;
 $fill: both;
@@ -33,7 +33,6 @@ $animations: (
     0%: (
       opacity: "0"
     ),
-
     100%: (
       opacity: "1"
     )
@@ -43,7 +42,6 @@ $animations: (
       transform: "translateY(400px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateY(0)",
       opacity: "1"
@@ -54,7 +52,6 @@ $animations: (
       transform: "translateY(20px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateY(0)",
       opacity: "1"
@@ -65,7 +62,6 @@ $animations: (
       transform: "translateX(-50%) translateY(20px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(-50%) translateY(0)",
       opacity: "1"
@@ -76,7 +72,6 @@ $animations: (
       transform: "translateY(10px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateY(0)",
       opacity: "1"
@@ -87,7 +82,6 @@ $animations: (
       transform: "translateX(400px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0)",
       opacity: "1"
@@ -98,7 +92,6 @@ $animations: (
       transform: "translateX(20px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0)",
       opacity: "1"
@@ -109,7 +102,6 @@ $animations: (
       transform: "translateX(20px) translateY(50%)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0) translateY(50%)",
       opacity: "1"
@@ -120,7 +112,6 @@ $animations: (
       transform: "translateX(10px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0)",
       opacity: "1"
@@ -131,7 +122,6 @@ $animations: (
       transform: "translateX(-400px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0)",
       opacity: "1"
@@ -142,7 +132,6 @@ $animations: (
       transform: "translateX(-20px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0)",
       opacity: "1"
@@ -153,7 +142,6 @@ $animations: (
       transform: "translateX(-20px) translateY(50%)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0) translateY(50%)",
       opacity: "1"
@@ -164,7 +152,6 @@ $animations: (
       transform: "translateX(-10px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(0)",
       opacity: "1"
@@ -175,7 +162,6 @@ $animations: (
       transform: "translateY(-20px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateY(0)",
       opacity: "1"
@@ -186,7 +172,6 @@ $animations: (
       transform: "translateX(-50%) translateY(-20px)",
       opacity: "0"
     ),
-
     100%: (
       transform: "translateX(-50%) translateY(0)",
       opacity: "1"
@@ -196,7 +181,6 @@ $animations: (
     0%: (
       opacity: "1"
     ),
-
     100%: (
       opacity: "0"
     )
@@ -206,7 +190,6 @@ $animations: (
       transform: "translateY(0)",
       opacity: "1"
     ),
-
     100%: (
       transform: "translateY(-20px)",
       opacity: "0"
@@ -217,7 +200,6 @@ $animations: (
       transform: "translateY(0)",
       opacity: "1"
     ),
-
     100%: (
       transform: "translateY(400px)",
       opacity: "0"
@@ -228,7 +210,6 @@ $animations: (
       transform: "translateY(0)",
       opacity: "1"
     ),
-
     100%: (
       transform: "translateY(20px)",
       opacity: "0"
@@ -246,38 +227,37 @@ $animations: (
     0%: (
       transform: "rotate(0deg)"
     ),
-
     100%: (
       transform: "rotate(360deg)"
     )
   ),
   wobble: (
     0%: (
-      transform: "rotateZ(0deg)",
+      transform: "rotateZ(0deg)"
     ),
     25%: (
-      transform: "rotateZ(1deg)",
+      transform: "rotateZ(1deg)"
     ),
     75%: (
-      transform: "rotateZ(-1deg)",
+      transform: "rotateZ(-1deg)"
     ),
     100%: (
-      transform: "rotateZ(0deg)",
-    ),
+      transform: "rotateZ(0deg)"
+    )
   ),
   typing-indicator: (
     0%: (
-      opacity: "0.3",
+      opacity: "0.3"
     ),
     40%: (
-      opacity: "0.7",
+      opacity: "0.7"
     ),
     80%: (
-      opacity: "0.3",
+      opacity: "0.3"
     ),
     100%: (
-      opacity: "0.3",
-    ),
+      opacity: "0.3"
+    )
   )
 );
 //
@@ -288,7 +268,6 @@ $animations: (
 @mixin keyframes($name, $kpv-map, $debug: true) {
   @keyframes hs-#{$name} {
     @each $frame, $properties in $kpv-map {
-
       #{$frame} {
         @each $prop, $value in $properties {
           #{unquote($prop)}: #{unquote($value)};
@@ -305,9 +284,13 @@ $animations: (
 }
 
 @mixin animation(
-  $name, $duration: $duration, $delay: $delay,
-  $function: $function, $fill: $fill,
-  $visibility: $visibility, $count: $count
+  $name,
+  $duration: $duration,
+  $delay: $delay,
+  $function: $function,
+  $fill: $fill,
+  $visibility: $visibility,
+  $count: $count
 ) {
   animation-delay: #{$delay};
   animation-duration: #{$duration};

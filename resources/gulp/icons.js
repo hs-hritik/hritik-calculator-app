@@ -1,19 +1,18 @@
 /* eslint-disable strict, no-console */
 /* global __dirname */
 
-const gulp = require ("gulp");
-const gutil = require ("gulp-util");
-const which = require ("npm-which");
-const {argv} = require ("yargs");
-const {generateIconFonts, compileLodash} = require ("./utils");
-
+const gulp = require("gulp");
+const gutil = require("gulp-util");
+const which = require("npm-which");
+const {argv} = require("yargs");
+const {generateIconFonts, compileLodash} = require("./utils");
 
 const PATHS = {
   design: {
-    base        : "design",
-    sketchFile  : "design/icons.sketch",
-    previewTmpl : "design/lodash-templates/_icons-preview-page.html",
-    sassMapTmpl : "design/lodash-templates/_icons-sass-map.scss"
+    base: "design",
+    sketchFile: "design/icons.sketch",
+    previewTmpl: "design/lodash-templates/_icons-preview-page.html",
+    sassMapTmpl: "design/lodash-templates/_icons-sass-map.scss"
   },
   fonts: "static/fonts",
   hestia: {
@@ -24,13 +23,13 @@ const PATHS = {
 /**
  * Task to generate iconfont
  */
-gulp.task ("icons", function () {
+gulp.task("icons", function() {
   try {
-    which.sync ("sketchtool", {cwd: __dirname});
+    which.sync("sketchtool", {cwd: __dirname});
   } catch (error) {
-    gutil.log (gutil.colors.red ("Error: ") + error.message);
+    gutil.log(gutil.colors.red("Error: ") + error.message);
     const errorMsg = "please install sketchtool from here - http://www.sketchapp.com/tool/";
-    gutil.log (gutil.colors.red ("Error: ") + errorMsg);
+    gutil.log(gutil.colors.red("Error: ") + errorMsg);
     return;
   }
 
@@ -38,36 +37,39 @@ gulp.task ("icons", function () {
   const iconFontName = "hesticons";
   const iconFontDest = `${PATHS.fonts}/${iconFontName}`;
 
-  const filesToCompile = [{
-    template: (PATHS.design.previewTmpl),
-    name: (`${iconFontName}-preview.html`),
-    outputFolder: PATHS.design.base
-  }, {
-    template: (PATHS.design.sassMapTmpl),
-    name: (`_${iconFontName}-icon-code.scss`),
-    outputFolder: PATHS.hestia.data
-  }];
+  const filesToCompile = [
+    {
+      template: PATHS.design.previewTmpl,
+      name: `${iconFontName}-preview.html`,
+      outputFolder: PATHS.design.base
+    },
+    {
+      template: PATHS.design.sassMapTmpl,
+      name: `_${iconFontName}-icon-code.scss`,
+      outputFolder: PATHS.hestia.data
+    }
+  ];
 
-  const onGlyphs = function (glyphs) {
+  const onGlyphs = function(glyphs) {
     const OPTIONS = {
-      glyphs: glyphs.map (function (glyph) {
+      glyphs: glyphs.map(function(glyph) {
         return {
           name: glyph.name,
-          codepoint: glyph.unicode [0].charCodeAt (0)
+          codepoint: glyph.unicode[0].charCodeAt(0)
         };
       }),
       fontName: iconFontName,
-      fontPath: (`../${iconFontDest}/`),
+      fontPath: `../${iconFontDest}/`,
       className: "s"
     };
-    compileLodash (OPTIONS, filesToCompile);
+    compileLodash(OPTIONS, filesToCompile);
   };
 
   if (argv.watch || argv.w) {
-    gulp.watch (sketchFile, function () {
-      generateIconFonts (sketchFile, iconFontName, iconFontDest, onGlyphs);
+    gulp.watch(sketchFile, function() {
+      generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
     });
     return;
   }
-  generateIconFonts (sketchFile, iconFontName, iconFontDest, onGlyphs);
+  generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
 });

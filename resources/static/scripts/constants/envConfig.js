@@ -6,13 +6,12 @@
  * @created 24 Aug, 2017
  */
 
-define ("constants/envConfig",
-  function () {
-    "use strict";
+define("constants/envConfig", function() {
+  "use strict";
 
-    const apiRoot = "https://api.helpshift.com/";
+  const apiRoot = "https://api.helpshift.com/";
 
-    return {
-      apiRoot
-    };
-  });
+  return {
+    apiRoot
+  };
+});
