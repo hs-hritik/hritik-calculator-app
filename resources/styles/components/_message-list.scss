@@ -11,7 +11,6 @@
 ///
 
 @include component(message-list) {
-
   $timestamp-color: color(text, light);
 
   $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
@@ -63,11 +62,11 @@
     }
 
     &__typing-anim-2 {
-      animation-delay: .075s;
+      animation-delay: 0.075s;
     }
 
     &__typing-anim-3 {
-      animation-delay: .150s;
+      animation-delay: 0.15s;
     }
 
     &__pills-container {
@@ -80,9 +79,9 @@
     &__pill-heading {
       margin-bottom: gutter(4);
       font-weight: font-weight(medium);
-      letter-spacing: -.5px;
+      letter-spacing: -0.5px;
       color: $chat-widget-secondary-text-color;
-      opacity: .8;
+      opacity: 0.8;
     }
 
     &__pill-options {

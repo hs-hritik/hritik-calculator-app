@@ -1,6 +1,6 @@
 const DOMAIN = "{{ENV_WEB_CHAT_ROOT}}";
 
-require.config ({
+require.config({
   baseUrl: `${DOMAIN}/scripts/`,
   urlArgs: "v=2.37.0",
   paths: {

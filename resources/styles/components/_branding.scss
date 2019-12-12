@@ -7,7 +7,6 @@
 // - - - - - - - - - - - - - - -
 
 @include component(branding) {
-
   $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
 
   .hs-branding {
@@ -15,7 +14,7 @@
     padding: gutter(16 0 8 0);
     color: $chat-widget-secondary-text-color;
     text-align: center;
-    opacity: .4;
+    opacity: 0.4;
 
     &--hidden {
       padding: gutter(4 0);

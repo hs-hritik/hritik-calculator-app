@@ -24,7 +24,7 @@
     cursor: pointer;
     background: $bg-color;
     border-radius: radius(round);
-    box-shadow: 0 0 1.5px 0 rgba(0, 0, 0, .33);
+    box-shadow: 0 0 1.5px 0 rgba(0, 0, 0, 0.33);
 
     &__icon {
       color: $arrow-color;

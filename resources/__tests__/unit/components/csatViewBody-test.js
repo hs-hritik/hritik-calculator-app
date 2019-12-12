@@ -14,13 +14,13 @@ const setup = () => {
     rating: 0,
     review: "MOCK_REVIEW",
     csatSaveInProgress: false,
-    onCsatReviewChange: jest.fn (),
-    onStarClick: jest.fn (),
-    setAxActiveIndex: jest.fn (),
-    onUpdateStarRating: jest.fn ()
+    onCsatReviewChange: jest.fn(),
+    onStarClick: jest.fn(),
+    setAxActiveIndex: jest.fn(),
+    onUpdateStarRating: jest.fn()
   };
 
-  const enzymeWrapper = shallow (<CsatViewBody {...props} />);
+  const enzymeWrapper = shallow(<CsatViewBody {...props} />);
 
   return {
     props,
@@ -28,32 +28,31 @@ const setup = () => {
   };
 };
 
-describe ("CsatViewBody", () => {
-  it ("should render correctly (snapshot)", () => {
-    const {props} = setup ();
-    const tree = shallow (<CsatViewBody {...props} />);
+describe("CsatViewBody", () => {
+  it("should render correctly (snapshot)", () => {
+    const {props} = setup();
+    const tree = shallow(<CsatViewBody {...props} />);
 
-    expect (toJson (tree)).toMatchSnapshot ();
+    expect(toJson(tree)).toMatchSnapshot();
   });
 
-  it ("should render its elements correctly", () => {
-    const {enzymeWrapper} = setup ();
-    expect (enzymeWrapper.find ("h3").text ()).toBe ("MOCK_REQUEST_MESSAGE");
+  it("should render its elements correctly", () => {
+    const {enzymeWrapper} = setup();
+    expect(enzymeWrapper.find("h3").text()).toBe("MOCK_REQUEST_MESSAGE");
 
-    const starRatingProps = enzymeWrapper.find ("StarRating").props ();
-    expect (starRatingProps.name).toBe ("csat");
-    expect (starRatingProps.editing).toBe (true);
-    expect (starRatingProps.value).toBe (0);
+    const starRatingProps = enzymeWrapper.find("StarRating").props();
+    expect(starRatingProps.name).toBe("csat");
+    expect(starRatingProps.editing).toBe(true);
+    expect(starRatingProps.value).toBe(0);
 
-    expect (enzymeWrapper.find (".hs-csat__form-label").text ())
-      .toBe ("MOCK_REVIEW_TITLE");
+    expect(enzymeWrapper.find(".hs-csat__form-label").text()).toBe("MOCK_REVIEW_TITLE");
 
-    const textareaProps = enzymeWrapper.find ("textarea").props ();
-    expect (textareaProps.value).toBe ("MOCK_REVIEW");
-    expect (textareaProps.dir).toBe ("auto");
-    expect (textareaProps.disabled).toBe (false);
-    expect (textareaProps.className).toBe ("hs-csat__input");
+    const textareaProps = enzymeWrapper.find("textarea").props();
+    expect(textareaProps.value).toBe("MOCK_REVIEW");
+    expect(textareaProps.dir).toBe("auto");
+    expect(textareaProps.disabled).toBe(false);
+    expect(textareaProps.className).toBe("hs-csat__input");
 
-    expect (textareaProps.placeholder).toBe ("MOCK_REVIEW_PLACEHOLDER");
+    expect(textareaProps.placeholder).toBe("MOCK_REVIEW_PLACEHOLDER");
   });
 });
