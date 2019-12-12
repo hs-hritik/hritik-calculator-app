@@ -32,7 +32,7 @@ define ("actions/common",
      * This callback will mostly be stop poller function.
      */
     const reloadApp = (config) => {
-      return (dispatch, getState) => {
+      return (dispatch) => {
         // @TODO: Lazy Preissue Creation
         // Remove config.loading param from the places this fn is called.
         const {trigger, callback} = config;
@@ -42,24 +42,9 @@ define ("actions/common",
           callback ();
         }
 
-        // The reset call (below) needs to know if the message list should also
-        // be reset. Message list is a part of the chat view reducer but the
-        // decision has to be made based on the value in the app state reducer -
-        // featuresEnabled -> coversationHistory. If conv history is on, retain
-        // the message list, else, reset it.
-        const {
-          appState: {
-            featuresEnabled: {
-              conversationHistory: messageListShouldNotReset
-            }
-          }
-        } = getState ();
-
         dispatch (actionCreators.setAppResetTrigger (trigger));
         dispatch (actionCreators.setConversationEnded ());
-        dispatch (actionCreators.reset ({
-          messageListShouldNotReset
-        }));
+        dispatch (actionCreators.reset ());
         dispatch (postSdkMessage.reset ());
         lsHelpers.reset ({
           resetProactiveChat: false
