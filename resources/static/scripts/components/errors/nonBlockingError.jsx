@@ -4,18 +4,15 @@
  * @created Nov 16, 2019
  */
 
-define (
-  "components/errors/nonBlockingError",
-  function () {
-    "use strict";
+define("components/errors/nonBlockingError", function() {
+  "use strict";
 
-    const NonBlockingError = () => (
-      <div className="hs-non-blocking-error">
-        <i className="ion-alert-circled hs-non-blocking-error__icon" />
-          Something went wrong. Please try reloading.
-      </div>
-    );
+  const NonBlockingError = () => (
+    <div className="hs-non-blocking-error">
+      <i className="ion-alert-circled hs-non-blocking-error__icon" />
+      Something went wrong. Please try reloading.
+    </div>
+  );
 
-    return NonBlockingError;
-  }
-);
+  return NonBlockingError;
+});

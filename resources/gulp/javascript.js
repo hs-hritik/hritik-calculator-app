@@ -1,20 +1,20 @@
 /* eslint-disable strict, no-console */
 
-const gulp = require ("gulp");
-const babel = require ("gulp-babel");
-const rename = require ("gulp-rename");
-const print = require ("gulp-print");
-const notifier = require ("node-notifier");
-const {argv} = require ("yargs");
-const {getTimeStamp} = require ("./utils");
-const gutil = require ("gulp-util");
-const replace = require ("gulp-replace");
-const runSequence = require ("run-sequence");
-const concat = require ("gulp-concat");
-const del = require ("del");
-const sri = require ("gulp-sri");
-const fs = require ("fs");
-const uglify = require ("gulp-uglify");
+const gulp = require("gulp");
+const babel = require("gulp-babel");
+const rename = require("gulp-rename");
+const print = require("gulp-print");
+const notifier = require("node-notifier");
+const {argv} = require("yargs");
+const {getTimeStamp} = require("./utils");
+const gutil = require("gulp-util");
+const replace = require("gulp-replace");
+const runSequence = require("run-sequence");
+const concat = require("gulp-concat");
+const del = require("del");
+const sri = require("gulp-sri");
+const fs = require("fs");
+const uglify = require("gulp-uglify");
 
 /**
  * Maximum hashes to add to the integrity attribute of script tag.
@@ -35,7 +35,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.37.0";
+const WEB_CHAT_VERSION = "2.38.0";
 
 /**
  * Name of app bundle
@@ -86,10 +86,7 @@ const PATHS = {
 
   // This is the source of files to be removed once libs bundle is generated
   // Basically remove all the file inside dist/libs except for libs-min.js
-  unwantedLibsSource: [
-    "dist/libs/**/*",
-    `!dist/libs/${LIBS_BUNDLE_NAME}-min.js`
-  ],
+  unwantedLibsSource: ["dist/libs/**/*", `!dist/libs/${LIBS_BUNDLE_NAME}-min.js`],
 
   // App bundle specific path
   unwantedAppSource: [
@@ -169,7 +166,7 @@ integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
     }
   },
   APP: {
-    DEV: "<script src=\"{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js\"></script>",
+    DEV: '<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/pages/webSdk.js"></script>',
     PROD: {
       EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
 integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
@@ -186,18 +183,23 @@ integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
  * @param [boolean] errorGrowl - True to show error notification
  * @returns {Object} - Stream of files
  */
-const babelCompile = function (srcFolder, destFolder, errorGrowl) {
-  return gulp.src (srcFolder)
-    .pipe (babel ().on ("error", function (err) {
-      if (errorGrowl) {
-        notifier.notify ("Oops! Babel compile error!");
-      }
-      gutil.log (err);
-    }))
-    .pipe (gulp.dest (destFolder))
-    .pipe (print (function (filepath) {
-      return `Compiled: ${filepath} ${getTimeStamp ()}`;
-    }));
+const babelCompile = function(srcFolder, destFolder, errorGrowl) {
+  return gulp
+    .src(srcFolder)
+    .pipe(
+      babel().on("error", function(err) {
+        if (errorGrowl) {
+          notifier.notify("Oops! Babel compile error!");
+        }
+        gutil.log(err);
+      })
+    )
+    .pipe(gulp.dest(destFolder))
+    .pipe(
+      print(function(filepath) {
+        return `Compiled: ${filepath} ${getTimeStamp()}`;
+      })
+    );
 };
 
 /**
@@ -207,26 +209,26 @@ const babelCompile = function (srcFolder, destFolder, errorGrowl) {
  * @param [string] separator - Delimiter to identify file name
  */
 const babelWatch = (srcFolder, destFolder, separator = "/scripts/") => {
-  const watcher = gulp.watch (srcFolder, () => {
-    runSequence ("replace-localhost", "copy-webchat");
+  const watcher = gulp.watch(srcFolder, () => {
+    runSequence("replace-localhost", "copy-webchat");
   });
 
-  watcher.on ("change", function (event) {
-    const filePath = event.path.split ("/resources/") [1];
-    let destPath = filePath.split (separator) [1];
+  watcher.on("change", function(event) {
+    const filePath = event.path.split("/resources/")[1];
+    let destPath = filePath.split(separator)[1];
     destPath = `${destFolder}/${destPath}`;
-    destPath = destPath.replace (/\/.[^\/]*$/, "/");
+    destPath = destPath.replace(/\/.[^\/]*$/, "/");
 
-    babelCompile (filePath, destPath, true);
+    babelCompile(filePath, destPath, true);
   });
 };
 
 /**
  * Compiles/watches js/jsx files. Only meant for production.
  */
-gulp.task ("babel", function () {
+gulp.task("babel", function() {
   if (argv.production || argv.prod) {
-    babelCompile (PATHS.scriptsSrc, PATHS.scriptsDest);
+    babelCompile(PATHS.scriptsSrc, PATHS.scriptsDest);
   }
 });
 
@@ -237,93 +239,122 @@ gulp.task ("babel", function () {
  * @returns {String} A string of latest three hashes.
  */
 const getBundleHash = (path) => {
-  const hsSri = require (PATHS.requirePath.hsSri);
-  return hsSri [path].slice (0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join (" ");
+  const hsSri = require(PATHS.requirePath.hsSri);
+  return hsSri[path].slice(0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join(" ");
 };
 
 /**
  * Production task.
  * Replace EC2 specific template strings with given values
  */
-gulp.task ("build-ec2", function () {
-  gulp.src (PATHS.ec2Source)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
+gulp.task("build-ec2", function() {
+  gulp
+    .src(PATHS.ec2Source)
+    .pipe(
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
+      })
+    )
+    .pipe(
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
+      })
+    )
+    .pipe(
+      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
+      })
+    )
+    .pipe(
+      replace("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
         skipBinary: true
-      }))
-      .pipe (gulp.dest (PATHS.ec2Dest));
+      })
+    )
+    .pipe(gulp.dest(PATHS.ec2Dest));
 });
 
 /**
  * Production task.
  * Replace Azure specific template strings with given values
  */
-gulp.task ("build-azure", function () {
-  gulp.src (PATHS.azureSource)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.AZURE, {
+gulp.task("build-azure", function() {
+  gulp
+    .src(PATHS.azureSource)
+    .pipe(
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.AZURE, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.AZURE, {
+      })
+    )
+    .pipe(
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.AZURE, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
+      })
+    )
+    .pipe(
+      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
+      })
+    )
+    .pipe(
+      replace("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
         skipBinary: true
-      }))
-      .pipe (gulp.dest (PATHS.azureDest));
+      })
+    )
+    .pipe(gulp.dest(PATHS.azureDest));
 });
 
 /**
  * Production task.
  * Replace localshiva (staging) specific template strings with given values
  */
-gulp.task ("build-localshiva", function () {
-  gulp.src (PATHS.localshivaSource)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
+gulp.task("build-localshiva", function() {
+  gulp
+    .src(PATHS.localshivaSource)
+    .pipe(
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
+      })
+    )
+    .pipe(
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
+      })
+    )
+    .pipe(
+      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
+      })
+    )
+    .pipe(
+      replace("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
         skipBinary: true
-      }))
-      .pipe (gulp.dest (PATHS.localshivaDest));
+      })
+    )
+    .pipe(gulp.dest(PATHS.localshivaDest));
 });
 
 /**
  * Copy libs from source dir (workspace) to destination dir (server)
  */
-gulp.task ("libs", () => {
-  return gulp.src (PATHS.libsSrc)
-    .pipe (gulp.dest (PATHS.libsDestDev));
+gulp.task("libs", () => {
+  return gulp.src(PATHS.libsSrc).pipe(gulp.dest(PATHS.libsDestDev));
 });
 
 /**
  * Task to combine given libs in single bundle file
  */
-gulp.task ("bundle-libs", function () {
-  gulp.src (PATHS.bundleLibsSource)
-    .pipe (concat (`${LIBS_BUNDLE_NAME}-min.js`))
-    .pipe (gulp.dest (PATHS.libsDest))
-    .pipe (print (() => {
-      // Delete all the lib files inside dist/libs except libs bundle file
-      del (PATHS.unwantedLibsSource);
-      console.log ("Libs are bundled");
-    }));
+gulp.task("bundle-libs", function() {
+  gulp
+    .src(PATHS.bundleLibsSource)
+    .pipe(concat(`${LIBS_BUNDLE_NAME}-min.js`))
+    .pipe(gulp.dest(PATHS.libsDest))
+    .pipe(
+      print(() => {
+        // Delete all the lib files inside dist/libs except libs bundle file
+        del(PATHS.unwantedLibsSource);
+        console.log("Libs are bundled");
+      })
+    );
 });
 
 /**
@@ -332,29 +363,26 @@ gulp.task ("bundle-libs", function () {
  * Note: The source here is the `dist` directory because the compilation (by babel)
  * happens before this step and this step just minifies the compiled files.
  */
-gulp.task ("minify-ext-js", function () {
-  return gulp.src (PATHS.externalJsSrc)
-    .pipe (uglify ())
-    .pipe (gulp.dest (PATHS.externalJsDest));
+gulp.task("minify-ext-js", function() {
+  return gulp
+    .src(PATHS.externalJsSrc)
+    .pipe(uglify())
+    .pipe(gulp.dest(PATHS.externalJsDest));
 });
 
 /**
  * Task to clean unwanted js files after we generate app bundle
  */
-gulp.task ("clean-unwanted-js", function () {
-  del (PATHS.unwantedAppSource);
+gulp.task("clean-unwanted-js", function() {
+  del(PATHS.unwantedAppSource);
 });
 
 /**
  * Task to generate sri for libs and app JS bundles
  */
-gulp.task ("sri", function () {
+gulp.task("sri", function() {
   const {
-    sri: {
-      ec2,
-      azure,
-      localshiva
-    }
+    sri: {ec2, azure, localshiva}
   } = PATHS;
 
   const DEST_PATHS = [
@@ -366,12 +394,15 @@ gulp.task ("sri", function () {
     localshiva.source.libs
   ];
 
-  return gulp.src (DEST_PATHS)
-    .pipe (sri ({
-      algorithms: ["sha512"]
-    }))
-    .pipe (gulp.dest ("."))
-    .pipe (print (() => console.log ("Temporary resources/sri.json file generated")));
+  return gulp
+    .src(DEST_PATHS)
+    .pipe(
+      sri({
+        algorithms: ["sha512"]
+      })
+    )
+    .pipe(gulp.dest("."))
+    .pipe(print(() => console.log("Temporary resources/sri.json file generated")));
 });
 
 /**
@@ -382,72 +413,87 @@ gulp.task ("sri", function () {
  * This is required because we maintain hashes of last 10 versions corresponding to a file.
  * But we only add first three versions to the integrity attribute (check getBundleHash function)
  */
-gulp.task ("update-sri-list", function () {
-  const hsSri = require (PATHS.requirePath.hsSri);
-  const sri = require (PATHS.requirePath.tempSri);
+gulp.task("update-sri-list", function() {
+  const hsSri = require(PATHS.requirePath.hsSri);
+  const sri = require(PATHS.requirePath.tempSri);
 
-  Object.keys (sri).forEach ((key) => {
+  Object.keys(sri).forEach((key) => {
     // If new bundle is added then it won't be present
     // in hs-sri.json file. So, create a key corresponding
     // to that file and associate it to empty array.
-    if (!Array.isArray (hsSri [key])) {
-      hsSri [key] = [];
+    if (!Array.isArray(hsSri[key])) {
+      hsSri[key] = [];
     }
 
     // If the sri hash value is present with in first three hash values
     // then don't add this value otherwise add it.
-    if (hsSri [key].slice (0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).indexOf (sri [key]) !== -1) {
+    if (hsSri[key].slice(0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).indexOf(sri[key]) !== -1) {
       return;
     }
 
     // Pop the last value if max limit has reached
-    if (hsSri [key].length === MAX_SRI_LIMIT_PER_RESOURCE) {
-      hsSri [key].pop ();
+    if (hsSri[key].length === MAX_SRI_LIMIT_PER_RESOURCE) {
+      hsSri[key].pop();
     }
 
     // Prepend the latest hash value in the array
-    hsSri [key].unshift (sri [key]);
+    hsSri[key].unshift(sri[key]);
   });
 
   // Write the changes to hs-sri.json file
-  const writeStream = fs.createWriteStream (PATHS.hsSri);
-  writeStream.write (JSON.stringify (hsSri));
+  const writeStream = fs.createWriteStream(PATHS.hsSri);
+  writeStream.write(JSON.stringify(hsSri));
 
   // Delete sri.json temp file
-  fs.unlink (PATHS.tempSri);
+  fs.unlink(PATHS.tempSri);
 });
 
-gulp.task ("update-ec2-sri", function () {
-  gulp.src (PATHS.sri.ec2.dest)
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.ec2.source.libs), {
+gulp.task("update-ec2-sri", function() {
+  gulp
+    .src(PATHS.sri.ec2.dest)
+    .pipe(
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.ec2.source.libs), {
         skipBinary: true
-      }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.ec2.source.app), {
+      })
+    )
+    .pipe(
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.ec2.source.app), {
         skipBinary: true
-      }))
-      .pipe (gulp.dest ("dist/ec2/html/"));
+      })
+    )
+    .pipe(gulp.dest("dist/ec2/html/"));
 });
 
-gulp.task ("update-azure-sri", function () {
-  gulp.src (PATHS.sri.azure.dest)
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.azure.source.libs), {
+gulp.task("update-azure-sri", function() {
+  gulp
+    .src(PATHS.sri.azure.dest)
+    .pipe(
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.azure.source.libs), {
         skipBinary: true
-      }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.azure.source.app), {
+      })
+    )
+    .pipe(
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.azure.source.app), {
         skipBinary: true
-      }))
-      .pipe (gulp.dest ("dist/azure/html/"));
+      })
+    )
+    .pipe(gulp.dest("dist/azure/html/"));
 });
 
-gulp.task ("update-localshiva-sri", function () {
-  gulp.src (PATHS.sri.localshiva.dest)
-      .pipe (replace ("{{LIBS_BUNDLE_HASH}}", getBundleHash (PATHS.sri.localshiva.source.libs), {
+gulp.task("update-localshiva-sri", function() {
+  gulp
+    .src(PATHS.sri.localshiva.dest)
+    .pipe(
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.localshiva.source.libs), {
         skipBinary: true
-      }))
-      .pipe (replace ("{{APP_BUNDLE_HASH}}", getBundleHash (PATHS.sri.localshiva.source.app), {
+      })
+    )
+    .pipe(
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.localshiva.source.app), {
         skipBinary: true
-      }))
-      .pipe (gulp.dest ("dist/localshiva/html/"));
+      })
+    )
+    .pipe(gulp.dest("dist/localshiva/html/"));
 });
 
 /**
@@ -455,53 +501,61 @@ gulp.task ("update-localshiva-sri", function () {
  * IMPORTANT - Return stream in order to run this task as a dependency or in
  * sequence.
  */
-gulp.task ("scripts", () => {
-  return babelCompile (PATHS.scriptsSrc, PATHS.scriptsDestDev, true);
+gulp.task("scripts", () => {
+  return babelCompile(PATHS.scriptsSrc, PATHS.scriptsDestDev, true);
 });
 
 /**
  * Local server specific task.
  * Copy the web chat entry point script file to a destination
  */
-gulp.task ("copy-webchat", () => {
-  return gulp.src (PATHS.webChatSrcDev)
-    .pipe (rename ("webChat.js"))
-    .pipe (gulp.dest (PATHS.localhostDest));
+gulp.task("copy-webchat", () => {
+  return gulp
+    .src(PATHS.webChatSrcDev)
+    .pipe(rename("webChat.js"))
+    .pipe(gulp.dest(PATHS.localhostDest));
 });
 
 /**
  * Environment specific task.
  * Replace localhost specific template strings with given values
  */
-gulp.task ("replace-localhost", function () {
+gulp.task("replace-localhost", function() {
   // Read command line args to get webchat root and api root urls and use them if passed
   // Sample usage is as follows :
   // gulp --webchat http://localsite.helfshift.mobi:port --api http://localsite.helfshift.mobi
   // This allows configuration of local site and api server
-  const webChatRoot = gutil.env.webchat ? gutil.env.webchat :
-                      "http://localhost:3000";
-  const apiRoot = gutil.env.api ? gutil.env.api :
-                  "https://api.helpshift.com";
+  const webChatRoot = gutil.env.webchat ? gutil.env.webchat : "http://localhost:3000";
+  const apiRoot = gutil.env.api ? gutil.env.api : "https://api.helpshift.com";
 
-  return gulp.src (PATHS.localhostSource)
-      .pipe (replace ("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.DEV, {
+  return gulp
+    .src(PATHS.localhostSource)
+    .pipe(
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.DEV, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.DEV, {
+      })
+    )
+    .pipe(
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.DEV, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_WEB_CHAT_ROOT}}", webChatRoot, {
+      })
+    )
+    .pipe(
+      replace("{{ENV_WEB_CHAT_ROOT}}", webChatRoot, {
         skipBinary: true
-      }))
-      .pipe (replace ("{{ENV_API_ROOT}}", apiRoot, {
+      })
+    )
+    .pipe(
+      replace("{{ENV_API_ROOT}}", apiRoot, {
         skipBinary: true
-      }))
-      .pipe (gulp.dest (PATHS.localhostDest));
+      })
+    )
+    .pipe(gulp.dest(PATHS.localhostDest));
 });
 
 /**
  * Watch JavaScript files
  */
-gulp.task ("babel:watch", () => {
-  babelWatch (PATHS.scriptsSrc, PATHS.scriptsDestDev);
+gulp.task("babel:watch", () => {
+  babelWatch(PATHS.scriptsSrc, PATHS.scriptsDestDev);
 });

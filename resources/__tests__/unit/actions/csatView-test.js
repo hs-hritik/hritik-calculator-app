@@ -16,27 +16,27 @@ import routes from "../../../static/scripts/constants/routes";
 
 // Promise.finally is not integrated with the default axios package. It is recommended
 // this shim to be used when it's needed.
-promiseFinally.shim ();
+promiseFinally.shim();
 
 // Use a mock store for tests. Apply redux-thunk middleware.
 const middlewares = [thunk];
-const mockStore = configureMockStore (middlewares);
+const mockStore = configureMockStore(middlewares);
 
 // Mock axios
-const mockXhr = new MockAdapter (axios);
+const mockXhr = new MockAdapter(axios);
 
 const domain = "MOCK_DOMAIN";
 const activeIssueId = "MOCK_ISSUE_ID";
 
-describe ("csatView actions", () => {
-  afterEach (() => {
+describe("csatView actions", () => {
+  afterEach(() => {
     // After each test, removes all mock handlers to axios
-    mockXhr.reset ();
+    mockXhr.reset();
   });
 
-  it ("dispatches SET_CSAT_COMPLETED and other actions when csat is submitted", () => {
+  it("dispatches SET_CSAT_COMPLETED and other actions when csat is submitted", () => {
     // Mock POST csat call
-    mockXhr.onPost (routes.postCSAT (domain, activeIssueId)).reply (200);
+    mockXhr.onPost(routes.postCSAT(domain, activeIssueId)).reply(200);
 
     // Expected actions when the POST request ends
     const expectedActions = [
@@ -63,7 +63,7 @@ describe ("csatView actions", () => {
     ];
 
     // Mock the store required in the csat submit flow
-    const store = mockStore ({
+    const store = mockStore({
       appState: {
         domain,
         parentPageInfo: {
@@ -84,8 +84,8 @@ describe ("csatView actions", () => {
     });
 
     // Dispatch submitCsat action and verify the expected actions
-    return store.dispatch (csatViewActions.submitCsat ()).then (() => {
-      expect (store.getActions ()).toEqual (expectedActions);
+    return store.dispatch(csatViewActions.submitCsat()).then(() => {
+      expect(store.getActions()).toEqual(expectedActions);
     });
   });
 });

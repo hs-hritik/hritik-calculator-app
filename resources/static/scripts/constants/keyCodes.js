@@ -4,19 +4,17 @@
  * @created June 14, 2017
  */
 
-define ("constants/keyCodes",
-  function () {
-    "use strict";
+define("constants/keyCodes", function() {
+  "use strict";
 
-    return {
-      ENTER: 13,
-      ESCAPE: 27,
-      UP_ARROW: 38,
-      DOWN_ARROW: 40,
-      LEFT_ARROW: 37,
-      RIGHT_ARROW: 39,
-      SPACE: 32,
-      TAB: 9
-    };
-  }
-);
+  return {
+    ENTER: 13,
+    ESCAPE: 27,
+    UP_ARROW: 38,
+    DOWN_ARROW: 40,
+    LEFT_ARROW: 37,
+    RIGHT_ARROW: 39,
+    SPACE: 32,
+    TAB: 9
+  };
+});
