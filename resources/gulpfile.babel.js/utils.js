@@ -1,6 +1,3 @@
-/* eslint-disable strict, no-console */
-/* global module */
-
 const gulp = require("gulp");
 const sketch = require("gulp-sketch");
 const iconfont = require("gulp-iconfont");

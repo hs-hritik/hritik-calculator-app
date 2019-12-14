@@ -1,6 +1,3 @@
-/* eslint-disable strict, no-console */
-/* global __dirname */
-
 const gulp = require("gulp");
 const gutil = require("gulp-util");
 const which = require("npm-which");

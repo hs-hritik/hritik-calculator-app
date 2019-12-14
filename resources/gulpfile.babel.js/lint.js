@@ -1,4 +1,3 @@
-/* eslint-disable strict, no-undef */
 const gulp = require("gulp");
 const eslint = require("gulp-eslint");
 const print = require("gulp-print");

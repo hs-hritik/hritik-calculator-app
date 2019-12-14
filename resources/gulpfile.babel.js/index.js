@@ -1,5 +1,3 @@
-/* eslint-disable strict, no-console */
-
 /**
  * gulpfile for moby build tasks.
  *
