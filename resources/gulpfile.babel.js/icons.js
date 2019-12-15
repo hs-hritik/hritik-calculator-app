@@ -20,7 +20,7 @@ const PATHS = {
 /**
  * Task to generate iconfont
  */
-gulp.task("icons", function() {
+const iconsTask = () => {
   try {
     which.sync("sketchtool", {cwd: __dirname});
   } catch (error) {
@@ -63,10 +63,13 @@ gulp.task("icons", function() {
   };
 
   if (argv.watch || argv.w) {
-    gulp.watch(sketchFile, function() {
-      generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
-    });
+    gulp.watch(sketchFile, {ignoreInitial: false}, () =>
+      generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs)
+    );
     return;
   }
-  generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
-});
+
+  return generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
+};
+
+exports.icons = iconsTask;

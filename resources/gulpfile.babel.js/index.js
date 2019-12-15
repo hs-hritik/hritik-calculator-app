@@ -5,10 +5,28 @@
  */
 
 const gulp = require("gulp");
-const requireDir = require("require-dir");
-const runSequence = require("run-sequence");
-
-requireDir("./gulp");
+const {
+  compileScriptsDev,
+  replaceLocalhost,
+  babelWatch,
+  copyWebchat,
+  sri,
+  cleanUnwantedJs,
+  minifyExtJs,
+  updateLocalshivaSri,
+  updateAzureSri,
+  updateEc2Sri,
+  updateSriList,
+  bundleLibs,
+  buildLocalshiva,
+  buildAzure,
+  compileScriptsProd,
+  buildEc2,
+  libs
+} = require("./javascript");
+const {eslint} = require("./lint");
+const {sassCompileDev, sassCompileProd, sassWatch, sassLint} = require("./sass");
+const {icons} = require("./icons");
 
 const PATHS = {
   htmlSrc: "static/**/*.html",
@@ -25,7 +43,7 @@ const PATHS = {
 /**
  * Lists all the possible commands
  */
-gulp.task("ls", function() {
+const ls = (done) => {
   console.log(`\
 
     NOTE - [Production] denotes that the task runs for production builds and should be
@@ -43,7 +61,6 @@ gulp.task("ls", function() {
       build-azure       - [Production] Replace Azure specific template strings
       build-localshiva  - [Production] Replace staging specific template strings
       replace-localhost - Replace local env specific template strings
-      bundle-js         - Bundles app's js files
       bundle-libs       - Bundles library files
       libs              - Copy library files to the server directory
       copy-webchat      - Copy web chat entry script to the server directory
@@ -60,63 +77,54 @@ gulp.task("ls", function() {
       fonts             - Copy font files to the server directory
       copy-demo         - Copy the demo entry point HTML to the server directory
   `);
-});
+
+  done();
+};
 
 /**
  * Copy HTML files from source dir (workspace) to destination dir (server)
  */
-gulp.task("html", () => {
-  return gulp.src(PATHS.htmlSrc).pipe(gulp.dest(PATHS.localhostDest));
-});
+const htmlTask = () => gulp.src(PATHS.htmlSrc).pipe(gulp.dest(PATHS.localhostDest));
 
 /**
  * Watch HTML files
  */
-gulp.task("html:watch", () => {
+const htmlWatchTask = () => {
   gulp.watch(PATHS.htmlSrc, () => {
-    runSequence("html", "replace-localhost", "copy-demo");
+    gulp.series(htmlTask, replaceLocalhost, copyDemoTask);
   });
-});
+};
 
 /**
  * Copy font files from source dir (workspace) to destination dir (server)
  */
-gulp.task("fonts", () => {
-  return gulp.src(PATHS.fontsSrc).pipe(gulp.dest(PATHS.fontsDest));
-});
+const fontsTask = () => gulp.src(PATHS.fontsSrc).pipe(gulp.dest(PATHS.fontsDest));
 
 /**
  * Copy assets from source dir (workspace) to destination dir (server)
  */
-gulp.task("assets", () => {
-  return gulp.src(PATHS.assetsSrc).pipe(gulp.dest(PATHS.assetsDest));
-});
+const assetsTask = () => gulp.src(PATHS.assetsSrc).pipe(gulp.dest(PATHS.assetsDest));
 
 /**
  * Local server specific task.
  * Copy the demo entry point HTML to a destination
  */
-gulp.task("copy-demo", () => {
-  return gulp.src(PATHS.demoSrc).pipe(gulp.dest(PATHS.demoDest));
-});
+const copyDemoTask = () => gulp.src(PATHS.demoSrc).pipe(gulp.dest(PATHS.demoDest));
 
 /**
  * Combined tasks to prepare resources for local development
  */
-gulp.task("build-localhost", function() {
-  console.log("Preparing resources for local env");
-  runSequence(
-    "html",
-    "sass:styles",
-    "libs",
-    "fonts",
-    "assets",
-    "scripts",
-    "replace-localhost",
-    "copy-webchat",
-    "copy-demo"
-  );
-});
+const buildLocalhostTask = gulp.series(
+  htmlTask,
+  sassCompileDev,
+  libs,
+  fontsTask,
+  assetsTask,
+  compileScriptsDev,
+  replaceLocalhost,
+  copyWebchat,
+  copyDemoTask
+);
 
 /**
  * Combined tasks for generating sri for JS bundles and updating
@@ -132,11 +140,49 @@ gulp.task("build-localhost", function() {
  * runSequence ("sri", "update-sri-list", "update-ec2-sri", "update-azure-sri",
  *   "update-localshiva-sri");
  */
-gulp.task("generate-sri", function() {
-  console.log("Generating & Embedding environment specific SRI for JS bundles");
-  runSequence("sri", "update-sri-list", "update-ec2-sri", "update-localshiva-sri");
-});
+const generateSriTask = gulp.series(sri, updateSriList, updateEc2Sri, updateLocalshivaSri);
+const watchTask = gulp.series(buildLocalhostTask, babelWatch, htmlWatchTask, sassWatch);
 
-gulp.task("watch", ["build-localhost", "babel:watch", "html:watch", "sass:watch"]);
-gulp.task("default", ["watch"]);
-gulp.task("lint", ["sass:lint", "eslint"]);
+// Common tasks
+exports.ls = ls;
+exports.watch = watchTask;
+exports["build-localhost"] = buildLocalhostTask;
+
+// JS tasks
+exports.babel = compileScriptsProd;
+exports.scripts = compileScriptsDev;
+exports["babel:watch"] = babelWatch;
+exports["build-ec2"] = buildEc2;
+exports["build-azure"] = buildAzure;
+exports["build-localshiva"] = buildLocalshiva;
+exports["replace-localhost"] = replaceLocalhost;
+exports["bundle-libs"] = bundleLibs;
+exports.libs = libs;
+exports["copy-webchat"] = copyWebchat;
+
+// CSS tasks
+exports["sass:compile"] = sassCompileProd;
+exports["sass:styles"] = sassCompileDev;
+exports["sass:watch"] = sassWatch;
+exports["sass:lint"] = sassLint;
+
+exports.html = htmlTask;
+exports.htmlWatch = htmlWatchTask;
+exports.fonts = fontsTask;
+exports["copy-demo"] = copyDemoTask;
+
+exports.sri = sri;
+exports["clean-unwanted-js"] = cleanUnwantedJs;
+exports["minify-ext-js"] = minifyExtJs;
+exports["update-localshiva-sri"] = updateLocalshivaSri;
+exports["update-azure-sri"] = updateAzureSri;
+exports["update-ec2-sri"] = updateEc2Sri;
+exports["update-sri-list"] = updateSriList;
+exports.assets = assetsTask;
+exports["generate-sri"] = generateSriTask;
+
+exports.eslint = eslint;
+exports.icons = icons;
+
+exports.default = watchTask;
+exports.lint = gulp.parallel(sassLint, eslint);

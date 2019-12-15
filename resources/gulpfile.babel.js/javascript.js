@@ -3,16 +3,16 @@ const babel = require("gulp-babel");
 const rename = require("gulp-rename");
 const print = require("gulp-print");
 const notifier = require("node-notifier");
-const {argv} = require("yargs");
 const {getTimeStamp} = require("./utils");
 const gutil = require("gulp-util");
 const replace = require("gulp-replace");
-const runSequence = require("run-sequence");
 const concat = require("gulp-concat");
 const del = require("del");
-const sri = require("gulp-sri");
+const gulpSri = require("gulp-sri");
 const fs = require("fs");
 const uglify = require("gulp-uglify");
+const cache = require("gulp-cached");
+const gulpIf = require("gulp-if");
 
 /**
  * Maximum hashes to add to the integrity attribute of script tag.
@@ -178,57 +178,48 @@ integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
  * Run babel on a given source folder
  * @param {string} srcFolder - Source directory to compile
  * @param {string} destFolder - Destination directory to write to
- * @param [boolean] errorGrowl - True to show error notification
+ * @param {Object} config
+ * @param {boolean} config.isProduction - Whether the task is called in production.
+ * @param {function} done - Callback to signal async task completion
  * @returns {Object} - Stream of files
  */
-const babelCompile = function(srcFolder, destFolder, errorGrowl) {
-  return gulp
+const babelCompile = (srcFolder, destFolder, config, done) =>
+  gulp
     .src(srcFolder)
+    .pipe(gulpIf(!config.isProduction, cache("babelKey")))
     .pipe(
-      babel().on("error", function(err) {
-        if (errorGrowl) {
+      babel().on("error", (error) => {
+        if (!config.isProduction) {
           notifier.notify("Oops! Babel compile error!");
         }
-        gutil.log(err);
+
+        gutil.log(error);
+        done(error);
       })
     )
     .pipe(gulp.dest(destFolder))
-    .pipe(
-      print(function(filepath) {
-        return `Compiled: ${filepath} ${getTimeStamp()}`;
-      })
-    );
-};
+    .pipe(print((filepath) => `Compiled: ${filepath} ${getTimeStamp()}`));
 
 /**
  * Watch a given JavaScript source folder
  * @param {string} srcFolder - Source directory to watch
  * @param {string} destFolder - Destination directory to write to
- * @param [string] separator - Delimiter to identify file name
  */
-const babelWatch = (srcFolder, destFolder, separator = "/scripts/") => {
-  const watcher = gulp.watch(srcFolder, () => {
-    runSequence("replace-localhost", "copy-webchat");
-  });
-
-  watcher.on("change", function(event) {
-    const filePath = event.path.split("/resources/")[1];
-    let destPath = filePath.split(separator)[1];
-    destPath = `${destFolder}/${destPath}`;
-    destPath = destPath.replace(/\/.[^\/]*$/, "/");
-
-    babelCompile(filePath, destPath, true);
-  });
+const babelWatch = (srcFolder, destFolder) => {
+  gulp.watch(
+    srcFolder,
+    {ignoreInitial: true},
+    gulp.series(replaceLocalhostTask, copyWebchatTask, (done) =>
+      babelCompile(srcFolder, destFolder, {isProduction: false}, done)
+    )
+  );
 };
 
 /**
  * Compiles/watches js/jsx files. Only meant for production.
  */
-gulp.task("babel", function() {
-  if (argv.production || argv.prod) {
-    babelCompile(PATHS.scriptsSrc, PATHS.scriptsDest);
-  }
-});
+const compileScriptsProdTask = (done) =>
+  babelCompile(PATHS.scriptsSrc, PATHS.scriptsDest, {isProduction: true}, done);
 
 /**
  * Returns a string by combining the latest three SRI hashes corresponding
@@ -245,7 +236,7 @@ const getBundleHash = (path) => {
  * Production task.
  * Replace EC2 specific template strings with given values
  */
-gulp.task("build-ec2", function() {
+const buildEc2Task = () =>
   gulp
     .src(PATHS.ec2Source)
     .pipe(
@@ -269,13 +260,12 @@ gulp.task("build-ec2", function() {
       })
     )
     .pipe(gulp.dest(PATHS.ec2Dest));
-});
 
 /**
  * Production task.
  * Replace Azure specific template strings with given values
  */
-gulp.task("build-azure", function() {
+const buildAzureTask = () =>
   gulp
     .src(PATHS.azureSource)
     .pipe(
@@ -299,13 +289,12 @@ gulp.task("build-azure", function() {
       })
     )
     .pipe(gulp.dest(PATHS.azureDest));
-});
 
 /**
  * Production task.
  * Replace localshiva (staging) specific template strings with given values
  */
-gulp.task("build-localshiva", function() {
+const buildLocalshivaTask = () =>
   gulp
     .src(PATHS.localshivaSource)
     .pipe(
@@ -329,19 +318,16 @@ gulp.task("build-localshiva", function() {
       })
     )
     .pipe(gulp.dest(PATHS.localshivaDest));
-});
 
 /**
  * Copy libs from source dir (workspace) to destination dir (server)
  */
-gulp.task("libs", () => {
-  return gulp.src(PATHS.libsSrc).pipe(gulp.dest(PATHS.libsDestDev));
-});
+const libsTask = () => gulp.src(PATHS.libsSrc).pipe(gulp.dest(PATHS.libsDestDev));
 
 /**
  * Task to combine given libs in single bundle file
  */
-gulp.task("bundle-libs", function() {
+const bundleLibsTask = () =>
   gulp
     .src(PATHS.bundleLibsSource)
     .pipe(concat(`${LIBS_BUNDLE_NAME}-min.js`))
@@ -350,10 +336,9 @@ gulp.task("bundle-libs", function() {
       print(() => {
         // Delete all the lib files inside dist/libs except libs bundle file
         del(PATHS.unwantedLibsSource);
-        console.log("Libs are bundled");
+        return "Libs are bundled";
       })
     );
-});
 
 /**
  * Task to minify external JS files. These files are not part of the requirejs
@@ -361,24 +346,21 @@ gulp.task("bundle-libs", function() {
  * Note: The source here is the `dist` directory because the compilation (by babel)
  * happens before this step and this step just minifies the compiled files.
  */
-gulp.task("minify-ext-js", function() {
-  return gulp
+const minifyExtJsTask = () =>
+  gulp
     .src(PATHS.externalJsSrc)
     .pipe(uglify())
     .pipe(gulp.dest(PATHS.externalJsDest));
-});
 
 /**
  * Task to clean unwanted js files after we generate app bundle
  */
-gulp.task("clean-unwanted-js", function() {
-  del(PATHS.unwantedAppSource);
-});
+const cleanUnwantedJsTask = () => del(PATHS.unwantedAppSource);
 
 /**
  * Task to generate sri for libs and app JS bundles
  */
-gulp.task("sri", function() {
+const sriTask = () => {
   const {
     sri: {ec2, azure, localshiva}
   } = PATHS;
@@ -395,13 +377,13 @@ gulp.task("sri", function() {
   return gulp
     .src(DEST_PATHS)
     .pipe(
-      sri({
+      gulpSri({
         algorithms: ["sha512"]
       })
     )
     .pipe(gulp.dest("."))
-    .pipe(print(() => console.log("Temporary resources/sri.json file generated")));
-});
+    .pipe(print(() => "Temporary resources/sri.json file generated"));
+};
 
 /**
  * Task to update hs-sri.json file
@@ -411,7 +393,7 @@ gulp.task("sri", function() {
  * This is required because we maintain hashes of last 10 versions corresponding to a file.
  * But we only add first three versions to the integrity attribute (check getBundleHash function)
  */
-gulp.task("update-sri-list", function() {
+const updateSriListTask = (done) => {
   const hsSri = require(PATHS.requirePath.hsSri);
   const sri = require(PATHS.requirePath.tempSri);
 
@@ -440,13 +422,17 @@ gulp.task("update-sri-list", function() {
 
   // Write the changes to hs-sri.json file
   const writeStream = fs.createWriteStream(PATHS.hsSri);
-  writeStream.write(JSON.stringify(hsSri));
+  writeStream.write(JSON.stringify(hsSri), (err) => {
+    if (err) {
+      return done(err);
+    }
 
-  // Delete sri.json temp file
-  fs.unlink(PATHS.tempSri);
-});
+    // Delete sri.json temp file
+    fs.unlink(PATHS.tempSri, done);
+  });
+};
 
-gulp.task("update-ec2-sri", function() {
+const updateEc2SriTask = () =>
   gulp
     .src(PATHS.sri.ec2.dest)
     .pipe(
@@ -460,9 +446,8 @@ gulp.task("update-ec2-sri", function() {
       })
     )
     .pipe(gulp.dest("dist/ec2/html/"));
-});
 
-gulp.task("update-azure-sri", function() {
+const updateAzureSriTask = () =>
   gulp
     .src(PATHS.sri.azure.dest)
     .pipe(
@@ -476,9 +461,8 @@ gulp.task("update-azure-sri", function() {
       })
     )
     .pipe(gulp.dest("dist/azure/html/"));
-});
 
-gulp.task("update-localshiva-sri", function() {
+const updateLocalshivaSriTask = () =>
   gulp
     .src(PATHS.sri.localshiva.dest)
     .pipe(
@@ -492,33 +476,30 @@ gulp.task("update-localshiva-sri", function() {
       })
     )
     .pipe(gulp.dest("dist/localshiva/html/"));
-});
 
 /**
  * Babel compile JavaScript resources.
  * IMPORTANT - Return stream in order to run this task as a dependency or in
  * sequence.
  */
-gulp.task("scripts", () => {
-  return babelCompile(PATHS.scriptsSrc, PATHS.scriptsDestDev, true);
-});
+const compileScriptsDevTask = (done) =>
+  babelCompile(PATHS.scriptsSrc, PATHS.scriptsDestDev, {isProduction: false}, done);
 
 /**
  * Local server specific task.
  * Copy the web chat entry point script file to a destination
  */
-gulp.task("copy-webchat", () => {
-  return gulp
+const copyWebchatTask = () =>
+  gulp
     .src(PATHS.webChatSrcDev)
     .pipe(rename("webChat.js"))
     .pipe(gulp.dest(PATHS.localhostDest));
-});
 
 /**
  * Environment specific task.
  * Replace localhost specific template strings with given values
  */
-gulp.task("replace-localhost", function() {
+const replaceLocalhostTask = () => {
   // Read command line args to get webchat root and api root urls and use them if passed
   // Sample usage is as follows :
   // gulp --webchat http://localsite.helfshift.mobi:port --api http://localsite.helfshift.mobi
@@ -549,11 +530,29 @@ gulp.task("replace-localhost", function() {
       })
     )
     .pipe(gulp.dest(PATHS.localhostDest));
-});
+};
 
 /**
  * Watch JavaScript files
  */
-gulp.task("babel:watch", () => {
+const babelWatchTask = () => {
   babelWatch(PATHS.scriptsSrc, PATHS.scriptsDestDev);
-});
+};
+
+exports.compileScriptsDev = compileScriptsDevTask;
+exports.replaceLocalhost = replaceLocalhostTask;
+exports.babelWatch = babelWatchTask;
+exports.copyWebchat = copyWebchatTask;
+exports.sri = sriTask;
+exports.cleanUnwantedJs = cleanUnwantedJsTask;
+exports.minifyExtJs = minifyExtJsTask;
+exports.updateLocalshivaSri = updateLocalshivaSriTask;
+exports.updateAzureSri = updateAzureSriTask;
+exports.updateEc2Sri = updateEc2SriTask;
+exports.updateSriList = updateSriListTask;
+exports.bundleLibs = bundleLibsTask;
+exports.buildLocalshiva = buildLocalshivaTask;
+exports.buildAzure = buildAzureTask;
+exports.compileScriptsProd = compileScriptsProdTask;
+exports.buildEc2 = buildEc2Task;
+exports.libs = libsTask;
