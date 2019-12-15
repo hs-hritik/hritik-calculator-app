@@ -70,7 +70,6 @@
     "redux": "4.0.4",
     "redux-mock-store": "^1.5.3",
     "redux-thunk": "^2.3.0",
-    "run-sequence": "^2.2.0",
     "stylelint": "^9.6.0",
     "stylelint-declaration-use-variable": "^1.7.0",
     "stylelint-order": "^1.0.0",
