@@ -13,7 +13,7 @@ const PATHS = {
   },
   fonts: "static/fonts",
   hestia: {
-    data: "scss/hestia/data"
+    data: "styles/hestia/data"
   }
 };
 
