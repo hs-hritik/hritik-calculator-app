@@ -5,7 +5,8 @@
   "scripts": {
     "start": "babel-node resources/static/scripts/main",
     "test": "jest",
-    "update-snapshot": "jest --updateSnapshot"
+    "update-snapshot": "jest --updateSnapshot",
+    "gulp": "cd resources && gulp"
   },
   "repository": {
     "type": "git",
