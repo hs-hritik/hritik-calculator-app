@@ -240,6 +240,7 @@ define ("extras/api",
       const {
         appState: {
           conversationStarted,
+          issueExists,
           appResetTrigger,
           issueState,
           issueType,
@@ -291,8 +292,8 @@ define ("extras/api",
                 callback: chatViewActions.stopPollingForMessages
               })
             );
-          } else {
-            store.dispatch (appStateActions.startConversation ());
+          } else if (!issueExists) {
+            store.dispatch (appStateActions.startNewConversation ());
           }
         }
 

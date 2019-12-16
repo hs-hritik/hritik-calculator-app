@@ -29,6 +29,24 @@ define ("reducers/chatView",
       cta: ""
     };
 
+    const INITIAL_MESSAGE_CURSOR = {
+      [CURSOR_TYPES.FORWARD]: {
+        value: "",
+        meta: {
+          issueType: "",
+          issueId: ""
+        }
+      },
+      [CURSOR_TYPES.BACKWARD]: {
+        value: "",
+        meta: {
+          issueType: "",
+          issueId: "",
+          preIssueId: ""
+        }
+      }
+    };
+
     /**
      * Returns default user input config object to be set in store
      * @returns {Object} - input config object
@@ -111,23 +129,7 @@ define ("reducers/chatView",
         botStepMessage: null
       },
       messageList: [],
-      messageCursor: {
-        [CURSOR_TYPES.FORWARD]: {
-          value: "",
-          meta: {
-            issueType: "",
-            issueId: ""
-          }
-        },
-        [CURSOR_TYPES.BACKWARD]: {
-          value: "",
-          meta: {
-            issueType: "",
-            issueId: "",
-            preIssueId: ""
-          }
-        }
-      },
+      messageCursor: INITIAL_MESSAGE_CURSOR,
       userIsViewingPastMessages: false,
       userIsRedacted: false,
       allMessagesAreLoaded: false,
@@ -155,20 +157,40 @@ define ("reducers/chatView",
     };
 
     return (state = INITIAL_STATE, action) => {
-      let userInputUpdateObj = {};
       let index = null;
 
       switch (action.type) {
-        case ACTION_TYPES.REHYDRATE:
+        case ACTION_TYPES.REHYDRATE: {
           const updateObj = {};
+
           if (action.data.readFaqList) {
             updateObj.readFaqList = {$set: action.data.readFaqList};
           }
           return update (state, updateObj);
+        }
+
+        case ACTION_TYPES.NEW_CONVERSATION_STARTED: {
+          const {conversationHistoryIsEnabled} = action;
+          const userInputUpdateObj = _getDefaultUserInputConfig ();
+
+          const updateObj = {
+            activeFooter: {$set: ACTIVE_FOOTER.REPLY},
+            userInput: {$merge: userInputUpdateObj},
+            pollerFailureCount: {$set: 0}
+          };
+
+          if (!conversationHistoryIsEnabled) {
+            updateObj.messageList = {$set: []};
+            updateObj.unreadMessageIds = {$set: []};
+            updateObj.messageCursor = {$set: INITIAL_MESSAGE_CURSOR};
+            updateObj.issueCursor = {$set: 0};
+          }
+
+          return update (state, updateObj);
+        }
 
         case ACTION_TYPES.ISSUE_CREATED:
           // When an issue is created, reset userInput and chat view error
-          // @TODO: Check if the footer needs to be updated.
           return update (state, {
             userInput: {
               value: {$set: ""},
@@ -176,8 +198,10 @@ define ("reducers/chatView",
               defaultInputValue: {
                 $set: isInputTypeDefault (state) ? "" : state.userInput.defaultInputValue
               },
+              disabled: {$set: false},
               errorMsg: {$set: ""}
             },
+            systemTyping: {$set: false},
             error: {$set: INITIAL_ERROR_STATE}
           });
 
@@ -216,9 +240,10 @@ define ("reducers/chatView",
             }
           });
 
-        case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
+        case ACTION_TYPES.SET_CHAT_VIEW_FOOTER: {
+          let userInputUpdateObj = {};
           if (action.footer === ACTIVE_FOOTER.REPLY &&
-              state.activeFooter !== ACTIVE_FOOTER.REPLY) {
+            state.activeFooter !== ACTIVE_FOOTER.REPLY) {
             userInputUpdateObj = _getDefaultUserInputConfig ();
           }
 
@@ -226,6 +251,7 @@ define ("reducers/chatView",
             activeFooter: {$set: action.footer},
             userInput: {$merge: userInputUpdateObj}
           });
+        }
 
         case ACTION_TYPES.DISABLE_REPLY_BOX:
           return update (state, {
@@ -271,8 +297,8 @@ define ("reducers/chatView",
             readFaqList: {$push: [action.faqId]}
           });
 
-        case ACTION_TYPES.SET_USER_INPUT_DATA:
-          userInputUpdateObj = objUtils.shallowMerge (
+        case ACTION_TYPES.SET_USER_INPUT_DATA: {
+          const userInputUpdateObj = objUtils.shallowMerge (
             _getDefaultUserInputConfig (),
             action.input
           );
@@ -281,6 +307,7 @@ define ("reducers/chatView",
           return update (state, {
             userInput: {$set: userInputUpdateObj}
           });
+        }
 
         case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
           return update (state, {
@@ -298,8 +325,8 @@ define ("reducers/chatView",
             userIsRedacted: {$set: action.userIsRedacted}
           });
 
-        case ACTION_TYPES.RESET_USER_INPUT_DATA:
-          userInputUpdateObj = objUtils.shallowMerge (
+        case ACTION_TYPES.RESET_USER_INPUT_DATA: {
+          const userInputUpdateObj = objUtils.shallowMerge (
             _getDefaultUserInputConfig (), {
               // Restore default input value when user input is reset
               value: state.userInput.defaultInputValue
@@ -308,6 +335,7 @@ define ("reducers/chatView",
           return update (state, {
             userInput: {$set: userInputUpdateObj}
           });
+        }
 
         case ACTION_TYPES.UPDATE_USER_INPUT_DATA:
           return update (state, {
@@ -362,9 +390,12 @@ define ("reducers/chatView",
 
         case ACTION_TYPES.REMOVE_MESSAGE:
           index = _getMessageIndex (state.messageList, action.messageId);
-          return update (state, {
-            messageList: {$splice: [[index, 1]]}
-          });
+          if (index > -1) {
+            return update (state, {
+              messageList: {$splice: [[index, 1]]}
+            });
+          }
+          return state;
 
         case ACTION_TYPES.SET_ATTACHMENT_ERROR:
           index = _getMessageIndex (state.messageList, action.messageId);

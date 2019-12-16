@@ -139,35 +139,14 @@ define ("actions/appState",
     };
 
     /**
-     * Action to set conversation started
+     * Action for when a conversation starts
+     * @param {boolean} conversationHistoryIsEnabled
      * @returns {Object} - Action
      */
-    const setConversationStarted = () => {
+    const conversationStarted = (conversationHistoryIsEnabled) => {
       return {
-        type: ACTION_TYPES.SET_CONVERSATION_STARTED
-      };
-    };
-
-    /**
-     * Either starts a new conversation or handle previous one.
-     */
-    const startConversation = () => {
-      return (dispatch, getState) => {
-        const {
-          appState: {
-            issueExists
-          }
-        } = getState ();
-
-        dispatch (setConversationStarted ());
-
-        // If an issue exists, the poller would have started already with the
-        // success callback of setIssueState via get config.
-        // Only for new user, start a new conversation. Rest of the cases will be
-        // handled on click of 'start new conversation' button which will call reset.
-        if (!issueExists) {
-          startNewConversation ();
-        }
+        type: ACTION_TYPES.NEW_CONVERSATION_STARTED,
+        conversationHistoryIsEnabled
       };
     };
 
@@ -449,9 +428,7 @@ define ("actions/appState",
         // If app reset is triggered by
         // 1. preIssue reset conditions and widget is open
         //    OR
-        // 2. clicking start new conversation button
-        //    OR
-        // 3. update helpshift config api and widget is open and issue does not
+        // 2. update helpshift config api and widget is open and issue does not
         //    exist i.e. new user
         // Then explicitly create a new preIssue.
         // OR
@@ -461,13 +438,18 @@ define ("actions/appState",
         // `handleMessengerToggle` in `api.js`.
         if (
           (appResetTrigger === APP_RESET_TRIGGER.PRE_ISSUE_RESET && widgetIsOpen) ||
-          (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) ||
           (appResetTrigger === APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API &&
            widgetIsOpen && !issueExists)
         ) {
           dispatch (updateAnalyticsSessionId ());
-          startNewConversation ();
+          dispatch (startNewConversation ());
         } else if (issueExists) {
+          // The issueExists flag is true if for the given profile (user+device combination), at
+          // least one issue, irrespective of its state, exists. In that case, we start the poller
+          // to receive the latest updates from the backend and update our state accordingly.
+          // If the latest issue is resolved, we show the new conversation button, which starts a
+          // new conversation.
+          // If it's open, we keep polling.
           chatViewActions.startPollingForMessages ();
         }
 
@@ -809,14 +791,17 @@ define ("actions/appState",
      * enabling the reply box
      */
     const startNewConversation = () => {
-      // This is applicable only for chat view (in business hours). For out of business hours
-      // view, we load the business hours view first and when the user submits the form, we call
-      // create a web issue.
-      if (!commonHelpers.isOutOfBusinessHours ()) {
-        store.dispatch (setConversationStarted ());
-        store.dispatch (chatViewActions.addGreetingMessage ());
-        store.dispatch (chatViewActions.enableReplyBox ());
-      }
+      return (dispatch, getState) => {
+        const conversationHistoryIsEnabled =
+          getState ().appState.featuresEnabled.conversationHistory;
+        // This is applicable only for chat view (in business hours). For out of business hours
+        // view, we load the business hours view first and when the user submits the form, we call
+        // create a web issue.
+        if (!commonHelpers.isOutOfBusinessHours ()) {
+          dispatch (conversationStarted (conversationHistoryIsEnabled));
+          dispatch (chatViewActions.addGreetingMessage ());
+        }
+      };
     };
 
     /**
@@ -987,7 +972,7 @@ define ("actions/appState",
       setClientConfig,
       setWmConfig,
       toggleMinimized,
-      startConversation,
+      startNewConversation,
       replaceCif,
       setParentPageInfo,
       setProactiveChatRules,

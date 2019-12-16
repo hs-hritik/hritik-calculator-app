@@ -169,12 +169,12 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_WM_CONFIG:
           const {config} = action;
-          const greentingFeatureEnabled = config.hasOwnProperty ("greeting_enabled") ?
+          const greetingFeatureEnabled = config.hasOwnProperty ("greeting_enabled") ?
                                           config.greeting_enabled : true;
           return update (state, {
             wcEnabled: {$set: config.wm_widget_enabled},
             featuresEnabled: {
-              greeting: {$set: greentingFeatureEnabled},
+              greeting: {$set: greetingFeatureEnabled},
               resolutionQuestion: {$set: config.resolution_question_enabled},
               conversationHistory: {$set: config.conversation_history_enabled},
               userAttachments: {$set: config.allow_user_attachments},
@@ -294,9 +294,20 @@ define ("reducers/appState",
                                    {$set: showCloseButton}
           });
 
+        case ACTION_TYPES.NEW_CONVERSATION_STARTED:
+          return update (state, {
+            conversationStarted: {$set: true},
+            activeIssueId: {$set: ""},
+            internalIssueId: {$set: ""},
+            issueState: {$set: ISSUE_STATE.NA},
+            issueType: {$set: ISSUE_TYPE.INITIAL},
+            appResetTrigger: {$set: APP_RESET_TRIGGER.START_NEW_CONVERSATION}
+          });
+
         case ACTION_TYPES.ISSUE_CREATED:
           const {activeIssueId, internalIssueId} = action;
           return update (state, {
+            conversationStarted: {$set: true},
             activeIssueId: {$set: activeIssueId},
             internalIssueId: {$set: internalIssueId},
             issueState: {$set: ISSUE_STATE.ACTIVE}
@@ -304,6 +315,7 @@ define ("reducers/appState",
 
         case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
           return update (state, {
+            conversationStarted: {$set: true},
             activeIssueId: {$set: action.id}
           });
 
@@ -345,11 +357,6 @@ define ("reducers/appState",
             sdkConfigOptions: {
               initialUserMessage: {$set: action.message}
             }
-          });
-
-        case ACTION_TYPES.SET_CONVERSATION_STARTED:
-          return update (state, {
-            conversationStarted: {$set: true}
           });
 
         case ACTION_TYPES.SET_CONVERSATION_ENDED:

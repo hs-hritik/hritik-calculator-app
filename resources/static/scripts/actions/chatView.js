@@ -1588,6 +1588,10 @@ define ("actions/chatView",
                 })
               );
 
+              if (localGreetingMessageId) {
+                dispatch (removeMessage (localGreetingMessageId));
+              }
+
               saveMessageCursor ({
                 issue: currentIssue,
                 cursorTs: cursor,
@@ -1611,8 +1615,6 @@ define ("actions/chatView",
                   issue: oldestIssue,
                   cursorType: CURSOR_TYPES.BACKWARD
                 });
-
-                dispatch (removeMessage (localGreetingMessageId));
               }
 
               if (isPreIssue) {
@@ -2240,8 +2242,7 @@ define ("actions/chatView",
             }
 
             const newIssueId = response.id;
-            const internalId = response.type === ISSUE_TYPE.PRE_ISSUE ?
-              response.preissue_id : response.issue_id;
+            const internalId = response.internal_id;
 
             dispatch (issueCreated ({newIssueId, internalId}));
 
