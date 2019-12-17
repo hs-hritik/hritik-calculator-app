@@ -11,14 +11,12 @@
 ///
 
 @include component(chat-view) {
-
   $loader-color: color(primary);
   $subtitle-color: color(text, light);
 
   .hs-chat-view {
-
     &__msg-loading-failed-txt {
-      opacity: .8;
+      opacity: 0.8;
     }
 
     &__jump-to-latest-wrapper {

@@ -16,7 +16,6 @@ $_input-bg: color(bg);
 /// @type Color
 $_input-readonly-bg: color(bg, lightgray);
 
-
 /// Border color for <input> elements.
 /// @type Color
 $_input-border: color(border, dark);
@@ -46,15 +45,15 @@ $_input-focus-color: color(text, dark);
 $_input-size: (
   base: (
     font-size: font-size(body),
-    spacing: gutter(8 12),
+    spacing: gutter(8 12)
   ),
   small: (
     font-size: font-size(body),
-    spacing: gutter(4 8),
+    spacing: gutter(4 8)
   ),
   x-small: (
     font-size: font-size(body, small),
-    spacing: gutter(4 8),
+    spacing: gutter(4 8)
   )
 );
 
@@ -64,32 +63,32 @@ $_input-style: (
   default: (
     bg: $_input-bg,
     border: 1px solid $_input-border,
-    color: $_input-color,
+    color: $_input-color
   ),
   focus: (
     bg: $_input-bg,
     border: 1px solid $_input-focus-border,
-    color: $_input-focus-color,
+    color: $_input-focus-color
   ),
   disabled: (
     bg: $_input-readonly-bg,
     border: 1px solid $_input-border,
-    color: color(text, light),
+    color: color(text, light)
   ),
   readonly: (
     bg: $_input-readonly-bg,
     border: 1px solid $_input-border,
-    color: $_input-focus-color,
+    color: $_input-focus-color
   ),
   error: (
     bg: $_input-bg,
     border: 1px solid $_input-error-border,
-    color: $_input-color,
+    color: $_input-color
   ),
   success: (
     bg: $_input-bg,
     border: 1px solid $_input-success-border,
-    color: $_input-color,
+    color: $_input-color
   )
 );
 
@@ -107,7 +106,7 @@ $_input-radius: radius();
 
 /// Inset box shadows for all input fields.
 /// @type String
-$_input-box-shadow: rgba(0, 0, 0, .12) 0 1px 4px inset;
+$_input-box-shadow: rgba(0, 0, 0, 0.12) 0 1px 4px inset;
 
 /// Cursor style for disabled input fields.
 /// @type List
@@ -126,7 +125,6 @@ $_textarea-small-height: 90px;
 /// Text color for input labels.
 /// @type Color
 $_label-color: $header-color;
-
 
 /// Background Color for Dropdown Titles.
 /// @type Color
@@ -154,7 +152,7 @@ $_dropdown-title-active-color: color(text, dark);
 
 /// Box shadow for Dropdown Titles.
 /// @type String
-$_dropdown-title-box-shadow: rgba(0, 0, 0, .12) 0 1px 6px;
+$_dropdown-title-box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px;
 
 /// Spacing between Dropdown Title and Content.
 /// @type String
@@ -166,7 +164,7 @@ $_dropdown-content-bg: color(bg);
 
 /// Box shadow for Dropdown Content.
 /// @type String
-$_dropdown-content-box-shadow: rgba(0, 0, 0, .16) 0 1px 8px;
+$_dropdown-content-box-shadow: rgba(0, 0, 0, 0.16) 0 1px 8px;
 
 /// Dropdown item highlight background.
 /// @type Color
@@ -192,7 +190,6 @@ $_dropdown-item-selected-color: color(primary);
 /// @type String
 $_dropdown-item-spacing: gutter(12 24 12 12);
 
-
 @mixin input-base($size: base, $style: default) {
   @include set-default-type;
 
@@ -202,7 +199,7 @@ $_dropdown-item-spacing: gutter(12 24 12 12);
   font-size: map-fetch($_input-size, $size, font-size);
   line-height: $_input-line-height;
   outline: 0;
-  transition: border-color .125s ease-out;
+  transition: border-color 0.125s ease-out;
 }
 
 @mixin input-expand($expand: true) {
@@ -235,7 +232,6 @@ $_dropdown-item-spacing: gutter(12 24 12 12);
     outline-width: 0;
   }
 }
-
 
 input[type="text"],
 input[type="password"],

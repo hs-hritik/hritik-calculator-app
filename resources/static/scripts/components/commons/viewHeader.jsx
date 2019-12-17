@@ -5,94 +5,88 @@
  * @created June 13, 2017
  */
 
-define ("components/commons/viewHeader",
-  function () {
-    "use strict";
+define("components/commons/viewHeader", function() {
+  "use strict";
 
-    const PropTypes = React.PropTypes;
+  return createReactClass({
+    displayName: "ViewHeader",
+    propTypes: {
+      title: PropTypes.string.isRequired,
+      showBackBtn: PropTypes.bool,
+      showCloseBtn: PropTypes.bool,
+      onBackBtnClick: PropTypes.func,
+      onCloseBtnClick: PropTypes.func,
+      dataLabels: PropTypes.shape({
+        backBtnDataLabel: PropTypes.string
+      }),
+      ariaLabel: PropTypes.string
+    },
 
-    return React.createClass ({
-      displayName: "ViewHeader",
-      propTypes: {
-        title: PropTypes.string.isRequired,
-        showBackBtn: PropTypes.bool,
-        showCloseBtn: PropTypes.bool,
-        onBackBtnClick: PropTypes.func,
-        onCloseBtnClick: PropTypes.func,
-        dataLabels: PropTypes.shape ({
-          backBtnDataLabel: PropTypes.string
-        }),
-        ariaLabel: PropTypes.string
-      },
+    render() {
+      return (
+        <div className="hs-header">
+          {this._renderTitle()}
+          {this._renderCloseButton()}
+        </div>
+      );
+    },
 
-      render () {
-        return (
-          <div className="hs-header">
-            {this._renderTitle ()}
-            {this._renderCloseButton ()}
-          </div>
-        );
-      },
+    /**
+     * Render title text and the back button if required
+     */
+    _renderTitle() {
+      const {dataLabels, ariaLabel} = this.props;
+      const titleText = <span>{this.props.title}</span>;
 
-      /**
-       * Render title text and the back button if required
-       */
-      _renderTitle () {
-        const {dataLabels, ariaLabel} = this.props;
-        const titleText = (
-          <span>{this.props.title}</span>
-        );
-
-        if (!this.props.showBackBtn) {
-          return titleText;
-        }
-
-        return (
-          <a
-            className="hs-header__link"
-            onClick={this._onBackBtnClick}
-            tabIndex="0"
-            data-label={dataLabels.backBtnDataLabel}
-            aria-label={ariaLabel}
-            role="button">
-            <i className="ion-chevron-left hs-header__back-icon" />
-            {titleText}
-          </a>
-        );
-      },
-
-      /**
-       * Render close button
-       */
-      _renderCloseButton () {
-        if (!this.props.showCloseBtn) {
-          return null;
-        }
-
-        return (
-          <a className="hs-header__link" onClick={this._onCloseBtnClick}>
-            <i className="ion-cross hs-header__close-icon" />
-          </a>
-        );
-      },
-
-      /**
-       * Click handler for back button.
-       */
-      _onBackBtnClick () {
-        if (this.props.onBackBtnClick) {
-          this.props.onBackBtnClick ();
-        }
-      },
-
-      /**
-       * Click handler for close button.
-       */
-      _onCloseBtnClick () {
-        if (this.props.onCloseBtnClick) {
-          this.props.onCloseBtnClick ();
-        }
+      if (!this.props.showBackBtn) {
+        return titleText;
       }
-    });
-  }
-);
+
+      return (
+        <a
+          className="hs-header__link"
+          onClick={this._onBackBtnClick}
+          tabIndex="0"
+          data-label={dataLabels.backBtnDataLabel}
+          aria-label={ariaLabel}
+          role="button">
+          <i className="ion-chevron-left hs-header__back-icon" />
+          {titleText}
+        </a>
+      );
+    },
+
+    /**
+     * Render close button
+     */
+    _renderCloseButton() {
+      if (!this.props.showCloseBtn) {
+        return null;
+      }
+
+      return (
+        <a className="hs-header__link" onClick={this._onCloseBtnClick}>
+          <i className="ion-cross hs-header__close-icon" />
+        </a>
+      );
+    },
+
+    /**
+     * Click handler for back button.
+     */
+    _onBackBtnClick() {
+      if (this.props.onBackBtnClick) {
+        this.props.onBackBtnClick();
+      }
+    },
+
+    /**
+     * Click handler for close button.
+     */
+    _onCloseBtnClick() {
+      if (this.props.onCloseBtnClick) {
+        this.props.onCloseBtnClick();
+      }
+    }
+  });
+});

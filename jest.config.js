@@ -61,10 +61,7 @@ module.exports = {
   // globals: {},
 
   // An array of directory names to be searched recursively up from the requiring module's location
-  moduleDirectories: [
-    "./static/scripts/",
-    "./node_modules"
-  ],
+  moduleDirectories: ["./static/scripts/", "./node_modules"],
 
   // An array of file extensions your modules use
   // moduleFileExtensions: [
@@ -124,9 +121,7 @@ module.exports = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  setupFiles: [
-    "./resources/__tests__/jestSetup.js"
-  ],
+  setupFiles: ["./resources/__tests__/jestSetup.js"],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],
@@ -144,9 +139,7 @@ module.exports = {
   // testLocationInResults: false,
 
   // The glob patterns Jest uses to detect test files
-  testMatch: [
-    "**/__tests__/unit/**/*.js?(x)"
-  ],
+  testMatch: ["**/__tests__/unit/**/*.js?(x)"],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   // testPathIgnorePatterns: [

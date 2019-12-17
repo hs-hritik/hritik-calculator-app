@@ -4,42 +4,39 @@
  * @created Aug 14, 2017
  */
 
-define ("components/containers/csatView",
-  [
-    "components/csatView",
-    "actions/csatView"
-  ],
-  function (CsatView, csatViewActions) {
-    "use strict";
+define("components/containers/csatView", ["components/csatView", "actions/csatView"], function(
+  CsatView,
+  csatViewActions
+) {
+  "use strict";
 
-    const mapStateToProps = (state) => {
-      const {rating, review, csatSaveInProgress} = state.csatView;
+  const mapStateToProps = (state) => {
+    const {rating, review, csatSaveInProgress} = state.csatView;
 
-      return {
-        rating,
-        review,
-        csatSaveInProgress,
-        text: state.ui.text
-      };
+    return {
+      rating,
+      review,
+      csatSaveInProgress,
+      text: state.ui.text
     };
+  };
 
-    const mapDispatchToProps = (dispatch) => {
-      return {
-        onSubmitCsat: () => {
-          dispatch (csatViewActions.submitCsat ());
-        },
-        onUpdateCsatRating: (rating) => {
-          dispatch (csatViewActions.updateCsatRating (rating));
-        },
-        onUpdateCsatReview: (review) => {
-          dispatch (csatViewActions.updateCsatReview (review));
-        },
-        onUpdateStarRating: (rating) => {
-          dispatch (csatViewActions.updateCsatRating (rating));
-        }
-      };
+  const mapDispatchToProps = (dispatch) => {
+    return {
+      onSubmitCsat: () => {
+        dispatch(csatViewActions.submitCsat());
+      },
+      onUpdateCsatRating: (rating) => {
+        dispatch(csatViewActions.updateCsatRating(rating));
+      },
+      onUpdateCsatReview: (review) => {
+        dispatch(csatViewActions.updateCsatReview(review));
+      },
+      onUpdateStarRating: (rating) => {
+        dispatch(csatViewActions.updateCsatRating(rating));
+      }
     };
+  };
 
-    return ReactRedux.connect (mapStateToProps, mapDispatchToProps) (CsatView);
-  }
-);
+  return ReactRedux.connect(mapStateToProps, mapDispatchToProps)(CsatView);
+});

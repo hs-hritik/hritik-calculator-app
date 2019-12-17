@@ -11,7 +11,6 @@
 ///
 
 @include component(business-hours) {
-
   $chat-widget-primary-text-color: var(--hs-chat-widget-primary-text-color);
   $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
   $chat-widget-error: var(--hs-chat-widget-error);
@@ -125,7 +124,7 @@
 
     &__attachment-placeholder-text {
       color: $form-primary-text-color;
-      opacity: .4;
+      opacity: 0.4;
     }
 
     &__attachment-details-wrapper {
@@ -140,7 +139,7 @@
     }
 
     &__attachment-size {
-      opacity: .25;
+      opacity: 0.25;
     }
 
     &__attachment-error {

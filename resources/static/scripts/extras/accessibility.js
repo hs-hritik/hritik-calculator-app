@@ -4,575 +4,563 @@
  * @created Sept 1, 2019
  */
 
-define (
-  "extras/accessibility",
-  [
-    "constants/activeView",
-    "constants/accessibility",
-    "gunpowder/utils/array"
-  ],
-  function (activeViewConstants, axConstants, arrayUtils) {
-    "use strict";
+define("extras/accessibility", [
+  "constants/activeView",
+  "constants/accessibility",
+  "gunpowder/utils/array"
+], function(activeViewConstants, axConstants, arrayUtils) {
+  "use strict";
 
-    const {
-      DIRECTIONS,
-      METALIST_GROUP_NAME,
-      OOBH_SUBVIEW,
-      METALIST_ITEMS
-    } = axConstants;
+  const {DIRECTIONS, METALIST_GROUP_NAME, OOBH_SUBVIEW, METALIST_ITEMS} = axConstants;
 
-    const OOBH_OFFLINE_META_LIST = [
-      {
-        group: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
-        selectors: [METALIST_ITEMS.OOBH.OFFLINE_MSG.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
-        selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.LAUNCHER_BTN,
-        selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
-      }
-    ];
+  const OOBH_OFFLINE_META_LIST = [
+    {
+      group: METALIST_GROUP_NAME.OOBH.OFFLINE_MSG,
+      selectors: [METALIST_ITEMS.OOBH.OFFLINE_MSG.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+      selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+      selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
+    }
+  ];
 
-    const OOBH_FORM_META_LIST = [
-      {
-        group: METALIST_GROUP_NAME.OOBH.WRAPPER,
-        selectors: [METALIST_ITEMS.OOBH.WRAPPER.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.NAME,
-        selectors: [METALIST_ITEMS.OOBH.NAME.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.EMAIL,
-        selectors: [METALIST_ITEMS.OOBH.EMAIL.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.MESSAGE,
-        selectors: [METALIST_ITEMS.OOBH.MESSAGE.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
-        selectors: []
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
-        selectors: [METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
-        selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
-      },
-      {
-        group: METALIST_GROUP_NAME.LAUNCHER_BTN,
-        selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
-      }
-    ];
+  const OOBH_FORM_META_LIST = [
+    {
+      group: METALIST_GROUP_NAME.OOBH.WRAPPER,
+      selectors: [METALIST_ITEMS.OOBH.WRAPPER.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.NAME,
+      selectors: [METALIST_ITEMS.OOBH.NAME.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.EMAIL,
+      selectors: [METALIST_ITEMS.OOBH.EMAIL.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.MESSAGE,
+      selectors: [METALIST_ITEMS.OOBH.MESSAGE.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
+      selectors: []
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.FILE_SELECT,
+      selectors: [METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.OOBH.FOOTER_BTN,
+      selectors: [METALIST_ITEMS.OOBH.FOOTER_BTN.SELECTOR]
+    },
+    {
+      group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+      selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
+    }
+  ];
 
-    /**
-     * FocusData is a mapping of view types and the corresponding metaList
-     * MetaList is a list of objects containing selectors of the elements present
-     * in a particular view.
-     * Each object contains a list of selectors.
-     * For elements that are static, the selectors list contain only one item.
-     * For elements that are dynamically generated (attachments, messages, etc),
-     * the selectors list is populated with the selectors of the dynamically generated elements
-     * In future if any new view is added, it is required to add the corresponding metalist in
-     * "_removeLauncherBtnSelectors" function which remove the launcher button group,
-     * when launcher button is hidden
-     */
-    const _focusData = {
-      [activeViewConstants.BUSINESS_HOURS]: {
-        metaList: []
-      },
-      [activeViewConstants.CHAT] : {
-        metaList: [
-          {
-            group: METALIST_GROUP_NAME.CHAT.FOOTER,
-            selectors: []
-          },
-          {
-            group: METALIST_GROUP_NAME.LAUNCHER_BTN,
-            selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.CHAT.MSGS_SCROLL_WRAPPER,
-            selectors: [METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
-            selectors: []
-          },
-          {
-            group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
-            selectors: []
-          }
-        ]
-      },
-      [activeViewConstants.CSAT] : {
-        metaList: [
-          {
-            group: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
-            selectors: [METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
-            selectors: [METALIST_ITEMS.CSAT.FOOTER_BTN.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.LAUNCHER_BTN,
-            selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
-            selectors: [METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR]
-          }
-        ]
-      },
-      [activeViewConstants.FAQ] : {
-        metaList: [
-          {
-            group: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
-            selectors: [METALIST_ITEMS.FAQ.CONTENT_WRAPPER.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
-            selectors: []
-          },
-          {
-            group: METALIST_GROUP_NAME.LAUNCHER_BTN,
-            selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
-          },
-          {
-            group: METALIST_GROUP_NAME.FAQ.BACK_BTN,
-            selectors: [METALIST_ITEMS.FAQ.BACK_BTN.SELECTOR]
-          }
-        ]
-      },
-      specialHandlers: {}
-    };
-
-    let _activeView = "";
-
-    /**
-     * FlatList is generated by flattening the selectors present in the focusData's metaList
-     * for a particular view.
-     * This is used by the ax module to focus the previous and next selector on tab press.
-     */
-    let _flatList = [];
-
-    let _delayedFocusIndex = -1;
-
-    /**
-     * FlatListActiveIndices is the mapping of view and active index in that view
-     */
-    const flatListActiveIndices = {
-      [activeViewConstants.BUSINESS_HOURS]: 0,
-      [activeViewConstants.CHAT]: 0,
-      [activeViewConstants.FAQ]: 0,
-      [activeViewConstants.CSAT]: 0
-    };
-
-    /**
-     * This function generate the new flatList, whenever any change in focusData obj
-     * It concatenate all the selectors list present in metaData list of focusData
-     */
-    const _generateFlatList = () => {
-      const activeViewData = _focusData [_activeView];
-      const {metaList} = activeViewData;
-
-      _flatList = metaList.reduce ((acc, item) => {
-        return acc.concat (item.selectors);
-      }, []);
-    };
-
-    /**
-     * Returns currently focused index of the active view
-     */
-    const _getFlatListActiveIndex = () => {
-      return flatListActiveIndices [_activeView];
-    };
-
-    /**
-     * Returns the active selector from the flatList
-     *
-     * @param {Number} index - Index of the selector
-     */
-    const _getFlatListActiveSelector = (index) => {
-      const activeIndex = index ? index : _getFlatListActiveIndex ();
-
-      return _flatList [activeIndex];
-    };
-
-    /**
-     * Return the index of the selector group in metaList
-     *
-     * @param {String} group - Readable name of the selector
-     * @returns {Number} - Index of item from meta list searched using group
-     */
-    const _findMetaListIndexByGroupName = (group) => {
-      const activeViewData = _focusData [_activeView];
-      const {metaList} = activeViewData;
-
-      return arrayUtils.findIndexByKey (metaList, group, "group");
-    };
-
-    /**
-     * Returns meta-list of the current active view
-     *
-     * @returns {Array} - MetaList of the object
-     */
-    const _getActiveViewMetaList = () => {
-      const activeViewData = _focusData [_activeView];
-
-      return activeViewData.metaList;
-    };
-
-    /**
-     * Return the index of the selector in the selectors list
-     *
-     * @param {String} selector - Selector value
-     * @param {Array} list - List of selectors
-     * @returns {Number} - Index of the selector in the list
-     */
-    const _findSelectorIndexInMetaList = (selector, list) => {
-      const selectorIndex = arrayUtils.findIndex (list, (selectorVal) => {
-        return (selectorVal === selector);
-      });
-
-      return selectorIndex;
-    };
-
-    /**
-     * This function update the mapping of active view and the active index
-     *
-     * @param {Number} index - Updated index
-     */
-    const setFlatListActiveIndex = (index) => {
-      flatListActiveIndices [_activeView] = index;
-    };
-
-    /**
-     * Increase the current active view index
-     */
-    const incrementFocusIndex = () => {
-      const activeIndex = _getFlatListActiveIndex ();
-      const newIndex = (activeIndex + 1) % _flatList.length;
-
-      setFlatListActiveIndex (newIndex);
-    };
-
-    /**
-     * Decrease the current active view index
-     */
-    const decrementFocusIndex = () => {
-      const activeIndex = _getFlatListActiveIndex ();
-      const newIndex = (activeIndex - 1 + _flatList.length) % _flatList.length;
-
-      setFlatListActiveIndex (newIndex);
-    };
-
-    /**
-     * This function update the active view of this module
-     * It also handles the change by generating the new flatList for the new view
-     *
-     * @param {String} viewName - Active view name
-     */
-    const setActiveView = (viewName) => {
-      _activeView = viewName;
-      _generateFlatList ();
-    };
-
-    /**
-     * This function focus the element at active index
-     * If element is not present in DOM, recursively call focus prev/next on basis of direction
-     *
-     * @param {String} direction - If element is not present,
-     * direction represent to focus prev or next
-     */
-    const focus = (direction = DIRECTIONS.FORWARD) => {
-      const selector = _getFlatListActiveSelector ();
-      const el = document.querySelector (selector);
-
-      if (selector === METALIST_ITEMS.LAUNCHER_BTN.SELECTOR) {
-        const specialHandlers = _focusData.specialHandlers;
-        const launcherBtnHandlers = specialHandlers [METALIST_GROUP_NAME.LAUNCHER_BTN];
-
-        if (launcherBtnHandlers) {
-          launcherBtnHandlers.forEach ((handler) => handler ());
+  /**
+   * FocusData is a mapping of view types and the corresponding metaList
+   * MetaList is a list of objects containing selectors of the elements present
+   * in a particular view.
+   * Each object contains a list of selectors.
+   * For elements that are static, the selectors list contain only one item.
+   * For elements that are dynamically generated (attachments, messages, etc),
+   * the selectors list is populated with the selectors of the dynamically generated elements
+   * In future if any new view is added, it is required to add the corresponding metalist in
+   * "_removeLauncherBtnSelectors" function which remove the launcher button group,
+   * when launcher button is hidden
+   */
+  const _focusData = {
+    [activeViewConstants.BUSINESS_HOURS]: {
+      metaList: []
+    },
+    [activeViewConstants.CHAT]: {
+      metaList: [
+        {
+          group: METALIST_GROUP_NAME.CHAT.FOOTER,
+          selectors: []
+        },
+        {
+          group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+          selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.CHAT.MSGS_SCROLL_WRAPPER,
+          selectors: [METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
+          selectors: []
+        },
+        {
+          group: METALIST_GROUP_NAME.CHAT.SKIP_BTN,
+          selectors: []
         }
-      } else if (el) {
-        el.focus ();
-      } else if (direction === DIRECTIONS.FORWARD) {
-        focusNext (direction);
-      } else if (direction === DIRECTIONS.BACKWARD) {
-        focusPrev (direction);
-      }
-    };
-
-    /**
-     * On tab keypress, focus next by increasing the index and focus the active element
-     */
-    const focusNext = (direction = DIRECTIONS.FORWARD) => {
-      incrementFocusIndex ();
-      focus (direction);
-    };
-
-    /**
-     * On shift-tab keypress, focus prev by decreasing the index and focus the active element
-     */
-    const focusPrev = (direction = DIRECTIONS.BACKWARD) => {
-      decrementFocusIndex ();
-      focus (direction);
-    };
-
-    /**
-     * This function replace metaList of selectors
-     *
-     * @param {String} type - sub-type of view
-     */
-    const replaceMetaList = (type) => {
-      if (type === OOBH_SUBVIEW.OFFLINE_MSG) {
-        _focusData [_activeView].metaList = OOBH_OFFLINE_META_LIST;
-      } else if (type === OOBH_SUBVIEW.FORM) {
-        _focusData [_activeView].metaList = OOBH_FORM_META_LIST;
-      }
-
-      _generateFlatList ();
-      setFlatListActiveIndex (0);
-    };
-
-    /**
-     * This function does the following things
-     * - Finds the index of selector group in meta-list
-     * - Appends the selector in the meta-list
-     * - Based on the type of selector group, increment or decrement the current active index
-     * - Regenerates the flat list
-     *
-     * @param {Object} config
-     * @param {String} config.group - Name of the selector category
-     * @param {Boolean} config.selector - Unique selector of an element
-     * @param {String} config.data_label - Data label of the element
-     */
-    const addSelector = (config) => {
-      const {group, selector} = config;
-      const metaList = _getActiveViewMetaList ();
-      const metaListIndex = _findMetaListIndexByGroupName (group);
-
-      metaList [metaListIndex].selectors.push (selector);
-
-      if (group === METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS) {
-        incrementFocusIndex ();
-      }
-
-      _generateFlatList ();
-    };
-
-    /**
-     * This function does the following things
-     * - Finds the index of selector group in meta-list
-     * - Find the index of the selector to be removed in the group
-     * - Regenerates the flat list
-     *
-     * @param {Object} config
-     * @param {String} config.group - Name of the selector category
-     * @param {Boolean} [config.selector] - Unique selector of an element
-     */
-    const removeSelector = (config) => {
-      const {selector, group} = config;
-      const metaList = _getActiveViewMetaList ();
-      const index = _findMetaListIndexByGroupName (group);
-      const selectorIndex = _findSelectorIndexInMetaList (selector, metaList[index].selectors);
-
-      metaList [index].selectors.splice (selectorIndex, 1);
-      _generateFlatList ();
-    };
-
-    /**
-     * This function saves the index to be focused later
-     */
-    const delayFocus = () => {
-      _delayedFocusIndex = flatListActiveIndices [_activeView];
-    };
-
-    /**
-     * This function focuses and resets the delayed focus index
-     */
-    const clearDelayFocus = () => {
-      if (_delayedFocusIndex === -1) {
-        return;
-      }
-
-      const selector = _getFlatListActiveSelector (_delayedFocusIndex);
-      const el = document.querySelector (selector);
-
-      if (el) {
-        el.focus ();
-        _delayedFocusIndex = -1;
-      }
-    };
-
-    /**
-     * This function update the activeIndex to current focus index in flatList
-     *
-     * @param {String} config.selector - Selector of the current focused element
-     */
-    const setActiveIndex = (config) => {
-      const {selector} = config;
-
-      const index = arrayUtils.findIndex (_flatList, (selectorName) => {
-        if (selector === selectorName) {
-          return true;
+      ]
+    },
+    [activeViewConstants.CSAT]: {
+      metaList: [
+        {
+          group: METALIST_GROUP_NAME.CSAT.FEEDBACK_TEXT_AREA,
+          selectors: [METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.CSAT.FOOTER_BTN,
+          selectors: [METALIST_ITEMS.CSAT.FOOTER_BTN.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+          selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.CSAT.STAR_RATING_WRAPPER,
+          selectors: [METALIST_ITEMS.CSAT.STAR_RATING_WRAPPER.SELECTOR]
         }
-      });
+      ]
+    },
+    [activeViewConstants.FAQ]: {
+      metaList: [
+        {
+          group: METALIST_GROUP_NAME.FAQ.CONTENT_WRAPPER,
+          selectors: [METALIST_ITEMS.FAQ.CONTENT_WRAPPER.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.FAQ.FAQ_BODY_LINKS,
+          selectors: []
+        },
+        {
+          group: METALIST_GROUP_NAME.LAUNCHER_BTN,
+          selectors: [METALIST_ITEMS.LAUNCHER_BTN.SELECTOR]
+        },
+        {
+          group: METALIST_GROUP_NAME.FAQ.BACK_BTN,
+          selectors: [METALIST_ITEMS.FAQ.BACK_BTN.SELECTOR]
+        }
+      ]
+    },
+    specialHandlers: {}
+  };
 
-      if (index !== -1) {
-        setFlatListActiveIndex (index);
+  let _activeView = "";
+
+  /**
+   * FlatList is generated by flattening the selectors present in the focusData's metaList
+   * for a particular view.
+   * This is used by the ax module to focus the previous and next selector on tab press.
+   */
+  let _flatList = [];
+
+  let _delayedFocusIndex = -1;
+
+  /**
+   * FlatListActiveIndices is the mapping of view and active index in that view
+   */
+  const flatListActiveIndices = {
+    [activeViewConstants.BUSINESS_HOURS]: 0,
+    [activeViewConstants.CHAT]: 0,
+    [activeViewConstants.FAQ]: 0,
+    [activeViewConstants.CSAT]: 0
+  };
+
+  /**
+   * This function generate the new flatList, whenever any change in focusData obj
+   * It concatenate all the selectors list present in metaData list of focusData
+   */
+  const _generateFlatList = () => {
+    const activeViewData = _focusData[_activeView];
+    const {metaList} = activeViewData;
+
+    _flatList = metaList.reduce((acc, item) => {
+      return acc.concat(item.selectors);
+    }, []);
+  };
+
+  /**
+   * Returns currently focused index of the active view
+   */
+  const _getFlatListActiveIndex = () => {
+    return flatListActiveIndices[_activeView];
+  };
+
+  /**
+   * Returns the active selector from the flatList
+   *
+   * @param {Number} index - Index of the selector
+   */
+  const _getFlatListActiveSelector = (index) => {
+    const activeIndex = index ? index : _getFlatListActiveIndex();
+
+    return _flatList[activeIndex];
+  };
+
+  /**
+   * Return the index of the selector group in metaList
+   *
+   * @param {String} group - Readable name of the selector
+   * @returns {Number} - Index of item from meta list searched using group
+   */
+  const _findMetaListIndexByGroupName = (group) => {
+    const activeViewData = _focusData[_activeView];
+    const {metaList} = activeViewData;
+
+    return arrayUtils.findIndexByKey(metaList, group, "group");
+  };
+
+  /**
+   * Returns meta-list of the current active view
+   *
+   * @returns {Array} - MetaList of the object
+   */
+  const _getActiveViewMetaList = () => {
+    const activeViewData = _focusData[_activeView];
+
+    return activeViewData.metaList;
+  };
+
+  /**
+   * Return the index of the selector in the selectors list
+   *
+   * @param {String} selector - Selector value
+   * @param {Array} list - List of selectors
+   * @returns {Number} - Index of the selector in the list
+   */
+  const _findSelectorIndexInMetaList = (selector, list) => {
+    const selectorIndex = arrayUtils.findIndex(list, (selectorVal) => {
+      return selectorVal === selector;
+    });
+
+    return selectorIndex;
+  };
+
+  /**
+   * This function update the mapping of active view and the active index
+   *
+   * @param {Number} index - Updated index
+   */
+  const setFlatListActiveIndex = (index) => {
+    flatListActiveIndices[_activeView] = index;
+  };
+
+  /**
+   * Increase the current active view index
+   */
+  const incrementFocusIndex = () => {
+    const activeIndex = _getFlatListActiveIndex();
+    const newIndex = (activeIndex + 1) % _flatList.length;
+
+    setFlatListActiveIndex(newIndex);
+  };
+
+  /**
+   * Decrease the current active view index
+   */
+  const decrementFocusIndex = () => {
+    const activeIndex = _getFlatListActiveIndex();
+    const newIndex = (activeIndex - 1 + _flatList.length) % _flatList.length;
+
+    setFlatListActiveIndex(newIndex);
+  };
+
+  /**
+   * This function update the active view of this module
+   * It also handles the change by generating the new flatList for the new view
+   *
+   * @param {String} viewName - Active view name
+   */
+  const setActiveView = (viewName) => {
+    _activeView = viewName;
+    _generateFlatList();
+  };
+
+  /**
+   * This function focus the element at active index
+   * If element is not present in DOM, recursively call focus prev/next on basis of direction
+   *
+   * @param {String} direction - If element is not present,
+   * direction represent to focus prev or next
+   */
+  const focus = (direction = DIRECTIONS.FORWARD) => {
+    const selector = _getFlatListActiveSelector();
+    const el = document.querySelector(selector);
+
+    if (selector === METALIST_ITEMS.LAUNCHER_BTN.SELECTOR) {
+      const specialHandlers = _focusData.specialHandlers;
+      const launcherBtnHandlers = specialHandlers[METALIST_GROUP_NAME.LAUNCHER_BTN];
+
+      if (launcherBtnHandlers) {
+        launcherBtnHandlers.forEach((handler) => handler());
       }
-    };
+    } else if (el) {
+      el.focus();
+    } else if (direction === DIRECTIONS.FORWARD) {
+      focusNext(direction);
+    } else if (direction === DIRECTIONS.BACKWARD) {
+      focusPrev(direction);
+    }
+  };
 
-    /**
-     * This function replaces the selector list in meta-list
-     *
-     * @param {String} data.group - Identifier of the meta-list
-     * @param {Array} data.selectors - Array of selectors
-     */
-    const replaceSelectors = (data) => {
-      if (!data) {
-        return null;
+  /**
+   * On tab keypress, focus next by increasing the index and focus the active element
+   */
+  const focusNext = (direction = DIRECTIONS.FORWARD) => {
+    incrementFocusIndex();
+    focus(direction);
+  };
+
+  /**
+   * On shift-tab keypress, focus prev by decreasing the index and focus the active element
+   */
+  const focusPrev = (direction = DIRECTIONS.BACKWARD) => {
+    decrementFocusIndex();
+    focus(direction);
+  };
+
+  /**
+   * This function replace metaList of selectors
+   *
+   * @param {String} type - sub-type of view
+   */
+  const replaceMetaList = (type) => {
+    if (type === OOBH_SUBVIEW.OFFLINE_MSG) {
+      _focusData[_activeView].metaList = OOBH_OFFLINE_META_LIST;
+    } else if (type === OOBH_SUBVIEW.FORM) {
+      _focusData[_activeView].metaList = OOBH_FORM_META_LIST;
+    }
+
+    _generateFlatList();
+    setFlatListActiveIndex(0);
+  };
+
+  /**
+   * This function does the following things
+   * - Finds the index of selector group in meta-list
+   * - Appends the selector in the meta-list
+   * - Based on the type of selector group, increment or decrement the current active index
+   * - Regenerates the flat list
+   *
+   * @param {Object} config
+   * @param {String} config.group - Name of the selector category
+   * @param {Boolean} config.selector - Unique selector of an element
+   * @param {String} config.data_label - Data label of the element
+   */
+  const addSelector = (config) => {
+    const {group, selector} = config;
+    const metaList = _getActiveViewMetaList();
+    const metaListIndex = _findMetaListIndexByGroupName(group);
+
+    metaList[metaListIndex].selectors.push(selector);
+
+    if (group === METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS) {
+      incrementFocusIndex();
+    }
+
+    _generateFlatList();
+  };
+
+  /**
+   * This function does the following things
+   * - Finds the index of selector group in meta-list
+   * - Find the index of the selector to be removed in the group
+   * - Regenerates the flat list
+   *
+   * @param {Object} config
+   * @param {String} config.group - Name of the selector category
+   * @param {Boolean} [config.selector] - Unique selector of an element
+   */
+  const removeSelector = (config) => {
+    const {selector, group} = config;
+    const metaList = _getActiveViewMetaList();
+    const index = _findMetaListIndexByGroupName(group);
+    const selectorIndex = _findSelectorIndexInMetaList(selector, metaList[index].selectors);
+
+    metaList[index].selectors.splice(selectorIndex, 1);
+    _generateFlatList();
+  };
+
+  /**
+   * This function saves the index to be focused later
+   */
+  const delayFocus = () => {
+    _delayedFocusIndex = flatListActiveIndices[_activeView];
+  };
+
+  /**
+   * This function focuses and resets the delayed focus index
+   */
+  const clearDelayFocus = () => {
+    if (_delayedFocusIndex === -1) {
+      return;
+    }
+
+    const selector = _getFlatListActiveSelector(_delayedFocusIndex);
+    const el = document.querySelector(selector);
+
+    if (el) {
+      el.focus();
+      _delayedFocusIndex = -1;
+    }
+  };
+
+  /**
+   * This function update the activeIndex to current focus index in flatList
+   *
+   * @param {String} config.selector - Selector of the current focused element
+   */
+  const setActiveIndex = (config) => {
+    const {selector} = config;
+
+    const index = arrayUtils.findIndex(_flatList, (selectorName) => {
+      if (selector === selectorName) {
+        return true;
       }
+    });
 
-      const metaList = _getActiveViewMetaList ();
-      const selectorGroupIndex = arrayUtils.findIndexByKey (metaList, data.group, "group");
+    if (index !== -1) {
+      setFlatListActiveIndex(index);
+    }
+  };
 
-      metaList [selectorGroupIndex].selectors = data.selectors;
+  /**
+   * This function replaces the selector list in meta-list
+   *
+   * @param {String} data.group - Identifier of the meta-list
+   * @param {Array} data.selectors - Array of selectors
+   */
+  const replaceSelectors = (data) => {
+    if (!data) {
+      return null;
+    }
 
-      _generateFlatList ();
-    };
+    const metaList = _getActiveViewMetaList();
+    const selectorGroupIndex = arrayUtils.findIndexByKey(metaList, data.group, "group");
 
-    /**
-     * Returns the next active selector
-     * @returns {String} - Selector value
-     */
-    const getNextActiveSelector = () => {
-      const activeIndex = (_getFlatListActiveIndex () + 1) % _flatList.length;
+    metaList[selectorGroupIndex].selectors = data.selectors;
 
-      return _flatList [activeIndex];
-    };
+    _generateFlatList();
+  };
 
-    /**
-     * Returns the prev active index
-     * @returns {String} - Selector value
-     */
-    const getPrevActiveSelector = () => {
-      const activeIndex = (_getFlatListActiveIndex () - 1 + _flatList.length) % _flatList.length;
+  /**
+   * Returns the next active selector
+   * @returns {String} - Selector value
+   */
+  const getNextActiveSelector = () => {
+    const activeIndex = (_getFlatListActiveIndex() + 1) % _flatList.length;
 
-      return _flatList [activeIndex];
-    };
+    return _flatList[activeIndex];
+  };
 
-    const _backupSelectors = {};
+  /**
+   * Returns the prev active index
+   * @returns {String} - Selector value
+   */
+  const getPrevActiveSelector = () => {
+    const activeIndex = (_getFlatListActiveIndex() - 1 + _flatList.length) % _flatList.length;
 
-    /**
-     * This function takes backup of the selectors
-     *
-     * @param {String} selectorGroupName - Name of the selectors category
-     */
-    const backupSelectors = (selectorGroupName) => {
-      if (!selectorGroupName) {
-        return;
-      }
+    return _flatList[activeIndex];
+  };
 
-      const metaList = _getActiveViewMetaList ();
-      const selectorGroupIndex = _findMetaListIndexByGroupName (selectorGroupName);
+  const _backupSelectors = {};
 
-      _backupSelectors [selectorGroupName] = metaList [selectorGroupIndex].selectors;
-    };
+  /**
+   * This function takes backup of the selectors
+   *
+   * @param {String} selectorGroupName - Name of the selectors category
+   */
+  const backupSelectors = (selectorGroupName) => {
+    if (!selectorGroupName) {
+      return;
+    }
 
-    /**
-     * This function returns the backed up selectors for a given group
-     *
-     * @param {String} selectorGroupName - Readable name of the meta-list
-     */
-    const restoreSelectors = (selectorGroupName) => {
-      if (!selectorGroupName) {
-        return;
-      }
+    const metaList = _getActiveViewMetaList();
+    const selectorGroupIndex = _findMetaListIndexByGroupName(selectorGroupName);
 
-      return _backupSelectors [selectorGroupName];
-    };
+    _backupSelectors[selectorGroupName] = metaList[selectorGroupIndex].selectors;
+  };
 
-    /**
-     * This function remove the group object in the metaList
-     *
-     * @param {Array} config.metaList - List of objects containing group name &
-     * selectors of the particular group
-     * @param {String} config.group - Name of the group
-     */
-    const _removeMetaListGroup = (config) => {
-      const {
-        metaList,
-        group
-      } = config;
-      const index = arrayUtils.findIndexByKey (metaList, group, "group");
+  /**
+   * This function returns the backed up selectors for a given group
+   *
+   * @param {String} selectorGroupName - Readable name of the meta-list
+   */
+  const restoreSelectors = (selectorGroupName) => {
+    if (!selectorGroupName) {
+      return;
+    }
 
-      if (index !== -1) {
-        metaList.splice (index, 1);
-      }
-    };
+    return _backupSelectors[selectorGroupName];
+  };
 
-    /**
-     * Remove launcher button group object from all the metaList,
-     * when launcher button is hidden
-     */
-    const _removeLauncherBtnSelectors = () => {
-      const metaLists = [
-        _focusData.CHAT.metaList,
-        _focusData.CSAT.metaList,
-        _focusData.FAQ.metaList,
-        OOBH_FORM_META_LIST,
-        OOBH_OFFLINE_META_LIST
-      ];
-      const group = METALIST_GROUP_NAME.LAUNCHER_BTN;
+  /**
+   * This function remove the group object in the metaList
+   *
+   * @param {Array} config.metaList - List of objects containing group name &
+   * selectors of the particular group
+   * @param {String} config.group - Name of the group
+   */
+  const _removeMetaListGroup = (config) => {
+    const {metaList, group} = config;
+    const index = arrayUtils.findIndexByKey(metaList, group, "group");
 
-      metaLists.forEach ((metaList) => {
-        _removeMetaListGroup ({metaList, group});
-      });
-    };
+    if (index !== -1) {
+      metaList.splice(index, 1);
+    }
+  };
 
-    const init = (data) => {
-      const {showLauncher, handlers} = data;
-      const {specialHandlers} = _focusData;
+  /**
+   * Remove launcher button group object from all the metaList,
+   * when launcher button is hidden
+   */
+  const _removeLauncherBtnSelectors = () => {
+    const metaLists = [
+      _focusData.CHAT.metaList,
+      _focusData.CSAT.metaList,
+      _focusData.FAQ.metaList,
+      OOBH_FORM_META_LIST,
+      OOBH_OFFLINE_META_LIST
+    ];
+    const group = METALIST_GROUP_NAME.LAUNCHER_BTN;
 
-      // If launcher button is hidden, remove launcher button group in all views metaList
-      if (!showLauncher) {
-        _removeLauncherBtnSelectors ();
-      }
+    metaLists.forEach((metaList) => {
+      _removeMetaListGroup({metaList, group});
+    });
+  };
 
-      handlers.forEach ((handlerConfig) => {
-        specialHandlers [handlerConfig.group] = handlerConfig.handlers;
-      });
-    };
+  const init = (data) => {
+    const {showLauncher, handlers} = data;
+    const {specialHandlers} = _focusData;
 
-    return {
-      setActiveView,
-      focusNext,
-      focusPrev,
-      focus,
-      addSelector,
-      removeSelector,
-      delayFocus,
-      clearDelayFocus,
-      replaceMetaList,
-      setActiveIndex,
-      replaceSelectors,
-      getNextActiveSelector,
-      getPrevActiveSelector,
-      setFlatListActiveIndex,
-      backupSelectors,
-      restoreSelectors,
-      init
-    };
-  }
-);
+    // If launcher button is hidden, remove launcher button group in all views metaList
+    if (!showLauncher) {
+      _removeLauncherBtnSelectors();
+    }
+
+    handlers.forEach((handlerConfig) => {
+      specialHandlers[handlerConfig.group] = handlerConfig.handlers;
+    });
+  };
+
+  return {
+    setActiveView,
+    focusNext,
+    focusPrev,
+    focus,
+    addSelector,
+    removeSelector,
+    delayFocus,
+    clearDelayFocus,
+    replaceMetaList,
+    setActiveIndex,
+    replaceSelectors,
+    getNextActiveSelector,
+    getPrevActiveSelector,
+    setFlatListActiveIndex,
+    backupSelectors,
+    restoreSelectors,
+    init
+  };
+});

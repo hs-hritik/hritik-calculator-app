@@ -4,30 +4,37 @@
  * @author Prasenjit Sharan <prasenjit@helpshift.com>
  * @created 19 June, 2019
  */
-const enzyme = require ("enzyme");
-const Adapter = require ("enzyme-adapter-react-15.4");
+const enzyme = require("enzyme");
+const Adapter = require("enzyme-adapter-react-16");
 
-// Update node's global object with references to React, Redux, etc for tests.
-if (!global.React || !global.Redux || !global.ReactRedux) {
-  const React = require ("react");
-  const PureRenderMixin = require ("react-addons-pure-render-mixin");
-  const update = require ("react-addons-update");
-  const Redux = require ("redux");
-  const ReactRedux = require ("react-redux");
-
-  // Add react, react-addons, and redux to the global scope.
-  // We can't use `libs/react-with-addons` and `libs/redux` because jest
-  // also requires react and redux from node_modules.
-  // Running multiple instances of react and redux will throw an error so we use
-  // react and redux from node_modules and manually add them to the global scope.
-  global.React = React;
-  React.addons = {
-    PureRenderMixin,
-    update
+// Add react, react-addons, create-react-class, prop-types and redux to the
+// global scope. We can't use `libs/react-with-addons` and `libs/redux`
+// because jest also requires react and redux from node_modules.
+// Running multiple instances of react and redux will throw an error so we use
+// react and redux from node_modules and manually add them to the global scope.
+if (!global.React) {
+  global.React = require("react");
+  global.React.addons = {
+    PureRenderMixin: require("react-addons-pure-render-mixin"),
+    update: require("react-addons-update")
   };
-  global.Redux = Redux;
-  global.ReactRedux = ReactRedux;
+}
+
+if (!global.createReactClass) {
+  global.createReactClass = require("create-react-class");
+}
+
+if (!global.PropTypes) {
+  global.PropTypes = require("prop-types");
+}
+
+if (!global.Redux) {
+  global.Redux = require("redux");
+}
+
+if (!global.ReactRedux) {
+  global.ReactRedux = require("react-redux");
 }
 
 // Enzyme setup
-enzyme.configure ({adapter: new Adapter ()});
+enzyme.configure({adapter: new Adapter()});
