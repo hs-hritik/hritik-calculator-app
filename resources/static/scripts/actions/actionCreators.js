@@ -322,6 +322,18 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to select an intent
+   * @param {Object} intent
+   * @returns {Object} - Action
+   */
+  const selectIntent = (intent) => {
+    return {
+      type: ACTION_TYPES.SELECT_INTENT,
+      intent
+    };
+  };
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -351,6 +363,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     setKeyboardInteractionIsActive,
     intentsTreeSuccess,
     intentsTreeRequest,
-    intentsModelSuccess
+    intentsModelSuccess,
+    selectIntent
   };
 });

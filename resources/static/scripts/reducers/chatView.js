@@ -491,6 +491,14 @@ define("reducers/chatView", [
         });
       }
 
+      case ACTION_TYPES.SELECT_INTENT: {
+        return update(state, {
+          intents: {
+            selectedIntentIds: {$push: [action.intent.id]}
+          }
+        });
+      }
+
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
 

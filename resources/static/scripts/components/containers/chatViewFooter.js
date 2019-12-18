@@ -171,6 +171,9 @@ define("components/containers/chatViewFooter", [
       },
       onIntentsNavigationStateChange: (navigationState) => {
         dispatch(actionCreators.updateIntentsNavigationState(navigationState));
+      },
+      onSelectIntent: (intent) => {
+        dispatch(actionCreators.selectIntent(intent));
       }
     };
   };
