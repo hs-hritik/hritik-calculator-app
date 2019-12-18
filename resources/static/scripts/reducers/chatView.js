@@ -174,7 +174,8 @@ define("reducers/chatView", [
         const updateObj = {
           activeFooter: {$set: ACTIVE_FOOTER.REPLY},
           userInput: {$merge: userInputUpdateObj},
-          pollerFailureCount: {$set: 0}
+          pollerFailureCount: {$set: 0},
+          isCsatSubmitted: {$set: false}
         };
 
         if (!conversationHistoryIsEnabled) {
@@ -182,6 +183,7 @@ define("reducers/chatView", [
           updateObj.unreadMessageIds = {$set: []};
           updateObj.messageCursor = {$set: INITIAL_MESSAGE_CURSOR};
           updateObj.issueCursor = {$set: 0};
+          updateObj.activeIssueMsgCursor = {$set: null};
         }
 
         return update(state, updateObj);

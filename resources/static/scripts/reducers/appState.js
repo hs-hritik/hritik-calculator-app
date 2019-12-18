@@ -295,7 +295,11 @@ define("reducers/appState", [
           internalIssueId: {$set: ""},
           issueState: {$set: ISSUE_STATE.NA},
           issueType: {$set: ISSUE_TYPE.INITIAL},
-          appResetTrigger: {$set: APP_RESET_TRIGGER.START_NEW_CONVERSATION}
+          appResetTrigger: {$set: APP_RESET_TRIGGER.START_NEW_CONVERSATION},
+          postChatFeatures: {
+            resolutionQuestionCompleted: {$set: false},
+            csatCompleted: {$set: false}
+          }
         });
 
       case ACTION_TYPES.ISSUE_CREATED:

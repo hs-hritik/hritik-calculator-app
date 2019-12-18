@@ -33,6 +33,7 @@ define("reducers/csatView", ["constants/actionTypes"], function(ACTION_TYPES) {
         });
 
       case ACTION_TYPES.RESET:
+      case ACTION_TYPES.NEW_CONVERSATION_STARTED:
         return INITIAL_STATE;
 
       default:
