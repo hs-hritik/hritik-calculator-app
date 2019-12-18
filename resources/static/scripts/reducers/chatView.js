@@ -348,6 +348,13 @@ define("reducers/chatView", [
           }
         });
 
+      case ACTION_TYPES.UPDATE_INTENTS_NAVIGATION_STATE:
+        return update(state, {
+          intents: {
+            pickerNavigationState: {$set: action.navigationState}
+          }
+        });
+
       case ACTION_TYPES.SET_USER_VIEWING_PAST_MESSAGES:
         return update(state, {
           userIsViewingPastMessages: {$set: action.isViewing}

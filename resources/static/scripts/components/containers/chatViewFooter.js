@@ -168,6 +168,9 @@ define("components/containers/chatViewFooter", [
       },
       onListPickerNavigationStateChange: (navigationState) => {
         dispatch(actionCreators.updateListPickerNavigationState(navigationState));
+      },
+      onIntentsNavigationStateChange: (navigationState) => {
+        dispatch(actionCreators.updateIntentsNavigationState(navigationState));
       }
     };
   };

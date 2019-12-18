@@ -130,6 +130,7 @@ define("components/chatViewFooter", [
       onStarClick: PropTypes.func.isRequired,
       onListPickerNavigationStateChange: PropTypes.func,
       onListPickerOptionSelect: PropTypes.func.isRequired,
+      onIntentsNavigationStateChange: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
         resolutionQuestionReject: PropTypes.string.isRequired,
@@ -804,8 +805,12 @@ define("components/chatViewFooter", [
       return [headingEl, labelEl];
     },
 
-    _onIntentsNavigationStateChange() {
-      // @TODO
+    /**
+     * Handler to update the intents navigation state.
+     * @param {String} navigationState
+     */
+    _onIntentsNavigationStateChange(navigationState) {
+      this.props.onIntentsNavigationStateChange(navigationState);
     },
 
     _onSelectIntent() {

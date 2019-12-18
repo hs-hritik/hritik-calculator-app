@@ -232,6 +232,17 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   });
 
   /**
+   * Return action to change intents navigation state
+   * @param {String} navigationState - Whether the intents picker is in "closed", "opened" or
+   * "resizing" state
+   * @returns {Object} - the action object
+   */
+  const updateIntentsNavigationState = (navigationState) => ({
+    type: ACTION_TYPES.UPDATE_INTENTS_NAVIGATION_STATE,
+    navigationState
+  });
+
+  /**
    * Action to set conversation ended
    * @returns {Object} - Action
    */
@@ -333,6 +344,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     setFooterInactive,
     resetReEngagementId,
     updateListPickerNavigationState,
+    updateIntentsNavigationState,
     setAppResetTrigger,
     setInitialUserMsg,
     setConversationEnded,
