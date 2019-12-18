@@ -11,7 +11,6 @@
 ///
 
 @include component(chat-footer) {
-
   $chat-widget-bg-color: var(--hs-chat-widget-bg-color);
   $form-bg-color: var(--hs-form-bg-color);
   $form-border-color: var(--hs-form-border-color);
@@ -128,16 +127,16 @@
       }
 
       &[disabled] {
-        opacity: .4;
+        opacity: 0.4;
       }
 
-      &[type=number] {
+      &[type="number"] {
         -moz-appearance: textfield;
       }
 
       // Remove the spinner arrows for input type number
-      &[type=number]::-webkit-inner-spin-button,
-      &[type=number]::-webkit-outer-spin-button {
+      &[type="number"]::-webkit-inner-spin-button,
+      &[type="number"]::-webkit-outer-spin-button {
         margin: 0;
         -moz-appearance: none;
         -webkit-appearance: none;
@@ -150,8 +149,8 @@
       // @NOTE - Disabling pseudo element lint rule as it gives error for
       // -webkit-clear-button scss lint recognize -webkit-clear-button as a
       // pseudo class and not a pseudo element
-      &[type=date]::-webkit-inner-spin-button,
-      &[type=date]::-webkit-clear-button {
+      &[type="date"]::-webkit-inner-spin-button,
+      &[type="date"]::-webkit-clear-button {
         display: none;
         -webkit-appearance: none;
       }
@@ -202,7 +201,7 @@
     &--form-invalid {
       .hs-chat-footer__submit {
         cursor: not-allowed;
-        opacity: .4;
+        opacity: 0.4;
       }
     }
 
@@ -230,8 +229,8 @@
       .hs-chat-footer__text-field {
         // @NOTE - If we want to avoid zoom on focus for iOS devices, we need to
         // set the font size to 16px
-        &[type=number],
-        &[type=date] {
+        &[type="number"],
+        &[type="date"] {
           font-size: font-size(body, large);
         }
       }

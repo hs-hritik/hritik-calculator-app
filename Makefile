@@ -73,7 +73,6 @@ npminstall:
 eslint: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Running eslint on JS & JSX files."
-	$(NPM) install resources/static/eslint;
 	$(GULP) --gulpfile "resources/gulpfile.babel.js" eslint $(eslint_prefixed_js_diff);
 	@echo ">> Finished task: $@"
 

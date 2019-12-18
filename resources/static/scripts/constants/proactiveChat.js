@@ -4,36 +4,35 @@
  * @created 7 Nov, 2017
  */
 
-define ("constants/proactiveChat",
-  function () {
-    "use strict";
+define("constants/proactiveChat", function() {
+  "use strict";
 
-    return {
-      CONDITION: {
-        TAG: "tags",
-        TIME_ON_PAGE: "time_on_page",
-        TIME_ON_SITE: "time_on_site",
-        PAGE_URL: "page_url",
-        TIME_RELATION: "time_relation"
-      },
-      OPERATOR: {
-        EQUALS: "equals",
-        NOT_EQUALS: "not_equals",
-        CONTAINS: "contains",
-        DOES_NOT_CONTAIN: "does_not_contain",
-        STARTS_WITH: "starts_with",
-        SET: "set",
-        OPEN: "open"
-      },
-      ACTION: {
-        GREETING: "greeting_message",
-        TAG: "tags",
-        CIF: "cif",
-        WIDGET: "widget"
-      },
-      TIME_RELATION: {
-        AND: "and",
-        OR: "or"
-      }
-    };
-  });
+  return {
+    CONDITION: {
+      TAG: "tags",
+      TIME_ON_PAGE: "time_on_page",
+      TIME_ON_SITE: "time_on_site",
+      PAGE_URL: "page_url",
+      TIME_RELATION: "time_relation"
+    },
+    OPERATOR: {
+      EQUALS: "equals",
+      NOT_EQUALS: "not_equals",
+      CONTAINS: "contains",
+      DOES_NOT_CONTAIN: "does_not_contain",
+      STARTS_WITH: "starts_with",
+      SET: "set",
+      OPEN: "open"
+    },
+    ACTION: {
+      GREETING: "greeting_message",
+      TAG: "tags",
+      CIF: "cif",
+      WIDGET: "widget"
+    },
+    TIME_RELATION: {
+      AND: "and",
+      OR: "or"
+    }
+  };
+});

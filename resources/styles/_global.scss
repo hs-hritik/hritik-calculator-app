@@ -6,7 +6,6 @@
 // Global variables and styles
 // - - - - - - - - - - - - - - -
 
-
 ////
 /// @group global
 ////
@@ -15,35 +14,34 @@
 /// @type Map
 $_palettes: (
   black: (
-    dark:      #383f44,
-    base:      #576066,
-    light:     #859199,
-    x-light:   #b6c3cc,
-    xx-light:  #d5dfe6
+    dark: #383f44,
+    base: #576066,
+    light: #859199,
+    x-light: #b6c3cc,
+    xx-light: #d5dfe6
   ),
   green: (
-    x-dark:    #19803c,
-    dark:      #2e9952,
-    base:      #43bf6c,
-    light:     #8dd9a6,
-    x-light:   #b0ebbf,
-    xx-light:  #e6faeb
+    x-dark: #19803c,
+    dark: #2e9952,
+    base: #43bf6c,
+    light: #8dd9a6,
+    x-light: #b0ebbf,
+    xx-light: #e6faeb
   ),
   gray: (
-    x-dark:    #a2a4a6,
-    dark:      #c8cacc,
-    base:      #d4d7d9,
-    light:     #e8e9eb,
-    x-light:   #f8f9f9,
-    xx-light:  #fff
+    x-dark: #a2a4a6,
+    dark: #c8cacc,
+    base: #d4d7d9,
+    light: #e8e9eb,
+    x-light: #f8f9f9,
+    xx-light: #fff
   ),
   red: (
-    dark:      #e65050,
-    base:      #f66,
-    light:     #ff8c8c
+    dark: #e65050,
+    base: #f66,
+    light: #ff8c8c
   )
 ) !global;
-
 
 /// Colors for global elements on the dashboard
 /// @type Map
@@ -112,7 +110,7 @@ $_font-sizes: (
     h3: 18,
     h4: 16,
     h5: 14,
-    h6: 12,
+    h6: 12
   )
 ) !global;
 
@@ -127,7 +125,7 @@ $_line-heights: (
   h3: 24px,
   h4: 20px,
   h5: 20px,
-  h6: 16px,
+  h6: 16px
 ) !global;
 
 /// Font weights for body and header elements
@@ -135,7 +133,7 @@ $_line-heights: (
 $_font-weights: (
   normal: 400,
   medium: 500,
-  bold: 600,
+  bold: 600
 ) !global;
 
 /// Font sizes for icons
@@ -174,7 +172,9 @@ $_z-index: (
 
 /// Font stack used for elements that should be rendered in system fonts
 /// @type String | List
-$_font-family-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+$_font-family-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+  Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+  "Segoe UI Emoji", "Segoe UI Symbol";
 
 /// Default font stack for all elements.
 /// @type String | List

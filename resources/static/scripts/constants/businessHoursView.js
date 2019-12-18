@@ -4,25 +4,23 @@
  * @created Oct 4, 2017
  */
 
-define ("constants/businessHoursView",
-  function () {
-    "use strict";
+define("constants/businessHoursView", function() {
+  "use strict";
 
-    const CONTACT_FORM_FIELDS = {
-      NAME: "name",
-      EMAIL: "email",
-      MESSAGE: "message"
-    };
+  const CONTACT_FORM_FIELDS = {
+    NAME: "name",
+    EMAIL: "email",
+    MESSAGE: "message"
+  };
 
-    const OFFLINE_BEHAVIOUR = {
-      CONTACT_FORM: "contact_form",
-      OFFLINE_MESSAGE: "offline_message",
-      HIDE_WIDGET: "hide_widget"
-    };
+  const OFFLINE_BEHAVIOUR = {
+    CONTACT_FORM: "contact_form",
+    OFFLINE_MESSAGE: "offline_message",
+    HIDE_WIDGET: "hide_widget"
+  };
 
-    return {
-      CONTACT_FORM_FIELDS,
-      OFFLINE_BEHAVIOUR
-    };
-  }
-);
+  return {
+    CONTACT_FORM_FIELDS,
+    OFFLINE_BEHAVIOUR
+  };
+});

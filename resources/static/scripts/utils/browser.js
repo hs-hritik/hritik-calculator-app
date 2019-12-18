@@ -4,8 +4,7 @@
  * @created Aug 16, 2017
  */
 
-define ("utils/browser",
-function () {
+define("utils/browser", function() {
   "use strict";
 
   /**
@@ -15,7 +14,7 @@ function () {
   const isMobile = () => {
     // eslint-disable-next-line max-len
     const isMobileRegEx = /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop|XBLWP7/i;
-    return isMobileRegEx.test (navigator.userAgent);
+    return isMobileRegEx.test(navigator.userAgent);
   };
 
   /**
@@ -26,7 +25,7 @@ function () {
    */
   const getLanguage = () => {
     const nav = window.navigator;
-    return nav.languages && nav.languages[0] || nav.language || nav.userLanguage;
+    return (nav.languages && nav.languages[0]) || nav.language || nav.userLanguage;
   };
 
   /**
@@ -39,9 +38,7 @@ function () {
    * @returns {boolean}
    */
   const isBot = () => {
-    return navigator && (
-      /bot|googlebot|crawler|spider|robot|crawling/i.test (navigator.userAgent)
-    );
+    return navigator && /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
   };
 
   /**
@@ -52,7 +49,7 @@ function () {
    * @returns {Boolean}
    */
   const areTouchEventsSupported = () => {
-    return (typeof window.ontouchstart !== "undefined");
+    return typeof window.ontouchstart !== "undefined";
   };
 
   return {
