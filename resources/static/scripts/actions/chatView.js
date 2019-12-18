@@ -31,7 +31,8 @@ define("actions/chatView", [
   "helpers/common",
   "utils/browser",
   "utils/upload",
-  "extras/accessibility"
+  "extras/accessibility",
+  "constants/dummyData"
 ], function(
   store,
   ACTION_TYPES,
@@ -59,7 +60,8 @@ define("actions/chatView", [
   commonHelpers,
   browserUtils,
   upload,
-  ax
+  ax,
+  dummyData
 ) {
   "use strict";
 
@@ -2511,7 +2513,7 @@ define("actions/chatView", [
   /**
    * Action to skip user input
    * First update the skipped state in user input and then post user message
-   * @returns Function - Action
+   * @returns {Function} - Action
    */
   const skipUserInput = () => {
     return (dispatch) => {
@@ -2521,6 +2523,70 @@ define("actions/chatView", [
         })
       );
       postUserMessage();
+    };
+  };
+
+  /**
+   * Action to load the intents tree.
+   *
+   * @returns {Function} - Action
+   */
+  const loadIntentsTree = () => {
+    return (dispatch, getState) => {
+      const {domain, featuresEnabled} = getState().appState;
+
+      if (!featuresEnabled.intents) {
+        return;
+      }
+
+      dispatch(actionCreators.intentsTreeRequest());
+
+      xhr({
+        route: routes.getIntentTree(domain),
+        headers: xhrHelpers.getCommonHeaders(),
+        data: xhrHelpers.getPreparedXhrData(),
+        onSuccess: (response) => {
+          dispatch(actionCreators.intentsTreeSuccess(response));
+          dispatch(loadIntentsModel(response.id));
+        },
+        onFailure: () => {
+          // @TODO: Intents: Handle failure
+        }
+      });
+
+      // @TODO: Intents: Remove this after backend intergration.
+      setTimeout(() => {
+        dispatch(actionCreators.intentsTreeSuccess(dummyData.INTENTS_TREE_RESPONSE));
+        dispatch(loadIntentsModel(dummyData.INTENTS_TREE_RESPONSE.id));
+      }, 100);
+    };
+  };
+
+  /**
+   * Action to load the intents model.
+   *
+   * @returns {Function} - Action
+   */
+  const loadIntentsModel = (treeId) => {
+    return (dispatch, getState) => {
+      const {domain} = getState().appState;
+
+      xhr({
+        route: routes.getIntentModel(domain, treeId),
+        headers: xhrHelpers.getCommonHeaders(),
+        data: xhrHelpers.getPreparedXhrData(),
+        onSuccess: (response) => {
+          dispatch(actionCreators.intentsModelSuccess(response));
+        },
+        onFailure: () => {
+          // @TODO: Intents: Handle failure
+        }
+      });
+
+      // @TODO: Intents: Remove this after backend intergration.
+      setTimeout(() => {
+        dispatch(actionCreators.intentsModelSuccess(dummyData.INTENTS_MODEL_SUCCESS));
+      }, 100);
     };
   };
 
@@ -2549,6 +2615,8 @@ define("actions/chatView", [
     updateUserInputData,
     setUserSelectedOption,
     handleErrorAction,
-    skipUserInput
+    skipUserInput,
+    loadIntentsTree,
+    loadIntentsModel
   };
 });

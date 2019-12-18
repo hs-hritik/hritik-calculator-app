@@ -107,8 +107,13 @@ define("reducers/appState", [
       resolutionQuestion: true,
       conversationHistory: true,
       userAttachments: true,
-      branding: true
+      branding: true,
+      intents: false
     },
+    // The time after which the intents tree should be updated from the backend.
+    intentsTreeSla: 0,
+    // The time after which the intents model should be updated from the backend.
+    intentsModelSla: 0,
     browserIsMobile: false,
     tags: [],
     cif: {},
@@ -158,10 +163,12 @@ define("reducers/appState", [
 
       case ACTION_TYPES.SET_WM_CONFIG:
         const {config} = action;
+        const intentsAreEnabled = config.si.enabled;
         const greentingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;
-        return update(state, {
+
+        const changeObj = {
           wcEnabled: {$set: config.wm_widget_enabled},
           featuresEnabled: {
             greeting: {$set: greentingFeatureEnabled},
@@ -171,10 +178,18 @@ define("reducers/appState", [
             csatBot: {$set: config.csat_bot_enabled},
             agentNickname: {$set: config.agent_nickname_enabled},
             branding: {$set: !config.disable_helpshift_branding},
-            audioNotifications: {$set: config.audio_notifications_enabled}
+            audioNotifications: {$set: config.audio_notifications_enabled},
+            intents: {$set: intentsAreEnabled}
           },
           issueExists: {$set: config.issue_exists}
-        });
+        };
+
+        if (intentsAreEnabled) {
+          changeObj.intentsModelSla = {$set: config.si.model_sla};
+          changeObj.intentsTreeSla = {$set: config.si.tree_sla};
+        }
+
+        return update(state, changeObj);
 
       case ACTION_TYPES.SET_APP_RESET_TRIGGER:
         return update(state, {

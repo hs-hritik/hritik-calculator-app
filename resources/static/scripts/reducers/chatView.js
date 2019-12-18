@@ -96,6 +96,41 @@ define("reducers/chatView", [
     return state.userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT;
   };
 
+  /**
+   * Process intents tree.
+   * We convert the nested intent tree into the intents detail map.
+   * @param {Array} tree - Intents tree array which we get from the backend.
+   * @returns {Object} - Intents details map and ids.
+   */
+  const _processIntentsTree = (tree) => {
+    const intentsMap = {};
+    const ids = [];
+
+    tree.forEach((intent) => {
+      const {id, children} = intent;
+      let childrenIntents;
+
+      if (children && children.length) {
+        childrenIntents = _processIntentsTree(children);
+      }
+
+      intentsMap[id] = {
+        id,
+        label: intent.label,
+        showByDefault: intent.show_by_default
+      };
+
+      if (childrenIntents) {
+        intentsMap[id].children = childrenIntents.ids;
+        objUtils.shallowMerge(intentsMap, childrenIntents.intentsMap);
+      }
+
+      ids.push(id);
+    });
+
+    return {intentsMap, ids};
+  };
+
   const INITIAL_STATE = {
     userInput: _getDefaultUserInputConfig(),
     activeFooter: ACTIVE_FOOTER.REPLY,
@@ -125,6 +160,21 @@ define("reducers/chatView", [
           preIssueId: ""
         }
       }
+    },
+    intents: {
+      enforeIntentSelection: false,
+      tree: {
+        id: "",
+        version: 0,
+        updatedAt: 0,
+        intentsMap: {},
+        topLevelIntentsOrder: []
+      },
+      model: null,
+      confidenceThreshold: 0,
+      maxCombinedConfidence: 0,
+      pickerNavigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE,
+      selectedIntentIds: []
     },
     userIsViewingPastMessages: false,
     userIsRedacted: false,
@@ -391,6 +441,48 @@ define("reducers/chatView", [
             botStepMessage: {$set: action.message}
           }
         });
+
+      case ACTION_TYPES.INTENTS_TREE_REQUEST:
+        return update(state, {
+          loading: {$set: true}
+        });
+
+      case ACTION_TYPES.INTENTS_TREE_SUCCESS: {
+        const {response} = action;
+        const {intentsMap, ids} = _processIntentsTree(response.tree);
+
+        return update(state, {
+          loading: {$set: false},
+          intents: {
+            enforeIntentSelection: {$set: response.eis},
+            tree: {
+              id: {$set: response.id},
+              version: {$set: response.version},
+              updatedAt: {$set: response.updated_at},
+              intentsMap: {$set: intentsMap},
+              topLevelIntentsOrder: {$set: ids}
+            }
+          }
+        });
+      }
+
+      case ACTION_TYPES.INTENTS_MODEL_SUCCESS: {
+        const {response} = action;
+
+        return update(state, {
+          intents: {
+            model: {
+              $set: {
+                intentIds: response.model.intent_ids,
+                vocabulary: response.model.vocabulary,
+                weights: response.model.weights
+              }
+            },
+            confidenceThreshold: {$set: response.confidence_threshold},
+            maxCombinedConfidence: {$set: response.max_combined_confidence}
+          }
+        });
+      }
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;

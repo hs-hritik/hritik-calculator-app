@@ -52,6 +52,10 @@ define("constants/routes", function() {
 
   const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs_suggestion_read`;
 
+  const getIntentTree = (domain) => `${BASE}${domain}/intent-tree`;
+
+  const getIntentModel = (domain, treeId) => `${BASE}${domain}/intent-trees/${treeId}/model`;
+
   return {
     getWmConfig,
     getCss,
@@ -67,6 +71,8 @@ define("constants/routes", function() {
     getConversationUpdates,
     getConversationHistory,
     postSuggestedFaqRead,
-    postIssue
+    postIssue,
+    getIntentTree,
+    getIntentModel
   };
 });

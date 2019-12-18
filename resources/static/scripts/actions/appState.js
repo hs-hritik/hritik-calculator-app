@@ -28,7 +28,8 @@ define("actions/appState", [
   "actions/postSdkMessage",
   "actions/common",
   "utils/browser",
-  "utils/dataType"
+  "utils/dataType",
+  "constants/dummyData"
 ], function(
   ACTION_TYPES,
   routes,
@@ -53,7 +54,8 @@ define("actions/appState", [
   postSdkMessage,
   commonActions,
   browserUtils,
-  dataTypeUtils
+  dataTypeUtils,
+  dummyData
 ) {
   "use strict";
 
@@ -390,6 +392,9 @@ define("actions/appState", [
         );
       }
 
+      // @TODO: Intents: Change this action dispatch location after pre-issue optimization release.
+      dispatch(chatViewActions.loadIntentsTree());
+
       // If atleast one issue exists on backend then start the poller.
       // (poller will check for issue state)
       // Else start a new conversation by creating new preIssue.
@@ -440,6 +445,10 @@ define("actions/appState", [
 
       getWmConfig(domain, {
         onSuccess: (response) => {
+          // @TODO: Intents: Remove this after backend intergration.
+          response.si = dummyData.CONFIG_SI_OBJ;
+          Object.assign(response.translations, dummyData.CONFIG_SI_TRANSLATIONS);
+
           dispatch(
             batchActions([
               // Set the config values to the store

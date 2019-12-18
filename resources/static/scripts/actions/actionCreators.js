@@ -277,6 +277,40 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to update the intents tree data.
+   * @param {Object} response - The intents tree XHR response
+   * @returns {Object} - Action
+   */
+  const intentsTreeSuccess = (response) => {
+    return {
+      type: ACTION_TYPES.INTENTS_TREE_SUCCESS,
+      response
+    };
+  };
+
+  /**
+   * Action to be fired before making intents tree request
+   * @returns {Object} - Action
+   */
+  const intentsTreeRequest = () => {
+    return {
+      type: ACTION_TYPES.INTENTS_TREE_REQUEST
+    };
+  };
+
+  /**
+   * Action to update the intents model data.
+   * @param {Object} response - The intents model XHR response
+   * @returns {Object} - Action
+   */
+  const intentsModelSuccess = (response) => {
+    return {
+      type: ACTION_TYPES.INTENTS_MODEL_SUCCESS,
+      response
+    };
+  };
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -302,6 +336,9 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     setAppResetTrigger,
     setInitialUserMsg,
     setConversationEnded,
-    setKeyboardInteractionIsActive
+    setKeyboardInteractionIsActive,
+    intentsTreeSuccess,
+    intentsTreeRequest,
+    intentsModelSuccess
   };
 });
