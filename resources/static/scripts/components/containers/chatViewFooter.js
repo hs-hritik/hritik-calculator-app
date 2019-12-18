@@ -44,7 +44,7 @@ define("components/containers/chatViewFooter", [
         fullPrivacyEnabled,
         online,
         browserIsMobile,
-        featuresEnabled: {userAttachments: userAttachmentsEnabled}
+        featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsEnabled}
       },
       chatView: {
         userInput,
@@ -54,7 +54,8 @@ define("components/containers/chatViewFooter", [
         userIsViewingPastMessages,
         unreadMessageIds,
         error,
-        botState: {botStepInProgress}
+        botState: {botStepInProgress},
+        intents
       },
       csatView: {rating},
       ui: {text}
@@ -83,7 +84,7 @@ define("components/containers/chatViewFooter", [
       };
     }
 
-    return {
+    const props = {
       widgetIsMinimized,
       rating,
       activeFooter: activeFooter,
@@ -102,6 +103,14 @@ define("components/containers/chatViewFooter", [
       botStepInProgress,
       browserIsMobile
     };
+
+    if (intentsEnabled) {
+      props.intentsMap = intents.tree.intentsMap;
+      props.topLevelIntentsOrder = intents.tree.topLevelIntentsOrder;
+      props.selectedIntentIds = intents.selectedIntentIds;
+    }
+
+    return props;
   };
 
   const mapDispatchToProps = (dispatch) => {

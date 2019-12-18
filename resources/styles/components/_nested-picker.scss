@@ -1,0 +1,80 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2019, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for the nested picker component
+// - - - - - - - - - - - - - - -
+
+///
+/// @group nested-picker
+///
+
+@include component(nested-picker) {
+  // @TODO: Use variable for highlighted-option-background
+  $highlighted-option-background: #eaecec;
+  $no-tap-highlight-color: rgba(255, 255, 255, 0);
+  $action-icon-size: icon-size();
+  $action-icon-color: var(--hs-base-color);
+
+  .hs-nested-picker {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: hidden;
+
+    &__options-wrapper {
+      display: flex;
+      flex-basis: 100%;
+      overflow-y: hidden;
+      outline-offset: -3px;
+    }
+
+    &__options {
+      width: 100%;
+      margin: 0;
+      list-style: none;
+    }
+
+    &__option-item {
+      @include ellipsis;
+      padding: gutter(12 16);
+      cursor: pointer;
+      -webkit-tap-highlight-color: $no-tap-highlight-color;
+
+      &-highlighted {
+        background: $highlighted-option-background;
+      }
+    }
+
+    &__header {
+      &-toggle-icon {
+        padding: gutter(4);
+        font-size: $action-icon-size;
+        font-weight: font-weight(bold);
+        color: $action-icon-color;
+        cursor: pointer;
+      }
+    }
+
+    &--opened {
+      overflow-y: auto;
+      // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
+      // and Chrome behave.
+      // Details –
+      // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+
+      .hs-nested-picker__options-wrapper {
+        overflow-y: auto;
+        // Auto hide vertical scrollbars on IE and Edge. Similar to how FF
+        // and Chrome behave.
+        // Details –
+        // https://css-tricks.com/snippets/css/hide-scrollbar-in-edge-ie-1011/
+        // https://developer.mozilla.org/en-US/docs/Web/CSS/-ms-overflow-style
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+      }
+    }
+  }
+}

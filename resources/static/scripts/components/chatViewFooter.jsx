@@ -20,7 +20,8 @@ define("components/chatViewFooter", [
   "extras/accessibility",
   "constants/accessibility",
   "constants/activeView",
-  "gunpowder/widgets/dragIt"
+  "gunpowder/widgets/dragIt",
+  "gunpowder/widgets/nestedPicker"
 ], function(
   StarRating,
   JumpToLatestBtn,
@@ -37,7 +38,8 @@ define("components/chatViewFooter", [
   ax,
   axConstants,
   activeViewConstants,
-  dragIt
+  dragIt,
+  NestedPicker
 ) {
   "use strict";
 
@@ -57,6 +59,7 @@ define("components/chatViewFooter", [
   };
 
   const DraggablePicker = dragIt(Picker);
+  const DraggableNestedPicker = dragIt(NestedPicker);
 
   return createReactClass({
     displayName: "ChatViewFooter",
@@ -67,6 +70,37 @@ define("components/chatViewFooter", [
       browserIsMobile: PropTypes.bool,
       allowFullScreen: PropTypes.bool,
       userIsViewingPastMessages: PropTypes.bool,
+      /**
+       * Intents Map
+       */
+      intentsMap: PropTypes.objectOf(
+        PropTypes.shape({
+          /**
+           * Id for the intent
+           */
+          id: PropTypes.string.isRequired,
+          /**
+           * Label of the intent
+           */
+          label: PropTypes.string.isRequired,
+          /**
+           * Id of the parent intent, if any
+           */
+          parentId: PropTypes.string,
+          /**
+           * Array of children option ids, if any
+           */
+          children: PropTypes.arrayOf(PropTypes.string)
+        })
+      ).isRequired,
+      /**
+       * The order in which the top level intents should be rendered.
+       */
+      topLevelIntentsOrder: PropTypes.arrayOf(PropTypes.string),
+      /**
+       * Selected intent Ids
+       */
+      selectedIntentIds: PropTypes.arrayOf(PropTypes.string),
       unreadCount: PropTypes.number,
       /**
        * If any failure has to be displayed on the chat view footer.
@@ -239,6 +273,7 @@ define("components/chatViewFooter", [
       return (
         <div className={footerClasses}>
           {miscActionsWrapper}
+          {this._renderIntents()}
           {this._renderFooterComponent()}
         </div>
       );
@@ -430,6 +465,30 @@ define("components/chatViewFooter", [
           </div>
           {errorMsgEl}
         </div>
+      );
+    },
+
+    _renderIntents() {
+      // @TODO: Handle conditions when we don't want to render the intents tree.
+      // @TODO: Pass different height (instead of pickerMaxHeight) if required.
+      // @TODO: Pass different classes.
+
+      const pickerClasses = classes("hs-chat-footer__picker-field", {
+        "hs-nested-picker--mobile": this.props.browserIsMobile
+      });
+
+      return (
+        <DraggableNestedPicker
+          className={pickerClasses}
+          optionsMap={this.props.intentsMap}
+          topLevelOptionsOrder={this.props.topLevelIntentsOrder}
+          selectedOptionIds={this.props.selectedIntentIds}
+          onNavigationStateChange={this._onIntentsNavigationStateChange}
+          onSelectOption={this._onSelectIntent}
+          onUnselectOption={this._onUnselectIntent}
+          minHeight={PICKER_MIN_HEIGHT}
+          maxHeight={this.state.pickerMaxHeight}
+        />
       );
     },
 
@@ -743,6 +802,26 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    _onIntentsNavigationStateChange() {
+      // @TODO
+    },
+
+    _onSelectIntent() {
+      // @TODO
+      // this.setState({
+      //   selectedOptionIds: [...this.state.selectedOptionIds, option.id]
+      // })
+    },
+
+    _onUnselectIntent() {
+      // @TODO
+      // this.setState({
+      //   selectedOptionIds: [
+      //     ...this.state.selectedOptionIds.slice(0, this.state.selectedOptionIds.length - 1)
+      //   ]
+      // })
     },
 
     /**
