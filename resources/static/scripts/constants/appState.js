@@ -55,13 +55,14 @@ define("constants/appState", function() {
    * App reset triggers represent ways by which app can be reset
    * INITIAL = The default value - Used when we reset preIssue
    * UPDATE_HELPSHIFT_CONFIG_API = Used when update helpshift config is called
-   * START_NEW_CONVERSATION = Used when user clicks on start new conversation
+   * NEW_CONV_VIA_INITIAL_USER_MESSAGE_API = Used when a new conversation starts via the
+   *  setInitialUserMessage API.
    */
   const APP_RESET_TRIGGER = {
     INITIAL: "INITIAL",
     UPDATE_HELPSHIFT_CONFIG_API: "UPDATE_HELPSHIFT_CONFIG_API",
-    START_NEW_CONVERSATION: "START_NEW_CONVERSATION",
-    PRE_ISSUE_RESET: "PRE_ISSUE_RESET"
+    PRE_ISSUE_RESET: "PRE_ISSUE_RESET",
+    NEW_CONV_VIA_INITIAL_USER_MESSAGE_API: "NEW_CONV_VIA_INITIAL_USER_MESSAGE_API"
   };
 
   /**

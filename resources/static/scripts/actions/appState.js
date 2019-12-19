@@ -427,7 +427,9 @@ define("actions/appState", [
       // If app reset is triggered by
       // 1. preIssue reset conditions and widget is open
       //    OR
-      // 2. update helpshift config api and widget is open and issue does not
+      // 2. new conversation via initial user message set via the setInitialUserMessage API
+      //    OR
+      // 3. update helpshift config api and widget is open and issue does not
       //    exist i.e. new user
       // Then explicitly create a new preIssue.
       // OR
@@ -437,6 +439,7 @@ define("actions/appState", [
       // `handleMessengerToggle` in `api.js`.
       if (
         (appResetTrigger === APP_RESET_TRIGGER.PRE_ISSUE_RESET && widgetIsOpen) ||
+        appResetTrigger === APP_RESET_TRIGGER.NEW_CONV_VIA_INITIAL_USER_MESSAGE_API ||
         (appResetTrigger === APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API &&
           widgetIsOpen &&
           !issueExists)
@@ -781,13 +784,24 @@ define("actions/appState", [
    */
   const startNewConversation = () => {
     return (dispatch, getState) => {
-      const conversationHistoryIsEnabled = getState().appState.featuresEnabled.conversationHistory;
+      const {
+        featuresEnabled: {conversationHistory: conversationHistoryIsEnabled},
+        sdkConfigOptions: {initialUserMessage}
+      } = getState().appState;
+
       // This is applicable only for chat view (in business hours). For out of business hours
       // view, we load the business hours view first and when the user submits the form, we call
       // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
         dispatch(chatViewActions.addGreetingMessage());
+
+        // If initial user message is set via API, create preissue without waiting for end-user's
+        // input. The initial user message once consumed should be reset - this is being handled in
+        // the poller success callback, check actions/chatView -> handleResetInitialUserMessage.
+        if (initialUserMessage) {
+          dispatch(chatViewActions.createPreIssue());
+        }
       }
     };
   };

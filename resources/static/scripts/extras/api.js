@@ -266,6 +266,10 @@ define("extras/api", [
       store.dispatch(chatViewActions.markMessagesSeen());
 
       const issueStateIsClosed = isIssueClosed(issueState);
+      // Issue state = NA is different than the issueExists flag. NA is set as the default value in
+      // the app state as long as there's no active issue created. issueExists flag is sent by the
+      // backend denoting whether at least one issue (open/closed) exists for this user.
+      const issueDoesNotExist = issueState === ISSUE_STATE.NA;
       const preIssueIsRejected = issueType === ISSUE_TYPE.PRE_ISSUE && issueStateIsClosed;
       const resetTriggerIsDefault = appResetTrigger === APP_RESET_TRIGGER.INITIAL;
       // When the end user opens the widget, check if preIssue reset
@@ -276,10 +280,10 @@ define("extras/api", [
       } else if (!conversationStarted) {
         // If initial user message is set through the api and issue state is closed then
         // start new conversation.
-        if (initialUserMessage && issueStateIsClosed) {
+        if (initialUserMessage && (issueStateIsClosed || issueDoesNotExist)) {
           store.dispatch(
             commonActions.reloadApp({
-              trigger: APP_RESET_TRIGGER.START_NEW_CONVERSATION,
+              trigger: APP_RESET_TRIGGER.NEW_CONV_VIA_INITIAL_USER_MESSAGE_API,
               loading: true,
               callback: chatViewActions.stopPollingForMessages
             })
