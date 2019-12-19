@@ -131,6 +131,7 @@ define("components/chatViewFooter", [
       onListPickerNavigationStateChange: PropTypes.func,
       onListPickerOptionSelect: PropTypes.func.isRequired,
       onSelectIntent: PropTypes.func.isRequired,
+      onUnselectIntent: PropTypes.func.isRequired,
       onIntentsNavigationStateChange: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
@@ -822,13 +823,11 @@ define("components/chatViewFooter", [
       this.props.onSelectIntent(intent);
     },
 
+    /**
+     * Handler to unselect an intent
+     */
     _onUnselectIntent() {
-      // @TODO
-      // this.setState({
-      //   selectedOptionIds: [
-      //     ...this.state.selectedOptionIds.slice(0, this.state.selectedOptionIds.length - 1)
-      //   ]
-      // })
+      this.props.onUnselectIntent();
     },
 
     /**

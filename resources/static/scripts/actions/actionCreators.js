@@ -334,6 +334,16 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to unselect an intent
+   * @returns {Object} - Action
+   */
+  const unselectIntent = () => {
+    return {
+      type: ACTION_TYPES.UNSELECT_INTENT
+    };
+  };
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -364,6 +374,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentsTreeSuccess,
     intentsTreeRequest,
     intentsModelSuccess,
-    selectIntent
+    selectIntent,
+    unselectIntent
   };
 });

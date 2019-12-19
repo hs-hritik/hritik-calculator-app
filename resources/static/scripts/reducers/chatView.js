@@ -499,6 +499,16 @@ define("reducers/chatView", [
         });
       }
 
+      case ACTION_TYPES.UNSELECT_INTENT: {
+        return update(state, {
+          intents: {
+            selectedIntentIds: {
+              $splice: [[state.intents.selectedIntentIds.length - 1, 1]]
+            }
+          }
+        });
+      }
+
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
 

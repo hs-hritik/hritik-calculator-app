@@ -174,6 +174,9 @@ define("components/containers/chatViewFooter", [
       },
       onSelectIntent: (intent) => {
         dispatch(actionCreators.selectIntent(intent));
+      },
+      onUnselectIntent: () => {
+        dispatch(actionCreators.unselectIntent());
       }
     };
   };
