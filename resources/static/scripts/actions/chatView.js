@@ -293,6 +293,12 @@ define("actions/chatView", [
         appState: {domain, activeIssueId, issueType},
         chatView: {unreadMessageIds}
       } = getState();
+
+      // Don't fire the XHR if issue type is initial i.e. not preissue or issue
+      if (issueType === ISSUE_TYPE.INITIAL) {
+        return;
+      }
+
       const pluralIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
 
       // @TODO: message-Ids key is unconfirmed. Get Ack
