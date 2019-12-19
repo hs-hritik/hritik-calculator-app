@@ -308,7 +308,10 @@ define("reducers/appState", [
           conversationStarted: {$set: true},
           activeIssueId: {$set: activeIssueId},
           internalIssueId: {$set: internalIssueId},
-          issueState: {$set: ISSUE_STATE.ACTIVE}
+          issueState: {$set: ISSUE_STATE.ACTIVE},
+          sdkConfigOptions: {
+            initialUserMessage: {$set: ""}
+          }
         });
 
       case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
