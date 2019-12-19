@@ -1,0 +1,15 @@
+Branches:
+feature/delayed-preissue
+
+Changelog:
+Don't fire mark messages seen XHR is issue type is initial
+Reset initialUserMessage when preissue is created
+Fix setInitialUserMessage API
+Reset post chat feature values on new conv start
+Handle new conversation button click
+Revert "Retain message list on start new conversation"
+Clear reply box on successful issue creation
+Retain message list on start new conversation
+Use a session id with analytics event
+Add greeting message before preissue is created
+Wait for end user's message for creating preissue
