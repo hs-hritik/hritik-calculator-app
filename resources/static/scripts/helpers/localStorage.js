@@ -13,6 +13,7 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
   const KEYS = {
     USER_ID: "ui",
     DEVICE_ID: "di",
+    ANALYTICS_SESSION_ID: "asi",
     ANON_USER_ID: "aui",
     LAST_ACTIVITY_TIME: "lat",
     SITE_ACTIVITY_START_TIME: "sast",
@@ -28,6 +29,7 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
   const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
   const DEVICE_ID_KEY = "DEVICE_ID";
+  const ANALYTICS_SESSION_ID_KEY = "ANALYTICS_SESSION_ID";
 
   /**
    * A helper function to check if a localstorage key should be
@@ -36,7 +38,8 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
    * The DEVICE_ID key should never be reset. We use DEVICE_ID to
    * identify a browser (the device). Its value should remain the
    * same irrespective of who (the user) is using it.
-   *
+   * The analytics session id should not reset. It is supposed to be reset
+   * only when a new conversation starts.
    * @param {string} key
    * @param {Object} [options]
    * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
@@ -47,7 +50,8 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
     return (
       !(USER_KEYS.indexOf(key) !== -1) &&
       !(!options.resetProactiveChat && PROACTIVE_CHAT_KEYS.indexOf(key) !== -1) &&
-      !(key === DEVICE_ID_KEY)
+      !(key === DEVICE_ID_KEY) &&
+      !(key === ANALYTICS_SESSION_ID_KEY)
     );
   };
 
@@ -82,6 +86,20 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
    */
   const setDeviceId = (id) => {
     lsUtils.setItem(KEYS.DEVICE_ID, id);
+  };
+
+  /**
+   * Get the analytics session id
+   * @returns {string}
+   */
+  const getAnalyticsSessionId = () => lsUtils.getItem(KEYS.ANALYTICS_SESSION_ID);
+
+  /**
+   * Set the analytics session id to the localstorage
+   * @param {string} - id
+   */
+  const setAnalyticsSessionId = (id) => {
+    lsUtils.setItem(KEYS.ANALYTICS_SESSION_ID, id);
   };
 
   /**
@@ -243,6 +261,8 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
     removeUserId,
     getDeviceId,
     setDeviceId,
+    getAnalyticsSessionId,
+    setAnalyticsSessionId,
     getAnonUserId,
     setAnonUserId,
     removeAnonUserId,
