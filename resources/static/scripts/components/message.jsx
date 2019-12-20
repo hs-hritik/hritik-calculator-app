@@ -190,7 +190,7 @@ define("components/message", [
      * Render server text and attachment(bots & agent) message
      */
     _renderServerMessage() {
-      let textMessageEl;
+      let textMessageEl = null;
 
       const {
         message: {redacted, body},
@@ -201,7 +201,7 @@ define("components/message", [
         // Redaction message is a plain text and needs
         // to be shown in italics.
         textMessageEl = <em className="hs-message--redacted">{messageDeleted}</em>;
-      } else {
+      } else if (body) {
         /* eslint-disable react/no-danger */
         textMessageEl = <div dangerouslySetInnerHTML={{__html: body}} />;
         /* eslint-enable react/no-danger */
