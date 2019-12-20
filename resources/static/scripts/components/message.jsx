@@ -159,7 +159,7 @@ define("components/message", [
         case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT:
         case MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT:
         case MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT:
-          messageItemEl = this._renderTextMessage();
+          messageItemEl = this._renderServerMessage();
           break;
 
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
@@ -171,7 +171,7 @@ define("components/message", [
           break;
 
         case MESSAGE_TYPE.ATTACHMENT:
-          messageItemEl = this._renderAttachmentMessage();
+          messageItemEl = this._renderUserAttachmentMessage();
           break;
       }
 
@@ -187,9 +187,9 @@ define("components/message", [
     },
 
     /**
-     * Render text message.
+     * Render server text and attachment(bots & agent) message
      */
-    _renderTextMessage() {
+    _renderServerMessage() {
       let textMessageEl;
 
       const {
@@ -210,15 +210,15 @@ define("components/message", [
       return (
         <div className="hs-message__item" dir="auto">
           {textMessageEl}
-          {this._renderAgentAttachments()}
+          {this._renderServerAttachments()}
         </div>
       );
     },
 
     /**
-     * Render agent message attachments
+     * Render agent or bot message attachments
      */
-    _renderAgentAttachments() {
+    _renderServerAttachments() {
       const {attachments} = this.props.message;
 
       if (!(attachments && attachments.length)) {
@@ -333,9 +333,9 @@ define("components/message", [
     },
 
     /**
-     * Render attachment message
+     * Render user attachment message
      */
-    _renderAttachmentMessage() {
+    _renderUserAttachmentMessage() {
       const {
         message: {isSystemMsg, states: messageStates, file, attachments}
       } = this.props;
