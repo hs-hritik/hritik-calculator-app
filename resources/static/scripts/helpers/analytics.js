@@ -37,16 +37,6 @@ define("helpers/analytics", [
 
   const {EVENT, PAYLOAD_EVENT, TRIGGER, PAYLOAD_SOURCE} = analyticsConstants;
 
-  /* If issue related data is unavailable i.e. if poller has not started yet
-   * then enqueue all the events. The event format is as follows:
-   * {
-   *   name: EVENT.WIDGET_OPEN,
-   *   config: eventConfig,
-   *   ts: Date.now ()
-   * }
-   */
-  const eventsQueue = [];
-
   let _route;
   const _isBot = browserUtils.isBot();
   const _lang = browserUtils.getLanguage();
@@ -97,13 +87,18 @@ define("helpers/analytics", [
    */
   const _getDefaultPayload = () => {
     const {
-      appState: {deviceId, developerSetLanguage}
+      appState: {
+        deviceId,
+        developerSetLanguage,
+        analytics: {sessionId: analyticsSessionId}
+      }
     } = store.getState();
 
     // @TODO: Backend needs `cc` (country code) as well, but we don't have this
     // information. Add it to the following object when we implement it.
     const payload = {
       [PAYLOAD_EVENT.ID]: deviceId,
+      [PAYLOAD_EVENT.SESSION_ID]: analyticsSessionId,
       [PAYLOAD_EVENT.TIMESTAMP]: Date.now(), // Timestamp of when the event is tracked
       [PAYLOAD_EVENT.LANGUAGE]: _lang
     };
@@ -299,18 +294,6 @@ define("helpers/analytics", [
   };
 
   /**
-   * Predicate to check if issue data is fetched.
-   * @returns {Boolean}
-   */
-  const _isIssueStateReady = () => {
-    const {
-      appState: {internalIssueId}
-    } = store.getState();
-
-    return !!internalIssueId;
-  };
-
-  /**
    * Track the given event with relevant data.
    * @param {string} event - The event to track.
    * @param {Object} [config]
@@ -319,17 +302,6 @@ define("helpers/analytics", [
   const track = (event, config = {}) => {
     // Do not track the event if initiated via a search engine bot or crawler.
     if (_isBot) {
-      return;
-    }
-
-    // If issue data is not available then enqueue event.
-    if (!_isIssueStateReady()) {
-      eventsQueue.push({
-        config,
-        name: event,
-        ts: Date.now()
-      });
-
       return;
     }
 
@@ -355,18 +327,7 @@ define("helpers/analytics", [
     }
   };
 
-  /**
-   * Flush all the pending events and empty the queue
-   */
-  const flushEvents = () => {
-    while (eventsQueue.length > 0) {
-      const {name, config, ts} = eventsQueue.shift();
-      track(name, config, ts);
-    }
-  };
-
   return {
-    track,
-    flushEvents
+    track
   };
 });
