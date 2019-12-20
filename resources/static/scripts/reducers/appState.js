@@ -88,11 +88,13 @@ define("reducers/appState", [
 
     // Backend flag to represent if any issue exists
     issueExists: false,
-    // Type of issue can either be a. issue b. preissue
-    issueType: ISSUE_TYPE.PRE_ISSUE,
-    // Issue state can be either a. active b. resolved c. rejected
-    // It's applicable for both issue types (issue and preissue)
-    issueState: ISSUE_STATE.ACTIVE,
+    // Issue type can take one of these three values - initial (no issue/preissue
+    // has been created yet), preissue, and issue.
+    issueType: ISSUE_TYPE.INITIAL,
+    // Issue state can take one of these values - na (no issue/preissue
+    // has been created yet), active, resolved, rejected.
+    // na is for the initial issue type, other states for preissue and issue.
+    issueState: ISSUE_STATE.NA,
     activeIssueId: "",
     internalIssueId: "",
 
@@ -129,6 +131,7 @@ define("reducers/appState", [
     conversationStarted: false,
     proactiveChatRules: [],
     analytics: {
+      sessionId: "",
       suggestedFaqReadTracked: false
     },
     // footerIsActive is used to udpate the UI of the footer by adding a border
@@ -164,14 +167,14 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_WM_CONFIG:
         const {config} = action;
         const intentsAreEnabled = config.si.enabled;
-        const greentingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
+        const greetingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;
 
         const changeObj = {
           wcEnabled: {$set: config.wm_widget_enabled},
           featuresEnabled: {
-            greeting: {$set: greentingFeatureEnabled},
+            greeting: {$set: greetingFeatureEnabled},
             resolutionQuestion: {$set: config.resolution_question_enabled},
             conversationHistory: {$set: config.conversation_history_enabled},
             userAttachments: {$set: config.allow_user_attachments},
@@ -204,6 +207,13 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_DEVICE_ID:
         return update(state, {
           deviceId: {$set: action.id}
+        });
+
+      case ACTION_TYPES.SET_ANALYTICS_SESSION_ID:
+        return update(state, {
+          analytics: {
+            sessionId: {$set: action.id}
+          }
         });
 
       case ACTION_TYPES.SET_ANON_USER_ID:
@@ -293,8 +303,35 @@ define("reducers/appState", [
             : {$set: showCloseButton}
         });
 
+      case ACTION_TYPES.NEW_CONVERSATION_STARTED:
+        return update(state, {
+          conversationStarted: {$set: true},
+          activeIssueId: {$set: ""},
+          internalIssueId: {$set: ""},
+          issueState: {$set: ISSUE_STATE.NA},
+          issueType: {$set: ISSUE_TYPE.INITIAL},
+          appResetTrigger: {$set: APP_RESET_TRIGGER.INITIAL},
+          postChatFeatures: {
+            resolutionQuestionCompleted: {$set: false},
+            csatCompleted: {$set: false}
+          }
+        });
+
+      case ACTION_TYPES.ISSUE_CREATED:
+        const {activeIssueId, internalIssueId} = action;
+        return update(state, {
+          conversationStarted: {$set: true},
+          activeIssueId: {$set: activeIssueId},
+          internalIssueId: {$set: internalIssueId},
+          issueState: {$set: ISSUE_STATE.ACTIVE},
+          sdkConfigOptions: {
+            initialUserMessage: {$set: ""}
+          }
+        });
+
       case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
         return update(state, {
+          conversationStarted: {$set: true},
           activeIssueId: {$set: action.id}
         });
 
@@ -336,11 +373,6 @@ define("reducers/appState", [
           sdkConfigOptions: {
             initialUserMessage: {$set: action.message}
           }
-        });
-
-      case ACTION_TYPES.SET_CONVERSATION_STARTED:
-        return update(state, {
-          conversationStarted: {$set: true}
         });
 
       case ACTION_TYPES.SET_CONVERSATION_ENDED:

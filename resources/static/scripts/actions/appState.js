@@ -105,17 +105,46 @@ define("actions/appState", [
   };
 
   /**
-   * Set user identifier for anon user in state and localstorage.
-   * Checks localstorage if an anon user id already exists.
-   * If it does, it gets the value from the ls and sets it in the
-   * state while not affecting ls at all.
-   * If it does not exist, it sets a new value (`anonUserId`) in state
-   * and localstorage.
-   *
-   * FAQ: How does Web Chat identify the user?
-   * https://helpshift.atlassian.net/wiki/spaces/FRON/pages/774963891/
-     FAQ#FAQ-4.HowdoestheWebChatidentifytheuser?
+   * Set the analytics session id value in the state/localstorage via an action.
+   * If a value is present in the localstorage, keep using the same value.
+   * This value is used with the payload of all the anaytics events fired by
+   * web chat.
    */
+  const setAnalyticsSessionId = () => {
+    return (dispatch) => {
+      let sessionId = lsHelpers.getAnalyticsSessionId();
+
+      // Create a new session id if one doesn't exist already.
+      // Set it in the local storage.
+      if (!sessionId) {
+        sessionId = getUuid();
+      }
+
+      dispatch(setAnalyticsSessionIdValue(sessionId));
+    };
+  };
+
+  /**
+   * Update the analytics session id value with a new uuid.
+   */
+  const updateAnalyticsSessionId = () => {
+    return (dispatch) => {
+      dispatch(setAnalyticsSessionIdValue(getUuid()));
+    };
+  };
+
+  /**
+     * Set user identifier for anon user in state and localstorage.
+     * Checks localstorage if an anon user id already exists.
+     * If it does, it gets the value from the ls and sets it in the
+     * state while not affecting ls at all.
+     * If it does not exist, it sets a new value (`anonUserId`) in state
+     * and localstorage.
+     *
+     * FAQ: How does Web Chat identify the user?
+     * https://helpshift.atlassian.net/wiki/spaces/FRON/pages/774963891/
+       FAQ#FAQ-4.HowdoestheWebChatidentifytheuser?
+     */
   const setAnonUserId = () => {
     return () => {
       const currentAnonUserId = lsHelpers.getAnonUserId();
@@ -132,33 +161,14 @@ define("actions/appState", [
   };
 
   /**
-   * Action to set conversation started
+   * Action for when a conversation starts
+   * @param {boolean} conversationHistoryIsEnabled
    * @returns {Object} - Action
    */
-  const setConversationStarted = () => {
+  const conversationStarted = (conversationHistoryIsEnabled) => {
     return {
-      type: ACTION_TYPES.SET_CONVERSATION_STARTED
-    };
-  };
-
-  /**
-   * Either starts a new conversation or handle previous one.
-   */
-  const startConversation = () => {
-    return (dispatch, getState) => {
-      const {
-        appState: {issueExists}
-      } = getState();
-
-      dispatch(setConversationStarted());
-
-      // If an issue exists, the poller would have started already with the
-      // success callback of setIssueState via get config.
-      // Only for new user, start a new conversation. Rest of the cases will be
-      // handled on click of 'start new conversation' button which will call reset.
-      if (!issueExists) {
-        startNewConversation();
-      }
+      type: ACTION_TYPES.NEW_CONVERSATION_STARTED,
+      conversationHistoryIsEnabled
     };
   };
 
@@ -211,6 +221,16 @@ define("actions/appState", [
    */
   const setDeviceIdValue = (id) => ({
     type: ACTION_TYPES.SET_DEVICE_ID,
+    id
+  });
+
+  /**
+   * Action to analytics session id.
+   * @param {string} id - session id
+   * @returns {Object}
+   */
+  const setAnalyticsSessionIdValue = (id) => ({
+    type: ACTION_TYPES.SET_ANALYTICS_SESSION_ID,
     id
   });
 
@@ -384,6 +404,14 @@ define("actions/appState", [
       } = getState();
       const widgetIsOpen = !minimized;
 
+      // If the app reset trigger is the start new conversation button, update
+      // the analytics session id with a new value.
+      // @TODO: Lazy Preissue Creation
+      // Check if this can be directly used with startNewConversation fn.
+      // if (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) {
+      //   dispatch (updateAnalyticsSessionId ());
+      // }
+
       if (!issueExists) {
         dispatch(
           postSdkMessage.conversationStatusEvent({
@@ -394,8 +422,7 @@ define("actions/appState", [
 
       // @TODO: Intents: Change this action dispatch location after pre-issue optimization release.
       dispatch(chatViewActions.loadIntentsTree());
-
-      // If atleast one issue exists on backend then start the poller.
+      // If at least one issue exists on backend then start the poller.
       // (poller will check for issue state)
       // Else start a new conversation by creating new preIssue.
 
@@ -404,22 +431,32 @@ define("actions/appState", [
       // If app reset is triggered by
       // 1. preIssue reset conditions and widget is open
       //    OR
-      // 2. clicking start new conversation button
+      // 2. new conversation via initial user message set via the setInitialUserMessage API
       //    OR
       // 3. update helpshift config api and widget is open and issue does not
       //    exist i.e. new user
       // Then explicitly create a new preIssue.
       // OR
       // If issue exists for a user, then start the poller.
+      // Note - For the other app reset trigger i.e. INITIAL, don't do anything.
+      // INITIAL means that the app hasn't reset via any of the other triggers.
+      // `handleMessengerToggle` in `api.js`.
       if (
         (appResetTrigger === APP_RESET_TRIGGER.PRE_ISSUE_RESET && widgetIsOpen) ||
-        appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION ||
+        appResetTrigger === APP_RESET_TRIGGER.NEW_CONV_VIA_INITIAL_USER_MESSAGE_API ||
         (appResetTrigger === APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API &&
           widgetIsOpen &&
           !issueExists)
       ) {
-        startNewConversation();
+        dispatch(updateAnalyticsSessionId());
+        dispatch(startNewConversation());
       } else if (issueExists) {
+        // The issueExists flag is true if for the given profile (user+device combination), at
+        // least one issue, irrespective of its state, exists. In that case, we start the poller
+        // to receive the latest updates from the backend and update our state accordingly.
+        // If the latest issue is resolved, we show the new conversation button, which starts a
+        // new conversation.
+        // If it's open, we keep polling.
         chatViewActions.startPollingForMessages();
       }
 
@@ -748,18 +785,33 @@ define("actions/appState", [
   };
 
   /**
-   * Action to start new conversation.
-   * Creates preIssue (or issue, for out of business hours) on the backend
-   * @returns {Function} - action.
+   * Action to start a new conversation.
+   * A new conversation is started by -
+   * adding the greeting message to the message list, if applicable, and
+   * enabling the reply box
    */
   const startNewConversation = () => {
-    // This is applicable only for chat view (in business hours). For out of business hours
-    // view, we load the business hours view first and when the user submits the form, we call
-    // create a web issue.
-    if (!commonHelpers.isOutOfBusinessHours()) {
-      store.dispatch(setConversationStarted());
-      store.dispatch(chatViewActions.createPreIssue());
-    }
+    return (dispatch, getState) => {
+      const {
+        featuresEnabled: {conversationHistory: conversationHistoryIsEnabled},
+        sdkConfigOptions: {initialUserMessage}
+      } = getState().appState;
+
+      // This is applicable only for chat view (in business hours). For out of business hours
+      // view, we load the business hours view first and when the user submits the form, we call
+      // create a web issue.
+      if (!commonHelpers.isOutOfBusinessHours()) {
+        dispatch(conversationStarted(conversationHistoryIsEnabled));
+        dispatch(chatViewActions.addGreetingMessage());
+
+        // If initial user message is set via API, create preissue without waiting for end-user's
+        // input. The initial user message once consumed should be reset - this is being handled in
+        // the poller success callback, check actions/chatView -> handleResetInitialUserMessage.
+        if (initialUserMessage) {
+          dispatch(chatViewActions.createPreIssue());
+        }
+      }
+    };
   };
 
   /**
@@ -925,18 +977,18 @@ define("actions/appState", [
 
   return {
     setDeviceId,
+    setAnalyticsSessionId,
     setAnonUserId,
     setClientConfig,
     setWmConfig,
     toggleMinimized,
-    startConversation,
+    startNewConversation,
     replaceCif,
     setParentPageInfo,
     setProactiveChatRules,
     executeProactiveChatRules,
     updateStyles,
     resetPreIssue,
-    setConversationStarted,
     setWidgetShouldAutoOpen,
     setReEngagementId,
     setWindowIsFocused,

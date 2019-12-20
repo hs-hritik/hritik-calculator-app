@@ -200,6 +200,7 @@ define("extras/api", [
     dispatch(appStateActions.setParentPageInfo(parentPageInfo));
     dispatch(appStateActions.setClientConfig(clientConfig));
     dispatch(appStateActions.setDeviceId());
+    dispatch(appStateActions.setAnalyticsSessionId());
     dispatch(appStateActions.setAnonUserId());
     dispatch(
       appStateActions.setWmConfig({
@@ -247,6 +248,7 @@ define("extras/api", [
     const {
       appState: {
         conversationStarted,
+        issueExists,
         appResetTrigger,
         issueState,
         issueType,
@@ -264,6 +266,10 @@ define("extras/api", [
       store.dispatch(chatViewActions.markMessagesSeen());
 
       const issueStateIsClosed = isIssueClosed(issueState);
+      // Issue state = NA is different than the issueExists flag. NA is set as the default value in
+      // the app state as long as there's no active issue created. issueExists flag is sent by the
+      // backend denoting whether at least one issue (open/closed) exists for this user.
+      const issueDoesNotExist = issueState === ISSUE_STATE.NA;
       const preIssueIsRejected = issueType === ISSUE_TYPE.PRE_ISSUE && issueStateIsClosed;
       const resetTriggerIsDefault = appResetTrigger === APP_RESET_TRIGGER.INITIAL;
       // When the end user opens the widget, check if preIssue reset
@@ -274,30 +280,30 @@ define("extras/api", [
       } else if (!conversationStarted) {
         // If initial user message is set through the api and issue state is closed then
         // start new conversation.
-        if (initialUserMessage && issueStateIsClosed) {
+        if (initialUserMessage && (issueStateIsClosed || issueDoesNotExist)) {
           store.dispatch(
             commonActions.reloadApp({
-              trigger: APP_RESET_TRIGGER.START_NEW_CONVERSATION,
+              trigger: APP_RESET_TRIGGER.NEW_CONV_VIA_INITIAL_USER_MESSAGE_API,
               loading: true,
               callback: chatViewActions.stopPollingForMessages
             })
           );
         } else if (preIssueIsRejected && resetTriggerIsDefault) {
-          // This is to handle special case where we get rejected preIssue on
-          // first page load. We will set app trigger as pre issue reset and call
-          // reset method which will create a new preIssue.
+          // This is to handle a special case where we get rejected preIssue on
+          // first page load. We will set app reset trigger as pre issue reset
+          // and call reset method which will create a new preIssue.
           // NOTE - Resetting preIssue and creating new preIssue should happen in
           // sequence, but these are two different api calls. So if we call reset
           // preIssue and the user closes the tab or browser, create new preIssue
-          // request wont be fired and the user will keep seeing reject preIssue.
+          // request won't be fired and the user will keep seeing the rejected preIssue.
           store.dispatch(
             commonActions.reloadApp({
               trigger: APP_RESET_TRIGGER.PRE_ISSUE_RESET,
               callback: chatViewActions.stopPollingForMessages
             })
           );
-        } else {
-          store.dispatch(appStateActions.startConversation());
+        } else if (!issueExists) {
+          store.dispatch(appStateActions.startNewConversation());
         }
       }
 

@@ -295,6 +295,12 @@ define("actions/chatView", [
         appState: {domain, activeIssueId, issueType},
         chatView: {unreadMessageIds}
       } = getState();
+
+      // Don't fire the XHR if issue type is initial i.e. not preissue or issue
+      if (issueType === ISSUE_TYPE.INITIAL) {
+        return;
+      }
+
       const pluralIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
 
       // @TODO: message-Ids key is unconfirmed. Get Ack
@@ -1365,7 +1371,8 @@ define("actions/chatView", [
         messageCursor: {forward: forwardMessageCursor},
         issueCursor,
         pollerFailureCount: prevPollerFailureCount,
-        userIsRedacted
+        userIsRedacted,
+        localGreetingMessageId
       }
     } = store.getState();
 
@@ -1529,6 +1536,10 @@ define("actions/chatView", [
               })
             );
 
+            if (localGreetingMessageId) {
+              dispatch(removeMessage(localGreetingMessageId));
+            }
+
             saveMessageCursor({
               issue: currentIssue,
               cursorTs: cursor,
@@ -1537,7 +1548,8 @@ define("actions/chatView", [
 
             // Only set the backward cursor when initial issues are being
             // fetched, not when updates for issues are being received.
-            //
+            // Also, remove the greeting message added by the client side logic
+            // (local greeting message) with the first poller response.
             // Note: This works because issueCursor is not set before
             // the first call.
             if (!issueCursor) {
@@ -1571,10 +1583,6 @@ define("actions/chatView", [
           handleIssueState();
 
           dispatch(setIssueCursor(cursor));
-
-          // Considering the state is ready, flush all the events recorded
-          // till now.
-          analyticsHelpers.flushEvents();
         } catch (ex) {
           // @TODO - Ideally, this exception should be logged to server.
           // eslint-disable-next-line
@@ -1891,7 +1899,7 @@ define("actions/chatView", [
     return (dispatch, getState) => {
       const state = getState();
       const {
-        appState: {activeIssueId, issueState},
+        appState: {activeIssueId, issueType, issueState},
         chatView: {userInput},
         ui: {text}
       } = state;
@@ -1938,13 +1946,35 @@ define("actions/chatView", [
         })
       );
 
-      postUserMessage({
-        onSuccess: () => {
-          handleIssueReopen(issueState);
-          dispatch(updateReplyText(""));
-          audioHelpers.playSend();
-        }
-      });
+      // If the issue type is not "initial" i.e. an issue / a preissue has been
+      // created
+      // Send the user message to the backend.
+      // Else if the issue type is "initial" i.e. an issue / a preissue
+      // hasn't been created yet and
+      // the initial user message is not set yet (via the API)
+      // Set the initial user message in the state and
+      // Create the preIssue (the create preIssue fn uses the initial user message
+      // set in the state).
+      if (issueType !== ISSUE_TYPE.INITIAL) {
+        postUserMessage({
+          onSuccess: () => {
+            handleIssueReopen(issueState);
+            dispatch(updateReplyText(""));
+            audioHelpers.playSend();
+          }
+        });
+      } else {
+        // @TODO: Lazy Preissue Creation
+        // 1. This sets the initial user message under sdkConfigOptions in
+        // the appState. Consider moving it out of this object. For now, the
+        // create preIssue fn is going to use this value. Fix in the next commits.
+        // 2. Add a check so that the initial user message is added only if it's
+        // not present already. For the initial user message added via the API,
+        // createPreIssue should be called as soon as the reply box is enabled.
+        // This flow (submitReply) won't be invoked in that case.
+        dispatch(actionCreators.setInitialUserMsg(trimmedValue));
+        dispatch(createPreIssue());
+      }
     };
   };
 
@@ -1996,25 +2026,6 @@ define("actions/chatView", [
   };
 
   /**
-   * Action to reset chat view error.
-   * @returns {Object} - action
-   */
-  const resetChatViewError = () => {
-    return {
-      type: ACTION_TYPES.RESET_CHAT_VIEW_ERROR
-    };
-  };
-
-  /**
-   * Action to update user's last activity time
-   */
-  const updateUserLastActivityTime = () => {
-    return {
-      type: ACTION_TYPES.UPDATE_USER_LAT
-    };
-  };
-
-  /**
    * Create pre-issue on backend.
    */
   const createPreIssue = () => {
@@ -2029,7 +2040,8 @@ define("actions/chatView", [
           fullPrivacyEnabled,
           developerSetLanguage,
           userName,
-          userId
+          userId,
+          sdkConfigOptions: {initialUserMessage}
         },
         ui: {
           text: {greetingMsg, networkError, retryBtn}
@@ -2097,7 +2109,11 @@ define("actions/chatView", [
         xhrData.user_id = userId;
       }
 
-      dispatch(actionCreators.toggleChatViewLoading(true));
+      // If initial user message is present in the state, send it with the
+      // create preissue API request.
+      if (initialUserMessage) {
+        xhrData.user_message = initialUserMessage;
+      }
 
       // We need to hide footer while creating preIssue because the default
       // value of input disabled is false, in store on page refresh.
@@ -2116,20 +2132,11 @@ define("actions/chatView", [
           }
 
           const newIssueId = response.id;
-          const internalId =
-            response.type === ISSUE_TYPE.PRE_ISSUE ? response.preissue_id : response.issue_id;
+          const internalId = response.internal_id;
 
-          dispatch(
-            batchActions([
-              setActiveIssueId(newIssueId),
-              actionCreators.setInternalIssueId(internalId),
-              updateIssueState(ISSUE_STATE.ACTIVE),
-              setChatViewFooter(ACTIVE_FOOTER.REPLY),
-              updateUserLastActivityTime()
-            ])
-          );
+          dispatch(issueCreated({newIssueId, internalId}));
+
           startPollingForMessages();
-          dispatch(resetChatViewError());
 
           // Track the issue created event.
           // @TODO: Confirm if issue created event has to be tracked from Web Chat.
@@ -2526,6 +2533,68 @@ define("actions/chatView", [
     };
   };
 
+  /*
+   * Return the action to set the local greeting message id in the state
+   * @param {string} id - message id
+   * @returns {Object} - the action object
+   */
+  const saveLocalGreetingMessageId = (id) => {
+    return {
+      type: ACTION_TYPES.SET_LOCAL_GREETING_MESSAGE_ID,
+      id
+    };
+  };
+
+  /**
+   * Create greeting message and add it to the message list. Check if this
+   * feature is enabled before doing so.
+   * @returns {Object} - the action object
+   */
+  const addGreetingMessage = () => {
+    return (dispatch, getState) => {
+      const {
+        appState: {
+          featuresEnabled: {greeting: greetingMessageFeatureIsEnabled}
+        },
+        ui: {
+          text: {greetingMsg: greetingMessageBody}
+        }
+      } = getState();
+
+      if (!greetingMessageFeatureIsEnabled) {
+        return;
+      }
+
+      dispatch(
+        createMessage({
+          type: MESSAGE_TYPE.TEXT,
+          messageConfig: {
+            body: greetingMessageBody,
+            isCustomerMsg: false,
+            isGreetingMessage: true
+          },
+          onAddMessage: (localGreetingMessage) => {
+            dispatch(saveLocalGreetingMessageId(localGreetingMessage.id));
+          }
+        })
+      );
+    };
+  };
+
+  /*
+   * Return the action to be dispatched when an issue/preissue is created.
+   * @param {string} newIssueId
+   * @param {string} internalId - internal issue id
+   * @returns {Object} - the action object
+   */
+  const issueCreated = (newIssueId, internalId) => {
+    return {
+      type: ACTION_TYPES.ISSUE_CREATED,
+      activeIssueId: newIssueId,
+      internalIssueId: internalId
+    };
+  };
+
   /**
    * Action to load the intents tree.
    *
@@ -2593,14 +2662,12 @@ define("actions/chatView", [
   return {
     createPreIssue,
     updateReplyText,
+    enableReplyBox,
     submitReply,
     abortCreatePreissueXhr,
     startPollingForMessages,
     stopPollingForMessages,
     addMessages,
-    setActiveIssueId,
-    setChatViewFooter,
-    updateIssueState,
     markMessagesSeen,
     handleScrollPastExistingConversation,
     switchToChatView,
@@ -2616,6 +2683,7 @@ define("actions/chatView", [
     setUserSelectedOption,
     handleErrorAction,
     skipUserInput,
+    addGreetingMessage,
     loadIntentsTree,
     loadIntentsModel
   };

@@ -291,10 +291,11 @@ define("helpers/message", [
    * @param {Object} options - Options to set fields of the message.
    * @param {String} options.body - Body of the message.
    * @param {Boolean} [options.isCustomerMsg] - Agent message or customer message.
+   * @param {Boolean} [options.isGreetingMessage]
    * @returns {Object} - message object.
    */
   const createTextMessage = (options = {}) => {
-    const {body, isCustomerMsg = true} = options;
+    const {body, isCustomerMsg = true, isGreetingMessage = false} = options;
 
     return {
       id: `${MSG_ID_PREFIX}${uuidGenerator()}`,
@@ -302,7 +303,8 @@ define("helpers/message", [
       isSystemMsg: true,
       body,
       createdTs: Date.now(),
-      isCustomerMsg
+      isCustomerMsg,
+      isGreetingMessage
     };
   };
 

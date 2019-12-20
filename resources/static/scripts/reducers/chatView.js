@@ -27,6 +27,24 @@ define("reducers/chatView", [
     cta: ""
   };
 
+  const INITIAL_MESSAGE_CURSOR = {
+    [CURSOR_TYPES.FORWARD]: {
+      value: "",
+      meta: {
+        issueType: "",
+        issueId: ""
+      }
+    },
+    [CURSOR_TYPES.BACKWARD]: {
+      value: "",
+      meta: {
+        issueType: "",
+        issueId: "",
+        preIssueId: ""
+      }
+    }
+  };
+
   /**
    * Returns default user input config object to be set in store
    * @returns {Object} - input config object
@@ -144,23 +162,7 @@ define("reducers/chatView", [
       botStepMessage: null
     },
     messageList: [],
-    messageCursor: {
-      [CURSOR_TYPES.FORWARD]: {
-        value: "",
-        meta: {
-          issueType: "",
-          issueId: ""
-        }
-      },
-      [CURSOR_TYPES.BACKWARD]: {
-        value: "",
-        meta: {
-          issueType: "",
-          issueId: "",
-          preIssueId: ""
-        }
-      }
-    },
+    messageCursor: INITIAL_MESSAGE_CURSOR,
     intents: {
       enforeIntentSelection: false,
       tree: {
@@ -185,10 +187,11 @@ define("reducers/chatView", [
     pollerFailureCount: 0,
     isCsatSubmitted: false,
     readFaqList: [],
-    loading: true,
+    loading: false,
     // This represents the error in the whole chat view
     // @TODO: Move the error handling to the error reducer.
-    error: INITIAL_ERROR_STATE
+    error: INITIAL_ERROR_STATE,
+    localGreetingMessageId: ""
   };
 
   /**
@@ -202,16 +205,55 @@ define("reducers/chatView", [
   };
 
   return (state = INITIAL_STATE, action) => {
-    let userInputUpdateObj = {};
     let index = null;
 
     switch (action.type) {
-      case ACTION_TYPES.REHYDRATE:
+      case ACTION_TYPES.REHYDRATE: {
         const updateObj = {};
+
         if (action.data.readFaqList) {
           updateObj.readFaqList = {$set: action.data.readFaqList};
         }
         return update(state, updateObj);
+      }
+
+      case ACTION_TYPES.NEW_CONVERSATION_STARTED: {
+        const {conversationHistoryIsEnabled} = action;
+        const userInputUpdateObj = _getDefaultUserInputConfig();
+
+        const updateObj = {
+          activeFooter: {$set: ACTIVE_FOOTER.REPLY},
+          userInput: {$merge: userInputUpdateObj},
+          pollerFailureCount: {$set: 0},
+          isCsatSubmitted: {$set: false}
+        };
+
+        if (!conversationHistoryIsEnabled) {
+          updateObj.messageList = {$set: []};
+          updateObj.unreadMessageIds = {$set: []};
+          updateObj.messageCursor = {$set: INITIAL_MESSAGE_CURSOR};
+          updateObj.issueCursor = {$set: 0};
+          updateObj.activeIssueMsgCursor = {$set: null};
+        }
+
+        return update(state, updateObj);
+      }
+
+      case ACTION_TYPES.ISSUE_CREATED:
+        // When an issue is created, reset userInput and chat view error
+        return update(state, {
+          userInput: {
+            value: {$set: ""},
+            // Save user entered text for input type default input
+            defaultInputValue: {
+              $set: isInputTypeDefault(state) ? "" : state.userInput.defaultInputValue
+            },
+            disabled: {$set: false},
+            errorMsg: {$set: ""}
+          },
+          systemTyping: {$set: false},
+          error: {$set: INITIAL_ERROR_STATE}
+        });
 
       case ACTION_TYPES.UPDATE_REPLY_TEXT:
         return update(state, {
@@ -241,7 +283,8 @@ define("reducers/chatView", [
           }
         });
 
-      case ACTION_TYPES.SET_CHAT_VIEW_FOOTER:
+      case ACTION_TYPES.SET_CHAT_VIEW_FOOTER: {
+        let userInputUpdateObj = {};
         if (action.footer === ACTIVE_FOOTER.REPLY && state.activeFooter !== ACTIVE_FOOTER.REPLY) {
           userInputUpdateObj = _getDefaultUserInputConfig();
         }
@@ -250,6 +293,7 @@ define("reducers/chatView", [
           activeFooter: {$set: action.footer},
           userInput: {$merge: userInputUpdateObj}
         });
+      }
 
       case ACTION_TYPES.DISABLE_REPLY_BOX:
         return update(state, {
@@ -295,13 +339,17 @@ define("reducers/chatView", [
           readFaqList: {$push: [action.faqId]}
         });
 
-      case ACTION_TYPES.SET_USER_INPUT_DATA:
-        userInputUpdateObj = objUtils.shallowMerge(_getDefaultUserInputConfig(), action.input);
+      case ACTION_TYPES.SET_USER_INPUT_DATA: {
+        const userInputUpdateObj = objUtils.shallowMerge(
+          _getDefaultUserInputConfig(),
+          action.input
+        );
         // When the default input switches to bot input, save default input value
         userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
         return update(state, {
           userInput: {$set: userInputUpdateObj}
         });
+      }
 
       case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
         return update(state, {
@@ -318,14 +366,15 @@ define("reducers/chatView", [
           userIsRedacted: {$set: action.userIsRedacted}
         });
 
-      case ACTION_TYPES.RESET_USER_INPUT_DATA:
-        userInputUpdateObj = objUtils.shallowMerge(_getDefaultUserInputConfig(), {
+      case ACTION_TYPES.RESET_USER_INPUT_DATA: {
+        const userInputUpdateObj = objUtils.shallowMerge(_getDefaultUserInputConfig(), {
           // Restore default input value when user input is reset
           value: state.userInput.defaultInputValue
         });
         return update(state, {
           userInput: {$set: userInputUpdateObj}
         });
+      }
 
       case ACTION_TYPES.UPDATE_USER_INPUT_DATA:
         return update(state, {
@@ -363,7 +412,7 @@ define("reducers/chatView", [
       case ACTION_TYPES.APPEND_MESSAGES:
         /**
          * When message is redacted, we get real time update of it in poller.
-         * If message is redacted and if it's id is already present in the message list
+         * If message is redacted and if its id is already present in the message list
          * then that message is replaced with a message having "message deleted" text.
          */
         const updatedExistingMessages = _replaceRedactedMessages(
@@ -387,9 +436,12 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.REMOVE_MESSAGE:
         index = _getMessageIndex(state.messageList, action.messageId);
-        return update(state, {
-          messageList: {$splice: [[index, 1]]}
-        });
+        if (index > -1) {
+          return update(state, {
+            messageList: {$splice: [[index, 1]]}
+          });
+        }
+        return state;
 
       case ACTION_TYPES.SET_ATTACHMENT_ERROR:
         index = _getMessageIndex(state.messageList, action.messageId);
@@ -428,11 +480,6 @@ define("reducers/chatView", [
       case ACTION_TYPES.SET_CHAT_VIEW_ERROR:
         return update(state, {
           error: {$set: action.error}
-        });
-
-      case ACTION_TYPES.RESET_CHAT_VIEW_ERROR:
-        return update(state, {
-          error: {$set: INITIAL_ERROR_STATE}
         });
 
       case ACTION_TYPES.SET_BOT_STEP_IN_PROGRESS:
@@ -508,6 +555,11 @@ define("reducers/chatView", [
           }
         });
       }
+
+      case ACTION_TYPES.SET_LOCAL_GREETING_MESSAGE_ID:
+        return update(state, {
+          localGreetingMessageId: {$set: action.id}
+        });
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
