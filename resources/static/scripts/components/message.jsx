@@ -678,6 +678,7 @@ define("components/message", [
     /**
      * Predicate to check if attachment is of type image
      * @param {String} name - attachment file name
+     * @param {String} url - attachment url
      * @returns {Boolean} - attachment is of type image
      */
     _isImageAttachment(name, url) {
@@ -685,10 +686,6 @@ define("components/message", [
 
       if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
         return false;
-      }
-
-      if (!name) {
-        name = message.file ? message.file.name : message.attachments[0].fileName;
       }
 
       let imageIdentifier;
@@ -710,7 +707,6 @@ define("components/message", [
 
     /**
      * Predicate to check if attachment is previewable
-     * @param {String} name - attachment file name
      * @returns {Boolean} - attachment is previewable
      */
     _isAttachmentPreviewable() {
@@ -720,10 +716,8 @@ define("components/message", [
         return false;
       }
 
-      const isImageAttachment = this._isImageAttachment(
-        this._attachmentRenderConfig.name,
-        this._attachmentRenderConfig.url
-      );
+      const name = this._getFileName();
+      const isImageAttachment = this._isImageAttachment(name, this._attachmentRenderConfig.url);
       const localAttachmentHasError = message.isSystemMsg ? message.states.error : true;
 
       // For any attachment to be previewable
@@ -731,6 +725,21 @@ define("components/message", [
       // b] If it is local image, it should have error
       //    Do not show preview while uploading!
       return isImageAttachment && localAttachmentHasError;
+    },
+
+    /**
+     * Returns file name by checking attachment config name
+     * If attachment config name is not present return name by using message object
+     */
+    _getFileName() {
+      const {message} = this.props;
+      let name = this._attachmentRenderConfig.name;
+
+      if (!name) {
+        name = message.file ? message.file.name : message.attachments[0].fileName;
+      }
+
+      return name;
     },
 
     /**
