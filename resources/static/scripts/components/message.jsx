@@ -682,12 +682,6 @@ define("components/message", [
      * @returns {Boolean} - attachment is of type image
      */
     _isImageAttachment(name, url) {
-      const {message} = this.props;
-
-      if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
-        return false;
-      }
-
       let imageIdentifier;
 
       // If file does not contain any extension
