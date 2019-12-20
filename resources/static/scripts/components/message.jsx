@@ -225,7 +225,16 @@ define("components/message", [
         return null;
       }
 
-      const attachmentsEl = attachments.map(this._renderAgentAttachment);
+      const attachmentsEl = attachments.map((attachment, index) => {
+        const {url, fileName} = attachment;
+        const attachmentIsPreviewable = this._isImageAttachment(url, fileName);
+
+        if (attachmentIsPreviewable) {
+          return this._renderServerPreviewableAttachment(attachment, index);
+        }
+
+        return this._renderServerNonPreviewableAttachment(attachment, index);
+      });
 
       return <div>{attachmentsEl}</div>;
     },
@@ -252,9 +261,13 @@ define("components/message", [
     },
 
     /**
-     * Render agent message attachment
+     * Render server non-previewable attachment message
+     * @param {Object} attachment - attachment to be rendered
+     * @param {string} attachment.fileName - attachment name
+     * @param {string} attachment.url - attachment url
+     * @param {Number} index - attachment index
      */
-    _renderAgentAttachment(attachment, index) {
+    _renderServerNonPreviewableAttachment(attachment, index) {
       const formattedFileName = attachmentsHelpers.getFormattedFileName(attachment.fileName);
       const {text} = this.props;
       const clickHandler = this._onAttachmentClick.bind(this, attachment.url);
@@ -277,6 +290,31 @@ define("components/message", [
             </small>
           </div>
         </div>
+      );
+    },
+
+    /**
+     * Render server previewable attachment message
+     * @param {Object} attachment - attachment to be rendered
+     * @param {string} attachment.fileName - attachment name
+     * @param {string} attachment.url - attachment url
+     * @param {Number} index - attachment index
+     */
+    _renderServerPreviewableAttachment(attachment, index) {
+      const {url} = attachment;
+      const clickHandler = this._onAttachmentClick.bind(this, url);
+      const wrapperStyles = {
+        backgroundImage: `url(${url})`,
+        height: `${this.state.imageWrapperHeight}px`
+      };
+
+      return (
+        <div
+          style={wrapperStyles}
+          key={index}
+          className="hs-message__image-wrapper"
+          onClick={clickHandler}
+        />
       );
     },
 
