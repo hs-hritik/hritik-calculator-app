@@ -2026,94 +2026,110 @@ define("actions/chatView", [
   };
 
   /**
+   * Prepare pre-issue XHR data
+   * @param {Object} state - Whole application state.
+   * @returns {Object} - The data required for pre-issue XHR
+   */
+  const _getPreparedPreIssueData = (state) => {
+    const {
+      appState: {
+        tags,
+        metadata,
+        cif,
+        featuresEnabled: {greeting: greetingFeatureEnabled},
+        fullPrivacyEnabled,
+        developerSetLanguage,
+        userName,
+        userId,
+        sdkConfigOptions: {initialUserMessage}
+      },
+      ui: {
+        text: {greetingMsg}
+      }
+    } = state;
+
+    const meta = {
+      device_info: getPreparedDeviceInfo()
+    };
+
+    if (tags) {
+      meta.custom_meta = {
+        "hs-tags": tags
+      };
+    }
+
+    if (metadata && Object.keys(metadata).length) {
+      meta.custom_meta = update(meta.custom_meta, {
+        $merge: metadata
+      });
+    }
+
+    /**
+     * Note :
+     * sm = sdk meta
+     * cb = chat bots
+     * library_version = current webchat version
+     * timezone_minutes = timezone offset. This is required while rendering
+     * the message timestamp in re-engagement email.
+     */
+    const xhrData = {
+      meta: JSON.stringify(meta),
+      sm: JSON.stringify({
+        cb: true
+      }),
+      library_version: WEB_CHAT_VERSION,
+      timezone_minutes: -new Date().getTimezoneOffset()
+    };
+
+    // If CIF is set and contains at least one field, add it to XHR data
+    if (cif && Object.keys(cif).length) {
+      xhrData.custom_fields = JSON.stringify(cif);
+    }
+
+    if (greetingFeatureEnabled) {
+      xhrData.greeting = greetingMsg;
+    }
+
+    if (fullPrivacyEnabled) {
+      xhrData.fp_status = true;
+    } else if (userName) {
+      // Set name if fullPrivacy mode is off
+      xhrData.name = userName;
+    }
+
+    xhrData.device_language = browserUtils.getLanguage();
+
+    if (developerSetLanguage) {
+      xhrData.developer_set_language = developerSetLanguage;
+    }
+
+    // Passing user_id is a temporary backend requirement.
+    if (userId) {
+      xhrData.user_id = userId;
+    }
+
+    // If initial user message is present in the state, send it with the
+    // create preissue API request.
+    if (initialUserMessage) {
+      xhrData.user_message = initialUserMessage;
+    }
+
+    return xhrData;
+  };
+
+  /**
    * Create pre-issue on backend.
    */
   const createPreIssue = () => {
     return (dispatch, getState) => {
+      const state = getState();
+      const xhrData = _getPreparedPreIssueData(state);
       const {
-        appState: {
-          domain,
-          tags,
-          metadata,
-          cif,
-          featuresEnabled: {greeting: greetingFeatureEnabled},
-          fullPrivacyEnabled,
-          developerSetLanguage,
-          userName,
-          userId,
-          sdkConfigOptions: {initialUserMessage}
-        },
+        appState: {domain},
         ui: {
-          text: {greetingMsg, networkError, retryBtn}
+          text: {networkError, retryBtn}
         }
-      } = getState();
-
-      // Prepare XHR data
-      const meta = {
-        device_info: getPreparedDeviceInfo()
-      };
-
-      if (tags) {
-        meta.custom_meta = {
-          "hs-tags": tags
-        };
-      }
-
-      if (metadata && Object.keys(metadata).length) {
-        meta.custom_meta = update(meta.custom_meta, {
-          $merge: metadata
-        });
-      }
-
-      /**
-       * Note :
-       * sm = sdk meta
-       * cb = chat bots
-       * library_version = current webchat version
-       * timezone_minutes = timezone offset. This is required while rendering
-       * the message timestamp in re-engagement email.
-       */
-      const xhrData = {
-        meta: JSON.stringify(meta),
-        sm: JSON.stringify({
-          cb: true
-        }),
-        library_version: WEB_CHAT_VERSION,
-        timezone_minutes: -new Date().getTimezoneOffset()
-      };
-
-      // If CIF is set and contains at least one field, add it to XHR data
-      if (cif && Object.keys(cif).length) {
-        xhrData.custom_fields = JSON.stringify(cif);
-      }
-
-      if (greetingFeatureEnabled) {
-        xhrData.greeting = greetingMsg;
-      }
-
-      if (fullPrivacyEnabled) {
-        xhrData.fp_status = true;
-      } else if (userName) {
-        // Set name if fullPrivacy mode is off
-        xhrData.name = userName;
-      }
-
-      xhrData.device_language = browserUtils.getLanguage();
-
-      if (developerSetLanguage) {
-        xhrData.developer_set_language = developerSetLanguage;
-      }
-
-      // Passing user_id is a temporary backend requirement.
-      if (userId) {
-        xhrData.user_id = userId;
-      }
-
-      // If initial user message is present in the state, send it with the
-      // create preissue API request.
-      if (initialUserMessage) {
-        xhrData.user_message = initialUserMessage;
-      }
+      } = state;
 
       // We need to hide footer while creating preIssue because the default
       // value of input disabled is false, in store on page refresh.
