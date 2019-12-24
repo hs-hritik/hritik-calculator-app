@@ -39,7 +39,7 @@ define("components/containers/chatViewFooter", [
         fullPrivacyEnabled,
         online,
         browserIsMobile,
-        featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsEnabled}
+        featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsFeatureIsEnabled}
       },
       chatView: {
         userInput,
@@ -96,10 +96,12 @@ define("components/containers/chatViewFooter", [
       unreadCount: unreadMessageIds.length,
       failureConfig,
       botStepInProgress,
-      browserIsMobile
+      browserIsMobile,
+      intentsFeatureIsEnabled,
+      issueType
     };
 
-    if (intentsEnabled) {
+    if (intentsFeatureIsEnabled) {
       props.intentsMap = intents.tree.intentsMap;
       props.topLevelIntentsOrder = intents.tree.topLevelIntentsOrder;
       props.selectedIntentIds = intents.selectedIntentIds;

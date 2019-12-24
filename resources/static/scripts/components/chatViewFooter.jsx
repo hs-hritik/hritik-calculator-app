@@ -11,6 +11,7 @@ define("components/chatViewFooter", [
   "components/commons/fileInput",
   "components/commons/skipButtonWrapper",
   "constants/chatView",
+  "constants/appState",
   "constants/keyCodes",
   "constants/propTypes",
   "helpers/common",
@@ -29,6 +30,7 @@ define("components/chatViewFooter", [
   FileInput,
   SkipButtonWrapper,
   CHAT_VIEW_CONSTANTS,
+  APP_STATE_CONSTANTS,
   KEY_CODES,
   customPropTypes,
   commonHelpers,
@@ -50,7 +52,7 @@ define("components/chatViewFooter", [
     PICKER_MIN_HEIGHT
   } = CHAT_VIEW_CONSTANTS;
   const {USER_INPUT_PROP_TYPE} = customPropTypes;
-
+  const {ISSUE_TYPE} = APP_STATE_CONSTANTS;
   const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
   const {METALIST_GROUP_NAME, METALIST_ITEMS, FOOTER_SELECTORS_LIST_MAP} = axConstants;
   const FOOTER_SELECTORS_TYPES = {
@@ -70,6 +72,14 @@ define("components/chatViewFooter", [
       browserIsMobile: PropTypes.bool,
       allowFullScreen: PropTypes.bool,
       userIsViewingPastMessages: PropTypes.bool,
+      /**
+       * Whether intents feature is enabled or not
+       */
+      intentsFeatureIsEnabled: PropTypes.bool.isRequired,
+      /**
+       * Issue Type
+       */
+      issueType: PropTypes.string.isRequired,
       /**
        * Intents Map
        */
@@ -472,9 +482,11 @@ define("components/chatViewFooter", [
     },
 
     _renderIntents() {
-      // @TODO: Handle conditions when we don't want to render the intents tree.
       // @TODO: Pass different height (instead of pickerMaxHeight) if required.
       // @TODO: Pass different classes.
+      if (!this._shouldIntentsBeShown()) {
+        return;
+      }
 
       const pickerClasses = classes("hs-chat-footer__picker-field", {
         "hs-nested-picker--mobile": this.props.browserIsMobile
@@ -805,6 +817,31 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    /**
+     * Whether the intents widget should be shown or not
+     * @returns {Boolean}
+     */
+    _shouldIntentsBeShown() {
+      const {selectedIntentIds, intentsMap, topLevelIntentsOrder} = this.props;
+      let intentsAreAvailable = false;
+
+      // If some intent is selected, check if the last selected intent has any children,
+      // otherwise ensure that we have top level intents to show.
+      if (selectedIntentIds.length) {
+        const selectedIntent = intentsMap[selectedIntentIds[selectedIntentIds.length - 1]];
+        intentsAreAvailable = !!(selectedIntent.children && selectedIntent.children.length);
+      } else {
+        intentsAreAvailable = !!topLevelIntentsOrder.length;
+      }
+
+      return (
+        this.props.intentsFeatureIsEnabled &&
+        this.props.issueType === ISSUE_TYPE.INITIAL &&
+        intentsAreAvailable &&
+        !this.props.userInput.disabled
+      );
     },
 
     /**
