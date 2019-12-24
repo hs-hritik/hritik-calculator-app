@@ -327,9 +327,9 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
    * @param {Object} intent
    * @returns {Object} - Action
    */
-  const selectIntent = (intent) => {
+  const intentSelected = (intent) => {
     return {
-      type: ACTION_TYPES.SELECT_INTENT,
+      type: ACTION_TYPES.INTENT_SELECTED,
       intent
     };
   };
@@ -338,9 +338,9 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
    * Action to unselect an intent
    * @returns {Object} - Action
    */
-  const unselectIntent = () => {
+  const intentUnselected = () => {
     return {
-      type: ACTION_TYPES.UNSELECT_INTENT
+      type: ACTION_TYPES.INTENT_UNSELECTED
     };
   };
 
@@ -374,7 +374,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentsTreeSuccess,
     intentsTreeRequest,
     intentsModelSuccess,
-    selectIntent,
-    unselectIntent
+    intentSelected,
+    intentUnselected
   };
 });

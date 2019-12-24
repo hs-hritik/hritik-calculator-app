@@ -538,7 +538,7 @@ define("reducers/chatView", [
         });
       }
 
-      case ACTION_TYPES.SELECT_INTENT: {
+      case ACTION_TYPES.INTENT_SELECTED: {
         return update(state, {
           intents: {
             selectedIntentIds: {$push: [action.intent.id]}
@@ -546,7 +546,7 @@ define("reducers/chatView", [
         });
       }
 
-      case ACTION_TYPES.UNSELECT_INTENT: {
+      case ACTION_TYPES.INTENT_UNSELECTED: {
         return update(state, {
           intents: {
             selectedIntentIds: {

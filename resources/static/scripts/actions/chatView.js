@@ -2675,6 +2675,21 @@ define("actions/chatView", [
     };
   };
 
+  /**
+   * Action to select an intent
+   * @param {Object} intent - Selected intent
+   */
+  const selectIntent = (intent) => {
+    return (dispatch) => {
+      dispatch(actionCreators.intentSelected(intent));
+
+      // If leaf intent node is selected, create pre-issue with that intent
+      if (!intent.children) {
+        dispatch(createPreIssue());
+      }
+    };
+  };
+
   return {
     createPreIssue,
     updateReplyText,
@@ -2701,6 +2716,7 @@ define("actions/chatView", [
     skipUserInput,
     addGreetingMessage,
     loadIntentsTree,
-    loadIntentsModel
+    loadIntentsModel,
+    selectIntent
   };
 });

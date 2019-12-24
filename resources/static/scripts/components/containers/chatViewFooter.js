@@ -160,10 +160,10 @@ define("components/containers/chatViewFooter", [
         dispatch(actionCreators.updateIntentsNavigationState(navigationState));
       },
       onSelectIntent: (intent) => {
-        dispatch(actionCreators.selectIntent(intent));
+        dispatch(chatViewActions.selectIntent(intent));
       },
       onUnselectIntent: () => {
-        dispatch(actionCreators.unselectIntent());
+        dispatch(actionCreators.intentUnselected());
       }
     };
   };
