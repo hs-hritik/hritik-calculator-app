@@ -2077,8 +2077,10 @@ define("actions/chatView", [
         developerSetLanguage,
         userName,
         userId,
+        analytics,
         sdkConfigOptions: {initialUserMessage}
       },
+      chatView: {intents, userInput},
       ui: {
         text: {greetingMsg}
       }
@@ -2101,20 +2103,24 @@ define("actions/chatView", [
     }
 
     /**
-     * Note :
+     * Note: These are the required fields for pre-issues XHR.
      * sm = sdk meta
      * cb = chat bots
+     * acid = analytics conversation id
      * library_version = current webchat version
      * timezone_minutes = timezone offset. This is required while rendering
      * the message timestamp in re-engagement email.
+     * device_language = Device language
      */
     const xhrData = {
       meta: JSON.stringify(meta),
       sm: JSON.stringify({
         cb: true
       }),
+      acid: analytics.sessionId,
       library_version: WEB_CHAT_VERSION,
-      timezone_minutes: -new Date().getTimezoneOffset()
+      timezone_minutes: -new Date().getTimezoneOffset(),
+      device_language: browserUtils.getLanguage()
     };
 
     // If CIF is set and contains at least one field, add it to XHR data
@@ -2133,8 +2139,6 @@ define("actions/chatView", [
       xhrData.name = userName;
     }
 
-    xhrData.device_language = browserUtils.getLanguage();
-
     if (developerSetLanguage) {
       xhrData.developer_set_language = developerSetLanguage;
     }
@@ -2148,6 +2152,22 @@ define("actions/chatView", [
     // create preissue API request.
     if (initialUserMessage) {
       xhrData.user_message = initialUserMessage;
+    }
+
+    // If any intent is selected, pass the intent related data
+    if (intents.selectedIntentIds.length) {
+      xhrData.intent = intents.selectedIntentIds;
+
+      // If user entered some text before selecting an intent, send it as search term (st).
+      // This would be used by Data Science to improve their algorithms.
+      if (userInput.value) {
+        xhrData.st = userInput.value;
+      }
+    }
+
+    // If intent tree was shown, we have to send intent tree id everytime.
+    if (intents.tree.id) {
+      xhrData.tree_id = intents.tree.id;
     }
 
     return xhrData;
