@@ -38,7 +38,7 @@ define("components/containers/replyBox", [
   const mapDispatchToProps = (dispatch) => {
     return {
       onChangeReplyBoxValue: (value) => {
-        dispatch(chatViewActions.updateReplyText(value));
+        dispatch(chatViewActions.updateReplyTextAndSearchIntents(value));
       },
       onSubmitReply: () => {
         dispatch(chatViewActions.submitReply());

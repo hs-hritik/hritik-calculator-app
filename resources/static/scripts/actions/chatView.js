@@ -32,6 +32,7 @@ define("actions/chatView", [
   "utils/browser",
   "utils/upload",
   "extras/accessibility",
+  "utils/debounceAction",
   "constants/dummyData"
 ], function(
   store,
@@ -61,6 +62,7 @@ define("actions/chatView", [
   browserUtils,
   upload,
   ax,
+  debounceAction,
   dummyData
 ) {
   "use strict";
@@ -79,7 +81,8 @@ define("actions/chatView", [
     MESSAGES_FORCE_POLLING_TIMEOUT,
     CURSOR_TYPES,
     USER_REDACTION_ERR_MSG,
-    USER_REDACTION_ERR_STATUS_CODE
+    USER_REDACTION_ERR_STATUS_CODE,
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -122,6 +125,49 @@ define("actions/chatView", [
     return {
       type: ACTION_TYPES.UPDATE_REPLY_TEXT,
       value
+    };
+  };
+
+  /**
+   * Action to search intents.
+   * @param {String} searchText - Search text (User input)
+   */
+  const searchIntents = (searchText) => {
+    return (dispatch, getState) => {
+      const {
+        chatView: {
+          intents: {model}
+        }
+      } = getState();
+
+      if (!searchText) {
+        // @TODO: Intents: Clear search results and stop searching mode
+      } else if (!model) {
+        // @TODO: Intents: Do the string based search.
+      } else {
+        // @TODO: Intents: Do the model based search.
+      }
+    };
+  };
+
+  // Debounced search intents action
+  const debouncedSearchIntents = debounceAction(searchIntents, INTENTS_SEARCH_DEBOUNCE_THRESHOLD);
+
+  /**
+   * This action updates the reply text, and search intents if applicable (based on the
+   * issue state and the feature toggle)
+   *
+   * @param {String} value - New reply value.
+   * @returns {Function} - action
+   */
+  const updateReplyTextAndSearchIntents = (value) => {
+    return (dispatch, getState) => {
+      dispatch(updateReplyText(value));
+
+      const {appState} = getState();
+      if (appState.issueType === ISSUE_TYPE.INITIAL && appState.featuresEnabled.intents) {
+        dispatch(debouncedSearchIntents(value));
+      }
     };
   };
 
@@ -2717,6 +2763,7 @@ define("actions/chatView", [
     addGreetingMessage,
     loadIntentsTree,
     loadIntentsModel,
-    selectIntent
+    selectIntent,
+    updateReplyTextAndSearchIntents
   };
 });

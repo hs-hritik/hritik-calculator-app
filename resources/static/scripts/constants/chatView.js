@@ -66,6 +66,9 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
 
   const DEFAULT_LIST_PICKER_NAVIGATION_STATE = LIST_PICKER_NAVIGATION_STATES.CLOSED;
 
+  // @TODO: Intents: Update threshold if required.
+  const INTENTS_SEARCH_DEBOUNCE_THRESHOLD = 500;
+
   return {
     ACTIVE_FOOTER,
     MESSAGES_POLLING_TIMEOUT,
@@ -79,6 +82,7 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     PICKER_INPUT_THRESHOLD: 5,
     OPTIONS_INPUT_TYPES,
     PICKER_MIN_HEIGHT: 112, // px
-    DEFAULT_LIST_PICKER_NAVIGATION_STATE
+    DEFAULT_LIST_PICKER_NAVIGATION_STATE,
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
   };
 });
