@@ -173,8 +173,6 @@ define("reducers/chatView", [
         topLevelIntentsOrder: []
       },
       model: null,
-      confidenceThreshold: 0,
-      maxCombinedConfidence: 0,
       pickerNavigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE,
       selectedIntentIds: []
     },
@@ -527,13 +525,15 @@ define("reducers/chatView", [
           intents: {
             model: {
               $set: {
-                intentIds: response.model.intent_ids,
-                vocabulary: response.model.vocabulary,
-                weights: response.model.weights
+                intentIds: response.intent_ids,
+                vocabulary: response.vocabulary,
+                weights: response.weights,
+                parameters: {
+                  confidenceThreshold: response.parameters.confidence_threshold,
+                  maxCombinedConfidence: response.parameters.max_combined_confidence
+                }
               }
-            },
-            confidenceThreshold: {$set: response.confidence_threshold},
-            maxCombinedConfidence: {$set: response.max_combined_confidence}
+            }
           }
         });
       }

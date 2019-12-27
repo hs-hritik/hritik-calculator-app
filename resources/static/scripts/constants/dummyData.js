@@ -259,30 +259,30 @@ define("constants/dummyData", function() {
   };
 
   const INTENTS_MODEL_SUCCESS = {
-    model: {
-      intent_ids: [
-        "0ef527cb-d6c1-4a09-9dd2-9dc3bb6cb80a",
-        "2083c531-9c50-4cfd-ad9c-1a00ecff81b1",
-        "3045936e-9c31-42b1-a9bb-f78769350d5d",
-        "36727e1a-f365-4eeb-9900-2764321fc3e7",
-        "3f9e5d6a-3887-4fa6-9526-fa86747e3b31",
-        "5f2da46e-1990-4960-91a4-66ffd8a17aa1",
-        "6f3ba529-563a-4cd7-a458-c4cd014bda53",
-        "72ce6672-207f-4e94-8148-2080640e342a",
-        "9f31adfc-407a-4922-954e-d2ee0bccfe2a",
-        "b92104e4-17eb-4913-827c-15ec63617aae",
-        "d26713d1-4c0d-41df-b789-e317a85c454f",
-        "e0abd0c4-b30d-404b-af43-511e9a3e175f",
-        "e5153cb0-aadd-4fa7-b1bb-903bf1684238"
-      ],
-      vocabulary: ["abc", "xyz"],
-      weights: [
-        [0.0, 3.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [12.0, 4.0, 2.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 9.0, 1.0, 0.0]
-      ]
-    },
-    confidence_threshold: 0.6,
-    max_combined_confidence: 0.7
+    intent_ids: [
+      "0ef527cb-d6c1-4a09-9dd2-9dc3bb6cb80a",
+      "2083c531-9c50-4cfd-ad9c-1a00ecff81b1",
+      "3045936e-9c31-42b1-a9bb-f78769350d5d",
+      "36727e1a-f365-4eeb-9900-2764321fc3e7",
+      "3f9e5d6a-3887-4fa6-9526-fa86747e3b31",
+      "5f2da46e-1990-4960-91a4-66ffd8a17aa1",
+      "6f3ba529-563a-4cd7-a458-c4cd014bda53",
+      "72ce6672-207f-4e94-8148-2080640e342a",
+      "9f31adfc-407a-4922-954e-d2ee0bccfe2a",
+      "b92104e4-17eb-4913-827c-15ec63617aae",
+      "d26713d1-4c0d-41df-b789-e317a85c454f",
+      "e0abd0c4-b30d-404b-af43-511e9a3e175f",
+      "e5153cb0-aadd-4fa7-b1bb-903bf1684238"
+    ],
+    vocabulary: ["abc", "xyz"],
+    weights: [
+      [0.0, 3.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [12.0, 4.0, 2.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 9.0, 1.0, 0.0]
+    ],
+    parameters: {
+      confidence_threshold: 0.6,
+      max_combined_confidence: 0.7
+    }
   };
 
   const CONFIG_SI_OBJ = {
