@@ -131,22 +131,12 @@ define("actions/chatView", [
   /**
    * Action to search intents.
    * @param {String} searchText - Search text (User input)
+   * @returns {Object} - action
    */
   const searchIntents = (searchText) => {
-    return (dispatch, getState) => {
-      const {
-        chatView: {
-          intents: {model}
-        }
-      } = getState();
-
-      if (!searchText) {
-        // @TODO: Intents: Clear search results and stop searching mode
-      } else if (!model) {
-        // @TODO: Intents: Do the string based search.
-      } else {
-        // @TODO: Intents: Do the model based search.
-      }
+    return {
+      type: ACTION_TYPES.SEARCH_INTENTS,
+      searchText
     };
   };
 

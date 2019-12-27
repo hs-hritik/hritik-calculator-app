@@ -68,6 +68,9 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
 
   // @TODO: Intents: Update threshold if required.
   const INTENTS_SEARCH_DEBOUNCE_THRESHOLD = 500;
+  const INTENTS_MINIMUM_CHAR_FOR_SEARCH = 5;
+  const MAX_LEAF_NODE_INTENT_RESULTS = 5;
+  const MAX_LEVEL_1_INTENT_RESULTS = 2;
 
   return {
     ACTIVE_FOOTER,
@@ -83,6 +86,9 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     OPTIONS_INPUT_TYPES,
     PICKER_MIN_HEIGHT: 112, // px
     DEFAULT_LIST_PICKER_NAVIGATION_STATE,
-    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
+    INTENTS_MINIMUM_CHAR_FOR_SEARCH,
+    MAX_LEAF_NODE_INTENT_RESULTS,
+    MAX_LEVEL_1_INTENT_RESULTS
   };
 });

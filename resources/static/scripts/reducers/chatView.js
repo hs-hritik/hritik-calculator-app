@@ -8,8 +8,9 @@ define("reducers/chatView", [
   "constants/chatView",
   "constants/actionTypes",
   "gunpowder/utils/object",
-  "gunpowder/utils/array"
-], function(CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils, arrayUtils) {
+  "gunpowder/utils/array",
+  "helpers/intent"
+], function(CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils, arrayUtils, intentHelpers) {
   "use strict";
 
   const update = React.addons.update;
@@ -17,7 +18,8 @@ define("reducers/chatView", [
     ACTIVE_FOOTER,
     USER_INPUT_TYPES,
     CURSOR_TYPES,
-    DEFAULT_LIST_PICKER_NAVIGATION_STATE
+    DEFAULT_LIST_PICKER_NAVIGATION_STATE,
+    INTENTS_MINIMUM_CHAR_FOR_SEARCH
   } = CHAT_VIEW_CONSTANTS;
 
   const INITIAL_ERROR_STATE = {
@@ -174,7 +176,9 @@ define("reducers/chatView", [
       },
       model: null,
       pickerNavigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE,
-      selectedIntentIds: []
+      selectedIntentIds: [],
+      isSearching: false,
+      searchResultIntentIds: []
     },
     userIsViewingPastMessages: false,
     userIsRedacted: false,
@@ -252,6 +256,39 @@ define("reducers/chatView", [
           systemTyping: {$set: false},
           error: {$set: INITIAL_ERROR_STATE}
         });
+
+      case ACTION_TYPES.SEARCH_INTENTS: {
+        let isSearching;
+        let searchResultIntentIds;
+        const {searchText} = action;
+        const {
+          intents: {
+            tree: {intentsMap},
+            model
+          }
+        } = state;
+
+        // If the number of search characters is less than minimum characters required for
+        // search, reset the search results
+        if (searchText.length < INTENTS_MINIMUM_CHAR_FOR_SEARCH) {
+          isSearching = false;
+          searchResultIntentIds = [];
+        } else if (!model) {
+          // If the model is not yet loaded, do the string based search.
+          isSearching = true;
+          searchResultIntentIds = intentHelpers.substringSearch(intentsMap, searchText);
+        } else {
+          isSearching = true;
+          // @TODO: Intents: Do the model based search.
+        }
+
+        return update(state, {
+          intents: {
+            isSearching: {$set: isSearching},
+            searchResultIntentIds: {$set: searchResultIntentIds}
+          }
+        });
+      }
 
       case ACTION_TYPES.UPDATE_REPLY_TEXT:
         return update(state, {
