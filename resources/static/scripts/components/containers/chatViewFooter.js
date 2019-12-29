@@ -102,9 +102,13 @@ define("components/containers/chatViewFooter", [
     };
 
     if (intentsFeatureIsEnabled) {
-      props.intentsMap = intents.tree.intentsMap;
-      props.topLevelIntentsOrder = intents.tree.topLevelIntentsOrder;
-      props.selectedIntentIds = intents.selectedIntentIds;
+      props.intent = {
+        intentsMap: intents.tree.intentsMap,
+        topLevelIntentsOrder: intents.tree.topLevelIntentsOrder,
+        selectedIntentIds: intents.selectedIntentIds,
+        isSearching: intents.isSearching,
+        searchResultIntentIds: intents.searchResultIntentIds
+      };
     }
 
     return props;

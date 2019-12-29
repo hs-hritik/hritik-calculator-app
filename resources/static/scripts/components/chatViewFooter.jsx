@@ -81,36 +81,49 @@ define("components/chatViewFooter", [
        */
       issueType: PropTypes.string.isRequired,
       /**
-       * Intents Map
+       * Intents related data. Required only if intentsEnabled is true.
        */
-      intentsMap: PropTypes.objectOf(
-        PropTypes.shape({
-          /**
-           * Id for the intent
-           */
-          id: PropTypes.string.isRequired,
-          /**
-           * Label of the intent
-           */
-          label: PropTypes.string.isRequired,
-          /**
-           * Id of the parent intent, if any
-           */
-          parentId: PropTypes.string,
-          /**
-           * Array of children option ids, if any
-           */
-          children: PropTypes.arrayOf(PropTypes.string)
-        })
-      ).isRequired,
-      /**
-       * The order in which the top level intents should be rendered.
-       */
-      topLevelIntentsOrder: PropTypes.arrayOf(PropTypes.string),
-      /**
-       * Selected intent Ids
-       */
-      selectedIntentIds: PropTypes.arrayOf(PropTypes.string),
+      intent: PropTypes.shape({
+        /**
+         * Intents Map
+         */
+        intentsMap: PropTypes.objectOf(
+          PropTypes.shape({
+            /**
+             * Id for the intent
+             */
+            id: PropTypes.string.isRequired,
+            /**
+             * Label of the intent
+             */
+            label: PropTypes.string.isRequired,
+            /**
+             * Id of the parent intent, if any
+             */
+            parentId: PropTypes.string,
+            /**
+             * Array of children option ids, if any
+             */
+            children: PropTypes.arrayOf(PropTypes.string)
+          })
+        ).isRequired,
+        /**
+         * The order in which the top level intents should be rendered.
+         */
+        topLevelIntentsOrder: PropTypes.arrayOf(PropTypes.string),
+        /**
+         * Selected intent Ids
+         */
+        selectedIntentIds: PropTypes.arrayOf(PropTypes.string),
+        /**
+         * Whether the search mode is on or off for intents
+         */
+        isSearching: PropTypes.bool,
+        /**
+         * Search result intent ids
+         */
+        searchResultIntentIds: PropTypes.arrayOf(PropTypes.string)
+      }),
       unreadCount: PropTypes.number,
       /**
        * If any failure has to be displayed on the chat view footer.
@@ -488,6 +501,14 @@ define("components/chatViewFooter", [
         return;
       }
 
+      const {
+        intentsMap,
+        topLevelIntentsOrder,
+        selectedIntentIds,
+        isSearching,
+        searchResultIntentIds
+      } = this.props.intent;
+
       const pickerClasses = classes("hs-chat-footer__picker-field", {
         "hs-nested-picker--mobile": this.props.browserIsMobile
       });
@@ -495,13 +516,15 @@ define("components/chatViewFooter", [
       return (
         <DraggableNestedPicker
           className={pickerClasses}
-          optionsMap={this.props.intentsMap}
-          topLevelOptionsOrder={this.props.topLevelIntentsOrder}
-          selectedOptionIds={this.props.selectedIntentIds}
+          optionsMap={intentsMap}
+          topLevelOptionsOrder={topLevelIntentsOrder}
+          selectedOptionIds={selectedIntentIds}
           onNavigationStateChange={this._onIntentsNavigationStateChange}
           onSelectOption={this._onSelectIntent}
           onUnselectOption={this._onUnselectIntent}
           minHeight={PICKER_MIN_HEIGHT}
+          isSearching={isSearching}
+          searchResultOptionIds={searchResultIntentIds}
           maxHeight={this.state.pickerMaxHeight}
         />
       );
@@ -824,7 +847,11 @@ define("components/chatViewFooter", [
      * @returns {Boolean}
      */
     _shouldIntentsBeShown() {
-      const {selectedIntentIds, intentsMap, topLevelIntentsOrder} = this.props;
+      if (!this.props.intentsFeatureIsEnabled) {
+        return false;
+      }
+
+      const {selectedIntentIds, intentsMap, topLevelIntentsOrder} = this.props.intent;
       let intentsAreAvailable = false;
 
       // If some intent is selected, check if the last selected intent has any children,
@@ -837,7 +864,6 @@ define("components/chatViewFooter", [
       }
 
       return (
-        this.props.intentsFeatureIsEnabled &&
         this.props.issueType === ISSUE_TYPE.INITIAL &&
         intentsAreAvailable &&
         !this.props.userInput.disabled
