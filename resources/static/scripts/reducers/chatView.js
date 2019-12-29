@@ -120,9 +120,10 @@ define("reducers/chatView", [
    * Process intents tree.
    * We convert the nested intent tree into the intents detail map.
    * @param {Array} tree - Intents tree array which we get from the backend.
+   * @param {String} [parentId] - Parent intent id of the given intent tree (if any)
    * @returns {Object} - Intents details map and ids.
    */
-  const _processIntentsTree = (tree) => {
+  const _processIntentsTree = (tree, parentId = null) => {
     const intentsMap = {};
     const ids = [];
 
@@ -131,12 +132,13 @@ define("reducers/chatView", [
       let childrenIntents;
 
       if (children && children.length) {
-        childrenIntents = _processIntentsTree(children);
+        childrenIntents = _processIntentsTree(children, id);
       }
 
       intentsMap[id] = {
         id,
         label: intent.label,
+        parentId,
         showByDefault: intent.show_by_default
       };
 
