@@ -8,4 +8,4 @@
  * @author Ayush Sachdeva
  */
 
-module.exports = [];
+module.exports = ["resources/static/scripts/utils/logReactError.js"];
