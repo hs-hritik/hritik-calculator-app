@@ -27,16 +27,16 @@ define("helpers/intent", ["gunpowder/utils/object", "constants/chatView"], funct
    *   is no maximum limit for leaf node intents for this case.
    *
    * @param {Object} intentsMap - Intents Map
-   * @param {String} searchText - Search text
+   * @param {String} query - Search query
    * @return {String[]} - Search result's intent ids
    */
-  const substringSearch = (intentsMap, searchText) => {
+  const substringSearch = (intentsMap, query) => {
     const leafNodeIntentIds = [];
     const nonLeafNodeIntentIds = [];
-    searchText = searchText.trim().toLowerCase();
+    query = query.trim().toLowerCase();
 
     objUtils.forEachKey(intentsMap, (id, intent) => {
-      if (intent.label.toLowerCase().indexOf(searchText) !== -1) {
+      if (intent.label.toLowerCase().indexOf(query) !== -1) {
         if (intent.children && intent.children.length) {
           nonLeafNodeIntentIds.push(id);
         } else {
