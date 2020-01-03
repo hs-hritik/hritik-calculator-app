@@ -4,13 +4,14 @@
  * @created Dec 27, 2019
  */
 
-define("helpers/intent", ["gunpowder/utils/object", "constants/chatView"], function(
-  objUtils,
-  chatViewConstants
-) {
+define("helpers/intent", [
+  "helpers/intentModelSearch",
+  "gunpowder/utils/object",
+  "constants/chatView"
+], function(intentsModelSearch, objUtils, chatViewConstants) {
   "use strict";
 
-  const {MAX_LEAF_NODE_INTENT_RESULTS, MAX_LEVEL_1_INTENT_RESULTS} = chatViewConstants;
+  const {MAX_LEAF_NODE_INTENT_RESULTS, MAX_PARENT_INTENT_RESULTS} = chatViewConstants;
 
   /**
    * Helper to do substring based search on intents.
@@ -54,7 +55,7 @@ define("helpers/intent", ["gunpowder/utils/object", "constants/chatView"], funct
     // show the leaf nodes of those intents.
     if (nonLeafNodeIntentIds.length) {
       return nonLeafNodeIntentIds
-        .splice(0, MAX_LEVEL_1_INTENT_RESULTS)
+        .splice(0, MAX_PARENT_INTENT_RESULTS)
         .reduce((childrenIntentIds, id) => {
           return childrenIntentIds.push(
             ...intentsMap[id].children.splice(0, MAX_LEAF_NODE_INTENT_RESULTS)
@@ -65,7 +66,27 @@ define("helpers/intent", ["gunpowder/utils/object", "constants/chatView"], funct
     return [];
   };
 
+  /**
+   * Intents model based search.
+   * @param {Object} model - Data related to model
+   * @param {Object} intentsMap - Intents Map
+   * @param {String} query - Search query
+   * @returns {String[]} - Matched intent ids
+   */
+  const modelSearch = (model, intentsMap, query) => {
+    return intentsModelSearch
+      .match({
+        model,
+        intentsMap,
+        query,
+        maxNumberOfLeafIntents: MAX_LEAF_NODE_INTENT_RESULTS,
+        maxNumberOfParentIntents: MAX_PARENT_INTENT_RESULTS
+      })
+      .map(({intentId}) => intentId);
+  };
+
   return {
-    substringSearch
+    substringSearch,
+    modelSearch
   };
 });
