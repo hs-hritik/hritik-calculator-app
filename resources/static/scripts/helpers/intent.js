@@ -53,13 +53,13 @@ define("helpers/intent", ["gunpowder/utils/object", "constants/chatView"], funct
     // If there is no leaf node intent match, but there is Level 1 intents match,
     // show the leaf nodes of those intents.
     if (nonLeafNodeIntentIds.length) {
-      const childrenIntentIds = [];
-
-      nonLeafNodeIntentIds.splice(0, MAX_LEVEL_1_INTENT_RESULTS).forEach((id) => {
-        childrenIntentIds.push(...intentsMap[id].children);
-      });
-
-      return childrenIntentIds;
+      return nonLeafNodeIntentIds
+        .splice(0, MAX_LEVEL_1_INTENT_RESULTS)
+        .reduce((childrenIntentIds, id) => {
+          return childrenIntentIds.push(
+            ...intentsMap[id].children.splice(0, MAX_LEAF_NODE_INTENT_RESULTS)
+          );
+        }, []);
     }
 
     return [];
