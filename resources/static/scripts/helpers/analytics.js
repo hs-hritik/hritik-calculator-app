@@ -112,12 +112,14 @@ define("helpers/analytics", [
 
   /**
    * Fire the XHR to track the given event payload.
-   * @param {Object} payload - The event payload with name, event timestamp etc.
+   * @param {Object[]} eventsPayload - Array of events payload with name, event timestamp etc.
    * @param {Object} [config]
    */
-  const _fireTrackingXhr = (payload, config = {}) => {
+  const _fireTrackingXhr = (eventsPayload, config = {}) => {
     const defaultPayload = _getDefaultPayload();
-    const data = objUtils.shallowMerge(defaultPayload, payload);
+    const data = objUtils.shallowMerge(defaultPayload, {
+      e: JSON.stringify(eventsPayload)
+    });
 
     xhr({
       route: _route || _getRoute(),
@@ -137,16 +139,12 @@ define("helpers/analytics", [
    * @param {Number} ts - unix epoch
    */
   const _trackWidgetLoad = (ts) => {
-    const eventPayload = {
-      e: JSON.stringify([
-        {
-          ts,
-          t: PAYLOAD_EVENT.WIDGET_LOAD
-        }
-      ])
-    };
-
-    _fireTrackingXhr(eventPayload);
+    _fireTrackingXhr([
+      {
+        ts,
+        t: PAYLOAD_EVENT.WIDGET_LOAD
+      }
+    ]);
   };
 
   /**
@@ -187,11 +185,7 @@ define("helpers/analytics", [
       eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE;
     }
 
-    const eventPayload = {
-      e: JSON.stringify([eventData])
-    };
-
-    _fireTrackingXhr(eventPayload);
+    _fireTrackingXhr([eventData]);
   };
 
   /**
@@ -201,19 +195,15 @@ define("helpers/analytics", [
    * @param {Number} [config.ts] - unix epoch
    */
   const _trackIssueCreated = (config = {}) => {
-    const eventPayload = {
-      e: JSON.stringify([
-        {
-          ts: config.ts,
-          d: {
-            id: config.issueId
-          },
-          t: PAYLOAD_EVENT.ISSUE_CREATED
-        }
-      ])
-    };
-
-    _fireTrackingXhr(eventPayload);
+    _fireTrackingXhr([
+      {
+        ts: config.ts,
+        d: {
+          id: config.issueId
+        },
+        t: PAYLOAD_EVENT.ISSUE_CREATED
+      }
+    ]);
   };
 
   /**
@@ -286,11 +276,7 @@ define("helpers/analytics", [
         break;
     }
 
-    const eventPayload = {
-      e: JSON.stringify([eventData])
-    };
-
-    _fireTrackingXhr(eventPayload);
+    _fireTrackingXhr([eventData]);
   };
 
   /**
