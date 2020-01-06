@@ -280,6 +280,152 @@ define("helpers/analytics", [
   };
 
   /**
+   * Track selected intent event.
+   * When the end user selects any level intent.
+   *
+   * @param {Object} config
+   * @param {Object} config.intent - The selected intent
+   * @param {Number} config.ts - unix epoch
+   */
+  const _trackIntentSelected = (config) => {
+    const {intent, ts} = config;
+    const {
+      chatView: {
+        intents: {selectedIntentIds, isSearching}
+      }
+    } = store.getState();
+
+    const data = {
+      iids: selectedIntentIds,
+      leaf: !!(intent.children && intent.children.length)
+    };
+
+    if (isSearching) {
+      // @TODO: Intents: Pass cnf (confidence value) and r (rank)
+    }
+
+    _fireTrackingXhr([
+      {
+        t: PAYLOAD_EVENT.INTENT_SELECTED,
+        ts,
+        d: data
+      }
+    ]);
+  };
+
+  /**
+   * Track unselected intent event.
+   * When the end user clicks on the back button after intent selection.
+   *
+   * @param {Object} config
+   * @param {Number} config.ts - unix epoch
+   */
+  const _trackIntentUnselected = (config) => {
+    const {
+      chatView: {
+        intents: {selectedIntentIds}
+      }
+    } = store.getState();
+
+    _fireTrackingXhr([
+      {
+        t: PAYLOAD_EVENT.INTENT_UNSELECTED,
+        ts: config.ts,
+        d: {
+          iids: selectedIntentIds
+        }
+      }
+    ]);
+  };
+
+  /**
+   * Track search intent event.
+   * This event is triggered when the end user performs a search on the intent tree.
+   * Triggers for this event are:
+   * (1) Clearing the entire input field.
+   * (2) Selecting an intent from search results.
+   * (3) Sending the message.
+   *
+   * @param {Object} config
+   * @param {string} config.intent - The selected intent
+   * @param {Number} config.ts - unix epoch
+   */
+  const _trackSearchIntent = (config) => {
+    const {
+      chatView: {
+        intents: {selectedIntentIds, searchResultIntentIds}
+      }
+    } = store.getState();
+
+    const data = {
+      rc: searchResultIntentIds.length,
+      iids: selectedIntentIds
+    };
+
+    // @TODO: Intents: Pass the following fields as well: sa, mv, clr
+
+    _fireTrackingXhr([
+      {
+        t: PAYLOAD_EVENT.SEARCH_INTENTS,
+        ts: config.ts,
+        d: data
+      }
+    ]);
+  };
+
+  /**
+   * Triggered when intent tree is shown to the end user.
+   * @param {Object} config
+   * @param {Number} config.ts - unix epoch
+   */
+  const _trackIntentTreeShown = (config) => {
+    const {
+      chatView: {
+        intents: {tree, enforeIntentSelection}
+      }
+    } = store.getState();
+
+    _fireTrackingXhr([
+      {
+        t: PAYLOAD_EVENT.INTENT_TREE_SHOWN,
+        ts: config.ts,
+        d: {
+          itid: tree.id,
+          itv: tree.version,
+          eis: enforeIntentSelection
+        }
+      }
+    ]);
+  };
+
+  /**
+   * Triggered any time the message is sent by the end user.
+   * This will also be triggered when the end user finishes the intent selection.
+   * @param {Object} config
+   * @param {Object} config.message
+   * @param {String} config.message.id - Message id
+   * @param {String} config.message.type - Message type
+   * @param {Number} config.ts - unix epoch
+   */
+  const _trackMessageSent = (config) => {
+    const {
+      message: {id, type},
+      ts
+    } = config;
+
+    _fireTrackingXhr([
+      {
+        t: PAYLOAD_EVENT.MESSAGE_SENT,
+        ts: ts,
+        d: {
+          id,
+          type
+        }
+      }
+    ]);
+  };
+
+  /**
    * Track the given event with relevant data.
    * @param {string} event - The event to track.
    * @param {Object} [config]
@@ -309,6 +455,21 @@ define("helpers/analytics", [
         break;
       case EVENT.CSAT:
         _trackCsatEvents(config);
+        break;
+      case EVENT.INTENT_SELECTED:
+        _trackIntentSelected(config);
+        break;
+      case EVENT.INTENT_UNSELECTED:
+        _trackIntentUnselected(config);
+        break;
+      case EVENT.SEARCH_INTENTS:
+        _trackSearchIntent();
+        break;
+      case EVENT.INTENT_TREE_SHOWN:
+        _trackIntentTreeShown(config);
+        break;
+      case EVENT.MESSAGE_SENT:
+        _trackMessageSent(config);
         break;
     }
   };
