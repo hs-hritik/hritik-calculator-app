@@ -633,6 +633,8 @@ define("components/businessHoursView", [
       contactFormDetails: CONTACT_FORM_DETAILS_PROP_TYPE,
       offlineBehaviour: OFFLINE_BEHAVIOUR_PROP_TYPE,
       onMinimizeConversation: PropTypes.func.isRequired,
+      onKeyDown: PropTypes.func.isRequired,
+      onClick: PropTypes.func.isRequired,
       onChangeBusinessHoursContactFormDetails: PropTypes.func.isRequired,
       onSubmitBusinessHoursContactForm: PropTypes.func.isRequired,
       onFilesChange: PropTypes.func.isRequired,
@@ -658,6 +660,8 @@ define("components/businessHoursView", [
         text,
         showCloseButton,
         onMinimizeConversation,
+        onKeyDown,
+        onClick,
         onFilesChange,
         contactFormDetails,
         viewStyles,
@@ -677,7 +681,7 @@ define("components/businessHoursView", [
       });
 
       return (
-        <div className={viewClasses} style={viewStyles}>
+        <div className={viewClasses} style={viewStyles} onKeyDown={onKeyDown} onClick={onClick}>
           <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback()}>
             <ViewHeader
               title={text.businessHoursViewHeader}

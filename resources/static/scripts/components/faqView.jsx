@@ -88,6 +88,8 @@ define("components/faqView", [
       errorMsg: PropTypes.string,
       onBackBtnClick: PropTypes.func.isRequired,
       onMinimizeConversation: PropTypes.func.isRequired,
+      onKeyDown: PropTypes.func.isRequired,
+      onClick: PropTypes.func.isRequired,
       text: PropTypes.shape({
         faqViewHeader: PropTypes.string.isRequired,
         ariaLabelLoading: PropTypes.string,
@@ -111,12 +113,14 @@ define("components/faqView", [
         onBackBtnClick,
         viewStyles,
         showCloseButton,
-        onMinimizeConversation,
         title,
         body,
         loading,
         errorMsg,
-        keyboardInteractionIsActive
+        keyboardInteractionIsActive,
+        onMinimizeConversation,
+        onKeyDown,
+        onClick
       } = this.props;
 
       const viewHeaderDataLabels = {
@@ -128,7 +132,7 @@ define("components/faqView", [
       });
 
       return (
-        <div className={viewClasses} style={viewStyles}>
+        <div className={viewClasses} style={viewStyles} onKeyDown={onKeyDown} onClick={onClick}>
           <ErrorBoundaryWithLogging fallbackComponent={this._renderFallbackComponent()}>
             <ViewHeader
               title={text.faqViewHeader}

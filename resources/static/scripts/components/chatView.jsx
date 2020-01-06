@@ -287,6 +287,8 @@ define("components/chatView", [
     displayName: "ChatView",
     propTypes: {
       onMinimizeConversation: PropTypes.func,
+      onKeyDown: PropTypes.func.isRequired,
+      onClick: PropTypes.func.isRequired,
       showCloseButton: PropTypes.bool.isRequired,
       viewStyles: PropTypes.shape({
         fontFamily: PropTypes.string
@@ -348,11 +350,13 @@ define("components/chatView", [
     render() {
       const {
         showCloseButton,
-        onMinimizeConversation,
         text,
         viewStyles,
         minimized,
-        keyboardInteractionIsActive
+        keyboardInteractionIsActive,
+        onMinimizeConversation,
+        onKeyDown,
+        onClick
       } = this.props;
 
       // In certain cases, Safari ignores scroll events on
@@ -372,7 +376,7 @@ define("components/chatView", [
       });
 
       return (
-        <div className={viewClasses} style={viewStyles}>
+        <div className={viewClasses} style={viewStyles} onKeyDown={onKeyDown} onClick={onClick}>
           <ErrorBoundaryWithLogging onError={this._showNonBlockingError}>
             <ViewHeader
               title={text.chatViewHeader}

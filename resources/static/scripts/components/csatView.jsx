@@ -98,6 +98,8 @@ define("components/csatView", [
       showCloseButton: PropTypes.bool.isRequired,
       allowFullScreen: PropTypes.bool,
       onMinimizeConversation: PropTypes.func.isRequired,
+      onKeyDown: PropTypes.func.isRequired,
+      onClick: PropTypes.func.isRequired,
       onSubmitCsat: PropTypes.func.isRequired,
       onUpdateCsatRating: PropTypes.func.isRequired,
       onUpdateCsatReview: PropTypes.func.isRequired,
@@ -120,14 +122,16 @@ define("components/csatView", [
       const {
         text,
         showCloseButton,
-        onMinimizeConversation,
         viewStyles,
         rating,
         review,
         csatSaveInProgress,
         onSubmitCsat,
         keyboardInteractionIsActive,
-        onUpdateStarRating
+        onUpdateStarRating,
+        onMinimizeConversation,
+        onKeyDown,
+        onClick
       } = this.props;
 
       const viewClasses = classes("hs-view", {
@@ -135,7 +139,7 @@ define("components/csatView", [
       });
 
       return (
-        <div className={viewClasses} style={viewStyles}>
+        <div className={viewClasses} style={viewStyles} onKeyDown={onKeyDown} onClick={onClick}>
           <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback()}>
             <ViewHeader
               title={text.csatViewHeader}
