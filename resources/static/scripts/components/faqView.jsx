@@ -88,8 +88,8 @@ define("components/faqView", [
       errorMsg: PropTypes.string,
       onBackBtnClick: PropTypes.func.isRequired,
       onMinimizeConversation: PropTypes.func.isRequired,
-      onKeyDown: PropTypes.func.isRequired,
-      onClick: PropTypes.func.isRequired,
+      onKeyDown: PropTypes.func,
+      onClick: PropTypes.func,
       text: PropTypes.shape({
         faqViewHeader: PropTypes.string.isRequired,
         ariaLabelLoading: PropTypes.string,

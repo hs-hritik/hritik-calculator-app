@@ -287,8 +287,8 @@ define("components/chatView", [
     displayName: "ChatView",
     propTypes: {
       onMinimizeConversation: PropTypes.func,
-      onKeyDown: PropTypes.func.isRequired,
-      onClick: PropTypes.func.isRequired,
+      onKeyDown: PropTypes.func,
+      onClick: PropTypes.func,
       showCloseButton: PropTypes.bool.isRequired,
       viewStyles: PropTypes.shape({
         fontFamily: PropTypes.string
