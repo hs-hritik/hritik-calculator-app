@@ -52,9 +52,9 @@ define("constants/routes", function() {
 
   const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs_suggestion_read`;
 
-  const getIntentTree = (domain) => `${BASE}${domain}/intent-tree`;
+  const getIntentTree = (domain) => `${BASE}${domain}/intent-trees`;
 
-  const getIntentModel = (domain, treeId) => `${BASE}${domain}/intent-trees/${treeId}/model`;
+  const getIntentModel = (domain, treeId) => `${BASE}${domain}/intent-trees/${treeId}/models`;
 
   return {
     getWmConfig,
