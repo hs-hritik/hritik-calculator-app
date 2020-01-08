@@ -156,6 +156,7 @@ define("actions/chatView", [
 
       const {appState} = getState();
       if (appState.issueType === ISSUE_TYPE.INITIAL && appState.featuresEnabled.intents) {
+        // @TODO: Intents: Trigger search event if value === ""
         dispatch(debouncedSearchIntents(value));
       }
     };
@@ -1997,6 +1998,7 @@ define("actions/chatView", [
             handleIssueReopen(issueState);
             dispatch(updateReplyText(""));
             audioHelpers.playSend();
+            // @TODO: Intents: Trigger message sent event.
           }
         });
       } else {
@@ -2010,6 +2012,7 @@ define("actions/chatView", [
         // This flow (submitReply) won't be invoked in that case.
         dispatch(actionCreators.setInitialUserMsg(trimmedValue));
         dispatch(createPreIssue());
+        // @TODO: Intents: If intent feature is enabled, trigger the search intents event
       }
     };
   };
@@ -2736,12 +2739,21 @@ define("actions/chatView", [
    * @param {Object} intent - Selected intent
    */
   const selectIntent = (intent) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
       dispatch(actionCreators.intentSelected(intent));
+      analyticsHelpers.track(EVENT.INTENT_SELECTED, {intent});
 
       // If leaf intent node is selected, create pre-issue with that intent
       if (!intent.children) {
         dispatch(createPreIssue());
+
+        const {
+          chatView: {intents}
+        } = getState();
+
+        if (intents.isSearching) {
+          analyticsHelpers.track(EVENT.SEARCH_INTENTS);
+        }
       }
     };
   };

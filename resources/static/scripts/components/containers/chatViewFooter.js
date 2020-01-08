@@ -13,7 +13,9 @@ define("components/containers/chatViewFooter", [
   "actions/postSdkMessage",
   "constants/activeView",
   "constants/chatView",
-  "helpers/common"
+  "constants/analytics",
+  "helpers/common",
+  "helpers/analytics"
 ], function(
   ChatViewFooter,
   chatViewActions,
@@ -23,11 +25,14 @@ define("components/containers/chatViewFooter", [
   postSdkMessage,
   ACTIVE_VIEW,
   chatViewConstants,
-  commonHelpers
+  analyticsConstants,
+  commonHelpers,
+  analyticsHelpers
 ) {
   "use strict";
 
   const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
+  const {EVENT} = analyticsConstants;
 
   const mapStateToProps = (state) => {
     const {
@@ -168,6 +173,7 @@ define("components/containers/chatViewFooter", [
       },
       onUnselectIntent: () => {
         dispatch(actionCreators.intentUnselected());
+        analyticsHelpers.track(EVENT.INTENT_UNSELECTED);
       }
     };
   };
