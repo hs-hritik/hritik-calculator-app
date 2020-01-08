@@ -6,6 +6,7 @@ module.exports = {
     {
       test: esmFiles,
       presets: [["@babel/preset-env", {modules: "amd"}]],
+      plugins: [["babel-plugin-module-resolver", {root: "./resources/static/scripts"}]],
       env: {
         test: {
           presets: [

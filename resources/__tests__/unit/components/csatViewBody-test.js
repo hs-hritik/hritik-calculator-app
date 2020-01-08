@@ -1,6 +1,6 @@
 import {shallow} from "enzyme";
 import toJson from "enzyme-to-json";
-import CsatViewBody from "../../../static/scripts/components/csatViewBody";
+import CsatViewBody from "components/csatViewBody";
 
 /**
  * Setup enzyme wrapper for the CsatViewBody component

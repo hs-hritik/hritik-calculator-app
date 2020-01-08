@@ -9,10 +9,10 @@ import axios from "axios";
 import promiseFinally from "promise.prototype.finally";
 import MockAdapter from "axios-mock-adapter";
 import configureMockStore from "redux-mock-store";
-import csatViewActions from "../../../static/scripts/actions/csatView";
-import ACTION_TYPES from "../../../static/scripts/constants/actionTypes";
-import ACTIVE_VIEW from "../../../static/scripts/constants/activeView";
-import routes from "../../../static/scripts/constants/routes";
+import csatViewActions from "actions/csatView";
+import ACTION_TYPES from "constants/actionTypes";
+import ACTIVE_VIEW from "constants/activeView";
+import routes from "constants/routes";
 
 // Promise.finally is not integrated with the default axios package. It is recommended
 // this shim to be used when it's needed.
