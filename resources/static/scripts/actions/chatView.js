@@ -2039,7 +2039,8 @@ define("actions/chatView", [
           developerSetLanguage,
           userName,
           userId,
-          sdkConfigOptions: {initialUserMessage}
+          sdkConfigOptions: {initialUserMessage},
+          internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}}
         },
         ui: {
           text: {greetingMsg, networkError, retryBtn}
@@ -2061,6 +2062,14 @@ define("actions/chatView", [
         meta.custom_meta = update(meta.custom_meta, {
           $merge: metadata
         });
+      }
+
+      // We need to send deflection contact flow id to backend so that
+      // we know webchat issue is created for SMS deflection use case.
+      if (deflectionContactFlowId) {
+        meta.voice_meta = {
+          deflection_contact_id: deflectionContactFlowId
+        };
       }
 
       /**
