@@ -116,8 +116,7 @@ define ("components/chatViewFooter",
         onCloseConversation: PropTypes.func.isRequired,
         botStepInProgress: PropTypes.bool.isRequired,
         onSelectStarRating: PropTypes.func,
-        onUpdateStarRating: PropTypes.func,
-        allowedFileTypes: PropTypes.string.isRequired
+        onUpdateStarRating: PropTypes.func
       },
       getInitialState () {
         return {
@@ -574,7 +573,7 @@ define ("components/chatViewFooter",
        * Render attachment button
        */
       _renderAttachmentButton () {
-        const {text, allowedFileTypes} = this.props;
+        const {text} = this.props;
         const _setAxActiveIndex = this._setAxActiveIndex.bind (
           this, {
             selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
@@ -594,8 +593,7 @@ define ("components/chatViewFooter",
               noPadding
               labelClasses="hs-chat-footer__attachment-icon"
               iconClasses="ion-attachment"
-              onSaveInputRef={this._saveInputRef}
-              accept={allowedFileTypes} />
+              onSaveInputRef={this._saveInputRef}/>
           </div>
         );
       },

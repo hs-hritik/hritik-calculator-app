@@ -9,6 +9,11 @@ define ("components/commons/fileInput",
   function (classes) {
     "use strict";
 
+    const DEFAULT_ACCEPT = ".zip, .rar, .tar, .gzip, .mp3, .mpeg, .wav, .ogg, .amr, .jpeg, " +
+                           ".jpg, .png, .gif, .bmp, .txt, .rtf, .webm, .mpeg4, .3gpp, .mov, " +
+                           ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
+                           ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csvm, .mp4";
+
     const PropTypes = React.PropTypes;
 
     return React.createClass ({
@@ -20,7 +25,7 @@ define ("components/commons/fileInput",
          * Refer to following link for more details:
          * https://developer.mozilla.org/en/docs/Web/HTML/Element/Input#attr-accept
          */
-        accept: PropTypes.string.isRequired,
+        accept: PropTypes.string,
 
         /**
          * Change handler for files select
@@ -56,6 +61,12 @@ define ("components/commons/fileInput",
          * Callback to pass the ref of the file input element
          */
         onSaveInputRef: PropTypes.func
+      },
+
+      getDefaultProps () {
+        return {
+          accept: DEFAULT_ACCEPT
+        };
       },
 
       getInitialState () {
