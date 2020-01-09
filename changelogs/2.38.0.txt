@@ -1,0 +1,14 @@
+Branches:
+feature/prettier
+
+Changelog:
+Run prettier formatting on SCSS files
+Add stylelintignore
+Integrate prettier with stylelint
+Run prettier on gulp task files & config files
+Run prettier formatting on all JS and JSX files
+Add prettierrc and prettierignore
+Extend eslint helpshift config
+Remove eslint-plugin-hs
+Remove duplicate stylelint rule
+Remove SCSS formatting rules

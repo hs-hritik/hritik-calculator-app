@@ -1,0 +1,2 @@
+Changelog:
+Fix messenger size when loaded inside a container

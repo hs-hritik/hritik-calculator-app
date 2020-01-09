@@ -1,0 +1,5 @@
+resources/static/libs/
+resources/static/build/
+vendor/
+npm-shrinkwrap.json
+resources/styles/hestia/

@@ -6,18 +6,18 @@
  * @created May 31, 2017
  */
 
-(function (win, doc) {
+(function(win, doc) {
   "use strict";
 
   // On dev env, this gets replaced by a localhost URL.
   // See babel tasks in resources/gulp/javascript.js
   const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
 
-  const urlParts = WEB_CHAT_ROOT.split ("://"),
-        PROTOCOL = `${urlParts [0]}://`,
-        PLAT_ID = win.helpshiftConfig.platformId,
-        HOST = urlParts [1],
-        PATH = "/html/index.html?v=2.35.0";
+  const urlParts = WEB_CHAT_ROOT.split("://"),
+    PROTOCOL = `${urlParts[0]}://`,
+    PLAT_ID = win.helpshiftConfig.platformId,
+    HOST = urlParts[1],
+    PATH = "/html/index.html?v=2.39.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -25,14 +25,14 @@
   // chars -> get the first 8 chars of the domain. "testdoma" in this case.
   // Part 2 - Then slice the plat id from the end by 16 chars -> get a unique
   // part of the platform id. "-0319dffe2b25f9c" in this case.
-  const TRUNCATED_PLAT_ID = PLAT_ID.split ("_platform_") [0].slice (0, 8) + PLAT_ID.slice (-16);
+  const TRUNCATED_PLAT_ID = PLAT_ID.split("_platform_")[0].slice(0, 8) + PLAT_ID.slice(-16);
 
   // @TODO: Rename WEB_SDK -> WEB_CHAT
   const WEB_SDK_DOMAIN = `${PROTOCOL}${TRUNCATED_PLAT_ID}.${HOST}`;
 
   // A query string with parent page's origin, which is later used with the
   // postMessage call by web chat to the parent page.
-  const PARENT_ORIGIN_QUERY_STRING = `parent=${encodeURIComponent (win.location.origin)}`;
+  const PARENT_ORIGIN_QUERY_STRING = `parent=${encodeURIComponent(win.location.origin)}`;
 
   // @TODO: Use `&` or `?` appropriately. PATH already contains hard-coded `?` so
   // it's safe to use `&` here but this must be made generic when `?` is removed.
@@ -44,6 +44,9 @@
     BOTTOM_LEFT: "bottom-left",
     BOTTOM_RIGHT: "bottom-right"
   };
+
+  // This is the default gap of iframes from the edge
+  const DEFAULT_FRAME_OFFSET = "28px";
 
   // Local state managed by this script.
   const state = {
@@ -193,7 +196,7 @@
     "border": "none",
     "border-radius": "8px",
     "z-index": "9999999",
-    "overflow":"hidden",
+    "overflow": "hidden",
     "transform": "translate3d(0,0,0)",
     "box-shadow": "0 4px 32px rgba(0, 0, 0, .2)"
   };
@@ -204,13 +207,18 @@
     "left": "0px",
     "bottom": "0px",
     "right": "0px",
+    "min-height": "0",
+    "max-height": "none",
+    "min-width": "0",
+    "max-width": "none",
     "width": "100%",
     "height": "100%",
     "border": "none",
     "margin": 0,
     "padding": 0,
     "overflow": "hidden",
-    "z-index": "9999999"
+    "z-index": "9999999",
+    "border-radius": "0"
   };
 
   const MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES = {
@@ -219,6 +227,10 @@
     "left": "0px",
     "bottom": "0px",
     "right": "0px",
+    "min-height": "0",
+    "max-height": "none",
+    "min-width": "0",
+    "max-width": "none",
     "width": "100%",
     "height": "100%",
     "border": "none",
@@ -285,8 +297,13 @@
   };
 
   // Reference for web sdk iframe.
-  let webSdkIframe, launcherBtn, unreadCountEl, launcherIconEl, launcherIframe,
-      launcherButton, bodyTimer;
+  let webSdkIframe,
+    launcherBtn,
+    unreadCountEl,
+    launcherIconEl,
+    launcherIframe,
+    launcherButton,
+    bodyTimer;
 
   // Api queue to save the apis and call them after sdk config is loaded
   let sdkLoaded = false;
@@ -295,8 +312,8 @@
     title: doc.title,
     url: win.location.href,
     origin: win.location.origin,
-    width: Math.max (doc.documentElement.clientWidth, win.innerWidth || 0),
-    height: Math.max (doc.documentElement.clientHeight, win.innerHeight || 0)
+    width: Math.max(doc.documentElement.clientWidth, win.innerWidth || 0),
+    height: Math.max(doc.documentElement.clientHeight, win.innerHeight || 0)
   };
 
   /**
@@ -324,7 +341,7 @@
   // then we need to think of functionality changes. Example: If we want
   // to notify developer for every new message by agent.
   const eventRegister = {
-    [SUPPORTED_EVENTS.USER_CHANGED]: _getDefaultRegisteredEventValue ()
+    [SUPPORTED_EVENTS.USER_CHANGED]: _getDefaultRegisteredEventValue()
   };
 
   /**
@@ -332,7 +349,7 @@
    * @param {String} eventName
    */
   const resetRegisteredEvent = (eventName) => {
-    eventRegister [eventName] = _getDefaultRegisteredEventValue ();
+    eventRegister[eventName] = _getDefaultRegisteredEventValue();
   };
 
   /**
@@ -345,8 +362,8 @@
       return;
     }
     for (const key in styles) {
-      if (styles.hasOwnProperty (key)) {
-        el.style [key] = styles [key];
+      if (styles.hasOwnProperty(key)) {
+        el.style[key] = styles[key];
       }
     }
   };
@@ -359,10 +376,13 @@
    * @param {Object} [data] - data for the message.
    */
   const _postMessage = (type, data) => {
-    webSdkIframe.contentWindow.postMessage (JSON.stringify ({
-      type,
-      data
-    }), WEB_SDK_URL);
+    webSdkIframe.contentWindow.postMessage(
+      JSON.stringify({
+        type,
+        data
+      }),
+      WEB_SDK_URL
+    );
   };
 
   /**
@@ -370,7 +390,7 @@
    * @param {HTMLElement} node - the node to be removed
    */
   const _removeNode = (node) => {
-    node.parentNode.removeChild (node);
+    node.parentNode.removeChild(node);
   };
 
   /**
@@ -378,7 +398,7 @@
    * @param {String} icon - the icon that needs to be set
    */
   const updateLauncherBtnIcon = (icon) => {
-    if (!launcherIframe) {
+    if (!launcherIframe || !launcherIconEl || !launcherBtn) {
       return;
     }
 
@@ -386,16 +406,16 @@
       launcherIconEl.innerHTML = CLOSE_ICON;
       // Due the the size and geometry of the close icon, update the
       // padding of the container element.
-      setStyle (launcherBtn, {
+      setStyle(launcherBtn, {
         padding: "16px"
       });
-      launcherBtn.setAttribute ("aria-label", state.translations.ariaCloseWcLabel);
+      launcherBtn.setAttribute("aria-label", state.translations.ariaCloseWcLabel);
     } else {
       launcherIconEl.innerHTML = MESSENGER_ICON;
-      setStyle (launcherBtn, {
+      setStyle(launcherBtn, {
         padding: "12px 10px 8px"
       });
-      launcherBtn.setAttribute ("aria-label", state.translations.ariaOpenWcLabel);
+      launcherBtn.setAttribute("aria-label", state.translations.ariaOpenWcLabel);
     }
   };
 
@@ -404,12 +424,12 @@
    * @returns {Element} - launcher iframe.
    */
   const createLauncherIframe = () => {
-    const iframe = doc.createElement ("iframe");
-    setStyle (iframe, LAUNCHER_IFRAME_STYLES);
+    const iframe = doc.createElement("iframe");
+    setStyle(iframe, LAUNCHER_IFRAME_STYLES);
 
     // Update z-index of launcher if it was passed with helpshfitConfig
     if (typeof state.widgetOptions.zIndex === "number") {
-      setStyle (iframe, {
+      setStyle(iframe, {
         zIndex: state.widgetOptions.zIndex
       });
     }
@@ -422,51 +442,51 @@
    * @returns {Element} - launcher button div.
    */
   const createLauncherButton = () => {
-    launcherButton = doc.createElement ("button");
-    launcherButton.setAttribute ("aria-label", state.translations.ariaOpenWcLabel);
-    launcherIconEl = doc.createElement ("span");
+    launcherButton = doc.createElement("button");
+    launcherButton.setAttribute("aria-label", state.translations.ariaOpenWcLabel);
+    launcherIconEl = doc.createElement("span");
     launcherIconEl.innerHTML = MESSENGER_ICON;
 
-    unreadCountEl = doc.createElement ("span");
-    setStyle (unreadCountEl, UNREAD_COUNT_STYLES);
-    renderUnreadCount ();
+    unreadCountEl = doc.createElement("span");
+    setStyle(unreadCountEl, UNREAD_COUNT_STYLES);
+    renderUnreadCount();
 
-    launcherButton.appendChild (unreadCountEl);
-    launcherButton.appendChild (launcherIconEl);
+    launcherButton.appendChild(unreadCountEl);
+    launcherButton.appendChild(launcherIconEl);
 
-    launcherButton.addEventListener ("mouseenter", () => {
-      setStyle (launcherButton, {
+    launcherButton.addEventListener("mouseenter", () => {
+      setStyle(launcherButton, {
         background: state.cssConfig.launcherBgColorLight
       });
     });
 
-    launcherButton.addEventListener ("mouseleave", () => {
-      setStyle (launcherButton, {
+    launcherButton.addEventListener("mouseleave", () => {
+      setStyle(launcherButton, {
         background: state.cssConfig.launcherBgColor
       });
     });
 
-    launcherButton.addEventListener ("focus", () => {
+    launcherButton.addEventListener("focus", () => {
       if (state.mouseInteraction) {
         state.mouseInteraction = false;
         return;
       }
-      setStyle (launcherButton, {
+      setStyle(launcherButton, {
         outlineWidth: "4px"
       });
     });
 
-    launcherButton.addEventListener ("blur", () => {
-      setStyle (launcherButton, {
+    launcherButton.addEventListener("blur", () => {
+      setStyle(launcherButton, {
         outlineWidth: "0"
       });
     });
 
-    launcherButton.addEventListener ("mousedown", () => {
+    launcherButton.addEventListener("mousedown", () => {
       state.mouseInteraction = true;
     });
 
-    setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
+    setStyle(launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
     return launcherButton;
   };
 
@@ -479,12 +499,12 @@
     }
     if (state.unreadCount !== 0 && webSdkIframe.style.display === "none") {
       unreadCountEl.innerHTML = state.unreadCount;
-      setStyle (unreadCountEl, {
+      setStyle(unreadCountEl, {
         display: "inline"
       });
     } else {
       unreadCountEl.innerHTML = "";
-      setStyle (unreadCountEl, {
+      setStyle(unreadCountEl, {
         display: "none"
       });
     }
@@ -495,10 +515,10 @@
    * @returns {Element} - web sdk iframe.
    */
   const createWebSdkIframe = () => {
-    const iframe = doc.createElement ("iframe");
+    const iframe = doc.createElement("iframe");
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
-    setStyle (iframe, {
+    setStyle(iframe, {
       display: "none"
     });
     return iframe;
@@ -509,7 +529,7 @@
    */
   const destroyWebSdkIframe = () => {
     if (webSdkIframe) {
-      _removeNode (webSdkIframe);
+      _removeNode(webSdkIframe);
       webSdkIframe = null;
     }
   };
@@ -519,7 +539,7 @@
    */
   const destroyLauncherIframe = () => {
     if (launcherIframe) {
-      _removeNode (launcherIframe);
+      _removeNode(launcherIframe);
       launcherIframe = null;
     }
   };
@@ -540,14 +560,14 @@
     if (widgetIsMinimized) {
       webSdkIframe.style.display = "block";
       state.webChatVisibility.widget = "block";
-      updateLauncherBtnIcon (LAUNCHER_ICON.CLOSE);
+      updateLauncherBtnIcon(LAUNCHER_ICON.CLOSE);
     } else {
       webSdkIframe.style.display = "none";
       state.webChatVisibility.widget = "none";
-      updateLauncherBtnIcon (LAUNCHER_ICON.MESSENGER);
+      updateLauncherBtnIcon(LAUNCHER_ICON.MESSENGER);
     }
 
-    callApiEventHandler ("widgetToggle", {
+    callApiEventHandler("widgetToggle", {
       visible: state.webChatVisibility.widget === "block"
     });
 
@@ -556,15 +576,14 @@
     if (state.widgetOptions.showLauncher && !state.widgetOptions.showCloseButton) {
       // When the widget is opened, hide the launcher
       // If the widget is hidden, show the launcher again
-      launcherBtn.style.display = state.webChatVisibility.widget === "block" ?
-                                  "none" : "block";
+      launcherBtn.style.display = state.webChatVisibility.widget === "block" ? "none" : "block";
     }
 
-    _postMessage (EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
+    _postMessage(EVENT_TYPES.CMD_MESSENGER_TOGGLED, {
       widgetHasMinimized: !widgetIsMinimized,
       trigger: config.trigger
     });
-    renderUnreadCount ();
+    renderUnreadCount();
   };
 
   /**
@@ -572,19 +591,40 @@
    */
   const markSdkReady = () => {
     sdkLoaded = true;
-    clearApiQueue ();
+    clearApiQueue();
   };
 
   /**
    * Update widget position
    */
   const updateWidgetPosition = () => {
+    const webSdkIframeOffset = !state.widgetOptions.showLauncher ? DEFAULT_FRAME_OFFSET : "100px";
+
     switch (state.widgetOptions.position) {
+      case WIDGET_POSITIONS.BOTTOM_RIGHT:
+        LAUNCHER_IFRAME_STYLES.top = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.left = "auto";
+        LAUNCHER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
+
+        MESSENGER_IFRAME_STYLES.top = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = webSdkIframeOffset;
+        MESSENGER_IFRAME_STYLES.left = "auto";
+        MESSENGER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
+
+        UNREAD_COUNT_STYLES.right = "4px";
+        UNREAD_COUNT_STYLES.left = "auto";
+        break;
+
       case WIDGET_POSITIONS.BOTTOM_LEFT:
-        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.top = "auto";
+        LAUNCHER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.right = "auto";
 
-        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.top = "auto";
+        MESSENGER_IFRAME_STYLES.bottom = webSdkIframeOffset;
+        MESSENGER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
         MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
@@ -592,32 +632,38 @@
         break;
 
       case WIDGET_POSITIONS.TOP_LEFT:
-        LAUNCHER_IFRAME_STYLES.top = "28px";
-        LAUNCHER_IFRAME_STYLES.right = "auto";
+        LAUNCHER_IFRAME_STYLES.top = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
-        LAUNCHER_IFRAME_STYLES.left = "28px";
+        LAUNCHER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
+        LAUNCHER_IFRAME_STYLES.right = "auto";
 
-        MESSENGER_IFRAME_STYLES.top = "100px";
-        MESSENGER_IFRAME_STYLES.right = "auto";
+        MESSENGER_IFRAME_STYLES.top = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.bottom = "auto";
-        MESSENGER_IFRAME_STYLES.left = "28px";
+        MESSENGER_IFRAME_STYLES.left = DEFAULT_FRAME_OFFSET;
+        MESSENGER_IFRAME_STYLES.right = "auto";
 
         UNREAD_COUNT_STYLES.left = "4px";
         UNREAD_COUNT_STYLES.right = "auto";
         break;
 
       case WIDGET_POSITIONS.TOP_RIGHT:
-        LAUNCHER_IFRAME_STYLES.top = "28px";
-        LAUNCHER_IFRAME_STYLES.right = "28px";
+        LAUNCHER_IFRAME_STYLES.top = DEFAULT_FRAME_OFFSET;
         LAUNCHER_IFRAME_STYLES.bottom = "auto";
         LAUNCHER_IFRAME_STYLES.left = "auto";
+        LAUNCHER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
 
-        MESSENGER_IFRAME_STYLES.top = "100px";
-        MESSENGER_IFRAME_STYLES.right = "28px";
+        MESSENGER_IFRAME_STYLES.top = webSdkIframeOffset;
         MESSENGER_IFRAME_STYLES.bottom = "auto";
         MESSENGER_IFRAME_STYLES.left = "auto";
+        MESSENGER_IFRAME_STYLES.right = DEFAULT_FRAME_OFFSET;
+
+        UNREAD_COUNT_STYLES.right = "4px";
+        UNREAD_COUNT_STYLES.left = "auto";
         break;
     }
+
+    setStyle(launcherIframe, LAUNCHER_IFRAME_STYLES);
+    setStyle(webSdkIframe, MESSENGER_IFRAME_STYLES);
   };
 
   /**
@@ -641,15 +687,23 @@
     const colorRegEx = /fill=".+"\s/;
     const replaceValue = `fill="${launcherTextColor}" `;
 
-    CLOSE_ICON = CLOSE_ICON.replace (colorRegEx, replaceValue);
-    MESSENGER_ICON = MESSENGER_ICON.replace (colorRegEx, replaceValue);
+    CLOSE_ICON = CLOSE_ICON.replace(colorRegEx, replaceValue);
+    MESSENGER_ICON = MESSENGER_ICON.replace(colorRegEx, replaceValue);
 
     if (forceUpdateStyles) {
-      setStyle (launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
-      setStyle (unreadCountEl, UNREAD_COUNT_STYLES);
-      const icon = webSdkIframe.style.display === "none" ?
-                   LAUNCHER_ICON.MESSENGER : LAUNCHER_ICON.CLOSE;
-      updateLauncherBtnIcon (icon);
+      setStyle(launcherButton, LAUNCHER_BUTTON_WRAPPER_STYLES);
+      setStyle(unreadCountEl, UNREAD_COUNT_STYLES);
+      const icon =
+        webSdkIframe.style.display === "none" ? LAUNCHER_ICON.MESSENGER : LAUNCHER_ICON.CLOSE;
+      updateLauncherBtnIcon(icon);
+    }
+
+    // We need to destory the launcher iframe if showLauncher widget option is
+    // set to false. We need this in scenario where, initially the launcher is
+    // visible, widget loads and at later point developer sets showLauncher
+    // to false and calls updateHelpshiftConfig.
+    if (launcherIframe && !state.widgetOptions.showLauncher) {
+      destroyLauncherIframe();
     }
   };
 
@@ -665,6 +719,8 @@
     // Full screen option is calculated by widget iframe depending on screens
     // resolution
     state.widgetOptions.fullScreen = config.fullScreen;
+    // Save transaltions in state
+    state.translations = config.translations;
   };
 
   /**
@@ -675,7 +731,43 @@
    */
   const getWidgetSelector = () => {
     const widgetSelector = win.helpshiftConfig.widgetSelector;
-    return widgetSelector && doc.querySelector (widgetSelector) || null;
+    return (widgetSelector && doc.querySelector(widgetSelector)) || null;
+  };
+
+  /**
+   * Function to update messenger iframe styles
+   * @param {Object} config
+   */
+  const updateMessengerStyles = (config) => {
+    // Set styles for websdk iframe
+    const webchatContainer = getWidgetSelector();
+    if (webchatContainer) {
+      setStyle(webSdkIframe, MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES);
+    } else if (config.fullScreen) {
+      setStyle(webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
+    } else {
+      setStyle(webSdkIframe, MESSENGER_IFRAME_STYLES);
+    }
+  };
+
+  /**
+   * Function to update z index of both the iframes
+   */
+  const updateIframeZIndexes = () => {
+    // Update z-index of the web chat iframe if it was passed with helpshfitConfig
+    // The client (via helpshiftConfig) can set the z-index value of the launcher
+    // iframe. We derive the z-index value for the chat widget iframe by incrementing
+    // it by a number. Incrementing by 10, the choice of number doesn't make much
+    // of a difference.
+    if (typeof state.widgetOptions.zIndex === "number") {
+      setStyle(webSdkIframe, {
+        zIndex: state.widgetOptions.zIndex + 10
+      });
+
+      setStyle(launcherIframe, {
+        zIndex: state.widgetOptions.zIndex
+      });
+    }
   };
 
   /**
@@ -683,30 +775,10 @@
    * @param {Object} config
    */
   const updateIframeStyles = (config) => {
-    // Set styles for launcher iframe
-    updateLauncherStyles ();
-    updateWidgetPosition ();
-
-    // Set styles for websdk iframe
-    const webchatContainer = getWidgetSelector ();
-    if (webchatContainer) {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_WIDGET_SELECTOR_STYLES);
-    } else if (config.fullScreen) {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_FULL_SCREEN_STYLES);
-    } else {
-      setStyle (webSdkIframe, MESSENGER_IFRAME_STYLES);
-    }
-
-    // Update z-index of the web chat iframe if it was passed with helpshfitConfig
-    // The client (via helpshiftConfig) can set the z-index value of the launcher
-    // iframe. We derive the z-index value for the chat widget iframe by incrementing
-    // it by a number. Incrementing by 10, the choice of number doesn't make much
-    // of a difference.
-    if (typeof state.widgetOptions.zIndex === "number") {
-      setStyle (webSdkIframe, {
-        zIndex: state.widgetOptions.zIndex + 10
-      });
-    }
+    updateLauncherStyles();
+    updateWidgetPosition();
+    updateMessengerStyles(config);
+    updateIframeZIndexes();
   };
 
   /**
@@ -717,20 +789,20 @@
   const processWmConfig = (config) => {
     // If web chat is not enabled, destroy the iframes.
     if (!config.widgetEnabled) {
-      destroyWebSdkIframe ();
-      destroyLauncherIframe ();
+      destroyWebSdkIframe();
+      destroyLauncherIframe();
       return;
     }
 
-    saveConfigOptionsInState (config);
-    updateIframeStyles (config);
-    state.translations = config.translations;
+    processWidgetOptions();
+    saveConfigOptionsInState(config);
+    updateIframeStyles(config);
 
     const launcherHidden = !state.widgetOptions.showLauncher;
     // If the launcher iframe is hidden by the widget config options
     // then mark sdk as ready
     if (launcherHidden) {
-      markSdkReady ();
+      markSdkReady();
     }
 
     // If launcher is hidden or launcher iframe is already created then
@@ -741,7 +813,7 @@
 
     // If the widget is enabled, create the launcher iframe+button and append
     // it to the document.
-    launcherIframe = createLauncherIframe ();
+    launcherIframe = createLauncherIframe();
 
     // Append the buttons to iframe once it is loaded.
     // Note: Even though the iframe doesn't have any src, if we try to append
@@ -750,59 +822,59 @@
     // (Works fine on chrome without onload event)
     launcherIframe.onload = () => {
       // Append meta tag to iframe's head.
-      const metaTag = doc.createElement ("meta");
-      metaTag.setAttribute ("charset", "utf-8");
-      launcherIframe.contentDocument.head.appendChild (metaTag);
+      const metaTag = doc.createElement("meta");
+      metaTag.setAttribute("charset", "utf-8");
+      launcherIframe.contentDocument.head.appendChild(metaTag);
 
       // Append title tag to iframe's head.
-      const titleTag = doc.createElement ("title");
+      const titleTag = doc.createElement("title");
       titleTag.innerText = "Support Web Chat Launcher";
-      launcherIframe.contentDocument.head.appendChild (titleTag);
+      launcherIframe.contentDocument.head.appendChild(titleTag);
 
       // Append launcher button to iframe's body.
-      launcherBtn = createLauncherButton ();
-      launcherBtn.addEventListener ("click", () => {
-        toggleWebSdkIframe ();
+      launcherBtn = createLauncherButton();
+      launcherBtn.addEventListener("click", () => {
+        toggleWebSdkIframe();
       });
 
       // Event listener for the tab on launcher button to focus next element
-      launcherIframe.contentWindow.document.addEventListener ("keydown", (ev) => {
+      launcherIframe.contentWindow.document.addEventListener("keydown", (ev) => {
         const widgetIsMinimized = webSdkIframe.style.display === "none";
 
         if (ev.shiftKey && ev.keyCode === KEYCODES.TAB && !widgetIsMinimized) {
-          ev.preventDefault ();
-          launcherIframe.blur ();
-          webSdkIframe.focus ();
-          _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: false});
+          ev.preventDefault();
+          launcherIframe.blur();
+          webSdkIframe.focus();
+          _postMessage(EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: false});
         } else if (ev.keyCode === KEYCODES.TAB && !widgetIsMinimized) {
-          ev.preventDefault ();
-          launcherIframe.blur ();
-          webSdkIframe.focus ();
-          _postMessage (EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: true});
+          ev.preventDefault();
+          launcherIframe.blur();
+          webSdkIframe.focus();
+          _postMessage(EVENT_TYPES.CMD_FOCUS_WEBCHAT, {forward: true});
         }
       });
 
-      launcherIframe.contentDocument.body.appendChild (launcherBtn);
+      launcherIframe.contentDocument.body.appendChild(launcherBtn);
 
-      markSdkReady ();
+      markSdkReady();
 
       // If widgetShouldAutoOpen is true then dispatch message to open
       // the widget.
       if (config.widgetShouldAutoOpen) {
-        toggleWebSdkIframe ({
+        toggleWebSdkIframe({
           widgetShouldMinimize: false
         });
       }
     };
 
-    doc.body.appendChild (launcherIframe);
+    doc.body.appendChild(launcherIframe);
   };
 
   /**
    * Post message to set app configuration
    */
   const setConfig = (data) => {
-    _postMessage (EVENT_TYPES.CMD_SET_CONFIG, data);
+    _postMessage(EVENT_TYPES.CMD_SET_CONFIG, data);
   };
 
   /**
@@ -811,7 +883,7 @@
    * @returns {Boolean}
    */
   const isApiValid = (api) => {
-    return typeof helpshiftApis [api] === "function";
+    return typeof helpshiftApis[api] === "function";
   };
 
   /**
@@ -827,8 +899,8 @@
     const HS = win.Helpshift;
     const validApiQueue = [];
 
-    if (HS && Array.isArray (HS.q) && HS.q.length) {
-      HS.q.forEach ((queuedArgs) => {
+    if (HS && Array.isArray(HS.q) && HS.q.length) {
+      HS.q.forEach((queuedArgs) => {
         // Convert arguments to an array.
         // For V8 optimization reasons, using a for loop here, instead of slicing
         // the arguments to make a new array.
@@ -838,20 +910,20 @@
         const queuedArgsLen = queuedArgs.length;
         const args = [];
         for (let i = 0; i < queuedArgsLen; i++) {
-          args.push (queuedArgs [i]);
+          args.push(queuedArgs[i]);
         }
 
         // The array args contains the API name ("open", "addEventListener", etc)
         // as the first item. Rest of the items of the args array are the arguments
         // that the API should execute with.
-        const api = args [0];
-        const apiArgs = args.slice (1);
+        const api = args[0];
+        const apiArgs = args.slice(1);
 
-        if (isApiValid (api)) {
-          const apiFn = helpshiftApis [api];
+        if (isApiValid(api)) {
+          const apiFn = helpshiftApis[api];
           // Concatenating apiArgs with null in order to specify the context of
           // the bound function (null).
-          validApiQueue.push (apiFn.bind.apply (apiFn, [null].concat (apiArgs)));
+          validApiQueue.push(apiFn.bind(...[null].concat(apiArgs)));
         }
       });
     }
@@ -863,9 +935,9 @@
    * Execute every queued api and clear the api queue
    */
   const clearApiQueue = () => {
-    apiQueue.forEach ((fn) => {
+    apiQueue.forEach((fn) => {
       if (typeof fn === "function") {
-        fn ();
+        fn();
       }
     });
     apiQueue = [];
@@ -882,10 +954,11 @@
     // Add try-catch as reading localStorage property throws an error if
     // localStorage is disabled
     try {
-      supported = !!win.localStorage &&
-                  typeof localStorage.getItem === "function" &&
-                  typeof localStorage.setItem === "function" &&
-                  typeof localStorage.removeItem === "function";
+      supported =
+        !!win.localStorage &&
+        typeof localStorage.getItem === "function" &&
+        typeof localStorage.setItem === "function" &&
+        typeof localStorage.removeItem === "function";
     } catch (exception) {
       // @TODO :- Add analytics events for exceptions/failures
       supported = false;
@@ -900,8 +973,7 @@
    * option passed by developers.
    */
   const setDefaultLauncherVisibility = () => {
-    state.webChatVisibility.launcher = state.widgetOptions.showLauncher ?
-                                       "block" : "none";
+    state.webChatVisibility.launcher = state.widgetOptions.showLauncher ? "block" : "none";
   };
 
   /**
@@ -909,10 +981,7 @@
    */
   const updateWidgetStyles = () => {
     const {
-      widgetOptions: {
-        showLauncher,
-        showCloseButton
-      }
+      widgetOptions: {showLauncher, showCloseButton}
     } = state;
 
     // If show launcher is false or show close button is false then move the
@@ -921,7 +990,7 @@
       // @NOTE - We are modifying the style in style constant as opposed to using
       // setStyle method because the launcher is not present at this point in time.
       // Also changing the constant will not have side effect as it expected behavior.
-      MESSENGER_IFRAME_STYLES.bottom = "28px";
+      MESSENGER_IFRAME_STYLES.bottom = DEFAULT_FRAME_OFFSET;
     }
   };
 
@@ -959,14 +1028,14 @@
   const logUiConfigErrors = (errors) => {
     const prefix = ERROR_MSG.UI_CONFIG_ERROR_PREFIX;
 
-    errors.forEach ((error) => {
+    errors.forEach((error) => {
       const {set, value, info} = error;
       const setText = "Set = " + set;
       const valueText = value ? " | Value = " + value : "";
       const infoText = " | Info = " + info;
 
       /* eslint-disable no-console */
-      console.error (prefix + setText + valueText + infoText);
+      console.error(prefix + setText + valueText + infoText);
       /* eslint-enable no-console */
     });
   };
@@ -980,9 +1049,9 @@
   const callApiEventHandler = (eventName, eventData) => {
     let handlerIsFound = false;
 
-    state.apiEvents.forEach ((apiEvent) => {
+    state.apiEvents.forEach((apiEvent) => {
       if (apiEvent.eventName === eventName) {
-        apiEvent.eventHandler (eventData);
+        apiEvent.eventHandler(eventData);
         handlerIsFound = true;
       }
     });
@@ -990,8 +1059,8 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && !eventRegister [eventName]) {
-      eventRegister [eventName] = {
+    if (!handlerIsFound && !eventRegister[eventName]) {
+      eventRegister[eventName] = {
         eventHasOccured: true,
         data: eventData
       };
@@ -1006,199 +1075,202 @@
     // Check for existence of document body, if body is not present, wait and
     // try again in sometime
     if (!document || !document.body) {
-      bodyTimer = setTimeout (init, BODY_WAIT_TIMER);
+      bodyTimer = setTimeout(init, BODY_WAIT_TIMER);
       return;
     }
 
     if (bodyTimer) {
-      clearTimeout (bodyTimer);
+      clearTimeout(bodyTimer);
     }
 
     // If browser features required to run web chat isn't available on this
     // browser OR
     // if a web chat iframe already exists on the host web page,
     // no-op and return.
-    const webChatIframe = doc.getElementById ("hs-web-sdk-iframe");
-    if (!isWebSdkSupported () || webChatIframe) {
+    const webChatIframe = doc.getElementById("hs-web-sdk-iframe");
+    if (!isWebSdkSupported() || webChatIframe) {
       return;
     }
 
-    processWidgetOptions ();
-    updateWidgetStyles ();
+    processWidgetOptions();
+    updateWidgetStyles();
 
-    setDefaultLauncherVisibility ();
+    setDefaultLauncherVisibility();
 
-    webSdkIframe = createWebSdkIframe ();
+    webSdkIframe = createWebSdkIframe();
 
-    const webchatContainer = getWidgetSelector ();
+    const webchatContainer = getWidgetSelector();
 
     if (webchatContainer) {
-      webchatContainer.appendChild (webSdkIframe);
+      webchatContainer.appendChild(webSdkIframe);
     } else {
-      doc.body.appendChild (webSdkIframe);
+      doc.body.appendChild(webSdkIframe);
     }
 
     // Start listening to the iframe's messages.
-    win.addEventListener ("message", (event) => {
-      // Only handle events from our web chat iframes (old and new)
-      if (event.origin !== WEB_SDK_DOMAIN) {
-        return;
-      }
+    win.addEventListener(
+      "message",
+      (event) => {
+        // Only handle events from our web chat iframes (old and new)
+        if (event.origin !== WEB_SDK_DOMAIN) {
+          return;
+        }
 
-      let type, data;
+        let type, data;
 
-      try {
-        const eventData = JSON.parse (event.data);
-        type = eventData.type;
-        data = eventData.data;
-      } catch (exception) {
-        return;
-      }
+        try {
+          const eventData = JSON.parse(event.data);
+          type = eventData.type;
+          data = eventData.data;
+        } catch (exception) {
+          return;
+        }
 
-      switch (type) {
-        case EVENT_TYPES.SDK_JS_LOADED:
-          // Before the Web Chat APIs can be called by the client, following
-          // events should occur (in the given order).
-          //
-          // SDK_JS_LOADED: Represents the execution completion of the Web Chat
-          // entry point (webSdk.js).
-          // SDK_CONFIG_LOADED: Represents the loading of the web chat BE
-          // config, which along with other settings, determines whether
-          // the widget should load or not.
+        switch (type) {
+          case EVENT_TYPES.SDK_JS_LOADED:
+            // Before the Web Chat APIs can be called by the client, following
+            // events should occur (in the given order).
+            //
+            // SDK_JS_LOADED: Represents the execution completion of the Web Chat
+            // entry point (webSdk.js).
+            // SDK_CONFIG_LOADED: Represents the loading of the web chat BE
+            // config, which along with other settings, determines whether
+            // the widget should load or not.
 
-          // Pass client config and parent page info to set initial app data.
-          // Also, pass the localStorage data to migrate. Passing this with setConfig
-          // in order to avoid another asynchronous postMessage call to the web
-          // chat iframe.
-          setConfig ({
-            clientConfig: win.helpshiftConfig,
-            parentPageInfo
-          });
-          break;
+            // Pass client config and parent page info to set initial app data.
+            // Also, pass the localStorage data to migrate. Passing this with setConfig
+            // in order to avoid another asynchronous postMessage call to the web
+            // chat iframe.
+            setConfig({
+              clientConfig: win.helpshiftConfig,
+              parentPageInfo
+            });
+            break;
 
-        case EVENT_TYPES.SDK_USER_CHANGED_VIA_RE_ENGAGEMENT:
-          callApiEventHandler (SUPPORTED_EVENTS.USER_CHANGED, data.userInfo);
-          break;
+          case EVENT_TYPES.SDK_USER_CHANGED_VIA_RE_ENGAGEMENT:
+            callApiEventHandler(SUPPORTED_EVENTS.USER_CHANGED, data.userInfo);
+            break;
 
-        case EVENT_TYPES.SDK_CONFIG_LOADED:
-          // Process wm config to set appearance, etc.
-          processWmConfig (data.wmConfig);
-          break;
+          case EVENT_TYPES.SDK_CONFIG_LOADED:
+            // Process wm config to set appearance, etc.
+            processWmConfig(data.wmConfig);
+            break;
 
-        case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
-          toggleWebSdkIframe ({
-            widgetShouldMinimize: data.minimized
-          });
-          break;
+          case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
+            toggleWebSdkIframe({
+              widgetShouldMinimize: data.minimized
+            });
+            break;
 
-        case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
-          state.unreadCount = data.count;
+          case EVENT_TYPES.SDK_UPDATE_UNREAD_COUNT:
+            state.unreadCount = data.count;
 
-          if (state.unreadCount) {
-            let ariaLabel = state.translations.ariaOpenWcLabel + ", ";
+            if (launcherButton && state.unreadCount) {
+              let ariaLabel = state.translations.ariaOpenWcLabel + ", ";
 
-            ariaLabel += state.translations.ariaWcBadgeLabel.replace (
-              "{{num}}",
-              state.unreadCount
-            );
+              ariaLabel += state.translations.ariaWcBadgeLabel.replace(
+                "{{num}}",
+                state.unreadCount
+              );
+              launcherButton.setAttribute("aria-label", ariaLabel);
+            }
 
-            launcherButton.setAttribute ("aria-label", ariaLabel);
-          }
+            renderUnreadCount();
 
-          renderUnreadCount ();
+            callApiEventHandler(SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
+              unreadCount: data.count
+            });
+            break;
 
-          callApiEventHandler (SUPPORTED_EVENTS.NEW_UNREAD_MESSAGES, {
-            unreadCount: data.count
-          });
-          break;
+          case EVENT_TYPES.SDK_RESET:
+            // Reset unread count of the local state and re-render
+            state.unreadCount = 0;
+            renderUnreadCount();
 
-        case EVENT_TYPES.SDK_RESET:
-          // Reset unread count of the local state and re-render
-          state.unreadCount = 0;
-          renderUnreadCount ();
+            // Call `setConfig` which will ultimately create a preissue and/or
+            // start the poller.
+            setConfig({
+              clientConfig: win.helpshiftConfig,
+              parentPageInfo,
+              trigger: TRIGGER.RESET
+            });
+            break;
 
-          // Call `setConfig` which will ultimately create a preissue and/or
-          // start the poller.
-          setConfig ({
-            clientConfig: win.helpshiftConfig,
-            parentPageInfo,
-            trigger: TRIGGER.RESET
-          });
-          break;
+          case EVENT_TYPES.SDK_EVENT_CHAT_END:
+            // Call the event handler for chat end event.
+            callApiEventHandler(SUPPORTED_EVENTS.CHAT_END);
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CHAT_END:
-          // Call the event handler for chat end event.
-          callApiEventHandler (SUPPORTED_EVENTS.CHAT_END);
-          break;
+          case EVENT_TYPES.SDK_EVENT_CONVERSATION_START:
+            // Call the event handler for conversation start event.
+            callApiEventHandler(SUPPORTED_EVENTS.CONVERSATION_START, {
+              message: data.message
+            });
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CONVERSATION_START:
-          // Call the event handler for conversation start event.
-          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_START, {
-            message: data.message
-          });
-          break;
+          case EVENT_TYPES.SDK_EVENT_CONVERSATION_END:
+            // Call the event handler for conversation end event.
+            callApiEventHandler(SUPPORTED_EVENTS.CONVERSATION_END);
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CONVERSATION_END:
-          // Call the event handler for conversation end event.
-          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_END);
-          break;
+          case EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED:
+            // Call the event handler for conversation reopened event.
+            callApiEventHandler(SUPPORTED_EVENTS.CONVERSATION_REOPENED);
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CONVERSATION_REOPENED:
-          // Call the event handler for conversation reopened event.
-          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REOPENED);
-          break;
+          case EVENT_TYPES.SDK_EVENT_CONVERSATION_RESOLVED:
+            // Call the event handler for conversation resolved event.
+            callApiEventHandler(SUPPORTED_EVENTS.CONVERSATION_RESOLVED);
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CONVERSATION_RESOLVED:
-          // Call the event handler for conversation resolved event.
-          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_RESOLVED);
-          break;
+          case EVENT_TYPES.SDK_EVENT_CONVERSATION_REJECTED:
+            // Call the event handler for conversation rejected event.
+            callApiEventHandler(SUPPORTED_EVENTS.CONVERSATION_REJECTED);
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CONVERSATION_REJECTED:
-          // Call the event handler for conversation rejected event.
-          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_REJECTED);
-          break;
+          case EVENT_TYPES.SDK_EVENT_MESSAGE_ADD:
+            // Call the event handler for add message
+            callApiEventHandler(SUPPORTED_EVENTS.MESSAGE_ADD, {
+              type: data.type,
+              body: data.body
+            });
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_MESSAGE_ADD:
-          // Call the event handler for add message
-          callApiEventHandler (SUPPORTED_EVENTS.MESSAGE_ADD, {
-            type: data.type,
-            body: data.body
-          });
-          break;
+          case EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT:
+            // Call the event handler for csat submit event.
+            callApiEventHandler(SUPPORTED_EVENTS.CSAT_SUBMIT, {
+              rating: data.rating,
+              additionalFeedback: data.review
+            });
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CSAT_SUBMIT:
-          // Call the event handler for csat submit event.
-          callApiEventHandler (SUPPORTED_EVENTS.CSAT_SUBMIT, {
-            rating: data.rating,
-            additionalFeedback: data.review
-          });
-          break;
+          case EVENT_TYPES.SDK_FOCUS_LAUNCHER:
+            // Call the event handler to focus launcher button
+            webSdkIframe.blur();
+            launcherIframe.focus();
 
-        case EVENT_TYPES.SDK_FOCUS_LAUNCHER:
-          // Call the event handler to focus launcher button
-          webSdkIframe.blur ();
-          launcherIframe.focus ();
+            if (launcherButton) {
+              launcherButton.focus();
+            }
+            break;
 
-          if (launcherButton) {
-            launcherButton.focus ();
-          }
-          break;
+          case EVENT_TYPES.SDK_EVENT_CONVERSATION_STATUS:
+            // Call the event handler for conversation status event
+            callApiEventHandler(SUPPORTED_EVENTS.CONVERSATION_STATUS, data);
+            break;
 
-        case EVENT_TYPES.SDK_EVENT_CONVERSATION_STATUS:
-          // Call the event handler for conversation status event
-          callApiEventHandler (SUPPORTED_EVENTS.CONVERSATION_STATUS, data);
-          break;
+          case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
+            state.cssConfig = data.cssConfig;
+            updateLauncherStyles(FORCE_UPDATE_STYLES);
+            break;
 
-        case EVENT_TYPES.SDK_UI_CONFIG_UPDATED:
-          state.cssConfig = data.cssConfig;
-          updateLauncherStyles (FORCE_UPDATE_STYLES);
-          break;
-
-        case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
-          logUiConfigErrors (data.errors);
-          break;
-      }
-    }, false);
+          case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
+            logUiConfigErrors(data.errors);
+            break;
+        }
+      },
+      false
+    );
   };
 
   /**
@@ -1206,7 +1278,7 @@
    */
   const open = () => {
     if (!state.webChatVisibility.hiddenByApi) {
-      toggleWebSdkIframe ({
+      toggleWebSdkIframe({
         widgetShouldMinimize: false,
         trigger: TRIGGER.API
       });
@@ -1218,7 +1290,7 @@
    */
   const close = () => {
     if (!state.webChatVisibility.hiddenByApi) {
-      toggleWebSdkIframe ({
+      toggleWebSdkIframe({
         widgetShouldMinimize: true,
         trigger: TRIGGER.API
       });
@@ -1274,8 +1346,8 @@
    */
   const setInitialUserMessage = (message) => {
     // message should be non-empty string
-    if (typeof message === "string" && message.trim ()) {
-      _postMessage (EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
+    if (typeof message === "string" && message.trim()) {
+      _postMessage(EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE, {
         message,
         trigger: TRIGGER.API
       });
@@ -1289,7 +1361,7 @@
   const setGreetingMessage = (message) => {
     // message should be a non-empty string
     if (message && typeof message === "string") {
-      _postMessage (EVENT_TYPES.CMD_SET_GREETING_MESSAGE, {message});
+      _postMessage(EVENT_TYPES.CMD_SET_GREETING_MESSAGE, {message});
     }
   };
 
@@ -1299,7 +1371,7 @@
    */
   const setLanguage = (language) => {
     if (language && typeof language === "string") {
-      _postMessage (EVENT_TYPES.CMD_SET_LANGUAGE, {language});
+      _postMessage(EVENT_TYPES.CMD_SET_LANGUAGE, {language});
     }
   };
 
@@ -1310,7 +1382,7 @@
    */
   const isEventSupported = (eventName) => {
     for (const event in SUPPORTED_EVENTS) {
-      if (SUPPORTED_EVENTS [event] === eventName) {
+      if (SUPPORTED_EVENTS[event] === eventName) {
         return true;
       }
     }
@@ -1324,8 +1396,8 @@
    */
   const addEventListener = (eventName, eventHandler) => {
     // If event name is supported, add that event
-    if (isEventSupported (eventName) && eventHandler) {
-      state.apiEvents.push ({
+    if (isEventSupported(eventName) && eventHandler) {
+      state.apiEvents.push({
         eventName,
         eventHandler
       });
@@ -1333,10 +1405,10 @@
       // If event has already occured for the current event
       // then call the handler with the registered data.
       // Reset the event in register once the handler is called.
-      const registeredEvent = eventRegister [eventName];
+      const registeredEvent = eventRegister[eventName];
       if (registeredEvent && registeredEvent.eventHasOccured) {
-        callApiEventHandler (eventName, registeredEvent.data);
-        resetRegisteredEvent (eventName);
+        callApiEventHandler(eventName, registeredEvent.data);
+        resetRegisteredEvent(eventName);
       }
     }
   };
@@ -1348,10 +1420,9 @@
    */
   const removeEventListener = (eventName, eventHandler) => {
     // If event name is supported, remove that event
-    if (isEventSupported (eventName) && eventHandler) {
-      state.apiEvents = state.apiEvents.filter ((apiEvent) => {
-        return !(apiEvent.eventName === eventName &&
-                 apiEvent.eventHandler === eventHandler);
+    if (isEventSupported(eventName) && eventHandler) {
+      state.apiEvents = state.apiEvents.filter((apiEvent) => {
+        return !(apiEvent.eventName === eventName && apiEvent.eventHandler === eventHandler);
       });
     }
   };
@@ -1362,7 +1433,7 @@
    * @returns {Boolean} - whether item is object
    */
   const isObject = (item) => {
-    return (typeof item === "object" && !Array.isArray (item) && item !== null);
+    return typeof item === "object" && !Array.isArray(item) && item !== null;
   };
 
   /**
@@ -1373,19 +1444,21 @@
   const getProcessedCifData = (cifData) => {
     const processedCif = {};
 
-    if (!isObject (cifData)) {
+    if (!isObject(cifData)) {
       return processedCif;
     }
 
     for (const cifItem in cifData) {
-      if (cifData.hasOwnProperty (cifItem)) {
-        const cif = cifData [cifItem];
+      if (cifData.hasOwnProperty(cifItem)) {
+        const cif = cifData[cifItem];
 
-        if (isObject (cif) &&
-            typeof cif.type === "string" &&
-            !!cif.type &&
-            typeof cif.value !== "undefined") {
-          processedCif [cifItem] = {
+        if (
+          isObject(cif) &&
+          typeof cif.type === "string" &&
+          !!cif.type &&
+          typeof cif.value !== "undefined"
+        ) {
+          processedCif[cifItem] = {
             type: cif.type,
             value: cif.value
           };
@@ -1401,8 +1474,8 @@
    * @param {Object} cifData - cif data
    */
   const setCustomIssueFields = (cifData) => {
-    _postMessage (EVENT_TYPES.CMD_SET_CIF, {
-      cifData: getProcessedCifData (cifData)
+    _postMessage(EVENT_TYPES.CMD_SET_CIF, {
+      cifData: getProcessedCifData(cifData)
     });
   };
 
@@ -1411,8 +1484,8 @@
    * @param {Object} metaData - meta data object
    */
   const setCustomMetadata = (metadata) => {
-    if (metadata && isObject (metadata)) {
-      _postMessage (EVENT_TYPES.CMD_SET_METADATA, {
+    if (metadata && isObject(metadata)) {
+      _postMessage(EVENT_TYPES.CMD_SET_METADATA, {
         metadata
       });
     }
@@ -1423,8 +1496,8 @@
    * @param {Object} cifData - cif data
    */
   const replaceCustomIssueFields = (cifData) => {
-    _postMessage (EVENT_TYPES.CMD_REPLACE_CIF, {
-      cifData: getProcessedCifData (cifData)
+    _postMessage(EVENT_TYPES.CMD_REPLACE_CIF, {
+      cifData: getProcessedCifData(cifData)
     });
   };
 
@@ -1435,7 +1508,7 @@
    *                 actions for proactive chat
    */
   const setProactiveChatRules = (proactiveChatRules) => {
-    _postMessage (EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES, {
+    _postMessage(EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES, {
       proactiveChatRules
     });
   };
@@ -1445,7 +1518,7 @@
    * @param {Object} uiConfig - ui config
    */
   const updateUiConfig = (uiConfig) => {
-    _postMessage (EVENT_TYPES.CMD_UPDATE_UI_CONFIG, {
+    _postMessage(EVENT_TYPES.CMD_UPDATE_UI_CONFIG, {
       uiConfig
     });
   };
@@ -1454,7 +1527,7 @@
    * JS API to enable/disable full privacy mode.
    */
   const setFullPrivacy = (enabled = false) => {
-    _postMessage (EVENT_TYPES.CMD_SET_FULL_PRIVACY, {
+    _postMessage(EVENT_TYPES.CMD_SET_FULL_PRIVACY, {
       enabled
     });
   };
@@ -1465,7 +1538,7 @@
    *  later point after the parent page is loaded.
    */
   const updateHelpshiftConfig = () => {
-    _postMessage (EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG);
+    _postMessage(EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG);
   };
 
   // A map with all the supported APIs. The global Helpshift () call looks
@@ -1492,7 +1565,7 @@
 
   // Append the APIs to the local apiQueue variable in order to execute them
   // after the SDK is loaded.
-  let apiQueue = getQueuedApis ();
+  let apiQueue = getQueuedApis();
 
   /**
    * The global Helpshift function to handle the APIs. It relies on the
@@ -1506,13 +1579,13 @@
    * The number of arguments passed to this function may vary depending on which
    * API is called. The API should throw exception(s) based on its requirements.
    */
-  win.Helpshift = function (api, ...apiArguments) {
+  win.Helpshift = function(api, ...apiArguments) {
     if (typeof api !== "string") {
       // Throw an error back to the client if an API is not called
-      throw new Error (ERROR_MSG.NO_API_NAME);
-    } else if (typeof helpshiftApis [api] !== "function") {
+      throw new Error(ERROR_MSG.NO_API_NAME);
+    } else if (typeof helpshiftApis[api] !== "function") {
       // Throw an error if the API is not supported
-      throw new Error (ERROR_MSG.API_NOT_SUPPORTED);
+      throw new Error(ERROR_MSG.API_NOT_SUPPORTED);
     }
 
     // If a] sdk is loaded OR b] the API is init or update, then directly call
@@ -1521,10 +1594,10 @@
     // Note :- Allowing init API because it's the first API that will be called
     if (sdkLoaded || api === INIT) {
       // Call the Helpshift api with the arguments
-      helpshiftApis [api].apply (null, apiArguments);
-    } else if (isApiValid (api)) {
+      helpshiftApis[api].apply(null, apiArguments);
+    } else if (isApiValid(api)) {
       // Queue the API, if it's valid
-      apiQueue.push (helpshiftApis [api].bind (null, ...apiArguments));
+      apiQueue.push(helpshiftApis[api].bind(null, ...apiArguments));
     }
   };
-}) (window, document);
+})(window, document);

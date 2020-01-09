@@ -6,7 +6,6 @@
 /// @group mixins
 ///
 
-
 /// Hardware Accelerate animations/transforms
 @mixin accelerate($name) {
   will-change: $name;
@@ -15,7 +14,16 @@
   perspective: 1000px;
 }
 
-@mixin bg-img($clr, $src, $repeat: no-repeat, $x: 0, $y: 0, $include-2x: false, $width: false, $height: false) {
+@mixin bg-img(
+  $clr,
+  $src,
+  $repeat: no-repeat,
+  $x: 0,
+  $y: 0,
+  $include-2x: false,
+  $width: false,
+  $height: false
+) {
   $root: "../images/";
 
   @if ($src == "sprite.png") {
@@ -27,9 +35,7 @@
   background: $clr url($path) $repeat $x $y;
 
   @if $include-2x != false {
-
     @if ($width != false and $height != false) {
-
       @include respond-to(retina) {
         $dot-index: str-index($src, ".");
         $src-2x: str-insert($src, "@2x", $dot-index);
@@ -63,7 +69,7 @@
 
 @mixin css-spinner($pe: after, $color: color(primary), $size: 24px) {
   &:#{$pe} {
-    @include animation(rotate360, .6s, 0, linear, none, visible, infinite);
+    @include animation(rotate360, 0.6s, 0, linear, none, visible, infinite);
 
     position: absolute;
     top: 50%;
@@ -71,7 +77,7 @@
     display: block;
     width: $size;
     height: $size;
-    margin: -#{ $size / 2 } 0 0 -#{ $size / 2 };
+    margin: -#{$size / 2} 0 0 -#{$size / 2};
     color: $color;
     border: 1px solid $color;
     border-width: 0 1px 2px 2px;
@@ -122,7 +128,7 @@
     }
 
     &-thumb {
-      background: rgba(color(bg, lightblack), .45);
+      background: rgba(color(bg, lightblack), 0.45);
       border: 2px solid transparent;
       border-radius: 20px;
     }
@@ -131,7 +137,7 @@
   &:hover {
     &::-webkit-scrollbar-thumb {
       cursor: pointer;
-      background: rgba(color(bg, lightblack), .75);
+      background: rgba(color(bg, lightblack), 0.75);
     }
   }
 }
@@ -141,11 +147,7 @@
 /// @param {Number} $triangle-size - Width of the triangle.
 /// @param {Color} $triangle-color - Color of the triangle.
 /// @param {Keyword} $triangle-direction - Direction the triangle points. Can be `up`, `right`, `down`, or `left`.
-@mixin css-triangle(
-  $triangle-size,
-  $triangle-color,
-  $triangle-direction
-) {
+@mixin css-triangle($triangle-size, $triangle-color, $triangle-direction) {
   $down-triangle-border-color: $triangle-color transparent transparent;
   $up-triangle-border-color: transparent transparent $triangle-color;
   $right-triangle-border-color: transparent transparent transparent $triangle-color;
@@ -220,8 +222,8 @@
 }
 
 /// Add striped progress bar in the background of the element
-@mixin striped-progress-bar($opacity: .25) {
-  @include animation(move, $duration: .75s, $function: linear, $count: infinite);
+@mixin striped-progress-bar($opacity: 0.25) {
+  @include animation(move, $duration: 0.75s, $function: linear, $count: infinite);
   background-image: linear-gradient(
     -45deg,
     rgba(255, 255, 255, $opacity) 25%,
@@ -235,31 +237,35 @@
   background-size: 50px 50px;
 }
 
-
 // Media Queries
 @mixin respond-to($media) {
   @if $media == mobile {
-    @media only screen and (max-width: 767px) { @content; }
+    @media only screen and (max-width: 767px) {
+      @content;
+    }
   } @else if $media == small {
-    @media only screen and (max-width: 1024px) { @content; }
+    @media only screen and (max-width: 1024px) {
+      @content;
+    }
   } @else if $media == tablets {
-    @media only screen and (min-width: 768px) and (max-width: 1024px) { @content; }
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+      @content;
+    }
   } @else if $media == touch {
-    @media only screen and (max-width: 1280px) { .touch & { @content; } }
+    @media only screen and (max-width: 1280px) {
+      .touch & {
+        @content;
+      }
+    }
   } @else if $media == retina {
-
-
     /* stylelint-disable unit-whitelist */
+    /* prettier-ignore */
     @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-
       // https://developer.mozilla.org/en/CSS/Media_queries
       only screen and (min--moz-device-pixel-ratio: 1.5),
-
       // http://dev.opera.com/articles/view/an-introduction-to-meta-viewport-and-viewport
       only screen and (-o-min-device-pixel-ratio: 3/2),
-
       only screen and (min-device-pixel-ratio: 1.5),
-
       // Refer: https://github.com/h5bp/html5-boilerplate/issues/1178
       only screen and (min-resolution: 1.5dppx) {
       @content;
@@ -270,11 +276,17 @@
 
 @mixin respond-to-width($min-width: false, $max-width: false) {
   @if $min-width and $max-width {
-    @media only screen and (min-width: $min-width) and (max-width: $max-width) { @content; }
+    @media only screen and (min-width: $min-width) and (max-width: $max-width) {
+      @content;
+    }
   } @else if $min-width {
-    @media only screen and (min-width: $min-width) { @content; }
+    @media only screen and (min-width: $min-width) {
+      @content;
+    }
   } @else if $max-width {
-    @media only screen and (max-width: $max-width) { @content; }
+    @media only screen and (max-width: $max-width) {
+      @content;
+    }
   }
 }
 
@@ -306,7 +318,7 @@
 }
 
 @mixin rotate($degrees) {
-  -ms-transform: rotate(#{ $degrees }deg);
-  -webkit-transform: rotate(#{ $degrees }deg);
-  transform: rotate(#{ $degrees }deg);
+  -ms-transform: rotate(#{$degrees}deg);
+  -webkit-transform: rotate(#{$degrees}deg);
+  transform: rotate(#{$degrees}deg);
 }

@@ -11,7 +11,6 @@
 ///
 
 @include component(message) {
-
   $max-width: 88%;
   $failed-img-icon-width: 20px;
   $failed-img-icon-height: 20px;
@@ -99,7 +98,7 @@
       cursor: pointer;
       background-color: $form-bg-color;
       border-radius: 6px;
-      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
 
       &:hover {
         color: $form-accent-color-light;
@@ -120,7 +119,7 @@
       height: 1px;
       margin: gutter(16 0);
       background: $chat-widget-secondary-text-color;
-      opacity: .2;
+      opacity: 0.2;
     }
 
     &__conversation-redacted {
@@ -128,19 +127,19 @@
       font-size: font-size(body, small);
       color: $chat-widget-secondary-text-color;
       text-align: center;
-      opacity: .5;
+      opacity: 0.5;
     }
 
     &--redacted {
-      opacity: .5;
+      opacity: 0.5;
     }
 
     &__details {
       display: flex;
       font-size: font-size(body, small);
-      letter-spacing: -.5px;
+      letter-spacing: -0.5px;
       color: $chat-widget-secondary-text-color;
-      opacity: .8;
+      opacity: 0.8;
     }
 
     &__icon-error {
@@ -170,7 +169,7 @@
     }
 
     &__failed-img {
-      opacity: .5;
+      opacity: 0.5;
     }
 
     &--image-attachment {
@@ -205,7 +204,7 @@
       font-size: font-size(body, small);
       color: $chat-widget-secondary-text-color;
       text-align: center;
-      opacity: .5;
+      opacity: 0.5;
     }
 
     &--timestamp {

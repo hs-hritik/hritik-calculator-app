@@ -3,9 +3,7 @@
 /// @component icons
 /// Generate icon styles for given selector and icons code set.
 
-
 @import "./hestia/data/hesticons-icon-code";
-
 
 @font-face {
   font-family: "hesticons";
@@ -30,7 +28,6 @@
 }
 
 @each $icon-name, $icon-code in $hesticons-icon-code {
-
   // don't make properties like font-size too specific
   // they should be overridable by a bem like convention
   .ion-#{$icon-name} {
@@ -51,7 +48,7 @@ $dark-gray-color: color(border, dark);
 // Add icon related style here!
 // In moby this is added in legacy.scss but its not present in mirkwood
 .ion--spinning {
-  @include animation(rotate360, $function: linear, $duration: .75s, $count: infinite);
+  @include animation(rotate360, $function: linear, $duration: 0.75s, $count: infinite);
 }
 
 .ion-primary-color {

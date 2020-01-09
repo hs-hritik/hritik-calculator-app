@@ -4,14 +4,13 @@
  * @created June 13, 2017
  */
 
-define ("constants/activeView",
-  function () {
-    "use strict";
+define("constants/activeView", function() {
+  "use strict";
 
-    return {
-      CHAT: "CHAT",
-      FAQ: "FAQ",
-      CSAT: "CSAT",
-      BUSINESS_HOURS: "BUSINESS_HOURS"
-    };
-  });
+  return {
+    CHAT: "CHAT",
+    FAQ: "FAQ",
+    CSAT: "CSAT",
+    BUSINESS_HOURS: "BUSINESS_HOURS"
+  };
+});
