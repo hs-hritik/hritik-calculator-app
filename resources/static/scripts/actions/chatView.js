@@ -1050,12 +1050,18 @@ define("actions/chatView", [
     // encountered. In order to counter any unknown bug during the preissue state
     // disable the footer so that the end user isn't able to send a message that
     // doesn't correspond to a bot message during preissue.
+
+    // After preIssue optimization, if there are no bots running on preIssue,
+    // backend directly creates an issue. So in this case we have to re-enable the
+    // footer if issue type is issue.
     const {
       appState: {issueType}
     } = getState();
 
     if (issueType === ISSUE_TYPE.PRE_ISSUE) {
       handleIssueFooterAndTAI(DISABLE_FOOTER);
+    } else if (issueType === ISSUE_TYPE.ISSUE) {
+      handleIssueFooterAndTAI(ENABLE_FOOTER);
     }
   };
 
