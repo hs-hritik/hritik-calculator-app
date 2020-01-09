@@ -281,7 +281,7 @@ define("reducers/chatView", [
           searchResultIntentIds = intentHelpers.substringSearch(intentsMap, searchText);
         } else {
           isSearching = true;
-          // @TODO: Intents: Do the model based search.
+          searchResultIntentIds = intentHelpers.modelSearch(model, intentsMap, searchText);
         }
 
         return update(state, {
@@ -566,7 +566,10 @@ define("reducers/chatView", [
               $set: {
                 intentIds: response.intent_ids,
                 vocabulary: response.vocabulary,
-                weights: response.weights,
+                weights: {
+                  wordIntentProbabilities: response.weights.word_label_probabilities,
+                  intentsBaseProbabilities: response.weights.label_base_probabilities
+                },
                 parameters: {
                   confidenceThreshold: response.parameters.confidence_threshold,
                   maxCombinedConfidence: response.parameters.max_combined_confidence
