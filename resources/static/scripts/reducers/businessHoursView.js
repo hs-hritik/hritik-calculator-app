@@ -12,11 +12,10 @@ define ("reducers/businessHoursView",
     "helpers/attachments",
     "gunpowder/utils/uuid",
     "extras/accessibility",
-    "constants/accessibility",
-    "constants/errors"
+    "constants/accessibility"
   ],
   function (ACTION_TYPES, BUSINESS_HOURS_CONSTANTS, ATTACHMENT_CONSTANTS,
-    attachmentsHelper, uuidGenerator, ax, axConstants, ERROR_CONSTANTS) {
+    attachmentsHelper, uuidGenerator, ax, axConstants) {
     "use strict";
 
     const update = React.addons.update;
@@ -26,7 +25,6 @@ define ("reducers/businessHoursView",
       BUSINESS_HOURS_ALLOWED_REMOVE_COUNT
     } = ATTACHMENT_CONSTANTS;
     const {METALIST_ITEMS, METALIST_GROUP_NAME} = axConstants;
-    const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
     const INITIAL_STATE = {
       businessHoursEnabled: false,
@@ -308,9 +306,6 @@ define ("reducers/businessHoursView",
                 [action.attachmentIndex]: {
                   attachmentHasError: {$set: true}
                 }
-              },
-              attachmentsMeta: {
-                attachmentsAreInvalid: {$set: action.errorCode === FILE_UPLOAD_ERRORS.INVALID_TYPE}
               }
             }
           });
