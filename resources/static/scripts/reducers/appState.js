@@ -180,7 +180,6 @@ define ("reducers/appState",
               branding: {$set: !config.disable_helpshift_branding},
               audioNotifications: {$set: config.audio_notifications_enabled}
             },
-            allowedFileTypes: {$set: config.allowed_file_types},
             issueExists: {$set: config.issue_exists}
           });
 
