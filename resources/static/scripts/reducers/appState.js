@@ -7,8 +7,9 @@
 define("reducers/appState", [
   "constants/actionTypes",
   "constants/activeView",
-  "constants/appState"
-], function(ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS) {
+  "constants/appState",
+  "gunpowder/utils/array"
+], function(ACTION_TYPES, ACTIVE_VIEW, APP_STATE_CONSTANTS, arrayUtils) {
   "use strict";
 
   const update = React.addons.update;
@@ -145,6 +146,21 @@ define("reducers/appState", [
     keyboardInteractionIsActive: false
   };
 
+  /**
+   * Convert array of arrays of attachments into linear array of attachment &
+   * remove duplicate elements
+   *
+   * @param {Array.<string[]>} attachments- Array of array of attachments strings
+   * @returns {string[]} - Array of attachments
+   */
+  const _processAttachmentsWhiteList = (attachments) => {
+    return arrayUtils.dedupe(
+      attachments.reduce((acc, attachment) => {
+        return [...acc, ...attachment];
+      }, [])
+    );
+  };
+
   return (state = INITIAL_STATE, action) => {
     switch (action.type) {
       case ACTION_TYPES.REHYDRATE:
@@ -164,6 +180,8 @@ define("reducers/appState", [
         const greetingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;
+        const whiteListedAttachments = _processAttachmentsWhiteList(config.wa);
+
         return update(state, {
           wcEnabled: {$set: config.wm_widget_enabled},
           featuresEnabled: {
@@ -176,7 +194,8 @@ define("reducers/appState", [
             branding: {$set: !config.disable_helpshift_branding},
             audioNotifications: {$set: config.audio_notifications_enabled}
           },
-          issueExists: {$set: config.issue_exists}
+          issueExists: {$set: config.issue_exists},
+          whiteListedAttachments: {$set: whiteListedAttachments}
         });
 
       case ACTION_TYPES.SET_APP_RESET_TRIGGER:
