@@ -1,0 +1,5 @@
+Branches:
+feature/voice-sprint-7
+
+Changelog:
+Add support for internal data in helpshift config
