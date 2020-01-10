@@ -491,7 +491,8 @@ define("components/businessHoursView", [
       const {
         onFilesChange,
         text: {dndInfoText, ariaLabelAttachFiles},
-        setAxActiveIndex
+        setAxActiveIndex,
+        attachmentsWhitelist
       } = this.props;
 
       const {
@@ -504,6 +505,7 @@ define("components/businessHoursView", [
       const _setAxActiveIndex = setAxActiveIndex.bind(null, {
         selector: METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR
       });
+      const allowedMimeTypes = attachmentsWhitelist.join(", ");
 
       return (
         <div
@@ -522,6 +524,7 @@ define("components/businessHoursView", [
             labelClasses="hs-business-hours__attachment-placeholder-text"
             onSaveInputRef={this._saveInputRef}
             infoText={dndInfoText}
+            accept={allowedMimeTypes}
           />
         </div>
       );
@@ -621,7 +624,11 @@ define("components/businessHoursView", [
      * @param {Object} config.name - Selector value
      * @param {Object} ev - Click or focus event object
      */
-    setAxActiveIndex: PropTypes.func.isRequired
+    setAxActiveIndex: PropTypes.func.isRequired,
+    /**
+     * Allowed file mime types list
+     */
+    attachmentsWhitelist: PropTypes.array.isRequired
   };
 
   return createReactClass({
@@ -644,7 +651,11 @@ define("components/businessHoursView", [
         fontFamily: PropTypes.string
       }),
       fullPrivacyEnabled: PropTypes.bool,
-      keyboardInteractionIsActive: PropTypes.bool.isRequired
+      keyboardInteractionIsActive: PropTypes.bool.isRequired,
+      /**
+       * Allowed file mime types list
+       */
+      attachmentsWhitelist: PropTypes.array.isRequired
     },
 
     getInitialState() {
@@ -667,7 +678,8 @@ define("components/businessHoursView", [
         contactFormDisabled,
         allowFullScreen,
         submitInProgress,
-        keyboardInteractionIsActive
+        keyboardInteractionIsActive,
+        attachmentsWhitelist
       } = this.props;
 
       const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
@@ -706,6 +718,7 @@ define("components/businessHoursView", [
               onEmailChange={this._onEmailChange}
               onRemoveAttachmentClick={this._onRemoveAttachmentClick}
               setAxActiveIndex={this._setAxActiveIndex}
+              attachmentsWhitelist={attachmentsWhitelist}
             />
           </ErrorBoundaryWithLogging>
         </div>
