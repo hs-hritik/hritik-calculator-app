@@ -132,15 +132,16 @@ define("reducers/businessHoursView", [
   /**
    * Predicate to check if all files have valid mime type
    * @param {Object[]} attachments
-   * @returns {Boolean}
+   * @param {string[]} attachmentsWhitelist - Array of supported mime types
+   * @returns {boolean}
    */
-  const areAttachmentsValid = (attachments) => {
+  const areAttachmentsValid = (attachments, attachmentsWhitelist) => {
     if (!attachments.length) {
       return true;
     }
 
     return Array.prototype.every.call(attachments, ({file}) => {
-      return attachmentsHelper.isAttachmentTypeValid(file.type);
+      return attachmentsHelper.isAttachmentTypeValid(file.type, attachmentsWhitelist);
     });
   };
 
@@ -238,7 +239,7 @@ define("reducers/businessHoursView", [
         const allAttachments = processedAttachments.concat(state.contactFormDetails.attachments);
 
         attachmentSizeIsInvalid = !isTotalSizeOfAttachmentsValid(allAttachments);
-        attachmentsAreInvalid = !areAttachmentsValid(allAttachments);
+        attachmentsAreInvalid = !areAttachmentsValid(allAttachments, action.attachmentsWhitelist);
 
         return update(state, {
           contactFormDisabled: {
@@ -275,7 +276,10 @@ define("reducers/businessHoursView", [
         );
 
         attachmentSizeIsInvalid = !isTotalSizeOfAttachmentsValid(filteredAttachments);
-        attachmentsAreInvalid = !areAttachmentsValid(filteredAttachments);
+        attachmentsAreInvalid = !areAttachmentsValid(
+          filteredAttachments,
+          action.attachmentsWhitelist
+        );
 
         return update(state, {
           contactFormDisabled: {

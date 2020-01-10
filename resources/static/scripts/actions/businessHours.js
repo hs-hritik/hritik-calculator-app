@@ -233,24 +233,28 @@ define("actions/businessHours", [
   /**
    * Action to add attachments to store
    * @param {Object} files - Array like files object
+   * @param {string[]} attachmentsWhitelist - Array of supported mime types
    * @returns {Object} - Action
    */
-  const addAttachments = (files) => {
+  const addAttachments = (files, attachmentsWhitelist) => {
     return {
       type: ACTION_TYPES.ADD_BUSINESS_HOURS_ATTACHMENTS,
-      files
+      files,
+      attachmentsWhitelist
     };
   };
 
   /**
    * Action to remove attachment from store
    * @param {String} attachmentId - id of attachment
+   * @param {string[]} attachmentsWhitelist - Array of supported mime types
    * @returns {Object} - Action
    */
-  const removeAttachment = (attachmentId) => {
+  const removeAttachment = (attachmentId, attachmentsWhitelist) => {
     return {
       type: ACTION_TYPES.REMOVE_BUSINESS_HOURS_ATTACHMENT,
-      attachmentId
+      attachmentId,
+      attachmentsWhitelist
     };
   };
 

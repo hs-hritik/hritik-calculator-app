@@ -669,7 +669,6 @@ define("components/businessHoursView", [
         text,
         showCloseButton,
         onMinimizeConversation,
-        onFilesChange,
         contactFormDetails,
         viewStyles,
         fullPrivacyEnabled,
@@ -703,7 +702,7 @@ define("components/businessHoursView", [
             <BusinessHoursViewContents
               text={text}
               attachmentIsEnabled={attachmentIsEnabled}
-              onFilesChange={onFilesChange}
+              onFilesChange={this._onFilesChange}
               offlineBehaviour={offlineBehaviour}
               contactFormSubmitted={contactFormSubmitted}
               contactFormDisabled={contactFormDisabled}
@@ -777,6 +776,8 @@ define("components/businessHoursView", [
      * @param {Object} ev - Click event object
      */
     _onRemoveAttachmentClick(attachmentId, dataLabelAttribute, ev) {
+      const {attachmentsWhitelist} = this.props;
+
       this._setAxActiveIndex(
         {
           selector: `[data-label=${dataLabelAttribute}]`
@@ -784,7 +785,16 @@ define("components/businessHoursView", [
         ev
       );
 
-      this.props.onRemoveAttachment(attachmentId);
+      this.props.onRemoveAttachment(attachmentId, attachmentsWhitelist);
+    },
+
+    /**
+     * Change handler for files select
+     */
+    _onFilesChange(ev) {
+      const {onFilesChange, attachmentsWhitelist} = this.props;
+
+      onFilesChange(ev, attachmentsWhitelist);
     },
 
     _handleViewContentsError() {

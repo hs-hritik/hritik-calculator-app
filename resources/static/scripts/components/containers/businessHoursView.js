@@ -42,11 +42,11 @@ define("components/containers/businessHoursView", [
       onSubmitBusinessHoursContactForm() {
         dispatch(businessHoursActions.submitBusinessHoursContactForm());
       },
-      onFilesChange(files) {
-        dispatch(businessHoursActions.addAttachments(files));
+      onFilesChange(files, attachmentsWhitelist) {
+        dispatch(businessHoursActions.addAttachments(files, attachmentsWhitelist));
       },
-      onRemoveAttachment(attachmentId) {
-        dispatch(businessHoursActions.removeAttachment(attachmentId));
+      onRemoveAttachment(attachmentId, attachmentsWhitelist) {
+        dispatch(businessHoursActions.removeAttachment(attachmentId, attachmentsWhitelist));
       }
     };
   };

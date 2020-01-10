@@ -15,8 +15,7 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
     UNITS_LIST,
     MAX_CHAR_LIMIT,
     MAX_EXTENSION_LIMIT,
-    ELLIPSIS_LENGTH,
-    SUPPORTED_MIME_TYPES
+    ELLIPSIS_LENGTH
   } = ATTACHMENT_CONSTANTS;
 
   /**
@@ -91,15 +90,18 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
    * too.
    *
    * @param {String} type - MIME type of the file
-   * @returns {Boolean}
+   * @param {string[]} attachmentsWhitelist - Array of supported mime types
+   * @returns {boolean}
    */
-  const isAttachmentTypeValid = (type) => {
+  const isAttachmentTypeValid = (type, attachmentsWhitelist) => {
     // Skip the check if file deosn't have a mime type. e.g: text file.
     if (!type) {
       return true;
     }
-
-    return SUPPORTED_MIME_TYPES.indexOf(type) > -1;
+    // @TODO :- Use includes method instead of indexOf
+    // Add a method in arrayUtils to support function on IE
+    // JIRA: https://helpshift.atlassian.net/browse/FRON-5149
+    return attachmentsWhitelist.indexOf(type) > -1;
   };
 
   /**
