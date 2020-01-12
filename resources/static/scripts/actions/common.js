@@ -31,7 +31,9 @@ define("actions/common", [
    */
   const reloadApp = (config) => {
     return (dispatch) => {
-      const {trigger, loading = false, callback} = config;
+      // @TODO: Lazy Preissue Creation
+      // Remove config.loading param from the places this fn is called.
+      const {trigger, callback} = config;
 
       // Extra callback to be executed during reset
       if (callback) {
@@ -45,7 +47,6 @@ define("actions/common", [
       lsHelpers.reset({
         resetProactiveChat: false
       });
-      dispatch(actionCreators.toggleChatViewLoading(loading));
     };
   };
 

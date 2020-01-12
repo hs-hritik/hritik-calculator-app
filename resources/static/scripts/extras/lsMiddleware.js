@@ -47,7 +47,7 @@ define("extras/lsMiddleware", [
         }
         break;
 
-      case ACTION_TYPES.UPDATE_USER_LAT:
+      case ACTION_TYPES.ISSUE_CREATED:
         throttledSetLastActivityTime();
         break;
 
@@ -77,6 +77,10 @@ define("extras/lsMiddleware", [
         if (!lsHelpers.getDeviceId()) {
           lsHelpers.setDeviceId(action.id);
         }
+        break;
+
+      case ACTION_TYPES.SET_ANALYTICS_SESSION_ID:
+        lsHelpers.setAnalyticsSessionId(action.id);
         break;
 
       case ACTION_TYPES.SET_RE_ENGAGEMENT_ID:

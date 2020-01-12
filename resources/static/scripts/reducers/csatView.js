@@ -10,7 +10,7 @@ define("reducers/csatView", ["constants/actionTypes"], function(ACTION_TYPES) {
   const update = React.addons.update;
 
   const INITIAL_STATE = {
-    rating: 3,
+    rating: 0,
     review: "",
     csatSaveInProgress: false
   };
@@ -33,6 +33,7 @@ define("reducers/csatView", ["constants/actionTypes"], function(ACTION_TYPES) {
         });
 
       case ACTION_TYPES.RESET:
+      case ACTION_TYPES.NEW_CONVERSATION_STARTED:
         return INITIAL_STATE;
 
       default:
