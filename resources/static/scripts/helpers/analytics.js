@@ -9,6 +9,7 @@ define("helpers/analytics", [
   "constants/routes",
   "constants/appState",
   "constants/businessHoursView",
+  "constants/chatView",
   "store",
   "helpers/xhr",
   "helpers/common",
@@ -21,6 +22,7 @@ define("helpers/analytics", [
   routes,
   appStateConstants,
   businessHoursConstants,
+  chatViewConstants,
   store,
   xhrHelpers,
   commonHelpers,
@@ -32,7 +34,7 @@ define("helpers/analytics", [
   "use strict";
 
   const {ISSUE_TYPE, ISSUE_STATE} = appStateConstants;
-
+  const {INTENTS_SEARCH_ALGO} = chatViewConstants;
   const {OFFLINE_BEHAVIOUR} = businessHoursConstants;
 
   const {EVENT, PAYLOAD_EVENT, TRIGGER, PAYLOAD_SOURCE} = analyticsConstants;
@@ -347,27 +349,36 @@ define("helpers/analytics", [
    * (3) Sending the message.
    *
    * @param {Object} config
-   * @param {string} config.intent - The selected intent
+   * @param {Boolean} config.searchIsCleared - True if the search is cleared
    * @param {Number} config.ts - unix epoch
    */
   const _trackSearchIntent = (config) => {
     const {
       chatView: {
-        intents: {selectedIntentIds, searchResultIntents}
+        intents: {selectedIntentIds, searchResultIntents, searchAlgo, model}
       }
     } = store.getState();
+    const {ts, searchIsCleared = false} = config;
 
     const data = {
       rc: searchResultIntents.length,
-      iids: selectedIntentIds
+      iids: selectedIntentIds,
+      clr: searchIsCleared
     };
 
-    // @TODO: Intents: Pass the following fields as well: sa, mv, clr
+    if (!searchIsCleared) {
+      if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
+        data.sa = "ss";
+      } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
+        data.sa = "ml";
+        data.mv = model.version;
+      }
+    }
 
     _fireTrackingXhr([
       {
         t: PAYLOAD_EVENT.SEARCH_INTENTS,
-        ts: config.ts,
+        ts,
         d: data
       }
     ]);
@@ -463,7 +474,7 @@ define("helpers/analytics", [
         _trackIntentUnselected(config);
         break;
       case EVENT.SEARCH_INTENTS:
-        _trackSearchIntent();
+        _trackSearchIntent(config);
         break;
       case EVENT.INTENT_TREE_SHOWN:
         _trackIntentTreeShown(config);

@@ -140,8 +140,36 @@ define("actions/chatView", [
     };
   };
 
+  /**
+   * Async action to search intents
+   * Note: Created async action just for triggering analytics event after updating
+   * the search results. Ideally, it should be done in the analytics middleware.
+   * But, the creation of analytics middleware isn't possible without revamp of
+   * the existing events because of circular dependency of the store file.
+   * @param {String} searchText - Search text (User input)
+   * @returns {Function} - action
+   */
+  const asyncSearchIntents = (searchText) => {
+    return (dispatch, getState) => {
+      const searchingIntentsBeforeUpdate = getState().chatView.intents.isSearching;
+      dispatch(searchIntents(searchText));
+      const searchingIntentsAfterUpdate = getState().chatView.intents.isSearching;
+
+      // Check if the search is cleared because the number of characters get reduced
+      // We need to fire the search event if search gets cleared.
+      if (searchingIntentsBeforeUpdate && !searchingIntentsAfterUpdate) {
+        analyticsHelpers.track(EVENT.SEARCH_INTENTS, {
+          searchIsCleared: true
+        });
+      }
+    };
+  };
+
   // Debounced search intents action
-  const debouncedSearchIntents = debounceAction(searchIntents, INTENTS_SEARCH_DEBOUNCE_THRESHOLD);
+  const debouncedSearchIntents = debounceAction(
+    asyncSearchIntents,
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
+  );
 
   /**
    * This action updates the reply text, and search intents if applicable (based on the

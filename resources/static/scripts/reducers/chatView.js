@@ -572,6 +572,7 @@ define("reducers/chatView", [
           intents: {
             model: {
               $set: {
+                version: response.version,
                 intentIds: response.intent_ids,
                 vocabulary: response.vocabulary,
                 weights: {
