@@ -15,6 +15,7 @@ define("helpers/analytics", [
   "helpers/common",
   "gunpowder/utils/xhr",
   "gunpowder/utils/object",
+  "gunpowder/utils/array",
   "utils/browser",
   "actions/actionCreators"
 ], function(
@@ -28,6 +29,7 @@ define("helpers/analytics", [
   commonHelpers,
   xhr,
   objUtils,
+  arrayUtils,
   browserUtils,
   actionCreators
 ) {
@@ -293,17 +295,27 @@ define("helpers/analytics", [
     const {intent, ts} = config;
     const {
       chatView: {
-        intents: {selectedIntentIds, isSearching}
+        intents: {selectedIntentIds, isSearching, searchResultIntents}
       }
     } = store.getState();
 
     const data = {
       iids: selectedIntentIds,
-      leaf: !!(intent.children && intent.children.length)
+      leaf: !(intent.children && intent.children.length)
     };
 
+    // If intent was selected from search results, also pass its confidence value and rank
     if (isSearching) {
-      // @TODO: Intents: Pass cnf (confidence value) and r (rank)
+      const searchIndex = arrayUtils.findIndexByKey(searchResultIntents, intent.id, "intentId");
+
+      if (searchIndex !== -1) {
+        const {probability} = searchResultIntents[searchIndex];
+        data.r = searchIndex + 1; // Rank starts from 1
+
+        if (probability) {
+          data.cnf = probability;
+        }
+      }
     }
 
     _fireTrackingXhr([
