@@ -581,9 +581,35 @@ define("reducers/chatView", [
       }
 
       case ACTION_TYPES.INTENT_SELECTED: {
+        let selectedIntentIdsChangeObj;
+        const {
+          tree: {intentsMap},
+          isSearching
+        } = state.intents;
+
+        const selectedIntentId = action.intent.id;
+        // If the user isn't searching, simply push the selected intent to selectedIntentIds
+        if (!isSearching) {
+          selectedIntentIdsChangeObj = {$push: [selectedIntentId]};
+        } else {
+          // If the user selects an intent from search result, create the array
+          // of the selected intent ids, since we only show the leaf node intents
+          // in the search results.
+          let intent = intentsMap[selectedIntentId];
+          const selectedIntentIds = [];
+
+          while (intent.parentId) {
+            selectedIntentIds.push(intent.id);
+            intent = intentsMap[intent.parentId];
+          }
+
+          selectedIntentIds.push(intent.id);
+          selectedIntentIdsChangeObj = {$set: selectedIntentIds.reverse()};
+        }
+
         return update(state, {
           intents: {
-            selectedIntentIds: {$push: [action.intent.id]}
+            selectedIntentIds: selectedIntentIdsChangeObj
           }
         });
       }
