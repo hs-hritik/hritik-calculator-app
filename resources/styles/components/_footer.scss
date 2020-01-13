@@ -16,13 +16,17 @@
   $form-primary-text-color: var(--hs-form-primary-text-color);
   $form-accent-color: var(--hs-form-accent-color);
   $form-accent-color-light: var(--hs-form-accent-color-light);
-
   .hs-footer {
     position: relative;
     flex: 0 0 auto;
     background-color: $form-bg-color;
     border-top: 1px solid $form-border-color;
     border-radius: radius(0 0 8 8);
+
+    &__intents {
+      border-top-right-radius: gutter(8);
+      border-top-left-radius: gutter(8);
+    }
 
     /// Applies default radius to footer buttons
     &__btn {
