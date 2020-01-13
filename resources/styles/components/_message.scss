@@ -36,6 +36,8 @@
   $form-accent-color-light: var(--hs-form-accent-color-light);
   $form-border-color: var(--hs-form-border-color);
 
+  $server-attachment-border-color: var(--hs-form-border-color);
+
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
@@ -68,12 +70,13 @@
       }
     }
 
-    &__server-attachment {
-      margin-top: gutter(12);
+    &__image-attachment {
+      padding: 0;
+      overflow: hidden;
       cursor: pointer;
     }
 
-    &__server-file-attachment {
+    &__file-attachment {
       display: flex;
       align-items: center;
       cursor: pointer;
@@ -81,6 +84,11 @@
       &:hover {
         color: $user-message-accent-color-light;
       }
+    }
+
+    &__server-attachment {
+      margin-top: gutter(12);
+      border: 1px solid $server-attachment-border-color;
     }
 
     &--right {
@@ -98,6 +106,10 @@
 
       .hs-message__details {
         justify-content: flex-end;
+      }
+
+      .hs-message__file-attachment {
+        color: $user-message-accent-color;
       }
     }
 
@@ -169,20 +181,6 @@
       font-size: icon-size(xx-small);
     }
 
-    &__user-attachment {
-      display: flex;
-      align-items: center;
-      color: $user-message-accent-color;
-
-      &:hover {
-        color: $user-message-accent-color-light;
-      }
-    }
-
-    &__attachment {
-      cursor: pointer;
-    }
-
     &__attachment-error {
       display: flex;
       align-items: center;
@@ -192,14 +190,6 @@
 
     &__failed-img {
       opacity: 0.5;
-    }
-
-    &--user-image-attachment {
-      overflow: hidden;
-
-      .hs-message__item {
-        padding: 0;
-      }
     }
 
     &--error {

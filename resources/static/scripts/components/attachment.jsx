@@ -285,7 +285,6 @@ define("components/attachment", [
       onImageLoad
     } = props;
 
-    let attachmentEl = null;
     let name, url, iconClasses, onWrapperClick;
 
     // Attachment message is a frontend/dummy message
@@ -340,29 +339,27 @@ define("components/attachment", [
     const attachmentIsPreviewable = isImageAttachment && localAttachmentHasError;
 
     if (attachmentIsPreviewable) {
-      attachmentEl = (
+      return (
         <PreviewableAttachment
           url={url}
           file={file}
-          wrapperClasses="hs-message__image-wrapper"
+          wrapperClasses="hs-message__item hs-message__image-wrapper"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
         />
       );
     } else {
-      attachmentEl = (
+      return (
         <NonPreviewableAttachment
           url={url}
           name={name}
           iconClasses={iconClasses}
-          wrapperClasses="hs-message__user-attachment"
+          wrapperClasses="hs-message__item hs-message__file-attachment"
           onWrapperClick={onWrapperClick}
           attachmentAriaLabel={attachmentAriaLabel}
         />
       );
     }
-
-    return <div className="hs-message__item hs-message__attachment">{attachmentEl}</div>;
   };
 
   UserAttachmentMessage.propTypes = {
@@ -400,7 +397,8 @@ define("components/attachment", [
 
       if (attachmentIsPreviewable) {
         const previewableAttachmentWrapperClasses =
-          "hs-message__item hs-message__server-attachment hs-message__image-wrapper";
+          "hs-message__item hs-message__image-wrapper " +
+          "hs-message__server-attachment hs-message__image-attachment";
 
         return (
           <PreviewableAttachment
@@ -413,7 +411,7 @@ define("components/attachment", [
       }
 
       const nonPreviewableAttachmentWrapperClasses =
-        "hs-message__item hs-message__server-attachment hs-message__server-file-attachment";
+        "hs-message__item hs-message__server-attachment hs-message__file-attachment";
 
       return (
         <NonPreviewableAttachment
