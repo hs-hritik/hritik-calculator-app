@@ -2065,6 +2065,33 @@ define("actions/chatView", [
   };
 
   /**
+   * Check if the last selected intent is the leaf intent or not.
+   * @param {String[]} selectedIntentIds - Selected intent ids
+   * @param {Object} intentsMap - Intents map
+   * @returns {Boolean} - True, if the last selected intent is leaf intent.
+   */
+  const _wasLeafIntentSelected = (selectedIntentIds, intentsMap) => {
+    if (!selectedIntentIds || !selectedIntentIds.length) {
+      return false;
+    }
+
+    const lastSelectedIntentId = selectedIntentIds[selectedIntentIds.length - 1];
+    const {children} = intentsMap[lastSelectedIntentId];
+
+    return !children || !children.length;
+  };
+
+  /**
+   * Create user message from the selected intents.
+   * @param {String[]} selectedIntentIds - Selected intent ids
+   * @param {Object} intentsMap - Intents Map
+   * @returns {String} - user message created from the selected intents.
+   */
+  const _createUserMessageFromIntents = (selectedIntentIds, intentsMap) => {
+    return selectedIntentIds.map((id) => intentsMap[id].label).join(" → ");
+  };
+
+  /**
    * Prepare pre-issue XHR data
    * @param {Object} state - Whole application state.
    * @returns {Object} - The data required for pre-issue XHR
@@ -2151,21 +2178,24 @@ define("actions/chatView", [
       xhrData.user_id = userId;
     }
 
-    // If initial user message is present in the state, send it with the
-    // create preissue API request.
-    if (initialUserMessage) {
-      xhrData.user_message = initialUserMessage;
-    }
-
     // If any intent is selected, pass the intent related data
-    if (intents.selectedIntentIds.length) {
-      xhrData.intent = intents.selectedIntentIds;
+    if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
+      xhrData.intent = JSON.stringify(intents.selectedIntentIds);
+      // Create user message if the intent was selected by the user
+      xhrData.user_message = _createUserMessageFromIntents(
+        intents.selectedIntentIds,
+        intents.tree.intentsMap
+      );
 
       // If user entered some text before selecting an intent, send it as search term (st).
       // This would be used by Data Science to improve their algorithms.
       if (userInput.value) {
         xhrData.st = userInput.value;
       }
+    } else if (initialUserMessage) {
+      // If initial user message is present in the state, send it with the
+      // create preissue API request.
+      xhrData.user_message = initialUserMessage;
     }
 
     // If intent tree was shown, we have to send intent tree id everytime.
