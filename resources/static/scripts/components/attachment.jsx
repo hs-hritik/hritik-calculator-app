@@ -16,6 +16,26 @@ define("components/attachment", [
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
   /**
+   * The default click handler for attachments. Opens the attachment URL in a new window.
+   * @param {string} url
+   */
+  const _onAttachmentClick = (url) => {
+    window.open(url);
+  };
+
+  /**
+   * Get the aria label for an attachment based on the file name and the template string for opening
+   * a file.
+   * @param {string} fileName
+   * @param {string} ariaLabelOpenFile
+   * @returns {string} - the aria label for opening an attachment file
+   */
+  const _getAttachmentAriaLabel = (fileName, ariaLabelOpenFile) => {
+    const formatedFileName = attachmentsHelpers.getFormattedFileName(fileName);
+    return ariaLabelOpenFile.replace("{{file_name}}", formatedFileName);
+  };
+
+  /**
    * Previewable attachment component.
    * @param {Object} props
    * @param {string} props.url - URL of the attachment object.
@@ -268,10 +288,6 @@ define("components/attachment", [
     let attachmentEl = null;
     let name, url, iconClasses, onWrapperClick;
 
-    const _onAttachmentClick = () => {
-      window.open(url);
-    };
-
     // Attachment message is a frontend/dummy message
     if (messageIsClientGenerated) {
       name = file.name;
@@ -306,11 +322,12 @@ define("components/attachment", [
       name = attachment.fileName;
       url = attachment.url;
       iconClasses = "ion-attachment";
-      onWrapperClick = _onAttachmentClick;
+      onWrapperClick = () => {
+        _onAttachmentClick(url);
+      };
     }
 
-    const formatedFileName = attachmentsHelpers.getFormattedFileName(name);
-    const attachmentAriaLabel = ariaLabelOpenFile.replace("{{file_name}}", formatedFileName);
+    const attachmentAriaLabel = _getAttachmentAriaLabel(name, ariaLabelOpenFile);
 
     // Determine if the attachment is previewable or not
     const isImageAttachment = attachmentsHelpers.isImageAttachment(name, url);
@@ -358,7 +375,67 @@ define("components/attachment", [
     onImageLoad: PropTypes.func.isRequired
   };
 
+  /**
+   * Server attachment message component. It returns a list of "message items". An item can be a
+   * text message, a previewable attachment (image) or a file attachment.
+   * @param {Object} props
+   * @param {string} ariaLabelOpenFile - Voice over aria label for the attachment message.
+   * @param {array} props.attachments - List of attachments in the message object.
+   * @returns {element} - User attachment message element.
+   */
+  const ServerAttachmentsMessage = (props) => {
+    const {attachments, ariaLabelOpenFile} = props;
+
+    if (!(attachments && attachments.length)) {
+      return null;
+    }
+
+    return attachments.map((attachment, index) => {
+      const {url, fileName} = attachment;
+      const attachmentIsPreviewable = attachmentsHelpers.isImageAttachment(url, fileName);
+      const onWrapperClick = () => {
+        _onAttachmentClick(url);
+      };
+      const attachmentAriaLabel = _getAttachmentAriaLabel(fileName, ariaLabelOpenFile);
+
+      if (attachmentIsPreviewable) {
+        const previewableAttachmentWrapperClasses =
+          "hs-message__item hs-message__server-attachment hs-message__image-wrapper";
+
+        return (
+          <PreviewableAttachment
+            key={`previewable-${index}`}
+            url={url}
+            wrapperClasses={previewableAttachmentWrapperClasses}
+            onWrapperClick={onWrapperClick}
+          />
+        );
+      }
+
+      const nonPreviewableAttachmentWrapperClasses =
+        "hs-message__item hs-message__server-attachment hs-message__server-file-attachment";
+
+      return (
+        <NonPreviewableAttachment
+          key={`nonpreviewable-${index}`}
+          url={url}
+          name={fileName}
+          iconClasses="ion-attachment"
+          wrapperClasses={nonPreviewableAttachmentWrapperClasses}
+          onWrapperClick={onWrapperClick}
+          attachmentAriaLabel={attachmentAriaLabel}
+        />
+      );
+    });
+  };
+
+  ServerAttachmentsMessage.propTypes = {
+    ariaLabelOpenFile: PropTypes.string.isRequired,
+    attachments: PropTypes.array
+  };
+
   return {
-    UserAttachmentMessage
+    UserAttachmentMessage,
+    ServerAttachmentsMessage
   };
 });

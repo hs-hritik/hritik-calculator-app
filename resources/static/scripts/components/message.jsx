@@ -29,7 +29,9 @@ define("components/message", [
 ) {
   "use strict";
 
-  const {UserAttachmentMessage} = attachmentComponents;
+  const {Fragment} = React;
+
+  const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
   const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
   const IMAGE_MSG_MAX_HEIGHT = 170;
@@ -97,7 +99,7 @@ define("components/message", [
       const msgClasses = classes("hs-message", {
         "hs-message--left": !isCustomerMsg,
         "hs-message--right": isCustomerMsg,
-        "hs-message--image-attachment": isCustomerMsg && this._isAttachmentPreviewable(),
+        "hs-message--user-image-attachment": isCustomerMsg && this._isAttachmentPreviewable(),
         "hs-message--error": states && states.error
       });
       const time = this._getHumanReadableTime();
@@ -197,18 +199,29 @@ define("components/message", [
       if (redacted) {
         // Redaction message is a plain text and needs
         // to be shown in italics.
-        textMessageEl = <em className="hs-message--redacted">{messageDeleted}</em>;
+        textMessageEl = (
+          <em key="redacted-message" className="hs-message__item hs-message--redacted" dir="auto">
+            {messageDeleted}
+          </em>
+        );
       } else if (body) {
         /* eslint-disable react/no-danger */
-        textMessageEl = <div dangerouslySetInnerHTML={{__html: body}} />;
+        textMessageEl = (
+          <div
+            key="text-message"
+            className="hs-message__item"
+            dir="auto"
+            dangerouslySetInnerHTML={{__html: body}}
+          />
+        );
         /* eslint-enable react/no-danger */
       }
 
       return (
-        <div className="hs-message__item" dir="auto">
+        <Fragment>
           {textMessageEl}
           {this._renderServerAttachments()}
-        </div>
+        </Fragment>
       );
     },
 
@@ -217,23 +230,11 @@ define("components/message", [
      */
     _renderServerAttachments() {
       const {attachments} = this.props.message;
+      const {ariaLabelOpenFile} = this.props.text;
 
-      if (!(attachments && attachments.length)) {
-        return null;
-      }
-
-      const attachmentsEl = attachments.map((attachment, index) => {
-        const {url, fileName} = attachment;
-        const attachmentIsPreviewable = attachmentsHelpers.isImageAttachment(url, fileName);
-
-        if (attachmentIsPreviewable) {
-          return this._renderServerPreviewableAttachment(attachment, index);
-        }
-
-        return this._renderServerNonPreviewableAttachment(attachment, index);
-      });
-
-      return <div>{attachmentsEl}</div>;
+      return (
+        <ServerAttachmentsMessage attachments={attachments} ariaLabelOpenFile={ariaLabelOpenFile} />
+      );
     },
 
     _renderConversationRedactionMsg() {
@@ -254,64 +255,6 @@ define("components/message", [
             <em>{body}</em>
           </div>
         </div>
-      );
-    },
-
-    /**
-     * Render server non-previewable attachment message
-     * @param {Object} attachment - attachment to be rendered
-     * @param {string} attachment.fileName - attachment name
-     * @param {string} attachment.url - attachment url
-     * @param {Number} index - attachment index
-     */
-    _renderServerNonPreviewableAttachment(attachment, index) {
-      const formattedFileName = attachmentsHelpers.getFormattedFileName(attachment.fileName);
-      const {text} = this.props;
-      const clickHandler = this._onAttachmentClick.bind(this, attachment.url);
-      const attachmentAriaLabel = text.ariaLabelOpenFile.replace(
-        "{{file_name}}",
-        formattedFileName
-      );
-
-      return (
-        <div
-          key={index}
-          className="hs-attachment"
-          onClick={clickHandler}
-          aria-label={attachmentAriaLabel}
-          role="button">
-          <i className="ion-attachment" />
-          <div className="hs-attachment__info-wrapper">
-            <small title={attachment.fileName}>
-              <strong>{formattedFileName}</strong>
-            </small>
-          </div>
-        </div>
-      );
-    },
-
-    /**
-     * Render server previewable attachment message
-     * @param {Object} attachment - attachment to be rendered
-     * @param {string} attachment.fileName - attachment name
-     * @param {string} attachment.url - attachment url
-     * @param {Number} index - attachment index
-     */
-    _renderServerPreviewableAttachment(attachment, index) {
-      const {url} = attachment;
-      const clickHandler = this._onAttachmentClick.bind(this, url);
-      const wrapperStyles = {
-        backgroundImage: `url(${url})`,
-        height: `${this.state.imageWrapperHeight}px`
-      };
-
-      return (
-        <div
-          style={wrapperStyles}
-          key={index}
-          className="hs-message__image-wrapper"
-          onClick={clickHandler}
-        />
       );
     },
 

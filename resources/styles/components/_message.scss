@@ -43,6 +43,8 @@
 
     &__item-wrapper {
       display: flex;
+      align-items: flex-start;
+      flex-direction: column;
     }
 
     &__item {
@@ -63,6 +65,21 @@
         &:hover {
           color: $agent-message-accent-color-light;
         }
+      }
+    }
+
+    &__server-attachment {
+      margin-top: gutter(12);
+      cursor: pointer;
+    }
+
+    &__server-file-attachment {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      &:hover {
+        color: $user-message-accent-color-light;
       }
     }
 
@@ -177,7 +194,7 @@
       opacity: 0.5;
     }
 
-    &--image-attachment {
+    &--user-image-attachment {
       overflow: hidden;
 
       .hs-message__item {
