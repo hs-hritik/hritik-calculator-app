@@ -2235,6 +2235,22 @@ define("actions/chatView", [
   };
 
   /**
+   * Fire analytics event for the first message.
+   * We track first message event from Webchat because the analytics want it for ordering.
+   * All other messages are tracked by dashboard events.
+   * @param {Object[]} messages - Array of messages
+   */
+  const _trackFirstMessage = (messages = []) => {
+    const firstMessage = messages[0];
+
+    if (firstMessage) {
+      analyticsHelpers.track(EVENT.MESSAGE_SENT, {
+        message: firstMessage
+      });
+    }
+  };
+
+  /**
    * Create pre-issue on backend.
    */
   const createPreIssue = () => {
@@ -2271,6 +2287,7 @@ define("actions/chatView", [
 
           startPollingForMessages();
 
+          _trackFirstMessage(response.messages);
           // Track the issue created event.
           // @TODO: Confirm if issue created event has to be tracked from Web Chat.
           // analyticsHelpers.track (EVENT.ISSUE_CREATED);
