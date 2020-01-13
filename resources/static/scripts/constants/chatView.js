@@ -71,6 +71,10 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
   const INTENTS_MINIMUM_CHAR_FOR_SEARCH = 5;
   const MAX_LEAF_NODE_INTENT_RESULTS = 5;
   const MAX_PARENT_INTENT_RESULTS = 2;
+  const INTENTS_SEARCH_ALGO = {
+    SUBSTRING: "substring",
+    ML: "ml"
+  };
 
   return {
     ACTIVE_FOOTER,
@@ -89,6 +93,7 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
     INTENTS_MINIMUM_CHAR_FOR_SEARCH,
     MAX_LEAF_NODE_INTENT_RESULTS,
-    MAX_PARENT_INTENT_RESULTS
+    MAX_PARENT_INTENT_RESULTS,
+    INTENTS_SEARCH_ALGO
   };
 });

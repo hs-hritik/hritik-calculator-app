@@ -19,7 +19,8 @@ define("reducers/chatView", [
     USER_INPUT_TYPES,
     CURSOR_TYPES,
     DEFAULT_LIST_PICKER_NAVIGATION_STATE,
-    INTENTS_MINIMUM_CHAR_FOR_SEARCH
+    INTENTS_MINIMUM_CHAR_FOR_SEARCH,
+    INTENTS_SEARCH_ALGO
   } = CHAT_VIEW_CONSTANTS;
 
   const INITIAL_ERROR_STATE = {
@@ -180,7 +181,9 @@ define("reducers/chatView", [
       pickerNavigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE,
       selectedIntentIds: [],
       isSearching: false,
-      searchResultIntentIds: []
+      searchAlgo: "", // The algorithm used for searching (substring or ML)
+      searchResultIntents: [] // Array of {intentId: "", probability: 0.3} (probability would
+      // be  null for substring search)
     },
     userIsViewingPastMessages: false,
     userIsRedacted: false,
@@ -261,7 +264,8 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.SEARCH_INTENTS: {
         let isSearching;
-        let searchResultIntentIds;
+        let searchResultIntents;
+        let searchAlgo;
         const {searchText} = action;
         const {
           intents: {
@@ -274,20 +278,24 @@ define("reducers/chatView", [
         // search, reset the search results
         if (searchText.length < INTENTS_MINIMUM_CHAR_FOR_SEARCH) {
           isSearching = false;
-          searchResultIntentIds = [];
+          searchResultIntents = [];
+          searchAlgo = "";
         } else if (!model) {
           // If the model is not yet loaded, do the string based search.
           isSearching = true;
-          searchResultIntentIds = intentHelpers.substringSearch(intentsMap, searchText);
+          searchResultIntents = intentHelpers.substringSearch(intentsMap, searchText);
+          searchAlgo = INTENTS_SEARCH_ALGO.SUBSTRING;
         } else {
           isSearching = true;
-          searchResultIntentIds = intentHelpers.modelSearch(model, intentsMap, searchText);
+          searchResultIntents = intentHelpers.modelSearch(model, intentsMap, searchText);
+          searchAlgo = INTENTS_SEARCH_ALGO.ML;
         }
 
         return update(state, {
           intents: {
             isSearching: {$set: isSearching},
-            searchResultIntentIds: {$set: searchResultIntentIds}
+            searchResultIntents: {$set: searchResultIntents},
+            searchAlgo: {$set: searchAlgo}
           }
         });
       }

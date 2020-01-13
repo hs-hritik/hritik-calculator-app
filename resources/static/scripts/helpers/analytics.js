@@ -353,12 +353,12 @@ define("helpers/analytics", [
   const _trackSearchIntent = (config) => {
     const {
       chatView: {
-        intents: {selectedIntentIds, searchResultIntentIds}
+        intents: {selectedIntentIds, searchResultIntents}
       }
     } = store.getState();
 
     const data = {
-      rc: searchResultIntentIds.length,
+      rc: searchResultIntents.length,
       iids: selectedIntentIds
     };
 

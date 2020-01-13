@@ -29,11 +29,12 @@ define("helpers/intent", [
    *
    * @param {Object} intentsMap - Intents Map
    * @param {String} query - Search query
-   * @return {String[]} - Search result's intent ids
+   * @return {Object[]} - Search result's intents
    */
   const substringSearch = (intentsMap, query) => {
     const leafNodeIntentIds = [];
     const nonLeafNodeIntentIds = [];
+    let res = [];
     query = query.trim().toLowerCase();
 
     objUtils.forEachKey(intentsMap, (id, intent) => {
@@ -48,13 +49,11 @@ define("helpers/intent", [
 
     // If there is any leaf node intent match, show those leaf node intents only.
     if (leafNodeIntentIds.length) {
-      return leafNodeIntentIds.splice(0, MAX_LEAF_NODE_INTENT_RESULTS);
-    }
-
-    // If there is no leaf node intent match, but there is Level 1 intents match,
-    // show the leaf nodes of those intents.
-    if (nonLeafNodeIntentIds.length) {
-      return nonLeafNodeIntentIds
+      res = leafNodeIntentIds.splice(0, MAX_LEAF_NODE_INTENT_RESULTS);
+    } else if (nonLeafNodeIntentIds.length) {
+      // If there is no leaf node intent match, but there is Level 1 intents match,
+      // show the leaf nodes of those intents.
+      res = nonLeafNodeIntentIds
         .splice(0, MAX_PARENT_INTENT_RESULTS)
         .reduce((childrenIntentIds, id) => {
           return childrenIntentIds.push(
@@ -63,7 +62,12 @@ define("helpers/intent", [
         }, []);
     }
 
-    return [];
+    return res.map((id) => {
+      return {
+        intentId: id,
+        probability: null
+      };
+    });
   };
 
   /**
@@ -71,18 +75,16 @@ define("helpers/intent", [
    * @param {Object} model - Data related to model
    * @param {Object} intentsMap - Intents Map
    * @param {String} query - Search query
-   * @returns {String[]} - Matched intent ids
+   * @return {Object[]} - Matched intents
    */
   const modelSearch = (model, intentsMap, query) => {
-    return intentsModelSearch
-      .match({
-        model,
-        intentsMap,
-        query,
-        maxNumberOfLeafIntents: MAX_LEAF_NODE_INTENT_RESULTS,
-        maxNumberOfParentIntents: MAX_PARENT_INTENT_RESULTS
-      })
-      .map(({intentId}) => intentId);
+    return intentsModelSearch.match({
+      model,
+      intentsMap,
+      query,
+      maxNumberOfLeafIntents: MAX_LEAF_NODE_INTENT_RESULTS,
+      maxNumberOfParentIntents: MAX_PARENT_INTENT_RESULTS
+    });
   };
 
   return {
