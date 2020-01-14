@@ -7,6 +7,7 @@
 define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CONSTANTS) {
   "use strict";
 
+  const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
   const {
     MAX_ATTACHMENT_LIMIT,
     ATTACHMENT_OPERATIONS,
@@ -132,11 +133,36 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
     return `${nameStr}...${extension}`;
   };
 
+  /**
+   * Predicate to check if attachment is of type image
+   * @param {String} name - attachment file name
+   * @param {String} url - attachment url
+   * @returns {Boolean} - attachment is of type image
+   */
+  const isImageAttachment = (name, url) => {
+    let imageIdentifier;
+
+    // If file does not contain any extension
+    if (name.indexOf(".") !== -1) {
+      imageIdentifier = name;
+    } else if (url && url.indexOf(".") !== -1) {
+      imageIdentifier = url;
+    } else {
+      return false;
+    }
+
+    const dotIndex = imageIdentifier.lastIndexOf(".") + 1;
+    const fileExt = imageIdentifier.substr(dotIndex, imageIdentifier.length).toLowerCase();
+
+    return IMAGE_EXTENSIONS.indexOf(fileExt) !== -1;
+  };
+
   return {
     humanizeFileSize,
     isAttachmentsNumberValid,
     isAttachmentsSizeValid,
     isAttachmentTypeValid,
-    getFormattedFileName
+    getFormattedFileName,
+    isImageAttachment
   };
 });
