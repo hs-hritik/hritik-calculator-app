@@ -180,7 +180,7 @@ define("reducers/appState", [
         const greetingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;
-        const whiteListedAttachments = _processAttachmentsWhiteList(config.wa);
+        const attachmentsWhitelist = _processAttachmentsWhiteList(config.wa);
 
         return update(state, {
           wcEnabled: {$set: config.wm_widget_enabled},
@@ -195,7 +195,7 @@ define("reducers/appState", [
             audioNotifications: {$set: config.audio_notifications_enabled}
           },
           issueExists: {$set: config.issue_exists},
-          whiteListedAttachments: {$set: whiteListedAttachments}
+          attachmentsWhitelist: {$set: attachmentsWhitelist}
         });
 
       case ACTION_TYPES.SET_APP_RESET_TRIGGER:
