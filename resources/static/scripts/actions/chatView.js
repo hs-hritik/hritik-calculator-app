@@ -2764,7 +2764,7 @@ define("actions/chatView", [
         data: xhrHelpers.getPreparedXhrData(),
         onSuccess: (response) => {
           dispatch(actionCreators.intentsTreeSuccess(response));
-          dispatch(loadIntentsModel(response.id));
+          dispatch(loadIntentsModel());
         },
         onFailure: () => {
           // @TODO: Intents: Handle failure
@@ -2778,14 +2778,21 @@ define("actions/chatView", [
    *
    * @returns {Function} - Action
    */
-  const loadIntentsModel = (treeId) => {
+  const loadIntentsModel = () => {
     return (dispatch, getState) => {
-      const {domain} = getState().appState;
+      const {
+        appState: {domain},
+        chatView: {
+          intents: {tree}
+        }
+      } = getState();
 
       xhr({
-        route: routes.getIntentModel(domain, treeId),
+        route: routes.getIntentModel(domain, tree.id),
         headers: xhrHelpers.getCommonHeaders(),
-        data: xhrHelpers.getPreparedXhrData(),
+        data: xhrHelpers.getPreparedXhrData({
+          tree_version: tree.version
+        }),
         onSuccess: (response) => {
           dispatch(actionCreators.intentsModelSuccess(response));
         },
