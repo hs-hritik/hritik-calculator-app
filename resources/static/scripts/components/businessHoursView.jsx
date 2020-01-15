@@ -204,10 +204,10 @@ define("components/businessHoursView", [
         contactFormSubmitted,
         text,
         onMinimizeConversation,
-        contactFormDisabled,
         offlineBehaviour,
         allowFullScreen,
-        setAxActiveIndex
+        setAxActiveIndex,
+        contactFormDetails
       } = this.props;
 
       let btnText, clickHandler;
@@ -232,12 +232,17 @@ define("components/businessHoursView", [
       const footerClasses = classes("hs-footer", "hs-footer--center-items", {
         "hs-footer--full-screen": allowFullScreen
       });
+      const attachmentsAreInvalid = contactFormDetails.attachments.some(
+        (attachment) => attachment.attachmentHasError
+      );
+      const {limitHasExceeded, sizeHasExceeded} = contactFormDetails.attachmentsMeta;
+      const submitButtonIsDisabled = limitHasExceeded || sizeHasExceeded || !!attachmentsAreInvalid;
 
       return (
         <div className={footerClasses}>
           <button
             className="hs-button hs-footer__btn "
-            disabled={contactFormDisabled}
+            disabled={submitButtonIsDisabled}
             data-label={METALIST_ITEMS.OOBH.FOOTER_BTN.DATA_LABEL}
             tabIndex="0"
             onFocus={_setAxActiveIndex}
