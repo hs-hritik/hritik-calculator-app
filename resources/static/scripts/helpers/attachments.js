@@ -4,7 +4,10 @@
  * @created Nov 10, 2017
  */
 
-define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CONSTANTS) {
+define("helpers/attachments", ["constants/attachments", "gunpowder/utils/array"], function(
+  ATTACHMENT_CONSTANTS,
+  arrayUtils
+) {
   "use strict";
 
   const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
@@ -18,6 +21,7 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
     MAX_EXTENSION_LIMIT,
     ELLIPSIS_LENGTH
   } = ATTACHMENT_CONSTANTS;
+  const ALLOW_ALL_ATTACHMENT_WHITELIST = "*/*";
 
   /**
    * Converts bytes to object containing size and unit
@@ -96,7 +100,9 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
    */
   const isAttachmentTypeValid = (type, attachmentsWhitelist) => {
     // Skip the check if file deosn't have a mime type. e.g: text file.
-    if (!type) {
+    // Skip the check when any extension is allowed to upload.
+    // In that case attachmentsWhitelist will be ["*/*"]
+    if (!type || arrayUtils.includes(attachmentsWhitelist, ALLOW_ALL_ATTACHMENT_WHITELIST)) {
       return true;
     }
     // @TODO :- Use includes method instead of indexOf
