@@ -32,8 +32,7 @@ define("actions/chatView", [
   "utils/browser",
   "utils/upload",
   "extras/accessibility",
-  "utils/debounceAction",
-  "constants/dummyData"
+  "utils/debounceAction"
 ], function(
   store,
   ACTION_TYPES,
@@ -62,8 +61,7 @@ define("actions/chatView", [
   browserUtils,
   upload,
   ax,
-  debounceAction,
-  dummyData
+  debounceAction
 ) {
   "use strict";
 
@@ -2772,12 +2770,6 @@ define("actions/chatView", [
           // @TODO: Intents: Handle failure
         }
       });
-
-      // @TODO: Intents: Remove this after backend intergration.
-      setTimeout(() => {
-        dispatch(actionCreators.intentsTreeSuccess(dummyData.INTENTS_TREE_RESPONSE));
-        dispatch(loadIntentsModel(dummyData.INTENTS_TREE_RESPONSE.id));
-      }, 100);
     };
   };
 
@@ -2801,11 +2793,6 @@ define("actions/chatView", [
           // @TODO: Intents: Handle failure
         }
       });
-
-      // @TODO: Intents: Remove this after backend intergration.
-      setTimeout(() => {
-        dispatch(actionCreators.intentsModelSuccess(dummyData.INTENTS_MODEL_SUCCESS));
-      }, 100);
     };
   };
 

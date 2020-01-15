@@ -28,8 +28,7 @@ define("actions/appState", [
   "actions/postSdkMessage",
   "actions/common",
   "utils/browser",
-  "utils/dataType",
-  "constants/dummyData"
+  "utils/dataType"
 ], function(
   ACTION_TYPES,
   routes,
@@ -54,8 +53,7 @@ define("actions/appState", [
   postSdkMessage,
   commonActions,
   browserUtils,
-  dataTypeUtils,
-  dummyData
+  dataTypeUtils
 ) {
   "use strict";
 
@@ -482,10 +480,6 @@ define("actions/appState", [
 
       getWmConfig(domain, {
         onSuccess: (response) => {
-          // @TODO: Intents: Remove this after backend intergration.
-          response.si = dummyData.CONFIG_SI_OBJ;
-          Object.assign(response.translations, dummyData.CONFIG_SI_TRANSLATIONS);
-
           dispatch(
             batchActions([
               // Set the config values to the store
