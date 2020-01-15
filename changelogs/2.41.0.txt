@@ -1,0 +1,15 @@
+Branches:
+feature/webchat-splitting-message
+
+Changelog:
+Change margin top for agent attachments to 8px
+Apply border and other style fixes to attachments
+Render server attachment message
+Refactor user attachment message rendering
+Disable react hooks eslint
+Support agent attachments msg without body
+Add server previewable functionality
+Remove unnecessary msg check in _isImageAttachment
+Make _isImageAttachment function generic
+Rename message render function
+Split FAQ suggestion into two messages

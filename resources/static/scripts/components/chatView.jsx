@@ -269,7 +269,10 @@ define("components/chatView", [
     text: PropTypes.shape({
       chatViewHeader: PropTypes.string.isRequired,
       dndInfoText: PropTypes.string.isRequired,
-      pastConversationsLoadingText: PropTypes.string.isRequired
+      pastConversationsLoadingText: PropTypes.string.isRequired,
+      loadMoreMessagesFailedText: PropTypes.string,
+      clickToRetryText: PropTypes.string,
+      ariaLabelJumpToLatestBtn: PropTypes.string
     }).isRequired,
     loading: PropTypes.bool,
     pastConversationsLoading: PropTypes.bool,
