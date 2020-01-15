@@ -127,12 +127,15 @@ define("helpers/intentModelSearch", ["gunpowder/utils/object"], function(objUtil
   /**
    * Split the query into words.
    * @param {String} query
+   * @param {String[]} tokenDelimiters - Array of characters using which we want to
+   *                   split the query. For example, [" ", ",", "?", "!"]
    * @returns {String[]} - List of words in the query split by spaces
    */
-  const _splitQuery = (query) => {
-    // @TODO: Intents: Use the list of characters (which are sent by backend) to
-    // split the query.
-    return query.split(" ");
+  const _splitQuery = (query, tokenDelimiters) => {
+    const regexStr = "\\" + tokenDelimiters.join("|\\");
+    const regex = new RegExp(regexStr, "gm");
+
+    return query.split(regex);
   };
 
   /**
@@ -226,13 +229,15 @@ define("helpers/intentModelSearch", ["gunpowder/utils/object"], function(objUtil
    *                 we want to show.
    * @param {String} config.query - The query for which we want to find the suitable intents
    *                 (user typed message).
+   * @param {String[]} config.tokenDelimiters - Array of characters using which we want to
+   *                   split the query. For example, [" ", ",", "?", "!"]
    * @returns {Object[]} - Sorted map of the matched intent ids and probabilities
    *                      [{intentId: "intent_1_id", probability: 0.3}]
    */
   const match = (config) => {
-    const {model, query, maxNumberOfLeafIntents} = config;
+    const {model, query, maxNumberOfLeafIntents, tokenDelimiters} = config;
 
-    const words = _splitQuery(query.toLowerCase());
+    const words = _splitQuery(query.toLowerCase(), tokenDelimiters);
     const intentProbabilities = _getChildProbabilities(model, words);
     const mappedIntentProbabilities = _mapAndRankProbabilities(
       intentProbabilities,

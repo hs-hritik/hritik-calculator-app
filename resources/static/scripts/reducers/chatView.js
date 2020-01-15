@@ -270,7 +270,8 @@ define("reducers/chatView", [
         const {
           intents: {
             tree: {intentsMap},
-            model
+            model,
+            tokenDelimiters
           }
         } = state;
 
@@ -287,7 +288,12 @@ define("reducers/chatView", [
           searchAlgo = INTENTS_SEARCH_ALGO.SUBSTRING;
         } else {
           isSearching = true;
-          searchResultIntents = intentHelpers.modelSearch(model, intentsMap, searchText);
+          searchResultIntents = intentHelpers.modelSearch({
+            model,
+            intentsMap,
+            query: searchText,
+            tokenDelimiters
+          });
           searchAlgo = INTENTS_SEARCH_ALGO.ML;
         }
 
@@ -554,6 +560,7 @@ define("reducers/chatView", [
           loading: {$set: false},
           intents: {
             enforeIntentSelection: {$set: response.eis},
+            tokenDelimiters: {$set: response.token_delimiters},
             tree: {
               id: {$set: response.id},
               version: {$set: response.version},

@@ -72,16 +72,22 @@ define("helpers/intent", [
 
   /**
    * Intents model based search.
-   * @param {Object} model - Data related to model
-   * @param {Object} intentsMap - Intents Map
-   * @param {String} query - Search query
+   * @param {Object} config
+   * @param {Object} config.model - Data related to model
+   * @param {Object} config.intentsMap - Intents Map
+   * @param {String} config.query - Search query
+   * @param {String[]} config.tokenDelimiters - Array of characters using which we want to
+   *                   split the query. For example, [" ", ",", "?", "!"]
    * @return {Object[]} - Matched intents
    */
-  const modelSearch = (model, intentsMap, query) => {
+  const modelSearch = (config) => {
+    const {model, intentsMap, query, tokenDelimiters} = config;
+
     return intentsModelSearch.match({
       model,
       intentsMap,
       query,
+      tokenDelimiters,
       maxNumberOfLeafIntents: MAX_LEAF_NODE_INTENT_RESULTS,
       maxNumberOfParentIntents: MAX_PARENT_INTENT_RESULTS
     });
