@@ -105,10 +105,8 @@ define("helpers/attachments", ["constants/attachments", "gunpowder/utils/array"]
     if (!type || arrayUtils.includes(attachmentsWhitelist, ALLOW_ALL_ATTACHMENT_WHITELIST)) {
       return true;
     }
-    // @TODO :- Use includes method instead of indexOf
-    // Add a method in arrayUtils to support function on IE
-    // JIRA: https://helpshift.atlassian.net/browse/FRON-5149
-    return attachmentsWhitelist.indexOf(type) > -1;
+
+    return arrayUtils.includes(attachmentsWhitelist, type);
   };
 
   /**
