@@ -261,12 +261,14 @@ define("actions/businessHours", [
   /**
    * Action to set attachment error
    * @param {Number} attachmentIndex - attachment index
+   * @param {number} status - attachment error code
    * @returns {Object} - Action
    */
-  const setAttachmentError = (attachmentIndex) => {
+  const setAttachmentError = (attachmentIndex, status) => {
     return {
       type: ACTION_TYPES.SET_BUSINESS_HOURS_ATTACHMENT_ERROR,
-      attachmentIndex
+      attachmentIndex,
+      status
     };
   };
 
@@ -280,7 +282,7 @@ define("actions/businessHours", [
 
     attachments.forEach((attachment, index) => {
       if (attachment.error) {
-        errorAttachmentsActions.push(setAttachmentError(index));
+        errorAttachmentsActions.push(setAttachmentError(index, attachment.status));
       }
     });
 

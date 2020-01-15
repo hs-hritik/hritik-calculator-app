@@ -57,9 +57,11 @@ define("utils/upload", ["constants/errors"], function(errorConstants) {
 
         case 400:
         case 401:
+        case 415:
         case 500:
         case 503:
           // if there is a response message, use that.
+          const {status} = event.target;
           try {
             response = JSON.parse(this.responseText);
             errorMsg = response.msg || "Default error";
@@ -67,11 +69,14 @@ define("utils/upload", ["constants/errors"], function(errorConstants) {
             errorMsg = "Default error";
           }
 
+          const errorCode =
+            status === 415 ? FILE_UPLOAD_ERRORS.INVALID_TYPE : FILE_UPLOAD_ERRORS.RETRY;
+
           if (config.onFailure) {
             config.onFailure({
               error: true,
               errorMsg: errorMsg,
-              errorCode: FILE_UPLOAD_ERRORS.RETRY,
+              errorCode: errorCode,
               responseData: response
             });
           }

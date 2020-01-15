@@ -18,7 +18,8 @@ define("components/businessHoursView", [
   "extras/accessibility",
   "constants/activeView",
   "constants/accessibility",
-  "constants/keyCodes"
+  "constants/keyCodes",
+  "constants/errors"
 ], function(
   ViewHeader,
   BrandingContainer,
@@ -33,7 +34,8 @@ define("components/businessHoursView", [
   ax,
   activeViewConstants,
   axConstants,
-  KEY_CODES
+  KEY_CODES,
+  ERROR_CONSTANTS
 ) {
   "use strict";
 
@@ -87,6 +89,7 @@ define("components/businessHoursView", [
   }).isRequired;
 
   const OFFLINE_BEHAVIOUR_PROP_TYPE = PropTypes.oneOf([CONTACT_FORM, OFFLINE_MESSAGE]);
+  const {RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
 
   class BusinessHoursViewContents extends React.PureComponent {
     constructor(props) {
@@ -411,12 +414,18 @@ define("components/businessHoursView", [
     _renderAttachment(attachment) {
       const {
         submitInProgress,
-        text: {ariaLabelsRemoveAttachment, ariaLabelAddedAttachmentPrefix},
+        text: {
+          ariaLabelsRemoveAttachment,
+          ariaLabelAddedAttachmentPrefix,
+          attachmentFileTypeError,
+          attachmentDefaultError
+        },
         onRemoveAttachmentClick,
         setAxActiveIndex
       } = this.props;
 
-      const {id, name, size, attachmentHasError} = attachment;
+      const {id, name, size, attachmentHasError, status} = attachment;
+
       let iconEl = null;
       let attachmentErrorEl = null;
 
@@ -448,10 +457,14 @@ define("components/businessHoursView", [
       }
 
       if (attachmentHasError) {
+        const attachmentError =
+          status === RESPONSE_STATUS_CODE.UNSUPPORTED_MEDIA_TYPE
+            ? attachmentFileTypeError
+            : attachmentDefaultError;
         attachmentErrorEl = (
           <div className="hs-business-hours__attachment-error">
             <i className="ion-alert-circled hs-business-hours__small-icon" />
-            <span>{this.props.text.attachmentDefaultError}</span>
+            <span>{attachmentError}</span>
           </div>
         );
       }
@@ -492,15 +505,13 @@ define("components/businessHoursView", [
         onFilesChange,
         text: {dndInfoText, ariaLabelAttachFiles},
         setAxActiveIndex,
-        attachmentsWhitelist
+        attachmentsWhitelist,
+        contactFormDetails: {
+          attachmentsMeta: {limitHasExceeded, sizeHasExceeded},
+          attachments
+        }
       } = this.props;
-
-      const {
-        limitHasExceeded,
-        sizeHasExceeded,
-        attachmentsAreInvalid
-      } = this.props.contactFormDetails.attachmentsMeta;
-
+      const attachmentsAreInvalid = attachments.some((attachment) => attachment.attachmentHasError);
       const fileInputIsDisabled = limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid;
       const _setAxActiveIndex = setAxActiveIndex.bind(null, {
         selector: METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR
@@ -546,13 +557,11 @@ define("components/businessHoursView", [
 
       const {
         businessHoursAttachmentsLimitExceedMsg,
-        businessHoursAttachmentsSizeExceedMsg,
-        attachmentFileTypeError
+        businessHoursAttachmentsSizeExceedMsg
       } = this.props.text;
 
       let limitExceedInfoTextEl = null;
       let sizeExceedInfoTextEl = null;
-      let invalidTypeInfoTextEl = null;
 
       if (limitHasExceeded) {
         limitExceedInfoTextEl = this._renderAttachmentError(businessHoursAttachmentsLimitExceedMsg);
@@ -562,15 +571,10 @@ define("components/businessHoursView", [
         sizeExceedInfoTextEl = this._renderAttachmentError(businessHoursAttachmentsSizeExceedMsg);
       }
 
-      if (attachmentsAreInvalid) {
-        invalidTypeInfoTextEl = this._renderAttachmentError(attachmentFileTypeError);
-      }
-
       return (
         <div>
           {limitExceedInfoTextEl}
           {sizeExceedInfoTextEl}
-          {invalidTypeInfoTextEl}
         </div>
       );
     }
