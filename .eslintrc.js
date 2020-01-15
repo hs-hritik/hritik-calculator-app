@@ -9,5 +9,9 @@ module.exports = {
     "ReduxThunk": true,
     "createReactClass": true,
     "PropTypes": true
+  },
+  rules: {
+    "react-hooks/rules-of-hooks": "off",
+    "react-hooks/exhaustive-deps": "off"
   }
 }
