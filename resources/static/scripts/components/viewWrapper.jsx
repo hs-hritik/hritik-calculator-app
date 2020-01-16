@@ -40,7 +40,7 @@ define("components/viewWrapper", [
       onToggleOnlineStatus: PropTypes.func.isRequired,
       onMinimizeConversation: PropTypes.func.isRequired,
       onFocusLauncher: PropTypes.func,
-      onKeyPress: PropTypes.func.isRequired,
+      onKeyDown: PropTypes.func.isRequired,
       onClick: PropTypes.func.isRequired,
       showLauncher: PropTypes.bool
     },
@@ -62,10 +62,12 @@ define("components/viewWrapper", [
 
       const commonProps = {
         allowFullScreen,
-        onMinimizeConversation: this._onMinimizeConversation,
         viewStyles,
         showCloseButton,
-        keyboardInteractionIsActive
+        keyboardInteractionIsActive,
+        onMinimizeConversation: this._onMinimizeConversation,
+        onKeyDown: this._onViewWrapperKeyDown,
+        onClick: this._onViewWrapperClick
       };
 
       switch (this.props.activeView) {
@@ -101,24 +103,32 @@ define("components/viewWrapper", [
       this.props.onToggleOnlineStatus(false);
     },
 
-    _onKeyPress(ev) {
+    _onViewWrapperKeyDown(ev) {
       if (ev.shiftKey && ev.keyCode === KEY_CODES.TAB) {
         ax.focusPrev();
-        this.props.onKeyPress({
+        this.props.onKeyDown({
           keyboardInteractionIsActive: true
         });
         ev.preventDefault();
       } else if (ev.keyCode === KEY_CODES.TAB) {
         ax.focusNext();
-        this.props.onKeyPress({
+        this.props.onKeyDown({
           keyboardInteractionIsActive: true
         });
         ev.preventDefault();
+      } else if (ev.keyCode === KEY_CODES.ENTER || ev.keyCode === KEY_CODES.SPACE) {
+        document.activeElement.click();
       }
     },
 
-    // Set keyboard interaction is active flag to false on click
-    _onClick() {
+    /**
+     * Click handler for view wrapper
+     * Sets keyboard interaction is active flag to false
+     *
+     * NOTE: This will be passed as a callback from container component to each view
+     * so that they attach it on the topmost element mostly div having "hs-view"
+     */
+    _onViewWrapperClick() {
       this.props.onClick({
         keyboardInteractionIsActive: false
       });
@@ -140,17 +150,13 @@ define("components/viewWrapper", [
     },
 
     componentDidMount() {
-      window.addEventListener("online", this._onOnline);
-      window.addEventListener("offline", this._onOffline);
-      window.addEventListener("keydown", this._onKeyPress);
-      window.addEventListener("click", this._onClick);
+      document.addEventListener("online", this._onOnline);
+      document.addEventListener("offline", this._onOffline);
     },
 
     componentWillUnmount() {
-      window.removeEventListener("online", this._onOnline);
-      window.removeEventListener("offline", this._onOffline);
-      window.removeEventListener("keydown", this._onKeyPress);
-      window.removeEventListener("click", this._onClick);
+      document.removeEventListener("online", this._onOnline);
+      document.removeEventListener("offline", this._onOffline);
     }
   });
 });

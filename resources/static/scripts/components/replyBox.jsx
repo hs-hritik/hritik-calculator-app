@@ -86,8 +86,13 @@ define("components/replyBox", [
         }
       } else if (ev.keyCode === KEY_CODES.ESCAPE) {
         ev.target.blur();
+      } else if (ev.keyCode === KEY_CODES.SPACE) {
+        // Do not propagate the space character key down event because it is captured as a "submit"
+        // action event by the parent component keydown handler.
+        ev.stopPropagation();
       }
     },
+
     /**
      * Handler for reply text area change event.
      */

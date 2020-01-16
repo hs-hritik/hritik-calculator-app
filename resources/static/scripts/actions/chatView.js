@@ -1115,12 +1115,18 @@ define("actions/chatView", [
     // encountered. In order to counter any unknown bug during the preissue state
     // disable the footer so that the end user isn't able to send a message that
     // doesn't correspond to a bot message during preissue.
+
+    // After preIssue optimization, if there are no bots running on preIssue,
+    // backend directly creates an issue. So in this case we have to re-enable the
+    // footer if issue type is issue.
     const {
       appState: {issueType}
     } = getState();
 
     if (issueType === ISSUE_TYPE.PRE_ISSUE) {
       handleIssueFooterAndTAI(DISABLE_FOOTER);
+    } else if (issueType === ISSUE_TYPE.ISSUE) {
+      handleIssueFooterAndTAI(ENABLE_FOOTER);
     }
   };
 
@@ -2134,7 +2140,8 @@ define("actions/chatView", [
         userName,
         userId,
         analytics,
-        sdkConfigOptions: {initialUserMessage}
+        sdkConfigOptions: {initialUserMessage},
+        internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}}
       },
       chatView: {intents, userInput},
       ui: {
@@ -2149,6 +2156,14 @@ define("actions/chatView", [
     if (tags) {
       meta.custom_meta = {
         "hs-tags": tags
+      };
+    }
+
+    // We need to send deflection contact flow id to backend so that
+    // we know webchat issue is created for SMS deflection use case.
+    if (deflectionContactFlowId) {
+      meta.voice_meta = {
+        deflection_contact_id: deflectionContactFlowId
       };
     }
 

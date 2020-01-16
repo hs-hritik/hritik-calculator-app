@@ -5,6 +5,7 @@
  */
 
 define("components/message", [
+  "components/attachment",
   "constants/propTypes",
   "constants/message",
   "constants/errors",
@@ -15,6 +16,7 @@ define("components/message", [
   "helpers/common",
   "extras/accessibility"
 ], function(
+  attachmentComponents,
   customPropTypes,
   MESSAGE_CONSTANTS,
   ERROR_CONSTANTS,
@@ -27,13 +29,12 @@ define("components/message", [
 ) {
   "use strict";
 
+  const {Fragment} = React;
+
+  const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
   const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
-  const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
-
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
-
   const IMAGE_MSG_MAX_HEIGHT = 170;
-
   const AGENT_NAME_SEPARATOR = ", ";
 
   return createReactClass({
@@ -76,9 +77,7 @@ define("components/message", [
 
     getInitialState() {
       return {
-        imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT,
-        imageLoaded: false,
-        localImageData: null
+        imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT
       };
     },
 
@@ -100,7 +99,7 @@ define("components/message", [
       const msgClasses = classes("hs-message", {
         "hs-message--left": !isCustomerMsg,
         "hs-message--right": isCustomerMsg,
-        "hs-message--image-attachment": isCustomerMsg && this._isAttachmentPreviewable(),
+        "hs-message__image-attachment": isCustomerMsg && this._isAttachmentPreviewable(),
         "hs-message--error": states && states.error
       });
       const time = this._getHumanReadableTime();
@@ -159,7 +158,7 @@ define("components/message", [
         case MESSAGE_TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT:
         case MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT:
         case MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT:
-          messageItemEl = this._renderTextMessage();
+          messageItemEl = this._renderServerMessage();
           break;
 
         case MESSAGE_TYPE.FAQ_LIST_WITH_OPTION_INPUT:
@@ -171,7 +170,7 @@ define("components/message", [
           break;
 
         case MESSAGE_TYPE.ATTACHMENT:
-          messageItemEl = this._renderAttachmentMessage();
+          messageItemEl = this._renderUserAttachmentMessage();
           break;
       }
 
@@ -187,10 +186,10 @@ define("components/message", [
     },
 
     /**
-     * Render text message.
+     * Render server text and attachment(bots & agent) message
      */
-    _renderTextMessage() {
-      let textMessageEl;
+    _renderServerMessage() {
+      let textMessageEl = null;
 
       const {
         message: {redacted, body},
@@ -200,34 +199,42 @@ define("components/message", [
       if (redacted) {
         // Redaction message is a plain text and needs
         // to be shown in italics.
-        textMessageEl = <em className="hs-message--redacted">{messageDeleted}</em>;
-      } else {
+        textMessageEl = (
+          <em key="redacted-message" className="hs-message__item hs-message--redacted" dir="auto">
+            {messageDeleted}
+          </em>
+        );
+      } else if (body) {
         /* eslint-disable react/no-danger */
-        textMessageEl = <div dangerouslySetInnerHTML={{__html: body}} />;
+        textMessageEl = (
+          <div
+            key="text-message"
+            className="hs-message__item"
+            dir="auto"
+            dangerouslySetInnerHTML={{__html: body}}
+          />
+        );
         /* eslint-enable react/no-danger */
       }
 
       return (
-        <div className="hs-message__item" dir="auto">
+        <Fragment>
           {textMessageEl}
-          {this._renderAgentAttachments()}
-        </div>
+          {this._renderServerAttachments()}
+        </Fragment>
       );
     },
 
     /**
-     * Render agent message attachments
+     * Render agent or bot message attachments
      */
-    _renderAgentAttachments() {
+    _renderServerAttachments() {
       const {attachments} = this.props.message;
+      const {ariaLabelOpenFile} = this.props.text;
 
-      if (!(attachments && attachments.length)) {
-        return null;
-      }
-
-      const attachmentsEl = attachments.map(this._renderAgentAttachment);
-
-      return <div>{attachmentsEl}</div>;
+      return (
+        <ServerAttachmentsMessage attachments={attachments} ariaLabelOpenFile={ariaLabelOpenFile} />
+      );
     },
 
     _renderConversationRedactionMsg() {
@@ -252,35 +259,6 @@ define("components/message", [
     },
 
     /**
-     * Render agent message attachment
-     */
-    _renderAgentAttachment(attachment, index) {
-      const formattedFileName = attachmentsHelpers.getFormattedFileName(attachment.fileName);
-      const {text} = this.props;
-      const clickHandler = this._onAttachmentClick.bind(this, attachment.url);
-      const attachmentAriaLabel = text.ariaLabelOpenFile.replace(
-        "{{file_name}}",
-        formattedFileName
-      );
-
-      return (
-        <div
-          key={index}
-          className="hs-attachment"
-          onClick={clickHandler}
-          aria-label={attachmentAriaLabel}
-          role="button">
-          <i className="ion-attachment" />
-          <div className="hs-attachment__info-wrapper">
-            <small title={attachment.fileName}>
-              <strong>{formattedFileName}</strong>
-            </small>
-          </div>
-        </div>
-      );
-    },
-
-    /**
      * Render FAQ suggestions message.
      */
     _renderFaqMessage() {
@@ -291,8 +269,8 @@ define("components/message", [
       }
 
       return (
-        <div className="hs-message__item">
-          {body}
+        <div>
+          <div className="hs-message__item">{body}</div>
           <div className="hs-message__suggested-faqs">{this._renderFaqs()}</div>
         </div>
       );
@@ -333,169 +311,25 @@ define("components/message", [
     },
 
     /**
-     * Render attachment message
+     * Render user attachment message
      */
-    _renderAttachmentMessage() {
+    _renderUserAttachmentMessage() {
       const {
-        message: {isSystemMsg, states: messageStates, file, attachments}
+        message: {isSystemMsg: messageIsClientGenerated, states: messageStates, file, attachments},
+        text: {ariaLabelOpenFile},
+        onImageLoad
       } = this.props;
 
-      let attachmentEl = null;
-      let attachmentIsPreviewable = false;
-
-      // Attachment message is a frontend/dummy message
-      if (isSystemMsg) {
-        this._attachmentRenderConfig.name = file.name;
-        attachmentIsPreviewable = this._isAttachmentPreviewable();
-
-        // If attachment message is uploading, set loading icons
-        if (messageStates.uploadInProgress) {
-          this._attachmentRenderConfig.iconClasses = classes("ion-load-b", "ion--spinning");
-        } else if (messageStates.error) {
-          // If attachment message has errors, set icon classes depending on
-          // error code. Also attach retry click handler in case of failure is
-          // retryable.
-          const errorCode = messageStates.errorCode;
-          const failureIsRetryable = errorCode === FILE_UPLOAD_ERRORS.RETRY;
-
-          if (failureIsRetryable) {
-            this._attachmentRenderConfig.onClick = this._onRetryClick;
-          } else {
-            this._attachmentRenderConfig.onClick = null;
-          }
-
-          this._attachmentRenderConfig.iconClasses = classes("hs-message__icon-error", {
-            "ion-alert-circled": !failureIsRetryable,
-            "ion-reset": failureIsRetryable
-          });
-        } else {
-          this._attachmentRenderConfig.iconClasses = "";
-        }
-      } else {
-        // Attachment message is a backend message
-        const attachment = attachments[0];
-
-        this._attachmentRenderConfig.name = attachment.fileName;
-        this._attachmentRenderConfig.url = attachment.url;
-        this._attachmentRenderConfig.iconClasses = "ion-attachment";
-
-        attachmentIsPreviewable = this._isAttachmentPreviewable();
-      }
-
-      if (attachmentIsPreviewable) {
-        attachmentEl = this._renderPreviewableAttachment();
-      } else {
-        attachmentEl = this._renderNonPreviewableAttachment();
-      }
-
-      return <div className="hs-message__item hs-message__attachment">{attachmentEl}</div>;
-    },
-
-    /**
-     * Render previewable attachment
-     */
-    _renderPreviewableAttachment() {
-      // @TODO :- Get alt text from designers
-      // Render uploaded image
-      if (this._attachmentRenderConfig.url) {
-        return this._renderUploadedImage();
-      }
-      // Render local image
-      return this._renderLocalImage();
-    },
-
-    /**
-     * Render uploaded image
-     */
-    _renderUploadedImage() {
-      const {url} = this._attachmentRenderConfig;
-
-      const clickHandler = this._onAttachmentClick.bind(this, url);
-      const wrapperStyles = {
-        backgroundImage: `url(${url})`,
-        height: `${this.state.imageWrapperHeight}px`
-      };
-      let imageEl = null;
-
-      if (!this.state.imageLoaded) {
-        imageEl = (
-          <img className="hs-message__height-finder" src={url} onLoad={this._onImageLoad} />
-        );
-      }
-
       return (
-        <div style={wrapperStyles} className="hs-message__image-wrapper" onClick={clickHandler}>
-          {imageEl}
-        </div>
-      );
-    },
-
-    /**
-     * Render local image
-     */
-    _renderLocalImage() {
-      const {onClick} = this._attachmentRenderConfig;
-
-      const bgImg = this.state.localImageData ? `url(${this.state.localImageData})` : "none";
-      let imageEl = null;
-
-      if (!this.state.imageLoaded) {
-        const imageProps = {
-          ref: this._saveLocalImageRef,
-          className: "hs-message__height-finder"
-        };
-
-        if (this.state.localImageData) {
-          imageProps.src = this.state.localImageData;
-          imageProps.onLoad = this._onImageLoad;
-        }
-
-        imageEl = <img {...imageProps} />;
-      }
-
-      const wrapperStyles = {
-        backgroundImage: bgImg,
-        height: `${this.state.imageWrapperHeight}px`
-      };
-
-      return (
-        <div onClick={onClick}>
-          <div
-            ref={this._saveLocalImageWrapperRef}
-            style={wrapperStyles}
-            className="hs-message__image-wrapper hs-message__failed-img">
-            {imageEl}
-          </div>
-        </div>
-      );
-    },
-
-    /**
-     * Render non previewable attachment
-     */
-    _renderNonPreviewableAttachment() {
-      const {name, iconClasses, onClick, url} = this._attachmentRenderConfig;
-      const {ariaLabelOpenFile} = this.props.text;
-      const formatedFileName = attachmentsHelpers.getFormattedFileName(name);
-      let wrapperClickHandler;
-
-      if (!this.props.message.isSystemMsg) {
-        wrapperClickHandler = this._onAttachmentClick.bind(this, url);
-      } else {
-        wrapperClickHandler = onClick;
-      }
-
-      const attachmentAriaLabel = ariaLabelOpenFile.replace("{{file_name}}", formatedFileName);
-
-      return (
-        <div
-          className="hs-message__user-attachment"
-          onClick={wrapperClickHandler}
-          aria-label={attachmentAriaLabel}
-          role="button">
-          <i className={iconClasses} />
-          <span title={name}>{attachmentsHelpers.getFormattedFileName(name)}</span>
-        </div>
+        <UserAttachmentMessage
+          messageIsClientGenerated={messageIsClientGenerated}
+          messageStates={messageStates}
+          file={file}
+          attachments={attachments}
+          ariaLabelOpenFile={ariaLabelOpenFile}
+          onImageLoad={onImageLoad}
+          onRetryClick={this._onRetryClick}
+        />
       );
     },
 
@@ -610,25 +444,6 @@ define("components/message", [
     },
 
     /**
-     * Load handler for image tag
-     */
-    _onImageLoad(ev) {
-      const imageHeight = ev.target.clientHeight;
-      if (imageHeight < IMAGE_MSG_MAX_HEIGHT) {
-        // Set height of parent div
-        this.setState({
-          imageWrapperHeight: imageHeight
-        });
-      }
-      if (this.props.onImageLoad) {
-        this.props.onImageLoad();
-      }
-      this.setState({
-        imageLoaded: true
-      });
-    },
-
-    /**
      * Click handler for attachment
      */
     _onAttachmentClick(url) {
@@ -642,32 +457,41 @@ define("components/message", [
      */
     _getAttachmentErrorMessageEl(errorCode) {
       const {text} = this.props;
-      const {iconClasses} = this._attachmentRenderConfig;
+      const failureIsRetriable = errorCode === FILE_UPLOAD_ERRORS.RETRY;
+
+      const iconClasses = classes("hs-message__icon-error", {
+        "ion-alert-circled": !failureIsRetriable,
+        "ion-reset": failureIsRetriable
+      });
+
       let errorTextEl;
 
       switch (errorCode) {
         case FILE_UPLOAD_ERRORS.RETRY:
-          errorTextEl = [<i className={iconClasses} />, <small>{text.attachmentRetryError}</small>];
+          errorTextEl = [
+            <i className={iconClasses} key="retry-icon" />,
+            <small key="retry-text">{text.attachmentRetryError}</small>
+          ];
           break;
 
         case FILE_UPLOAD_ERRORS.SIZE_EXCEEDED:
           errorTextEl = [
-            <i className={iconClasses} />,
-            <small>{text.attachmentFileSizeError}</small>
+            <i className={iconClasses} key="retry-icon" />,
+            <small key="retry-text">{text.attachmentFileSizeError}</small>
           ];
           break;
 
         case FILE_UPLOAD_ERRORS.INVALID_TYPE:
           errorTextEl = [
-            <i className={iconClasses} />,
-            <small>{text.attachmentFileTypeError}</small>
+            <i className={iconClasses} key="retry-icon" />,
+            <small key="retry-text">{text.attachmentFileTypeError}</small>
           ];
           break;
 
         default:
           errorTextEl = [
-            <i className={iconClasses} />,
-            <small>{text.attachmentDefaultError}</small>
+            <i className={iconClasses} key="retry-icon" />,
+            <small key="retry-text">{text.attachmentDefaultError}</small>
           ];
           break;
       }
@@ -676,55 +500,26 @@ define("components/message", [
     },
 
     /**
-     * Predicate to check if attachment is of type image
-     * @param {String} name - attachment file name
-     * @returns {Boolean} - attachment is of type image
-     */
-    _isImageAttachment(name, url) {
-      const {message} = this.props;
-
-      if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
-        return false;
-      }
-
-      if (!name) {
-        name = message.file ? message.file.name : message.attachments[0].fileName;
-      }
-
-      let imageIdentifier;
-
-      // If file does not contain any extension
-      if (name.indexOf(".") !== -1) {
-        imageIdentifier = name;
-      } else if (url && url.indexOf(".") !== -1) {
-        imageIdentifier = url;
-      } else {
-        return false;
-      }
-
-      const dotIndex = imageIdentifier.lastIndexOf(".") + 1;
-      const fileExt = imageIdentifier.substr(dotIndex, imageIdentifier.length).toLowerCase();
-
-      return IMAGE_EXTENSIONS.indexOf(fileExt) !== -1;
-    },
-
-    /**
      * Predicate to check if attachment is previewable
-     * @param {String} name - attachment file name
      * @returns {Boolean} - attachment is previewable
      */
     _isAttachmentPreviewable() {
-      const {message} = this.props;
+      const {isSystemMsg, attachments, type, states: messageStates} = this.props.message;
 
-      if (message.type !== MESSAGE_TYPE.ATTACHMENT) {
+      if (type !== MESSAGE_TYPE.ATTACHMENT) {
         return false;
       }
 
-      const isImageAttachment = this._isImageAttachment(
-        this._attachmentRenderConfig.name,
-        this._attachmentRenderConfig.url
-      );
-      const localAttachmentHasError = message.isSystemMsg ? message.states.error : true;
+      let url = "";
+
+      if (!isSystemMsg) {
+        const attachment = attachments[0];
+        url = attachment.url;
+      }
+
+      const name = this._getFileName();
+      const isImageAttachment = attachmentsHelpers.isImageAttachment(name, url);
+      const localAttachmentHasError = isSystemMsg ? messageStates.error : true;
 
       // For any attachment to be previewable
       // a] The type of attachment must be of type image and
@@ -734,61 +529,12 @@ define("components/message", [
     },
 
     /**
-     * Reference for image tag
+     * Returns file name by using the message object
      */
-    _localImgWrapperRef: null,
-
-    _localImgRef: null,
-
-    _attachmentRenderConfig: {
-      name: "",
-      url: "",
-      iconClasses: "",
-      retry: false,
-      onClick: null
-    },
-
-    /**
-     * Save local image wrapper reference
-     * @param {Object} ref - DOM reference of image
-     */
-    _saveLocalImageWrapperRef(ref) {
-      this._localImgWrapperRef = ref;
-    },
-
-    /**
-     * Save local image reference
-     * @param {Object} ref - DOM reference of image
-     */
-    _saveLocalImageRef(ref) {
-      this._localImgRef = ref;
-    },
-
-    /**
-     * Flag to represent local image is picked up by file reader
-     */
-    _fileRead: false,
-
-    /**
-     * Preview attachment
-     */
-    _previewAttachment() {
+    _getFileName() {
       const {message} = this.props;
-      if (!this._localImgWrapperRef || !message.isSystemMsg || this._fileRead) {
-        return;
-      }
 
-      this._fileRead = true;
-
-      const file = message.file;
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (ev) => {
-        // @TODO :- check if image ref has already set src
-        this.setState({
-          localImageData: ev.target.result
-        });
-      };
+      return message.file ? message.file.name : message.attachments[0].fileName;
     },
 
     /**
@@ -797,19 +543,6 @@ define("components/message", [
     _onRetryClick() {
       const {message} = this.props;
       this.props.onRetryAttachmentClick(message);
-    },
-
-    componentDidUpdate() {
-      this._previewAttachment();
-
-      // Reset attachment render config for the next render.
-      this._attachmentRenderConfig = {
-        name: "",
-        url: "",
-        iconClasses: "",
-        retry: false,
-        onClick: null
-      };
     }
   });
 });
