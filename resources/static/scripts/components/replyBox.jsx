@@ -25,6 +25,10 @@ define("components/replyBox", [
        */
       value: PropTypes.string.isRequired,
       disabled: PropTypes.bool,
+      /**
+       * Whether the submit reply should be disabled.
+       */
+      disableSubmit: PropTypes.bool,
       widgetIsOpened: PropTypes.bool,
       onChangeReplyBoxValue: PropTypes.func.isRequired,
       onSubmitReply: PropTypes.func.isRequired,
@@ -76,7 +80,7 @@ define("components/replyBox", [
      */
     _onReplyTextKeyDown(ev) {
       if (ev.keyCode === KEY_CODES.ENTER) {
-        if (!ev.shiftKey) {
+        if (!ev.shiftKey && !this.props.disableSubmit) {
           this.props.onSubmitReply();
           ev.preventDefault();
         }

@@ -404,7 +404,7 @@ define("helpers/analytics", [
   const _trackIntentTreeShown = (config) => {
     const {
       chatView: {
-        intents: {tree, enforeIntentSelection}
+        intents: {tree, enforceIntentSelection}
       }
     } = store.getState();
 
@@ -415,7 +415,7 @@ define("helpers/analytics", [
         d: {
           itid: tree.id,
           itv: tree.version,
-          eis: enforeIntentSelection
+          eis: enforceIntentSelection
         }
       }
     ]);

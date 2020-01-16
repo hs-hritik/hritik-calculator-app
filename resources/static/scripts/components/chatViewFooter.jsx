@@ -122,7 +122,12 @@ define("components/chatViewFooter", [
         /**
          * Search result intent ids
          */
-        searchResultIntentIds: PropTypes.arrayOf(PropTypes.string)
+        searchResultIntentIds: PropTypes.arrayOf(PropTypes.string),
+        /**
+         * Whether the intent selection should be enforced. If this is true, submit reply
+         * is disabled, and the send button won't be shown.
+         */
+        enforceIntentSelection: PropTypes.bool.isRequired
       }),
       unreadCount: PropTypes.number,
       /**
@@ -434,6 +439,7 @@ define("components/chatViewFooter", [
         inputComponentEl = (
           <ReplyBoxContainer
             className="hs-chat-footer__text-area"
+            disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
             ariaLabel={ariaLabel}
           />
@@ -535,6 +541,10 @@ define("components/chatViewFooter", [
      * Render reply box action
      */
     _renderFooterAction() {
+      if (this._shouldSubmitReplyBeDisabled()) {
+        return null;
+      }
+
       const {
         userInput: {value},
         issueIsCreated,
@@ -841,6 +851,16 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    /**
+     * Check whether submit reply should be disabled.
+     * Submit reply is disabled when the intents are shown to the end user, and
+     * the enforceIntentSelection flag is true.
+     * @returns {Boolean} - True, if the submit reply should be disabled.
+     */
+    _shouldSubmitReplyBeDisabled() {
+      return this._shouldIntentsBeShown() && this.props.intent.enforceIntentSelection;
     },
 
     /**

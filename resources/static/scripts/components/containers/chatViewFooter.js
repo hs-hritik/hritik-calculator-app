@@ -112,7 +112,8 @@ define("components/containers/chatViewFooter", [
         topLevelIntentsOrder: intents.tree.topLevelIntentsOrder,
         selectedIntentIds: intents.selectedIntentIds,
         isSearching: intents.isSearching,
-        searchResultIntentIds: intents.searchResultIntents.map(({intentId}) => intentId)
+        searchResultIntentIds: intents.searchResultIntents.map(({intentId}) => intentId),
+        enforceIntentSelection: intents.enforceIntentSelection
       };
     }
 

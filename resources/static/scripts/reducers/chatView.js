@@ -169,7 +169,7 @@ define("reducers/chatView", [
     messageList: [],
     messageCursor: INITIAL_MESSAGE_CURSOR,
     intents: {
-      enforeIntentSelection: false,
+      enforceIntentSelection: false,
       tree: {
         id: "",
         version: 0,
@@ -559,7 +559,7 @@ define("reducers/chatView", [
         return update(state, {
           loading: {$set: false},
           intents: {
-            enforeIntentSelection: {$set: response.eis},
+            enforceIntentSelection: {$set: response.eis},
             tokenDelimiters: {$set: response.token_delimiters},
             tree: {
               id: {$set: response.id},
