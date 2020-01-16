@@ -1,40 +1,25 @@
-/// Hesticon Icon Codes
-/// Auto generates while creating icons fonts via "gulp icons" task
+/**
+ * Hesticon Icon Codes
+ * Auto generates while creating icons fonts via "gulp icons" task
+ */
 
-$hesticons-icon-code: (
-  arrow-back-short : "\F001",
-
-  tick : "\F002",
-
-  cross : "\F003",
-
-  cross-round : "\F004",
-
-  star : "\F005",
-
-  attachment : "\F006",
-
-  magnifier : "\F007",
-
-  alert-circled : "\F008",
-
-  send : "\F009",
-
-  load-a : "\F010",
-
-  load-b : "\F011",
-
-  reset : "\F012",
-
-  chevron-left : "\F013",
-
-  chevron-right : "\F014",
-
-  chevron-up : "\F015",
-
-  chevron-down : "\F016",
-
-  arrow-sort-down : "\F017",
-
-  arrow-sort-up : "\F018",
+$hesticons-icon-code : (
+  arrow-back-short: "\F001",
+  tick: "\F002",
+  cross-round: "\F004",
+  cross: "\F003",
+  attachment: "\F006",
+  star: "\F005",
+  magnifier: "\F007",
+  alert-circled: "\F008",
+  load-a: "\F010",
+  load-b: "\F011",
+  send: "\F009",
+  reset: "\F012",
+  chevron-left: "\F013",
+  chevron-right: "\F014",
+  chevron-up: "\F015",
+  chevron-down: "\F016",
+  arrow-sort-down: "\F017",
+  arrow-sort-up: "\F018",
 );

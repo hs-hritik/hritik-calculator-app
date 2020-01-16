@@ -1,0 +1,8 @@
+/**
+ * Hesticon Icon Codes
+ * Auto generates while creating icons fonts via "gulp icons" task
+ */
+
+$<%= fontName %>-icon-code : (<% _.each(glyphs, function(glyph) { %>
+  <%= glyph.name %>: "\<%= glyph.codepoint.toString(16).toUpperCase() %>",<% }); %>
+);
