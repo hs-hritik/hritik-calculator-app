@@ -277,7 +277,7 @@ define("reducers/chatView", [
 
         // If the number of search characters is less than minimum characters required for
         // search, reset the search results
-        if (searchText.length < INTENTS_MINIMUM_CHAR_FOR_SEARCH) {
+        if (searchText.trim().length < INTENTS_MINIMUM_CHAR_FOR_SEARCH) {
           isSearching = false;
           searchResultIntents = [];
           searchAlgo = "";
