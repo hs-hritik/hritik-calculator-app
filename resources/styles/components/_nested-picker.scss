@@ -16,6 +16,7 @@
   $no-tap-highlight-color: rgba(255, 255, 255, 0);
   $action-icon-size: icon-size();
   $action-icon-color: var(--hs-base-color);
+  $header-txt-color: var(--hs-chat-widget-secondary-text-color);
 
   .hs-nested-picker {
     display: flex;
@@ -37,19 +38,40 @@
     }
 
     &__option-item {
+      display: flex;
       @include ellipsis;
-      padding: gutter(12 16);
+      padding: gutter(12);
       cursor: pointer;
       -webkit-tap-highlight-color: $no-tap-highlight-color;
 
       &-highlighted {
         background: $highlighted-option-background;
       }
+
+      &-parent-option {
+        color: $header-txt-color;
+      }
+
+      &-search-result {
+        flex: 1;
+      }
+
+      &-label {
+        flex: 1;
+      }
     }
 
     &__header {
+      display: flex;
+      align-items: center;
+      padding: gutter(12 0);
+
+      &-text {
+        color: $header-txt-color;
+      }
+
       &-toggle-icon {
-        padding: gutter(4);
+        padding: gutter(0 12);
         font-size: $action-icon-size;
         font-weight: font-weight(bold);
         color: $action-icon-color;

@@ -293,7 +293,8 @@ define("components/chatViewFooter", [
         "hs-footer--full-screen": allowFullScreen,
         "hs-footer--failure": failureConfig,
         "hs-footer--list-picker-opened": listPickerIsOpened,
-        "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened
+        "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened,
+        "hs-footer__intents": this._shouldIntentsBeShown()
       });
 
       return (
