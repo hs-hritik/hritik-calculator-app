@@ -1,4 +1,3 @@
-/* eslint-disable strict, no-undef */
 const gulp = require("gulp");
 const eslint = require("gulp-eslint");
 const print = require("gulp-print");
@@ -11,16 +10,16 @@ const PATHS = {
 /**
  * Runs eslint on js & jsx files
  * You can run eslint on specific file(s) using -
- * gulp eslint -f static/js/pages/admin.js -f static/jsx/widgets/popOver.jsx
+ * gulp eslint --file static/js/pages/admin.js --file static/jsx/widgets/popOver.jsx
  */
-gulp.task("eslint", function() {
+const eslintTask = (done) => {
   let src = PATHS.eslint;
-  if (argv.f) {
-    src = argv.f;
+  if (argv.file) {
+    src = argv.file;
     if (!Array.isArray(src)) {
       src = [src];
     }
-    src = src.map(function(path) {
+    src = src.map((path) => {
       if (path.indexOf("resources/") !== -1) {
         return path.split("resources/")[1];
       }
@@ -28,17 +27,16 @@ gulp.task("eslint", function() {
     });
   }
 
-  gulp
+  return gulp
     .src(src)
     .pipe(eslint())
     .pipe(eslint.format(argv.format)) // stylish, compact
     .pipe(eslint.failAfterError())
-    .on("error", function() {
+    .on("error", (error) => {
+      done(error);
       process.exit(1);
     })
-    .pipe(
-      print(function(filepath) {
-        return `Verified: ${filepath}`;
-      })
-    );
-});
+    .pipe(print((filepath) => `Verified: ${filepath}`));
+};
+
+exports.eslint = eslintTask;

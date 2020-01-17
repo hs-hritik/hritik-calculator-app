@@ -11,7 +11,7 @@ export PATH := $(abspath ./tools):$(PATH)
 # set defaults for the tools, this can be overriden using env
 # variables
 #
-GULP ?= gulp
+GULP ?= npm run gulp --
 NPM ?= npm
 NODE ?= node
 
@@ -27,7 +27,7 @@ GUNPOWDER_DEST = resources/static/scripts/gunpowder
 ifdef GERRIT_CHANGE_ID
 	git_diff = $(shell sh -c 'git diff-tree --no-commit-id --name-only --root -m -r HEAD')
 	js_diff = $(shell sh -c "echo $(git_diff) | xargs -n 1 | grep -E 'scripts/.+\.js$$|__tests__/.+\.js$$|scripts/.+\.jsx$$|__tests__/.+\.jsx$$'")
-	eslint_prefixed_js_diff = $(addprefix -f ,$(js_diff))
+	eslint_prefixed_js_diff = $(addprefix --file ,$(js_diff))
 	styles_diff = $(shell sh -c "echo $(git_diff) | grep 'styles/.*\.scss'")
 	makefile_diff = $(shell sh -c "echo $(git_diff) | grep Makefile")
 
@@ -52,13 +52,13 @@ static: dist
 styles: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Compiling and Linting Sass files in resources/styles folder"
-	@cd resources && $(GULP) sass:compile
+	$(GULP) sass:compile
 	@echo ">> Finished task: $@"
 
 sass-lint: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Lint Sass files in resources/styles folder"
-	@cd resources && $(GULP) sass:lint
+	$(GULP) sass:lint
 	@echo ">> Finished task: $@"
 
 npminstall:
@@ -73,13 +73,13 @@ npminstall:
 eslint: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Running eslint on JS & JSX files."
-	$(GULP) --gulpfile "resources/gulpfile.babel.js" eslint $(eslint_prefixed_js_diff);
+	$(GULP) eslint $(eslint_prefixed_js_diff);
 	@echo ">> Finished task: $@"
 
 reactjs: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Compiling JSX"
-	@cd resources && $(GULP) babel --production
+	$(GULP) babel
 	@echo ">> Finished task: $@"
 
 gunpowder: npminstall
@@ -95,13 +95,13 @@ bundle-js:
 	$(NODE) r.js -o build.js
 	@echo "Bundle generated"
 	@echo "Cleaning unwanted js files"
-	@cd resources && $(GULP) clean-unwanted-js
+	$(GULP) clean-unwanted-js
 	@echo ">> Finished task: $@"
 
 bundle-libs:
 	@echo ">> Starting task: $@"
 	@echo "Bundling minified libs"
-	@cd resources && $(GULP) bundle-libs
+	$(GULP) bundle-libs
 	@echo ">> Finished task: $@"
 
 # Minify external JS files. The bundle-js task doesn't minify the external
@@ -111,13 +111,13 @@ bundle-libs:
 minify-ext-js:
 	@echo ">> Starting task: $@"
 	@echo "Bundling external JS files"
-	@cd resources && $(GULP) minify-ext-js
+	$(GULP) minify-ext-js
 	@echo ">> Finished task: $@"
 
 sri:
 	@echo ">> Starting task: $@"
 	@echo "Starting SRI related tasks"
-	@cd resources && $(GULP) generate-sri
+	$(GULP) generate-sri
 	@echo ">> Finished task: $@"
 
 # The dist task is to compile and compress resources and
@@ -181,7 +181,7 @@ ec2:
 	@cp -R resources/build/* resources/dist/ec2/
 	@cd resources/dist/ec2; ln -sv scripts/external/messenger.js webChat.js;
 	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
-	@cd resources && $(GULP) build-ec2
+	$(GULP) build-ec2
 	@echo ">> Finished task: $@"
 
 azure:
@@ -190,7 +190,7 @@ azure:
 	@cp -R resources/build/* resources/dist/azure/
 	@cd resources/dist/azure; ln -sv scripts/external/messenger.js webChat.js;
 	@cd resources/dist/azure/demo; ln -sv ../html/demo/index.html .;
-	@cd resources && $(GULP) build-azure
+	$(GULP) build-azure
 	@echo ">> Finished task: $@"
 
 localshiva:
@@ -199,13 +199,13 @@ localshiva:
 	@cp -R resources/build/* resources/dist/localshiva/
 	@cd resources/dist/localshiva; ln -sv scripts/external/messenger.js webChat.js;
 	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
-	@cd resources && $(GULP) build-localshiva
+	$(GULP) build-localshiva
 	@echo ">> Finished task: $@"
 
 localhost:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for localhost"
-	@cd resources && $(GULP) build-localhost;
+	$(GULP) build-localhost;
 	@mkdir -p resources/localhost/demo
 	@echo ">> Finished task: $@"
 

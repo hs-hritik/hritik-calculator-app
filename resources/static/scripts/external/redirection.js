@@ -253,7 +253,7 @@
         response = _getProcessedResponse(response);
 
         // On dev env, this gets replaced by a localhost URL.
-        // See babel tasks in resources/gulp/javascript.js
+        // See babel tasks in resources/gulpfile.babel.js/javascript.js
         const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
         const urlParts = WEB_CHAT_ROOT.split("://"),
           PROTOCOL = `${urlParts[0]}://`,

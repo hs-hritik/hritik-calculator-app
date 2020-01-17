@@ -1,6 +1,3 @@
-/* eslint-disable strict, no-console */
-/* global __dirname */
-
 const gulp = require("gulp");
 const gutil = require("gulp-util");
 const which = require("npm-which");
@@ -16,14 +13,14 @@ const PATHS = {
   },
   fonts: "static/fonts",
   hestia: {
-    data: "scss/hestia/data"
+    data: "styles/hestia/data"
   }
 };
 
 /**
  * Task to generate iconfont
  */
-gulp.task("icons", function() {
+const iconsTask = () => {
   try {
     which.sync("sketchtool", {cwd: __dirname});
   } catch (error) {
@@ -66,10 +63,13 @@ gulp.task("icons", function() {
   };
 
   if (argv.watch || argv.w) {
-    gulp.watch(sketchFile, function() {
-      generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
-    });
+    gulp.watch(sketchFile, {ignoreInitial: false}, () =>
+      generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs)
+    );
     return;
   }
-  generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
-});
+
+  return generateIconFonts(sketchFile, iconFontName, iconFontDest, onGlyphs);
+};
+
+exports.icons = iconsTask;

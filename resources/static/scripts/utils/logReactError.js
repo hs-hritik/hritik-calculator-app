@@ -4,15 +4,13 @@
  * @created Nov 05, 2019
  */
 
-define("utils/logReactError", ["gunpowder/utils/errorLoggerFactory"], function(errorLoggerFactory) {
-  "use strict";
+import errorLoggerFactory from "../gunpowder/utils/errorLoggerFactory";
 
-  const PROJECT = "mirkwood";
-  const STACK_SIZE = 10;
-  const MAX_LOGS_PER_SESSION = 10;
-  const LINE_LENGTH = 200;
+const PROJECT = "mirkwood";
+const STACK_SIZE = 10;
+const MAX_LOGS_PER_SESSION = 10;
+const LINE_LENGTH = 200;
 
-  const logReactError = errorLoggerFactory(PROJECT, STACK_SIZE, MAX_LOGS_PER_SESSION, LINE_LENGTH);
+const logReactError = errorLoggerFactory(PROJECT, STACK_SIZE, MAX_LOGS_PER_SESSION, LINE_LENGTH);
 
-  return logReactError;
-});
+export default logReactError;

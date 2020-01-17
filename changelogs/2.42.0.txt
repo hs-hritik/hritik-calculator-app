@@ -1,0 +1,20 @@
+Branches:
+feature/node-upgrade
+
+Changelog:
+Update gunpowder to 3.0.2
+Update gulp-iconfont and regenerate icons
+Update babel to 7.8.0
+Use absolute paths in ES6 imports
+Update packages and regenerate package-lock
+Update stylelint, eslint and related deps
+Convert logReactError to ES6 module
+Add support for ES6 modules
+Remove run-sequence NPM module
+Update jest, babel & use preset env
+Use npm script for running gulp in Makefile
+Fix gulp icons task
+Update gulp tasks to gulp v4 format
+Move all gulpfiles into gulpfile.babel.js directory
+Add gulp latest version to package.json
+Replace shrinkwrap with package-lock

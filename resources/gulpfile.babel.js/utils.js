@@ -1,6 +1,3 @@
-/* eslint-disable strict, no-console */
-/* global module */
-
 const gulp = require("gulp");
 const sketch = require("gulp-sketch");
 const iconfont = require("gulp-iconfont");
@@ -19,7 +16,7 @@ const getTimeStamp = function() {
 /**
  * Generate icon fonts from sketch file.
  */
-const generateIconFonts = function(sourceSketchFile, outputFontName, outputFontDest, onGlyphs) {
+const generateIconFonts = (sourceSketchFile, outputFontName, outputFontDest, onGlyphs) =>
   gulp
     .src(sourceSketchFile)
     .pipe(
@@ -31,14 +28,13 @@ const generateIconFonts = function(sourceSketchFile, outputFontName, outputFontD
     .pipe(iconfont({fontName: outputFontName}))
     .on("glyphs", onGlyphs)
     .pipe(gulp.dest(outputFontDest));
-};
 
 /**
  * Compile Ladash templates
  * It takes options and files to be compiled. Where each file object
  * contains template, file name and output folder.
  */
-const compileLodash = function(options, files) {
+const compileLodash = (options, files) => {
   files.forEach(function(file) {
     if (!file.template || !file.name || !file.outputFolder) {
       console.error(
@@ -47,7 +43,7 @@ const compileLodash = function(options, files) {
       );
       return;
     }
-    gulp
+    return gulp
       .src(file.template)
       .pipe(consolidate("lodash", options))
       .pipe(rename(file.name))
