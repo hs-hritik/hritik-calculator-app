@@ -34,6 +34,9 @@
   $form-bg-color: var(--hs-form-bg-color);
   $form-accent-color: var(--hs-form-accent-color);
   $form-accent-color-light: var(--hs-form-accent-color-light);
+  $form-border-color: var(--hs-form-border-color);
+
+  $server-attachment-border-color: var(--hs-form-border-color);
 
   .hs-message {
     align-self: flex-start;
@@ -42,6 +45,8 @@
 
     &__item-wrapper {
       display: flex;
+      align-items: flex-start;
+      flex-direction: column;
     }
 
     &__item {
@@ -65,6 +70,27 @@
       }
     }
 
+    &__image-attachment {
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    &__file-attachment {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      &:hover {
+        color: $user-message-accent-color-light;
+      }
+    }
+
+    &__server-attachment {
+      margin-top: gutter(8);
+      border: 1px solid $server-attachment-border-color;
+    }
+
     &--right {
       align-self: flex-end;
 
@@ -81,27 +107,35 @@
       .hs-message__details {
         justify-content: flex-end;
       }
+
+      .hs-message__file-attachment {
+        color: $user-message-accent-color;
+      }
     }
 
     &__suggested-faqs {
       display: flex;
       flex-direction: column;
-      margin-top: gutter(6);
+      margin: gutter(4 0);
+      background-color: $form-bg-color;
+      border: 1px solid $form-border-color;
+      border-radius: radius();
     }
 
     &__suggested-faq {
       display: flex;
       justify-content: space-between;
       padding: gutter(12);
-      margin: gutter(4 0);
       color: $form-accent-color;
       cursor: pointer;
-      background-color: $form-bg-color;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid $form-border-color;
 
       &:hover {
         color: $form-accent-color-light;
+      }
+
+      &:last-child {
+        border: none;
       }
     }
 
@@ -147,20 +181,6 @@
       font-size: icon-size(xx-small);
     }
 
-    &__user-attachment {
-      display: flex;
-      align-items: center;
-      color: $user-message-accent-color;
-
-      &:hover {
-        color: $user-message-accent-color-light;
-      }
-    }
-
-    &__attachment {
-      cursor: pointer;
-    }
-
     &__attachment-error {
       display: flex;
       align-items: center;
@@ -170,14 +190,6 @@
 
     &__failed-img {
       opacity: 0.5;
-    }
-
-    &--image-attachment {
-      overflow: hidden;
-
-      .hs-message__item {
-        padding: 0;
-      }
     }
 
     &--error {

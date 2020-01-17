@@ -258,7 +258,12 @@ define("reducers/appState", [
             userAuthToken,
             tags,
             fullPrivacy,
-            widgetOptions = {}
+            widgetOptions = {},
+            /**
+             * Internal data can be passed from helpshift config.
+             * For now internal data might contain only voice meta.
+             */
+            __internal__ = {}
           }
         } = action;
 
@@ -304,7 +309,8 @@ define("reducers/appState", [
           // config options doc :- https://tinyurl.com/yafecdkv
           showHeaderCloseButton: showLauncher
             ? {$set: showCloseButton && fullScreen}
-            : {$set: showCloseButton}
+            : {$set: showCloseButton},
+          internalHsConfigData: {$set: __internal__}
         });
 
       case ACTION_TYPES.NEW_CONVERSATION_STARTED:

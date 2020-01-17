@@ -8,8 +8,10 @@ define("components/containers/branding", [
   "gunpowder/utils/withErrorBoundary",
   "components/commons/branding",
   "utils/logReactError"
-], function(withErrorBoundary, Branding, logReactError) {
+], function(withErrorBoundary, Branding, logReactErrorEsm) {
   "use strict";
+
+  const logReactError = logReactErrorEsm.default;
 
   const mapStateToProps = (state) => {
     const {

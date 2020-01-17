@@ -10,14 +10,14 @@
   "use strict";
 
   // On dev env, this gets replaced by a localhost URL.
-  // See babel tasks in resources/gulp/javascript.js
+  // See babel tasks in resources/gulpfile.babel.js/javascript.js
   const WEB_CHAT_ROOT = "{{ENV_WEB_CHAT_ROOT}}";
 
   const urlParts = WEB_CHAT_ROOT.split("://"),
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.39.0";
+    PATH = "/html/index.html?v=2.42.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c

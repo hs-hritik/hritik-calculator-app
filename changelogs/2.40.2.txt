@@ -1,0 +1,2 @@
+Changelog:
+Enable the footer if poller directly sends issue data

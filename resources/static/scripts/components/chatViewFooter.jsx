@@ -109,7 +109,8 @@ define("components/chatViewFooter", [
         ariaLabelOptionsList: PropTypes.string,
         ariaLabelSearchList: PropTypes.string,
         ariaLabelCloseSearch: PropTypes.string,
-        ariaLabelAttachFiles: PropTypes.string
+        ariaLabelAttachFiles: PropTypes.string,
+        unsupportedDateInputPlaceholder: PropTypes.string
       }).isRequired,
       footerIsActive: PropTypes.bool,
       onFooterFocus: PropTypes.func,
