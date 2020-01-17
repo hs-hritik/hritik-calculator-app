@@ -1,4 +1,3 @@
-/* eslint-disable strict, no-console  */
 const gulp = require("gulp");
 const sass = require("gulp-sass");
 const gulpStylelint = require("gulp-stylelint");
@@ -9,6 +8,8 @@ const sourcemaps = require("gulp-sourcemaps");
 const autoprefixer = require("gulp-autoprefixer");
 const importOnce = require("node-sass-import-once");
 const cache = require("gulp-cached");
+const notifier = require("node-notifier");
+const print = require("gulp-print");
 
 const PATHS = {
   styles: {
@@ -23,6 +24,7 @@ const PATHS = {
   }
 };
 
+// @TODO: Check if we want to use common browserslist for babel
 const BROWSER_COMPATIBILITY = ["last 5 versions", "ie > 9", "ios_saf > 8"];
 
 const SASS_OPTIONS = {
@@ -61,6 +63,7 @@ const lintSass = (path, isProduction) => {
         debug: !isProduction
       })
     )
+    .pipe(print((filepath) => `Linted: ${filepath}`))
     .on("end", () => {
       gutil.log(gutil.colors.blue.bold("*** END: SCSS Lint ***\n"));
     });
@@ -69,19 +72,23 @@ const lintSass = (path, isProduction) => {
 /**
  * Compiles sass files into css and run stylelint
  */
-const compileSass = (path, prod = false) => {
-  let sassHasErrors = false;
-
-  return gulp
+const compileSass = (path, prod, done) =>
+  gulp
     .src(path.src)
     .pipe(sourcemaps.init())
     .pipe(plumber())
     .pipe(
-      sass(prod === true ? SASS_OPTIONS.production : SASS_OPTIONS.development)
-        .on("error", sass.logError)
-        .on("error", () => {
-          sassHasErrors = true;
-        })
+      sass(prod === true ? SASS_OPTIONS.production : SASS_OPTIONS.development).on(
+        "error",
+        (error) => {
+          if (!prod) {
+            notifier.notify("Oops! Sass compile error!");
+          }
+
+          sass.logError(error);
+          done(error);
+        }
+      )
     )
     .pipe(
       autoprefixer({
@@ -91,25 +98,25 @@ const compileSass = (path, prod = false) => {
     .pipe(sourcemaps.write("."))
     .pipe(plumber.stop())
     .pipe(gulp.dest(path.dest))
-    .on("finish", () => {
-      if (!sassHasErrors) {
-        lintSass(path, prod);
-      }
-    });
+    .pipe(print((filepath) => `Compiled: ${filepath}`));
+
+const sassCompileDevTask = (done) => compileSass(PATHS.stylesDev, false, done);
+
+const sassCompileProdTask = (done) => compileSass(PATHS.styles, true, done);
+
+const sassLintDevTask = () => lintSass(PATHS.styles, false);
+
+const sassLintProdTask = () => lintSass(PATHS.styles, true);
+
+const sassWatch = () => {
+  gulp.watch(
+    PATHS.stylesDev.src,
+    {ignoreInitial: false},
+    gulp.parallel(sassCompileDevTask, sassLintDevTask)
+  );
 };
 
-gulp.task("sass:styles", () => {
-  compileSass(PATHS.stylesDev);
-});
-
-gulp.task("sass:compile", () => {
-  compileSass(PATHS.styles, true);
-});
-
-gulp.task("sass:watch", ["sass:styles"], () => {
-  gulp.watch([PATHS.stylesDev.src], ["sass:styles"]);
-});
-
-gulp.task("sass:lint", function() {
-  return lintSass(PATHS.styles, true);
-});
+exports.sassCompileDev = gulp.parallel(sassCompileDevTask, sassLintDevTask);
+exports.sassCompileProd = gulp.series(sassLintProdTask, sassCompileProdTask);
+exports.sassWatch = sassWatch;
+exports.sassLint = sassLintProdTask;

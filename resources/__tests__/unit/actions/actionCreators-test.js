@@ -1,5 +1,5 @@
-import actionCreators from "../../../static/scripts/actions/actionCreators";
-import ACTION_TYPES from "../../../static/scripts/constants/actionTypes";
+import actionCreators from "actions/actionCreators";
+import ACTION_TYPES from "constants/actionTypes";
 
 describe("action creators", () => {
   it("should create an action to update the view", () => {
