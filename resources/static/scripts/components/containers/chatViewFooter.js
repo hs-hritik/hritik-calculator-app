@@ -113,7 +113,8 @@ define("components/containers/chatViewFooter", [
         selectedIntentIds: intents.selectedIntentIds,
         isSearching: intents.isSearching,
         searchResultIntentIds: intents.searchResultIntents.map(({intentId}) => intentId),
-        enforceIntentSelection: intents.enforceIntentSelection
+        enforceIntentSelection: intents.enforceIntentSelection,
+        pickerNavigationState: intents.pickerNavigationState
       };
     }
 

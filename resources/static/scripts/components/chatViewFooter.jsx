@@ -53,7 +53,7 @@ define("components/chatViewFooter", [
   } = CHAT_VIEW_CONSTANTS;
   const {USER_INPUT_PROP_TYPE} = customPropTypes;
   const {ISSUE_TYPE} = APP_STATE_CONSTANTS;
-  const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
+  const {NAVIGATION_STATES} = dragItConstants;
   const {METALIST_GROUP_NAME, METALIST_ITEMS, FOOTER_SELECTORS_LIST_MAP} = axConstants;
   const FOOTER_SELECTORS_TYPES = {
     REPLY_FOOTER: "reply",
@@ -83,6 +83,7 @@ define("components/chatViewFooter", [
       /**
        * Intents related data. Required only if intentsEnabled is true.
        */
+      // @TODO: Intents: Rename this prop to intents because we use intents in store.
       intent: PropTypes.shape({
         /**
          * Intents Map
@@ -127,7 +128,15 @@ define("components/chatViewFooter", [
          * Whether the intent selection should be enforced. If this is true, submit reply
          * is disabled, and the send button won't be shown.
          */
-        enforceIntentSelection: PropTypes.bool.isRequired
+        enforceIntentSelection: PropTypes.bool.isRequired,
+        /**
+         * Navigation state of intents picker widget
+         */
+        pickerNavigationState: PropTypes.oneOf([
+          NAVIGATION_STATES.CLOSED,
+          NAVIGATION_STATES.OPENED,
+          NAVIGATION_STATES.RESIZING
+        ])
       }),
       unreadCount: PropTypes.number,
       /**
@@ -243,8 +252,8 @@ define("components/chatViewFooter", [
 
       const inputIsPillSelect = type === USER_INPUT_TYPES.PILL_SELECT;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
-      const listPickerIsClosed = listPickerNavigationState === LIST_PICKER_NAVIGATION_STATES.CLOSED;
-      const listPickerIsOpened = listPickerNavigationState === LIST_PICKER_NAVIGATION_STATES.OPENED;
+      const listPickerIsClosed = listPickerNavigationState === NAVIGATION_STATES.CLOSED;
+      const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
 
       const isPreIssue = !issueIsCreated;
 
@@ -300,7 +309,10 @@ define("components/chatViewFooter", [
         "hs-footer--failure": failureConfig,
         "hs-footer--list-picker-opened": listPickerIsOpened,
         "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened,
-        "hs-footer__intents": this._shouldIntentsBeShown()
+        "hs-footer--intents": this._shouldIntentsBeShown(),
+        "hs-footer--intents-open":
+          this._shouldIntentsBeShown() &&
+          this.props.intent.pickerNavigationState === NAVIGATION_STATES.OPENED
       });
 
       return (
@@ -403,13 +415,14 @@ define("components/chatViewFooter", [
         text
       } = this.props;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
-      const listPickerIsOpened = listPickerNavigationState === LIST_PICKER_NAVIGATION_STATES.OPENED;
+      const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
       const footerClasses = classes("hs-chat-footer", {
         "hs-chat-footer--form-error": errorMsg,
         "hs-chat-footer--form-invalid": disabled || !value.trim(),
         "hs-chat-footer--mobile": browserIsMobile,
         "hs-chat-footer--no-padding": inputIsListPicker,
-        "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened
+        "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened,
+        "hs-chat-footer--top-border": this._shouldIntentsBeShown()
       });
 
       if (inputIsListPicker) {
@@ -935,13 +948,13 @@ define("components/chatViewFooter", [
      * @param {String} firstFocusItem - To be focused selector
      */
     _onFocusItemsChanged(navigationState, selectors, firstFocusItem) {
-      if (navigationState === LIST_PICKER_NAVIGATION_STATES.OPENED) {
+      if (navigationState === NAVIGATION_STATES.OPENED) {
         ax.backupSelectors(METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
         ax.replaceSelectors({
           group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
           selectors: []
         });
-      } else if (navigationState === LIST_PICKER_NAVIGATION_STATES.CLOSED) {
+      } else if (navigationState === NAVIGATION_STATES.CLOSED) {
         const backedupSelectors = ax.restoreSelectors(METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
 
         if (backedupSelectors) {
@@ -1192,8 +1205,7 @@ define("components/chatViewFooter", [
       const userInputIsPillSelect = userInput.type === USER_INPUT_TYPES.PILL_SELECT;
       const userInputIsListPicker = userInput.type === USER_INPUT_TYPES.LIST_PICKER;
       const userInputIsSelectOption = userInputIsPillSelect || userInputIsListPicker;
-      const listPickerIsClosed =
-        userInput.listPicker.navigationState === LIST_PICKER_NAVIGATION_STATES.CLOSED;
+      const listPickerIsClosed = userInput.listPicker.navigationState === NAVIGATION_STATES.CLOSED;
       const userInputIsEnterText =
         userInput.type === USER_INPUT_TYPES.PLAIN_TEXT ||
         userInput.type === USER_INPUT_TYPES.EMAIL ||

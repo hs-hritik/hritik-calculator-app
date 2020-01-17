@@ -23,11 +23,6 @@
     border-top: 1px solid $form-border-color;
     border-radius: radius(0 0 8 8);
 
-    &__intents {
-      border-top-right-radius: gutter(8);
-      border-top-left-radius: gutter(8);
-    }
-
     /// Applies default radius to footer buttons
     &__btn {
       color: $form-bg-color;
@@ -38,6 +33,18 @@
         color: $form-bg-color;
         background-color: $form-accent-color-light;
       }
+    }
+
+    &--intents {
+      border-top-right-radius: gutter(8);
+      border-top-left-radius: gutter(8);
+    }
+
+    &--intents-open {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
     }
 
     /// Horizontally center align items

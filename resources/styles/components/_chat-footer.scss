@@ -250,5 +250,10 @@
         height: 100%;
       }
     }
+
+    &--top-border {
+      border-top: 1px solid $form-border-color;
+      border-radius: radius(0 0 8 8);
+    }
   }
 }
