@@ -7,12 +7,21 @@
 define("reducers/chatView", [
   "constants/chatView",
   "constants/actionTypes",
+  "gunpowder/constants/widgets/dragIt",
   "gunpowder/utils/object",
   "gunpowder/utils/array",
   "helpers/intent"
-], function(CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils, arrayUtils, intentHelpers) {
+], function(
+  CHAT_VIEW_CONSTANTS,
+  ACTION_TYPES,
+  dragItConstants,
+  objUtils,
+  arrayUtils,
+  intentHelpers
+) {
   "use strict";
 
+  const {NAVIGATION_STATES} = dragItConstants;
   const update = React.addons.update;
   const {
     ACTIVE_FOOTER,
@@ -314,7 +323,8 @@ define("reducers/chatView", [
           intents: {
             isSearching: {$set: isSearching},
             searchResultIntents: {$set: searchResultIntents},
-            searchAlgo: {$set: searchAlgo}
+            searchAlgo: {$set: searchAlgo},
+            pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
           }
         });
       }
@@ -638,7 +648,8 @@ define("reducers/chatView", [
 
         return update(state, {
           intents: {
-            selectedIntentIds: selectedIntentIdsChangeObj
+            selectedIntentIds: selectedIntentIdsChangeObj,
+            pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
           }
         });
       }
