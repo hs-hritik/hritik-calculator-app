@@ -247,7 +247,7 @@ define("reducers/chatView", [
       }
 
       case ACTION_TYPES.ISSUE_CREATED:
-        // When an issue is created, reset userInput and chat view error
+        // When an issue is created, reset userInput, selected intents data and chat view error
         return update(state, {
           userInput: {
             value: {$set: ""},
@@ -257,6 +257,19 @@ define("reducers/chatView", [
             },
             disabled: {$set: false},
             errorMsg: {$set: ""}
+          },
+          intents: {
+            pickerNavigationState: {$set: DEFAULT_LIST_PICKER_NAVIGATION_STATE},
+            selectedIntentIds: {$set: []},
+            isSearching: {$set: false},
+            searchAlgo: {$set: ""},
+            searchResultIntents: {$set: []}
+            // We are not resetting tree and model because we fetch the new tree/model
+            // when we start the new conversation only if it has passed the tree/model SLA.
+            // Also, there is no user selected data in tree/model.
+            // @TODO: Intents: Confirm from product if they want us to fetch the tree
+            // for new issue even if the SLA hasn't passed yet. If yes, reset tree/model
+            // data as well.
           },
           systemTyping: {$set: false},
           error: {$set: INITIAL_ERROR_STATE}
