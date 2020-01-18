@@ -533,7 +533,8 @@ define("components/chatViewFooter", [
         selectedIntentIds,
         isSearching,
         searchResultIntentIds,
-        enforceIntentSelection
+        enforceIntentSelection,
+        pickerNavigationState
       } = this.props.intent;
 
       const {
@@ -559,6 +560,7 @@ define("components/chatViewFooter", [
           topLevelOptionsOrder={topLevelIntentsOrder}
           selectedOptionIds={selectedIntentIds}
           onNavigationStateChange={this._onIntentsNavigationStateChange}
+          navigationState={pickerNavigationState}
           onSelectOption={this._onSelectIntent}
           onUnselectOption={this._onUnselectIntent}
           minHeight={PICKER_MIN_HEIGHT}
@@ -607,7 +609,11 @@ define("components/chatViewFooter", [
      */
     _renderPicker() {
       const {
-        userInput: {options, label: headerLabel},
+        userInput: {
+          options,
+          label: headerLabel,
+          listPicker: {navigationState}
+        },
         onListPickerOptionSelect,
         text: {
           searchPlaceholder,
@@ -638,6 +644,7 @@ define("components/chatViewFooter", [
           className={pickerClasses}
           options={options}
           onNavigationStateChange={this._onPickerNavigationStateChange}
+          navigationState={navigationState}
           onSelect={onListPickerOptionSelect}
           searchPlaceholder={searchPlaceholder}
           headerLabel={headerLabel}
