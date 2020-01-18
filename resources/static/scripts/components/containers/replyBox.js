@@ -21,6 +21,8 @@ define("components/containers/replyBox", [
       ui: {text}
     } = state;
 
+    // @TODO: Intents: Pass intentsReplyBoxPlaceholder/intentsReplyBoxPlaceholderEis
+    // as placeholder when intents are shown to the user.
     return {
       value,
       disabled,

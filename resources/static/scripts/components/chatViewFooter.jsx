@@ -188,7 +188,12 @@ define("components/chatViewFooter", [
         ariaLabelSearchList: PropTypes.string,
         ariaLabelCloseSearch: PropTypes.string,
         ariaLabelAttachFiles: PropTypes.string,
-        unsupportedDateInputPlaceholder: PropTypes.string
+        unsupportedDateInputPlaceholder: PropTypes.string,
+        intentsTitle: PropTypes.string,
+        intentsSearchTitle: PropTypes.string,
+        intentsEmptySearchTitle: PropTypes.string,
+        intentsEmptySearchDesc: PropTypes.string,
+        intentsEmptySearchDescEis: PropTypes.string
       }).isRequired,
       footerIsActive: PropTypes.bool,
       onFooterFocus: PropTypes.func,
@@ -527,12 +532,25 @@ define("components/chatViewFooter", [
         topLevelIntentsOrder,
         selectedIntentIds,
         isSearching,
-        searchResultIntentIds
+        searchResultIntentIds,
+        enforceIntentSelection
       } = this.props.intent;
+
+      const {
+        intentsTitle,
+        intentsSearchTitle,
+        intentsEmptySearchTitle,
+        intentsEmptySearchDescEis,
+        intentsEmptySearchDesc
+      } = this.props.text;
 
       const pickerClasses = classes("hs-chat-footer__picker-field", {
         "hs-nested-picker--mobile": this.props.browserIsMobile
       });
+
+      const emptyListDesc = enforceIntentSelection
+        ? intentsEmptySearchDescEis
+        : intentsEmptySearchDesc;
 
       return (
         <DraggableNestedPicker
@@ -547,6 +565,10 @@ define("components/chatViewFooter", [
           isSearching={isSearching}
           searchResultOptionIds={searchResultIntentIds}
           maxHeight={this.state.pickerMaxHeight}
+          headerTitle={intentsTitle}
+          headerSearchTitle={intentsSearchTitle}
+          headerEmptySearchTitle={intentsEmptySearchTitle}
+          emptyListDesc={emptyListDesc}
         />
       );
     },
