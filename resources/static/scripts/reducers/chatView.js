@@ -163,6 +163,21 @@ define("reducers/chatView", [
     return {intentsMap, ids};
   };
 
+  /**
+   * Returns the default data for intent tree.
+   * @returns {Object} - default data for intent tree
+   */
+  const _getDefaultIntentsTreeData = () => {
+    return {
+      id: "",
+      version: 0,
+      updatedAt: 0,
+      lastFetchTime: 0,
+      intentsMap: {},
+      topLevelIntentsOrder: []
+    };
+  };
+
   const INITIAL_STATE = {
     userInput: _getDefaultUserInputConfig(),
     activeFooter: ACTIVE_FOOTER.REPLY,
@@ -179,14 +194,7 @@ define("reducers/chatView", [
     messageCursor: INITIAL_MESSAGE_CURSOR,
     intents: {
       enforceIntentSelection: false,
-      tree: {
-        id: "",
-        version: 0,
-        updatedAt: 0,
-        lastFetchTime: 0,
-        intentsMap: {},
-        topLevelIntentsOrder: []
-      },
+      tree: _getDefaultIntentsTreeData(),
       model: null,
       pickerNavigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE,
       selectedIntentIds: [],
@@ -596,6 +604,15 @@ define("reducers/chatView", [
           }
         });
       }
+
+      case ACTION_TYPES.INTENTS_TREE_FAILURE:
+        return update(state, {
+          loading: {$set: false},
+          // @TODO: Intents: Confirm enforceIntentSelection flag behavior in case of failure.
+          intents: {
+            tree: {$set: _getDefaultIntentsTreeData()}
+          }
+        });
 
       case ACTION_TYPES.INTENTS_MODEL_SUCCESS: {
         const {response} = action;

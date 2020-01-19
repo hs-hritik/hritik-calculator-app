@@ -2787,7 +2787,10 @@ define("actions/chatView", [
           }
         },
         onFailure: () => {
-          // @TODO: Intents: Handle failure
+          dispatch(actionCreators.intentsTreeFailure());
+          if (callbacks.onFailure) {
+            callbacks.onFailure();
+          }
         }
       });
     };

@@ -312,6 +312,16 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   };
 
   /**
+   * Action to handle the failure of intents tree XHR
+   * @returns {Object} - Action
+   */
+  const intentsTreeFailure = () => {
+    return {
+      type: ACTION_TYPES.INTENTS_TREE_FAILURE
+    };
+  };
+
+  /**
    * Action to update the intents model data.
    * @param {Object} response - The intents model XHR response
    * @returns {Object} - Action
@@ -374,6 +384,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     setKeyboardInteractionIsActive,
     intentsTreeSuccess,
     intentsTreeRequest,
+    intentsTreeFailure,
     intentsModelSuccess,
     intentSelected,
     intentUnselected
