@@ -2761,9 +2761,12 @@ define("actions/chatView", [
   /**
    * Action to load the intents tree.
    *
+   * @param {Object} [callbacks]
+   * @param {Function} [callbacks.onSuccess]
+   * @param {Function} [callbacks.onFailure]
    * @returns {Function} - Action
    */
-  const loadIntentsTree = () => {
+  const loadIntentsTree = (callbacks = {}) => {
     return (dispatch, getState) => {
       const {domain, featuresEnabled} = getState().appState;
 
@@ -2779,7 +2782,9 @@ define("actions/chatView", [
         data: xhrHelpers.getPreparedXhrData(),
         onSuccess: (response) => {
           dispatch(actionCreators.intentsTreeSuccess(response));
-          dispatch(loadIntentsModel());
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess(response);
+          }
         },
         onFailure: () => {
           // @TODO: Intents: Handle failure

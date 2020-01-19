@@ -418,8 +418,8 @@ define("actions/appState", [
         );
       }
 
-      // @TODO: Intents: Change this action dispatch location after pre-issue optimization release.
-      dispatch(chatViewActions.loadIntentsTree());
+      // Pre-load the intents tree.
+      dispatch(loadIntents());
       // If at least one issue exists on backend then start the poller.
       // (poller will check for issue state)
       // Else start a new conversation by creating new preIssue.
@@ -779,6 +779,49 @@ define("actions/appState", [
   };
 
   /**
+   * Returns true if the intent tree SLA has elapsed.
+   * @param {Number} intentsTreeSla - Intent tree SLA
+   * @param {Number} lastFetchTime - Last fetch time of intents tree.
+   * @returns {Boolean} - True if the intent tree SLA has elapsed.
+   */
+  const _hasIntentTreeSlaElapsed = (intentsTreeSla, lastFetchTime) => {
+    return Date.now() - lastFetchTime < intentsTreeSla;
+  };
+
+  /**
+   * Action to load intents tree and model data
+   * @returns {Function} - Action
+   */
+  const loadIntents = () => {
+    return (dispatch, getState) => {
+      const {
+        chatView: {
+          intents: {
+            tree: {lastFetchTime}
+          }
+        },
+        appState: {featuresEnabled, intentsTreeSla}
+      } = getState();
+
+      // No need to fetch the intent tree again if it was last fetched within
+      // the defined time period (intentsTreeSla)
+      if (!featuresEnabled.intents || _hasIntentTreeSlaElapsed(intentsTreeSla, lastFetchTime)) {
+        return;
+      }
+
+      dispatch(
+        chatViewActions.loadIntentsTree({
+          onSuccess: () => {
+            // @TODO: Intents: Check if we should clear the model related data before loading the
+            // new data.
+            dispatch(chatViewActions.loadIntentsModel());
+          }
+        })
+      );
+    };
+  };
+
+  /**
    * Action to start a new conversation.
    * A new conversation is started by -
    * adding the greeting message to the message list, if applicable, and
@@ -803,6 +846,9 @@ define("actions/appState", [
         // the poller success callback, check actions/chatView -> handleResetInitialUserMessage.
         if (initialUserMessage) {
           dispatch(chatViewActions.createPreIssue());
+        } else {
+          // Load intents before starting the conversation.
+          dispatch(loadIntents());
         }
       }
     };

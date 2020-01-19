@@ -296,7 +296,8 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   const intentsTreeSuccess = (response) => {
     return {
       type: ACTION_TYPES.INTENTS_TREE_SUCCESS,
-      response
+      response,
+      fetchTime: Date.now()
     };
   };
 

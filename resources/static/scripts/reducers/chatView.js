@@ -183,6 +183,7 @@ define("reducers/chatView", [
         id: "",
         version: 0,
         updatedAt: 0,
+        lastFetchTime: 0,
         intentsMap: {},
         topLevelIntentsOrder: []
       },
@@ -576,7 +577,7 @@ define("reducers/chatView", [
         });
 
       case ACTION_TYPES.INTENTS_TREE_SUCCESS: {
-        const {response} = action;
+        const {response, fetchTime} = action;
         const {intentsMap, ids} = _processIntentsTree(response.tree);
 
         return update(state, {
@@ -588,6 +589,7 @@ define("reducers/chatView", [
               id: {$set: response.id},
               version: {$set: response.version},
               updatedAt: {$set: response.updated_at},
+              lastFetchTime: {$set: fetchTime},
               intentsMap: {$set: intentsMap},
               topLevelIntentsOrder: {$set: ids}
             }
