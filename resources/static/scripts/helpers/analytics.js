@@ -367,14 +367,13 @@ define("helpers/analytics", [
   const _trackSearchIntent = (config) => {
     const {
       chatView: {
-        intents: {selectedIntentIds, searchResultIntents, searchAlgo, model}
+        intents: {searchResultIntents, searchAlgo, model}
       }
     } = store.getState();
     const {ts, searchIsCleared = false} = config;
 
     const data = {
       rc: searchResultIntents.length,
-      iids: selectedIntentIds,
       clr: searchIsCleared
     };
 
