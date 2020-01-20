@@ -182,7 +182,6 @@ define("actions/chatView", [
 
       const {appState} = getState();
       if (appState.issueType === ISSUE_TYPE.INITIAL && appState.featuresEnabled.intents) {
-        // @TODO: Intents: Trigger search event if value === ""
         dispatch(debouncedSearchIntents(value));
       }
     };
@@ -2030,7 +2029,6 @@ define("actions/chatView", [
             handleIssueReopen(issueState);
             dispatch(updateReplyText(""));
             audioHelpers.playSend();
-            // @TODO: Intents: Trigger message sent event.
           }
         });
       } else {
@@ -2044,7 +2042,6 @@ define("actions/chatView", [
         // This flow (submitReply) won't be invoked in that case.
         dispatch(actionCreators.setInitialUserMsg(trimmedValue));
         dispatch(createPreIssue());
-        // @TODO: Intents: If intent feature is enabled, trigger the search intents event
       }
     };
   };
