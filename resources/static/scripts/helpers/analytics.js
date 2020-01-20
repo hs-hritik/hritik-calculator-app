@@ -91,18 +91,13 @@ define("helpers/analytics", [
    */
   const _getDefaultPayload = () => {
     const {
-      appState: {
-        deviceId,
-        developerSetLanguage,
-        analytics: {sessionId: analyticsSessionId}
-      }
+      appState: {deviceId, developerSetLanguage}
     } = store.getState();
 
     // @TODO: Backend needs `cc` (country code) as well, but we don't have this
     // information. Add it to the following object when we implement it.
     const payload = {
       [PAYLOAD_EVENT.ID]: deviceId,
-      [PAYLOAD_EVENT.SESSION_ID]: analyticsSessionId,
       [PAYLOAD_EVENT.TIMESTAMP]: Date.now(), // Timestamp of when the event is tracked
       [PAYLOAD_EVENT.LANGUAGE]: _lang
     };
@@ -112,6 +107,14 @@ define("helpers/analytics", [
     }
 
     return xhrHelpers.getPreparedXhrData(payload);
+  };
+
+  /**
+   * Returns the analytics session id
+   * @returns {String} - Analytics session id
+   */
+  const _getAnalyticsSessionId = () => {
+    return store.getState().appState.analytics.sessionId;
   };
 
   /**
@@ -146,7 +149,10 @@ define("helpers/analytics", [
     _fireTrackingXhr([
       {
         ts,
-        t: PAYLOAD_EVENT.WIDGET_LOAD
+        t: PAYLOAD_EVENT.WIDGET_LOAD,
+        d: {
+          acid: _getAnalyticsSessionId()
+        }
       }
     ]);
   };
@@ -168,6 +174,7 @@ define("helpers/analytics", [
     const eventData = {
       ts: config.ts,
       d: {
+        acid: _getAnalyticsSessionId(),
         s: config.trigger === TRIGGER.API ? PAYLOAD_SOURCE.API : PAYLOAD_SOURCE.USER,
         b: outOfBusinessHours
       }
@@ -203,6 +210,7 @@ define("helpers/analytics", [
       {
         ts: config.ts,
         d: {
+          acid: _getAnalyticsSessionId(),
           id: config.issueId
         },
         t: PAYLOAD_EVENT.ISSUE_CREATED
@@ -264,6 +272,7 @@ define("helpers/analytics", [
     const eventData = {
       ts,
       d: {
+        acid: _getAnalyticsSessionId(),
         id: internalIssueId
       }
     };
@@ -300,6 +309,7 @@ define("helpers/analytics", [
     } = store.getState();
 
     const data = {
+      acid: _getAnalyticsSessionId(),
       iids: selectedIntentIds,
       leaf: !(intent.children && intent.children.length)
     };
@@ -346,6 +356,7 @@ define("helpers/analytics", [
         t: PAYLOAD_EVENT.INTENT_UNSELECTED,
         ts: config.ts,
         d: {
+          acid: _getAnalyticsSessionId(),
           iids: selectedIntentIds
         }
       }
@@ -373,6 +384,7 @@ define("helpers/analytics", [
     const {ts, searchIsCleared = false} = config;
 
     const data = {
+      acid: _getAnalyticsSessionId(),
       rc: searchResultIntents.length,
       clr: searchIsCleared
     };
@@ -412,6 +424,7 @@ define("helpers/analytics", [
         t: PAYLOAD_EVENT.INTENT_TREE_SHOWN,
         ts: config.ts,
         d: {
+          acid: _getAnalyticsSessionId(),
           itid: tree.id,
           itv: tree.version,
           eis: enforceIntentSelection
@@ -440,6 +453,7 @@ define("helpers/analytics", [
         t: PAYLOAD_EVENT.MESSAGE_SENT,
         ts: ts,
         d: {
+          acid: _getAnalyticsSessionId(),
           id,
           type
         }
