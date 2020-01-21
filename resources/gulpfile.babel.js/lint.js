@@ -13,9 +13,17 @@ const PATHS = {
  * gulp eslint --file static/js/pages/admin.js --file static/jsx/widgets/popOver.jsx
  */
 const eslintTask = (done) => {
+  const gulpSrcOptions = {};
   let src = PATHS.eslint;
+
   if (argv.file) {
     src = argv.file;
+    // The argument --file is passed by office bots to run eslint on changed files.
+    // When eslint task is ran on JS diff, that diff may include deleted files, but eslint task
+    // will fail on non existent files. So we added allowEmpty flag to make it pass as a temporary
+    // workaround
+    gulpSrcOptions.allowEmpty = true;
+
     if (!Array.isArray(src)) {
       src = [src];
     }
@@ -28,7 +36,7 @@ const eslintTask = (done) => {
   }
 
   return gulp
-    .src(src)
+    .src(src, gulpSrcOptions)
     .pipe(eslint())
     .pipe(eslint.format(argv.format)) // stylish, compact
     .pipe(eslint.failAfterError())
