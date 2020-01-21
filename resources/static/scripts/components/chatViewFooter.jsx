@@ -7,7 +7,7 @@
 define("components/chatViewFooter", [
   "components/starRating",
   "components/jumpToLatestBtn",
-  "components/containers/replyBox",
+  "components/replyBox",
   "components/commons/fileInput",
   "components/commons/skipButtonWrapper",
   "constants/chatView",
@@ -26,7 +26,7 @@ define("components/chatViewFooter", [
 ], function(
   StarRating,
   JumpToLatestBtn,
-  ReplyBoxContainer,
+  ReplyBox,
   FileInput,
   SkipButtonWrapper,
   CHAT_VIEW_CONSTANTS,
@@ -159,6 +159,7 @@ define("components/chatViewFooter", [
       }),
       onJumpBtnClick: PropTypes.func,
       onSubmitReply: PropTypes.func.isRequired,
+      onChangeReplyBoxValue: PropTypes.func.isRequired,
       onValueChangeInputField: PropTypes.func.isRequired,
       onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
       onRejectResolutionQuestionClick: PropTypes.func.isRequired,
@@ -192,7 +193,8 @@ define("components/chatViewFooter", [
         intentsSearchTitle: PropTypes.string,
         intentsEmptySearchTitle: PropTypes.string,
         intentsEmptySearchDesc: PropTypes.string,
-        intentsEmptySearchDescEis: PropTypes.string
+        intentsEmptySearchDescEis: PropTypes.string,
+        replyBtnPlaceholder: PropTypes.string
       }).isRequired,
       footerIsActive: PropTypes.bool,
       onFooterFocus: PropTypes.func,
@@ -410,6 +412,7 @@ define("components/chatViewFooter", [
           type,
           errorMsg,
           disabled,
+          placeholder: userInputPlaceholder,
           listPicker: {navigationState: listPickerNavigationState}
         },
         onFooterFocus,
@@ -454,8 +457,21 @@ define("components/chatViewFooter", [
           ariaLabel = text.chatViewIssueRejectionQuestion;
         }
 
+        // @TODO: Intents: Pass intentsReplyBoxPlaceholder/intentsReplyBoxPlaceholderEis
+        // as placeholder when intents are shown to the user.
+
         inputComponentEl = (
-          <ReplyBoxContainer
+          <ReplyBox
+            value={value}
+            disabled={disabled}
+            placeholder={userInputPlaceholder || text.replyBtnPlaceholder}
+            widgetIsOpened={!this.props.widgetIsMinimized}
+            issueIsCreated={this.props.issueIsCreated}
+            browserIsMobile={this.props.browserIsMobile}
+            onChangeReplyBoxValue={this.props.onChangeReplyBoxValue}
+            onSubmitReply={this.props.onSubmitReply}
+            onFooterFocus={this.props.onFooterFocus}
+            onFooterBlur={this.props.onFooterBlur}
             className="hs-chat-footer__text-area"
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}

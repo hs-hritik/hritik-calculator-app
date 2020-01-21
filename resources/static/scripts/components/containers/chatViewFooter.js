@@ -142,6 +142,9 @@ define("components/containers/chatViewFooter", [
       onFooterBlur: () => {
         dispatch(actionCreators.setFooterInactive());
       },
+      onChangeReplyBoxValue: (value) => {
+        dispatch(chatViewActions.updateReplyTextAndSearchIntents(value));
+      },
       onAcceptResolutionQuestionClick: () => {
         dispatch(chatViewActions.acceptResolutionQuestion());
       },
