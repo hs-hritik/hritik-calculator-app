@@ -107,7 +107,7 @@ define("components/containers/chatViewFooter", [
     };
 
     if (intentsFeatureIsEnabled) {
-      props.intent = {
+      props.intents = {
         intentsMap: intents.tree.intentsMap,
         topLevelIntentsOrder: intents.tree.topLevelIntentsOrder,
         selectedIntentIds: intents.selectedIntentIds,

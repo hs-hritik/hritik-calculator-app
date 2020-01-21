@@ -83,8 +83,7 @@ define("components/chatViewFooter", [
       /**
        * Intents related data. Required only if intentsEnabled is true.
        */
-      // @TODO: Intents: Rename this prop to intents because we use intents in store.
-      intent: PropTypes.shape({
+      intents: PropTypes.shape({
         /**
          * Intents Map
          */
@@ -317,7 +316,7 @@ define("components/chatViewFooter", [
         "hs-footer--intents": this._shouldIntentsBeShown(),
         "hs-footer--intents-open":
           this._shouldIntentsBeShown() &&
-          this.props.intent.pickerNavigationState === NAVIGATION_STATES.OPENED
+          this.props.intents.pickerNavigationState === NAVIGATION_STATES.OPENED
       });
 
       return (
@@ -535,7 +534,7 @@ define("components/chatViewFooter", [
         searchResultIntentIds,
         enforceIntentSelection,
         pickerNavigationState
-      } = this.props.intent;
+      } = this.props.intents;
 
       const {
         intentsTitle,
@@ -903,7 +902,7 @@ define("components/chatViewFooter", [
      * @returns {Boolean} - True, if the submit reply should be disabled.
      */
     _shouldSubmitReplyBeDisabled() {
-      return this._shouldIntentsBeShown() && this.props.intent.enforceIntentSelection;
+      return this._shouldIntentsBeShown() && this.props.intents.enforceIntentSelection;
     },
 
     /**
@@ -915,7 +914,7 @@ define("components/chatViewFooter", [
         return false;
       }
 
-      const {selectedIntentIds, intentsMap, topLevelIntentsOrder} = this.props.intent;
+      const {selectedIntentIds, intentsMap, topLevelIntentsOrder} = this.props.intents;
       let intentsAreAvailable = false;
 
       // If some intent is selected, check if the last selected intent has any children,
