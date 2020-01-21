@@ -2290,10 +2290,14 @@ define("actions/chatView", [
             return;
           }
 
-          const newIssueId = response.id;
-          const internalId = response.internal_id;
+          const config = {
+            activeIssueId: response.id,
+            internalIssueId: response.internal_id,
+            // @TODO: Intents: Remove hardcoded "preissue" after backend starts sending type
+            issueType: response.type || "preissue"
+          };
 
-          dispatch(issueCreated({newIssueId, internalId}));
+          dispatch(issueCreated(config));
 
           startPollingForMessages();
 
@@ -2741,17 +2745,18 @@ define("actions/chatView", [
     };
   };
 
-  /*
+  /**
    * Return the action to be dispatched when an issue/preissue is created.
-   * @param {string} newIssueId
-   * @param {string} internalId - internal issue id
+   * @param {Object} config
+   * @param {String} config.activeIssueId
+   * @param {String} config.internalIssueId
+   * @param {String} config.issueType
    * @returns {Object} - the action object
    */
-  const issueCreated = (newIssueId, internalId) => {
+  const issueCreated = (config) => {
     return {
       type: ACTION_TYPES.ISSUE_CREATED,
-      activeIssueId: newIssueId,
-      internalIssueId: internalId
+      config
     };
   };
 

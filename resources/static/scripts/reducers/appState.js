@@ -323,17 +323,20 @@ define("reducers/appState", [
           }
         });
 
-      case ACTION_TYPES.ISSUE_CREATED:
-        const {activeIssueId, internalIssueId} = action;
+      case ACTION_TYPES.ISSUE_CREATED: {
+        const {activeIssueId, internalIssueId, issueType} = action.config;
+
         return update(state, {
           conversationStarted: {$set: true},
           activeIssueId: {$set: activeIssueId},
           internalIssueId: {$set: internalIssueId},
           issueState: {$set: ISSUE_STATE.ACTIVE},
+          issueType: {$set: issueType},
           sdkConfigOptions: {
             initialUserMessage: {$set: ""}
           }
         });
+      }
 
       case ACTION_TYPES.SET_ACTIVE_ISSUE_ID:
         return update(state, {
