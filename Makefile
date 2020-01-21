@@ -26,12 +26,11 @@ GUNPOWDER_DEST = resources/static/scripts/gunpowder
 # tests for HTML and CSS.
 ifdef GERRIT_CHANGE_ID
 	git_diff = $(shell sh -c 'git diff-tree --no-commit-id --name-only --root -m -r HEAD')
-	js_diff = $(shell sh -c "echo $(git_diff) | xargs -n 1 | grep -E 'scripts/.+\.js$$|__tests__/.+\.js$$|scripts/.+\.jsx$$|__tests__/.+\.jsx$$'")
-	eslint_prefixed_js_diff = $(addprefix --file ,$(js_diff))
+	js_diff = $(shell sh -c "echo $(git_diff) | grep -E 'scripts/.+\.js$$|__tests__/.+\.js$$|scripts/.+\.jsx$$|__tests__/.+\.jsx$$'")
 	styles_diff = $(shell sh -c "echo $(git_diff) | grep 'styles/.*\.scss'")
 	makefile_diff = $(shell sh -c "echo $(git_diff) | grep Makefile")
 
-	ifneq ($(eslint_prefixed_js_diff),)
+	ifneq ($(js_diff),)
 		TEST_TARGETS := $(TEST_TARGETS) npminstall gunpowder reactjs eslint unit-test
 		JS_TEST_TARGETS := $(JS_TEST_TARGETS) eslint
 	endif
@@ -73,8 +72,12 @@ npminstall:
 eslint: npminstall
 	@echo ">> Starting task: $@"
 	@echo "Running eslint on JS & JSX files."
-	$(GULP) eslint $(eslint_prefixed_js_diff);
+	$(GULP) eslint;
 	@echo ">> Finished task: $@"
+
+eslint-changed-files: npminstall
+	@echo "\nRunning eslint on changed js & jsx files."
+	npm run eslintChangedFiles;
 
 reactjs: npminstall
 	@echo ">> Starting task: $@"

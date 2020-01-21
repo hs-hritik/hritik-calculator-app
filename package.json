@@ -6,7 +6,8 @@
     "start": "babel-node resources/static/scripts/main",
     "test": "jest",
     "update-snapshot": "jest --updateSnapshot",
-    "gulp": "cd resources && gulp"
+    "gulp": "cd resources && gulp",
+    "eslintChangedFiles": "cd resources && gulp eslint `git diff-tree --no-commit-id --name-only --root -m -r HEAD | grep -E 'js/.+\\.js$$|scripts/.+\\.js$$|__tests__/src/.+\\.js$$|scripts/.+\\.jsx$$|__tests__/src/.+\\.jsx$$' | cut -d/ -f2- | sed 's/^/--file /g'`"
   },
   "repository": {
     "type": "git",
