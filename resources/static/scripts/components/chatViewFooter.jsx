@@ -194,7 +194,9 @@ define("components/chatViewFooter", [
         intentsEmptySearchTitle: PropTypes.string,
         intentsEmptySearchDesc: PropTypes.string,
         intentsEmptySearchDescEis: PropTypes.string,
-        replyBtnPlaceholder: PropTypes.string
+        replyBtnPlaceholder: PropTypes.string,
+        intentsReplyBoxPlaceholder: PropTypes.string,
+        intentsReplyBoxPlaceholderEis: PropTypes.string
       }).isRequired,
       footerIsActive: PropTypes.bool,
       onFooterFocus: PropTypes.func,
@@ -412,7 +414,6 @@ define("components/chatViewFooter", [
           type,
           errorMsg,
           disabled,
-          placeholder: userInputPlaceholder,
           listPicker: {navigationState: listPickerNavigationState}
         },
         onFooterFocus,
@@ -457,14 +458,11 @@ define("components/chatViewFooter", [
           ariaLabel = text.chatViewIssueRejectionQuestion;
         }
 
-        // @TODO: Intents: Pass intentsReplyBoxPlaceholder/intentsReplyBoxPlaceholderEis
-        // as placeholder when intents are shown to the user.
-
         inputComponentEl = (
           <ReplyBox
             value={value}
             disabled={disabled}
-            placeholder={userInputPlaceholder || text.replyBtnPlaceholder}
+            placeholder={this._getReplyBoxPlaceholder()}
             widgetIsOpened={!this.props.widgetIsMinimized}
             issueIsCreated={this.props.issueIsCreated}
             browserIsMobile={this.props.browserIsMobile}
@@ -909,6 +907,28 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    /**
+     * Return the reply box placeholder.
+     * If intents are being shown to the user, the reply box placeholder is different.
+     * @returns {String} - Reply box placeholder
+     */
+    _getReplyBoxPlaceholder() {
+      const {
+        userInput,
+        text: {replyBtnPlaceholder, intentsReplyBoxPlaceholder, intentsReplyBoxPlaceholderEis}
+      } = this.props;
+
+      if (this._shouldIntentsBeShown()) {
+        if (this.props.intents.enforceIntentSelection) {
+          return intentsReplyBoxPlaceholderEis;
+        }
+
+        return intentsReplyBoxPlaceholder;
+      }
+
+      return userInput.placeholder || replyBtnPlaceholder;
     },
 
     /**
