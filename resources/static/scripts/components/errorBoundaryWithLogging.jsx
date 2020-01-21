@@ -7,8 +7,10 @@
 define("components/errorBoundaryWithLogging", [
   "gunpowder/widgets/errorBoundary",
   "utils/logReactError"
-], function(ErrorBoundary, logReactError) {
+], function(ErrorBoundary, logReactErrorEsm) {
   "use strict";
+
+  const logReactError = logReactErrorEsm.default;
 
   const ErrorBoundaryWithLogging = ({children, fallbackComponent, onError}) => {
     const handleError = (error, info) => {

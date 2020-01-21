@@ -47,7 +47,7 @@ define("components/containers/viewWrapper", [
       onFocusLauncher: () => {
         dispatch(postSdkMessage.focusLauncher());
       },
-      onKeyPress: ({keyboardInteractionIsActive}) => {
+      onKeyDown: ({keyboardInteractionIsActive}) => {
         dispatch(actionCreators.setKeyboardInteractionIsActive(keyboardInteractionIsActive));
       },
       onClick: ({keyboardInteractionIsActive}) => {
