@@ -416,10 +416,11 @@ define("actions/appState", [
             open: false
           })
         );
+
+        // Pre-load the intents tree.
+        dispatch(loadIntents());
       }
 
-      // Pre-load the intents tree.
-      dispatch(loadIntents());
       // If at least one issue exists on backend then start the poller.
       // (poller will check for issue state)
       // Else start a new conversation by creating new preIssue.
