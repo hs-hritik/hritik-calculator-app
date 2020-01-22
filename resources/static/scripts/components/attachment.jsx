@@ -285,7 +285,7 @@ define("components/attachment", [
       onImageLoad
     } = props;
 
-    let name, url, iconClasses, onWrapperClick;
+    let name, url, iconClasses, onWrapperClick, contentType;
 
     // Attachment message is a frontend/dummy message
     if (messageIsClientGenerated) {
@@ -320,6 +320,7 @@ define("components/attachment", [
 
       name = attachment.fileName;
       url = attachment.url;
+      contentType = attachment.contentType;
       iconClasses = "ion-attachment";
       onWrapperClick = () => {
         _onAttachmentClick(url);
@@ -329,7 +330,7 @@ define("components/attachment", [
     const attachmentAriaLabel = _getAttachmentAriaLabel(name, ariaLabelOpenFile);
 
     // Determine if the attachment is previewable or not
-    const isImageAttachment = attachmentsHelpers.isImageAttachment(name, url);
+    const isImageAttachment = attachmentsHelpers.isImageAttachment(contentType);
     const localAttachmentHasError = messageIsClientGenerated ? messageStates.error : true;
 
     // For any attachment to be previewable
@@ -388,8 +389,8 @@ define("components/attachment", [
     }
 
     return attachments.map((attachment, index) => {
-      const {url, fileName} = attachment;
-      const attachmentIsPreviewable = attachmentsHelpers.isImageAttachment(url, fileName);
+      const {url, fileName, contentType} = attachment;
+      const attachmentIsPreviewable = attachmentsHelpers.isImageAttachment(contentType);
       const onWrapperClick = () => {
         _onAttachmentClick(url);
       };

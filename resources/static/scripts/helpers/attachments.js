@@ -10,7 +10,6 @@ define("helpers/attachments", ["constants/attachments", "gunpowder/utils/array"]
 ) {
   "use strict";
 
-  const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
   const {
     MAX_ATTACHMENT_LIMIT,
     ATTACHMENT_OPERATIONS,
@@ -145,22 +144,9 @@ define("helpers/attachments", ["constants/attachments", "gunpowder/utils/array"]
    * @param {String} url - attachment url
    * @returns {Boolean} - attachment is of type image
    */
-  const isImageAttachment = (name, url) => {
-    let imageIdentifier;
-
-    // If file does not contain any extension
-    if (name.indexOf(".") !== -1) {
-      imageIdentifier = name;
-    } else if (url && url.indexOf(".") !== -1) {
-      imageIdentifier = url;
-    } else {
-      return false;
-    }
-
-    const dotIndex = imageIdentifier.lastIndexOf(".") + 1;
-    const fileExt = imageIdentifier.substr(dotIndex, imageIdentifier.length).toLowerCase();
-
-    return IMAGE_EXTENSIONS.indexOf(fileExt) !== -1;
+  const isImageAttachment = (contentType) => {
+    // TODO: Fix to use string includes instead of indexOf when polyfill is added in gunpowder
+    return !!contentType && contentType.indexOf("image/") > -1;
   };
 
   return {
