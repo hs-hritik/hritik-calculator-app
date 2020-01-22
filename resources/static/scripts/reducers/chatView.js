@@ -673,6 +673,16 @@ define("reducers/chatView", [
         });
       }
 
+      case ACTION_TYPES.STOP_INTENTS_SEARCH: {
+        return update(state, {
+          intents: {
+            isSearching: {$set: false},
+            searchResultIntents: {$set: []},
+            searchAlgo: {$set: ""}
+          }
+        });
+      }
+
       case ACTION_TYPES.INTENT_UNSELECTED: {
         return update(state, {
           intents: {

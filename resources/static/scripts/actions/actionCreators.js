@@ -355,6 +355,16 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to stop intents search
+   * @returns {Object} - Action
+   */
+  const stopIntentsSearch = () => {
+    return {
+      type: ACTION_TYPES.STOP_INTENTS_SEARCH
+    };
+  };
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -387,6 +397,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentsTreeFailure,
     intentsModelSuccess,
     intentSelected,
-    intentUnselected
+    intentUnselected,
+    stopIntentsSearch
   };
 });

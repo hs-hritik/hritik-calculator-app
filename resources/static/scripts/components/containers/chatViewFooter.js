@@ -179,6 +179,9 @@ define("components/containers/chatViewFooter", [
       onUnselectIntent: () => {
         dispatch(actionCreators.intentUnselected());
         analyticsHelpers.track(EVENT.INTENT_UNSELECTED);
+      },
+      onStopIntentsSearch: () => {
+        dispatch(actionCreators.stopIntentsSearch());
       }
     };
   };

@@ -170,6 +170,7 @@ define("components/chatViewFooter", [
       onSelectIntent: PropTypes.func.isRequired,
       onUnselectIntent: PropTypes.func.isRequired,
       onIntentsNavigationStateChange: PropTypes.func.isRequired,
+      onStopIntentsSearch: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
         resolutionQuestionReject: PropTypes.string.isRequired,
@@ -584,6 +585,7 @@ define("components/chatViewFooter", [
           headerSearchTitle={intentsSearchTitle}
           headerEmptySearchTitle={intentsEmptySearchTitle}
           emptyListDesc={emptyListDesc}
+          onStopSearch={this._onStopIntentsSearch}
         />
       );
     },
@@ -990,6 +992,13 @@ define("components/chatViewFooter", [
      */
     _onUnselectIntent() {
       this.props.onUnselectIntent();
+    },
+
+    /**
+     * Handler to stop intents search
+     */
+    _onStopIntentsSearch() {
+      this.props.onStopIntentsSearch();
     },
 
     /**
