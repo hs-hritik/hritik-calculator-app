@@ -18,6 +18,8 @@
   $action-icon-color: var(--hs-base-color);
   $header-txt-color: var(--hs-chat-widget-secondary-text-color);
   $form-border-color: var(--hs-form-border-color);
+  $form-secondary-border-color: var(--hs-form-secondary-border-color);
+  $form-secondary-bg-color: var(--hs-form-secondary-bg-color);
 
   .hs-nested-picker {
     display: flex;
@@ -28,6 +30,7 @@
     &__options-wrapper {
       display: flex;
       flex-basis: 100%;
+      justify-content: center;
       overflow-y: hidden;
       outline-offset: -3px;
     }
@@ -43,7 +46,7 @@
       display: flex;
       padding: gutter(12);
       cursor: pointer;
-      border-bottom: 1px solid $form-border-color;
+      border-bottom: 1px solid $form-secondary-border-color;
       -webkit-tap-highlight-color: $no-tap-highlight-color;
 
       &-highlighted {
@@ -52,6 +55,7 @@
 
       &-parent-option {
         color: $header-txt-color;
+        opacity: 0.7;
       }
 
       &-search-result {
@@ -60,6 +64,10 @@
 
       &-label {
         flex: 1;
+      }
+
+      &-arrow {
+        color: $form-secondary-bg-color;
       }
     }
 
@@ -70,7 +78,9 @@
       border-bottom: 1px solid $form-border-color;
 
       &-text {
+        font-weight: font-weight(medium);
         color: $header-txt-color;
+        opacity: 0.7;
       }
 
       &-toggle-icon {
@@ -80,6 +90,15 @@
         color: $action-icon-color;
         cursor: pointer;
       }
+    }
+
+    &__empty-list-note {
+      display: flex;
+      align-items: center;
+      max-width: 75%;
+      font-weight: font-weight(medium);
+      text-align: center;
+      opacity: 0.7;
     }
 
     &--opened {
