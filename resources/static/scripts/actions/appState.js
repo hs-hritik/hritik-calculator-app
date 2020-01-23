@@ -782,9 +782,11 @@ define("actions/appState", [
 
   /**
    * Action to load intents tree and model data
+   * @param {Object} [callbacks]
+   * @param {Function} [callbacks.onIntentTreeSuccess] - Intents tree success callback
    * @returns {Function} - Action
    */
-  const loadIntents = () => {
+  const loadIntents = ({onIntentTreeSuccess} = {}) => {
     return (dispatch, getState) => {
       const {
         chatView: {
@@ -797,7 +799,16 @@ define("actions/appState", [
 
       // No need to fetch the intent tree again if it was last fetched within
       // the defined time period (intentsTreeSla)
-      if (!featuresEnabled.intents || _hasIntentTreeSlaElapsed(intentsTreeSla, lastFetchTime)) {
+      if (!featuresEnabled.intents) {
+        return;
+      }
+
+      if (_hasIntentTreeSlaElapsed(intentsTreeSla, lastFetchTime)) {
+        // If using the already fetched intents tree, call onIntentTreeSuccess callback
+        if (onIntentTreeSuccess) {
+          onIntentTreeSuccess();
+        }
+
         return;
       }
 
@@ -806,6 +817,10 @@ define("actions/appState", [
           onSuccess: () => {
             // @TODO: Intents: Check if we should clear the model related data before loading the
             // new data.
+            if (onIntentTreeSuccess) {
+              onIntentTreeSuccess();
+            }
+
             dispatch(chatViewActions.loadIntentsModel());
           }
         })
@@ -842,7 +857,13 @@ define("actions/appState", [
           dispatch(chatViewActions.createPreIssue());
         } else {
           // Load intents before starting the conversation.
-          dispatch(loadIntents());
+          dispatch(
+            loadIntents({
+              onIntentTreeSuccess: () => {
+                analyticsHelpers.track(EVENT.INTENT_TREE_SHOWN);
+              }
+            })
+          );
         }
       }
     };
