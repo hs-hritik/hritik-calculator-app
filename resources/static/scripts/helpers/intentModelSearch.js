@@ -147,13 +147,12 @@ define("helpers/intentModelSearch", ["gunpowder/utils/object"], function(objUtil
    * @param {Object} config - Config
    * @param {Object} config.intentsMap
    * @param {Number} config.maxNumberOfParentIntents
-   * @param {Number} config.maxNumberOfLeafIntents
    * @returns {Object[]} - Sorted map of the matched intent ids and probabilities
    *                      [{intentId: "intent_1_id", probability: 0.3}]
    */
   const _matchParentIntents = (mappedIntentProbabilities, config) => {
     const parentProbabilitiesMap = {};
-    const {intentsMap, maxNumberOfParentIntents, maxNumberOfLeafIntents} = config;
+    const {intentsMap, maxNumberOfParentIntents} = config;
 
     // Create the parent intents map which has the sum of all the child intents,
     // and the array of child intents as well
@@ -177,16 +176,13 @@ define("helpers/intentModelSearch", ["gunpowder/utils/object"], function(objUtil
     // Convert the parent probabilities map to array.
     // Sort the parent probabilities array according to probability.
     // Take the top X parent intents (where X = maxNumberOfParentIntents).
-    // Take the top Y child intents of each parent (where Y = maxNumberOfLeafIntents)
+    // Take all the child intents of each parent.
     return objUtils
       .getAllValues(parentProbabilitiesMap)
       .sort((a, b) => b.probability - a.probability)
       .splice(0, maxNumberOfParentIntents)
       .reduce((childProbablities, parentProbability) => {
-        return [
-          ...childProbablities,
-          ...parentProbability.children.splice(0, maxNumberOfLeafIntents)
-        ];
+        return [...childProbablities, ...parentProbability.children];
       }, []);
   };
 
