@@ -425,13 +425,15 @@ define("components/chatViewFooter", [
       } = this.props;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
       const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
+      const intentsAreShown = this._shouldIntentsBeShown();
       const footerClasses = classes("hs-chat-footer", {
         "hs-chat-footer--form-error": errorMsg,
         "hs-chat-footer--form-invalid": disabled || !value.trim(),
         "hs-chat-footer--mobile": browserIsMobile,
         "hs-chat-footer--no-padding": inputIsListPicker,
         "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened,
-        "hs-chat-footer--top-border": this._shouldIntentsBeShown()
+        "hs-chat-footer--top-border": intentsAreShown,
+        "hs-chat-footer--box-shadow": intentsAreShown
       });
 
       if (inputIsListPicker) {

@@ -97,7 +97,9 @@ define("constants/uiConfig", function() {
 
     // Form set
     FORM_BG_COLOR: "form.primaryBgColor",
+    FORM_SECONDARY_BG_COLOR: "form.secondaryBgColor",
     FORM_BORDER_COLOR: "form.borderColor",
+    FORM_SECONDARY_BORDER_COLOR: "form.secondaryBorderColor",
     FORM_PRIMARY_TEXT_COLOR: "form.primaryTextColor",
     FORM_ACCENT_COLOR: "form.accentColor",
     FORM_ACCENT_COLOR_LIGHT: `${DERIVED_ID}.form.accentColorLight`,
@@ -205,7 +207,17 @@ define("constants/uiConfig", function() {
     [FLATTENED_UI_CONFIG.CSAT_BG_COLOR, "--hs-csat-bg-color", COLORS.BLACK.X_LIGHT],
     [FLATTENED_UI_CONFIG.CSAT_ACCENT_COLOR, "--hs-csat-accent-color", COLORS.YELLOW.DARK],
     [FLATTENED_UI_CONFIG.FORM_BG_COLOR, "--hs-form-bg-color", COLORS.GRAY.XX_LIGHT],
+    [
+      FLATTENED_UI_CONFIG.FORM_SECONDARY_BG_COLOR,
+      "--hs-form-secondary-bg-color",
+      COLORS.BLACK.X_LIGHT
+    ],
     [FLATTENED_UI_CONFIG.FORM_BORDER_COLOR, "--hs-form-border-color", COLORS.GRAY.BASE],
+    [
+      FLATTENED_UI_CONFIG.FORM_SECONDARY_BORDER_COLOR,
+      "--hs-form-secondary-border-color",
+      COLORS.GRAY.LIGHT
+    ],
     [
       FLATTENED_UI_CONFIG.FORM_PRIMARY_TEXT_COLOR,
       "--hs-form-primary-text-color",
