@@ -402,14 +402,6 @@ define("actions/appState", [
       } = getState();
       const widgetIsOpen = !minimized;
 
-      // If the app reset trigger is the start new conversation button, update
-      // the analytics session id with a new value.
-      // @TODO: Lazy Preissue Creation
-      // Check if this can be directly used with startNewConversation fn.
-      // if (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) {
-      //   dispatch (updateAnalyticsSessionId ());
-      // }
-
       if (!issueExists) {
         dispatch(
           postSdkMessage.conversationStatusEvent({
@@ -447,7 +439,6 @@ define("actions/appState", [
           widgetIsOpen &&
           !issueExists)
       ) {
-        dispatch(updateAnalyticsSessionId());
         dispatch(startNewConversation());
       } else if (issueExists) {
         // The issueExists flag is true if for the given profile (user+device combination), at
@@ -841,6 +832,8 @@ define("actions/appState", [
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
         dispatch(chatViewActions.addGreetingMessage());
+        // Update analytics session id for new conversations.
+        dispatch(updateAnalyticsSessionId());
 
         // If initial user message is set via API, create preissue without waiting for end-user's
         // input. The initial user message once consumed should be reset - this is being handled in
