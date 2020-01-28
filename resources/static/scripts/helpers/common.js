@@ -380,6 +380,16 @@ define("helpers/common", [
     return path;
   };
 
+  /**
+   * Generates the key used for storing in localstorage whether faq suggestion via custom bot
+   * was read
+   * @param {string} msgId - Id of the faq suggestion msg
+   * @returns {string} - Key used for storing in localstorage whether faq suggestion was read
+   */
+  const getCbFaqSuggestionReadLsKey = (msgId) => {
+    return `${msgId}_cb_fsr`;
+  };
+
   return {
     isOutOfBusinessHours,
     isWidgetHiddenOutOfBusinessHours,
@@ -395,6 +405,7 @@ define("helpers/common", [
     getDateObjectFromString,
     isNumberValid,
     areMessagesSeen,
-    getSelectorForElement
+    getSelectorForElement,
+    getCbFaqSuggestionReadLsKey
   };
 });

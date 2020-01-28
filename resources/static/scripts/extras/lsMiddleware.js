@@ -62,7 +62,7 @@ define("extras/lsMiddleware", [
         break;
 
       case ACTION_TYPES.SET_SUGGESTED_FAQ_READ_TRACKED:
-        lsHelpers.setSuggestedFaqReadTracked(action.isTracked);
+        lsHelpers.setSuggestedFaqReadTracked(action.isTracked, action.key);
         break;
 
       case ACTION_TYPES.UPDATE_READ_FAQ_LIST:

@@ -4,12 +4,15 @@
  * @created May 31, 2017
  */
 
-define("constants/propTypes", ["gunpowder/constants/widgets/picker"], function(
-  LIST_PICKER_CONSTANTS
+define("constants/propTypes", ["gunpowder/constants/widgets/picker", "constants/message"], function(
+  LIST_PICKER_CONSTANTS,
+  msgConstants
 ) {
   "use strict";
 
   const {TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES} = LIST_PICKER_CONSTANTS;
+
+  const {FAQ_SUGGESTION_SOURCES} = msgConstants;
 
   const MESSAGE_PROP_TYPE = PropTypes.shape({
     id: PropTypes.string.isRequired,
@@ -25,7 +28,11 @@ define("constants/propTypes", ["gunpowder/constants/widgets/picker"], function(
     suggestedFaqs: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired
+        title: PropTypes.string.isRequired,
+        faqSource: PropTypes.oneOf([
+          FAQ_SUGGESTION_SOURCES.ANSWER_BOT,
+          FAQ_SUGGESTION_SOURCES.CUSTOM_BOT
+        ])
       })
     )
   }).isRequired;

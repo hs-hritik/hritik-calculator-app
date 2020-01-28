@@ -178,6 +178,7 @@ define("actions/appState", [
    * user so far.
    */
   const rehydrateState = () => {
+    // @TODO: feature/ai-powered : Handle rehydration
     const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked(),
       readFaqList = lsHelpers.getReadFaqList(),
       reEngagementId = lsHelpers.getReEngagementId();
