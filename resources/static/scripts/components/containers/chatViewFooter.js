@@ -44,6 +44,7 @@ define("components/containers/chatViewFooter", [
         fullPrivacyEnabled,
         online,
         browserIsMobile,
+        attachmentsWhitelist,
         featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsFeatureIsEnabled}
       },
       chatView: {
@@ -103,7 +104,8 @@ define("components/containers/chatViewFooter", [
       botStepInProgress,
       browserIsMobile,
       intentsFeatureIsEnabled,
-      issueType
+      issueType,
+      attachmentsWhitelist
     };
 
     if (intentsFeatureIsEnabled) {

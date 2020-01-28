@@ -2587,7 +2587,7 @@ define("actions/chatView", [
     return (dispatch, getState) => {
       const state = getState();
       const {appState} = state;
-      const {activeIssueId} = appState;
+      const {activeIssueId, attachmentsWhitelist} = appState;
 
       if (attachmentMsgId) {
         dispatch(
@@ -2608,7 +2608,7 @@ define("actions/chatView", [
             },
             onAddMessage(msg) {
               attachmentMsgId = msg.id;
-              if (!attachmentsHelpers.isAttachmentTypeValid(msg.file.type)) {
+              if (!attachmentsHelpers.isAttachmentTypeValid(msg.file.type, attachmentsWhitelist)) {
                 // If attachment type is not valid, set error on message
                 dispatch(setAttachmentError(attachmentMsgId, FILE_UPLOAD_ERRORS.INVALID_TYPE));
               } else if (!attachmentsHelpers.isAttachmentsSizeValid(msg.file.size)) {

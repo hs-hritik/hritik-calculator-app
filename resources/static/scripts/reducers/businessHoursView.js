@@ -11,7 +11,9 @@ define("reducers/businessHoursView", [
   "helpers/attachments",
   "gunpowder/utils/uuid",
   "extras/accessibility",
-  "constants/accessibility"
+  "constants/accessibility",
+  "gunpowder/utils/array",
+  "constants/errors"
 ], function(
   ACTION_TYPES,
   BUSINESS_HOURS_CONSTANTS,
@@ -19,7 +21,9 @@ define("reducers/businessHoursView", [
   attachmentsHelper,
   uuidGenerator,
   ax,
-  axConstants
+  axConstants,
+  arrayUtils,
+  ERROR_CONSTANTS
 ) {
   "use strict";
 
@@ -27,6 +31,7 @@ define("reducers/businessHoursView", [
   const {NAME, EMAIL, MESSAGE} = BUSINESS_HOURS_CONSTANTS.CONTACT_FORM_FIELDS;
   const {ATTACHMENT_OPERATIONS, BUSINESS_HOURS_ALLOWED_REMOVE_COUNT} = ATTACHMENT_CONSTANTS;
   const {METALIST_ITEMS, METALIST_GROUP_NAME} = axConstants;
+  const {RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
 
   const INITIAL_STATE = {
     businessHoursEnabled: false,
@@ -75,14 +80,19 @@ define("reducers/businessHoursView", [
   /**
    * Returns processed attachments
    * @param {Object} files - Files list array like object
+   * @param {string[]} attachmentsWhitelist - Array of supported mime types
    * @returns {Array} - processed attachments
    */
-  const _getProcessedAttachments = (files) => {
+  const _getProcessedAttachments = (files, attachmentsWhitelist) => {
     const processedAttachments = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const id = uuidGenerator();
+      const attachmentTypeIsValid = attachmentsHelper.isAttachmentTypeValid(
+        file.type,
+        attachmentsWhitelist
+      );
 
       ax.addSelector({
         group: METALIST_GROUP_NAME.OOBH.FILE_ATTACHMENTS,
@@ -96,7 +106,8 @@ define("reducers/businessHoursView", [
         // file is DOM object and saved in store as we want to send raw file
         // object in api call when contact form is saved
         file,
-        attachmentHasError: false
+        attachmentHasError: !attachmentTypeIsValid,
+        status: !attachmentTypeIsValid ? RESPONSE_STATUS_CODE.UNSUPPORTED_MEDIA_TYPE : null
       });
     }
 
@@ -127,21 +138,6 @@ define("reducers/businessHoursView", [
     });
 
     return attachmentsHelper.isAttachmentsSizeValid(totalSize);
-  };
-
-  /**
-   * Predicate to check if all files have valid mime type
-   * @param {Object[]} attachments
-   * @returns {Boolean}
-   */
-  const areAttachmentsValid = (attachments) => {
-    if (!attachments.length) {
-      return true;
-    }
-
-    return Array.prototype.every.call(attachments, ({file}) => {
-      return attachmentsHelper.isAttachmentTypeValid(file.type);
-    });
   };
 
   return (state = INITIAL_STATE, action) => {
@@ -228,7 +224,14 @@ define("reducers/businessHoursView", [
         });
 
       case ACTION_TYPES.ADD_BUSINESS_HOURS_ATTACHMENTS:
-        const processedAttachments = _getProcessedAttachments(action.files);
+        const processedAttachments = _getProcessedAttachments(
+          action.files,
+          action.attachmentsWhitelist
+        );
+        attachmentsAreInvalid = processedAttachments.some(
+          (attachment) => attachment.attachmentHasError
+        );
+
         attachmentNumberIsInvalid = !attachmentsHelper.isAttachmentsNumberValid(
           state.contactFormDetails.attachments.length,
           processedAttachments.length,
@@ -238,7 +241,6 @@ define("reducers/businessHoursView", [
         const allAttachments = processedAttachments.concat(state.contactFormDetails.attachments);
 
         attachmentSizeIsInvalid = !isTotalSizeOfAttachmentsValid(allAttachments);
-        attachmentsAreInvalid = !areAttachmentsValid(allAttachments);
 
         return update(state, {
           contactFormDisabled: {
@@ -248,8 +250,7 @@ define("reducers/businessHoursView", [
             attachments: {$push: processedAttachments},
             attachmentsMeta: {
               limitHasExceeded: {$set: attachmentNumberIsInvalid},
-              sizeHasExceeded: {$set: attachmentSizeIsInvalid},
-              attachmentsAreInvalid: {$set: attachmentsAreInvalid}
+              sizeHasExceeded: {$set: attachmentSizeIsInvalid}
             }
           }
         });
@@ -275,7 +276,9 @@ define("reducers/businessHoursView", [
         );
 
         attachmentSizeIsInvalid = !isTotalSizeOfAttachmentsValid(filteredAttachments);
-        attachmentsAreInvalid = !areAttachmentsValid(filteredAttachments);
+        attachmentsAreInvalid = filteredAttachments.some(
+          (attachment) => attachment.attachmentHasError
+        );
 
         return update(state, {
           contactFormDisabled: {
@@ -285,8 +288,7 @@ define("reducers/businessHoursView", [
             attachments: {$set: filteredAttachments},
             attachmentsMeta: {
               limitHasExceeded: {$set: attachmentNumberIsInvalid},
-              sizeHasExceeded: {$set: attachmentSizeIsInvalid},
-              attachmentsAreInvalid: {$set: attachmentsAreInvalid}
+              sizeHasExceeded: {$set: attachmentSizeIsInvalid}
             }
           }
         });
@@ -296,7 +298,8 @@ define("reducers/businessHoursView", [
           contactFormDetails: {
             attachments: {
               [action.attachmentIndex]: {
-                attachmentHasError: {$set: true}
+                attachmentHasError: {$set: true},
+                $merge: {status: action.status}
               }
             }
           }

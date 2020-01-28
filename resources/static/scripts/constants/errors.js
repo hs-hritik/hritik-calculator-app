@@ -18,7 +18,8 @@ define("constants/errors", function() {
   const RESPONSE_STATUS_CODE = {
     NO_AUTH_TOKEN: 401,
     INVALID_USER_AUTH_TOKEN: 403,
-    PRE_ISSUE_EXISTS: 204
+    PRE_ISSUE_EXISTS: 204,
+    UNSUPPORTED_MEDIA_TYPE: 415
   };
 
   const TYPE = {
