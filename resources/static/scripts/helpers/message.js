@@ -71,6 +71,7 @@ define("helpers/message", [
           language: faq.data.language
         };
       });
+      msgObj.faqSource = msg.faq_source;
     }
 
     return msgObj;
