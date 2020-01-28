@@ -2846,7 +2846,9 @@ define("actions/chatView", [
         } = getState();
 
         if (intents.isSearching) {
-          analyticsHelpers.track(EVENT.SEARCH_INTENTS);
+          analyticsHelpers.track(EVENT.SEARCH_INTENTS, {
+            leafNodeIsSelected: true
+          });
         }
       }
     };
