@@ -181,16 +181,19 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
   /**
    * Set whether the suggested FAQ read event has been tracked or not
    * @param {boolean} isTracked
+   * @param {string} [key=KEYS.SUGGESTED_FAQ_READ_TRACKED] - Key used for localstorage
    */
-  const setSuggestedFaqReadTracked = (isTracked) => {
-    lsUtils.setItem(KEYS.SUGGESTED_FAQ_READ_TRACKED, isTracked);
+  const setSuggestedFaqReadTracked = (isTracked, key = KEYS.SUGGESTED_FAQ_READ_TRACKED) => {
+    lsUtils.setItem(key, isTracked);
   };
 
   /**
    * Get whether the suggested FAQ read event has been tracked or not
+   * @param {string} [key=KEYS.SUGGESTED_FAQ_READ_TRACKED] - Key used for localstorage
    * @returns {boolean}
    */
-  const getSuggestedFaqReadTracked = () => !!lsUtils.getItem(KEYS.SUGGESTED_FAQ_READ_TRACKED);
+  const getSuggestedFaqReadTracked = (key = KEYS.SUGGESTED_FAQ_READ_TRACKED) =>
+    !!lsUtils.getItem(key);
 
   /**
    * Set the read FAQ list.
