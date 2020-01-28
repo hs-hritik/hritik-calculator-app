@@ -344,7 +344,7 @@ define("components/attachment", [
         <PreviewableAttachment
           url={url}
           file={file}
-          wrapperClasses="hs-message__item hs-message__image-wrapper"
+          wrapperClasses="hs-message__item hs-message__image-attachment"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
         />
@@ -397,22 +397,15 @@ define("components/attachment", [
       const attachmentAriaLabel = _getAttachmentAriaLabel(fileName, ariaLabelOpenFile);
 
       if (attachmentIsPreviewable) {
-        const previewableAttachmentWrapperClasses =
-          "hs-message__item hs-message__image-wrapper " +
-          "hs-message__server-attachment hs-message__image-attachment";
-
         return (
           <PreviewableAttachment
             key={`previewable-${index}`}
             url={url}
-            wrapperClasses={previewableAttachmentWrapperClasses}
+            wrapperClasses="hs-message__item hs-message__image-attachment"
             onWrapperClick={onWrapperClick}
           />
         );
       }
-
-      const nonPreviewableAttachmentWrapperClasses =
-        "hs-message__item hs-message__server-attachment hs-message__file-attachment";
 
       return (
         <NonPreviewableAttachment
@@ -420,7 +413,7 @@ define("components/attachment", [
           url={url}
           name={fileName}
           iconClasses="ion-attachment"
-          wrapperClasses={nonPreviewableAttachmentWrapperClasses}
+          wrapperClasses="hs-message__item hs-message__file-attachment"
           onWrapperClick={onWrapperClick}
           attachmentAriaLabel={attachmentAriaLabel}
         />
