@@ -398,15 +398,13 @@ define("helpers/analytics", [
     // returned or leaf node was returned as a match.
     // `sa` indicates the search algorithm.
     // `mv` indicates the model version when the search algorithm is ML based.
-    if (!searchIsCleared) {
-      if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
-        data.sa = "ss";
-        data.l = 2;
-      } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
-        data.sa = "ml";
-        data.mv = model.version;
-        data.l = leafNodeIsSelected ? 2 : 1;
-      }
+    if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
+      data.sa = "ss";
+      data.l = 2;
+    } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
+      data.sa = "ml";
+      data.mv = model.version;
+      data.l = leafNodeIsSelected ? 2 : 1;
     }
 
     _fireTrackingXhr([
