@@ -12,12 +12,15 @@ define("components/containers/businessHoursView", [
 
   const mapStateToProps = (state) => {
     const {
-      contactFormDetails,
-      offlineBehaviour,
-      contactFormDisabled,
-      contactFormSubmitted,
-      submitInProgress
-    } = state.businessHoursViewState;
+      appState: {attachmentsWhitelist},
+      businessHoursViewState: {
+        contactFormDetails,
+        offlineBehaviour,
+        contactFormDisabled,
+        contactFormSubmitted,
+        submitInProgress
+      }
+    } = state;
 
     return {
       contactFormDetails,
@@ -26,7 +29,8 @@ define("components/containers/businessHoursView", [
       contactFormDisabled,
       contactFormSubmitted,
       submitInProgress,
-      fullPrivacyEnabled: state.appState.fullPrivacyEnabled
+      fullPrivacyEnabled: state.appState.fullPrivacyEnabled,
+      attachmentsWhitelist
     };
   };
 
@@ -38,11 +42,11 @@ define("components/containers/businessHoursView", [
       onSubmitBusinessHoursContactForm() {
         dispatch(businessHoursActions.submitBusinessHoursContactForm());
       },
-      onFilesChange(files) {
-        dispatch(businessHoursActions.addAttachments(files));
+      onFilesChange(files, attachmentsWhitelist) {
+        dispatch(businessHoursActions.addAttachments(files, attachmentsWhitelist));
       },
-      onRemoveAttachment(attachmentId) {
-        dispatch(businessHoursActions.removeAttachment(attachmentId));
+      onRemoveAttachment(attachmentId, attachmentsWhitelist) {
+        dispatch(businessHoursActions.removeAttachment(attachmentId, attachmentsWhitelist));
       }
     };
   };

@@ -505,20 +505,18 @@ define("components/message", [
      */
     _isAttachmentPreviewable() {
       const {isSystemMsg, attachments, type, states: messageStates} = this.props.message;
+      let contentType = null;
 
       if (type !== MESSAGE_TYPE.ATTACHMENT) {
         return false;
       }
 
-      let url = "";
-
       if (!isSystemMsg) {
         const attachment = attachments[0];
-        url = attachment.url;
+        contentType = attachment.contentType;
       }
 
-      const name = this._getFileName();
-      const isImageAttachment = attachmentsHelpers.isImageAttachment(name, url);
+      const isImageAttachment = attachmentsHelpers.isImageAttachment(contentType);
       const localAttachmentHasError = isSystemMsg ? messageStates.error : true;
 
       // For any attachment to be previewable
