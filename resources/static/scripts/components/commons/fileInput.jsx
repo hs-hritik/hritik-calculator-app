@@ -7,20 +7,11 @@
 define("components/commons/fileInput", ["gunpowder/utils/classes"], function(classes) {
   "use strict";
 
-  const DEFAULT_ACCEPT =
-    ".zip, .rar, .tar, .gzip, .mp3, .mpeg, .wav, .ogg, .amr, .jpeg, " +
-    ".jpg, .png, .gif, .bmp, .txt, .rtf, .webm, .mpeg4, .3gpp, .mov, " +
-    ".avi, .mpegps, .wmv, .flv, .ogg, .qt, .doc, .docx, .xls, .xlsx, " +
-    ".ppt, .pptx, .log, .pdf, .tif, .tiff, .csvm, .mp4";
-
   return createReactClass({
     displayName: "FileInput",
     propTypes: {
       /**
-       * By default the widget will accept all types of files.
-       * But you can define what kind of files the widget should accept.
-       * Refer to following link for more details:
-       * https://developer.mozilla.org/en/docs/Web/HTML/Element/Input#attr-accept
+       * Allowed file types
        */
       accept: PropTypes.string,
 
@@ -58,12 +49,6 @@ define("components/commons/fileInput", ["gunpowder/utils/classes"], function(cla
        * Callback to pass the ref of the file input element
        */
       onSaveInputRef: PropTypes.func
-    },
-
-    getDefaultProps() {
-      return {
-        accept: DEFAULT_ACCEPT
-      };
     },
 
     getInitialState() {

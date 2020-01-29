@@ -1,0 +1,26 @@
+Branches:
+feature/webchat-secure-attachments
+
+Changelog:
+Use gunpowder 3.0.6
+Check if attachment is image by its content type
+Replace indexOf with arrayUtils.includes
+Update check for isAttachmentTypeValid function
+Fix submit button disable state
+Show error for invalid file types in OOBH
+Remove supported mime types constant
+Pass mime types argument in isAttachmentTypeValid
+Update mime types check value for OOBH fileInput
+Pass accept prop to fileInput
+Rename variable whiteListedAttachments
+Integrate secure attachments feature config
+Revert "Integrate secure attachments feature config"
+Revert "Set supported mime types value from config call"
+Revert "Remove supported mime types constant"
+Revert "Pass accept prop to fileInput"
+Revert "Show error for invalid file types"
+Show error for invalid file types
+Pass accept prop to fileInput
+Remove supported mime types constant
+Set supported mime types value from config call
+Integrate secure attachments feature config
