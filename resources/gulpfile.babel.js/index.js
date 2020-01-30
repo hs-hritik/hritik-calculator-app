@@ -90,9 +90,7 @@ const htmlTask = () => gulp.src(PATHS.htmlSrc).pipe(gulp.dest(PATHS.localhostDes
  * Watch HTML files
  */
 const htmlWatchTask = () => {
-  gulp.watch(PATHS.htmlSrc, () => {
-    gulp.series(htmlTask, replaceLocalhost, copyDemoTask);
-  });
+  gulp.watch(PATHS.htmlSrc, gulp.series(htmlTask, replaceLocalhost, copyDemoTask));
 };
 
 /**
