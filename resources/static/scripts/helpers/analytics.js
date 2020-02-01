@@ -374,8 +374,6 @@ define("helpers/analytics", [
    * @param {Object} config
    * @param {Boolean} config.searchIsCleared - True if the search is cleared
    * @param {Number} config.ts - unix epoch
-   * @param {boolean} config.leafNodeIsSelected - whether a leaf node was selected by the user from
-   *  the search results.
    */
   const _trackSearchIntent = (config) => {
     const {
@@ -383,7 +381,7 @@ define("helpers/analytics", [
         intents: {searchResultIntents, searchAlgo, model}
       }
     } = store.getState();
-    const {ts, searchIsCleared = false, leafNodeIsSelected = false} = config;
+    const {ts, searchIsCleared = false} = config;
 
     const data = {
       acid: _getAnalyticsSessionId(),
@@ -398,13 +396,12 @@ define("helpers/analytics", [
     // returned or leaf node was returned as a match.
     // `sa` indicates the search algorithm.
     // `mv` indicates the model version when the search algorithm is ML based.
+    // @TODO: Intents: Send `l`
     if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
       data.sa = "ss";
-      data.l = 2;
     } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
       data.sa = "ml";
       data.mv = model.version;
-      data.l = leafNodeIsSelected ? 2 : 1;
     }
 
     _fireTrackingXhr([
