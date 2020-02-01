@@ -213,6 +213,7 @@ define("helpers/message", [
       // If this response is to the answer bot step, web chat sends which
       // FAQs were read (max 10) so far by the end user to the backend. Backend
       // would then pass that information to data plat.
+      // @TODO: Store the max faqs to be sent (10) in a constant
       const readFaqs = store.getState().chatView.readFaqList;
       if (readFaqs.length) {
         requestData.read_faqs = JSON.stringify(readFaqs.slice(0, 10));

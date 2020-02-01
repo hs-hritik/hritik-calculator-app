@@ -7,14 +7,16 @@
 
 define("extras/lsMiddleware", [
   "constants/actionTypes",
+  "constants/message",
   "gunpowder/utils/throttle",
   "helpers/localStorage"
-], function(ACTION_TYPES, throttle, lsHelpers) {
+], function(ACTION_TYPES, msgConstants, throttle, lsHelpers) {
   "use strict";
 
   // @TODO: Confirm what is the correct timeout for saving the
   // last activity time in localstorage.
   const LAST_ACTIVITY_THROTTLE_TIME = 20000; // 20 seconds
+  const {TYPE: MESSAGE_TYPE} = msgConstants;
 
   const throttledSetLastActivityTime = throttle(
     lsHelpers.setLastActivityTime,
@@ -44,6 +46,10 @@ define("extras/lsMiddleware", [
 
         if (hasUserMessage && conversationHasStarted) {
           throttledSetLastActivityTime();
+        }
+
+        if (action.responseType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
+          lsHelpers.setReadFaqList(state.chatView.readFaqList);
         }
         break;
 

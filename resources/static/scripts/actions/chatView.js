@@ -130,10 +130,12 @@ define("actions/chatView", [
    * @param {Array} config.messages - array of response messages
    * @param {Boolean} [config.process] - whether to process messages
    * @param {Boolean} [config.prepend] - whether to push messages at the start
+   * @param {String} [config.responseType] - Type of response when addMessage is called
+   * from success of add user reply XHR
    * @returns {Object} - action
    */
   const addMessages = (config) => {
-    const {messages, process = true, prepend = false} = config;
+    const {messages, process = true, prepend = false, responseType} = config;
     let processedMessages = messages;
 
     if (process) {
@@ -149,7 +151,8 @@ define("actions/chatView", [
 
     return {
       type: ACTION_TYPES.APPEND_MESSAGES,
-      messages: processedMessages
+      messages: processedMessages,
+      responseType
     };
   };
 
@@ -1847,7 +1850,8 @@ define("actions/chatView", [
         dispatch(
           batchActions([
             addMessages({
-              messages: [response]
+              messages: [response],
+              responseType: response.type
             }),
             updateReplyText("")
           ])
