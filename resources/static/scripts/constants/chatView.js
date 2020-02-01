@@ -68,7 +68,7 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
 
   // @TODO: Intents: Update threshold if required.
   const INTENTS_SEARCH_DEBOUNCE_THRESHOLD = 500;
-  const INTENTS_MINIMUM_CHAR_FOR_SEARCH = 5;
+  const INTENTS_MINIMUM_CHAR_FOR_SEARCH = 4;
   const MAX_LEAF_NODE_INTENT_RESULTS = 5;
   const MAX_PARENT_INTENT_RESULTS = 2;
   const INTENTS_SEARCH_ALGO = {
