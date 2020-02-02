@@ -18,7 +18,8 @@ define("components/businessHoursView", [
   "extras/accessibility",
   "constants/activeView",
   "constants/accessibility",
-  "constants/keyCodes"
+  "constants/keyCodes",
+  "constants/errors"
 ], function(
   ViewHeader,
   BrandingContainer,
@@ -33,7 +34,8 @@ define("components/businessHoursView", [
   ax,
   activeViewConstants,
   axConstants,
-  KEY_CODES
+  KEY_CODES,
+  ERROR_CONSTANTS
 ) {
   "use strict";
 
@@ -87,6 +89,7 @@ define("components/businessHoursView", [
   }).isRequired;
 
   const OFFLINE_BEHAVIOUR_PROP_TYPE = PropTypes.oneOf([CONTACT_FORM, OFFLINE_MESSAGE]);
+  const {RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
 
   class BusinessHoursViewContents extends React.PureComponent {
     constructor(props) {
@@ -201,10 +204,10 @@ define("components/businessHoursView", [
         contactFormSubmitted,
         text,
         onMinimizeConversation,
-        contactFormDisabled,
         offlineBehaviour,
         allowFullScreen,
-        setAxActiveIndex
+        setAxActiveIndex,
+        contactFormDetails
       } = this.props;
 
       let btnText, clickHandler;
@@ -229,12 +232,17 @@ define("components/businessHoursView", [
       const footerClasses = classes("hs-footer", "hs-footer--center-items", {
         "hs-footer--full-screen": allowFullScreen
       });
+      const attachmentsAreInvalid = contactFormDetails.attachments.some(
+        (attachment) => attachment.attachmentHasError
+      );
+      const {limitHasExceeded, sizeHasExceeded} = contactFormDetails.attachmentsMeta;
+      const submitButtonIsDisabled = limitHasExceeded || sizeHasExceeded || !!attachmentsAreInvalid;
 
       return (
         <div className={footerClasses}>
           <button
             className="hs-button hs-footer__btn "
-            disabled={contactFormDisabled}
+            disabled={submitButtonIsDisabled}
             data-label={METALIST_ITEMS.OOBH.FOOTER_BTN.DATA_LABEL}
             tabIndex="0"
             onFocus={_setAxActiveIndex}
@@ -411,12 +419,18 @@ define("components/businessHoursView", [
     _renderAttachment(attachment) {
       const {
         submitInProgress,
-        text: {ariaLabelsRemoveAttachment, ariaLabelAddedAttachmentPrefix},
+        text: {
+          ariaLabelsRemoveAttachment,
+          ariaLabelAddedAttachmentPrefix,
+          attachmentFileTypeError,
+          attachmentDefaultError
+        },
         onRemoveAttachmentClick,
         setAxActiveIndex
       } = this.props;
 
-      const {id, name, size, attachmentHasError} = attachment;
+      const {id, name, size, attachmentHasError, status} = attachment;
+
       let iconEl = null;
       let attachmentErrorEl = null;
 
@@ -448,10 +462,14 @@ define("components/businessHoursView", [
       }
 
       if (attachmentHasError) {
+        const attachmentError =
+          status === RESPONSE_STATUS_CODE.UNSUPPORTED_MEDIA_TYPE
+            ? attachmentFileTypeError
+            : attachmentDefaultError;
         attachmentErrorEl = (
           <div className="hs-business-hours__attachment-error">
             <i className="ion-alert-circled hs-business-hours__small-icon" />
-            <span>{this.props.text.attachmentDefaultError}</span>
+            <span>{attachmentError}</span>
           </div>
         );
       }
@@ -491,19 +509,19 @@ define("components/businessHoursView", [
       const {
         onFilesChange,
         text: {dndInfoText, ariaLabelAttachFiles},
-        setAxActiveIndex
+        setAxActiveIndex,
+        attachmentsWhitelist,
+        contactFormDetails: {
+          attachmentsMeta: {limitHasExceeded, sizeHasExceeded},
+          attachments
+        }
       } = this.props;
-
-      const {
-        limitHasExceeded,
-        sizeHasExceeded,
-        attachmentsAreInvalid
-      } = this.props.contactFormDetails.attachmentsMeta;
-
+      const attachmentsAreInvalid = attachments.some((attachment) => attachment.attachmentHasError);
       const fileInputIsDisabled = limitHasExceeded || sizeHasExceeded || attachmentsAreInvalid;
       const _setAxActiveIndex = setAxActiveIndex.bind(null, {
         selector: METALIST_ITEMS.OOBH.FILE_SELECT.SELECTOR
       });
+      const allowedMimeTypes = attachmentsWhitelist.join(", ");
 
       return (
         <div
@@ -522,6 +540,7 @@ define("components/businessHoursView", [
             labelClasses="hs-business-hours__attachment-placeholder-text"
             onSaveInputRef={this._saveInputRef}
             infoText={dndInfoText}
+            accept={allowedMimeTypes}
           />
         </div>
       );
@@ -543,13 +562,11 @@ define("components/businessHoursView", [
 
       const {
         businessHoursAttachmentsLimitExceedMsg,
-        businessHoursAttachmentsSizeExceedMsg,
-        attachmentFileTypeError
+        businessHoursAttachmentsSizeExceedMsg
       } = this.props.text;
 
       let limitExceedInfoTextEl = null;
       let sizeExceedInfoTextEl = null;
-      let invalidTypeInfoTextEl = null;
 
       if (limitHasExceeded) {
         limitExceedInfoTextEl = this._renderAttachmentError(businessHoursAttachmentsLimitExceedMsg);
@@ -559,15 +576,10 @@ define("components/businessHoursView", [
         sizeExceedInfoTextEl = this._renderAttachmentError(businessHoursAttachmentsSizeExceedMsg);
       }
 
-      if (attachmentsAreInvalid) {
-        invalidTypeInfoTextEl = this._renderAttachmentError(attachmentFileTypeError);
-      }
-
       return (
         <div>
           {limitExceedInfoTextEl}
           {sizeExceedInfoTextEl}
-          {invalidTypeInfoTextEl}
         </div>
       );
     }
@@ -621,7 +633,11 @@ define("components/businessHoursView", [
      * @param {Object} config.name - Selector value
      * @param {Object} ev - Click or focus event object
      */
-    setAxActiveIndex: PropTypes.func.isRequired
+    setAxActiveIndex: PropTypes.func.isRequired,
+    /**
+     * Allowed file mime types list
+     */
+    attachmentsWhitelist: PropTypes.array.isRequired
   };
 
   return createReactClass({
@@ -646,7 +662,11 @@ define("components/businessHoursView", [
         fontFamily: PropTypes.string
       }),
       fullPrivacyEnabled: PropTypes.bool,
-      keyboardInteractionIsActive: PropTypes.bool.isRequired
+      keyboardInteractionIsActive: PropTypes.bool.isRequired,
+      /**
+       * Allowed file mime types list
+       */
+      attachmentsWhitelist: PropTypes.array.isRequired
     },
 
     getInitialState() {
@@ -662,7 +682,6 @@ define("components/businessHoursView", [
         onMinimizeConversation,
         onKeyDown,
         onClick,
-        onFilesChange,
         contactFormDetails,
         viewStyles,
         fullPrivacyEnabled,
@@ -671,7 +690,8 @@ define("components/businessHoursView", [
         contactFormDisabled,
         allowFullScreen,
         submitInProgress,
-        keyboardInteractionIsActive
+        keyboardInteractionIsActive,
+        attachmentsWhitelist
       } = this.props;
 
       const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
@@ -695,7 +715,7 @@ define("components/businessHoursView", [
             <BusinessHoursViewContents
               text={text}
               attachmentIsEnabled={attachmentIsEnabled}
-              onFilesChange={onFilesChange}
+              onFilesChange={this._onFilesChange}
               offlineBehaviour={offlineBehaviour}
               contactFormSubmitted={contactFormSubmitted}
               contactFormDisabled={contactFormDisabled}
@@ -710,6 +730,7 @@ define("components/businessHoursView", [
               onEmailChange={this._onEmailChange}
               onRemoveAttachmentClick={this._onRemoveAttachmentClick}
               setAxActiveIndex={this._setAxActiveIndex}
+              attachmentsWhitelist={attachmentsWhitelist}
             />
           </ErrorBoundaryWithLogging>
         </div>
@@ -768,6 +789,8 @@ define("components/businessHoursView", [
      * @param {Object} ev - Click event object
      */
     _onRemoveAttachmentClick(attachmentId, dataLabelAttribute, ev) {
+      const {attachmentsWhitelist} = this.props;
+
       this._setAxActiveIndex(
         {
           selector: `[data-label=${dataLabelAttribute}]`
@@ -775,7 +798,16 @@ define("components/businessHoursView", [
         ev
       );
 
-      this.props.onRemoveAttachment(attachmentId);
+      this.props.onRemoveAttachment(attachmentId, attachmentsWhitelist);
+    },
+
+    /**
+     * Change handler for files select
+     */
+    _onFilesChange(ev) {
+      const {onFilesChange, attachmentsWhitelist} = this.props;
+
+      onFilesChange(ev, attachmentsWhitelist);
     },
 
     _handleViewContentsError() {
