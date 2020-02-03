@@ -1968,7 +1968,7 @@ define("actions/chatView", [
       const state = getState();
       const {
         appState: {activeIssueId, issueType, issueState},
-        chatView: {userInput},
+        chatView: {userInput, intents},
         ui: {text}
       } = state;
       const trimmedValue = userInput.value.trim();
@@ -2041,6 +2041,11 @@ define("actions/chatView", [
         // createPreIssue should be called as soon as the reply box is enabled.
         // This flow (submitReply) won't be invoked in that case.
         dispatch(actionCreators.setInitialUserMsg(trimmedValue));
+
+        if (intents.isSearching) {
+          analyticsHelpers.track(EVENT.SEARCH_INTENTS);
+        }
+
         dispatch(createPreIssue());
       }
     };
@@ -2835,19 +2840,22 @@ define("actions/chatView", [
   const selectIntent = (intent) => {
     return (dispatch, getState) => {
       dispatch(actionCreators.intentSelected(intent));
-      analyticsHelpers.track(EVENT.INTENT_SELECTED, {intent});
 
       // If leaf intent node is selected, create pre-issue with that intent
       if (!intent.children) {
-        dispatch(createPreIssue());
-
         const {
           chatView: {intents}
         } = getState();
 
+        // "Search intent" event needs to be fired before "select intent" event.
         if (intents.isSearching) {
           analyticsHelpers.track(EVENT.SEARCH_INTENTS);
         }
+
+        analyticsHelpers.track(EVENT.INTENT_SELECTED, {intent});
+        dispatch(createPreIssue());
+      } else {
+        analyticsHelpers.track(EVENT.INTENT_SELECTED, {intent});
       }
     };
   };
