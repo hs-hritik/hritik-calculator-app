@@ -378,7 +378,7 @@ define("helpers/analytics", [
   const _trackSearchIntent = (config) => {
     const {
       chatView: {
-        intents: {searchResultIntents, searchAlgo, model}
+        intents: {searchResultIntents, searchAlgo, model, searchLevel}
       }
     } = store.getState();
     const {ts, searchIsCleared = false} = config;
@@ -396,12 +396,15 @@ define("helpers/analytics", [
     // returned or leaf node was returned as a match.
     // `sa` indicates the search algorithm.
     // `mv` indicates the model version when the search algorithm is ML based.
-    // @TODO: Intents: Send `l`
-    if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
-      data.sa = "ss";
-    } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
-      data.sa = "ml";
-      data.mv = model.version;
+    if (!searchIsCleared) {
+      data.l = searchLevel;
+
+      if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
+        data.sa = "ss";
+      } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
+        data.sa = "ml";
+        data.mv = model.version;
+      }
     }
 
     _fireTrackingXhr([

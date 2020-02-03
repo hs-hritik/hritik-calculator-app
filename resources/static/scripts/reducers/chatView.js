@@ -200,6 +200,8 @@ define("reducers/chatView", [
       selectedIntentIds: [],
       isSearching: false,
       searchAlgo: "", // The algorithm used for searching (substring or ML)
+      searchLevel: 0, // searchLevel 0 represents "no search", 1 represents search on level 1
+      // intents and so on.
       searchResultIntents: [] // Array of {intentId: "", probability: 0.3} (probability would
       // be  null for substring search)
     },
@@ -297,6 +299,7 @@ define("reducers/chatView", [
         let isSearching;
         let searchResultIntents;
         let searchAlgo;
+        let searchLevel;
         const {searchText} = action;
         const {
           intents: {
@@ -312,19 +315,24 @@ define("reducers/chatView", [
           isSearching = false;
           searchResultIntents = [];
           searchAlgo = "";
+          searchLevel = 0;
         } else if (!model) {
           // If the model is not yet loaded, do the string based search.
+          const res = intentHelpers.substringSearch(intentsMap, searchText);
           isSearching = true;
-          searchResultIntents = intentHelpers.substringSearch(intentsMap, searchText);
+          searchResultIntents = res.searchResults;
+          searchLevel = res.searchLevel;
           searchAlgo = INTENTS_SEARCH_ALGO.SUBSTRING;
         } else {
-          isSearching = true;
-          searchResultIntents = intentHelpers.modelSearch({
+          const res = intentHelpers.modelSearch({
             model,
             intentsMap,
             query: searchText,
             tokenDelimiters
           });
+          isSearching = true;
+          searchResultIntents = res.searchResults;
+          searchLevel = res.searchLevel;
           searchAlgo = INTENTS_SEARCH_ALGO.ML;
         }
 
@@ -333,6 +341,7 @@ define("reducers/chatView", [
             isSearching: {$set: isSearching},
             searchResultIntents: {$set: searchResultIntents},
             searchAlgo: {$set: searchAlgo},
+            searchLevel: {$set: searchLevel},
             pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
           }
         });

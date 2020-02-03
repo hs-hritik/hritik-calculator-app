@@ -227,8 +227,10 @@ define("helpers/intentModelSearch", ["gunpowder/utils/object"], function(objUtil
    *                 (user typed message).
    * @param {String[]} config.tokenDelimiters - Array of characters using which we want to
    *                   split the query. For example, [" ", ",", "?", "!"]
-   * @returns {Object[]} - Sorted map of the matched intent ids and probabilities
-   *                      [{intentId: "intent_1_id", probability: 0.3}]
+   * @return {Object} res - Object having searchResults and searchLevel
+   * @returns {Object[]} res.searchResults - Sorted map of the matched intent ids and probabilities
+   *                     [{intentId: "intent_1_id", probability: 0.3}]
+   * @returns {Number} res.searchLevel - The intent level on which search was performed.
    */
   const match = (config) => {
     const {model, query, maxNumberOfLeafIntents, tokenDelimiters} = config;
@@ -247,11 +249,16 @@ define("helpers/intentModelSearch", ["gunpowder/utils/object"], function(objUtil
 
     // If number of intents is greater than 0, return the intents.
     if (numberOfIntents > 0) {
-      return mappedIntentProbabilities.splice(0, numberOfIntents);
+      return {
+        searchResults: mappedIntentProbabilities.splice(0, numberOfIntents),
+        searchLevel: 2
+      };
     }
 
-    // Otherwise match the parent intents and return their child intents.
-    return _matchParentIntents(mappedIntentProbabilities, config);
+    return {
+      searchResults: _matchParentIntents(mappedIntentProbabilities, config),
+      searchLevel: 1
+    };
   };
 
   return {

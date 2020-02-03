@@ -29,7 +29,10 @@ define("helpers/intent", [
    *
    * @param {Object} intentsMap - Intents Map
    * @param {String} query - Search query
-   * @return {Object[]} - Search result's intents
+   * @return {Object} res - Object having searchResults and searchLevel
+   * @returns {Object[]} res.searchResults - Sorted map of the matched intent ids and probabilities
+   *                     [{intentId: "intent_1_id", probability: 0.3}]
+   * @returns {Number} res.searchLevel - The intent level on which search was performed.
    */
   const substringSearch = (intentsMap, query) => {
     const leafNodeIntentIds = [];
@@ -62,12 +65,17 @@ define("helpers/intent", [
         }, []);
     }
 
-    return res.map((id) => {
+    const searchResults = res.map((id) => {
       return {
         intentId: id,
         probability: null
       };
     });
+
+    return {
+      searchResults,
+      searchLevel: 2 // Substring search is always performed on leaf nodes.
+    };
   };
 
   /**
@@ -78,7 +86,10 @@ define("helpers/intent", [
    * @param {String} config.query - Search query
    * @param {String[]} config.tokenDelimiters - Array of characters using which we want to
    *                   split the query. For example, [" ", ",", "?", "!"]
-   * @return {Object[]} - Matched intents
+   * @return {Object} res - Object having searchResults and searchLevel
+   * @returns {Object[]} res.searchResults - Sorted map of the matched intent ids and probabilities
+   *                     [{intentId: "intent_1_id", probability: 0.3}]
+   * @returns {Number} res.searchLevel - The intent level on which search was performed.
    */
   const modelSearch = (config) => {
     const {model, intentsMap, query, tokenDelimiters} = config;
