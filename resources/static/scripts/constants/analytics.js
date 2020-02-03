@@ -58,6 +58,10 @@ define("constants/analytics", function() {
     PAYLOAD_SOURCE: {
       API: "js",
       USER: "u"
-    }
+    },
+    // The events which get triggered within this time will be passed to
+    // backend in the same XHR.
+    // @TODO: Intents: Confirm the batch events timeout value.
+    BATCH_EVENTS_TIMEOUT: 3000
   };
 });

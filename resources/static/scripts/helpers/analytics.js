@@ -39,7 +39,7 @@ define("helpers/analytics", [
   const {INTENTS_SEARCH_ALGO} = chatViewConstants;
   const {OFFLINE_BEHAVIOUR} = businessHoursConstants;
 
-  const {EVENT, PAYLOAD_EVENT, TRIGGER, PAYLOAD_SOURCE} = analyticsConstants;
+  const {EVENT, PAYLOAD_EVENT, TRIGGER, PAYLOAD_SOURCE, BATCH_EVENTS_TIMEOUT} = analyticsConstants;
 
   let _route;
   const _isBot = browserUtils.isBot();
@@ -117,12 +117,38 @@ define("helpers/analytics", [
     return store.getState().appState.analytics.sessionId;
   };
 
+  let eventQueue = [];
+  let eventFlushTimer = null;
+
   /**
-   * Fire the XHR to track the given event payload.
-   * @param {Object[]} eventsPayload - Array of events payload with name, event timestamp etc.
-   * @param {Object} [config]
+   * Track given event
+   * @param {Object} eventPayload - Event payload with name, event timestamp etc.
    */
-  const _fireTrackingXhr = (eventsPayload, config = {}) => {
+  const _trackEvent = (eventPayload) => {
+    // If there is no timer to flush the event queue, fire the XHR for current event,
+    // otherwise push the event to the event queue, and flush events after the
+    // timeout gets completed.
+    if (!eventFlushTimer) {
+      _fireTrackingXhr([eventPayload]);
+
+      eventFlushTimer = window.setTimeout(() => {
+        if (eventQueue.length) {
+          _fireTrackingXhr(eventQueue);
+          eventQueue = [];
+        }
+
+        eventFlushTimer = null;
+      }, BATCH_EVENTS_TIMEOUT);
+    } else {
+      eventQueue.push(eventPayload);
+    }
+  };
+
+  /**
+   * Fire the XHR to track the given events payload.
+   * @param {Object[]} eventsPayload - Array of events payload with name, event timestamp etc.
+   */
+  const _fireTrackingXhr = (eventsPayload) => {
     const defaultPayload = _getDefaultPayload();
     const data = objUtils.shallowMerge(defaultPayload, {
       e: JSON.stringify(eventsPayload)
@@ -132,12 +158,7 @@ define("helpers/analytics", [
       route: _route || _getRoute(),
       headers: xhrHelpers.getCommonHeaders(),
       data,
-      method: "POST",
-      onSuccess: (response) => {
-        if (typeof config.onSuccess === "function") {
-          config.onSuccess(response);
-        }
-      }
+      method: "POST"
     });
   };
 
@@ -146,15 +167,13 @@ define("helpers/analytics", [
    * @param {Number} ts - unix epoch
    */
   const _trackWidgetLoad = (ts) => {
-    _fireTrackingXhr([
-      {
-        ts,
-        t: PAYLOAD_EVENT.WIDGET_LOAD,
-        d: {
-          acid: _getAnalyticsSessionId()
-        }
+    _trackEvent({
+      ts,
+      t: PAYLOAD_EVENT.WIDGET_LOAD,
+      d: {
+        acid: _getAnalyticsSessionId()
       }
-    ]);
+    });
   };
 
   /**
@@ -196,7 +215,7 @@ define("helpers/analytics", [
       eventData.t = PAYLOAD_EVENT.WIDGET_OPEN_WITHOUT_ISSUE;
     }
 
-    _fireTrackingXhr([eventData]);
+    _trackEvent(eventData);
   };
 
   /**
@@ -206,16 +225,14 @@ define("helpers/analytics", [
    * @param {Number} [config.ts] - unix epoch
    */
   const _trackIssueCreated = (config = {}) => {
-    _fireTrackingXhr([
-      {
-        ts: config.ts,
-        d: {
-          acid: _getAnalyticsSessionId(),
-          id: config.issueId
-        },
-        t: PAYLOAD_EVENT.ISSUE_CREATED
-      }
-    ]);
+    _trackEvent({
+      ts: config.ts,
+      d: {
+        acid: _getAnalyticsSessionId(),
+        id: config.issueId
+      },
+      t: PAYLOAD_EVENT.ISSUE_CREATED
+    });
   };
 
   /**
@@ -289,7 +306,7 @@ define("helpers/analytics", [
         break;
     }
 
-    _fireTrackingXhr([eventData]);
+    _trackEvent(eventData);
   };
 
   /**
@@ -328,13 +345,11 @@ define("helpers/analytics", [
       }
     }
 
-    _fireTrackingXhr([
-      {
-        t: PAYLOAD_EVENT.INTENT_SELECTED,
-        ts,
-        d: data
-      }
-    ]);
+    _trackEvent({
+      t: PAYLOAD_EVENT.INTENT_SELECTED,
+      ts,
+      d: data
+    });
   };
 
   /**
@@ -351,16 +366,14 @@ define("helpers/analytics", [
       }
     } = store.getState();
 
-    _fireTrackingXhr([
-      {
-        t: PAYLOAD_EVENT.INTENT_UNSELECTED,
-        ts: config.ts,
-        d: {
-          acid: _getAnalyticsSessionId(),
-          iids: selectedIntentIds
-        }
+    _trackEvent({
+      t: PAYLOAD_EVENT.INTENT_UNSELECTED,
+      ts: config.ts,
+      d: {
+        acid: _getAnalyticsSessionId(),
+        iids: selectedIntentIds
       }
-    ]);
+    });
   };
 
   /**
@@ -407,13 +420,11 @@ define("helpers/analytics", [
       }
     }
 
-    _fireTrackingXhr([
-      {
-        t: PAYLOAD_EVENT.SEARCH_INTENTS,
-        ts,
-        d: data
-      }
-    ]);
+    _trackEvent({
+      t: PAYLOAD_EVENT.SEARCH_INTENTS,
+      ts,
+      d: data
+    });
   };
 
   /**
@@ -428,18 +439,16 @@ define("helpers/analytics", [
       }
     } = store.getState();
 
-    _fireTrackingXhr([
-      {
-        t: PAYLOAD_EVENT.INTENT_TREE_SHOWN,
-        ts: config.ts,
-        d: {
-          acid: _getAnalyticsSessionId(),
-          itid: tree.id,
-          itv: tree.version,
-          eis: enforceIntentSelection
-        }
+    _trackEvent({
+      t: PAYLOAD_EVENT.INTENT_TREE_SHOWN,
+      ts: config.ts,
+      d: {
+        acid: _getAnalyticsSessionId(),
+        itid: tree.id,
+        itv: tree.version,
+        eis: enforceIntentSelection
       }
-    ]);
+    });
   };
 
   /**
@@ -457,17 +466,15 @@ define("helpers/analytics", [
       ts
     } = config;
 
-    _fireTrackingXhr([
-      {
-        t: PAYLOAD_EVENT.MESSAGE_SENT,
-        ts: ts,
-        d: {
-          acid: _getAnalyticsSessionId(),
-          id,
-          type
-        }
+    _trackEvent({
+      t: PAYLOAD_EVENT.MESSAGE_SENT,
+      ts: ts,
+      d: {
+        acid: _getAnalyticsSessionId(),
+        id,
+        type
       }
-    ]);
+    });
   };
 
   /**
