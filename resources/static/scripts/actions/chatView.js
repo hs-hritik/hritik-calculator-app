@@ -1320,25 +1320,26 @@ define("actions/chatView", [
       appState: {
         domain,
         fullPrivacyEnabled,
-        featuresEnabled: {conversationHistory: conversationHistoryEnabled}
+        featuresEnabled: {conversationHistory: conversationHistoryEnabled},
+        issueType
       },
       chatView: {
         messageCursor: {
           [CURSOR_TYPES.BACKWARD]: {
             value: cursorTs,
-            meta: {issueType, preIssueId, issueId}
+            meta: {issueType: messageCursorIssueType, preIssueId, issueId}
           }
         },
         pastConversationsLoading
       }
     } = getState();
 
-    // If messages are already being loaded, return.
-    if (pastConversationsLoading) {
+    // Return if issue type is initial, or if messages are already being loaded.
+    if (issueType === ISSUE_TYPE.INITIAL || pastConversationsLoading) {
       return;
     }
 
-    const isIssue = issueType === ISSUE_TYPE.ISSUE;
+    const isIssue = messageCursorIssueType === ISSUE_TYPE.ISSUE;
     const xhrData = {
       cursor: cursorTs
     };
