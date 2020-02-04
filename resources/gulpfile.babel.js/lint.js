@@ -27,12 +27,6 @@ const eslintTask = (done) => {
     if (!Array.isArray(src)) {
       src = [src];
     }
-    src = src.map((path) => {
-      if (path.indexOf("resources/") !== -1) {
-        return path.split("resources/")[1];
-      }
-      return path;
-    });
   }
 
   return gulp

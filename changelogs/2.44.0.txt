@@ -1,0 +1,12 @@
+Branches:
+feature/node-upgrade-fixes
+
+Changelog:
+Update eslint helpshift config
+Fix HTML watch task
+Fix: Pass correct `this` to logError function of gulp-sass
+Fix gulp watch task
+Fix: Use eslint-changed-files make task when there is a js diff
+Fix eslint make task for large number of files
+Update eslint-config-hs to 1.0.4
+Add allowEmpty flag to ESLint gulp task
