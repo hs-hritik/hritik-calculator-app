@@ -90,9 +90,7 @@ const htmlTask = () => gulp.src(PATHS.htmlSrc).pipe(gulp.dest(PATHS.localhostDes
  * Watch HTML files
  */
 const htmlWatchTask = () => {
-  gulp.watch(PATHS.htmlSrc, () => {
-    gulp.series(htmlTask, replaceLocalhost, copyDemoTask);
-  });
+  gulp.watch(PATHS.htmlSrc, gulp.series(htmlTask, replaceLocalhost, copyDemoTask));
 };
 
 /**
@@ -141,7 +139,10 @@ const buildLocalhostTask = gulp.series(
  *   "update-localshiva-sri");
  */
 const generateSriTask = gulp.series(sri, updateSriList, updateEc2Sri, updateLocalshivaSri);
-const watchTask = gulp.series(buildLocalhostTask, babelWatch, htmlWatchTask, sassWatch);
+const watchTask = gulp.series(
+  buildLocalhostTask,
+  gulp.parallel(babelWatch, htmlWatchTask, sassWatch)
+);
 
 // Common tasks
 exports.ls = ls;
