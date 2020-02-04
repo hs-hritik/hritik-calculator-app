@@ -1791,7 +1791,8 @@ define("actions/chatView", [
       xhrData = messageHelpers.getPreparedMessageDataFromUserInput({
         input: userInput,
         latestMessage,
-        isIssue
+        isIssue,
+        botStepInProgress
       });
     }
 
