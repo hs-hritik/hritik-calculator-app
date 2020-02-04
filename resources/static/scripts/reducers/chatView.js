@@ -296,10 +296,6 @@ define("reducers/chatView", [
         });
 
       case ACTION_TYPES.SEARCH_INTENTS: {
-        let isSearching;
-        let searchResultIntents;
-        let searchAlgo;
-        let searchLevel;
         const {searchText} = action;
         const {
           intents: {
@@ -309,20 +305,22 @@ define("reducers/chatView", [
           }
         } = state;
 
+        const intentsChangeObj = {
+          pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
+        };
+
         // If the number of search characters is less than minimum characters required for
         // search, reset the search results
         if (searchText.trim().length < INTENTS_MINIMUM_CHAR_FOR_SEARCH) {
-          isSearching = false;
-          searchResultIntents = [];
-          searchAlgo = "";
-          searchLevel = 0;
+          intentsChangeObj.isSearching = {$set: false};
+          intentsChangeObj.searchResultIntents = {$set: []};
         } else if (!model) {
           // If the model is not yet loaded, do the string based search.
           const res = intentHelpers.substringSearch(intentsMap, searchText);
-          isSearching = true;
-          searchResultIntents = res.searchResults;
-          searchLevel = res.searchLevel;
-          searchAlgo = INTENTS_SEARCH_ALGO.SUBSTRING;
+          intentsChangeObj.isSearching = {$set: true};
+          intentsChangeObj.searchResultIntents = {$set: res.searchResults};
+          intentsChangeObj.searchLevel = {$set: res.searchLevel};
+          intentsChangeObj.searchAlgo = {$set: INTENTS_SEARCH_ALGO.SUBSTRING};
         } else {
           const res = intentHelpers.modelSearch({
             model,
@@ -330,20 +328,14 @@ define("reducers/chatView", [
             query: searchText,
             tokenDelimiters
           });
-          isSearching = true;
-          searchResultIntents = res.searchResults;
-          searchLevel = res.searchLevel;
-          searchAlgo = INTENTS_SEARCH_ALGO.ML;
+          intentsChangeObj.isSearching = {$set: true};
+          intentsChangeObj.searchResultIntents = {$set: res.searchResults};
+          intentsChangeObj.searchLevel = {$set: res.searchLevel};
+          intentsChangeObj.searchAlgo = {$set: INTENTS_SEARCH_ALGO.ML};
         }
 
         return update(state, {
-          intents: {
-            isSearching: {$set: isSearching},
-            searchResultIntents: {$set: searchResultIntents},
-            searchAlgo: {$set: searchAlgo},
-            searchLevel: {$set: searchLevel},
-            pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
-          }
+          intents: intentsChangeObj
         });
       }
 

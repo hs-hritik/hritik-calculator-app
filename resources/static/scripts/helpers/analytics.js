@@ -409,15 +409,13 @@ define("helpers/analytics", [
     // returned or leaf node was returned as a match.
     // `sa` indicates the search algorithm.
     // `mv` indicates the model version when the search algorithm is ML based.
-    if (!searchIsCleared) {
-      data.l = searchLevel;
+    data.l = searchLevel;
 
-      if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
-        data.sa = "ss";
-      } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
-        data.sa = "ml";
-        data.mv = model.version;
-      }
+    if (searchAlgo === INTENTS_SEARCH_ALGO.SUBSTRING) {
+      data.sa = "ss";
+    } else if (searchAlgo === INTENTS_SEARCH_ALGO.ML) {
+      data.sa = "ml";
+      data.mv = model.version;
     }
 
     _trackEvent({
