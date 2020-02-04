@@ -4,10 +4,12 @@
  * @created Nov 10, 2017
  */
 
-define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CONSTANTS) {
+define("helpers/attachments", ["constants/attachments", "gunpowder/utils/array"], function(
+  ATTACHMENT_CONSTANTS,
+  arrayUtils
+) {
   "use strict";
 
-  const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "bmp"];
   const {
     MAX_ATTACHMENT_LIMIT,
     ATTACHMENT_OPERATIONS,
@@ -16,9 +18,9 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
     UNITS_LIST,
     MAX_CHAR_LIMIT,
     MAX_EXTENSION_LIMIT,
-    ELLIPSIS_LENGTH,
-    SUPPORTED_MIME_TYPES
+    ELLIPSIS_LENGTH
   } = ATTACHMENT_CONSTANTS;
+  const ALLOW_ALL_ATTACHMENT_WHITELIST = "*/*";
 
   /**
    * Converts bytes to object containing size and unit
@@ -92,15 +94,18 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
    * too.
    *
    * @param {String} type - MIME type of the file
-   * @returns {Boolean}
+   * @param {string[]} attachmentsWhitelist - Array of supported mime types
+   * @returns {boolean}
    */
-  const isAttachmentTypeValid = (type) => {
+  const isAttachmentTypeValid = (type, attachmentsWhitelist) => {
     // Skip the check if file deosn't have a mime type. e.g: text file.
-    if (!type) {
+    // Skip the check when any extension is allowed to upload.
+    // In that case attachmentsWhitelist will be ["*/*"]
+    if (!type || arrayUtils.includes(attachmentsWhitelist, ALLOW_ALL_ATTACHMENT_WHITELIST)) {
       return true;
     }
 
-    return SUPPORTED_MIME_TYPES.indexOf(type) > -1;
+    return arrayUtils.includes(attachmentsWhitelist, type);
   };
 
   /**
@@ -139,22 +144,9 @@ define("helpers/attachments", ["constants/attachments"], function(ATTACHMENT_CON
    * @param {String} url - attachment url
    * @returns {Boolean} - attachment is of type image
    */
-  const isImageAttachment = (name, url) => {
-    let imageIdentifier;
-
-    // If file does not contain any extension
-    if (name.indexOf(".") !== -1) {
-      imageIdentifier = name;
-    } else if (url && url.indexOf(".") !== -1) {
-      imageIdentifier = url;
-    } else {
-      return false;
-    }
-
-    const dotIndex = imageIdentifier.lastIndexOf(".") + 1;
-    const fileExt = imageIdentifier.substr(dotIndex, imageIdentifier.length).toLowerCase();
-
-    return IMAGE_EXTENSIONS.indexOf(fileExt) !== -1;
+  const isImageAttachment = (contentType) => {
+    // TODO: Fix to use string includes instead of indexOf when polyfill is added in gunpowder
+    return !!contentType && contentType.indexOf("image/") > -1;
   };
 
   return {

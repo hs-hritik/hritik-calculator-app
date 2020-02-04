@@ -39,7 +39,8 @@ define("components/containers/chatViewFooter", [
         fullPrivacyEnabled,
         online,
         browserIsMobile,
-        featuresEnabled: {userAttachments: userAttachmentsEnabled}
+        featuresEnabled: {userAttachments: userAttachmentsEnabled},
+        attachmentsWhitelist
       },
       chatView: {
         userInput,
@@ -95,7 +96,8 @@ define("components/containers/chatViewFooter", [
       unreadCount: unreadMessageIds.length,
       failureConfig,
       botStepInProgress,
-      browserIsMobile
+      browserIsMobile,
+      attachmentsWhitelist
     };
   };
 

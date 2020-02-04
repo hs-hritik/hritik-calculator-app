@@ -124,7 +124,11 @@ define("components/chatViewFooter", [
       onCloseConversation: PropTypes.func.isRequired,
       botStepInProgress: PropTypes.bool.isRequired,
       onSelectStarRating: PropTypes.func,
-      onUpdateStarRating: PropTypes.func
+      onUpdateStarRating: PropTypes.func,
+      /**
+       * Allowed file mime types list
+       */
+      attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired
     },
     getInitialState() {
       return {
@@ -546,10 +550,11 @@ define("components/chatViewFooter", [
      * Render attachment button
      */
     _renderAttachmentButton() {
-      const {text} = this.props;
+      const {text, attachmentsWhitelist} = this.props;
       const _setAxActiveIndex = this._setAxActiveIndex.bind(this, {
         selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
       });
+      const allowedMimeTypes = attachmentsWhitelist.join(", ");
 
       return (
         <div
@@ -565,6 +570,7 @@ define("components/chatViewFooter", [
             labelClasses="hs-chat-footer__attachment-icon"
             iconClasses="ion-attachment"
             onSaveInputRef={this._saveInputRef}
+            accept={allowedMimeTypes}
           />
         </div>
       );
