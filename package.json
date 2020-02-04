@@ -1,6 +1,6 @@
 {
   "name": "mirkwood",
-  "version": "2.43.1",
+  "version": "2.44.0",
   "description": "Helpshift web SDK",
   "scripts": {
     "start": "babel-node resources/static/scripts/main",
