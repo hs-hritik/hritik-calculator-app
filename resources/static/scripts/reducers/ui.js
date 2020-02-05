@@ -136,7 +136,14 @@ define("reducers/ui", [
       ariaLabelOptionsList: "Options List",
       ariaLabelOpenChat: "Open Chat",
       ariaLabelCloseChat: "Close chat",
-      ariaLabelLauncherBtnBadge: "{{num}} new messages from Support"
+      ariaLabelLauncherBtnBadge: "{{num}} new messages from Support",
+      intentsTitle: "Select a response",
+      intentsReplyBoxPlaceholder: "Or enter your message",
+      intentsReplyBoxPlaceholderEis: "Search for your problem",
+      intentsSearchTitle: "You must be looking for",
+      intentsEmptySearchTitle: "No suggestions",
+      intentsEmptySearchDesc: "Send your message to start the conversation",
+      intentsEmptySearchDescEis: "Sorry, we couldn't find what you are looking for"
     },
     uiConfig: DEFAULT_UI_CONFIG.reduce((obj, config) => {
       // First elem in config is flattened ui config options (keys)

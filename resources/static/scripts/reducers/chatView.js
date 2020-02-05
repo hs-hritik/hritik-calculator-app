@@ -8,17 +8,30 @@ define("reducers/chatView", [
   "constants/chatView",
   "constants/actionTypes",
   "constants/message",
+  "gunpowder/constants/widgets/dragIt",
   "gunpowder/utils/object",
-  "gunpowder/utils/array"
-], function(CHAT_VIEW_CONSTANTS, ACTION_TYPES, msgConstants, objUtils, arrayUtils) {
+  "gunpowder/utils/array",
+  "helpers/intent"
+], function(
+  CHAT_VIEW_CONSTANTS,
+  ACTION_TYPES,
+  msgConstants,
+  dragItConstants,
+  objUtils,
+  arrayUtils,
+  intentHelpers
+) {
   "use strict";
 
+  const {NAVIGATION_STATES} = dragItConstants;
   const update = React.addons.update;
   const {
     ACTIVE_FOOTER,
     USER_INPUT_TYPES,
     CURSOR_TYPES,
-    DEFAULT_LIST_PICKER_TOGGLE_STATE
+    DEFAULT_LIST_PICKER_NAVIGATION_STATE,
+    INTENTS_MINIMUM_CHAR_FOR_SEARCH,
+    INTENTS_SEARCH_ALGO
   } = CHAT_VIEW_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
@@ -67,7 +80,7 @@ define("reducers/chatView", [
       placeholder: "",
       errorMsg: "",
       listPicker: {
-        toggleState: DEFAULT_LIST_PICKER_TOGGLE_STATE
+        navigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE
       }
     };
   };
@@ -117,6 +130,58 @@ define("reducers/chatView", [
     return state.userInput.type === USER_INPUT_TYPES.DEFAULT_INPUT;
   };
 
+  /**
+   * Process intents tree.
+   * We convert the nested intent tree into the intents detail map.
+   * @param {Array} tree - Intents tree array which we get from the backend.
+   * @param {String} [parentId] - Parent intent id of the given intent tree (if any)
+   * @returns {Object} - Intents details map and ids.
+   */
+  const _processIntentsTree = (tree, parentId = null) => {
+    const intentsMap = {};
+    const ids = [];
+
+    tree.forEach((intent) => {
+      const {id, children} = intent;
+      let childrenIntents;
+
+      if (children && children.length) {
+        childrenIntents = _processIntentsTree(children, id);
+      }
+
+      intentsMap[id] = {
+        id,
+        label: intent.label,
+        parentId,
+        showByDefault: intent.show_by_default
+      };
+
+      if (childrenIntents) {
+        intentsMap[id].children = childrenIntents.ids;
+        objUtils.shallowMerge(intentsMap, childrenIntents.intentsMap);
+      }
+
+      ids.push(id);
+    });
+
+    return {intentsMap, ids};
+  };
+
+  /**
+   * Returns the default data for intent tree.
+   * @returns {Object} - default data for intent tree
+   */
+  const _getDefaultIntentsTreeData = () => {
+    return {
+      id: "",
+      version: 0,
+      updatedAt: 0,
+      lastFetchTime: 0,
+      intentsMap: {},
+      topLevelIntentsOrder: []
+    };
+  };
+
   const INITIAL_STATE = {
     userInput: _getDefaultUserInputConfig(),
     activeFooter: ACTIVE_FOOTER.REPLY,
@@ -131,6 +196,19 @@ define("reducers/chatView", [
     },
     messageList: [],
     messageCursor: INITIAL_MESSAGE_CURSOR,
+    intents: {
+      enforceIntentSelection: false,
+      tree: _getDefaultIntentsTreeData(),
+      model: null,
+      pickerNavigationState: DEFAULT_LIST_PICKER_NAVIGATION_STATE,
+      selectedIntentIds: [],
+      isSearching: false,
+      searchAlgo: "", // The algorithm used for searching (substring or ML)
+      searchLevel: 0, // searchLevel 0 represents "no search", 1 represents search on level 1
+      // intents and so on.
+      searchResultIntents: [] // Array of {intentId: "", probability: 0.3} (probability would
+      // be  null for substring search)
+    },
     userIsViewingPastMessages: false,
     userIsRedacted: false,
     allMessagesAreLoaded: false,
@@ -193,7 +271,7 @@ define("reducers/chatView", [
       }
 
       case ACTION_TYPES.ISSUE_CREATED:
-        // When an issue is created, reset userInput and chat view error
+        // When an issue is created, reset userInput, selected intents data and chat view error
         return update(state, {
           userInput: {
             value: {$set: ""},
@@ -204,9 +282,66 @@ define("reducers/chatView", [
             disabled: {$set: false},
             errorMsg: {$set: ""}
           },
+          intents: {
+            pickerNavigationState: {$set: DEFAULT_LIST_PICKER_NAVIGATION_STATE},
+            selectedIntentIds: {$set: []},
+            isSearching: {$set: false},
+            searchAlgo: {$set: ""},
+            searchResultIntents: {$set: []}
+            // We are not resetting tree and model because we fetch the new tree/model
+            // when we start the new conversation only if it has passed the tree/model SLA.
+            // Also, there is no user selected data in tree/model.
+            // @TODO: Intents: Confirm from product if they want us to fetch the tree
+            // for new issue even if the SLA hasn't passed yet. If yes, reset tree/model
+            // data as well.
+          },
           systemTyping: {$set: false},
           error: {$set: INITIAL_ERROR_STATE}
         });
+
+      case ACTION_TYPES.SEARCH_INTENTS: {
+        const {searchText} = action;
+        const {
+          intents: {
+            tree: {intentsMap},
+            model,
+            tokenDelimiters
+          }
+        } = state;
+
+        const intentsChangeObj = {
+          pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
+        };
+
+        // If the number of search characters is less than minimum characters required for
+        // search, reset the search results
+        if (searchText.trim().length < INTENTS_MINIMUM_CHAR_FOR_SEARCH) {
+          intentsChangeObj.isSearching = {$set: false};
+          intentsChangeObj.searchResultIntents = {$set: []};
+        } else if (!model) {
+          // If the model is not yet loaded, do the string based search.
+          const res = intentHelpers.substringSearch(intentsMap, searchText);
+          intentsChangeObj.isSearching = {$set: true};
+          intentsChangeObj.searchResultIntents = {$set: res.searchResults};
+          intentsChangeObj.searchLevel = {$set: res.searchLevel};
+          intentsChangeObj.searchAlgo = {$set: INTENTS_SEARCH_ALGO.SUBSTRING};
+        } else {
+          const res = intentHelpers.modelSearch({
+            model,
+            intentsMap,
+            query: searchText,
+            tokenDelimiters
+          });
+          intentsChangeObj.isSearching = {$set: true};
+          intentsChangeObj.searchResultIntents = {$set: res.searchResults};
+          intentsChangeObj.searchLevel = {$set: res.searchLevel};
+          intentsChangeObj.searchAlgo = {$set: INTENTS_SEARCH_ALGO.ML};
+        }
+
+        return update(state, {
+          intents: intentsChangeObj
+        });
+      }
 
       case ACTION_TYPES.UPDATE_REPLY_TEXT:
         return update(state, {
@@ -341,12 +476,19 @@ define("reducers/chatView", [
           }
         });
 
-      case ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE:
+      case ACTION_TYPES.UPDATE_LIST_PICKER_NAVIGATION_STATE:
         return update(state, {
           userInput: {
             listPicker: {
-              toggleState: {$set: action.toggleState}
+              navigationState: {$set: action.navigationState}
             }
+          }
+        });
+
+      case ACTION_TYPES.UPDATE_INTENTS_NAVIGATION_STATE:
+        return update(state, {
+          intents: {
+            pickerNavigationState: {$set: action.navigationState}
           }
         });
 
@@ -447,6 +589,120 @@ define("reducers/chatView", [
             botStepMessage: {$set: action.message}
           }
         });
+
+      case ACTION_TYPES.INTENTS_TREE_REQUEST:
+        return update(state, {
+          loading: {$set: true}
+        });
+
+      case ACTION_TYPES.INTENTS_TREE_SUCCESS: {
+        const {response, fetchTime} = action;
+        const {intentsMap, ids} = _processIntentsTree(response.tree);
+
+        return update(state, {
+          loading: {$set: false},
+          intents: {
+            enforceIntentSelection: {$set: response.eis},
+            tokenDelimiters: {$set: response.token_delimiters},
+            tree: {
+              id: {$set: response.id},
+              version: {$set: response.version},
+              updatedAt: {$set: response.updated_at},
+              lastFetchTime: {$set: fetchTime},
+              intentsMap: {$set: intentsMap},
+              topLevelIntentsOrder: {$set: ids}
+            }
+          }
+        });
+      }
+
+      case ACTION_TYPES.INTENTS_TREE_FAILURE:
+        return update(state, {
+          loading: {$set: false},
+          // @TODO: Intents: Confirm enforceIntentSelection flag behavior in case of failure.
+          intents: {
+            tree: {$set: _getDefaultIntentsTreeData()}
+          }
+        });
+
+      case ACTION_TYPES.INTENTS_MODEL_SUCCESS: {
+        const {response} = action;
+
+        return update(state, {
+          intents: {
+            model: {
+              $set: {
+                version: response.version,
+                intentIds: response.intent_ids,
+                vocabulary: response.vocabulary,
+                weights: {
+                  wordIntentProbabilities: response.weights.word_label_probabilities,
+                  intentsBaseProbabilities: response.weights.label_base_probabilities
+                },
+                parameters: {
+                  confidenceThreshold: response.parameters.confidence_threshold,
+                  maxCombinedConfidence: response.parameters.max_combined_confidence
+                }
+              }
+            }
+          }
+        });
+      }
+
+      case ACTION_TYPES.INTENT_SELECTED: {
+        let selectedIntentIdsChangeObj;
+        const {
+          tree: {intentsMap},
+          isSearching
+        } = state.intents;
+
+        const selectedIntentId = action.intent.id;
+        // If the user isn't searching, simply push the selected intent to selectedIntentIds
+        if (!isSearching) {
+          selectedIntentIdsChangeObj = {$push: [selectedIntentId]};
+        } else {
+          // If the user selects an intent from search result, create the array
+          // of the selected intent ids, since we only show the leaf node intents
+          // in the search results.
+          let intent = intentsMap[selectedIntentId];
+          const selectedIntentIds = [];
+
+          while (intent.parentId) {
+            selectedIntentIds.push(intent.id);
+            intent = intentsMap[intent.parentId];
+          }
+
+          selectedIntentIds.push(intent.id);
+          selectedIntentIdsChangeObj = {$set: selectedIntentIds.reverse()};
+        }
+
+        return update(state, {
+          intents: {
+            selectedIntentIds: selectedIntentIdsChangeObj,
+            pickerNavigationState: {$set: NAVIGATION_STATES.OPENED}
+          }
+        });
+      }
+
+      case ACTION_TYPES.STOP_INTENTS_SEARCH: {
+        return update(state, {
+          intents: {
+            isSearching: {$set: false},
+            searchResultIntents: {$set: []},
+            searchAlgo: {$set: ""}
+          }
+        });
+      }
+
+      case ACTION_TYPES.INTENT_UNSELECTED: {
+        return update(state, {
+          intents: {
+            selectedIntentIds: {
+              $splice: [[state.intents.selectedIntentIds.length - 1, 1]]
+            }
+          }
+        });
+      }
 
       case ACTION_TYPES.SET_LOCAL_GREETING_MESSAGE_ID:
         return update(state, {
