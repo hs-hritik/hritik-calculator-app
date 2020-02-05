@@ -14,6 +14,7 @@ define("helpers/analytics", [
   "store",
   "helpers/xhr",
   "helpers/common",
+  "helpers/localStorage",
   "gunpowder/utils/xhr",
   "gunpowder/utils/object",
   "gunpowder/utils/array",
@@ -29,6 +30,7 @@ define("helpers/analytics", [
   store,
   xhrHelpers,
   commonHelpers,
+  lsHelpers,
   xhr,
   objUtils,
   arrayUtils,
@@ -281,11 +283,14 @@ define("helpers/analytics", [
       onSuccess: () => {
         // Store the fact that the SUGGESTED_FAQ_READ event has been tracked once
         if (config.faqSource === FAQ_SUGGESTION_SOURCES.CUSTOM_BOT) {
-          store.dispatch(
-            actionCreators.setSuggestedFaqReadTracked(
-              true,
-              commonHelpers.getCbFaqSuggestionReadLsKey(config.msgId)
-            )
+          // @TODO: Create a separate action which will update the state and
+          // it will also trigger the middleware for localstorage value to be
+          // set by the udpated value in state. For now, in case of custom
+          // bots we are not storing the faq suggestion read flag in state, we
+          // are directly using localstorage.
+          lsHelpers.setSuggestedFaqReadTracked(
+            true,
+            commonHelpers.getCbFaqSuggestionReadLsKey(config.msgId)
           );
         } else {
           store.dispatch(actionCreators.setSuggestedFaqReadTracked(true));
