@@ -9,6 +9,7 @@ define("helpers/analytics", [
   "constants/routes",
   "constants/appState",
   "constants/businessHoursView",
+  "constants/message",
   "store",
   "helpers/xhr",
   "helpers/common",
@@ -21,6 +22,7 @@ define("helpers/analytics", [
   routes,
   appStateConstants,
   businessHoursConstants,
+  msgConstants,
   store,
   xhrHelpers,
   commonHelpers,
@@ -36,6 +38,8 @@ define("helpers/analytics", [
   const {OFFLINE_BEHAVIOUR} = businessHoursConstants;
 
   const {EVENT, PAYLOAD_EVENT, TRIGGER, PAYLOAD_SOURCE} = analyticsConstants;
+
+  const {FAQ_SUGGESTION_SOURCES} = msgConstants;
 
   let _route;
   const _isBot = browserUtils.isBot();
@@ -222,10 +226,13 @@ define("helpers/analytics", [
    * This is done so because data platform requires all the conversation
    * related events in one stream. Backend tracks other conversational events
    * because preissue/issue business logic is handled by backend.
+   * @param {Object} [config]
+   * @param {string} [config.msgId] - Id of msg which had faq suggestions
+   * @param {string} [config.faqSource] - FAQ source
    */
-  const _trackSuggestedFaqRead = () => {
+  const _trackSuggestedFaqRead = (config = {}) => {
     const {
-      appState: {domain, internalIssueId},
+      appState: {domain, internalIssueId, issueType},
       faqView: {
         activeFaq: {id: faqId}
       }
@@ -234,10 +241,16 @@ define("helpers/analytics", [
     // @TODO: Backend doesn't send publish id with the GET faq API. Get the
     // publish_id in order to send it with this xhr.
     const xhrData = {
-      preissue_id: internalIssueId,
-      faq_id: faqId,
-      message_id: commonHelpers.getFaqSuggestionMessageId()
+      faq_id: faqId
     };
+
+    if (issueType === ISSUE_TYPE.ISSUE) {
+      xhrData.issue_id = internalIssueId;
+      xhrData.message_id = config.msgId;
+    } else {
+      xhrData.preissue_id = internalIssueId;
+      xhrData.message_id = commonHelpers.getFaqSuggestionMessageId();
+    }
 
     xhr({
       route: routes.postSuggestedFaqRead(domain),
@@ -248,7 +261,16 @@ define("helpers/analytics", [
       method: "POST",
       onSuccess: () => {
         // Store the fact that the SUGGESTED_FAQ_READ event has been tracked once
-        store.dispatch(actionCreators.setSuggestedFaqReadTracked(true));
+        if (config.faqSource === FAQ_SUGGESTION_SOURCES.CUSTOM_BOT) {
+          store.dispatch(
+            actionCreators.setSuggestedFaqReadTracked(
+              true,
+              commonHelpers.getCbFaqSuggestionReadLsKey(config.msgId)
+            )
+          );
+        } else {
+          store.dispatch(actionCreators.setSuggestedFaqReadTracked(true));
+        }
       }
     });
   };
@@ -298,6 +320,8 @@ define("helpers/analytics", [
    * @param {string} event - The event to track.
    * @param {Object} [config]
    * @param {Number} [config.ts] - Unix epoch
+   * @param {string} [config.msgId] - Id of msg which had faq suggestions
+   * @param {string} [config.faqSource] - FAQ source
    */
   const track = (event, config = {}) => {
     // Do not track the event if initiated via a search engine bot or crawler.
@@ -319,7 +343,7 @@ define("helpers/analytics", [
         _trackIssueCreated(config);
         break;
       case EVENT.SUGGESTED_FAQ_READ:
-        _trackSuggestedFaqRead();
+        _trackSuggestedFaqRead(config);
         break;
       case EVENT.CSAT:
         _trackCsatEvents(config);

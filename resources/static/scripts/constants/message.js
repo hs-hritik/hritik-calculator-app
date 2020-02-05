@@ -189,6 +189,14 @@ define("constants/message", function() {
     TYPE.TEXT
   ];
 
+  /**
+   * Source of FAQ suggestions
+   */
+  const FAQ_SUGGESTION_SOURCES = {
+    ANSWER_BOT: "ab-ai",
+    CUSTOM_BOT: "cb-ai"
+  };
+
   return {
     TYPE,
     ORIGIN,
@@ -199,6 +207,7 @@ define("constants/message", function() {
     TEXT_INPUT_MESSAGE_TYPES,
     MESSAGE_ADD_EVENT_TYPES,
     BOT_STEP_MESSAGES,
-    BOT_CANCEL_REASON
+    BOT_CANCEL_REASON,
+    FAQ_SUGGESTION_SOURCES
   };
 });

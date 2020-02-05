@@ -7,9 +7,10 @@
 define("reducers/chatView", [
   "constants/chatView",
   "constants/actionTypes",
+  "constants/message",
   "gunpowder/utils/object",
   "gunpowder/utils/array"
-], function(CHAT_VIEW_CONSTANTS, ACTION_TYPES, objUtils, arrayUtils) {
+], function(CHAT_VIEW_CONSTANTS, ACTION_TYPES, msgConstants, objUtils, arrayUtils) {
   "use strict";
 
   const update = React.addons.update;
@@ -19,6 +20,8 @@ define("reducers/chatView", [
     CURSOR_TYPES,
     DEFAULT_LIST_PICKER_TOGGLE_STATE
   } = CHAT_VIEW_CONSTANTS;
+
+  const {TYPE: MESSAGE_TYPE} = msgConstants;
 
   const INITIAL_ERROR_STATE = {
     type: "",
@@ -365,9 +368,15 @@ define("reducers/chatView", [
         const uniqueNewMessages = _getUniqueMessages(state.messageList, action.messages);
         const messages = updatedExistingMessages.concat(uniqueNewMessages);
 
-        return update(state, {
+        const updateObj = {
           messageList: {$set: messages}
-        });
+        };
+
+        if (action.responseType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
+          updateObj.readFaqList = {$set: []};
+        }
+
+        return update(state, updateObj);
 
       case ACTION_TYPES.PREPEND_MESSAGES:
         const uniqMessages = _getUniqueMessages(state.messageList, action.messages);
