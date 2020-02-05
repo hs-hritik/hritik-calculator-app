@@ -1269,6 +1269,31 @@ define("components/chatViewFooter", [
       }
     },
 
+    _picketHeightUpdateTimer: null,
+
+    /**
+     * Update picker height in state.
+     */
+    _updatePickerHeight() {
+      const parentNode = document.querySelector(".hs-dnd-wrapper");
+
+      if (parentNode) {
+        const height = parentNode.getBoundingClientRect().height;
+
+        // There is a weird issue on Firefox, because of which, sometimes height is coming 0 on
+        // componentDidMount. In case height is 0, update the height after timeout.
+        if (height) {
+          this.setState({
+            pickerMaxHeight: height
+          });
+
+          window.clearTimeout(this._picketHeightUpdateTimer);
+        } else {
+          this._picketHeightUpdateTimer = setTimeout(this._updatePickerHeight, 50);
+        }
+      }
+    },
+
     /**
      * This function do following things
      * - Clear delayed focus on componentDidUpdate to clear batched focus items
@@ -1362,11 +1387,11 @@ define("components/chatViewFooter", [
         this._replaceAxFooterSelectors();
       }
 
-      // Calculate the maximum height the picker widget can have.
-      const parentNode = document.querySelector(".hs-dnd-wrapper");
-      this.setState({
-        pickerMaxHeight: parentNode.getBoundingClientRect().height
-      });
+      this._updatePickerHeight();
+    },
+
+    componentWillUnmount() {
+      window.clearTimeout(this._picketHeightUpdateTimer);
     }
   });
 });
