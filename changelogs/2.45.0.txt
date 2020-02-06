@@ -1,0 +1,85 @@
+Branches:
+feature/ai-powered-faqs
+feature/smart-intents
+
+Changelog:
+Fix faq read state flag value in state
+Update gunpowder version
+Fix height of picker
+Clear faq read list when it has been sent to the backend
+Do not send chabot info in add msg XHR if bot is not in progress
+Fix search intents event when search is cleared
+Fix load more messages bug
+Batch the analytics events
+Fix "Search Intents" event
+Pass search level in search intent event
+Revert "Send search result level data (l) for search intents event"
+Intents: Change min char required for search to 4
+Intents: Remove max child cap when searching on parent nodes
+Track faq suggestion read for custom bot
+Pass custom key to faq suggestion read ls helper function
+Process faq source in faq suggestions step
+Remove search cleared condition for search intent event data
+Send search result level data (l) for search intents event
+Update gunpowder version
+Give max height to chat footer
+Fire analytics event when intents tree is shown
+Update analytics session id for new conversations
+Minor style fixes of intents widget
+Add action to stop intents search
+Don't pre-load intents if issue already exists
+Set issue type when issue is created
+Change reply box placeholder when intents are shown
+Remove ReplyBox container
+Rename "intent" prop to "intents"
+Fix gulp watch task
+Update gunpowder version
+Intents: Remove already completed TODOs
+Pass analytics session id inside data of each event
+Remove selected intent ids from search intents event
+Handle failure for intents tree fetch
+Load intents while starting a new conversation
+Update navigation state when user types or selects intent
+Pass navigation state to Picker and NestedPicker
+Reset selected intent data when issue is created
+Pass text props to NestedPicker
+Fix gulp watch task
+Give full height to intents widget
+Update gunpowder version
+Disable submit reply when enforceIntentSelection is true
+Trim query before deciding whether to search or not
+Pass tree version to model XHR
+Use the XHR data for intents
+Split words using delimiters sent by backend
+Create classes to style nested picker component
+Track first message event
+Pass required data in select intent event
+Trigger intent search event when search is cleared
+Add searchAlgo field and restructure searchResultIntentIds
+Check if leaf intent was selected while creating pre-issue
+Fix INTENT_SELECTED when search result is selected
+Do the model based search when model is available
+Fix intent tree and model route
+Trigger analytics events
+Add analytics XHRs for intents
+Update structure of _fireTrackingXhr param
+Add model based search
+Rename searchText to query in substring search fn
+Limit the children intent ids for each parent intent
+Club together intents related props
+Save parent intent id in intents map
+Pass intents related data in pre-issue XHR
+Add substring based search for intents
+Update intents model strcuture
+Add action updateReplyTextAndSearchIntents
+Add debounce action util
+Convert selectIntent to async action
+Render intents conditionally
+Move pre-issue XHR data creation to a separate fn
+Fix action types which got removed in master merge
+Add action to unselect an intent
+Add action to select an intent
+Add action to update the intents navigation state
+Render nested picker for smart intents
+Add XHRs for smart intents
+Use DragIt HOC for Picker

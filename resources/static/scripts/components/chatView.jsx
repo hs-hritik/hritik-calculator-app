@@ -14,7 +14,7 @@ define("components/chatView", [
   "constants/chatView",
   "components/jumpToLatestBtn",
   "gunpowder/utils/classes",
-  "gunpowder/constants/widgets/picker",
+  "gunpowder/constants/widgets/dragIt",
   "gunpowder/utils/object",
   "components/errorBoundaryWithLogging",
   "components/errors/appError",
@@ -31,7 +31,7 @@ define("components/chatView", [
   CHAT_VIEW_CONSTANTS,
   JumpToLatestBtn,
   classes,
-  LIST_PICKER_CONSTANTS,
+  dragItConstants,
   objUtils,
   ErrorBoundaryWithLogging,
   AppError,
@@ -43,7 +43,7 @@ define("components/chatView", [
 
   const {MESSAGE_PROP_TYPE, USER_INPUT_PROP_TYPE} = customPropTypes;
   const {USER_INPUT_TYPES} = CHAT_VIEW_CONSTANTS;
-  const {TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES} = LIST_PICKER_CONSTANTS;
+  const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
 
   class ChatViewContents extends React.PureComponent {
     constructor(props) {
@@ -202,11 +202,11 @@ define("components/chatView", [
     _renderPickerOverlay() {
       const {
         userInput: {
-          listPicker: {toggleState}
+          listPicker: {navigationState}
         }
       } = this.props;
 
-      if (toggleState !== LIST_PICKER_TOGGLE_STATES.RESIZING) {
+      if (navigationState !== LIST_PICKER_NAVIGATION_STATES.RESIZING) {
         return null;
       }
 
