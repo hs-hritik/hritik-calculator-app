@@ -171,6 +171,10 @@ define("components/chatViewFooter", [
       onUnselectIntent: PropTypes.func.isRequired,
       onIntentsNavigationStateChange: PropTypes.func.isRequired,
       onStopIntentsSearch: PropTypes.func.isRequired,
+      /**
+       * Handler to scroll message list to bottom.
+       */
+      onScrollMessageListToBottom: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
         resolutionQuestionReject: PropTypes.string.isRequired,
@@ -219,7 +223,10 @@ define("components/chatViewFooter", [
     },
     getInitialState() {
       return {
-        pickerMaxHeight: PICKER_MIN_HEIGHT
+        pickerMaxHeight: PICKER_MIN_HEIGHT,
+        intentsWidgetMaxHeight: PICKER_MIN_HEIGHT,
+        intentsWidgetMinHeight: PICKER_MIN_HEIGHT,
+        intentsWidgetIsReadyForRendering: false
       };
     },
 
@@ -541,9 +548,9 @@ define("components/chatViewFooter", [
     },
 
     _renderIntents() {
-      // @TODO: Pass different height (instead of pickerMaxHeight) if required.
-      // @TODO: Pass different classes.
-      if (!this._shouldIntentsBeShown()) {
+      // Intents widget is ready for rendering when we get the height of the parent node,
+      // because the minimium height of intents is 50% of the parent node.
+      if (!this._shouldIntentsBeShown() || !this.state.intentsWidgetIsReadyForRendering) {
         return;
       }
 
@@ -583,10 +590,11 @@ define("components/chatViewFooter", [
           navigationState={pickerNavigationState}
           onSelectOption={this._onSelectIntent}
           onUnselectOption={this._onUnselectIntent}
-          minHeight={PICKER_MIN_HEIGHT}
+          minHeight={this.state.intentsWidgetMinHeight}
+          maxHeight={this.state.intentsWidgetMaxHeight}
+          onComponentDidMount={this._onIntentsWidgetMount}
           isSearching={isSearching}
           searchResultOptionIds={searchResultIntentIds}
-          maxHeight={this.state.pickerMaxHeight}
           headerTitle={intentsTitle}
           headerSearchTitle={intentsSearchTitle}
           headerEmptySearchTitle={intentsEmptySearchTitle}
@@ -1269,6 +1277,13 @@ define("components/chatViewFooter", [
       }
     },
 
+    /**
+     * Scroll message list to bottom when intents widget is mounted.
+     */
+    _onIntentsWidgetMount() {
+      this.props.onScrollMessageListToBottom();
+    },
+
     _picketHeightUpdateTimer: null,
 
     /**
@@ -1284,7 +1299,10 @@ define("components/chatViewFooter", [
         // componentDidMount. In case height is 0, update the height after timeout.
         if (height) {
           this.setState({
-            pickerMaxHeight: height
+            pickerMaxHeight: height,
+            intentsWidgetMaxHeight: height,
+            intentsWidgetMinHeight: height / 2,
+            intentsWidgetIsReadyForRendering: true
           });
 
           window.clearTimeout(this._picketHeightUpdateTimer);
