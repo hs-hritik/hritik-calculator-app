@@ -53,6 +53,7 @@ define("components/chatView", [
       this._onLoadMore = this._onLoadMore.bind(this);
       this._onFilesDrop = this._onFilesDrop.bind(this);
       this._onJumpBtnClick = this._onJumpBtnClick.bind(this);
+      this._onScrollMessageListToBottom = this._onScrollMessageListToBottom.bind(this);
     }
 
     render() {
@@ -117,6 +118,7 @@ define("components/chatView", [
           <ErrorBoundaryWithLogging onError={onFooterError}>
             <ChatViewFooterContainer
               onJumpBtnClick={this._onJumpBtnClick}
+              onScrollMessageListToBottom={this._onScrollMessageListToBottom}
               onListPickerOptionSelect={onListPickerOptionSelect}
             />
           </ErrorBoundaryWithLogging>
@@ -242,6 +244,13 @@ define("components/chatView", [
       if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
         onLoadMoreMessages();
       }
+    }
+
+    /**
+     * Scroll message list to bottom
+     */
+    _onScrollMessageListToBottom() {
+      this._msgListRef.current._scrollToBottom();
     }
   }
 

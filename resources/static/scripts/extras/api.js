@@ -265,6 +265,11 @@ define("extras/api", [
       // mark unread messages as seen.
       store.dispatch(chatViewActions.markMessagesSeen());
 
+      // Track the widget open event
+      analyticsHelpers.track(EVENT.WIDGET_OPEN, {
+        trigger
+      });
+
       const issueStateIsClosed = isIssueClosed(issueState);
       // Issue state = NA is different than the issueExists flag. NA is set as the default value in
       // the app state as long as there's no active issue created. issueExists flag is sent by the
@@ -306,11 +311,6 @@ define("extras/api", [
           store.dispatch(appStateActions.startNewConversation());
         }
       }
-
-      // Track the widget open event
-      analyticsHelpers.track(EVENT.WIDGET_OPEN, {
-        trigger
-      });
     } else if (isIssueClosed(issueState)) {
       // @TODO : Change this default rating submission after confirming with product
       handleCsatRatingSubmission();
