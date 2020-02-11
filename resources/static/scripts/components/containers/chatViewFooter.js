@@ -155,6 +155,7 @@ define("components/containers/chatViewFooter", [
       },
       onStartNewConversation: () => {
         dispatch(appStateActions.startNewConversation());
+        analyticsHelpers.track(EVENT.WIDGET_OPEN);
       },
       onSkipUserInput: () => {
         dispatch(chatViewActions.skipUserInput());
