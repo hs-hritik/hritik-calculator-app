@@ -90,6 +90,10 @@
         color: $action-icon-color;
         cursor: pointer;
       }
+
+      &-clickable {
+        cursor: pointer;
+      }
     }
 
     &__empty-list-note {
