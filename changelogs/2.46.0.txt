@@ -1,0 +1,10 @@
+Branches:
+feature/smart-intents-fixes
+
+Changelog:
+Update gunpowder version
+Update gunpowder version
+Fix widget open event ordering
+Update gunpowder version
+Fire widget open event when user clicks on "Start New Conversation"
+Scroll message list to bottom when intents get mounted
