@@ -14,7 +14,7 @@ define("components/chatView", [
   "constants/chatView",
   "components/jumpToLatestBtn",
   "gunpowder/utils/classes",
-  "gunpowder/constants/widgets/picker",
+  "gunpowder/constants/widgets/dragIt",
   "gunpowder/utils/object",
   "components/errorBoundaryWithLogging",
   "components/errors/appError",
@@ -31,7 +31,7 @@ define("components/chatView", [
   CHAT_VIEW_CONSTANTS,
   JumpToLatestBtn,
   classes,
-  LIST_PICKER_CONSTANTS,
+  dragItConstants,
   objUtils,
   ErrorBoundaryWithLogging,
   AppError,
@@ -43,7 +43,7 @@ define("components/chatView", [
 
   const {MESSAGE_PROP_TYPE, USER_INPUT_PROP_TYPE} = customPropTypes;
   const {USER_INPUT_TYPES} = CHAT_VIEW_CONSTANTS;
-  const {TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES} = LIST_PICKER_CONSTANTS;
+  const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
 
   class ChatViewContents extends React.PureComponent {
     constructor(props) {
@@ -53,6 +53,7 @@ define("components/chatView", [
       this._onLoadMore = this._onLoadMore.bind(this);
       this._onFilesDrop = this._onFilesDrop.bind(this);
       this._onJumpBtnClick = this._onJumpBtnClick.bind(this);
+      this._onScrollMessageListToBottom = this._onScrollMessageListToBottom.bind(this);
     }
 
     render() {
@@ -117,6 +118,7 @@ define("components/chatView", [
           <ErrorBoundaryWithLogging onError={onFooterError}>
             <ChatViewFooterContainer
               onJumpBtnClick={this._onJumpBtnClick}
+              onScrollMessageListToBottom={this._onScrollMessageListToBottom}
               onListPickerOptionSelect={onListPickerOptionSelect}
             />
           </ErrorBoundaryWithLogging>
@@ -202,11 +204,11 @@ define("components/chatView", [
     _renderPickerOverlay() {
       const {
         userInput: {
-          listPicker: {toggleState}
+          listPicker: {navigationState}
         }
       } = this.props;
 
-      if (toggleState !== LIST_PICKER_TOGGLE_STATES.RESIZING) {
+      if (navigationState !== LIST_PICKER_NAVIGATION_STATES.RESIZING) {
         return null;
       }
 
@@ -242,6 +244,13 @@ define("components/chatView", [
       if (!allMessagesAreLoaded && !latestConversationHasLoaded && !loadingMoreMsgsHasFailed) {
         onLoadMoreMessages();
       }
+    }
+
+    /**
+     * Scroll message list to bottom
+     */
+    _onScrollMessageListToBottom() {
+      this._msgListRef.current._scrollToBottom();
     }
   }
 

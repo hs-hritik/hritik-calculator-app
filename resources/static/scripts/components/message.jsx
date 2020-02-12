@@ -282,7 +282,7 @@ define("components/message", [
     _renderFaqs() {
       const {
         onSuggestedFaqClick,
-        message: {suggestedFaqs}
+        message: {suggestedFaqs, id: msgId, faqSource}
       } = this.props;
 
       return suggestedFaqs.map((faq) => {
@@ -292,7 +292,7 @@ define("components/message", [
             key={faq.id}
             className="hs-message__suggested-faq"
             dir="auto"
-            onClick={onSuggestedFaqClick.bind(this, id, language)}
+            onClick={onSuggestedFaqClick.bind(this, id, language, msgId, faqSource)}
             tabIndex="0"
             aria-label={faq.title}
             role="button">

@@ -4,13 +4,10 @@
  * @created June 14, 2017
  */
 
-define("constants/chatView", ["gunpowder/constants/widgets/picker"], function(
-  LIST_PICKER_CONSTANTS
-) {
+define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dragItConstants) {
   "use strict";
 
-  const {TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES} = LIST_PICKER_CONSTANTS;
-
+  const {NAVIGATION_STATES: LIST_PICKER_NAVIGATION_STATES} = dragItConstants;
   const ACTIVE_FOOTER = {
     REPLY: "REPLY",
     FAQ_SUGGESTIONS_FEEDBACK: "FAQ_SUGGESTIONS_FEEDBACK",
@@ -67,7 +64,17 @@ define("constants/chatView", ["gunpowder/constants/widgets/picker"], function(
   const USER_REDACTION_ERR_MSG = "User Not Found";
   const USER_REDACTION_ERR_STATUS_CODE = 404;
 
-  const DEFAULT_LIST_PICKER_TOGGLE_STATE = LIST_PICKER_TOGGLE_STATES.CLOSED;
+  const DEFAULT_LIST_PICKER_NAVIGATION_STATE = LIST_PICKER_NAVIGATION_STATES.CLOSED;
+
+  // @TODO: Intents: Update threshold if required.
+  const INTENTS_SEARCH_DEBOUNCE_THRESHOLD = 500;
+  const INTENTS_MINIMUM_CHAR_FOR_SEARCH = 4;
+  const MAX_LEAF_NODE_INTENT_RESULTS = 5;
+  const MAX_PARENT_INTENT_RESULTS = 2;
+  const INTENTS_SEARCH_ALGO = {
+    SUBSTRING: "substring",
+    ML: "ml"
+  };
 
   return {
     ACTIVE_FOOTER,
@@ -82,6 +89,11 @@ define("constants/chatView", ["gunpowder/constants/widgets/picker"], function(
     PICKER_INPUT_THRESHOLD: 5,
     OPTIONS_INPUT_TYPES,
     PICKER_MIN_HEIGHT: 112, // px
-    DEFAULT_LIST_PICKER_TOGGLE_STATE
+    DEFAULT_LIST_PICKER_NAVIGATION_STATE,
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
+    INTENTS_MINIMUM_CHAR_FOR_SEARCH,
+    MAX_LEAF_NODE_INTENT_RESULTS,
+    MAX_PARENT_INTENT_RESULTS,
+    INTENTS_SEARCH_ALGO
   };
 });

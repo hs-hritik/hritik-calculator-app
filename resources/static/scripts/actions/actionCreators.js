@@ -221,14 +221,25 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   });
 
   /**
-   * Return action to change list picker toggle state
-   * @param {String} toggleState - Whether the picker is in "closed", "opened" or
+   * Return action to change list picker navigation state
+   * @param {String} navigationState - Whether the picker is in "closed", "opened" or
    * "resizing" state
    * @returns {Object} - the action object
    */
-  const updateListPickerToggleState = (toggleState) => ({
-    type: ACTION_TYPES.UPDATE_LIST_PICKER_TOGGLE_STATE,
-    toggleState
+  const updateListPickerNavigationState = (navigationState) => ({
+    type: ACTION_TYPES.UPDATE_LIST_PICKER_NAVIGATION_STATE,
+    navigationState
+  });
+
+  /**
+   * Return action to change intents navigation state
+   * @param {String} navigationState - Whether the intents picker is in "closed", "opened" or
+   * "resizing" state
+   * @returns {Object} - the action object
+   */
+  const updateIntentsNavigationState = (navigationState) => ({
+    type: ACTION_TYPES.UPDATE_INTENTS_NAVIGATION_STATE,
+    navigationState
   });
 
   /**
@@ -277,6 +288,83 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to update the intents tree data.
+   * @param {Object} response - The intents tree XHR response
+   * @returns {Object} - Action
+   */
+  const intentsTreeSuccess = (response) => {
+    return {
+      type: ACTION_TYPES.INTENTS_TREE_SUCCESS,
+      response,
+      fetchTime: Date.now()
+    };
+  };
+
+  /**
+   * Action to be fired before making intents tree request
+   * @returns {Object} - Action
+   */
+  const intentsTreeRequest = () => {
+    return {
+      type: ACTION_TYPES.INTENTS_TREE_REQUEST
+    };
+  };
+
+  /**
+   * Action to handle the failure of intents tree XHR
+   * @returns {Object} - Action
+   */
+  const intentsTreeFailure = () => {
+    return {
+      type: ACTION_TYPES.INTENTS_TREE_FAILURE
+    };
+  };
+
+  /**
+   * Action to update the intents model data.
+   * @param {Object} response - The intents model XHR response
+   * @returns {Object} - Action
+   */
+  const intentsModelSuccess = (response) => {
+    return {
+      type: ACTION_TYPES.INTENTS_MODEL_SUCCESS,
+      response
+    };
+  };
+
+  /**
+   * Action to select an intent
+   * @param {Object} intent
+   * @returns {Object} - Action
+   */
+  const intentSelected = (intent) => {
+    return {
+      type: ACTION_TYPES.INTENT_SELECTED,
+      intent
+    };
+  };
+
+  /**
+   * Action to unselect an intent
+   * @returns {Object} - Action
+   */
+  const intentUnselected = () => {
+    return {
+      type: ACTION_TYPES.INTENT_UNSELECTED
+    };
+  };
+
+  /**
+   * Action to stop intents search
+   * @returns {Object} - Action
+   */
+  const stopIntentsSearch = () => {
+    return {
+      type: ACTION_TYPES.STOP_INTENTS_SEARCH
+    };
+  };
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -298,10 +386,18 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     setFooterActive,
     setFooterInactive,
     resetReEngagementId,
-    updateListPickerToggleState,
+    updateListPickerNavigationState,
+    updateIntentsNavigationState,
     setAppResetTrigger,
     setInitialUserMsg,
     setConversationEnded,
-    setKeyboardInteractionIsActive
+    setKeyboardInteractionIsActive,
+    intentsTreeSuccess,
+    intentsTreeRequest,
+    intentsTreeFailure,
+    intentsModelSuccess,
+    intentSelected,
+    intentUnselected,
+    stopIntentsSearch
   };
 });

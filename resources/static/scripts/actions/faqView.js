@@ -10,10 +10,13 @@ define("actions/faqView", [
   "constants/routes",
   "constants/activeView",
   "constants/analytics",
+  "constants/message",
   "gunpowder/utils/xhr",
   "helpers/message",
   "helpers/xhr",
   "helpers/analytics",
+  "helpers/localStorage",
+  "helpers/common",
   "actions/actionCreators",
   "actions/batch"
 ], function(
@@ -22,16 +25,20 @@ define("actions/faqView", [
   routes,
   ACTIVE_VIEW,
   analyticsConstants,
+  msgConstants,
   xhr,
   messageHelpers,
   xhrHelpers,
   analyticsHelpers,
+  lsHelpers,
+  commonHelpers,
   actionCreators,
   batchActions
 ) {
   "use strict";
 
   const {EVENT} = analyticsConstants;
+  const {FAQ_SUGGESTION_SOURCES} = msgConstants;
 
   /**
    * Action to set the active FAQ in the FAQ View store
@@ -73,9 +80,11 @@ define("actions/faqView", [
    * Action to get FAQ details for a given faq-id.
    * @param {string} faqId - FAQ id
    * @param {string} language - The language the FAQ body should render in
+   * @param {string} msgId - Id of the msg to which this FAQ belongs
+   * @param {string} faqSource - Source of the faq suggestions - answer bot or custom bot
    * @returns {Object} - action
    */
-  const getFaq = (faqId, language) => {
+  const getFaq = (faqId, language, msgId, faqSource) => {
     return (dispatch, getState) => {
       const state = getState();
       const {
@@ -107,9 +116,19 @@ define("actions/faqView", [
           dispatch(setActiveFaq(faq));
 
           // Track suggested FAQ read event if it hasn't been tracked already.
-          if (!suggestedFaqReadTracked) {
+          if (faqSource === FAQ_SUGGESTION_SOURCES.ANSWER_BOT && !suggestedFaqReadTracked) {
             analyticsHelpers.track(EVENT.SUGGESTED_FAQ_READ, {
-              faqId
+              faqId,
+              faqSource
+            });
+          } else if (
+            faqSource === FAQ_SUGGESTION_SOURCES.CUSTOM_BOT &&
+            !lsHelpers.getSuggestedFaqReadTracked(commonHelpers.getCbFaqSuggestionReadLsKey(msgId))
+          ) {
+            analyticsHelpers.track(EVENT.SUGGESTED_FAQ_READ, {
+              faqId,
+              faqSource,
+              msgId
             });
           }
 

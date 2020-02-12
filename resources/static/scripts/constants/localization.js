@@ -77,7 +77,14 @@ define("constants/localization", function() {
     "collapse_search_vo": "ariaLabelCloseSearch",
     "open_chat_vo": "ariaLabelOpenChat",
     "close_chat_vo": "ariaLabelCloseChat",
-    "launcher_badge_count_vo": "ariaLabelLauncherBtnBadge"
+    "launcher_badge_count_vo": "ariaLabelLauncherBtnBadge",
+    "si_prompt_title": "intentsTitle",
+    "si_typing_hint": "intentsReplyBoxPlaceholder",
+    "si_typing_hint_eis": "intentsReplyBoxPlaceholderEis",
+    "si_search_title": "intentsSearchTitle",
+    "si_empty_search_title": "intentsEmptySearchTitle",
+    "si_empty_search_desc": "intentsEmptySearchDesc",
+    "si_empty_search_desc_eis": "intentsEmptySearchDescEis"
   };
 
   return {

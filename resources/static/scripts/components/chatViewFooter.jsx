@@ -7,35 +7,41 @@
 define("components/chatViewFooter", [
   "components/starRating",
   "components/jumpToLatestBtn",
-  "components/containers/replyBox",
+  "components/replyBox",
   "components/commons/fileInput",
   "components/commons/skipButtonWrapper",
   "constants/chatView",
+  "constants/appState",
   "constants/keyCodes",
   "constants/propTypes",
   "helpers/common",
   "gunpowder/utils/classes",
   "gunpowder/widgets/picker",
-  "gunpowder/constants/widgets/picker",
+  "gunpowder/constants/widgets/dragIt",
   "extras/accessibility",
   "constants/accessibility",
-  "constants/activeView"
+  "constants/activeView",
+  "gunpowder/widgets/dragIt",
+  "gunpowder/widgets/nestedPicker"
 ], function(
   StarRating,
   JumpToLatestBtn,
-  ReplyBoxContainer,
+  ReplyBox,
   FileInput,
   SkipButtonWrapper,
   CHAT_VIEW_CONSTANTS,
+  APP_STATE_CONSTANTS,
   KEY_CODES,
   customPropTypes,
   commonHelpers,
   classes,
   Picker,
-  LIST_PICKER_CONSTANTS,
+  dragItConstants,
   ax,
   axConstants,
-  activeViewConstants
+  activeViewConstants,
+  dragIt,
+  NestedPicker
 ) {
   "use strict";
 
@@ -46,13 +52,16 @@ define("components/chatViewFooter", [
     PICKER_MIN_HEIGHT
   } = CHAT_VIEW_CONSTANTS;
   const {USER_INPUT_PROP_TYPE} = customPropTypes;
-
-  const {TOGGLE_STATES: LIST_PICKER_TOGGLE_STATES} = LIST_PICKER_CONSTANTS;
+  const {ISSUE_TYPE} = APP_STATE_CONSTANTS;
+  const {NAVIGATION_STATES} = dragItConstants;
   const {METALIST_GROUP_NAME, METALIST_ITEMS, FOOTER_SELECTORS_LIST_MAP} = axConstants;
   const FOOTER_SELECTORS_TYPES = {
     REPLY_FOOTER: "reply",
     ACTIVE_FOOTER: "active_footer"
   };
+
+  const DraggablePicker = dragIt(Picker);
+  const DraggableNestedPicker = dragIt(NestedPicker);
 
   return createReactClass({
     displayName: "ChatViewFooter",
@@ -63,6 +72,71 @@ define("components/chatViewFooter", [
       browserIsMobile: PropTypes.bool,
       allowFullScreen: PropTypes.bool,
       userIsViewingPastMessages: PropTypes.bool,
+      /**
+       * Whether intents feature is enabled or not
+       */
+      intentsFeatureIsEnabled: PropTypes.bool.isRequired,
+      /**
+       * Issue Type
+       */
+      issueType: PropTypes.string.isRequired,
+      /**
+       * Intents related data. Required only if intentsEnabled is true.
+       */
+      intents: PropTypes.shape({
+        /**
+         * Intents Map
+         */
+        intentsMap: PropTypes.objectOf(
+          PropTypes.shape({
+            /**
+             * Id for the intent
+             */
+            id: PropTypes.string.isRequired,
+            /**
+             * Label of the intent
+             */
+            label: PropTypes.string.isRequired,
+            /**
+             * Id of the parent intent, if any
+             */
+            parentId: PropTypes.string,
+            /**
+             * Array of children option ids, if any
+             */
+            children: PropTypes.arrayOf(PropTypes.string)
+          })
+        ).isRequired,
+        /**
+         * The order in which the top level intents should be rendered.
+         */
+        topLevelIntentsOrder: PropTypes.arrayOf(PropTypes.string),
+        /**
+         * Selected intent Ids
+         */
+        selectedIntentIds: PropTypes.arrayOf(PropTypes.string),
+        /**
+         * Whether the search mode is on or off for intents
+         */
+        isSearching: PropTypes.bool,
+        /**
+         * Search result intent ids
+         */
+        searchResultIntentIds: PropTypes.arrayOf(PropTypes.string),
+        /**
+         * Whether the intent selection should be enforced. If this is true, submit reply
+         * is disabled, and the send button won't be shown.
+         */
+        enforceIntentSelection: PropTypes.bool.isRequired,
+        /**
+         * Navigation state of intents picker widget
+         */
+        pickerNavigationState: PropTypes.oneOf([
+          NAVIGATION_STATES.CLOSED,
+          NAVIGATION_STATES.OPENED,
+          NAVIGATION_STATES.RESIZING
+        ])
+      }),
       unreadCount: PropTypes.number,
       /**
        * If any failure has to be displayed on the chat view footer.
@@ -85,13 +159,22 @@ define("components/chatViewFooter", [
       }),
       onJumpBtnClick: PropTypes.func,
       onSubmitReply: PropTypes.func.isRequired,
+      onChangeReplyBoxValue: PropTypes.func.isRequired,
       onValueChangeInputField: PropTypes.func.isRequired,
       onAcceptResolutionQuestionClick: PropTypes.func.isRequired,
       onRejectResolutionQuestionClick: PropTypes.func.isRequired,
       onStartNewConversation: PropTypes.func.isRequired,
       onStarClick: PropTypes.func.isRequired,
-      onListPickerToggleStateChange: PropTypes.func,
+      onListPickerNavigationStateChange: PropTypes.func,
       onListPickerOptionSelect: PropTypes.func.isRequired,
+      onSelectIntent: PropTypes.func.isRequired,
+      onUnselectIntent: PropTypes.func.isRequired,
+      onIntentsNavigationStateChange: PropTypes.func.isRequired,
+      onStopIntentsSearch: PropTypes.func.isRequired,
+      /**
+       * Handler to scroll message list to bottom.
+       */
+      onScrollMessageListToBottom: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
         resolutionQuestionReject: PropTypes.string.isRequired,
@@ -110,7 +193,15 @@ define("components/chatViewFooter", [
         ariaLabelSearchList: PropTypes.string,
         ariaLabelCloseSearch: PropTypes.string,
         ariaLabelAttachFiles: PropTypes.string,
-        unsupportedDateInputPlaceholder: PropTypes.string
+        unsupportedDateInputPlaceholder: PropTypes.string,
+        intentsTitle: PropTypes.string,
+        intentsSearchTitle: PropTypes.string,
+        intentsEmptySearchTitle: PropTypes.string,
+        intentsEmptySearchDesc: PropTypes.string,
+        intentsEmptySearchDescEis: PropTypes.string,
+        replyBtnPlaceholder: PropTypes.string,
+        intentsReplyBoxPlaceholder: PropTypes.string,
+        intentsReplyBoxPlaceholderEis: PropTypes.string
       }).isRequired,
       footerIsActive: PropTypes.bool,
       onFooterFocus: PropTypes.func,
@@ -132,7 +223,10 @@ define("components/chatViewFooter", [
     },
     getInitialState() {
       return {
-        pickerMaxHeight: PICKER_MIN_HEIGHT
+        pickerMaxHeight: PICKER_MIN_HEIGHT,
+        intentsWidgetMaxHeight: PICKER_MIN_HEIGHT,
+        intentsWidgetMinHeight: PICKER_MIN_HEIGHT,
+        intentsWidgetIsReadyForRendering: false
       };
     },
 
@@ -148,7 +242,7 @@ define("components/chatViewFooter", [
           disabled,
           required,
           skipLabel,
-          listPicker: {toggleState: listPickerToggleState}
+          listPicker: {navigationState: listPickerNavigationState}
         },
         issueIsCreated,
         onSkipUserInput,
@@ -178,8 +272,8 @@ define("components/chatViewFooter", [
 
       const inputIsPillSelect = type === USER_INPUT_TYPES.PILL_SELECT;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
-      const listPickerIsClosed = listPickerToggleState === LIST_PICKER_TOGGLE_STATES.CLOSED;
-      const listPickerIsOpened = listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED;
+      const listPickerIsClosed = listPickerNavigationState === NAVIGATION_STATES.CLOSED;
+      const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
 
       const isPreIssue = !issueIsCreated;
 
@@ -234,12 +328,17 @@ define("components/chatViewFooter", [
         "hs-footer--full-screen": allowFullScreen,
         "hs-footer--failure": failureConfig,
         "hs-footer--list-picker-opened": listPickerIsOpened,
-        "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened
+        "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened,
+        "hs-footer--intents": this._shouldIntentsBeShown(),
+        "hs-footer--intents-open":
+          this._shouldIntentsBeShown() &&
+          this.props.intents.pickerNavigationState === NAVIGATION_STATES.OPENED
       });
 
       return (
         <div className={footerClasses}>
           {miscActionsWrapper}
+          {this._renderIntents()}
           {this._renderFooterComponent()}
         </div>
       );
@@ -327,7 +426,7 @@ define("components/chatViewFooter", [
           type,
           errorMsg,
           disabled,
-          listPicker: {toggleState: listPickerToggleState}
+          listPicker: {navigationState: listPickerNavigationState}
         },
         onFooterFocus,
         onFooterBlur,
@@ -336,13 +435,16 @@ define("components/chatViewFooter", [
         text
       } = this.props;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
-      const listPickerIsOpened = listPickerToggleState === LIST_PICKER_TOGGLE_STATES.OPENED;
+      const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
+      const intentsAreShown = this._shouldIntentsBeShown();
       const footerClasses = classes("hs-chat-footer", {
         "hs-chat-footer--form-error": errorMsg,
         "hs-chat-footer--form-invalid": disabled || !value.trim(),
         "hs-chat-footer--mobile": browserIsMobile,
         "hs-chat-footer--no-padding": inputIsListPicker,
-        "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened
+        "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened,
+        "hs-chat-footer--top-border": intentsAreShown,
+        "hs-chat-footer--box-shadow": intentsAreShown
       });
 
       if (inputIsListPicker) {
@@ -371,8 +473,19 @@ define("components/chatViewFooter", [
         }
 
         inputComponentEl = (
-          <ReplyBoxContainer
+          <ReplyBox
+            value={value}
+            disabled={disabled}
+            placeholder={this._getReplyBoxPlaceholder()}
+            widgetIsOpened={!this.props.widgetIsMinimized}
+            issueIsCreated={this.props.issueIsCreated}
+            browserIsMobile={this.props.browserIsMobile}
+            onChangeReplyBoxValue={this.props.onChangeReplyBoxValue}
+            onSubmitReply={this.props.onSubmitReply}
+            onFooterFocus={this.props.onFooterFocus}
+            onFooterBlur={this.props.onFooterBlur}
             className="hs-chat-footer__text-area"
+            disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
             ariaLabel={ariaLabel}
           />
@@ -434,10 +547,71 @@ define("components/chatViewFooter", [
       );
     },
 
+    _renderIntents() {
+      // Intents widget is ready for rendering when we get the height of the parent node,
+      // because the minimium height of intents is 50% of the parent node.
+      if (!this._shouldIntentsBeShown() || !this.state.intentsWidgetIsReadyForRendering) {
+        return;
+      }
+
+      const {
+        intentsMap,
+        topLevelIntentsOrder,
+        selectedIntentIds,
+        isSearching,
+        searchResultIntentIds,
+        enforceIntentSelection,
+        pickerNavigationState
+      } = this.props.intents;
+
+      const {
+        intentsTitle,
+        intentsSearchTitle,
+        intentsEmptySearchTitle,
+        intentsEmptySearchDescEis,
+        intentsEmptySearchDesc
+      } = this.props.text;
+
+      const pickerClasses = classes("hs-chat-footer__picker-field", {
+        "hs-nested-picker--mobile": this.props.browserIsMobile
+      });
+
+      const emptyListDesc = enforceIntentSelection
+        ? intentsEmptySearchDescEis
+        : intentsEmptySearchDesc;
+
+      return (
+        <DraggableNestedPicker
+          className={pickerClasses}
+          optionsMap={intentsMap}
+          topLevelOptionsOrder={topLevelIntentsOrder}
+          selectedOptionIds={selectedIntentIds}
+          onNavigationStateChange={this._onIntentsNavigationStateChange}
+          navigationState={pickerNavigationState}
+          onSelectOption={this._onSelectIntent}
+          onUnselectOption={this._onUnselectIntent}
+          minHeight={this.state.intentsWidgetMinHeight}
+          maxHeight={this.state.intentsWidgetMaxHeight}
+          onComponentDidMount={this._onIntentsWidgetMount}
+          isSearching={isSearching}
+          searchResultOptionIds={searchResultIntentIds}
+          headerTitle={intentsTitle}
+          headerSearchTitle={intentsSearchTitle}
+          headerEmptySearchTitle={intentsEmptySearchTitle}
+          emptyListDesc={emptyListDesc}
+          onStopSearch={this._onStopIntentsSearch}
+        />
+      );
+    },
+
     /**
      * Render reply box action
      */
     _renderFooterAction() {
+      if (this._shouldSubmitReplyBeDisabled()) {
+        return null;
+      }
+
       const {
         userInput: {value},
         issueIsCreated,
@@ -464,7 +638,11 @@ define("components/chatViewFooter", [
      */
     _renderPicker() {
       const {
-        userInput: {options, label: headerLabel},
+        userInput: {
+          options,
+          label: headerLabel,
+          listPicker: {navigationState}
+        },
         onListPickerOptionSelect,
         text: {
           searchPlaceholder,
@@ -491,10 +669,11 @@ define("components/chatViewFooter", [
       };
 
       return (
-        <Picker
+        <DraggablePicker
           className={pickerClasses}
           options={options}
-          onToggleStateChange={this._onPickerToggleStateChange}
+          onNavigationStateChange={this._onPickerNavigationStateChange}
+          navigationState={navigationState}
           onSelect={onListPickerOptionSelect}
           searchPlaceholder={searchPlaceholder}
           headerLabel={headerLabel}
@@ -749,6 +928,96 @@ define("components/chatViewFooter", [
     },
 
     /**
+     * Return the reply box placeholder.
+     * If intents are being shown to the user, the reply box placeholder is different.
+     * @returns {String} - Reply box placeholder
+     */
+    _getReplyBoxPlaceholder() {
+      const {
+        userInput,
+        text: {replyBtnPlaceholder, intentsReplyBoxPlaceholder, intentsReplyBoxPlaceholderEis}
+      } = this.props;
+
+      if (this._shouldIntentsBeShown()) {
+        if (this.props.intents.enforceIntentSelection) {
+          return intentsReplyBoxPlaceholderEis;
+        }
+
+        return intentsReplyBoxPlaceholder;
+      }
+
+      return userInput.placeholder || replyBtnPlaceholder;
+    },
+
+    /**
+     * Check whether submit reply should be disabled.
+     * Submit reply is disabled when the intents are shown to the end user, and
+     * the enforceIntentSelection flag is true.
+     * @returns {Boolean} - True, if the submit reply should be disabled.
+     */
+    _shouldSubmitReplyBeDisabled() {
+      return this._shouldIntentsBeShown() && this.props.intents.enforceIntentSelection;
+    },
+
+    /**
+     * Whether the intents widget should be shown or not
+     * @returns {Boolean}
+     */
+    _shouldIntentsBeShown() {
+      if (!this.props.intentsFeatureIsEnabled) {
+        return false;
+      }
+
+      const {selectedIntentIds, intentsMap, topLevelIntentsOrder} = this.props.intents;
+      let intentsAreAvailable = false;
+
+      // If some intent is selected, check if the last selected intent has any children,
+      // otherwise ensure that we have top level intents to show.
+      if (selectedIntentIds.length) {
+        const selectedIntent = intentsMap[selectedIntentIds[selectedIntentIds.length - 1]];
+        intentsAreAvailable = !!(selectedIntent.children && selectedIntent.children.length);
+      } else {
+        intentsAreAvailable = !!topLevelIntentsOrder.length;
+      }
+
+      return (
+        this.props.issueType === ISSUE_TYPE.INITIAL &&
+        intentsAreAvailable &&
+        !this.props.userInput.disabled
+      );
+    },
+
+    /**
+     * Handler to update the intents navigation state.
+     * @param {String} navigationState
+     */
+    _onIntentsNavigationStateChange(navigationState) {
+      this.props.onIntentsNavigationStateChange(navigationState);
+    },
+
+    /**
+     * Handler to select an intent
+     * @param {Object} intent
+     */
+    _onSelectIntent(intent) {
+      this.props.onSelectIntent(intent);
+    },
+
+    /**
+     * Handler to unselect an intent
+     */
+    _onUnselectIntent() {
+      this.props.onUnselectIntent();
+    },
+
+    /**
+     * Handler to stop intents search
+     */
+    _onStopIntentsSearch() {
+      this.props.onStopIntentsSearch();
+    },
+
+    /**
      * This Handler is called on focus or click event on picker element
      * It calls ax function to update active index
      *
@@ -760,21 +1029,21 @@ define("components/chatViewFooter", [
 
     /**
      * Support accessiblity depends on toggle state
-     * 1) Depending on the toggleState, backup or restore selectors
+     * 1) Depending on the navigationState, backup or restore selectors
      * 2) Replace the footer selectors
      * 3) Focus the element of the picker
-     * @param {String} toggleState - Whether the picker is in "closed", "opened" state
+     * @param {String} navigationState - Whether the picker is in "closed", "opened" state
      * @param {Array} selectors - List of current visible selectors
      * @param {String} firstFocusItem - To be focused selector
      */
-    _onFocusItemsChanged(toggleState, selectors, firstFocusItem) {
-      if (toggleState === LIST_PICKER_TOGGLE_STATES.OPENED) {
+    _onFocusItemsChanged(navigationState, selectors, firstFocusItem) {
+      if (navigationState === NAVIGATION_STATES.OPENED) {
         ax.backupSelectors(METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
         ax.replaceSelectors({
           group: METALIST_GROUP_NAME.CHAT.MESSAGE_LIST,
           selectors: []
         });
-      } else if (toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED) {
+      } else if (navigationState === NAVIGATION_STATES.CLOSED) {
         const backedupSelectors = ax.restoreSelectors(METALIST_GROUP_NAME.CHAT.MESSAGE_LIST);
 
         if (backedupSelectors) {
@@ -838,11 +1107,11 @@ define("components/chatViewFooter", [
     },
 
     /**
-     * Handle change in toggle state of the Picker
-     * @param {String} toggleState - Toggle state of the Picker
+     * Handle change in navigation state of the Picker
+     * @param {String} navigationState - Navigate state of the Picker
      */
-    _onPickerToggleStateChange(toggleState) {
-      this.props.onListPickerToggleStateChange(toggleState);
+    _onPickerNavigationStateChange(navigationState) {
+      this.props.onListPickerNavigationStateChange(navigationState);
     },
 
     /**
@@ -1009,6 +1278,41 @@ define("components/chatViewFooter", [
     },
 
     /**
+     * Scroll message list to bottom when intents widget is mounted.
+     */
+    _onIntentsWidgetMount() {
+      this.props.onScrollMessageListToBottom();
+    },
+
+    _picketHeightUpdateTimer: null,
+
+    /**
+     * Update picker height in state.
+     */
+    _updatePickerHeight() {
+      const parentNode = document.querySelector(".hs-dnd-wrapper");
+
+      if (parentNode) {
+        const height = parentNode.getBoundingClientRect().height;
+
+        // There is a weird issue on Firefox, because of which, sometimes height is coming 0 on
+        // componentDidMount. In case height is 0, update the height after timeout.
+        if (height) {
+          this.setState({
+            pickerMaxHeight: height,
+            intentsWidgetMaxHeight: height,
+            intentsWidgetMinHeight: height / 2,
+            intentsWidgetIsReadyForRendering: true
+          });
+
+          window.clearTimeout(this._picketHeightUpdateTimer);
+        } else {
+          this._picketHeightUpdateTimer = setTimeout(this._updatePickerHeight, 50);
+        }
+      }
+    },
+
+    /**
      * This function do following things
      * - Clear delayed focus on componentDidUpdate to clear batched focus items
      * - Update the footer object in metaList in Ax module
@@ -1025,8 +1329,7 @@ define("components/chatViewFooter", [
       const userInputIsPillSelect = userInput.type === USER_INPUT_TYPES.PILL_SELECT;
       const userInputIsListPicker = userInput.type === USER_INPUT_TYPES.LIST_PICKER;
       const userInputIsSelectOption = userInputIsPillSelect || userInputIsListPicker;
-      const listPickerIsClosed =
-        userInput.listPicker.toggleState === LIST_PICKER_TOGGLE_STATES.CLOSED;
+      const listPickerIsClosed = userInput.listPicker.navigationState === NAVIGATION_STATES.CLOSED;
       const userInputIsEnterText =
         userInput.type === USER_INPUT_TYPES.PLAIN_TEXT ||
         userInput.type === USER_INPUT_TYPES.EMAIL ||
@@ -1102,11 +1405,11 @@ define("components/chatViewFooter", [
         this._replaceAxFooterSelectors();
       }
 
-      // Calculate the maximum height the picker widget can have.
-      const parentNode = document.querySelector(".hs-dnd-wrapper");
-      this.setState({
-        pickerMaxHeight: parentNode.getBoundingClientRect().height
-      });
+      this._updatePickerHeight();
+    },
+
+    componentWillUnmount() {
+      window.clearTimeout(this._picketHeightUpdateTimer);
     }
   });
 });
