@@ -99,7 +99,6 @@ define("components/message", [
       const msgClasses = classes("hs-message", {
         "hs-message--left": !isCustomerMsg,
         "hs-message--right": isCustomerMsg,
-        "hs-message__image-attachment": isCustomerMsg && this._isAttachmentPreviewable(),
         "hs-message--error": states && states.error
       });
       const time = this._getHumanReadableTime();
