@@ -490,9 +490,6 @@ define("actions/appState", [
           // Set the ui configuration flags in the state.
           setUiConfig(helpshiftConfig);
 
-          // Send the config event loaded back to the client
-          dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
-
           // If widgetShouldAutoOpen is true then reset the value of it to false.
           if (widgetShouldAutoOpen) {
             store.dispatch(setWidgetShouldAutoOpen(false));
@@ -502,7 +499,12 @@ define("actions/appState", [
             // A side-effect of getting the web chat config would be to
             // add the stylesheet with the primary color (and any other
             // configurable CSS value) to the document head.
-            setStyles();
+            // The `config loaded` event should be sent to the client after the CSS is loaded.
+            setStyles({
+              onSuccess: () => {
+                dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+              }
+            });
 
             // Apply styles to page
             applyPageStyles();
@@ -523,6 +525,9 @@ define("actions/appState", [
             if (featuresEnabled.audioNotifications) {
               audioHelpers.init();
             }
+          } else {
+            // Send the config event loaded back to the client
+            dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
           }
         },
         onFailure: (response) => {
@@ -634,8 +639,10 @@ define("actions/appState", [
   /**
    * Get CSS over the wire, add it to the document and
    * update the custom CSS variables.
+   * @param {Object} [callbacks]
+   * @param {Function} [callbacks.onSuccess]
    */
-  const setStyles = () => {
+  const setStyles = (callbacks = {}) => {
     getCss({
       onSuccess: (css) => {
         // Check if CSS variable is supported by the client. If yes,
@@ -656,6 +663,10 @@ define("actions/appState", [
         } else {
           const updatedCss = _getCssVarsUpdatedCss(css);
           _addStyleToDocument(updatedCss);
+        }
+
+        if (callbacks.onSuccess) {
+          callbacks.onSuccess();
         }
       }
     });
