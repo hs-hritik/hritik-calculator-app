@@ -10,6 +10,7 @@
 /// @group conversation
 ///
 
+// @TODO: Refactor & create a new scss block "hs-attachment".
 @include component(message) {
   $max-width: 88%;
   $failed-img-icon-width: 20px;
@@ -35,8 +36,6 @@
   $form-accent-color: var(--hs-form-accent-color);
   $form-accent-color-light: var(--hs-form-accent-color-light);
   $form-border-color: var(--hs-form-border-color);
-
-  $server-attachment-border-color: var(--hs-form-border-color);
 
   .hs-message {
     align-self: flex-start;
@@ -70,25 +69,31 @@
       }
     }
 
+    &__file-attachment,
     &__image-attachment {
-      padding: 0;
-      overflow: hidden;
+      margin-top: gutter(8);
       cursor: pointer;
+      background-color: $form-bg-color;
+      border: 1px solid $form-border-color;
     }
 
     &__file-attachment {
       display: flex;
       align-items: center;
-      cursor: pointer;
+      color: $form-accent-color;
 
       &:hover {
-        color: $user-message-accent-color-light;
+        color: $form-accent-color-light;
       }
     }
 
-    &__server-attachment {
-      margin-top: gutter(8);
-      border: 1px solid $server-attachment-border-color;
+    &__image-attachment {
+      width: 260px;
+      padding: 0;
+      overflow: hidden;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: 100%;
     }
 
     &--right {
@@ -104,12 +109,23 @@
         border: 1px solid $user-message-border-color;
       }
 
-      .hs-message__details {
-        justify-content: flex-end;
+      .hs-message__image-attachment,
+      .hs-message__file-attachment {
+        margin: 0;
+        background-color: $form-bg-color;
+        border: 1px solid $form-border-color;
       }
 
       .hs-message__file-attachment {
-        color: $user-message-accent-color;
+        color: $form-accent-color;
+
+        &:hover {
+          color: $form-accent-color-light;
+        }
+      }
+
+      .hs-message__details {
+        justify-content: flex-end;
       }
     }
 
@@ -196,13 +212,6 @@
       .hs-message__item {
         border-color: $user-message-error;
       }
-    }
-
-    &__image-wrapper {
-      width: 260px;
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-size: 100%;
     }
 
     &__height-finder {
