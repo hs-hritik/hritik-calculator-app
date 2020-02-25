@@ -71,6 +71,7 @@ define("helpers/message", [
           language: faq.data.language
         };
       });
+      msgObj.faqSource = msg.faq_source;
     }
 
     return msgObj;
@@ -180,15 +181,17 @@ define("helpers/message", [
    * Return prepared message xhr data from user input
    * @param {Object} config
    * @param {Object} config.input - user input
-   * @param {Object} config.latestMessage - latest message
-   * @param {Object} config.isIssue - issue type is issue
+   * @param {String} config.latestMessage - latest message
+   * @param {Boolean} config.isIssue - issue type is issue
+   * @param {Boolean} config.botStepInProgress - Whether bot is in progress currently
    * @returns {Object} - prepared xhr data
    */
   const getPreparedMessageDataFromUserInput = (config) => {
     const {
       input: {value, skipped, skipLabel, selectedOption},
       latestMessage: {type: latestMsgType, id: messageId, chatBotInfo},
-      isIssue
+      isIssue,
+      botStepInProgress
     } = config;
 
     const responseMessageType = getUserResponseMessageType(latestMsgType);
@@ -210,6 +213,7 @@ define("helpers/message", [
       // If this response is to the answer bot step, web chat sends which
       // FAQs were read (max 10) so far by the end user to the backend. Backend
       // would then pass that information to data plat.
+      // @TODO: Store the max faqs to be sent (10) in a constant
       const readFaqs = store.getState().chatView.readFaqList;
       if (readFaqs.length) {
         requestData.read_faqs = JSON.stringify(readFaqs.slice(0, 10));
@@ -220,7 +224,7 @@ define("helpers/message", [
     // 1] Interrupt message (bot/agent) 2] Bot End.
     // Bot end contains empty chat bot info. So checking for non empty
     // chatBotInfo obj.
-    if (chatBotInfo && Object.keys(chatBotInfo).length) {
+    if (botStepInProgress && chatBotInfo && Object.keys(chatBotInfo).length) {
       requestData.chatbot_info = JSON.stringify(chatBotInfo);
     }
 

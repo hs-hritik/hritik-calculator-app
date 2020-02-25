@@ -178,6 +178,7 @@ define("actions/appState", [
    * user so far.
    */
   const rehydrateState = () => {
+    // @TODO: feature/ai-powered : Handle rehydration
     const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked(),
       readFaqList = lsHelpers.getReadFaqList(),
       reEngagementId = lsHelpers.getReEngagementId();
@@ -402,20 +403,15 @@ define("actions/appState", [
       } = getState();
       const widgetIsOpen = !minimized;
 
-      // If the app reset trigger is the start new conversation button, update
-      // the analytics session id with a new value.
-      // @TODO: Lazy Preissue Creation
-      // Check if this can be directly used with startNewConversation fn.
-      // if (appResetTrigger === APP_RESET_TRIGGER.START_NEW_CONVERSATION) {
-      //   dispatch (updateAnalyticsSessionId ());
-      // }
-
       if (!issueExists) {
         dispatch(
           postSdkMessage.conversationStatusEvent({
             open: false
           })
         );
+
+        // Pre-load the intents tree.
+        dispatch(loadIntents());
       }
 
       // If at least one issue exists on backend then start the poller.
@@ -444,7 +440,6 @@ define("actions/appState", [
           widgetIsOpen &&
           !issueExists)
       ) {
-        dispatch(updateAnalyticsSessionId());
         dispatch(startNewConversation());
       } else if (issueExists) {
         // The issueExists flag is true if for the given profile (user+device combination), at
@@ -777,6 +772,64 @@ define("actions/appState", [
   };
 
   /**
+   * Returns true if the intent tree SLA has elapsed.
+   * @param {Number} intentsTreeSla - Intent tree SLA
+   * @param {Number} lastFetchTime - Last fetch time of intents tree.
+   * @returns {Boolean} - True if the intent tree SLA has elapsed.
+   */
+  const _hasIntentTreeSlaElapsed = (intentsTreeSla, lastFetchTime) => {
+    return Date.now() - lastFetchTime < intentsTreeSla;
+  };
+
+  /**
+   * Action to load intents tree and model data
+   * @param {Object} [callbacks]
+   * @param {Function} [callbacks.onIntentTreeSuccess] - Intents tree success callback
+   * @returns {Function} - Action
+   */
+  const loadIntents = ({onIntentTreeSuccess} = {}) => {
+    return (dispatch, getState) => {
+      const {
+        chatView: {
+          intents: {
+            tree: {lastFetchTime}
+          }
+        },
+        appState: {featuresEnabled, intentsTreeSla}
+      } = getState();
+
+      // No need to fetch the intent tree again if it was last fetched within
+      // the defined time period (intentsTreeSla)
+      if (!featuresEnabled.intents) {
+        return;
+      }
+
+      if (_hasIntentTreeSlaElapsed(intentsTreeSla, lastFetchTime)) {
+        // If using the already fetched intents tree, call onIntentTreeSuccess callback
+        if (onIntentTreeSuccess) {
+          onIntentTreeSuccess();
+        }
+
+        return;
+      }
+
+      dispatch(
+        chatViewActions.loadIntentsTree({
+          onSuccess: () => {
+            // @TODO: Intents: Check if we should clear the model related data before loading the
+            // new data.
+            if (onIntentTreeSuccess) {
+              onIntentTreeSuccess();
+            }
+
+            dispatch(chatViewActions.loadIntentsModel());
+          }
+        })
+      );
+    };
+  };
+
+  /**
    * Action to start a new conversation.
    * A new conversation is started by -
    * adding the greeting message to the message list, if applicable, and
@@ -795,12 +848,23 @@ define("actions/appState", [
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
         dispatch(chatViewActions.addGreetingMessage());
+        // Update analytics session id for new conversations.
+        dispatch(updateAnalyticsSessionId());
 
         // If initial user message is set via API, create preissue without waiting for end-user's
         // input. The initial user message once consumed should be reset - this is being handled in
         // the poller success callback, check actions/chatView -> handleResetInitialUserMessage.
         if (initialUserMessage) {
           dispatch(chatViewActions.createPreIssue());
+        } else {
+          // Load intents before starting the conversation.
+          dispatch(
+            loadIntents({
+              onIntentTreeSuccess: () => {
+                analyticsHelpers.track(EVENT.INTENT_TREE_SHOWN);
+              }
+            })
+          );
         }
       }
     };

@@ -78,17 +78,16 @@ const compileSass = (path, prod, done) =>
     .pipe(sourcemaps.init())
     .pipe(plumber())
     .pipe(
-      sass(prod === true ? SASS_OPTIONS.production : SASS_OPTIONS.development).on(
-        "error",
-        (error) => {
-          if (!prod) {
-            notifier.notify("Oops! Sass compile error!");
-          }
-
-          sass.logError(error);
-          done(error);
+      sass(prod === true ? SASS_OPTIONS.production : SASS_OPTIONS.development).on("error", function(
+        error
+      ) {
+        if (!prod) {
+          notifier.notify("Oops! Sass compile error!");
         }
-      )
+
+        sass.logError.call(this, error);
+        done(error);
+      })
     )
     .pipe(
       autoprefixer({

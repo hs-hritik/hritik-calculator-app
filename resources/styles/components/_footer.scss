@@ -16,7 +16,6 @@
   $form-primary-text-color: var(--hs-form-primary-text-color);
   $form-accent-color: var(--hs-form-accent-color);
   $form-accent-color-light: var(--hs-form-accent-color-light);
-
   .hs-footer {
     position: relative;
     flex: 0 0 auto;
@@ -34,6 +33,18 @@
         color: $form-bg-color;
         background-color: $form-accent-color-light;
       }
+    }
+
+    &--intents {
+      border-top-right-radius: gutter(8);
+      border-top-left-radius: gutter(8);
+    }
+
+    &--intents-open {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      max-height: 100%;
     }
 
     /// Horizontally center align items
@@ -73,7 +84,7 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      height: 100%;
+      max-height: 100%;
     }
 
     &--with-list-picker {

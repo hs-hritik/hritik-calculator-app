@@ -15,7 +15,7 @@ define("constants/routes", function() {
   // @TODO: This is not an ideal solution. Either make this configurable or
   // implement an automatic cache busting solution based on a file's content.
   // Also, update this in html/index.html, messenger.js, and requireConfig.js.
-  const getCss = () => "/css/style.css?v=2.43.1";
+  const getCss = () => "/css/style.css?v=2.46.0";
 
   // @NOTE - Used to create issue out of business hours
   const postIssue = (domain) => `${BASE}${domain}/issues`;
@@ -52,6 +52,10 @@ define("constants/routes", function() {
 
   const postSuggestedFaqRead = (domain) => `${BASE}${domain}/faqs_suggestion_read`;
 
+  const getIntentTree = (domain) => `${BASE}${domain}/intent-trees`;
+
+  const getIntentModel = (domain, treeId) => `${BASE}${domain}/intent-trees/${treeId}/models`;
+
   return {
     getWmConfig,
     getCss,
@@ -67,6 +71,8 @@ define("constants/routes", function() {
     getConversationUpdates,
     getConversationHistory,
     postSuggestedFaqRead,
-    postIssue
+    postIssue,
+    getIntentTree,
+    getIntentModel
   };
 });

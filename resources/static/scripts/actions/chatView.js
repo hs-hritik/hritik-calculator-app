@@ -31,7 +31,8 @@ define("actions/chatView", [
   "helpers/common",
   "utils/browser",
   "utils/upload",
-  "extras/accessibility"
+  "extras/accessibility",
+  "utils/debounceAction"
 ], function(
   store,
   ACTION_TYPES,
@@ -59,7 +60,8 @@ define("actions/chatView", [
   commonHelpers,
   browserUtils,
   upload,
-  ax
+  ax,
+  debounceAction
 ) {
   "use strict";
 
@@ -77,7 +79,8 @@ define("actions/chatView", [
     MESSAGES_FORCE_POLLING_TIMEOUT,
     CURSOR_TYPES,
     USER_REDACTION_ERR_MSG,
-    USER_REDACTION_ERR_STATUS_CODE
+    USER_REDACTION_ERR_STATUS_CODE,
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -124,16 +127,79 @@ define("actions/chatView", [
   };
 
   /**
+   * Action to search intents.
+   * @param {String} searchText - Search text (User input)
+   * @returns {Object} - action
+   */
+  const searchIntents = (searchText) => {
+    return {
+      type: ACTION_TYPES.SEARCH_INTENTS,
+      searchText
+    };
+  };
+
+  /**
+   * Async action to search intents
+   * Note: Created async action just for triggering analytics event after updating
+   * the search results. Ideally, it should be done in the analytics middleware.
+   * But, the creation of analytics middleware isn't possible without revamp of
+   * the existing events because of circular dependency of the store file.
+   * @param {String} searchText - Search text (User input)
+   * @returns {Function} - action
+   */
+  const asyncSearchIntents = (searchText) => {
+    return (dispatch, getState) => {
+      const searchingIntentsBeforeUpdate = getState().chatView.intents.isSearching;
+      dispatch(searchIntents(searchText));
+      const searchingIntentsAfterUpdate = getState().chatView.intents.isSearching;
+
+      // Check if the search is cleared because the number of characters get reduced
+      // We need to fire the search event if search gets cleared.
+      if (searchingIntentsBeforeUpdate && !searchingIntentsAfterUpdate) {
+        analyticsHelpers.track(EVENT.SEARCH_INTENTS, {
+          searchIsCleared: true
+        });
+      }
+    };
+  };
+
+  // Debounced search intents action
+  const debouncedSearchIntents = debounceAction(
+    asyncSearchIntents,
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
+  );
+
+  /**
+   * This action updates the reply text, and search intents if applicable (based on the
+   * issue state and the feature toggle)
+   *
+   * @param {String} value - New reply value.
+   * @returns {Function} - action
+   */
+  const updateReplyTextAndSearchIntents = (value) => {
+    return (dispatch, getState) => {
+      dispatch(updateReplyText(value));
+
+      const {appState} = getState();
+      if (appState.issueType === ISSUE_TYPE.INITIAL && appState.featuresEnabled.intents) {
+        dispatch(debouncedSearchIntents(value));
+      }
+    };
+  };
+
+  /**
    * Action to add messages in message list.
    * This action will push given messages to the issue's messages array.
    * @param {Object} config - config
    * @param {Array} config.messages - array of response messages
    * @param {Boolean} [config.process] - whether to process messages
    * @param {Boolean} [config.prepend] - whether to push messages at the start
+   * @param {String} [config.responseType] - Type of response when addMessage is called
+   * from success of add user reply XHR
    * @returns {Object} - action
    */
   const addMessages = (config) => {
-    const {messages, process = true, prepend = false} = config;
+    const {messages, process = true, prepend = false, responseType} = config;
     let processedMessages = messages;
 
     if (process) {
@@ -149,7 +215,8 @@ define("actions/chatView", [
 
     return {
       type: ACTION_TYPES.APPEND_MESSAGES,
-      messages: processedMessages
+      messages: processedMessages,
+      responseType
     };
   };
 
@@ -1256,25 +1323,26 @@ define("actions/chatView", [
       appState: {
         domain,
         fullPrivacyEnabled,
-        featuresEnabled: {conversationHistory: conversationHistoryEnabled}
+        featuresEnabled: {conversationHistory: conversationHistoryEnabled},
+        issueType
       },
       chatView: {
         messageCursor: {
           [CURSOR_TYPES.BACKWARD]: {
             value: cursorTs,
-            meta: {issueType, preIssueId, issueId}
+            meta: {issueType: messageCursorIssueType, preIssueId, issueId}
           }
         },
         pastConversationsLoading
       }
     } = getState();
 
-    // If messages are already being loaded, return.
-    if (pastConversationsLoading) {
+    // Return if issue type is initial, or if messages are already being loaded.
+    if (issueType === ISSUE_TYPE.INITIAL || pastConversationsLoading) {
       return;
     }
 
-    const isIssue = issueType === ISSUE_TYPE.ISSUE;
+    const isIssue = messageCursorIssueType === ISSUE_TYPE.ISSUE;
     const xhrData = {
       cursor: cursorTs
     };
@@ -1791,7 +1859,8 @@ define("actions/chatView", [
       xhrData = messageHelpers.getPreparedMessageDataFromUserInput({
         input: userInput,
         latestMessage,
-        isIssue
+        isIssue,
+        botStepInProgress
       });
     }
 
@@ -1846,7 +1915,8 @@ define("actions/chatView", [
         dispatch(
           batchActions([
             addMessages({
-              messages: [response]
+              messages: [response],
+              responseType: response.type
             }),
             updateReplyText("")
           ])
@@ -1904,7 +1974,7 @@ define("actions/chatView", [
       const state = getState();
       const {
         appState: {activeIssueId, issueType, issueState},
-        chatView: {userInput},
+        chatView: {userInput, intents},
         ui: {text}
       } = state;
       const trimmedValue = userInput.value.trim();
@@ -1977,6 +2047,11 @@ define("actions/chatView", [
         // createPreIssue should be called as soon as the reply box is enabled.
         // This flow (submitReply) won't be invoked in that case.
         dispatch(actionCreators.setInitialUserMsg(trimmedValue));
+
+        if (intents.isSearching) {
+          analyticsHelpers.track(EVENT.SEARCH_INTENTS);
+        }
+
         dispatch(createPreIssue());
       }
     };
@@ -2030,103 +2105,185 @@ define("actions/chatView", [
   };
 
   /**
+   * Check if the last selected intent is the leaf intent or not.
+   * @param {String[]} selectedIntentIds - Selected intent ids
+   * @param {Object} intentsMap - Intents map
+   * @returns {Boolean} - True, if the last selected intent is leaf intent.
+   */
+  const _wasLeafIntentSelected = (selectedIntentIds, intentsMap) => {
+    if (!selectedIntentIds || !selectedIntentIds.length) {
+      return false;
+    }
+
+    const lastSelectedIntentId = selectedIntentIds[selectedIntentIds.length - 1];
+    const {children} = intentsMap[lastSelectedIntentId];
+
+    return !children || !children.length;
+  };
+
+  /**
+   * Create user message from the selected intents.
+   * @param {String[]} selectedIntentIds - Selected intent ids
+   * @param {Object} intentsMap - Intents Map
+   * @returns {String} - user message created from the selected intents.
+   */
+  const _createUserMessageFromIntents = (selectedIntentIds, intentsMap) => {
+    return selectedIntentIds.map((id) => intentsMap[id].label).join(" → ");
+  };
+
+  /**
+   * Prepare pre-issue XHR data
+   * @param {Object} state - Whole application state.
+   * @returns {Object} - The data required for pre-issue XHR
+   */
+  const _getPreparedPreIssueData = (state) => {
+    const {
+      appState: {
+        tags,
+        metadata,
+        cif,
+        featuresEnabled: {greeting: greetingFeatureEnabled},
+        fullPrivacyEnabled,
+        developerSetLanguage,
+        userName,
+        userId,
+        analytics,
+        sdkConfigOptions: {initialUserMessage},
+        internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}}
+      },
+      chatView: {intents, userInput},
+      ui: {
+        text: {greetingMsg}
+      }
+    } = state;
+
+    const meta = {
+      device_info: getPreparedDeviceInfo()
+    };
+
+    if (tags) {
+      meta.custom_meta = {
+        "hs-tags": tags
+      };
+    }
+
+    // We need to send deflection contact flow id to backend so that
+    // we know webchat issue is created for SMS deflection use case.
+    if (deflectionContactFlowId) {
+      meta.voice_meta = {
+        deflection_contact_id: deflectionContactFlowId
+      };
+    }
+
+    if (metadata && Object.keys(metadata).length) {
+      meta.custom_meta = update(meta.custom_meta, {
+        $merge: metadata
+      });
+    }
+
+    /**
+     * Note: These are the required fields for pre-issues XHR.
+     * sm = sdk meta
+     * cb = chat bots
+     * acid = analytics conversation id
+     * library_version = current webchat version
+     * timezone_minutes = timezone offset. This is required while rendering
+     * the message timestamp in re-engagement email.
+     * device_language = Device language
+     */
+    const xhrData = {
+      meta: JSON.stringify(meta),
+      sm: JSON.stringify({
+        cb: true
+      }),
+      acid: analytics.sessionId,
+      library_version: WEB_CHAT_VERSION,
+      timezone_minutes: -new Date().getTimezoneOffset(),
+      device_language: browserUtils.getLanguage()
+    };
+
+    // If CIF is set and contains at least one field, add it to XHR data
+    if (cif && Object.keys(cif).length) {
+      xhrData.custom_fields = JSON.stringify(cif);
+    }
+
+    if (greetingFeatureEnabled) {
+      xhrData.greeting = greetingMsg;
+    }
+
+    if (fullPrivacyEnabled) {
+      xhrData.fp_status = true;
+    } else if (userName) {
+      // Set name if fullPrivacy mode is off
+      xhrData.name = userName;
+    }
+
+    if (developerSetLanguage) {
+      xhrData.developer_set_language = developerSetLanguage;
+    }
+
+    // Passing user_id is a temporary backend requirement.
+    if (userId) {
+      xhrData.user_id = userId;
+    }
+
+    // If any intent is selected, pass the intent related data
+    if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
+      xhrData.intent = JSON.stringify(intents.selectedIntentIds);
+      // Create user message if the intent was selected by the user
+      xhrData.user_message = _createUserMessageFromIntents(
+        intents.selectedIntentIds,
+        intents.tree.intentsMap
+      );
+
+      // If user entered some text before selecting an intent, send it as search term (st).
+      // This would be used by Data Science to improve their algorithms.
+      if (userInput.value) {
+        xhrData.st = userInput.value;
+      }
+    } else if (initialUserMessage) {
+      // If initial user message is present in the state, send it with the
+      // create preissue API request.
+      xhrData.user_message = initialUserMessage;
+    }
+
+    // If intent tree was shown, we have to send intent tree id everytime.
+    if (intents.tree.id) {
+      xhrData.tree_id = intents.tree.id;
+    }
+
+    return xhrData;
+  };
+
+  /**
+   * Fire analytics event for the first message.
+   * We track first message event from Webchat because the analytics want it for ordering.
+   * All other messages are tracked by dashboard events.
+   * @param {Object[]} messages - Array of messages
+   */
+  const _trackFirstMessage = (messages = []) => {
+    const firstMessage = messages[0];
+
+    if (firstMessage) {
+      analyticsHelpers.track(EVENT.MESSAGE_SENT, {
+        message: firstMessage
+      });
+    }
+  };
+
+  /**
    * Create pre-issue on backend.
    */
   const createPreIssue = () => {
     return (dispatch, getState) => {
+      const state = getState();
+      const xhrData = _getPreparedPreIssueData(state);
       const {
-        appState: {
-          domain,
-          tags,
-          metadata,
-          cif,
-          featuresEnabled: {greeting: greetingFeatureEnabled},
-          fullPrivacyEnabled,
-          developerSetLanguage,
-          userName,
-          userId,
-          sdkConfigOptions: {initialUserMessage},
-          internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}}
-        },
+        appState: {domain},
         ui: {
-          text: {greetingMsg, networkError, retryBtn}
+          text: {networkError, retryBtn}
         }
-      } = getState();
-
-      // Prepare XHR data
-      const meta = {
-        device_info: getPreparedDeviceInfo()
-      };
-
-      if (tags) {
-        meta.custom_meta = {
-          "hs-tags": tags
-        };
-      }
-
-      if (metadata && Object.keys(metadata).length) {
-        meta.custom_meta = update(meta.custom_meta, {
-          $merge: metadata
-        });
-      }
-
-      // We need to send deflection contact flow id to backend so that
-      // we know webchat issue is created for SMS deflection use case.
-      if (deflectionContactFlowId) {
-        meta.voice_meta = {
-          deflection_contact_id: deflectionContactFlowId
-        };
-      }
-
-      /**
-       * Note :
-       * sm = sdk meta
-       * cb = chat bots
-       * library_version = current webchat version
-       * timezone_minutes = timezone offset. This is required while rendering
-       * the message timestamp in re-engagement email.
-       */
-      const xhrData = {
-        meta: JSON.stringify(meta),
-        sm: JSON.stringify({
-          cb: true
-        }),
-        library_version: WEB_CHAT_VERSION,
-        timezone_minutes: -new Date().getTimezoneOffset()
-      };
-
-      // If CIF is set and contains at least one field, add it to XHR data
-      if (cif && Object.keys(cif).length) {
-        xhrData.custom_fields = JSON.stringify(cif);
-      }
-
-      if (greetingFeatureEnabled) {
-        xhrData.greeting = greetingMsg;
-      }
-
-      if (fullPrivacyEnabled) {
-        xhrData.fp_status = true;
-      } else if (userName) {
-        // Set name if fullPrivacy mode is off
-        xhrData.name = userName;
-      }
-
-      xhrData.device_language = browserUtils.getLanguage();
-
-      if (developerSetLanguage) {
-        xhrData.developer_set_language = developerSetLanguage;
-      }
-
-      // Passing user_id is a temporary backend requirement.
-      if (userId) {
-        xhrData.user_id = userId;
-      }
-
-      // If initial user message is present in the state, send it with the
-      // create preissue API request.
-      if (initialUserMessage) {
-        xhrData.user_message = initialUserMessage;
-      }
+      } = state;
 
       // We need to hide footer while creating preIssue because the default
       // value of input disabled is false, in store on page refresh.
@@ -2144,13 +2301,18 @@ define("actions/chatView", [
             return;
           }
 
-          const newIssueId = response.id;
-          const internalId = response.internal_id;
+          const config = {
+            activeIssueId: response.id,
+            internalIssueId: response.internal_id,
+            // @TODO: Intents: Remove hardcoded "preissue" after backend starts sending type
+            issueType: response.type || "preissue"
+          };
 
-          dispatch(issueCreated({newIssueId, internalId}));
+          dispatch(issueCreated(config));
 
           startPollingForMessages();
 
+          _trackFirstMessage(response.messages);
           // Track the issue created event.
           // @TODO: Confirm if issue created event has to be tracked from Web Chat.
           // analyticsHelpers.track (EVENT.ISSUE_CREATED);
@@ -2533,7 +2695,7 @@ define("actions/chatView", [
   /**
    * Action to skip user input
    * First update the skipped state in user input and then post user message
-   * @returns Function - Action
+   * @returns {Function} - Action
    */
   const skipUserInput = () => {
     return (dispatch) => {
@@ -2546,7 +2708,7 @@ define("actions/chatView", [
     };
   };
 
-  /**
+  /*
    * Return the action to set the local greeting message id in the state
    * @param {string} id - message id
    * @returns {Object} - the action object
@@ -2596,15 +2758,111 @@ define("actions/chatView", [
 
   /**
    * Return the action to be dispatched when an issue/preissue is created.
-   * @param {string} newIssueId
-   * @param {string} internalId - internal issue id
+   * @param {Object} config
+   * @param {String} config.activeIssueId
+   * @param {String} config.internalIssueId
+   * @param {String} config.issueType
    * @returns {Object} - the action object
    */
-  const issueCreated = (newIssueId, internalId) => {
+  const issueCreated = (config) => {
     return {
       type: ACTION_TYPES.ISSUE_CREATED,
-      activeIssueId: newIssueId,
-      internalIssueId: internalId
+      config
+    };
+  };
+
+  /**
+   * Action to load the intents tree.
+   *
+   * @param {Object} [callbacks]
+   * @param {Function} [callbacks.onSuccess]
+   * @param {Function} [callbacks.onFailure]
+   * @returns {Function} - Action
+   */
+  const loadIntentsTree = (callbacks = {}) => {
+    return (dispatch, getState) => {
+      const {domain, featuresEnabled} = getState().appState;
+
+      if (!featuresEnabled.intents) {
+        return;
+      }
+
+      dispatch(actionCreators.intentsTreeRequest());
+
+      xhr({
+        route: routes.getIntentTree(domain),
+        headers: xhrHelpers.getCommonHeaders(),
+        data: xhrHelpers.getPreparedXhrData(),
+        onSuccess: (response) => {
+          dispatch(actionCreators.intentsTreeSuccess(response));
+          if (callbacks.onSuccess) {
+            callbacks.onSuccess(response);
+          }
+        },
+        onFailure: () => {
+          dispatch(actionCreators.intentsTreeFailure());
+          if (callbacks.onFailure) {
+            callbacks.onFailure();
+          }
+        }
+      });
+    };
+  };
+
+  /**
+   * Action to load the intents model.
+   *
+   * @returns {Function} - Action
+   */
+  const loadIntentsModel = () => {
+    return (dispatch, getState) => {
+      const {
+        appState: {domain},
+        chatView: {
+          intents: {tree}
+        }
+      } = getState();
+
+      xhr({
+        route: routes.getIntentModel(domain, tree.id),
+        headers: xhrHelpers.getCommonHeaders(),
+        data: xhrHelpers.getPreparedXhrData({
+          tree_version: tree.version
+        }),
+        onSuccess: (response) => {
+          dispatch(actionCreators.intentsModelSuccess(response));
+        },
+        onFailure: () => {
+          // @TODO: Intents: Handle failure
+        }
+      });
+    };
+  };
+
+  /**
+   * Action to select an intent
+   * @param {Object} intent - Selected intent
+   */
+  const selectIntent = (intent) => {
+    return (dispatch, getState) => {
+      dispatch(actionCreators.intentSelected(intent));
+
+      // If leaf intent node is selected, create pre-issue with that intent
+      if (!intent.children) {
+        const {
+          chatView: {intents}
+        } = getState();
+
+        // "Search intent" event needs to be fired before "select intent" event.
+        if (intents.isSearching) {
+          analyticsHelpers.track(EVENT.SEARCH_INTENTS);
+        }
+
+        analyticsHelpers.track(EVENT.INTENT_SELECTED, {intent});
+        dispatch(createPreIssue());
+      } else {
+        analyticsHelpers.track(EVENT.INTENT_SELECTED, {intent});
+      }
     };
   };
 
@@ -2632,6 +2890,10 @@ define("actions/chatView", [
     setUserSelectedOption,
     handleErrorAction,
     skipUserInput,
-    addGreetingMessage
+    addGreetingMessage,
+    loadIntentsTree,
+    loadIntentsModel,
+    selectIntent,
+    updateReplyTextAndSearchIntents
   };
 });

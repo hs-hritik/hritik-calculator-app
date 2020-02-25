@@ -13,7 +13,9 @@ define("components/containers/chatViewFooter", [
   "actions/postSdkMessage",
   "constants/activeView",
   "constants/chatView",
-  "helpers/common"
+  "constants/analytics",
+  "helpers/common",
+  "helpers/analytics"
 ], function(
   ChatViewFooter,
   chatViewActions,
@@ -23,11 +25,14 @@ define("components/containers/chatViewFooter", [
   postSdkMessage,
   ACTIVE_VIEW,
   chatViewConstants,
-  commonHelpers
+  analyticsConstants,
+  commonHelpers,
+  analyticsHelpers
 ) {
   "use strict";
 
   const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
+  const {EVENT} = analyticsConstants;
 
   const mapStateToProps = (state) => {
     const {
@@ -39,8 +44,8 @@ define("components/containers/chatViewFooter", [
         fullPrivacyEnabled,
         online,
         browserIsMobile,
-        featuresEnabled: {userAttachments: userAttachmentsEnabled},
-        attachmentsWhitelist
+        attachmentsWhitelist,
+        featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsFeatureIsEnabled}
       },
       chatView: {
         userInput,
@@ -50,7 +55,8 @@ define("components/containers/chatViewFooter", [
         userIsViewingPastMessages,
         unreadMessageIds,
         error,
-        botState: {botStepInProgress}
+        botState: {botStepInProgress},
+        intents
       },
       csatView: {rating},
       ui: {text}
@@ -79,7 +85,7 @@ define("components/containers/chatViewFooter", [
       };
     }
 
-    return {
+    const props = {
       widgetIsMinimized,
       rating,
       activeFooter: activeFooter,
@@ -97,8 +103,24 @@ define("components/containers/chatViewFooter", [
       failureConfig,
       botStepInProgress,
       browserIsMobile,
+      intentsFeatureIsEnabled,
+      issueType,
       attachmentsWhitelist
     };
+
+    if (intentsFeatureIsEnabled) {
+      props.intents = {
+        intentsMap: intents.tree.intentsMap,
+        topLevelIntentsOrder: intents.tree.topLevelIntentsOrder,
+        selectedIntentIds: intents.selectedIntentIds,
+        isSearching: intents.isSearching,
+        searchResultIntentIds: intents.searchResultIntents.map(({intentId}) => intentId),
+        enforceIntentSelection: intents.enforceIntentSelection,
+        pickerNavigationState: intents.pickerNavigationState
+      };
+    }
+
+    return props;
   };
 
   const mapDispatchToProps = (dispatch) => {
@@ -122,6 +144,9 @@ define("components/containers/chatViewFooter", [
       onFooterBlur: () => {
         dispatch(actionCreators.setFooterInactive());
       },
+      onChangeReplyBoxValue: (value) => {
+        dispatch(chatViewActions.updateReplyTextAndSearchIntents(value));
+      },
       onAcceptResolutionQuestionClick: () => {
         dispatch(chatViewActions.acceptResolutionQuestion());
       },
@@ -130,6 +155,7 @@ define("components/containers/chatViewFooter", [
       },
       onStartNewConversation: () => {
         dispatch(appStateActions.startNewConversation());
+        analyticsHelpers.track(EVENT.WIDGET_OPEN);
       },
       onSkipUserInput: () => {
         dispatch(chatViewActions.skipUserInput());
@@ -144,8 +170,21 @@ define("components/containers/chatViewFooter", [
         dispatch(postSdkMessage.chatEndEvent());
         dispatch(appStateActions.toggleMinimized(true));
       },
-      onListPickerToggleStateChange: (toggleState) => {
-        dispatch(actionCreators.updateListPickerToggleState(toggleState));
+      onListPickerNavigationStateChange: (navigationState) => {
+        dispatch(actionCreators.updateListPickerNavigationState(navigationState));
+      },
+      onIntentsNavigationStateChange: (navigationState) => {
+        dispatch(actionCreators.updateIntentsNavigationState(navigationState));
+      },
+      onSelectIntent: (intent) => {
+        dispatch(chatViewActions.selectIntent(intent));
+      },
+      onUnselectIntent: () => {
+        dispatch(actionCreators.intentUnselected());
+        analyticsHelpers.track(EVENT.INTENT_UNSELECTED);
+      },
+      onStopIntentsSearch: () => {
+        dispatch(actionCreators.stopIntentsSearch());
       }
     };
   };
