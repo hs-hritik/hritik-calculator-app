@@ -49,11 +49,11 @@
     }
 
     &__item {
+      @include word-break;
       position: relative;
       padding: gutter(8 12);
       overflow: hidden;
       color: $agent-message-primary-text-color;
-      word-break: normal;
       word-wrap: break-word;
       white-space: pre-wrap;
       background-color: $agent-message-bg-color;
@@ -100,6 +100,7 @@
       align-self: flex-end;
 
       .hs-message__item-wrapper {
+        align-items: flex-end;
         justify-content: flex-end;
       }
 
