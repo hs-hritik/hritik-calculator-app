@@ -1,0 +1,16 @@
+Branches:
+feature/splitting-attachments-bug-fix
+feature/smart-intents-fixes-2
+feature/regression-bug-fixes-feb-20
+
+Changelog:
+Update gunpowder version
+Align attachment name wrapper to right for user message
+Update gunpowder version
+Fix regular expression for email validation
+Add styles for clickable header of NestedPicker
+Fix minor styles of intents
+Add word-break rule to message items
+Update package-lock with the new release version
+Update example gulp commands to use api and web chat options
+Fix: Inconsistent style of attachments message
