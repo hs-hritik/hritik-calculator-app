@@ -35,9 +35,10 @@
       }
     }
 
-    &--intents {
+    &--intents-closed {
       border-top-right-radius: gutter(8);
       border-top-left-radius: gutter(8);
+      box-shadow: 0 2px 20px 0 rgba(0, 0, 0, 0.1);
     }
 
     &--intents-open {

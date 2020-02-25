@@ -323,16 +323,18 @@ define("components/chatViewFooter", [
         );
       }
 
+      const intentsAreShown = this._shouldIntentsBeShown();
+
       const footerClasses = classes("hs-footer", {
-        "hs-footer--active": footerIsActive,
+        "hs-footer--active": footerIsActive && !intentsAreShown,
         "hs-footer--full-screen": allowFullScreen,
         "hs-footer--failure": failureConfig,
         "hs-footer--list-picker-opened": listPickerIsOpened,
         "hs-footer--with-list-picker": inputIsListPicker && !listPickerIsOpened,
-        "hs-footer--intents": this._shouldIntentsBeShown(),
+        "hs-footer--intents-closed":
+          intentsAreShown && this.props.intents.pickerNavigationState === NAVIGATION_STATES.CLOSED,
         "hs-footer--intents-open":
-          this._shouldIntentsBeShown() &&
-          this.props.intents.pickerNavigationState === NAVIGATION_STATES.OPENED
+          intentsAreShown && this.props.intents.pickerNavigationState === NAVIGATION_STATES.OPENED
       });
 
       return (
@@ -436,15 +438,13 @@ define("components/chatViewFooter", [
       } = this.props;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
       const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
-      const intentsAreShown = this._shouldIntentsBeShown();
       const footerClasses = classes("hs-chat-footer", {
         "hs-chat-footer--form-error": errorMsg,
         "hs-chat-footer--form-invalid": disabled || !value.trim(),
         "hs-chat-footer--mobile": browserIsMobile,
         "hs-chat-footer--no-padding": inputIsListPicker,
         "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened,
-        "hs-chat-footer--top-border": intentsAreShown,
-        "hs-chat-footer--box-shadow": intentsAreShown
+        "hs-chat-footer--intents": this._shouldIntentsBeShown()
       });
 
       if (inputIsListPicker) {
