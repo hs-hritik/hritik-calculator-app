@@ -27,7 +27,7 @@ define("helpers/common", [
   const {ISSUE_TYPE} = appStateConstants;
 
   /* eslint-disable max-len */
-  const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@[\p{L}\p{M}\p{N}\p{S}A-Z0-9'.-]{1,246}\.[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
+  const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@(?:[\p{L}\p{M}\p{N}\p{S}A-Z0-9'-]+\.){1,246}[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
   /* eslint-enable max-len */
 
   /**

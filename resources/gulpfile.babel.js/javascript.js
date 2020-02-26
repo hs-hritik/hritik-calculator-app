@@ -33,7 +33,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.46.0";
+const WEB_CHAT_VERSION = "2.47.0";
 
 /**
  * Name of app bundle
@@ -502,7 +502,8 @@ const copyWebchatTask = () =>
 const replaceLocalhostTask = () => {
   // Read command line args to get webchat root and api root urls and use them if passed
   // Sample usage is as follows :
-  // gulp --webchat http://localsite.helfshift.mobi:port --api http://localsite.helfshift.mobi
+  // npm run gulp -- --webchat http://localsite.helfshift.mobi:port
+  // npm run gulp -- --api https://api.helpshift.mobi
   // This allows configuration of local site and api server
   const webChatRoot = gutil.env.webchat ? gutil.env.webchat : "http://localhost:3000";
   const apiRoot = gutil.env.api ? gutil.env.api : "https://api.helpshift.com";
