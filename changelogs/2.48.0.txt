@@ -1,0 +1,7 @@
+Branches:
+feature/HSBUG-309
+feature/HSBUG-202
+
+Changelog:
+Give max width to message item and wrapper
+Fire the SDK loaded event after the CSS is loaded
