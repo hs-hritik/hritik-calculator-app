@@ -32,6 +32,10 @@ define("components/replyBox", [
       widgetIsOpened: PropTypes.bool,
       onChangeReplyBoxValue: PropTypes.func.isRequired,
       onSubmitReply: PropTypes.func.isRequired,
+      /**
+       * Handler to be called when reply box height gets changed
+       */
+      onHeightChange: PropTypes.func.isRequired,
       browserIsMobile: PropTypes.bool.isRequired,
       onFooterFocus: PropTypes.func,
       onFooterBlur: PropTypes.func,
@@ -63,7 +67,7 @@ define("components/replyBox", [
           onBlur={onFooterBlur}
           minRows={TEXT_AREA_MIN_ROWS}
           maxRows={TEXT_AREA_MAX_ROWS}
-          onHeightChange={this._onReplyBoxHeightChange}
+          onHeightChange={this._onHeightChange}
           placeholder={placeholder}
           disabled={disabled}
           autoFocus
@@ -90,6 +94,15 @@ define("components/replyBox", [
         // Do not propagate the space character key down event because it is captured as a "submit"
         // action event by the parent component keydown handler.
         ev.stopPropagation();
+      }
+    },
+
+    /**
+     * Handler for height change of the textarea
+     */
+    _onHeightChange() {
+      if (this.props.onHeightChange) {
+        this.props.onHeightChange();
       }
     },
 
