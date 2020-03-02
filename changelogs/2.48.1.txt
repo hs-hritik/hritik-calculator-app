@@ -1,0 +1,2 @@
+Changelog:
+Pass correct max height to intents widget

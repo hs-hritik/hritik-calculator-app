@@ -484,6 +484,7 @@ define("components/chatViewFooter", [
             onSubmitReply={this.props.onSubmitReply}
             onFooterFocus={this.props.onFooterFocus}
             onFooterBlur={this.props.onFooterBlur}
+            onHeightChange={this._onReplyBoxHeightChange}
             className="hs-chat-footer__text-area"
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
@@ -536,7 +537,7 @@ define("components/chatViewFooter", [
       }
 
       return (
-        <div className={footerClasses}>
+        <div className={footerClasses} ref={this._saveUserInputWrapperRef}>
           {this._renderFooterLabelComponent()}
           <div key="input" className="hs-chat-footer__field">
             {inputComponentEl}
@@ -928,6 +929,55 @@ define("components/chatViewFooter", [
     },
 
     /**
+     * Handler for reply box height change.
+     */
+    _onReplyBoxHeightChange() {
+      if (!this._shouldIntentsBeShown()) {
+        return;
+      }
+
+      // Update the max height of the intents widget when the reply box height gets changed.
+      const parentHeight = this._getDndWrapperHeight();
+      const userInputWrapperHeight = this._getUserInputWrapperHeight();
+
+      this.setState({
+        intentsWidgetMaxHeight: parentHeight - userInputWrapperHeight
+      });
+    },
+
+    _userInputWrapperRef: null,
+
+    _saveUserInputWrapperRef(ref) {
+      this._userInputWrapperRef = ref;
+    },
+
+    /**
+     * Returns the height of the DnD wrapper
+     * @returns {Number} - DnD wrapper height
+     */
+    _getDndWrapperHeight() {
+      const dndWrapper = document.querySelector(".hs-dnd-wrapper");
+
+      if (!dndWrapper) {
+        return 0;
+      }
+
+      return dndWrapper.getBoundingClientRect().height;
+    },
+
+    /**
+     * Returns the height of the user input wrapper
+     * @returns {Number} - user input wrapper height
+     */
+    _getUserInputWrapperHeight() {
+      if (!this._userInputWrapperRef) {
+        return 0;
+      }
+
+      return ReactDOM.findDOMNode(this._userInputWrapperRef).getBoundingClientRect().height;
+    },
+
+    /**
      * Return the reply box placeholder.
      * If intents are being shown to the user, the reply box placeholder is different.
      * @returns {String} - Reply box placeholder
@@ -1290,25 +1340,23 @@ define("components/chatViewFooter", [
      * Update picker height in state.
      */
     _updatePickerHeight() {
-      const parentNode = document.querySelector(".hs-dnd-wrapper");
+      const dndWrapperHeight = this._getDndWrapperHeight();
 
-      if (parentNode) {
-        const height = parentNode.getBoundingClientRect().height;
+      // There is a weird issue on Firefox, because of which, sometimes height is coming 0 on
+      // componentDidMount. In case height is 0, update the height after timeout.
+      if (dndWrapperHeight) {
+        const userInputWrapperHeight = this._getUserInputWrapperHeight();
 
-        // There is a weird issue on Firefox, because of which, sometimes height is coming 0 on
-        // componentDidMount. In case height is 0, update the height after timeout.
-        if (height) {
-          this.setState({
-            pickerMaxHeight: height,
-            intentsWidgetMaxHeight: height,
-            intentsWidgetMinHeight: height / 2,
-            intentsWidgetIsReadyForRendering: true
-          });
+        this.setState({
+          pickerMaxHeight: dndWrapperHeight,
+          intentsWidgetMaxHeight: dndWrapperHeight - userInputWrapperHeight,
+          intentsWidgetMinHeight: dndWrapperHeight / 2,
+          intentsWidgetIsReadyForRendering: true
+        });
 
-          window.clearTimeout(this._picketHeightUpdateTimer);
-        } else {
-          this._picketHeightUpdateTimer = setTimeout(this._updatePickerHeight, 50);
-        }
+        window.clearTimeout(this._picketHeightUpdateTimer);
+      } else {
+        this._picketHeightUpdateTimer = setTimeout(this._updatePickerHeight, 50);
       }
     },
 
