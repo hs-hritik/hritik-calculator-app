@@ -535,10 +535,16 @@ define("components/chatViewFooter", [
         );
       }
 
+      let searchIcon = null;
+      if (this._shouldIntentsBeShown() && this.props.intents.enforceIntentSelection) {
+        searchIcon = <i className="ion-magnifier hs-chat-footer__search-icon" />;
+      }
+
       return (
         <div className={footerClasses}>
           {this._renderFooterLabelComponent()}
           <div key="input" className="hs-chat-footer__field">
+            {searchIcon}
             {inputComponentEl}
             {this._renderFooterAction()}
           </div>
