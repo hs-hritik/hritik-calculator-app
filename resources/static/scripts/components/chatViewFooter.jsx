@@ -609,7 +609,7 @@ define("components/chatViewFooter", [
      */
     _renderFooterAction() {
       if (this._shouldSubmitReplyBeDisabled()) {
-        return null;
+        return this._renderClearIntentsSearchBtn();
       }
 
       const {
@@ -685,6 +685,21 @@ define("components/chatViewFooter", [
           onFocusChange={this._onPickerFocusChange}
           ariaLabels={pickerAriaLabels}
         />
+      );
+    },
+
+    /**
+     * Clears out anything that is typed into the input field
+     * and stops search operation on available intents. This is used
+     * when enforceIntentSelection flag is set to true
+     */
+    _renderClearIntentsSearchBtn() {
+      return (
+        <button
+          className="hs-chat-footer__clear-intents-search"
+          onClick={this._onClickClearIntentsSearchBtn}>
+          <i className="ion-cross-round hs-chat-footer__cross-btn" />
+        </button>
       );
     },
 
@@ -985,6 +1000,14 @@ define("components/chatViewFooter", [
         intentsAreAvailable &&
         !this.props.userInput.disabled
       );
+    },
+
+    /**
+     * Handles click on clearIntentsSearchBtn when intent selection has been
+     * enforced via the enforceIntentSelection flag
+     */
+    _onClickClearIntentsSearchBtn() {
+      // @TODO - Implement handler for click on clearIntentsSearchBtn
     },
 
     /**

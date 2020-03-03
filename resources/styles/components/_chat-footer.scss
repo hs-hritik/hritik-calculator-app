@@ -19,6 +19,7 @@
   $form-accent-color-light: var(--hs-form-accent-color-light);
   $form-error: var(--hs-form-error);
   $loader-color: color(primary);
+  $cross-btn-color: var(--hs-base-color);
 
   .hs-chat-footer {
     position: relative;
@@ -195,6 +196,17 @@
       font-size: font-size(body, small);
       font-weight: font-weight(normal);
       line-height: line-height(h6);
+    }
+
+    &__clear-intents-search {
+      padding: 0;
+      border: 0;
+    }
+
+    &__cross-btn {
+      margin-right: gutter(4);
+      color: $cross-btn-color;
+      border: 0;
     }
 
     /// form invalid modifier is used to disable elements
