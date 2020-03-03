@@ -1004,10 +1004,11 @@ define("components/chatViewFooter", [
 
     /**
      * Handles click on clearIntentsSearchBtn when intent selection has been
-     * enforced via the enforceIntentSelection flag
+     * enforced via the enforceIntentSelection flag. When clicked, search
+     * operation is stopped and the input field is cleared.
      */
     _onClickClearIntentsSearchBtn() {
-      // @TODO - Implement handler for click on clearIntentsSearchBtn
+      this.props.onChangeReplyBoxValue("");
     },
 
     /**
