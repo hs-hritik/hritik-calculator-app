@@ -188,7 +188,9 @@ define("reducers/chatView", [
     activeIssueMsgCursor: null,
     systemTyping: false,
     agentTyping: false,
+    unreadIssues: {},
     unreadMessageIds: [],
+    markMessageAsSeenXhrIsInProgress: false,
     loadingMoreMsgsHasFailed: false,
     botState: {
       botStepInProgress: false,
@@ -261,6 +263,7 @@ define("reducers/chatView", [
 
         if (!conversationHistoryIsEnabled) {
           updateObj.messageList = {$set: []};
+          updateObj.unreadIssues = {$set: {}};
           updateObj.unreadMessageIds = {$set: []};
           updateObj.messageCursor = {$set: INITIAL_MESSAGE_CURSOR};
           updateObj.issueCursor = {$set: 0};
@@ -417,9 +420,26 @@ define("reducers/chatView", [
           agentTyping: {$set: action.typing}
         });
 
-      case ACTION_TYPES.SET_UNREAD_MESSAGE_IDS:
+      case ACTION_TYPES.UPDATE_UNREAD_MESSAGES_DATA:
         return update(state, {
-          unreadMessageIds: {$set: action.messageIds}
+          unreadIssues: {$merge: action.issues},
+          unreadMessageIds: {$push: action.messageIds}
+        });
+
+      case ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_REQUEST:
+        return update(state, {
+          markMessageAsSeenXhrIsInProgress: {$set: true}
+        });
+
+      case ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_SUCCESS:
+        return update(state, {
+          unreadIssues: {$set: {}},
+          unreadMessageIds: {$set: []}
+        });
+
+      case ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_END:
+        return update(state, {
+          markMessageAsSeenXhrIsInProgress: {$set: false}
         });
 
       case ACTION_TYPES.UPDATE_READ_FAQ_LIST:
