@@ -15,7 +15,7 @@ define("constants/routes", function() {
   // @TODO: This is not an ideal solution. Either make this configurable or
   // implement an automatic cache busting solution based on a file's content.
   // Also, update this in html/index.html, messenger.js, and requireConfig.js.
-  const getCss = () => "/css/style.css?v=2.48.1";
+  const getCss = () => "/css/style.css?v=2.49.0";
 
   // @NOTE - Used to create issue out of business hours
   const postIssue = (domain) => `${BASE}${domain}/issues`;

@@ -112,7 +112,8 @@ define("actions/chatView", [
     lastFetchCompleted = false,
     lastPollerCallSucceeded = false,
     agentActivitySubscribed = false,
-    emptyPollerCount = 0;
+    emptyPollerCount = 0,
+    markAsSeenXhrs = [];
 
   /**
    * Action to update reply text.
@@ -332,15 +333,58 @@ define("actions/chatView", [
   };
 
   /**
-   * Action to set unread message Ids
-   * @param {Array} messageIds - array of message Ids.
+   * Action to update unread messages data
+   * @param {Object} config
+   * @param {Object[]} issues - array of unread issues
+   * @param {string} issues[].type - type of issue (preIssue/issue)
+   * @param {String[]} messageIds - array of unread message Ids
    * @returns {Object} - action
    */
-  const setUnreadMessageIds = (messageIds) => {
+  const updateUnreadMessagesData = (config) => {
+    const {issues, messageIds} = config;
     return {
-      type: ACTION_TYPES.SET_UNREAD_MESSAGE_IDS,
+      type: ACTION_TYPES.UPDATE_UNREAD_MESSAGES_DATA,
+      issues,
       messageIds
     };
+  };
+
+  /**
+   * Action to represent mark messages as seen request init
+   */
+  const markMessagesSeenReqStart = () => {
+    return {
+      type: ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_REQUEST
+    };
+  };
+
+  /**
+   * Action to represent mark messages as seen success
+   * This action will clear out unread message ids and corresponding issue
+   * data belonging to those messages from chat view reducer
+   */
+  const markMessagesSeenReqSuccess = () => {
+    return {
+      type: ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_SUCCESS
+    };
+  };
+
+  /**
+   * Action to represent mark messages as seen end
+   * @param {boolean} inProgress - whether xhr is in progress
+   */
+  const markMessagesSeenReqEnd = () => {
+    return {
+      type: ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_END
+    };
+  };
+
+  /**
+   * Predicate to return all mark messages seen xhrs are completed
+   * @returns {boolean} - whether all xhrs are completed
+   */
+  const areAllMarkMessagesAsSeenXhrCompleted = () => {
+    return markAsSeenXhrs.every((req) => req.readyState === 4);
   };
 
   /**
@@ -357,37 +401,56 @@ define("actions/chatView", [
       }
 
       const {
-        appState: {domain, activeIssueId, issueType},
-        chatView: {unreadMessageIds}
+        appState: {domain, issueType},
+        chatView: {unreadMessageIds, unreadIssues, markMessageAsSeenXhrIsInProgress}
       } = getState();
 
-      // Don't fire the XHR if issue type is initial i.e. not preissue or issue
-      if (issueType === ISSUE_TYPE.INITIAL) {
+      // Don't fire the XHR if:
+      // a] Issue type is initial i.e. not preissue or issue
+      // b] Mark message seen xhr is in progress
+      //    There are multiple valid places which call this action and we want
+      //    to avoid multiple unnecessary backend calls.
+      if (issueType === ISSUE_TYPE.INITIAL || markMessageAsSeenXhrIsInProgress) {
         return;
       }
 
-      const pluralIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
+      dispatch(markMessagesSeenReqStart());
 
-      // @TODO: message-Ids key is unconfirmed. Get Ack
-      // from the BE team
-      xhr({
-        route: routes.putMessages(domain, activeIssueId, pluralIssueType),
-        data: xhrHelpers.getPreparedXhrData(
-          {
-            md_state: "read"
+      // Loop on all the issues (preIssue + issue) which have unread messages
+      // Mark all message for that issue as seen by user.
+      // Format of unreadIssues is {"3001": "preissue", "3002": "issue"}
+      // More info: https://helpshift.atlassian.net/browse/FRON-3731
+      Object.keys(unreadIssues).forEach((issueId, index) => {
+        const unreadIssueType = unreadIssues[issueId];
+        const pluralIssueType = chatViewHelpers.getPluralizedIssueType(unreadIssueType);
+
+        markAsSeenXhrs[index] = xhr({
+          route: routes.putMessages(domain, issueId, pluralIssueType),
+          data: xhrHelpers.getPreparedXhrData(
+            {
+              md_state: "read"
+            },
+            {
+              skipPlatformId: true
+            }
+          ),
+          method: "PUT",
+          headers: xhrHelpers.getCommonHeaders(),
+          onSuccess: () => {
+            const allXhrsCompleted = areAllMarkMessagesAsSeenXhrCompleted();
+            if (unreadMessageIds.length !== 0 && allXhrsCompleted) {
+              dispatch(markMessagesSeenReqSuccess());
+              dispatch(postSdkMessage.updateUnreadCount(0));
+            }
           },
-          {
-            skipPlatformId: true
+          onEnd: () => {
+            // Check if every xhr is completed then make xhr in progress as false
+            if (areAllMarkMessagesAsSeenXhrCompleted()) {
+              dispatch(markMessagesSeenReqEnd());
+              markAsSeenXhrs = [];
+            }
           }
-        ),
-        method: "PUT",
-        headers: xhrHelpers.getCommonHeaders(),
-        onSuccess: () => {
-          if (unreadMessageIds.length !== 0) {
-            dispatch(setUnreadMessageIds([]));
-            dispatch(postSdkMessage.updateUnreadCount(0));
-          }
-        }
+        });
       });
     };
   };
@@ -1648,7 +1711,8 @@ define("actions/chatView", [
             }
 
             handleUnreadMessages({
-              messages: processedMessages
+              messages: processedMessages,
+              issues
             });
           }
 
@@ -1736,16 +1800,16 @@ define("actions/chatView", [
    * will show unread notification on widget
    * @param {Object} config
    * @param {Array} config.messages - processed poller messages
+   * @param {Array} config.issues - raw poller issues
    */
   const handleUnreadMessages = (config) => {
     const {dispatch, getState} = store;
     const {
       chatView: {unreadMessageIds, issueCursor}
     } = getState();
-    const {messages} = config;
-
-    // Clone the existing list of message ids.
-    const finalUnreadMessageIds = unreadMessageIds.concat();
+    const {messages, issues} = config;
+    const unreadIssuesMap = {};
+    const newUnreadMessageIds = [];
 
     // Calculate unread count for agent messages only
     messages.forEach((msg) => {
@@ -1757,19 +1821,37 @@ define("actions/chatView", [
         state !== MESSAGES_STATE.READ &&
         messageHelpers.isRenderableMessage(type)
       ) {
-        finalUnreadMessageIds.push(id);
+        newUnreadMessageIds.push(id);
       }
+    });
+
+    // Find corresponding issue ids and type for unread messages
+    issues.forEach((issue) => {
+      issue.messages.forEach((msg) => {
+        if (newUnreadMessageIds.indexOf(msg.id) !== -1) {
+          // As multiple unread messages can belong to same issue,
+          // storing data in map is better as we don't have to dedupe it
+          unreadIssuesMap[issue.publish_id] = issue.type;
+        }
+      });
     });
 
     if (commonHelpers.areMessagesSeen()) {
       dispatch(markMessagesSeen());
     } else {
-      dispatch(setUnreadMessageIds(finalUnreadMessageIds));
-      dispatch(postSdkMessage.updateUnreadCount(finalUnreadMessageIds.length));
+      dispatch(
+        updateUnreadMessagesData({
+          messageIds: newUnreadMessageIds,
+          issues: unreadIssuesMap
+        })
+      );
+      dispatch(
+        postSdkMessage.updateUnreadCount(newUnreadMessageIds.length + unreadMessageIds.length)
+      );
     }
 
     // Do not play sound on page load even if there are unread messages
-    if (issueCursor && finalUnreadMessageIds.length) {
+    if (issueCursor && newUnreadMessageIds.length) {
       audioHelpers.playReceive();
     }
   };
