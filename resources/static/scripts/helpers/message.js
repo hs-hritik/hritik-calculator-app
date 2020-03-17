@@ -74,6 +74,10 @@ define("helpers/message", [
       msgObj.faqSource = msg.faq_source;
     }
 
+    /**
+     * @TODO - Add processing for type 'sis' here
+     */
+
     return msgObj;
   };
 

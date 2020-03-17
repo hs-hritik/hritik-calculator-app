@@ -2313,6 +2313,10 @@ define("actions/chatView", [
     if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
       xhrData.intent = JSON.stringify(intents.selectedIntentIds);
       // Create user message if the intent was selected by the user
+
+      /**
+       * @TODO - Remove user_message and replace by intent_labels
+       */
       xhrData.user_message = _createUserMessageFromIntents(
         intents.selectedIntentIds,
         intents.tree.intentsMap

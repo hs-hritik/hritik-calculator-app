@@ -112,6 +112,10 @@ define("constants/message", function() {
     TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT,
     TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT,
     TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT
+
+    /**
+     * @TODO - Add sis type here
+     */
   ];
 
   /**

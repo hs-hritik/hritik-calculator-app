@@ -171,6 +171,10 @@ define("components/message", [
         case MESSAGE_TYPE.ATTACHMENT:
           messageItemEl = this._renderUserAttachmentMessage();
           break;
+
+        /**
+         * @TODO - Create switch case for FUM type msg rendering
+         */
       }
 
       if (messageItemEl) {
