@@ -80,7 +80,7 @@ define("constants/message", function() {
     /**
      * Bot misc messages - start
      */
-    BOT_CANCELLED: "Bot Cancelled"
+    BOT_CANCELLED: "Bot Cancelled",
     /**
      * Bot misc messages - end
      */
@@ -88,6 +88,11 @@ define("constants/message", function() {
     /**
      * ------- Bot messages - end -------
      */
+
+    /**
+     * Intent related messages
+     */
+    SIS: "sis" // for first user message
   };
 
   /**
@@ -111,11 +116,8 @@ define("constants/message", function() {
     TYPE.RESP_TEXT_MSG_WITH_DATE_TIME_INPUT,
     TYPE.RESP_TEXT_MSG_WITH_OPTION_INPUT,
     TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT,
-    TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT
-
-    /**
-     * @TODO - Add sis type here
-     */
+    TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT,
+    TYPE.SIS
   ];
 
   /**

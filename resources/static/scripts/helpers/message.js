@@ -74,9 +74,9 @@ define("helpers/message", [
       msgObj.faqSource = msg.faq_source;
     }
 
-    /**
-     * @TODO - Add processing for type 'sis' here
-     */
+    if (messageType === MESSAGE_TYPE.SIS) {
+      msgObj.intentLabels = msg.intent_labels;
+    }
 
     return msgObj;
   };

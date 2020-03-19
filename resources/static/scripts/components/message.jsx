@@ -172,9 +172,9 @@ define("components/message", [
           messageItemEl = this._renderUserAttachmentMessage();
           break;
 
-        /**
-         * @TODO - Create switch case for FUM type msg rendering
-         */
+        case MESSAGE_TYPE.SIS:
+          messageItemEl = this._renderIntentMessage();
+          break;
       }
 
       if (messageItemEl) {
@@ -334,6 +334,14 @@ define("components/message", [
           onRetryClick={this._onRetryClick}
         />
       );
+    },
+
+    /**
+     * Render First User Message
+     */
+    _renderIntentMessage() {
+      // @TODO - Write logic for rendering UI for
+      // first user message
     },
 
     /**
