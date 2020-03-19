@@ -440,7 +440,11 @@ define("actions/appState", [
           widgetIsOpen &&
           !issueExists)
       ) {
-        dispatch(startNewConversation());
+        dispatch(
+          startNewConversation({
+            resetSessionId: true
+          })
+        );
       } else if (issueExists) {
         // The issueExists flag is true if for the given profile (user+device combination), at
         // least one issue, irrespective of its state, exists. In that case, we start the poller
@@ -845,8 +849,11 @@ define("actions/appState", [
    * A new conversation is started by -
    * adding the greeting message to the message list, if applicable, and
    * enabling the reply box
+   *
+   * @param {Object} config - Config object
+   * @param {Boolean} config.resetSessionId - Whether to reset the session id or not.
    */
-  const startNewConversation = () => {
+  const startNewConversation = (config) => {
     return (dispatch, getState) => {
       const {
         featuresEnabled: {conversationHistory: conversationHistoryIsEnabled},
@@ -859,8 +866,10 @@ define("actions/appState", [
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
         dispatch(chatViewActions.addGreetingMessage());
-        // Update analytics session id for new conversations.
-        dispatch(updateAnalyticsSessionId());
+
+        if (config.resetSessionId) {
+          dispatch(updateAnalyticsSessionId());
+        }
 
         // If initial user message is set via API, create preissue without waiting for end-user's
         // input. The initial user message once consumed should be reset - this is being handled in
