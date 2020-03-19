@@ -337,11 +337,30 @@ define("components/message", [
     },
 
     /**
-     * Render First User Message
+     * Render Intent Message
      */
     _renderIntentMessage() {
-      // @TODO - Write logic for rendering UI for
-      // first user message
+      const {
+        message: {redacted, intentLabels},
+        text: {messageDeleted}
+      } = this.props;
+
+      if (redacted) {
+        // Redaction message is a plain text and needs
+        // to be shown in italics.
+        return (
+          <em className="hs-message__item hs-message--redacted" dir="auto">
+            {messageDeleted}
+          </em>
+        );
+      }
+
+      return (
+        <div className="hs-message__item" dir="auto">
+          <div className="hs-message__sis-parent">{intentLabels[0].toUpperCase()}</div>
+          <div className="hs-message__sis-child">{intentLabels[1]}</div>
+        </div>
+      );
     },
 
     /**
