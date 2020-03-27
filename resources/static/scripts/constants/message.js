@@ -92,7 +92,7 @@ define("constants/message", function() {
     /**
      * Intent related messages
      */
-    SIS: "sis" // for first user message
+    SIS: "Smart Intents" // for first user message
   };
 
   /**
