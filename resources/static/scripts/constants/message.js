@@ -49,6 +49,7 @@ define("constants/message", function() {
     TEXT_MSG_WITH_NUMERIC_INPUT: "Text Message with Numeric Input",
     TEXT_MSG_WITH_DATE_TIME_INPUT: "Text Message with Datetime Input",
     TEXT_MSG_WITH_OPTION_INPUT: "Text Message with Option Input",
+    TEXT_MSG_WITH_ACTIONS: "Text Message with Actions",
     FAQ_LIST_WITH_OPTION_INPUT: "FAQ List with Options Input",
     // This is a special type of message used to wait for first user message.
     // This is not rendered on the UI as it does not have body.
@@ -104,6 +105,7 @@ define("constants/message", function() {
     TYPE.TEXT_MSG_WITH_NUMERIC_INPUT,
     TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT,
     TYPE.TEXT_MSG_WITH_OPTION_INPUT,
+    TYPE.TEXT_MSG_WITH_ACTIONS,
     TYPE.FAQ_LIST_WITH_OPTION_INPUT,
     TYPE.RESP_TEXT_MSG_WITH_TEXT_INPUT,
     TYPE.RESP_TEXT_MSG_WITH_EMAIL_INPUT,
@@ -126,6 +128,7 @@ define("constants/message", function() {
     TYPE.TEXT_MSG_WITH_NUMERIC_INPUT,
     TYPE.TEXT_MSG_WITH_DATE_TIME_INPUT,
     TYPE.TEXT_MSG_WITH_OPTION_INPUT,
+    TYPE.TEXT_MSG_WITH_ACTIONS,
     TYPE.FAQ_LIST_WITH_OPTION_INPUT,
     TYPE.EMPTY_MSG_WITH_TEXT_INPUT,
     TYPE.RESP_TEXT_MSG_WITH_TEXT_INPUT,
@@ -197,6 +200,13 @@ define("constants/message", function() {
     CUSTOM_BOT: "cb-ai"
   };
 
+  // Supported action types with action cards. Data received with the
+  // message object depends on the action type, e.g. a URL for "link".
+  const ACTION_TYPES = {
+    LINK: "link",
+    CALL: "call"
+  };
+
   return {
     TYPE,
     ORIGIN,
@@ -208,6 +218,7 @@ define("constants/message", function() {
     MESSAGE_ADD_EVENT_TYPES,
     BOT_STEP_MESSAGES,
     BOT_CANCEL_REASON,
-    FAQ_SUGGESTION_SOURCES
+    FAQ_SUGGESTION_SOURCES,
+    ACTION_TYPES
   };
 });
