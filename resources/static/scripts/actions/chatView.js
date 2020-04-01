@@ -2314,7 +2314,9 @@ define("actions/chatView", [
       xhrData.intent = JSON.stringify(intents.selectedIntentIds);
       // Create user message if the intent was selected by the user
 
-      xhrData.intent_labels = _getIntentLabels(intents.selectedIntentIds, intents.tree.intentsMap);
+      xhrData.intent_labels = JSON.stringify(
+        _getIntentLabels(intents.selectedIntentIds, intents.tree.intentsMap)
+      );
 
       // If user entered some text before selecting an intent, send it as search term (st).
       // This would be used by Data Science to improve their algorithms.
