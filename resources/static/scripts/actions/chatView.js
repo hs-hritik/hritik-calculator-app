@@ -65,6 +65,46 @@ define("actions/chatView", [
 ) {
   "use strict";
 
+  // @TODO: Messages with actions
+  // Remove when backend is ready.
+  const __TBD__DUMMY_MSG_WITH_ACTION_CARDS__ = {
+    chatbot_info: {
+      version: 1,
+      chatbot_id: "infinitelybeta_chatbot_20190305052824758-da733cfe5576d24",
+      step_id: "infinitelybeta_chatbot_step_20190305052832388-9f02605806d6386",
+      profile_id: "infinitelybeta_profile_20190305052824744-717bd40a432c527"
+    },
+    type: "Text Message with Actions",
+    state: "sent",
+    author: {
+      name: "infinitelybeta Support",
+      id: "infinitelybeta_profile_20190305052824744-717bd40a432c526",
+      emails: ["bots-61@infinitelybeta.mail.helpshift.com"],
+      roles: ["chatbot"]
+    },
+    id: "infinitelybeta_message_20200402061956128-8c6fdc81cfa894b",
+    origin: "admin",
+    body: "Checkout this cool stuff",
+    created_at: Date.now(),
+    action_cards: [
+      {
+        image_url: "https://helpshift.com/14581-t.png",
+        is_image_secure: false,
+        title: "Some cool music",
+        actions: [
+          {
+            id: "sha-of-url",
+            type: "link",
+            text_to_display: "Pink floyd",
+            data: {
+              url: "spotify://some-link"
+            }
+          }
+        ]
+      }
+    ]
+  };
+
   const {
     TYPE: MESSAGE_TYPE,
     STATE: MESSAGES_STATE,
@@ -1658,6 +1698,16 @@ define("actions/chatView", [
 
           const messagesLength = messages.length;
           if (messagesLength) {
+            // @TODO: Messages with actions
+            // Add a dummy bot message with actions to the response.
+            // A bot message needs a bot start and a bot end message from the backend as well.
+            // Add the dummy message right before the latest message if its of type "Text Message
+            // with Numeric Input".
+            // Remove the following if block when backend is ready.
+            if (messages[messagesLength - 1].type === "Text Message with Numeric Input") {
+              messages.splice(messagesLength - 1, 0, __TBD__DUMMY_MSG_WITH_ACTION_CARDS__);
+            }
+
             const latestMessage = messages[messagesLength - 1];
             const processedMessages = messageHelpers.getProcessedMessages(messages);
 
