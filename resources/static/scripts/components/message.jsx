@@ -11,6 +11,7 @@ define("components/message", [
   "constants/errors",
   "helpers/attachments",
   "gunpowder/widgets/messages/serverTextMessage",
+  "gunpowder/widgets/messages/messageWithActions",
   "gunpowder/utils/date",
   "gunpowder/utils/classes",
   "gunpowder/utils/object",
@@ -23,6 +24,7 @@ define("components/message", [
   ERROR_CONSTANTS,
   attachmentsHelpers,
   ServerTextMessage,
+  MessageWithActions,
   dateUtils,
   classes,
   objUtils,
@@ -173,6 +175,10 @@ define("components/message", [
         case MESSAGE_TYPE.ATTACHMENT:
           messageItemEl = this._renderUserAttachmentMessage();
           break;
+
+        case MESSAGE_TYPE.TEXT_MSG_WITH_ACTIONS:
+          messageItemEl = this._renderMessageWithActions();
+          break;
       }
 
       if (messageItemEl) {
@@ -303,6 +309,26 @@ define("components/message", [
           ariaLabelOpenFile={ariaLabelOpenFile}
           onImageLoad={onImageLoad}
           onRetryClick={this._onRetryClick}
+        />
+      );
+    },
+
+    /**
+     * Render message with action
+     */
+    _renderMessageWithActions() {
+      const {
+        message: {id, redacted, body, actionCards},
+        text: {messageDeleted}
+      } = this.props;
+
+      return (
+        <MessageWithActions
+          messageId={id}
+          messageIsRedacted={redacted}
+          mainText={body}
+          messageDeletedText={messageDeleted}
+          actionCards={actionCards}
         />
       );
     },
