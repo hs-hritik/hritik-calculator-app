@@ -10,6 +10,7 @@ define("components/message", [
   "constants/message",
   "constants/errors",
   "helpers/attachments",
+  "gunpowder/widgets/messages/serverTextMessage",
   "gunpowder/utils/date",
   "gunpowder/utils/classes",
   "gunpowder/utils/object",
@@ -21,6 +22,7 @@ define("components/message", [
   MESSAGE_CONSTANTS,
   ERROR_CONSTANTS,
   attachmentsHelpers,
+  ServerTextMessage,
   dateUtils,
   classes,
   objUtils,
@@ -188,51 +190,24 @@ define("components/message", [
      * Render server text and attachment(bots & agent) message
      */
     _renderServerMessage() {
-      let textMessageEl = null;
-
       const {
-        message: {redacted, body},
-        text: {messageDeleted}
+        message: {id, redacted, body, attachments},
+        text: {messageDeleted, ariaLabelOpenFile}
       } = this.props;
-
-      if (redacted) {
-        // Redaction message is a plain text and needs
-        // to be shown in italics.
-        textMessageEl = (
-          <em key="redacted-message" className="hs-message__item hs-message--redacted" dir="auto">
-            {messageDeleted}
-          </em>
-        );
-      } else if (body) {
-        /* eslint-disable react/no-danger */
-        textMessageEl = (
-          <div
-            key="text-message"
-            className="hs-message__item"
-            dir="auto"
-            dangerouslySetInnerHTML={{__html: body}}
-          />
-        );
-        /* eslint-enable react/no-danger */
-      }
 
       return (
         <Fragment>
-          {textMessageEl}
-          {this._renderServerAttachments()}
+          <ServerTextMessage
+            messageId={id}
+            messageIsRedacted={redacted}
+            messageText={body}
+            messageDeletedText={messageDeleted}
+          />
+          <ServerAttachmentsMessage
+            attachments={attachments}
+            ariaLabelOpenFile={ariaLabelOpenFile}
+          />
         </Fragment>
-      );
-    },
-
-    /**
-     * Render agent or bot message attachments
-     */
-    _renderServerAttachments() {
-      const {attachments} = this.props.message;
-      const {ariaLabelOpenFile} = this.props.text;
-
-      return (
-        <ServerAttachmentsMessage attachments={attachments} ariaLabelOpenFile={ariaLabelOpenFile} />
       );
     },
 
