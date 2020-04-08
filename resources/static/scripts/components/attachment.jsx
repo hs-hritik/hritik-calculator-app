@@ -162,6 +162,7 @@ define("components/attachment", [
           url={url}
           file={file}
           wrapperClasses="hs-message__item hs-message__image-attachment"
+          failedImageClassNames="hs-message__failed-img"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
         />
@@ -219,6 +220,7 @@ define("components/attachment", [
             key={`previewable-${index}`}
             url={url}
             wrapperClasses="hs-message__item hs-message__image-attachment"
+            failedImageClassNames="hs-message__failed-img"
             onWrapperClick={onWrapperClick}
           />
         );

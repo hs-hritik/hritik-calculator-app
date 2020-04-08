@@ -40,6 +40,10 @@ define("components/message", [
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
   const IMAGE_MSG_MAX_HEIGHT = 170;
   const AGENT_NAME_SEPARATOR = ", ";
+  const serverTextMessageClassNames = {
+    redactedMessageElement: "hs-message__item hs-message--redacted",
+    messageElement: "hs-message__item"
+  };
 
   return createReactClass({
     displayName: "Message",
@@ -208,6 +212,7 @@ define("components/message", [
             messageIsRedacted={redacted}
             messageText={body}
             messageDeletedText={messageDeleted}
+            classNames={serverTextMessageClassNames}
           />
           <ServerAttachmentsMessage
             attachments={attachments}
@@ -322,6 +327,17 @@ define("components/message", [
         text: {messageDeleted}
       } = this.props;
 
+      const classNames = {
+        serverTextMessage: serverTextMessageClassNames,
+        actionCard: {
+          wrapper: "hs-message__item hs-message__action-card",
+          actionCardImage: "hs-message__action-card-image",
+          actionCardFailedImage: "hs-message__failed-img",
+          actionCardTitle: "hs-message__action-card-title",
+          actionCardAction: "hs-message__action-card-action"
+        }
+      };
+
       return (
         <MessageWithActions
           messageId={id}
@@ -329,6 +345,7 @@ define("components/message", [
           mainText={body}
           messageDeletedText={messageDeleted}
           actionCards={actionCards}
+          classNames={classNames}
         />
       );
     },
