@@ -22,7 +22,8 @@ define("components/chatViewFooter", [
   "constants/accessibility",
   "constants/activeView",
   "gunpowder/widgets/dragIt",
-  "gunpowder/widgets/nestedPicker"
+  "gunpowder/widgets/nestedPicker",
+  "utils/browser"
 ], function(
   StarRating,
   JumpToLatestBtn,
@@ -41,7 +42,8 @@ define("components/chatViewFooter", [
   axConstants,
   activeViewConstants,
   dragIt,
-  NestedPicker
+  NestedPicker,
+  browserUtils
 ) {
   "use strict";
 
@@ -59,6 +61,9 @@ define("components/chatViewFooter", [
     REPLY_FOOTER: "reply",
     ACTIVE_FOOTER: "active_footer"
   };
+
+  // Max height of intents widget in case of iOS safari
+  const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
 
   const DraggablePicker = dragIt(Picker);
   const DraggableNestedPicker = dragIt(NestedPicker);
@@ -581,6 +586,17 @@ define("components/chatViewFooter", [
         ? intentsEmptySearchDescEis
         : intentsEmptySearchDesc;
 
+      let intentsWidgetMaxHeight = this.state.intentsWidgetMaxHeight;
+
+      // We need to pass fixed height when picker is in opened state for iOS safari
+      // because safari pushes the entire webpage when keyboard is open.
+      // This causes the smart intents to hide above the screen and user is not
+      // able to see/select the intents. Restricting height in safari ensures
+      // even after opening keyboard the intents are displayed to end user.
+      if (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari()) {
+        intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
+      }
+
       return (
         <DraggableNestedPicker
           className={pickerClasses}
@@ -592,7 +608,7 @@ define("components/chatViewFooter", [
           onSelectOption={this._onSelectIntent}
           onUnselectOption={this._onUnselectIntent}
           minHeight={this.state.intentsWidgetMinHeight}
-          maxHeight={this.state.intentsWidgetMaxHeight}
+          maxHeight={intentsWidgetMaxHeight}
           onComponentDidMount={this._onIntentsWidgetMount}
           isSearching={isSearching}
           searchResultOptionIds={searchResultIntentIds}
