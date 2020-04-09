@@ -29,8 +29,6 @@ define("components/message", [
 ) {
   "use strict";
 
-  const {Fragment} = React;
-
   const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
   const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -217,10 +215,10 @@ define("components/message", [
       }
 
       return (
-        <Fragment>
+        <>
           {textMessageEl}
           {this._renderServerAttachments()}
-        </Fragment>
+        </>
       );
     },
 
