@@ -79,7 +79,9 @@ const PATHS = {
     "static/libs/create-react-class-min.js",
     "static/libs/redux-min.js",
     "static/libs/react-redux-min.js",
-    "static/libs/require-min.js"
+    "static/libs/require-min.js",
+    "static/libs/axios-min.js",
+    "static/libs/purify-min.js"
   ],
 
   // This is the source of files to be removed once libs bundle is generated

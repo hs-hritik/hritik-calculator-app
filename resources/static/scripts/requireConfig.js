@@ -7,6 +7,7 @@ require.config({
     libs: `${DOMAIN}/libs/`,
     reduxThunk: `${DOMAIN}/libs/redux-thunk`,
     uaParser: `${DOMAIN}/libs/ua-parser`,
-    axios: `${DOMAIN}/libs/axios`
+    axios: `${DOMAIN}/libs/axios`,
+    domPurify: `${DOMAIN}/libs/purify`
   }
 });
