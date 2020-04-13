@@ -11,9 +11,10 @@
 ///
 
 @include component(header) {
-  $padding: gutter(16 20);
+  $padding: gutter(0 16);
   $bg-color: var(--hs-header-bg-color);
   $header-text-color: var(--hs-header-text-color);
+  $avatar-size: 32px;
 
   .hs-header {
     display: flex;
@@ -26,7 +27,23 @@
     color: $header-text-color;
     background-color: $bg-color;
 
-    &__link {
+    &--with-avatar {
+      .hs-header__back-icon {
+        padding-right: gutter(12);
+      }
+    }
+
+    &__avatar-title-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    &__title {
+      padding-left: gutter(4);
+    }
+
+    &__back-btn-link,
+    &__close-btn-link {
       display: flex;
       align-items: center;
       color: $header-text-color;
@@ -36,8 +53,19 @@
       }
     }
 
+    &__close-btn-link {
+      padding-right: gutter(4);
+    }
+
     &__back-icon {
-      margin-right: gutter(8);
+      padding: gutter(0 4);
+    }
+
+    &__avatar {
+      width: $avatar-size;
+      height: $avatar-size;
+      margin-right: gutter(4);
+      border-radius: radius(round);
     }
   }
 }
