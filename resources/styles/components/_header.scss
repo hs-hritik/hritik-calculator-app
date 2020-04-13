@@ -23,7 +23,7 @@
     justify-content: space-between;
     height: 52px;
     padding: $padding;
-    font-weight: font-weight(bold);
+    font-weight: font-weight(medium);
     color: $header-text-color;
     background-color: $bg-color;
 
@@ -36,10 +36,6 @@
     &__avatar-title-wrapper {
       display: flex;
       align-items: center;
-    }
-
-    &__title {
-      padding-left: gutter(4);
     }
 
     &__back-btn-link,
@@ -66,6 +62,11 @@
       height: $avatar-size;
       margin-right: gutter(4);
       border-radius: radius(round);
+    }
+
+    &__title-text {
+      padding-left: gutter(4);
+      font-size: font-size(body, large);
     }
   }
 }

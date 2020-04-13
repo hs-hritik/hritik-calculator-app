@@ -56,7 +56,7 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(cl
      */
     _renderTitleAndAvatar() {
       const {dataLabels, ariaLabel} = this.props;
-      const titleText = <span className="hs-header__title">{this.props.title}</span>;
+      const titleText = <span className="hs-header__title-text">{this.props.title}</span>;
 
       if (!this.props.showBackBtn) {
         return (
