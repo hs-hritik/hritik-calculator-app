@@ -14,7 +14,8 @@ define("components/message", [
   "gunpowder/utils/classes",
   "gunpowder/utils/object",
   "helpers/common",
-  "extras/accessibility"
+  "extras/accessibility",
+  "domPurify"
 ], function(
   attachmentComponents,
   customPropTypes,
@@ -25,7 +26,8 @@ define("components/message", [
   classes,
   objUtils,
   commonHelper,
-  ax
+  ax,
+  DOMPurify
 ) {
   "use strict";
 
@@ -210,7 +212,7 @@ define("components/message", [
             key="text-message"
             className="hs-message__item"
             dir="auto"
-            dangerouslySetInnerHTML={{__html: body}}
+            dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(body)}}
           />
         );
         /* eslint-enable react/no-danger */
