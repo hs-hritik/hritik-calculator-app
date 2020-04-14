@@ -70,6 +70,8 @@ const PATHS = {
   // Library bundle specific path
   // @NOTE - Any new file added to libs folder will not be automatically minified
   // You will have to add it explicity to following array.
+  // IMPORTANT - Make sure the the require js item is the last one. Add your
+  // library file above it.
   bundleLibsSource: [
     "static/libs/react-min.js",
     "static/libs/react-pure-render-mixin-fake.js",
@@ -79,9 +81,9 @@ const PATHS = {
     "static/libs/create-react-class-min.js",
     "static/libs/redux-min.js",
     "static/libs/react-redux-min.js",
-    "static/libs/require-min.js",
     "static/libs/axios-min.js",
-    "static/libs/purify-min.js"
+    "static/libs/purify-min.js",
+    "static/libs/require-min.js"
   ],
 
   // This is the source of files to be removed once libs bundle is generated
