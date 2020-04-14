@@ -52,8 +52,26 @@ define("utils/browser", function() {
     return typeof window.ontouchstart !== "undefined";
   };
 
+  /**
+   * Predicate to return wether current platform/os is iOS
+   * @returns {boolean} - whether current platform is iOS
+   */
+  const isPlatformIos = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  };
+
+  /**
+   * Predicate to return whether browser is safari
+   * @returns {boolean} - whether current browser if safari
+   */
+  const isBrowserSafari = () => {
+    return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+  };
+
   return {
     isMobile,
+    isPlatformIos,
+    isBrowserSafari,
     getLanguage,
     isBot,
     areTouchEventsSupported
