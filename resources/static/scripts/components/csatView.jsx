@@ -109,7 +109,9 @@ define("components/csatView", [
       }),
       csatSaveInProgress: PropTypes.bool,
       onUpdateStarRating: PropTypes.func,
-      keyboardInteractionIsActive: PropTypes.bool.isRequired
+      keyboardInteractionIsActive: PropTypes.bool.isRequired,
+      showHeaderAvatar: PropTypes.bool.isRequired,
+      appAvatarUrl: PropTypes.string.isRequired
     },
 
     getInitialState() {
@@ -131,7 +133,9 @@ define("components/csatView", [
         onUpdateStarRating,
         onMinimizeConversation,
         onKeyDown,
-        onClick
+        onClick,
+        showHeaderAvatar,
+        appAvatarUrl
       } = this.props;
 
       const viewClasses = classes("hs-view", {
@@ -145,6 +149,8 @@ define("components/csatView", [
               title={text.csatViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation}
+              avatarUrl={appAvatarUrl}
+              showAvatar={showHeaderAvatar}
             />
           </ErrorBoundaryWithLogging>
           <ErrorBoundaryWithLogging

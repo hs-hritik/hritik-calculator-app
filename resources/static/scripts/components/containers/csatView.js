@@ -11,13 +11,18 @@ define("components/containers/csatView", ["components/csatView", "actions/csatVi
   "use strict";
 
   const mapStateToProps = (state) => {
-    const {rating, review, csatSaveInProgress} = state.csatView;
+    const {
+      appState: {showHeaderAvatar, appAvatarUrl},
+      csatView: {rating, review, csatSaveInProgress}
+    } = state;
 
     return {
       rating,
       review,
       csatSaveInProgress,
-      text: state.ui.text
+      text: state.ui.text,
+      showHeaderAvatar,
+      appAvatarUrl
     };
   };
 
