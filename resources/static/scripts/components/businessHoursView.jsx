@@ -666,7 +666,9 @@ define("components/businessHoursView", [
       /**
        * Allowed file mime types list
        */
-      attachmentsWhitelist: PropTypes.array.isRequired
+      attachmentsWhitelist: PropTypes.array.isRequired,
+      showHeaderAvatar: PropTypes.bool.isRequired,
+      appAvatarUrl: PropTypes.string.isRequired
     },
 
     getInitialState() {
@@ -691,7 +693,9 @@ define("components/businessHoursView", [
         allowFullScreen,
         submitInProgress,
         keyboardInteractionIsActive,
-        attachmentsWhitelist
+        attachmentsWhitelist,
+        showHeaderAvatar,
+        appAvatarUrl
       } = this.props;
 
       const {featureIsEnabled} = contactFormDetails.attachmentsMeta;
@@ -707,6 +711,8 @@ define("components/businessHoursView", [
               title={text.businessHoursViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation}
+              avatarUrl={appAvatarUrl}
+              showAvatar={showHeaderAvatar}
             />
           </ErrorBoundaryWithLogging>
           <ErrorBoundaryWithLogging
