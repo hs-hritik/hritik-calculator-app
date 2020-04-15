@@ -143,7 +143,8 @@ define("reducers/ui", [
       intentsSearchTitle: "You must be looking for",
       intentsEmptySearchTitle: "No suggestions",
       intentsEmptySearchDesc: "Send your message to start the conversation",
-      intentsEmptySearchDescEis: "Sorry, we couldn't find what you are looking for"
+      intentsEmptySearchDescEis: "Sorry, we couldn't find what you are looking for",
+      systemNickname: "Support"
     },
     uiConfig: DEFAULT_UI_CONFIG.reduce((obj, config) => {
       // First elem in config is flattened ui config options (keys)
@@ -355,6 +356,7 @@ define("reducers/ui", [
           }
         };
         const businessHoursEnabled = config.business_hours_enabled;
+        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
 
         if (businessHoursEnabled) {
           const businessHours = config.business_hours;
@@ -366,6 +368,12 @@ define("reducers/ui", [
           };
           textUpdateObj.businessHoursOfflineMessage = {
             $set: businessHours.offline_message
+          };
+        }
+
+        if (personalisedConversationIsEnabled) {
+          textUpdateObj.systemNickname = {
+            $set: config.avatar.system_nickname
           };
         }
 

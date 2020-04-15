@@ -111,7 +111,8 @@ define("reducers/appState", [
       conversationHistory: true,
       userAttachments: true,
       branding: true,
-      intents: false
+      intents: false,
+      personalisedConversationIsEnabled: false
     },
     // The time after which the intents tree should be updated from the backend.
     intentsTreeSla: 0,
@@ -148,7 +149,17 @@ define("reducers/appState", [
     widgetShouldAutoOpen: false,
     reEngagementId: "",
     windowIsFocused: false,
-    keyboardInteractionIsActive: false
+    keyboardInteractionIsActive: false,
+    avatar: {
+      showMessageFeedAvatar: false,
+      agentPersonalisedAvatarIsEnabled: true,
+      botPersonalisedAvatarIsEnabled: true,
+      agentDefaultAvatarUrl: "",
+      botDefaultAvatarUrl: "",
+      avatarUrlTemplate: ""
+    },
+    showHeaderAvatar: false,
+    appAvatarUrl: ""
   };
 
   /**
@@ -183,6 +194,7 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_WM_CONFIG:
         const {config} = action;
         const intentsAreEnabled = config.si.enabled;
+        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
         const greetingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;
@@ -198,11 +210,27 @@ define("reducers/appState", [
             agentNickname: {$set: config.agent_nickname_enabled},
             branding: {$set: !config.disable_helpshift_branding},
             audioNotifications: {$set: config.audio_notifications_enabled},
-            intents: {$set: intentsAreEnabled}
+            intents: {$set: intentsAreEnabled},
+            personalisedConversationIsEnabled: {$set: personalisedConversationIsEnabled}
           },
           issueExists: {$set: config.issue_exists},
-          attachmentsWhitelist: {$set: attachmentsWhitelist}
+          attachmentsWhitelist: {$set: attachmentsWhitelist},
+          showHeaderAvatar: {$set: config.appearance.show_header_avatar},
+          appAvatarUrl: {$set: config.appearance.app_avatar}
         };
+
+        if (personalisedConversationIsEnabled) {
+          changeObj.avatar = {
+            $set: {
+              showMessageFeedAvatar: config.avatar.show_feed_avatar,
+              agentPersonalisedAvatarIsEnabled: config.avatar.show_agent_personalised_avatar,
+              botPersonalisedAvatarIsEnabled: config.avatar.show_bot_personalised_avatar,
+              agentDefaultAvatarUrl: config.avatar.agent_default_avatar,
+              botDefaultAvatarUrl: config.avatar.bot_default_avatar,
+              avatarUrlTemplate: config.avatar.avatar_template_url
+            }
+          };
+        }
 
         if (intentsAreEnabled) {
           changeObj.intentsModelSla = {$set: config.si.model_sla};

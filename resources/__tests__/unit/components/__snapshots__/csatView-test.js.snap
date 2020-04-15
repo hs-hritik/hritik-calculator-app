@@ -13,7 +13,10 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
     fallbackComponent={<NonBlockingError />}
   >
     <ViewHeader
+      avatarUrl={null}
       onCloseBtnClick={[MockFunction]}
+      showAvatar={false}
+      showBackBtn={false}
       showCloseBtn={false}
       title="MOCK_VIEW_HEADER"
     />

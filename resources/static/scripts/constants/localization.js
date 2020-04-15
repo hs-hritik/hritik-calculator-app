@@ -84,7 +84,8 @@ define("constants/localization", function() {
     "si_search_title": "intentsSearchTitle",
     "si_empty_search_title": "intentsEmptySearchTitle",
     "si_empty_search_desc": "intentsEmptySearchDesc",
-    "si_empty_search_desc_eis": "intentsEmptySearchDescEis"
+    "si_empty_search_desc_eis": "intentsEmptySearchDescEis",
+    "avatar.system_nickname": "systemNickname"
   };
 
   return {
