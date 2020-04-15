@@ -348,7 +348,9 @@ define("components/chatView", [
       /**
        * If chat view footer has any failure
        */
-      hasFailure: PropTypes.bool
+      hasFailure: PropTypes.bool,
+      showHeaderAvatar: PropTypes.bool.isRequired,
+      appAvatarUrl: PropTypes.string.isRequired
     },
 
     getInitialState() {
@@ -368,7 +370,9 @@ define("components/chatView", [
         keyboardInteractionIsActive,
         onMinimizeConversation,
         onKeyDown,
-        onClick
+        onClick,
+        showHeaderAvatar,
+        appAvatarUrl
       } = this.props;
 
       // In certain cases, Safari ignores scroll events on
@@ -394,6 +398,8 @@ define("components/chatView", [
               title={text.chatViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation}
+              avatarUrl={appAvatarUrl}
+              showAvatar={showHeaderAvatar}
             />
           </ErrorBoundaryWithLogging>
           {this._renderNonBlockingError()}

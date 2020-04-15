@@ -22,7 +22,9 @@ define("components/containers/chatView", [
         activeIssueId,
         issueType,
         minimized,
-        online
+        online,
+        showHeaderAvatar,
+        appAvatarUrl
       },
       chatView: {
         messageList: messages,
@@ -69,7 +71,9 @@ define("components/containers/chatView", [
       pastConversationsLoading,
       allMessagesAreLoaded,
       botStepInProgress,
-      activeFooter
+      activeFooter,
+      showHeaderAvatar,
+      appAvatarUrl
     };
   };
 
