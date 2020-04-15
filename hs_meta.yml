@@ -12,11 +12,6 @@ release:
       replacement: '"version": "{{ version }}"'
       num_expected: 1
 
-    - file: package-lock.json
-      pattern: '"version": "\d+\.\d+\.\d+"'
-      replacement: '"version": "{{ version }}"'
-      num_expected: 1
-
     - file: resources/static/scripts/constants/appState.js
       pattern: 'WEB_CHAT_VERSION = "\d+\.\d+\.\d+"'
       replacement: 'WEB_CHAT_VERSION = "{{ version }}"'
