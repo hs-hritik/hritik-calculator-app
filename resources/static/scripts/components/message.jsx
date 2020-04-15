@@ -57,6 +57,8 @@ define("components/message", [
       onSuggestedFaqClick: PropTypes.func,
       onRetryAttachmentClick: PropTypes.func,
       onImageLoad: PropTypes.func,
+      // Click handler for an action element on the action card
+      onActionClick: PropTypes.func,
       text: PropTypes.shape({
         csatBotRequestMsg: PropTypes.string.isRequired,
         messageDeleted: PropTypes.string.isRequired,
@@ -346,6 +348,7 @@ define("components/message", [
           messageDeletedText={messageDeleted}
           actionCards={actionCards}
           classNames={classNames}
+          onActionClick={this._onActionClick}
         />
       );
     },
@@ -558,6 +561,21 @@ define("components/message", [
     _onRetryClick() {
       const {message} = this.props;
       this.props.onRetryAttachmentClick(message);
+    },
+
+    /**
+     * Click handler for an action element of a message
+     * @param {Object} actionData - the action data received from the message action component
+     */
+    _onActionClick(actionData) {
+      const {
+        onActionClick,
+        message: {id}
+      } = this.props;
+
+      if (typeof onActionClick === "function") {
+        onActionClick({...actionData, ...{messageId: id}});
+      }
     }
   });
 });
