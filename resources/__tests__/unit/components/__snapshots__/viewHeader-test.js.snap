@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ViewHeader should render correctly (snapshot) 1`] = `
+<div
+  className="hs-header hs-header--with-avatar"
+>
+  <a
+    aria-label="MOCK_ARIA_LABEL"
+    className="hs-header__back-btn-link"
+    data-label="MOCK_DATA_LABEL_BACK_BTN"
+    onClick={[Function]}
+    role="button"
+    tabIndex="0"
+  >
+    <i
+      className="ion-chevron-left hs-header__back-icon"
+    />
+    <img
+      alt="Avatar Image"
+      aria-hidden={true}
+      className="hs-header__avatar"
+      src="MOCK_AVATAR_URL"
+    />
+    <span
+      className="hs-header__title-text"
+    >
+      MOCK_VIEW_HEADER_TITLE
+    </span>
+  </a>
+  <a
+    className="hs-header__close-btn-link"
+    onClick={[Function]}
+  >
+    <i
+      className="ion-cross hs-header__close-icon"
+    />
+  </a>
+</div>
+`;
