@@ -88,14 +88,16 @@ define("actions/chatView", [
     created_at: Date.now(),
     action_cards: [
       {
-        image_url: "https://helpshift.com/14581-t.png",
+        image_url:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSKHhJlhD7Y6Cu" +
+          "nSb-dEuRXo3bUwdvmU3RgSo553BQWZOi5qztK&usqp=CAU",
         is_image_secure: false,
         title: "Some cool music",
         actions: [
           {
             id: "sha-of-url",
             type: "link",
-            text_to_display: "Pink floyd",
+            display_text: "Pink floyd",
             data: {
               url: "spotify://some-link"
             }

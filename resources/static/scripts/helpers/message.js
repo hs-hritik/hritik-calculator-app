@@ -98,7 +98,7 @@ define("helpers/message", [
             return {
               id: action.id,
               type: action.type,
-              textToDisplay: action.text_to_display,
+              textToDisplay: action.display_text,
               data: actionData
             };
           })
