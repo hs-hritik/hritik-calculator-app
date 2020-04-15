@@ -115,25 +115,16 @@ define("components/messageList", [
     _renderMessages() {
       const {messages} = this.props;
 
-      return messages.map((message, index) => {
+      return messages.map((message) => {
         // Avoid rendering of unnecessary message types.
         if (!messageHelpers.isRenderableMessage(message.type)) {
           return null;
-        }
-
-        const nextMsg = messages[index + 1];
-        let isLastMessageInGroup = true;
-
-        if (nextMsg) {
-          isLastMessageInGroup = nextMsg.isCustomerMsg !== message.isCustomerMsg;
         }
 
         return (
           <ErrorBoundaryWithLogging key={message.id} onError={this.props.onMessageError}>
             <Message
               message={message}
-              isLastMessage={messages.length === index + 1}
-              isLastMessageInGroup={isLastMessageInGroup}
               showAgentNickname={this.props.showAgentNickname}
               text={this.props.text}
               onImageLoad={this._onImageAttachmentLoad}
