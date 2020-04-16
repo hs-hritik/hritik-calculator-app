@@ -26,9 +26,11 @@ const setup = () => {
     showAvatar: true,
     avatarUrl: "MOCK_AVATAR_URL"
   };
+  const enzymeWrapper = shallow(<ViewHeader {...props} />);
 
   return {
-    props
+    props,
+    enzymeWrapper
   };
 };
 
@@ -38,5 +40,17 @@ describe("ViewHeader", () => {
     const tree = shallow(<ViewHeader {...props} />);
 
     expect(toJson(tree)).toMatchSnapshot();
+  });
+
+  it("should render self and child elements", () => {
+    const {enzymeWrapper} = setup();
+
+    // Test the first div
+    expect(enzymeWrapper.first("div").hasClass("hs-header")).toBe(true);
+    // Test title should always present
+    expect(enzymeWrapper.find(".hs-header__title-text")).toBeDefined();
+
+    expect(enzymeWrapper.find(".hs-header__avatar")).toBeDefined();
+    expect(enzymeWrapper.find(".hs-header__back-btn-link")).toBeDefined();
   });
 });
