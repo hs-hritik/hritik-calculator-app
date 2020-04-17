@@ -27,7 +27,7 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(cl
     getDefaultProps() {
       return {
         showAvatar: false,
-        avatarUrl: null,
+        avatarUrl: "",
         showBackBtn: false,
         showCloseBtn: false
       };
