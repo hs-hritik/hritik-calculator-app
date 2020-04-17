@@ -197,6 +197,12 @@ define("constants/message", function() {
     CUSTOM_BOT: "cb-ai"
   };
 
+  const MESSAGE_ROLES = {
+    SYSTEM_MSG: "s",
+    AGENT_MSG: "a",
+    BOT_MSG: "b"
+  };
+
   return {
     TYPE,
     ORIGIN,
@@ -208,6 +214,7 @@ define("constants/message", function() {
     MESSAGE_ADD_EVENT_TYPES,
     BOT_STEP_MESSAGES,
     BOT_CANCEL_REASON,
-    FAQ_SUGGESTION_SOURCES
+    FAQ_SUGGESTION_SOURCES,
+    MESSAGE_ROLES
   };
 });
