@@ -12,7 +12,7 @@
 
 // @TODO: Refactor & create a new scss block "hs-attachment".
 @include component(message) {
-  $max-width: 88%;
+  $max-width: 80%;
   $failed-img-icon-width: 20px;
   $failed-img-icon-height: 20px;
 
