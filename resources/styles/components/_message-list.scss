@@ -29,6 +29,10 @@
     justify-content: flex-end;
     padding: gutter(0 20 16);
 
+    &--with-avatar {
+      padding-left: gutter(56);
+    }
+
     &__date-separator {
       margin: gutter(4 0);
       color: $timestamp-color;

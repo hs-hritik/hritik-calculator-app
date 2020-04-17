@@ -18,13 +18,14 @@ define("components/containers/chatView", [
   const mapStateToProps = (state) => {
     const {
       appState: {
-        featuresEnabled: {agentNickname},
+        featuresEnabled: {agentNickname, personalisedConversationIsEnabled},
         activeIssueId,
         issueType,
         minimized,
         online,
         showHeaderAvatar,
-        appAvatarUrl
+        appAvatarUrl,
+        avatar
       },
       chatView: {
         messageList: messages,
@@ -55,6 +56,7 @@ define("components/containers/chatView", [
       minimized,
       isTyping: systemTyping || agentTyping,
       showAgentNickname: agentNickname,
+      personalisedConversationIsEnabled,
       text: text,
       issueIsCreated: commonHelpers.isIssueCreated({
         activeIssueId,
@@ -73,7 +75,8 @@ define("components/containers/chatView", [
       botStepInProgress,
       activeFooter,
       showHeaderAvatar,
-      appAvatarUrl
+      appAvatarUrl,
+      avatar
     };
   };
 

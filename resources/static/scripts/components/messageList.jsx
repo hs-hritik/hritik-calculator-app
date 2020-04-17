@@ -88,10 +88,56 @@ define("components/messageList", [
       /**
        * Callback that gets called whenever a message fails to render
        */
-      onMessageError: PropTypes.func
+      onMessageError: PropTypes.func,
+
+      /**
+       * If true, render avatar in message feed
+       */
+      showAvatar: PropTypes.bool,
+      /**
+       * Avatar render data
+       */
+      avatar: PropTypes.shape({
+        /**
+         * If true, show avatar with message bubble
+         */
+        showMessageFeedAvatar: PropTypes.bool,
+        /**
+         * If true, show agent uploaded avatar
+         * If false, show agent default avatar configured by admin
+         */
+        agentAvatarIsPersonalised: PropTypes.bool,
+        /**
+         * If true, show avatar uploaded for the bot
+         * If false, show bot default avatar
+         */
+        botAvatarIsPersonalised: PropTypes.bool,
+        /**
+         * Agent default Url
+         */
+        agentDefaultAvatarUrl: PropTypes.string.isRequired,
+        /**
+         * Bot default Url
+         */
+        botDefaultAvatarUrl: PropTypes.string.isRequired,
+        /**
+         * Template to generate avatar url
+         */
+        avatarUrlTemplate: PropTypes.string.isRequired,
+        /**
+         * App avatar Url
+         */
+        appAvatarUrl: PropTypes.string.isRequired
+      }).isRequired
     },
 
     render() {
+      const {showAvatar} = this.props;
+
+      const messagListClasses = classes("hs-message-list", {
+        "hs-message-list--with-avatar": showAvatar
+      });
+
       return (
         <div
           ref={this._refCallback}
@@ -99,7 +145,7 @@ define("components/messageList", [
           onScroll={this._eventPresistedScroll}
           data-label={METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.DATA_LABEL}
           tabIndex="0">
-          <div className="hs-message-list">
+          <div className={messagListClasses}>
             {this._renderMessages()}
             {this._renderTypingIndicator()}
             {this._renderPillOptions()}

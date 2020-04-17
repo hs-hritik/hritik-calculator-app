@@ -152,8 +152,8 @@ define("reducers/appState", [
     keyboardInteractionIsActive: false,
     avatar: {
       showMessageFeedAvatar: false,
-      agentPersonalisedAvatarIsEnabled: true,
-      botPersonalisedAvatarIsEnabled: true,
+      agentAvatarIsPersonalised: true,
+      botAvatarIsPersonalised: true,
       agentDefaultAvatarUrl: "",
       botDefaultAvatarUrl: "",
       avatarUrlTemplate: ""
@@ -223,8 +223,8 @@ define("reducers/appState", [
           changeObj.avatar = {
             $set: {
               showMessageFeedAvatar: config.avatar.show_feed_avatar,
-              agentPersonalisedAvatarIsEnabled: config.avatar.show_agent_personalised_avatar,
-              botPersonalisedAvatarIsEnabled: config.avatar.show_bot_personalised_avatar,
+              agentAvatarIsPersonalised: config.avatar.show_agent_personalised_avatar,
+              botAvatarIsPersonalised: config.avatar.show_bot_personalised_avatar,
               agentDefaultAvatarUrl: config.avatar.agent_default_avatar,
               botDefaultAvatarUrl: config.avatar.bot_default_avatar,
               avatarUrlTemplate: config.avatar.avatar_template_url

@@ -77,7 +77,9 @@ define("components/chatView", [
         botStepInProgress,
         minimized,
         onMessageError,
-        onFooterError
+        onFooterError,
+        showAvatar,
+        avatar
       } = this.props;
 
       const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -111,6 +113,8 @@ define("components/chatView", [
               ref={this._msgListRef}
               minimized={minimized}
               onMessageError={onMessageError}
+              showAvatar={showAvatar}
+              avatar={avatar}
             />
             {this._renderJumpToLatestBtn()}
           </div>
@@ -292,7 +296,46 @@ define("components/chatView", [
      * If chat view footer has any failure
      */
     hasFailure: PropTypes.bool,
-    botStepInProgress: PropTypes.bool
+    botStepInProgress: PropTypes.bool,
+    /**
+     * If true, render avatar in message feed
+     */
+    showAvatar: PropTypes.bool,
+    /**
+     * Avatar render data
+     */
+    avatar: PropTypes.shape({
+      /**
+       * If true, show avatar with message bubble
+       */
+      showMessageFeedAvatar: PropTypes.bool,
+      /**
+       * If true, show agent uploaded avatar
+       * If false, show agent default avatar configured by admin
+       */
+      agentAvatarIsPersonalised: PropTypes.bool,
+      /**
+       * If true, show avatar uploaded for the bot
+       * If false, show bot default avatar
+       */
+      botAvatarIsPersonalised: PropTypes.bool,
+      /**
+       * Agent default Url
+       */
+      agentDefaultAvatarUrl: PropTypes.string.isRequired,
+      /**
+       * Bot default Url
+       */
+      botDefaultAvatarUrl: PropTypes.string.isRequired,
+      /**
+       * Template to generate avatar url
+       */
+      avatarUrlTemplate: PropTypes.string.isRequired,
+      /**
+       * App avatar Url
+       */
+      appAvatarUrl: PropTypes.string.isRequired
+    }).isRequired
   };
 
   return createReactClass({
@@ -350,7 +393,44 @@ define("components/chatView", [
        */
       hasFailure: PropTypes.bool,
       showHeaderAvatar: PropTypes.bool.isRequired,
-      appAvatarUrl: PropTypes.string.isRequired
+      appAvatarUrl: PropTypes.string.isRequired,
+      /**
+       * If true, show agent nickname and show feed avatar only when feed avatar is enabled
+       * If false, both nickname and feed avatar should not render
+       * Note: Both personalisedConversationIsEnabled & showAgentNickname has same value
+       */
+      personalisedConversationIsEnabled: PropTypes.bool.isRequired,
+      /**
+       * Avatar render data
+       */
+      avatar: PropTypes.shape({
+        /**
+         * If true, show avatar with message bubble
+         */
+        showMessageFeedAvatar: PropTypes.bool.isRequired,
+        /**
+         * If true, show agent uploaded avatar
+         * If false, show agent default avatar configured by admin
+         */
+        agentAvatarIsPersonalised: PropTypes.bool.isRequired,
+        /**
+         * If true, show avatar uploaded for the bot
+         * If false, show bot default avatar
+         */
+        botAvatarIsPersonalised: PropTypes.bool.isRequired,
+        /**
+         * Agent default Url
+         */
+        agentDefaultAvatarUrl: PropTypes.string.isRequired,
+        /**
+         * Bot default Url
+         */
+        botDefaultAvatarUrl: PropTypes.string.isRequired,
+        /**
+         * Template to generate avatar url
+         */
+        avatarUrlTemplate: PropTypes.string.isRequired
+      }).isRequired
     },
 
     getInitialState() {
@@ -433,8 +513,14 @@ define("components/chatView", [
         latestConversationHasLoaded,
         allMessagesAreLoaded,
         pastConversationsLoading,
-        loading
+        loading,
+        personalisedConversationIsEnabled,
+        appAvatarUrl,
+        avatar
       } = this.props;
+      const avatarProps = {...avatar, ...{appAvatarUrl}};
+      const avatarShouldRenderInMessageFeed =
+        personalisedConversationIsEnabled && avatar.showMessageFeedAvatar;
 
       return (
         <ErrorBoundaryWithLogging
@@ -467,6 +553,8 @@ define("components/chatView", [
             allMessagesAreLoaded={allMessagesAreLoaded}
             pastConversationsLoading={pastConversationsLoading}
             loading={loading}
+            showAvatar={avatarShouldRenderInMessageFeed}
+            avatar={avatarProps}
           />
         </ErrorBoundaryWithLogging>
       );
