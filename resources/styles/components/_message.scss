@@ -37,16 +37,33 @@
   $form-accent-color-light: var(--hs-form-accent-color-light);
   $form-border-color: var(--hs-form-border-color);
 
+  $avatar-size: 32px;
+
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
     margin-top: gutter(6);
 
     &__item-wrapper {
+      position: relative;
       display: flex;
       align-items: flex-start;
-      flex-direction: column;
       max-width: 100%;
+    }
+
+    &__details-and-msg-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__avatar {
+      position: absolute;
+      top: 0;
+      left: -40px;
+      width: $avatar-size;
+      height: $avatar-size;
+      margin-top: gutter(18);
+      border-radius: radius(round);
     }
 
     &__item {

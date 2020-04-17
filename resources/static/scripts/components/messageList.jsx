@@ -159,7 +159,7 @@ define("components/messageList", [
      * Render messages and timestamp.
      */
     _renderMessages() {
-      const {messages} = this.props;
+      const {messages, showAvatar, avatar} = this.props;
 
       return messages.map((message) => {
         // Avoid rendering of unnecessary message types.
@@ -176,6 +176,8 @@ define("components/messageList", [
               onImageLoad={this._onImageAttachmentLoad}
               onRetryAttachmentClick={this.props.onRetryAttachmentClick}
               onSuggestedFaqClick={this.props.onSuggestedFaqClick}
+              showAvatar={showAvatar}
+              avatar={avatar}
             />
           </ErrorBoundaryWithLogging>
         );

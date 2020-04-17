@@ -61,6 +61,45 @@ define("components/message", [
         ariaLabelUserMessage: PropTypes.string,
         conversationClosed: PropTypes.string,
         ariaLabelOpenFile: PropTypes.string
+      }).isRequired,
+      /**
+       * If true, render avatar in message feed
+       */
+      showAvatar: PropTypes.bool.isRequired,
+      /**
+       * Avatar render data
+       */
+      avatar: PropTypes.shape({
+        /**
+         * If true, show avatar with message bubble
+         */
+        showMessageFeedAvatar: PropTypes.bool.isRequired,
+        /**
+         * If true, show agent uploaded avatar
+         * If false, show agent default avatar configured by admin
+         */
+        agentAvatarIsPersonalised: PropTypes.bool.isRequired,
+        /**
+         * It true, show avatar uploaded for the bot
+         * If false, show bot default avatar
+         */
+        botAvatarIsPersonalised: PropTypes.bool.isRequired,
+        /**
+         * Agent default Url
+         */
+        agentDefaultAvatarUrl: PropTypes.string.isRequired,
+        /**
+         * Bot default Url
+         */
+        botDefaultAvatarUrl: PropTypes.string.isRequired,
+        /**
+         * Template to generate avatar url
+         */
+        avatarUrlTemplate: PropTypes.string.isRequired,
+        /**
+         * App avatar Url
+         */
+        appAvatarUrl: PropTypes.string.isRequired
       }).isRequired
     },
 
@@ -120,8 +159,6 @@ define("components/message", [
       return (
         <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel}>
           {this._renderMessage()}
-          {this._renderAttachmentErrors()}
-          {this._renderMessageDetails()}
         </div>
       );
     },
@@ -171,12 +208,28 @@ define("components/message", [
       if (messageItemEl) {
         return (
           <div className="hs-message__item-wrapper" aria-hidden={ariaContainerIsHidden}>
-            {messageItemEl}
+            {this._renderAvatar()}
+            <div className="hs-message__details-and-msg-wrapper">
+              {this._renderMessageDetails()}
+              <div>{messageItemEl}</div>
+              {this._renderAttachmentErrors()}
+            </div>
           </div>
         );
       }
 
       return null;
+    },
+
+    _renderAvatar() {
+      const {showAvatar, message} = this.props;
+
+      if (!showAvatar || message.isCustomerMsg) {
+        return null;
+      }
+
+      // @TODO: Add avatar image url
+      return <img src="" alt="Avatar Image" className="hs-message__avatar" aria-hidden />;
     },
 
     /**
