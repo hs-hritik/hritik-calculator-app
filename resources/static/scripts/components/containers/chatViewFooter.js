@@ -154,7 +154,11 @@ define("components/containers/chatViewFooter", [
         dispatch(chatViewActions.rejectResolutionQuestion());
       },
       onStartNewConversation: () => {
-        dispatch(appStateActions.startNewConversation());
+        dispatch(
+          appStateActions.startNewConversation({
+            resetSessionId: true
+          })
+        );
         analyticsHelpers.track(EVENT.WIDGET_OPEN);
       },
       onSkipUserInput: () => {

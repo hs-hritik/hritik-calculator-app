@@ -1,0 +1,2 @@
+Changelog:
+Fix FRON-5469

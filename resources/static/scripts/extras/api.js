@@ -308,7 +308,11 @@ define("extras/api", [
             })
           );
         } else if (!issueExists) {
-          store.dispatch(appStateActions.startNewConversation());
+          store.dispatch(
+            appStateActions.startNewConversation({
+              resetSessionId: false
+            })
+          );
         }
       }
     } else if (isIssueClosed(issueState)) {

@@ -22,7 +22,8 @@ define("components/chatViewFooter", [
   "constants/accessibility",
   "constants/activeView",
   "gunpowder/widgets/dragIt",
-  "gunpowder/widgets/nestedPicker"
+  "gunpowder/widgets/nestedPicker",
+  "utils/browser"
 ], function(
   StarRating,
   JumpToLatestBtn,
@@ -41,7 +42,8 @@ define("components/chatViewFooter", [
   axConstants,
   activeViewConstants,
   dragIt,
-  NestedPicker
+  NestedPicker,
+  browserUtils
 ) {
   "use strict";
 
@@ -59,6 +61,9 @@ define("components/chatViewFooter", [
     REPLY_FOOTER: "reply",
     ACTIVE_FOOTER: "active_footer"
   };
+
+  // Max height of intents widget in case of iOS safari
+  const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
 
   const DraggablePicker = dragIt(Picker);
   const DraggableNestedPicker = dragIt(NestedPicker);
@@ -484,6 +489,7 @@ define("components/chatViewFooter", [
             onSubmitReply={this.props.onSubmitReply}
             onFooterFocus={this.props.onFooterFocus}
             onFooterBlur={this.props.onFooterBlur}
+            onHeightChange={this._onReplyBoxHeightChange}
             className="hs-chat-footer__text-area"
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
@@ -541,7 +547,7 @@ define("components/chatViewFooter", [
       }
 
       return (
-        <div className={footerClasses}>
+        <div className={footerClasses} ref={this._saveUserInputWrapperRef}>
           {this._renderFooterLabelComponent()}
           <div key="input" className="hs-chat-footer__field">
             {searchIcon}
@@ -586,6 +592,17 @@ define("components/chatViewFooter", [
         ? intentsEmptySearchDescEis
         : intentsEmptySearchDesc;
 
+      let intentsWidgetMaxHeight = this.state.intentsWidgetMaxHeight;
+
+      // We need to pass fixed height when picker is in opened state for iOS safari
+      // because safari pushes the entire webpage when keyboard is open.
+      // This causes the smart intents to hide above the screen and user is not
+      // able to see/select the intents. Restricting height in safari ensures
+      // even after opening keyboard the intents are displayed to end user.
+      if (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari()) {
+        intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
+      }
+
       return (
         <DraggableNestedPicker
           className={pickerClasses}
@@ -597,7 +614,7 @@ define("components/chatViewFooter", [
           onSelectOption={this._onSelectIntent}
           onUnselectOption={this._onUnselectIntent}
           minHeight={this.state.intentsWidgetMinHeight}
-          maxHeight={this.state.intentsWidgetMaxHeight}
+          maxHeight={intentsWidgetMaxHeight}
           onComponentDidMount={this._onIntentsWidgetMount}
           isSearching={isSearching}
           searchResultOptionIds={searchResultIntentIds}
@@ -946,6 +963,55 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    /**
+     * Handler for reply box height change.
+     */
+    _onReplyBoxHeightChange() {
+      if (!this._shouldIntentsBeShown()) {
+        return;
+      }
+
+      // Update the max height of the intents widget when the reply box height gets changed.
+      const parentHeight = this._getDndWrapperHeight();
+      const userInputWrapperHeight = this._getUserInputWrapperHeight();
+
+      this.setState({
+        intentsWidgetMaxHeight: parentHeight - userInputWrapperHeight
+      });
+    },
+
+    _userInputWrapperRef: null,
+
+    _saveUserInputWrapperRef(ref) {
+      this._userInputWrapperRef = ref;
+    },
+
+    /**
+     * Returns the height of the DnD wrapper
+     * @returns {Number} - DnD wrapper height
+     */
+    _getDndWrapperHeight() {
+      const dndWrapper = document.querySelector(".hs-dnd-wrapper");
+
+      if (!dndWrapper) {
+        return 0;
+      }
+
+      return dndWrapper.getBoundingClientRect().height;
+    },
+
+    /**
+     * Returns the height of the user input wrapper
+     * @returns {Number} - user input wrapper height
+     */
+    _getUserInputWrapperHeight() {
+      if (!this._userInputWrapperRef) {
+        return 0;
+      }
+
+      return ReactDOM.findDOMNode(this._userInputWrapperRef).getBoundingClientRect().height;
     },
 
     /**
@@ -1320,25 +1386,23 @@ define("components/chatViewFooter", [
      * Update picker height in state.
      */
     _updatePickerHeight() {
-      const parentNode = document.querySelector(".hs-dnd-wrapper");
+      const dndWrapperHeight = this._getDndWrapperHeight();
 
-      if (parentNode) {
-        const height = parentNode.getBoundingClientRect().height;
+      // There is a weird issue on Firefox, because of which, sometimes height is coming 0 on
+      // componentDidMount. In case height is 0, update the height after timeout.
+      if (dndWrapperHeight) {
+        const userInputWrapperHeight = this._getUserInputWrapperHeight();
 
-        // There is a weird issue on Firefox, because of which, sometimes height is coming 0 on
-        // componentDidMount. In case height is 0, update the height after timeout.
-        if (height) {
-          this.setState({
-            pickerMaxHeight: height,
-            intentsWidgetMaxHeight: height,
-            intentsWidgetMinHeight: height / 2,
-            intentsWidgetIsReadyForRendering: true
-          });
+        this.setState({
+          pickerMaxHeight: dndWrapperHeight,
+          intentsWidgetMaxHeight: dndWrapperHeight - userInputWrapperHeight,
+          intentsWidgetMinHeight: dndWrapperHeight / 2,
+          intentsWidgetIsReadyForRendering: true
+        });
 
-          window.clearTimeout(this._picketHeightUpdateTimer);
-        } else {
-          this._picketHeightUpdateTimer = setTimeout(this._updatePickerHeight, 50);
-        }
+        window.clearTimeout(this._picketHeightUpdateTimer);
+      } else {
+        this._picketHeightUpdateTimer = setTimeout(this._updatePickerHeight, 50);
       }
     },
 

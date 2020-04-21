@@ -35,6 +35,7 @@ require(["store", "extras/api", "extras/globalEvents", "actions/postSdkMessage"]
   window.addEventListener("message", onMessage, false);
 
   globalEvents.addFocusAndBlurEventListener();
+  globalEvents.addDomPurifyTargetHook();
 
   store.dispatch(postSdkMessage.jsLoaded());
 });
