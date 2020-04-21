@@ -64,6 +64,8 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
   const USER_REDACTION_ERR_MSG = "User Not Found";
   const USER_REDACTION_ERR_STATUS_CODE = 404;
 
+  const ISSUE_REOPEN_ERR_STATUS_CODE = 410;
+
   const DEFAULT_LIST_PICKER_NAVIGATION_STATE = LIST_PICKER_NAVIGATION_STATES.CLOSED;
 
   // @TODO: Intents: Update threshold if required.
@@ -86,6 +88,7 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     MAX_POLLER_FAILURES_ALLOWED,
     USER_REDACTION_ERR_MSG,
     USER_REDACTION_ERR_STATUS_CODE,
+    ISSUE_REOPEN_ERR_STATUS_CODE,
     PICKER_INPUT_THRESHOLD: 5,
     OPTIONS_INPUT_TYPES,
     PICKER_MIN_HEIGHT: 112, // px
