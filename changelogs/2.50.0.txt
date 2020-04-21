@@ -1,0 +1,12 @@
+Branches:
+feature/eslint-config-upgrade
+feature/HSBUG-396
+feature/xss-sanitization
+
+Changelog:
+Reorder library bundle sources
+Sanitize message body before using it with dangerouslySetInnerHTML
+Add DOMPurify library to sanitize HTML for XSS
+HSBUG-396: Fix issue of intents not visible on mobile safari
+Bump eslint-config & fix eslint errors
+Reflect version upgrade in package-lock.json

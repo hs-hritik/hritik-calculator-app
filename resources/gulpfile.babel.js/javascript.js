@@ -33,7 +33,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.49.0";
+const WEB_CHAT_VERSION = "2.50.1";
 
 /**
  * Name of app bundle
@@ -70,6 +70,8 @@ const PATHS = {
   // Library bundle specific path
   // @NOTE - Any new file added to libs folder will not be automatically minified
   // You will have to add it explicity to following array.
+  // IMPORTANT - Make sure the the require js item is the last one. Add your
+  // library file above it.
   bundleLibsSource: [
     "static/libs/react-min.js",
     "static/libs/react-pure-render-mixin-fake.js",
@@ -79,6 +81,8 @@ const PATHS = {
     "static/libs/create-react-class-min.js",
     "static/libs/redux-min.js",
     "static/libs/react-redux-min.js",
+    "static/libs/axios-min.js",
+    "static/libs/purify-min.js",
     "static/libs/require-min.js"
   ],
 
