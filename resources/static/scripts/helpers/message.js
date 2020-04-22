@@ -196,9 +196,11 @@ define("helpers/message", [
 
     const responseMessageType = getUserResponseMessageType(latestMsgType);
 
-    const requestData = {
-      refers: messageId
-    };
+    const requestData = {};
+
+    if (botStepInProgress) {
+      requestData.refers = messageId;
+    }
 
     // @TODO - Change request params after apis are changed.
     // Ideally we should send same request params ('body' and 'type') for issue
