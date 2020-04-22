@@ -244,13 +244,13 @@ define("components/message", [
         avatarUrl = appAvatarUrl;
       } else if (author.role === MESSAGE_ROLES.BOT_MSG) {
         if (botAvatarIsPersonalised) {
-          avatarUrl = avatarUrlTemplate.replace("{{avatar_id}}", author.avatarId);
+          avatarUrl = avatarUrlTemplate.replace("{{avatar_id}}", author.id);
         } else {
           avatarUrl = botDefaultAvatarUrl;
         }
       } else if (author.role === MESSAGE_ROLES.AGENT_MSG) {
         if (agentAvatarIsPersonalised) {
-          avatarUrl = avatarUrlTemplate.replace("{{avatar_id}}", author.avatarId);
+          avatarUrl = avatarUrlTemplate.replace("{{avatar_id}}", author.id);
         } else {
           avatarUrl = agentDefaultAvatarUrl;
         }

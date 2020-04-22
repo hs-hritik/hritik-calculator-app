@@ -57,7 +57,6 @@ define("helpers/message", [
         role: msg.author.role,
         roles: msg.author.roles,
         id: msg.author.id,
-        avatarId: msg.author.avatar_id,
         lastUpdatedAvatarTimestamp: msg.author.updated_avatar_timestamp
       },
       isCustomerMsg: msg.origin !== MESSAGE_ORIGIN.ADMIN,
