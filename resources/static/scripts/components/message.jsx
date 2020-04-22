@@ -348,6 +348,7 @@ define("components/message", [
           messageDeletedText={messageDeleted}
           actionCards={actionCards}
           classNames={classNames}
+          imageWrapperHeightIsDynamic={false}
           onActionClick={this._onActionClick}
         />
       );
