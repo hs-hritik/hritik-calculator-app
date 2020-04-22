@@ -70,7 +70,8 @@ define("actions/chatView", [
     STATE: MESSAGES_STATE,
     BODY: MESSAGE_BODY,
     TEXT_INPUT_MESSAGE_TYPES,
-    MESSAGE_ADD_EVENT_TYPES
+    MESSAGE_ADD_EVENT_TYPES,
+    MESSAGE_ROLES
   } = MESSAGE_CONSTANTS;
 
   const {
@@ -2828,7 +2829,10 @@ define("actions/chatView", [
           messageConfig: {
             body: greetingMessageBody,
             isCustomerMsg: false,
-            isGreetingMessage: true
+            isGreetingMessage: true,
+            author: {
+              role: MESSAGE_ROLES.SYSTEM_MSG
+            }
           },
           onAddMessage: (localGreetingMessage) => {
             dispatch(saveLocalGreetingMessageId(localGreetingMessage.id));

@@ -306,7 +306,7 @@ define("helpers/message", [
    * @returns {Object} - message object.
    */
   const createTextMessage = (options = {}) => {
-    const {body, isCustomerMsg = true, isGreetingMessage = false} = options;
+    const {body, isCustomerMsg = true, isGreetingMessage = false, author} = options;
 
     return {
       id: `${MSG_ID_PREFIX}${uuidGenerator()}`,
@@ -315,7 +315,8 @@ define("helpers/message", [
       body,
       createdTs: Date.now(),
       isCustomerMsg,
-      isGreetingMessage
+      isGreetingMessage,
+      author
     };
   };
 
