@@ -239,6 +239,10 @@
       opacity: 0;
     }
 
+    &__chat-separator-wrapper {
+      margin-left: gutter(-36);
+    }
+
     &--timestamp,
     &--info-text {
       max-width: 100%;

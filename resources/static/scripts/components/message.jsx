@@ -412,7 +412,10 @@ define("components/message", [
      */
     _renderChatSeparator() {
       const {hr, timestamp, infoText} = this.props.message;
-      const {text} = this.props;
+      const {text, showAvatar} = this.props;
+      const chatSeparatorWrapperClasses = classes({
+        "hs-message__chat-separator-wrapper": showAvatar
+      });
       let hrEl, timestampEl, infoTextEl;
 
       if (hr) {
@@ -429,7 +432,7 @@ define("components/message", [
       }
 
       return (
-        <div>
+        <div className={chatSeparatorWrapperClasses}>
           {infoTextEl}
           {hrEl}
           {timestampEl}
