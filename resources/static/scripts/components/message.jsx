@@ -100,7 +100,11 @@ define("components/message", [
          * App avatar Url
          */
         appAvatarUrl: PropTypes.string.isRequired
-      }).isRequired
+      }).isRequired,
+      /**
+       * If true, show message details (timestamp, nickname) & avatar
+       */
+      showMessageDetails: PropTypes.bool
     },
 
     getDefaultProps() {
@@ -223,8 +227,7 @@ define("components/message", [
 
     _renderAvatar() {
       const {
-        showAvatar,
-        message: {author, isCustomerMsg},
+        message: {author},
         avatar: {
           appAvatarUrl,
           avatarUrlTemplate,
@@ -236,7 +239,7 @@ define("components/message", [
       } = this.props;
       let avatarUrl = "";
 
-      if (!showAvatar || isCustomerMsg) {
+      if (!this._shouldAvatarRender()) {
         return null;
       }
 
@@ -461,6 +464,10 @@ define("components/message", [
      * Render agent name and message timestamp.
      */
     _renderMessageDetails() {
+      if (!this.props.showMessageDetails) {
+        return null;
+      }
+
       const agentName = this._getAgentNickname();
       const time = this._getHumanReadableTime();
       let details = time;
@@ -618,6 +625,20 @@ define("components/message", [
     _onRetryClick() {
       const {message} = this.props;
       this.props.onRetryAttachmentClick(message);
+    },
+
+    /**
+     * Check whether avatar should be rendered
+     * @returns {Boolean} - True, if the avatar should be rendered
+     */
+    _shouldAvatarRender() {
+      const {
+        showAvatar,
+        message: {isCustomerMsg},
+        showMessageDetails
+      } = this.props;
+
+      return showAvatar && !isCustomerMsg && showMessageDetails;
     }
   });
 });

@@ -16,7 +16,8 @@ define("components/messageList", [
   "components/errorBoundaryWithLogging",
   "constants/accessibility",
   "extras/accessibility",
-  "helpers/common"
+  "helpers/common",
+  "gunpowder/utils/date"
 ], function(
   Message,
   BrandingContainer,
@@ -29,7 +30,8 @@ define("components/messageList", [
   ErrorBoundaryWithLogging,
   axConstants,
   ax,
-  commonHelpers
+  commonHelpers,
+  dateUtils
 ) {
   "use strict";
 
@@ -160,12 +162,11 @@ define("components/messageList", [
      */
     _renderMessages() {
       const {messages, showAvatar, avatar} = this.props;
+      let previousMessage = null;
 
       return messages.map((message) => {
-        // Avoid rendering of unnecessary message types.
-        if (!messageHelpers.isRenderableMessage(message.type)) {
-          return null;
-        }
+        const showMessageDetails = this._shouldMessageDetailsRender(message, previousMessage);
+        previousMessage = message;
 
         return (
           <ErrorBoundaryWithLogging key={message.id} onError={this.props.onMessageError}>
@@ -178,6 +179,7 @@ define("components/messageList", [
               onSuggestedFaqClick={this.props.onSuggestedFaqClick}
               showAvatar={showAvatar}
               avatar={avatar}
+              showMessageDetails={showMessageDetails}
             />
           </ErrorBoundaryWithLogging>
         );
@@ -324,6 +326,18 @@ define("components/messageList", [
       if (!this.props.userIsViewingPastMessages) {
         this._throttledScrollBottom();
       }
+    },
+
+    /**
+     * Returns author unique Id
+     * @param {Object} message - A message object
+     */
+    _getAuthorId(message) {
+      if (!message || !message.author) {
+        return null;
+      }
+
+      return message.author.id;
     },
 
     /**
@@ -527,6 +541,38 @@ define("components/messageList", [
       } = this.props;
 
       return !(hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled);
+    },
+
+    /**
+     * Check whether message details(avatar, nickname & timestamp) should render
+     * @param {Object} message - message object
+     * @param {Object} previousMessage - previous message object
+     * @returns {Boolean} - True, if the details should render
+     */
+    _shouldMessageDetailsRender(message, previousMessage) {
+      // Messages are grouped only when two messages have exact same
+      // timestamp, author name and avatar
+      const previousMessageAuthorId = this._getAuthorId(previousMessage);
+      const currentMessageAuthorId = this._getAuthorId(message);
+      const previousMessageTs = this._getFormattedMessageDate(previousMessage);
+      const currentMessageTs = this._getFormattedMessageDate(message);
+
+      return !(
+        previousMessageAuthorId &&
+        currentMessageAuthorId &&
+        previousMessageTs &&
+        currentMessageTs &&
+        previousMessageAuthorId === currentMessageAuthorId &&
+        previousMessageTs === currentMessageTs
+      );
+    },
+
+    /**
+     * Returns formatted date
+     * @param {Object} message - A message object
+     */
+    _getFormattedMessageDate(message) {
+      return message ? dateUtils.format(message.createdTs, "{hh}:{MM} {a}") : null;
     },
 
     /**
