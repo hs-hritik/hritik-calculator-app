@@ -1,0 +1,17 @@
+Branches:
+feature/fum
+feature/eis
+
+Changelog:
+Remove gray background behind search btn
+Prevent label from overflowing outside its div
+Change msg type to Smart Intent (singular)
+Stringify intent_labels in xhrData
+Update msg constant from "sis" to "Smart Intent"
+Prepare preissue data to contain intent labels
+Render search icon when EIS is enabled
+Add handler for click on clear intents search btn
+Add btn to clear intents search when EIS is true
+Add fn to render first user message
+Prepare msgObject to render `sis` type messages
+Add initial @TODOs for FUM

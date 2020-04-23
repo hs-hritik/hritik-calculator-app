@@ -171,6 +171,10 @@ define("components/message", [
         case MESSAGE_TYPE.ATTACHMENT:
           messageItemEl = this._renderUserAttachmentMessage();
           break;
+
+        case MESSAGE_TYPE.SIS:
+          messageItemEl = this._renderIntentMessage();
+          break;
       }
 
       if (messageItemEl) {
@@ -329,6 +333,33 @@ define("components/message", [
           onImageLoad={onImageLoad}
           onRetryClick={this._onRetryClick}
         />
+      );
+    },
+
+    /**
+     * Render Intent Message
+     */
+    _renderIntentMessage() {
+      const {
+        message: {redacted, intentLabels},
+        text: {messageDeleted}
+      } = this.props;
+
+      if (redacted) {
+        // Redaction message is a plain text and needs
+        // to be shown in italics.
+        return (
+          <em className="hs-message__item hs-message--redacted" dir="auto">
+            {messageDeleted}
+          </em>
+        );
+      }
+
+      return (
+        <div className="hs-message__item" dir="auto">
+          <div className="hs-message__sis-parent">{intentLabels[0].toUpperCase()}</div>
+          <div className="hs-message__sis-child">{intentLabels[1]}</div>
+        </div>
       );
     },
 
