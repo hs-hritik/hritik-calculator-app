@@ -541,10 +541,16 @@ define("components/chatViewFooter", [
         );
       }
 
+      let searchIcon = null;
+      if (this._shouldIntentsBeShown() && this.props.intents.enforceIntentSelection) {
+        searchIcon = <i className="ion-magnifier hs-chat-footer__search-icon" />;
+      }
+
       return (
         <div className={footerClasses} ref={this._saveUserInputWrapperRef}>
           {this._renderFooterLabelComponent()}
           <div key="input" className="hs-chat-footer__field">
+            {searchIcon}
             {inputComponentEl}
             {this._renderFooterAction()}
           </div>
@@ -626,7 +632,7 @@ define("components/chatViewFooter", [
      */
     _renderFooterAction() {
       if (this._shouldSubmitReplyBeDisabled()) {
-        return null;
+        return this._renderClearIntentsSearchBtn();
       }
 
       const {
@@ -702,6 +708,21 @@ define("components/chatViewFooter", [
           onFocusChange={this._onPickerFocusChange}
           ariaLabels={pickerAriaLabels}
         />
+      );
+    },
+
+    /**
+     * Clears out anything that is typed into the input field
+     * and stops search operation on available intents. This is used
+     * when enforceIntentSelection flag is set to true
+     */
+    _renderClearIntentsSearchBtn() {
+      return (
+        <button
+          className="hs-chat-footer__clear-intents-search"
+          onClick={this._onClickClearIntentsSearchBtn}>
+          <i className="ion-cross-round hs-chat-footer__cross-btn" />
+        </button>
       );
     },
 
@@ -1051,6 +1072,15 @@ define("components/chatViewFooter", [
         intentsAreAvailable &&
         !this.props.userInput.disabled
       );
+    },
+
+    /**
+     * Handles click on clearIntentsSearchBtn when intent selection has been
+     * enforced via the enforceIntentSelection flag. When clicked, search
+     * operation is stopped and the input field is cleared.
+     */
+    _onClickClearIntentsSearchBtn() {
+      this.props.onChangeReplyBoxValue("");
     },
 
     /**
