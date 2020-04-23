@@ -74,6 +74,10 @@ define("helpers/message", [
       msgObj.faqSource = msg.faq_source;
     }
 
+    if (messageType === MESSAGE_TYPE.SIS) {
+      msgObj.intentLabels = msg.intent_labels;
+    }
+
     return msgObj;
   };
 
