@@ -288,10 +288,21 @@ define("components/messageList", [
      * Render branding
      */
     _renderBranding() {
-      if (this.props.userInput.type === USER_INPUT_TYPES.PILL_SELECT) {
+      const {showAvatar, userInput} = this.props;
+
+      if (userInput.type === USER_INPUT_TYPES.PILL_SELECT) {
         return null;
       }
-      return <BrandingContainer />;
+
+      const brandingWrapperClasses = classes({
+        "hs-message-list__branding-wrapper": showAvatar
+      });
+
+      return (
+        <div className={brandingWrapperClasses}>
+          <BrandingContainer />
+        </div>
+      );
     },
 
     /**

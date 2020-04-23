@@ -113,5 +113,9 @@
       justify-content: flex-end;
       margin-top: gutter(4);
     }
+
+    &__branding-wrapper {
+      margin-left: gutter(-36);
+    }
   }
 }
