@@ -224,7 +224,9 @@ define("reducers/chatView", [
     // This represents the error in the whole chat view
     // @TODO: Move the error handling to the error reducer.
     error: INITIAL_ERROR_STATE,
-    localGreetingMessageId: ""
+    localGreetingMessageId: "",
+    // It contains key-value pair of avatarId and last updated timestamp
+    avatarLastUpdatedTs: {}
   };
 
   /**
@@ -539,6 +541,11 @@ define("reducers/chatView", [
         }
 
         return update(state, updateObj);
+
+      case ACTION_TYPES.UPDATE_AVATAR_LAST_UPDATED_TS:
+        return update(state, {
+          avatarLastUpdatedTs: {$set: {...state.avatarLastUpdatedTs, ...action.avatarsTs}}
+        });
 
       case ACTION_TYPES.PREPEND_MESSAGES:
         const uniqMessages = _getUniqueMessages(state.messageList, action.messages);

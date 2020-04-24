@@ -84,6 +84,25 @@ define("helpers/message", [
   };
 
   /**
+   * Return an object of avatars timestamp
+   *
+   * @param {Array.<Object>} messages - Array of unprocessed message object
+   * @return {Object} - Key value pair of avatar id and timestamp
+   */
+  const getAvatarTs = (messages) => {
+    return messages
+      .filter((message) => {
+        return message.author && message.author.id && message.author.updated_avatar_timestamp;
+      })
+      .reduce((avatarLastUpdatedTsObject, message) => {
+        return {
+          ...avatarLastUpdatedTsObject,
+          [message.author.id]: message.author.updated_avatar_timestamp
+        };
+      }, {});
+  };
+
+  /**
    * Return processed messages
    * @param {Object} messages - unprocessed messages
    * @returns {Array} - processed messages
@@ -455,6 +474,7 @@ define("helpers/message", [
     isRenderableMessage,
     isBotMessage,
     isBotStepMessage,
-    isMessageTypeSupported
+    isMessageTypeSupported,
+    getAvatarTs
   };
 });

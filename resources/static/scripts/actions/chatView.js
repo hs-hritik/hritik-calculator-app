@@ -223,6 +223,18 @@ define("actions/chatView", [
   };
 
   /**
+   * Action to update/add the avatar timestamp
+   * @param {Object} avatarsTs - key-value pair of avatar Id and timestamp
+   * @returns {Object} - action
+   */
+  const updateLatestAvatarTs = (avatarsTs) => {
+    return {
+      type: ACTION_TYPES.UPDATE_AVATAR_LAST_UPDATED_TS,
+      avatarsTs
+    };
+  };
+
+  /**
    * To be called at specified intervals to poll for new messages.
    * If the fetching is still going on for more than
    * MESSAGES_FORCE_POLLING_TIMEOUT, it aborts the last xhr and
@@ -1661,6 +1673,7 @@ define("actions/chatView", [
           if (messagesLength) {
             const latestMessage = messages[messagesLength - 1];
             const processedMessages = messageHelpers.getProcessedMessages(messages);
+            const avatarsTs = messageHelpers.getAvatarTs(messages);
 
             handleLatestMessage(latestMessage);
             saveLatestBotStepAndProcessBotInput(messages);
@@ -1671,6 +1684,8 @@ define("actions/chatView", [
                 process: false
               })
             );
+
+            dispatch(updateLatestAvatarTs(avatarsTs));
 
             if (localGreetingMessageId) {
               dispatch(removeMessage(localGreetingMessageId));
