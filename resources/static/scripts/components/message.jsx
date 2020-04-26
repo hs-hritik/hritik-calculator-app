@@ -336,14 +336,15 @@ define("components/message", [
           actionCardImage: "hs-message__action-card-image",
           actionCardFailedImage: "hs-message__failed-img",
           actionCardTitle: "hs-message__action-card-title",
-          actionCardAction: "hs-message__action-card-action"
+          actionCardAction: "hs-message__action-card-action",
+          redactedActionCardContent: "hs-message__item hs-message__action-card hs-message--redacted"
         }
       };
 
       return (
         <MessageWithActions
           messageId={id}
-          messageIsRedacted={redacted}
+          messageIsRedacted
           mainText={body}
           messageDeletedText={messageDeleted}
           actionCards={actionCards}

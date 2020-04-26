@@ -15,6 +15,7 @@
   $max-width: 88%;
   $failed-img-icon-width: 20px;
   $failed-img-icon-height: 20px;
+  $message-item-padding: gutter(8 12);
 
   $chat-widget-secondary-text-color: var(--hs-chat-widget-secondary-text-color);
   $chat-widget-error: var(--hs-chat-widget-error);
@@ -58,7 +59,7 @@
       @include word-break;
       position: relative;
       max-width: 100%;
-      padding: gutter(8 12);
+      padding: $message-item-padding;
       overflow: hidden;
       color: $agent-message-primary-text-color;
       word-wrap: break-word;
@@ -190,6 +191,11 @@
 
     &--redacted {
       opacity: 0.5;
+
+      + .hs-message__action-card {
+        width: auto;
+        padding: $message-item-padding;
+      }
     }
 
     &__details {
