@@ -344,7 +344,7 @@ define("components/message", [
       return (
         <MessageWithActions
           messageId={id}
-          messageIsRedacted
+          messageIsRedacted={redacted}
           mainText={body}
           messageDeletedText={messageDeleted}
           actionCards={actionCards}
