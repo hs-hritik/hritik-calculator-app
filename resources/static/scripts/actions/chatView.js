@@ -2212,13 +2212,13 @@ define("actions/chatView", [
   };
 
   /**
-   * Create user message from the selected intents.
+   * Get the labels of the intent selected
    * @param {String[]} selectedIntentIds - Selected intent ids
    * @param {Object} intentsMap - Intents Map
-   * @returns {String} - user message created from the selected intents.
+   * @returns {Array} - Labels of the selected intent.
    */
-  const _createUserMessageFromIntents = (selectedIntentIds, intentsMap) => {
-    return selectedIntentIds.map((id) => intentsMap[id].label).join(" → ");
+  const _getIntentLabels = (selectedIntentIds, intentsMap) => {
+    return selectedIntentIds.map((id) => intentsMap[id].label);
   };
 
   /**
@@ -2321,9 +2321,9 @@ define("actions/chatView", [
     if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
       xhrData.intent = JSON.stringify(intents.selectedIntentIds);
       // Create user message if the intent was selected by the user
-      xhrData.user_message = _createUserMessageFromIntents(
-        intents.selectedIntentIds,
-        intents.tree.intentsMap
+
+      xhrData.intent_labels = JSON.stringify(
+        _getIntentLabels(intents.selectedIntentIds, intents.tree.intentsMap)
       );
 
       // If user entered some text before selecting an intent, send it as search term (st).
