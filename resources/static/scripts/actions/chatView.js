@@ -1183,15 +1183,18 @@ define("actions/chatView", [
     // doesn't correspond to a bot message during preissue.
 
     // After preIssue optimization, if there are no bots running on preIssue,
-    // backend directly creates an issue. So in this case we have to re-enable the
-    // footer if issue type is issue.
+    // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
+    // is not running, enable the footer.
     const {
-      appState: {issueType}
+      appState: {issueType},
+      chatView: {
+        botState: {botStepInProgress}
+      }
     } = getState();
 
     if (issueType === ISSUE_TYPE.PRE_ISSUE) {
       handleIssueFooterAndTAI(DISABLE_FOOTER);
-    } else if (issueType === ISSUE_TYPE.ISSUE) {
+    } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
       handleIssueFooterAndTAI(ENABLE_FOOTER);
     }
   };
