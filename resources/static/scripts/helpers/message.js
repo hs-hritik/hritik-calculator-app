@@ -106,6 +106,11 @@ define("helpers/message", [
       });
     }
 
+    // Process raw data for a message with smart intents.
+    if (messageType === MESSAGE_TYPE.SIS) {
+      msgObj.intentLabels = msg.intent_labels;
+    }
+
     return msgObj;
   };
 

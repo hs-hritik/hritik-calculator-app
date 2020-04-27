@@ -33,8 +33,6 @@ define("components/message", [
 ) {
   "use strict";
 
-  const {Fragment} = React;
-
   const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
   const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -185,6 +183,10 @@ define("components/message", [
         case MESSAGE_TYPE.TEXT_MSG_WITH_ACTIONS:
           messageItemEl = this._renderMessageWithActions();
           break;
+
+        case MESSAGE_TYPE.SIS:
+          messageItemEl = this._renderIntentMessage();
+          break;
       }
 
       if (messageItemEl) {
@@ -208,7 +210,7 @@ define("components/message", [
       } = this.props;
 
       return (
-        <Fragment>
+        <>
           <ServerTextMessage
             messageId={id}
             messageIsRedacted={redacted}
@@ -220,7 +222,7 @@ define("components/message", [
             attachments={attachments}
             ariaLabelOpenFile={ariaLabelOpenFile}
           />
-        </Fragment>
+        </>
       );
     },
 
@@ -352,6 +354,33 @@ define("components/message", [
           imageWrapperHeightIsDynamic={false}
           onActionClick={this._onActionClick}
         />
+      );
+    },
+
+    /*
+     * Render Intent Message
+     */
+    _renderIntentMessage() {
+      const {
+        message: {redacted, intentLabels},
+        text: {messageDeleted}
+      } = this.props;
+
+      if (redacted) {
+        // Redaction message is a plain text and needs
+        // to be shown in italics.
+        return (
+          <em className="hs-message__item hs-message--redacted" dir="auto">
+            {messageDeleted}
+          </em>
+        );
+      }
+
+      return (
+        <div className="hs-message__item" dir="auto">
+          <div className="hs-message__sis-parent">{intentLabels[0].toUpperCase()}</div>
+          <div className="hs-message__sis-child">{intentLabels[1]}</div>
+        </div>
       );
     },
 

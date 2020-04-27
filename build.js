@@ -10,7 +10,8 @@
   paths: {
     reduxThunk: "../libs/redux-thunk",
     uaParser: "../libs/ua-parser",
-    axios: "../libs/axios"
+    axios: "../libs/axios",
+    domPurify: "../libs/purify"
   },
   // Entry point of our application without extension as per optimizer config syntax
   name: "pages/webSdk",

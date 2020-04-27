@@ -43,6 +43,8 @@
   $action-card-title-font-size: font-size(body, base);
   $action-card-action-font-size: font-size(body, large);
 
+  $sis-parent-text-color: var(--hs-form-secondary-bg-color);
+
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
@@ -116,6 +118,16 @@
         color: $user-message-primary-text-color;
         background-color: $user-message-bg-color;
         border: 1px solid $user-message-border-color;
+      }
+
+      .hs-message__sis-parent {
+        padding-bottom: gutter(4);
+        font-size: font-size(body, small);
+        color: $sis-parent-text-color;
+      }
+
+      .hs-message__sis-child {
+        color: $user-message-primary-text-color;
       }
 
       .hs-message__image-attachment,
