@@ -280,6 +280,7 @@
     }
 
     &__action-card-title {
+      @include ellipsis;
       padding: gutter(12);
       font-size: $action-card-title-font-size;
       color: $agent-message-primary-text-color;
