@@ -357,7 +357,7 @@ define("components/message", [
       );
     },
 
-    /*
+    /**
      * Render Intent Message
      */
     _renderIntentMessage() {
