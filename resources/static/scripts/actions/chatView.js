@@ -80,7 +80,8 @@ define("actions/chatView", [
     CURSOR_TYPES,
     USER_REDACTION_ERR_MSG,
     USER_REDACTION_ERR_STATUS_CODE,
-    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
+    ISSUE_REOPEN_ERR_STATUS_CODE
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -1182,15 +1183,18 @@ define("actions/chatView", [
     // doesn't correspond to a bot message during preissue.
 
     // After preIssue optimization, if there are no bots running on preIssue,
-    // backend directly creates an issue. So in this case we have to re-enable the
-    // footer if issue type is issue.
+    // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
+    // is not running, enable the footer.
     const {
-      appState: {issueType}
+      appState: {issueType},
+      chatView: {
+        botState: {botStepInProgress}
+      }
     } = getState();
 
     if (issueType === ISSUE_TYPE.PRE_ISSUE) {
       handleIssueFooterAndTAI(DISABLE_FOOTER);
-    } else if (issueType === ISSUE_TYPE.ISSUE) {
+    } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
       handleIssueFooterAndTAI(ENABLE_FOOTER);
     }
   };
@@ -2008,16 +2012,23 @@ define("actions/chatView", [
           onSuccess(response);
         }
       },
-      onFailure: () => {
-        // If user reply on
-        // 1. preIssue fails
-        //    a. Hide typing indicator
-        //    b. Enable replyBox
-        // This enables text and pill options input in case of failure
-        // OR
-        // 2. issue fails
-        //    a. Enable reply box
-        if (isPreIssue) {
+      onFailure: (request, statusCode) => {
+        // Handle 410 status code. It is sent in the following cases -
+        // 1. attempt to reopen a closed issue, and
+        // 2. issue is archived
+        // The UX in both the cases is supposed to show the new conversation button with the
+        // conversation closed message.
+        if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
+          handleChatEnd({conversationHasEnded: true});
+        } else if (isPreIssue) {
+          // If user reply on
+          // 1. preIssue fails
+          //    a. Hide typing indicator
+          //    b. Enable replyBox
+          // This enables text and pill options input in case of failure
+          // OR
+          // 2. issue fails
+          //    a. Enable reply box
           dispatch(batchActions([enableReplyBox(), toggleSystemTyping(false)]));
         } else if (isIssue) {
           dispatch(enableReplyBox());

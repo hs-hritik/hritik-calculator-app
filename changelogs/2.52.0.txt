@@ -1,0 +1,7 @@
+Branches:
+feature/do-not-reopen-if-resolved
+
+Changelog:
+Update condition before enabling reply footer
+Send refers key with send message request only for bot messages
+Handle 410 status code on send messages API
