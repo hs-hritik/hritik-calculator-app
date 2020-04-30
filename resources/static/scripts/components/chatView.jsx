@@ -66,6 +66,7 @@ define("components/chatView", [
         onListPickerOptionSelect,
         onRetryAttachmentClick,
         onSuggestedFaqClick,
+        onActionClick,
         onScrollPastExistingConversation,
         onSkipUserInput,
         userInput,
@@ -102,6 +103,7 @@ define("components/chatView", [
               onPillOptionSelect={onPillOptionSelect}
               onRetryAttachmentClick={onRetryAttachmentClick}
               onSuggestedFaqClick={onSuggestedFaqClick}
+              onActionClick={onActionClick}
               onSkipUserInput={onSkipUserInput}
               hasFailure={hasFailure}
               userInput={userInput}
@@ -261,6 +263,7 @@ define("components/chatView", [
     // Props common to chat view & chat view contents
     messages: PropTypes.arrayOf(MESSAGE_PROP_TYPE).isRequired,
     onSuggestedFaqClick: PropTypes.func,
+    onActionClick: PropTypes.func,
     showAgentNickname: PropTypes.bool,
     isTyping: PropTypes.bool,
     userIsViewingPastMessages: PropTypes.bool,
@@ -321,6 +324,7 @@ define("components/chatView", [
       // Props common to chat view & chat view contents
       messages: PropTypes.arrayOf(MESSAGE_PROP_TYPE).isRequired,
       onSuggestedFaqClick: PropTypes.func,
+      onActionClick: PropTypes.func,
       showAgentNickname: PropTypes.bool,
       isTyping: PropTypes.bool,
       userIsViewingPastMessages: PropTypes.bool,
@@ -406,6 +410,7 @@ define("components/chatView", [
       const {
         messages,
         onSuggestedFaqClick,
+        onActionClick,
         showAgentNickname,
         isTyping,
         userIsViewingPastMessages,
@@ -437,6 +442,7 @@ define("components/chatView", [
           <ChatViewContents
             messages={messages}
             onSuggestedFaqClick={onSuggestedFaqClick}
+            onActionClick={onActionClick}
             showAgentNickname={showAgentNickname}
             isTyping={isTyping}
             userIsViewingPastMessages={userIsViewingPastMessages}

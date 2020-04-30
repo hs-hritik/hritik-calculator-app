@@ -166,7 +166,7 @@ define("reducers/ui", [
 
   /**
    * Return update object to update text strings in state
-   * @param {Object} xhrTextStrings - map of strings recieved from XHR
+   * @param {Object} xhrTextStrings - map of strings received from XHR
    * @returns {Object} - update object to set values in the store
    */
   const getUiTextUpdateObj = (xhrTextStrings) => {

@@ -10,24 +10,26 @@ define("components/message", [
   "constants/message",
   "constants/errors",
   "helpers/attachments",
+  "gunpowder/widgets/messages/serverTextMessage",
+  "gunpowder/widgets/messages/messageWithActions",
   "gunpowder/utils/date",
   "gunpowder/utils/classes",
   "gunpowder/utils/object",
   "helpers/common",
-  "extras/accessibility",
-  "domPurify"
+  "extras/accessibility"
 ], function(
   attachmentComponents,
   customPropTypes,
   MESSAGE_CONSTANTS,
   ERROR_CONSTANTS,
   attachmentsHelpers,
+  ServerTextMessage,
+  MessageWithActions,
   dateUtils,
   classes,
   objUtils,
   commonHelper,
-  ax,
-  DOMPurify
+  ax
 ) {
   "use strict";
 
@@ -36,6 +38,10 @@ define("components/message", [
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
   const IMAGE_MSG_MAX_HEIGHT = 170;
   const AGENT_NAME_SEPARATOR = ", ";
+  const serverTextMessageClassNames = {
+    redactedMessageElement: "hs-message__item hs-message--redacted",
+    messageElement: "hs-message__item"
+  };
 
   return createReactClass({
     displayName: "Message",
@@ -49,6 +55,8 @@ define("components/message", [
       onSuggestedFaqClick: PropTypes.func,
       onRetryAttachmentClick: PropTypes.func,
       onImageLoad: PropTypes.func,
+      // Click handler for an action element on the action card
+      onActionClick: PropTypes.func,
       text: PropTypes.shape({
         csatBotRequestMsg: PropTypes.string.isRequired,
         messageDeleted: PropTypes.string.isRequired,
@@ -172,6 +180,10 @@ define("components/message", [
           messageItemEl = this._renderUserAttachmentMessage();
           break;
 
+        case MESSAGE_TYPE.TEXT_MSG_WITH_ACTIONS:
+          messageItemEl = this._renderMessageWithActions();
+          break;
+
         case MESSAGE_TYPE.SIS:
           messageItemEl = this._renderIntentMessage();
           break;
@@ -192,51 +204,25 @@ define("components/message", [
      * Render server text and attachment(bots & agent) message
      */
     _renderServerMessage() {
-      let textMessageEl = null;
-
       const {
-        message: {redacted, body},
-        text: {messageDeleted}
+        message: {id, redacted, body, attachments},
+        text: {messageDeleted, ariaLabelOpenFile}
       } = this.props;
-
-      if (redacted) {
-        // Redaction message is a plain text and needs
-        // to be shown in italics.
-        textMessageEl = (
-          <em key="redacted-message" className="hs-message__item hs-message--redacted" dir="auto">
-            {messageDeleted}
-          </em>
-        );
-      } else if (body) {
-        /* eslint-disable react/no-danger */
-        textMessageEl = (
-          <div
-            key="text-message"
-            className="hs-message__item"
-            dir="auto"
-            dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(body)}}
-          />
-        );
-        /* eslint-enable react/no-danger */
-      }
 
       return (
         <>
-          {textMessageEl}
-          {this._renderServerAttachments()}
+          <ServerTextMessage
+            messageId={id}
+            messageIsRedacted={redacted}
+            messageText={body}
+            messageDeletedText={messageDeleted}
+            classNames={serverTextMessageClassNames}
+          />
+          <ServerAttachmentsMessage
+            attachments={attachments}
+            ariaLabelOpenFile={ariaLabelOpenFile}
+          />
         </>
-      );
-    },
-
-    /**
-     * Render agent or bot message attachments
-     */
-    _renderServerAttachments() {
-      const {attachments} = this.props.message;
-      const {ariaLabelOpenFile} = this.props.text;
-
-      return (
-        <ServerAttachmentsMessage attachments={attachments} ariaLabelOpenFile={ariaLabelOpenFile} />
       );
     },
 
@@ -332,6 +318,41 @@ define("components/message", [
           ariaLabelOpenFile={ariaLabelOpenFile}
           onImageLoad={onImageLoad}
           onRetryClick={this._onRetryClick}
+        />
+      );
+    },
+
+    /**
+     * Render message with action
+     */
+    _renderMessageWithActions() {
+      const {
+        message: {id, redacted, body, actionCards},
+        text: {messageDeleted}
+      } = this.props;
+
+      const classNames = {
+        serverTextMessage: serverTextMessageClassNames,
+        actionCard: {
+          wrapper: "hs-message__item hs-message__action-card",
+          actionCardImage: "hs-message__action-card-image",
+          actionCardFailedImage: "hs-message__failed-img",
+          actionCardTitle: "hs-message__action-card-title",
+          actionCardAction: "hs-message__action-card-action",
+          redactedActionCardContent: "hs-message__item hs-message__action-card hs-message--redacted"
+        }
+      };
+
+      return (
+        <MessageWithActions
+          messageId={id}
+          messageIsRedacted={redacted}
+          mainText={body}
+          messageDeletedText={messageDeleted}
+          actionCards={actionCards}
+          classNames={classNames}
+          imageWrapperHeightIsDynamic={false}
+          onActionClick={this._onActionClick}
         />
       );
     },
@@ -571,6 +592,21 @@ define("components/message", [
     _onRetryClick() {
       const {message} = this.props;
       this.props.onRetryAttachmentClick(message);
+    },
+
+    /**
+     * Click handler for an action element of a message
+     * @param {Object} actionData - the action data received from the message action component
+     */
+    _onActionClick(actionData) {
+      const {
+        onActionClick,
+        message: {id}
+      } = this.props;
+
+      if (typeof onActionClick === "function") {
+        onActionClick({...actionData, ...{messageId: id}});
+      }
     }
   });
 });
