@@ -20,7 +20,8 @@ define("helpers/message", [
     ROLE: MESSAGE_AUTHOR_ROLE,
     BOT_STEP_MESSAGES,
     BODY: MESSAGE_BODY,
-    BOT_CANCEL_REASON
+    BOT_CANCEL_REASON,
+    ACTION_TYPES
   } = messageConstants;
   const MSG_ID_PREFIX = "message_";
 
@@ -74,6 +75,38 @@ define("helpers/message", [
       msgObj.faqSource = msg.faq_source;
     }
 
+    // Process raw data for a message with action cards.
+    if (messageType === MESSAGE_TYPE.TEXT_MSG_WITH_ACTIONS) {
+      // Set actionCards list to the message object.
+      msgObj.actionCards = msg.action_cards.map((actionCard) => {
+        return {
+          imageUrl: actionCard.image_url,
+          title: actionCard.title,
+          actions: actionCard.actions.map((action) => {
+            const actionType = action.type;
+            const actionData = {};
+
+            switch (actionType) {
+              case ACTION_TYPES.LINK:
+                actionData.url = action.data.url;
+                break;
+              case ACTION_TYPES.CALL:
+                actionData.phoneNumber = action.data.phone_number;
+                break;
+            }
+
+            return {
+              id: action.id,
+              type: action.type,
+              textToDisplay: action.display_text,
+              data: actionData
+            };
+          })
+        };
+      });
+    }
+
+    // Process raw data for a message with smart intents.
     if (messageType === MESSAGE_TYPE.SIS) {
       msgObj.intentLabels = msg.intent_labels;
     }

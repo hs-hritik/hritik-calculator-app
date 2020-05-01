@@ -23,7 +23,8 @@ define("constants/analytics", function() {
       INTENT_UNSELECTED: "INTENT_UNSELECTED",
       SEARCH_INTENTS: "SEARCH_INTENTS",
       INTENT_TREE_SHOWN: "INTENT_TREE_SHOWN",
-      MESSAGE_SENT: "MESSAGE_SENT"
+      MESSAGE_SENT: "MESSAGE_SENT",
+      MESSAGE_ACTION_CLICKED: "MESSAGE_ACTION_CLICKED"
     },
     // The PAYLOAD_EVENT constant is to be used with the tracking XHR's payload.
     PAYLOAD_EVENT: {
@@ -47,7 +48,8 @@ define("constants/analytics", function() {
       INTENT_UNSELECTED: "sid",
       SEARCH_INTENTS: "sisr",
       INTENT_TREE_SHOWN: "its",
-      MESSAGE_SENT: "m"
+      MESSAGE_SENT: "m",
+      MESSAGE_ACTION_CLICKED: "acl"
     },
     // The TRIGGER constant is to be used in web chat internal logic and not with
     // the tracking XHR's payload.

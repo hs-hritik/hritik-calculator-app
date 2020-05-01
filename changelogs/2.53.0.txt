@@ -1,0 +1,25 @@
+Branches:
+feature/message-with-actions
+
+Changelog:
+Add ellipsis style to action card title
+Center align action card's action text
+Fix the comment format for a function in the message component
+Set message redacted prop to message with actions component
+Update gunpowder to use message with action cards component
+Redact action card for a redacted message
+Revert "Add dummy message with action card object"
+Control the height of the action card image
+Revert "Update package-lock with the new release version"
+Rename response key from text_to_display to display_text
+Track message action click analytics event
+Style action card elements
+Pass class names to message components
+Use gunpowder widget to render message-with-action
+Add id to the action object when processing message
+Use gunpowder to render previewable attachments
+Use gunpowder to render server text messages
+Process message with actions for application state
+Add dummy message with action card object
+Add message and action type constants
+Update package-lock with the new release version

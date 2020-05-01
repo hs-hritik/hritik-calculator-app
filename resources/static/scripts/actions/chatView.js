@@ -2959,6 +2959,26 @@ define("actions/chatView", [
     };
   };
 
+  /**
+   * Action to track the click event on an action in a message.
+   * @param {Object} eventData
+   * @param {string} eventData.messageId
+   * @param {string} eventData.actionId
+   * @param {string} eventData.actionType
+   */
+  const trackActionClickEvent = ({messageId, actionId, actionType}) => {
+    return (dispatch, getState) => {
+      const issueId = getState().appState.internalIssueId;
+
+      analyticsHelpers.track(EVENT.MESSAGE_ACTION_CLICKED, {
+        issueId,
+        messageId,
+        actionId,
+        actionType
+      });
+    };
+  };
+
   return {
     createPreIssue,
     updateReplyText,
@@ -2987,6 +3007,7 @@ define("actions/chatView", [
     loadIntentsTree,
     loadIntentsModel,
     selectIntent,
-    updateReplyTextAndSearchIntents
+    updateReplyTextAndSearchIntents,
+    trackActionClickEvent
   };
 });

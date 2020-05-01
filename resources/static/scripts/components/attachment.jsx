@@ -1,18 +1,22 @@
 /**
- * Components for rendering attachment messages and attachments
+ * Components to render attachment messages and attachments. Attachment messages
+ * can be of two types - user sent and admin sent. This module exposes
+ * two functional components for the two types. It also exposes a component to
+ * render a previewable (i.e. image) attachment, which is used with messages
+ * with actions.
+ *
  * @author Prasenjit Sharan <ps@helpshift.com>
  * @created 12 Jan, 2019
  */
 
 define("components/attachment", [
+  "gunpowder/widgets/messages/previewableAttachment",
   "helpers/attachments",
   "gunpowder/utils/classes",
   "constants/errors"
-], function(attachmentsHelpers, classes, ERROR_CONSTANTS) {
+], function(PreviewableAttachment, attachmentsHelpers, classes, ERROR_CONSTANTS) {
   "use strict";
 
-  const {useState, useEffect, createRef} = React;
-  const IMAGE_MSG_MAX_HEIGHT = 170;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
 
   /**
@@ -33,193 +37,6 @@ define("components/attachment", [
   const _getAttachmentAriaLabel = (fileName, ariaLabelOpenFile) => {
     const formatedFileName = attachmentsHelpers.getFormattedFileName(fileName);
     return ariaLabelOpenFile.replace("{{file_name}}", formatedFileName);
-  };
-
-  /**
-   * Previewable attachment component.
-   * @param {Object} props
-   * @param {string} props.url - URL of the attachment object.
-   * @param {Object} props.file - The file object added to the message object in case of client
-   *    generated message.
-   * @param {string} props.wrapperClasses - Class names to be applied on the wrapper div of this
-   *    component
-   * @param {function} props.onWrapperClick - Click handler for the attachment message - can be one
-   *    of the following - retry - in case of an error, open the file, and none - in case of
-   *    non-retriable error.
-   * @param {function} onImageLoad - Prop passed from "above" applicable in case of image
-   *    attachments.
-   * @returns {element} - Previewable attachment element.
-   */
-  const PreviewableAttachment = (props) => {
-    const {url, file, wrapperClasses, onWrapperClick, onImageLoad} = props;
-    const [imageHasLoaded, setImageHasLoaded] = useState(false);
-    const [wrapperHeight, setWrapperHeight] = useState(IMAGE_MSG_MAX_HEIGHT);
-
-    const _onImageLoad = (ev) => {
-      const imageHeight = ev.target.clientHeight;
-
-      if (imageHeight < IMAGE_MSG_MAX_HEIGHT) {
-        setWrapperHeight(imageHeight);
-      }
-
-      if (onImageLoad) {
-        onImageLoad();
-      }
-
-      setImageHasLoaded(true);
-    };
-
-    // Render uploaded image
-    if (url) {
-      return (
-        <UploadedImage
-          imageHasLoaded={imageHasLoaded}
-          url={url}
-          wrapperClasses={wrapperClasses}
-          wrapperHeight={wrapperHeight}
-          onClick={onWrapperClick}
-          onImageLoad={_onImageLoad}
-        />
-      );
-    }
-
-    // Render local image
-    return (
-      <LocalImage
-        imageHasLoaded={imageHasLoaded}
-        file={file}
-        wrapperClasses={wrapperClasses}
-        wrapperHeight={wrapperHeight}
-        onClick={onWrapperClick}
-        onImageLoad={_onImageLoad}
-      />
-    );
-  };
-
-  PreviewableAttachment.propTypes = {
-    url: PropTypes.string,
-    file: PropTypes.object,
-    wrapperClasses: PropTypes.string,
-    onWrapperClick: PropTypes.func,
-    onImageLoad: PropTypes.func
-  };
-
-  /**
-   * Uploaded image component - An image attachment that has been uploaded on the backend.
-   * @param {Object} props
-   * @param {boolean} props.imageHasLoaded - Whether the image has been loaded on the client side.
-   * @param {string} props.url - URL of the uploaded image.
-   * @param {string} props.wrapperClasses - Class names to be applied on the wrapper div of this
-   *    component
-   * @param {number} props.wrapperHeight - Height of the attachment bubble wrapper.
-   * @param {function} props.onClick
-   * @param {function} props.onImageLoad
-   * @returns {element} - Uploaded image element.
-   */
-  const UploadedImage = (props) => {
-    const {imageHasLoaded, url, wrapperClasses, wrapperHeight, onClick, onImageLoad} = props;
-
-    const wrapperStyles = {
-      backgroundImage: `url(${url})`,
-      height: `${wrapperHeight}px`
-    };
-
-    let imageEl = null;
-
-    if (!imageHasLoaded) {
-      imageEl = <img className="hs-message__height-finder" src={url} onLoad={onImageLoad} />;
-    }
-
-    return (
-      <div style={wrapperStyles} className={wrapperClasses} onClick={onClick}>
-        {imageEl}
-      </div>
-    );
-  };
-
-  UploadedImage.propTypes = {
-    imageHasLoaded: PropTypes.bool,
-    url: PropTypes.string.isRequired,
-    wrapperClasses: PropTypes.string,
-    wrapperHeight: PropTypes.number,
-    onClick: PropTypes.func.isRequired,
-    onImageLoad: PropTypes.func.isRequired
-  };
-
-  /**
-   * Local image component - An image attachment that has not been uploaded on the backend yet.
-   * @param {Object} props
-   * @param {boolean} props.imageHasLoaded - Whether the image has been loaded on the client side.
-   * @param {string} props.wrapperClasses - Class names to be applied on the wrapper div of this
-   *    component
-   * @param {number} props.wrapperHeight - Height of the attachment bubble wrapper.
-   * @param {string} props.file - the file object selected by the user.
-   * @param {function} props.onClick
-   * @param {function} props.onImageLoad
-   * @returns {element} - Uploaded image element.
-   */
-  const LocalImage = (props) => {
-    const {imageHasLoaded, wrapperClasses, wrapperHeight, file, onClick, onImageLoad} = props;
-    const [fileIsRead, setFileIsRead] = useState(false);
-    const [localImageData, setLocalImageData] = useState(null);
-    const _localImageWrapperRef = createRef();
-    const _localImageRef = createRef();
-
-    useEffect(() => {
-      if (!_localImageWrapperRef || fileIsRead) {
-        return;
-      }
-
-      setFileIsRead(true);
-
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (ev) => {
-        // @TODO :- check if image ref has already set src
-        setLocalImageData(ev.target.result);
-      };
-    }, [_localImageWrapperRef, fileIsRead, file]);
-
-    const bgImg = localImageData ? `url(${localImageData})` : "none";
-    let imageEl = null;
-
-    if (!imageHasLoaded) {
-      const imageProps = {
-        ref: _localImageRef,
-        className: "hs-message__height-finder"
-      };
-
-      if (localImageData) {
-        imageProps.src = localImageData;
-        imageProps.onLoad = onImageLoad;
-      }
-
-      imageEl = <img {...imageProps} />;
-    }
-
-    const wrapperStyles = {
-      backgroundImage: bgImg,
-      height: `${wrapperHeight}px`
-    };
-
-    const className = `${wrapperClasses} hs-message__failed-img`;
-
-    return (
-      <div onClick={onClick}>
-        <div ref={_localImageWrapperRef} style={wrapperStyles} className={className}>
-          {imageEl}
-        </div>
-      </div>
-    );
-  };
-
-  LocalImage.propTypes = {
-    imageHasLoaded: PropTypes.bool,
-    wrapperClasses: PropTypes.string,
-    wrapperHeight: PropTypes.number,
-    file: PropTypes.object,
-    onClick: PropTypes.func,
-    onImageLoad: PropTypes.func
   };
 
   /**
@@ -345,6 +162,7 @@ define("components/attachment", [
           url={url}
           file={file}
           wrapperClasses="hs-message__item hs-message__image-attachment"
+          failedImageClassNames="hs-message__failed-img"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
         />
@@ -402,6 +220,7 @@ define("components/attachment", [
             key={`previewable-${index}`}
             url={url}
             wrapperClasses="hs-message__item hs-message__image-attachment"
+            failedImageClassNames="hs-message__failed-img"
             onWrapperClick={onWrapperClick}
           />
         );

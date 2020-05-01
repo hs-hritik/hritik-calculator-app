@@ -503,6 +503,29 @@ define("helpers/analytics", [
   };
 
   /**
+   * Track a message action click event. This event is trigerred when an action in an action card
+   * in a message is clicked. In the first version of messages with actions, we support link and
+   * call types of action.
+   * @param {Object} eventData
+   * @param {string} eventData.issueId
+   * @param {string} eventData.messageId
+   * @param {string} eventData.actionId
+   * @param {string} eventData.actionType
+   */
+  const _trackMessageActionClicked = ({issueId, messageId, actionId, actionType}) => {
+    _trackEvent({
+      t: PAYLOAD_EVENT.MESSAGE_ACTION_CLICKED,
+      ts: Date.now(),
+      d: {
+        issue_id: issueId,
+        type: actionType,
+        a: actionId,
+        mid: messageId
+      }
+    });
+  };
+
+  /**
    * Track the given event with relevant data.
    * @param {string} event - The event to track.
    * @param {Object} [config]
@@ -549,6 +572,9 @@ define("helpers/analytics", [
         break;
       case EVENT.MESSAGE_SENT:
         _trackMessageSent(config);
+        break;
+      case EVENT.MESSAGE_ACTION_CLICKED:
+        _trackMessageActionClicked(config);
         break;
     }
   };
