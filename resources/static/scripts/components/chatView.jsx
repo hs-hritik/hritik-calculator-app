@@ -79,7 +79,8 @@ define("components/chatView", [
         onMessageError,
         onFooterError,
         showAvatar,
-        avatar
+        avatar,
+        avatarLastUpdatedTs
       } = this.props;
 
       const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -115,6 +116,7 @@ define("components/chatView", [
               onMessageError={onMessageError}
               showAvatar={showAvatar}
               avatar={avatar}
+              avatarLastUpdatedTs={avatarLastUpdatedTs}
             />
             {this._renderJumpToLatestBtn()}
           </div>
@@ -335,7 +337,11 @@ define("components/chatView", [
        * App avatar Url
        */
       appAvatarUrl: PropTypes.string.isRequired
-    }).isRequired
+    }).isRequired,
+    /**
+     * Object of avatar id and its last updated timestamp
+     */
+    avatarLastUpdatedTs: PropTypes.object.isRequired
   };
 
   return createReactClass({
@@ -430,7 +436,11 @@ define("components/chatView", [
          * Template to generate avatar url
          */
         avatarUrlTemplate: PropTypes.string.isRequired
-      }).isRequired
+      }).isRequired,
+      /**
+       * Object of avatar id and its last updated timestamp
+       */
+      avatarLastUpdatedTs: PropTypes.object.isRequired
     },
 
     getInitialState() {
@@ -516,7 +526,8 @@ define("components/chatView", [
         loading,
         personalisedConversationIsEnabled,
         appAvatarUrl,
-        avatar
+        avatar,
+        avatarLastUpdatedTs
       } = this.props;
       const avatarProps = {...avatar, ...{appAvatarUrl}};
       const avatarShouldRenderInMessageFeed =
@@ -555,6 +566,7 @@ define("components/chatView", [
             loading={loading}
             showAvatar={avatarShouldRenderInMessageFeed}
             avatar={avatarProps}
+            avatarLastUpdatedTs={avatarLastUpdatedTs}
           />
         </ErrorBoundaryWithLogging>
       );

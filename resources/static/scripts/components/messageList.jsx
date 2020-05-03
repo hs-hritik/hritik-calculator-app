@@ -17,7 +17,8 @@ define("components/messageList", [
   "constants/accessibility",
   "extras/accessibility",
   "helpers/common",
-  "gunpowder/utils/date"
+  "gunpowder/utils/date",
+  "constants/message"
 ], function(
   Message,
   BrandingContainer,
@@ -31,7 +32,8 @@ define("components/messageList", [
   axConstants,
   ax,
   commonHelpers,
-  dateUtils
+  dateUtils,
+  MESSAGE_CONSTANTS
 ) {
   "use strict";
 
@@ -60,6 +62,7 @@ define("components/messageList", [
   // be loaded?
   const LOAD_MORE_SCROLL_THRESHOLD = 500;
   const {METALIST_ITEMS, METALIST_GROUP_NAME, FOOTER_SELECTORS_LIST_MAP} = axConstants;
+  const {MESSAGE_ROLES} = MESSAGE_CONSTANTS;
 
   return createReactClass({
     displayName: "MessageList",
@@ -130,7 +133,8 @@ define("components/messageList", [
          * App avatar Url
          */
         appAvatarUrl: PropTypes.string.isRequired
-      }).isRequired
+      }).isRequired,
+      avatarLastUpdatedTs: PropTypes.object.isRequired
     },
 
     render() {
@@ -161,12 +165,14 @@ define("components/messageList", [
      * Render messages and timestamp.
      */
     _renderMessages() {
-      const {messages, showAvatar, avatar} = this.props;
+      const {messages, showAvatar} = this.props;
       let previousMessage = null;
 
       return messages.map((message) => {
         const showMessageDetails = this._shouldMessageDetailsRender(message, previousMessage);
         previousMessage = message;
+
+        const avatarUrl = this._getAvatarUrl(message);
 
         return (
           <ErrorBoundaryWithLogging key={message.id} onError={this.props.onMessageError}>
@@ -178,7 +184,7 @@ define("components/messageList", [
               onRetryAttachmentClick={this.props.onRetryAttachmentClick}
               onSuggestedFaqClick={this.props.onSuggestedFaqClick}
               showAvatar={showAvatar}
-              avatar={avatar}
+              avatarUrl={avatarUrl}
               showMessageDetails={showMessageDetails}
             />
           </ErrorBoundaryWithLogging>
@@ -331,6 +337,7 @@ define("components/messageList", [
     /**
      * Returns author unique Id
      * @param {Object} message - A message object
+     * @returns {string} - Author id
      */
     _getAuthorId(message) {
       if (!message || !message.author) {
@@ -338,6 +345,57 @@ define("components/messageList", [
       }
 
       return message.author.id;
+    },
+
+    /**
+     * Returns avatar image URL
+     * @param {Object} message - A messsage object
+     * @returns {string} - Avatar image url
+     */
+    _getAvatarUrl(message) {
+      const {showAvatar, avatar, avatarLastUpdatedTs} = this.props;
+      const {author} = message;
+
+      if (!showAvatar || !author) {
+        return null;
+      }
+
+      const {
+        appAvatarUrl,
+        avatarUrlTemplate,
+        botDefaultAvatarUrl,
+        agentDefaultAvatarUrl,
+        botAvatarIsPersonalised,
+        agentAvatarIsPersonalised
+      } = avatar;
+
+      switch (author.role) {
+        case MESSAGE_ROLES.SYSTEM_MSG:
+          return appAvatarUrl;
+
+        case MESSAGE_ROLES.BOT_MSG:
+          if (botAvatarIsPersonalised) {
+            return (
+              avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
+              `?=${avatarLastUpdatedTs[author.id]}`
+            );
+          } else {
+            return botDefaultAvatarUrl;
+          }
+
+        case MESSAGE_ROLES.AGENT_MSG:
+          if (agentAvatarIsPersonalised) {
+            return (
+              avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
+              `?=${avatarLastUpdatedTs[author.id]}`
+            );
+          } else {
+            return agentDefaultAvatarUrl;
+          }
+
+        default:
+          return null;
+      }
     },
 
     /**

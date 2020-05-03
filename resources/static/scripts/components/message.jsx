@@ -32,7 +32,7 @@ define("components/message", [
   const {Fragment} = React;
 
   const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
-  const {TYPE: MESSAGE_TYPE, MESSAGE_ROLES} = MESSAGE_CONSTANTS;
+  const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
   const IMAGE_MSG_MAX_HEIGHT = 170;
   const AGENT_NAME_SEPARATOR = ", ";
@@ -66,41 +66,7 @@ define("components/message", [
        * If true, render avatar in message feed
        */
       showAvatar: PropTypes.bool.isRequired,
-      /**
-       * Avatar render data
-       */
-      avatar: PropTypes.shape({
-        /**
-         * If true, show avatar with message bubble
-         */
-        showMessageFeedAvatar: PropTypes.bool.isRequired,
-        /**
-         * If true, show agent uploaded avatar
-         * If false, show agent default avatar configured by admin
-         */
-        agentAvatarIsPersonalised: PropTypes.bool.isRequired,
-        /**
-         * It true, show avatar uploaded for the bot
-         * If false, show bot default avatar
-         */
-        botAvatarIsPersonalised: PropTypes.bool.isRequired,
-        /**
-         * Agent default Url
-         */
-        agentDefaultAvatarUrl: PropTypes.string.isRequired,
-        /**
-         * Bot default Url
-         */
-        botDefaultAvatarUrl: PropTypes.string.isRequired,
-        /**
-         * Template to generate avatar url
-         */
-        avatarUrlTemplate: PropTypes.string.isRequired,
-        /**
-         * App avatar Url
-         */
-        appAvatarUrl: PropTypes.string.isRequired
-      }).isRequired,
+      avatarUrl: PropTypes.string,
       /**
        * If true, show message details (timestamp, nickname) & avatar
        */
@@ -226,37 +192,10 @@ define("components/message", [
     },
 
     _renderAvatar() {
-      const {
-        message: {author},
-        avatar: {
-          appAvatarUrl,
-          avatarUrlTemplate,
-          botDefaultAvatarUrl,
-          agentDefaultAvatarUrl,
-          botAvatarIsPersonalised,
-          agentAvatarIsPersonalised
-        }
-      } = this.props;
-      let avatarUrl = "";
+      const {avatarUrl} = this.props;
 
       if (!this._shouldAvatarRender()) {
         return null;
-      }
-
-      if (author.role === MESSAGE_ROLES.SYSTEM_MSG) {
-        avatarUrl = appAvatarUrl;
-      } else if (author.role === MESSAGE_ROLES.BOT_MSG) {
-        if (botAvatarIsPersonalised) {
-          avatarUrl = avatarUrlTemplate.replace("{{avatar_id}}", author.id);
-        } else {
-          avatarUrl = botDefaultAvatarUrl;
-        }
-      } else if (author.role === MESSAGE_ROLES.AGENT_MSG) {
-        if (agentAvatarIsPersonalised) {
-          avatarUrl = avatarUrlTemplate.replace("{{avatar_id}}", author.id);
-        } else {
-          avatarUrl = agentDefaultAvatarUrl;
-        }
       }
 
       return <img src={avatarUrl} alt="Avatar Image" className="hs-message__avatar" aria-hidden />;
