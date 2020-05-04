@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChatView should render correctly (snapshot) 1`] = `
+<div
+  className="hs-view hs-view--safari-fix"
+>
+  <ErrorBoundaryWithLogging
+    onError={[Function]}
+  >
+    <ViewHeader
+      avatarUrl="MOCK_AVATAR_URL"
+      showAvatar={true}
+      showBackBtn={false}
+      showCloseBtn={true}
+      title="MOCK_CHAT_VIEW_HEADER"
+    />
+  </ErrorBoundaryWithLogging>
+  <ErrorBoundaryWithLogging
+    fallbackComponent={<AppError />}
+    onError={[Function]}
+  >
+    <ChatViewContents
+      avatar={
+        Object {
+          "agentAvatarIsPersonalised": true,
+          "agentDefaultAvatarUrl": "MOCK_AGENT_DEFAULT_AVATAR_URL",
+          "appAvatarUrl": "MOCK_AVATAR_URL",
+          "avatarUrlTemplate": "MOCK_AVATAR_URL_TEMPLATE",
+          "botAvatarIsPersonalised": true,
+          "botDefaultAvatarUrl": "MOCK_BOT_DEFAULT_AVATAR_URL",
+          "showMessageFeedAvatar": true,
+        }
+      }
+      avatarLastUpdatedTs={Object {}}
+      isTyping={true}
+      issueIsCreated={true}
+      messages={Array []}
+      onFilesDrop={[MockFunction]}
+      onFooterError={[Function]}
+      onMessageError={[Function]}
+      onPillOptionSelect={[MockFunction]}
+      onRetryAttachmentClick={[MockFunction]}
+      onSuggestedFaqClick={[MockFunction]}
+      showAgentNickname={true}
+      showAvatar={true}
+      text={
+        Object {
+          "chatViewHeader": "MOCK_CHAT_VIEW_HEADER",
+          "dndInfoText": "MOCK_DND_INFO_TEXT",
+          "pastConversationsLoadingText": "MOCK_PAST_CONVERSATIONS_LOADING_TEXT",
+        }
+      }
+      userInput={
+        Object {
+          "options": Array [],
+          "type": "MOCK_TYPE",
+        }
+      }
+    />
+  </ErrorBoundaryWithLogging>
+</div>
+`;
