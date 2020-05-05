@@ -11,6 +11,7 @@ define("actions/appState", [
   "constants/uiConfig",
   "constants/analytics",
   "constants/activeView",
+  "constants/errors",
   "helpers/xhr",
   "helpers/localStorage",
   "helpers/audio",
@@ -36,6 +37,7 @@ define("actions/appState", [
   UI_CONFIG_CONSTANTS,
   analyticsConstants,
   ACTIVE_VIEW,
+  ERROR_CONSTANTS,
   xhrHelpers,
   lsHelpers,
   audioHelpers,
@@ -76,6 +78,8 @@ define("actions/appState", [
     SHADES
   } = UI_CONFIG_CONSTANTS;
   const {EVENT} = analyticsConstants;
+
+  const {TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
 
   const isCssVarSupported =
     window.CSS && window.CSS.supports && window.CSS.supports("--fake-var", 0);
@@ -1051,6 +1055,38 @@ define("actions/appState", [
     }
   };
 
+  /**
+   * Handle the retry button click on chat view footer.
+   *
+   * @TODO: Move this to another module that handles errors globally. Although this action
+   * handles the errors on the chat view footer, we can't keep this in actions/chatView. This
+   * handler calls actions/appState's (this module's) action. Can't import this module in
+   * actions/chatView because that imports this module causing a circular dependency. The
+   * solution is to handle errors in a separate module.
+   */
+  const handleChatViewFooterRetry = () => {
+    return (dispatch, getState) => {
+      const errorType = getState().chatView.error.type;
+
+      switch (errorType) {
+        case ERROR_TYPES.PRE_ISSUE_FAILURE:
+          // For non-specific errors with preissue creation, we assume that the preissue wasn't
+          // created successfully, so we try to restart the conversation.
+          dispatch(startNewConversation({resetSessionId: true}));
+          break;
+
+        case ERROR_TYPES.PRE_ISSUE_TIME_OUT:
+        default:
+          // For network time-out and other unknown errors, start the poller. This fetches the
+          // latest updates from the backend and web chat react safely based on the response. A
+          // typical case if when create preissue API call returns a 504 response code but a
+          // preissue is still created on the backend.
+          chatViewActions.startPollingForMessages();
+          break;
+      }
+    };
+  };
+
   return {
     setDeviceId,
     setAnalyticsSessionId,
@@ -1068,6 +1104,7 @@ define("actions/appState", [
     setWidgetShouldAutoOpen,
     setReEngagementId,
     setWindowIsFocused,
-    abortGetConfigXhr
+    abortGetConfigXhr,
+    handleChatViewFooterRetry
   };
 });

@@ -1463,6 +1463,8 @@ define("actions/chatView", [
           issue: oldestIssue,
           cursorType: CURSOR_TYPES.BACKWARD
         });
+
+        dispatch(actionCreators.fetchMessagesSuccess());
       },
 
       onFailure: () => {
@@ -1556,6 +1558,8 @@ define("actions/chatView", [
           if (userIsRedacted) {
             dispatch(setUserIsRedacted(false));
           }
+
+          dispatch(actionCreators.fetchMessagesSuccess());
 
           const {has_older_messages: hasOlderMsgs, issues = [], cursor} = response;
 
@@ -2410,23 +2414,26 @@ define("actions/chatView", [
           // @TODO: Confirm if issue created event has to be tracked from Web Chat.
           // analyticsHelpers.track (EVENT.ISSUE_CREATED);
         },
-        onFailure: () => {
+        onFailure: (request, statusCode) => {
+          const errorType =
+            statusCode === RESPONSE_STATUS_CODE.GATEWAY_TIMEOUT
+              ? ERROR_TYPES.PRE_ISSUE_TIME_OUT
+              : ERROR_TYPES.PRE_ISSUE_FAILURE;
+
           // When start new conversation button is clicked, we clear the current state of the app
           // (app reset), and it is restored when the preIssue call succeeds and starts polling
-          // for messages. In case of failure, we still need to show the messages, but we don't
-          // need to poll for new ones. Hence, we have fetchMessages () call.
+          // for messages. In case of failure, we let the error handler proceed with the flow.
           handleIssueFooterAndTAI(ENABLE_FOOTER);
           dispatch(
             batchActions([
               setChatViewError({
-                type: ERROR_TYPES.PRE_ISSUE_FAILURE,
+                type: errorType,
                 title: networkError,
                 cta: retryBtn
               }),
               actionCreators.toggleChatViewLoading(false)
             ])
           );
-          fetchMessages();
         }
       });
     };

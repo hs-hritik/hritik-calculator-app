@@ -180,6 +180,7 @@ define("components/chatViewFooter", [
        * Handler to scroll message list to bottom.
        */
       onScrollMessageListToBottom: PropTypes.func.isRequired,
+      onRetry: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
         resolutionQuestionReject: PropTypes.string.isRequired,
@@ -413,7 +414,7 @@ define("components/chatViewFooter", [
       const {retryBtn} = this.props.text;
 
       return (
-        <a onClick={this.props.onStartNewConversation} className="hs-chat-footer__field-item">
+        <a onClick={this.props.onRetry} className="hs-chat-footer__field-item">
           <strong>{retryBtn}</strong>
         </a>
       );
