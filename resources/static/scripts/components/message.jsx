@@ -32,7 +32,7 @@ define("components/message", [
   const {Fragment} = React;
 
   const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
-  const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
+  const {TYPE: MESSAGE_TYPE, MESSAGE_ROLES} = MESSAGE_CONSTANTS;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
   const IMAGE_MSG_MAX_HEIGHT = 170;
   const AGENT_NAME_SEPARATOR = ", ";
@@ -60,7 +60,8 @@ define("components/message", [
         ariaLabelAttachmentUploading: PropTypes.string,
         ariaLabelUserMessage: PropTypes.string,
         conversationClosed: PropTypes.string,
-        ariaLabelOpenFile: PropTypes.string
+        ariaLabelOpenFile: PropTypes.string,
+        systemNickname: PropTypes.string
       }).isRequired,
       /**
        * If true, render avatar in message feed
@@ -433,15 +434,27 @@ define("components/message", [
     },
     /**
      * Get agent nickname.
+     * If message is system message return system nickname
      */
     _getAgentNickname() {
-      const {message, showAgentNickname} = this.props;
+      const {message, showAgentNickname, text} = this.props;
 
-      if (!showAgentNickname || message.isCustomerMsg || message.isSystemMsg) {
+      if (!showAgentNickname || message.isCustomerMsg) {
         return null;
+      } else if (this._isSystemMessage(message)) {
+        return text.systemNickname;
       }
 
       return objUtils.getIn(message, ["author", "name"]);
+    },
+
+    /**
+     * Returns true if message is system message
+     * @param {Object} message - message object
+     * @returns {boolean} - True, if message is system message
+     */
+    _isSystemMessage(message) {
+      return message.author && message.author.role === MESSAGE_ROLES.SYSTEM_MSG;
     },
 
     /**
