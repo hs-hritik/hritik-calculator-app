@@ -57,7 +57,7 @@ define("helpers/message", [
         role: msg.author.role,
         roles: msg.author.roles,
         id: msg.author.id,
-        lastUpdatedAvatarTimestamp: msg.author.updated_avatar_timestamp
+        lastUpdatedAvatarTimestamp: msg.author.avatar_updated_at
       },
       isCustomerMsg: msg.origin !== MESSAGE_ORIGIN.ADMIN,
       attachments: getProcessedAttachments(msg)
@@ -92,12 +92,12 @@ define("helpers/message", [
   const getAvatarTs = (messages) => {
     return messages
       .filter((message) => {
-        return message.author && message.author.id && message.author.updated_avatar_timestamp;
+        return message.author && message.author.id && message.author.avatar_updated_at;
       })
       .reduce((avatarLastUpdatedTsObject, message) => {
         return {
           ...avatarLastUpdatedTsObject,
-          [message.author.id]: message.author.updated_avatar_timestamp
+          [message.author.id]: message.author.avatar_updated_at
         };
       }, {});
   };
