@@ -189,6 +189,9 @@ define("components/containers/chatViewFooter", [
       },
       onStopIntentsSearch: () => {
         dispatch(actionCreators.stopIntentsSearch());
+      },
+      onRetry: () => {
+        dispatch(appStateActions.handleChatViewFooterRetry());
       }
     };
   };
