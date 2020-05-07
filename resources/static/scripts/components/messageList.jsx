@@ -170,9 +170,9 @@ define("components/messageList", [
 
       return messages.map((message) => {
         const showMessageDetails = this._shouldMessageDetailsRender(message, previousMessage);
-        previousMessage = message;
-
         const avatarUrl = this._getAvatarUrl(message);
+        const key = this._getUniqueKey(message);
+        previousMessage = message;
 
         return (
           <ErrorBoundaryWithLogging key={message.id} onError={this.props.onMessageError}>
@@ -186,6 +186,7 @@ define("components/messageList", [
               showAvatar={showAvatar}
               avatarUrl={avatarUrl}
               showMessageDetails={showMessageDetails}
+              key={key}
             />
           </ErrorBoundaryWithLogging>
         );
@@ -377,7 +378,7 @@ define("components/messageList", [
           if (botAvatarIsPersonalised) {
             return (
               avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
-              `?=${avatarLastUpdatedTs[author.id]}`
+              `?ts=${avatarLastUpdatedTs[author.id]}`
             );
           } else {
             return botDefaultAvatarUrl;
@@ -387,7 +388,7 @@ define("components/messageList", [
           if (agentAvatarIsPersonalised) {
             return (
               avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
-              `?=${avatarLastUpdatedTs[author.id]}`
+              `?ts=${avatarLastUpdatedTs[author.id]}`
             );
           } else {
             return agentDefaultAvatarUrl;
@@ -396,6 +397,27 @@ define("components/messageList", [
         default:
           return null;
       }
+    },
+
+    /**
+     * Returns unique key of a message
+     * @param {Object} message - A messsage object
+     * @returns {string} - Unique key of a message
+     */
+    _getUniqueKey(message) {
+      const {avatarLastUpdatedTs} = this.props;
+      let key = "" + message.id;
+
+      if (
+        message &&
+        message.author &&
+        message.author.id &&
+        avatarLastUpdatedTs[message.author.id]
+      ) {
+        key += avatarLastUpdatedTs[message.author.id];
+      }
+
+      return key;
     },
 
     /**

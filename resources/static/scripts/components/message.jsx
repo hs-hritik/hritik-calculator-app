@@ -71,7 +71,11 @@ define("components/message", [
       /**
        * If true, show message details (timestamp, nickname) & avatar
        */
-      showMessageDetails: PropTypes.bool
+      showMessageDetails: PropTypes.bool,
+      /**
+       * Unique key of a message
+       */
+      key: PropTypes.string
     },
 
     getDefaultProps() {
@@ -88,6 +92,7 @@ define("components/message", [
 
     render() {
       const {isCustomerMsg, type, states, body} = this.props.message;
+      const {key} = this.props;
       const {
         ariaLabelSupportMsgAgentName,
         ariaLabelSupportMsgMissingAgentName,
@@ -128,7 +133,7 @@ define("components/message", [
       }
 
       return (
-        <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel}>
+        <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel} key={key}>
           {this._renderMessage()}
         </div>
       );
