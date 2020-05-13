@@ -51,4 +51,15 @@ const createPreissueFailure = ({error}) => {
   };
 };
 
-export {createPreissueRequest, createPreissueSuccess, createPreissueFailure};
+/**
+ * Action to dispatch when fetch messages API calls (updates and history) succeed and errors have to
+ * be cleared.
+ * @returns {Object} - Action
+ */
+const clearErrors = () => {
+  return {
+    type: ACTION_TYPES.CLEAR_CHAT_VIEW_ERRORS
+  };
+};
+
+export {createPreissueRequest, createPreissueSuccess, createPreissueFailure, clearErrors};

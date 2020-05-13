@@ -365,16 +365,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
-  /**
-   * Action to dispatch when fetch messages API calls (updates and history) succeed.
-   * @returns {Object} - Action
-   */
-  const fetchMessagesSuccess = () => {
-    return {
-      type: ACTION_TYPES.FETCH_MESSAGES_SUCCESS
-    };
-  };
-
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -408,7 +398,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentsModelSuccess,
     intentSelected,
     intentUnselected,
-    stopIntentsSearch,
-    fetchMessagesSuccess
+    stopIntentsSearch
   };
 });

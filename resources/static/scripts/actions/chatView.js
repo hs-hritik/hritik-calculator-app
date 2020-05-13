@@ -1515,7 +1515,8 @@ define("actions/chatView", [
         issueCursor,
         pollerFailureCount: prevPollerFailureCount,
         userIsRedacted,
-        localGreetingMessageId
+        localGreetingMessageId,
+        error: chatViewError
       }
     } = store.getState();
 
@@ -1561,7 +1562,10 @@ define("actions/chatView", [
             dispatch(setUserIsRedacted(false));
           }
 
-          dispatch(actionCreators.fetchMessagesSuccess());
+          // If an error exists, clear them on a successful fetch messages call
+          if (chatViewError.type) {
+            dispatch(chatViewActionCreators.clearErrors());
+          }
 
           const {has_older_messages: hasOlderMsgs, issues = [], cursor} = response;
 
