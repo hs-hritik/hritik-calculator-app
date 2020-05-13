@@ -5,6 +5,7 @@
  */
 
 define("reducers/chatView", [
+  "constants/appState",
   "constants/chatView",
   "constants/actionTypes",
   "constants/message",
@@ -13,6 +14,7 @@ define("reducers/chatView", [
   "gunpowder/utils/array",
   "helpers/intent"
 ], function(
+  APP_STATE_CONSTANTS,
   CHAT_VIEW_CONSTANTS,
   ACTION_TYPES,
   msgConstants,
@@ -25,6 +27,8 @@ define("reducers/chatView", [
 
   const {NAVIGATION_STATES} = dragItConstants;
   const update = React.addons.update;
+
+  const {ISSUE_TYPE} = APP_STATE_CONSTANTS;
   const {
     ACTIVE_FOOTER,
     USER_INPUT_TYPES,
@@ -285,15 +289,20 @@ define("reducers/chatView", [
         });
 
       case ACTION_TYPES.CREATE_PREISSUE_SUCCESS:
+        // User input should be disabled for preissues.
+        const userInputShouldBeDisabled = action.issueDetails.issueType === ISSUE_TYPE.PRE_ISSUE;
+        // If the current input type is the default one, reset the value.
+        const defaultInputValue = isInputTypeDefault(state)
+          ? ""
+          : state.userInput.defaultInputValue;
+
         // When an issue is created, reset userInput, selected intents data and chat view error
         return update(state, {
           userInput: {
             value: {$set: ""},
             // Save user entered text for input type default input
-            defaultInputValue: {
-              $set: isInputTypeDefault(state) ? "" : state.userInput.defaultInputValue
-            },
-            disabled: {$set: false},
+            defaultInputValue: {$set: defaultInputValue},
+            disabled: {$set: userInputShouldBeDisabled},
             errorMsg: {$set: ""}
           },
           intents: {
