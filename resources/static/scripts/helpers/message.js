@@ -92,12 +92,12 @@ define("helpers/message", [
   const getAvatarTs = (messages) => {
     return messages
       .filter((message) => {
-        return message.author && message.author.id && message.author.avatar_updated_at;
+        return message.author && message.author.id;
       })
       .reduce((avatarLastUpdatedTsObject, message) => {
         return {
           ...avatarLastUpdatedTsObject,
-          [message.author.id]: message.author.avatar_updated_at
+          [message.author.id]: message.author.avatar_updated_at || null
         };
       }, {});
   };

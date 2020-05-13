@@ -375,7 +375,7 @@ define("components/messageList", [
           return appAvatarUrl;
 
         case MESSAGE_ROLES.BOT_MSG:
-          if (botAvatarIsPersonalised) {
+          if (botAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
             return (
               avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
               `?ts=${avatarLastUpdatedTs[author.id]}`
@@ -385,7 +385,7 @@ define("components/messageList", [
           }
 
         case MESSAGE_ROLES.AGENT_MSG:
-          if (agentAvatarIsPersonalised) {
+          if (agentAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
             return (
               avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
               `?ts=${avatarLastUpdatedTs[author.id]}`
