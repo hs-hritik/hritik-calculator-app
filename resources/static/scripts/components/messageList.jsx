@@ -169,6 +169,10 @@ define("components/messageList", [
       let previousMessage = null;
 
       return messages.map((message) => {
+        if (!messageHelpers.isRenderableMessage(message.type)) {
+          return null;
+        }
+
         const showMessageDetails = this._shouldMessageDetailsRender(message, previousMessage);
         const avatarUrl = this._getAvatarUrl(message);
         const key = this._getUniqueKey(message);
