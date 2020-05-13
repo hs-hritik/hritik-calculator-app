@@ -340,8 +340,8 @@ define("reducers/appState", [
           }
         });
 
-      case ACTION_TYPES.ISSUE_CREATED: {
-        const {activeIssueId, internalIssueId, issueType} = action.config;
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
+        const {activeIssueId, internalIssueId, issueType} = action.issueDetails;
 
         return update(state, {
           conversationStarted: {$set: true},

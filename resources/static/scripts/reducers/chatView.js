@@ -273,7 +273,18 @@ define("reducers/chatView", [
         return update(state, updateObj);
       }
 
-      case ACTION_TYPES.ISSUE_CREATED:
+      case ACTION_TYPES.CREATE_PREISSUE_REQUEST:
+        // On create preissue request
+        // Disable the user input
+        // Show fake typing indicator (represents loading state)
+        return update(state, {
+          userInput: {
+            disabled: {$set: true}
+          },
+          systemTyping: {$set: true}
+        });
+
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS:
         // When an issue is created, reset userInput, selected intents data and chat view error
         return update(state, {
           userInput: {
@@ -300,6 +311,22 @@ define("reducers/chatView", [
           },
           systemTyping: {$set: false},
           error: {$set: INITIAL_ERROR_STATE}
+        });
+
+      case ACTION_TYPES.CREATE_PREISSUE_FAILURE:
+        const {error} = action;
+        // On create preissue request failure
+        // Enable the user input
+        // Hide fake typing indicator (represents loading state)
+        // Set the error the state
+        // Hide the loading screen
+        return update(state, {
+          userInput: {
+            disabled: {$set: false}
+          },
+          systemTyping: {$set: false},
+          error: {$set: error},
+          loading: {$set: false}
         });
 
       case ACTION_TYPES.SEARCH_INTENTS: {

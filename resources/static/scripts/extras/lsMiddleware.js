@@ -53,7 +53,7 @@ define("extras/lsMiddleware", [
         }
         break;
 
-      case ACTION_TYPES.ISSUE_CREATED:
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS:
         throttledSetLastActivityTime();
         break;
 

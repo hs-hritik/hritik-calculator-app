@@ -19,6 +19,7 @@ define("actions/chatView", [
   "gunpowder/utils/date",
   "actions/batch",
   "actions/actionCreators",
+  "actions/chatViewActionCreators",
   "actions/postSdkMessage",
   "helpers/message",
   "helpers/chatView",
@@ -48,6 +49,7 @@ define("actions/chatView", [
   dateUtils,
   batchActions,
   actionCreators,
+  chatViewActionCreators,
   postSdkMessage,
   messageHelpers,
   chatViewHelpers,
@@ -637,7 +639,7 @@ define("actions/chatView", [
   };
 
   /**
-   * Handle latest message for bot actions and bot input and take actions
+   * Handle bot started and bot ended steps for the latest message
    * @param {Object} latestMessage - latest message in message list
    */
   const handleLatestMessage = (latestMessage) => {
@@ -2186,22 +2188,6 @@ define("actions/chatView", [
   };
 
   /**
-   * Action to set chat view error.
-   * @param {Object} error
-   * @param {String} error.type - Error type - For example, pre issue failure
-   * @param {String} error.title
-   * @param {String} [error.subtitle]
-   * @param {String} [error.cta] - Call to action text
-   * @returns {Object} - action
-   */
-  const setChatViewError = (error) => {
-    return {
-      type: ACTION_TYPES.SET_CHAT_VIEW_ERROR,
-      error
-    };
-  };
-
-  /**
    * Check if the last selected intent is the leaf intent or not.
    * @param {String[]} selectedIntentIds - Selected intent ids
    * @param {Object} intentsMap - Intents map
@@ -2382,9 +2368,7 @@ define("actions/chatView", [
         }
       } = state;
 
-      // We need to hide footer while creating preIssue because the default
-      // value of input disabled is false, in store on page refresh.
-      handleIssueFooterAndTAI(DISABLE_FOOTER);
+      dispatch(chatViewActionCreators.createPreissueRequest());
 
       createPreissueXhr = xhr({
         route: routes.postPreIssue(domain),
@@ -2398,21 +2382,15 @@ define("actions/chatView", [
             return;
           }
 
-          const config = {
+          const issueDetails = {
             activeIssueId: response.id,
             internalIssueId: response.internal_id,
-            // @TODO: Intents: Remove hardcoded "preissue" after backend starts sending type
-            issueType: response.type || "preissue"
+            issueType: response.type
           };
 
-          dispatch(issueCreated(config));
-
+          dispatch(chatViewActionCreators.createPreissueSuccess(issueDetails));
           startPollingForMessages();
-
           _trackFirstMessage(response.messages);
-          // Track the issue created event.
-          // @TODO: Confirm if issue created event has to be tracked from Web Chat.
-          // analyticsHelpers.track (EVENT.ISSUE_CREATED);
         },
         onFailure: (request, statusCode) => {
           const errorType =
@@ -2420,19 +2398,14 @@ define("actions/chatView", [
               ? ERROR_TYPES.PRE_ISSUE_TIME_OUT
               : ERROR_TYPES.PRE_ISSUE_FAILURE;
 
-          // When start new conversation button is clicked, we clear the current state of the app
-          // (app reset), and it is restored when the preIssue call succeeds and starts polling
-          // for messages. In case of failure, we let the error handler proceed with the flow.
-          handleIssueFooterAndTAI(ENABLE_FOOTER);
           dispatch(
-            batchActions([
-              setChatViewError({
+            chatViewActionCreators.createPreissueFailure({
+              error: {
                 type: errorType,
                 title: networkError,
                 cta: retryBtn
-              }),
-              actionCreators.toggleChatViewLoading(false)
-            ])
+              }
+            })
           );
         }
       });
@@ -2857,21 +2830,6 @@ define("actions/chatView", [
   };
 
   /**
-   * Return the action to be dispatched when an issue/preissue is created.
-   * @param {Object} config
-   * @param {String} config.activeIssueId
-   * @param {String} config.internalIssueId
-   * @param {String} config.issueType
-   * @returns {Object} - the action object
-   */
-  const issueCreated = (config) => {
-    return {
-      type: ACTION_TYPES.ISSUE_CREATED,
-      config
-    };
-  };
-
-  /**
    * Action to load the intents tree.
    *
    * @param {Object} [callbacks]
@@ -3002,10 +2960,8 @@ define("actions/chatView", [
     createAttachmentMessages,
     createAttachmentMessage,
     showPostIssueResolutionFooter,
-    setUserIsViewingPastMessages,
     acceptResolutionQuestion,
     rejectResolutionQuestion,
-    setUserInputData,
     updateUserInputData,
     setUserSelectedOption,
     handleErrorAction,

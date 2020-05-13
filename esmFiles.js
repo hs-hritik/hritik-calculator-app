@@ -8,4 +8,7 @@
  * @author Ayush Sachdeva
  */
 
-module.exports = ["resources/static/scripts/utils/logReactError.js"];
+module.exports = [
+  "resources/static/scripts/utils/logReactError.js",
+  "resources/static/scripts/actions/chatViewActionCreators.js"
+];
