@@ -187,7 +187,7 @@ define("components/message", [
             {this._renderAvatar()}
             <div className="hs-message__details-and-msg-wrapper">
               {this._renderMessageDetails()}
-              <div>{messageItemEl}</div>
+              {messageItemEl}
               {this._renderAttachmentErrors()}
             </div>
           </div>
