@@ -165,6 +165,7 @@ define("components/attachment", [
           failedImageClassNames="hs-message__failed-img"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
+          wrapperHeightIsDynamic={false}
         />
       );
     } else {

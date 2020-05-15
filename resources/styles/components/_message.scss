@@ -45,6 +45,7 @@
   $action-card-action-font-size: font-size(body, large);
 
   $sis-parent-text-color: var(--hs-form-secondary-bg-color);
+  $image-attachment-size: 160px;
 
   .hs-message {
     align-self: flex-start;
@@ -114,12 +115,13 @@
     }
 
     &__image-attachment {
-      width: 260px;
+      width: $image-attachment-size;
+      height: $image-attachment-size;
       padding: 0;
       overflow: hidden;
       background-position: center center;
       background-repeat: no-repeat;
-      background-size: 100%;
+      background-size: cover;
     }
 
     &--right {
