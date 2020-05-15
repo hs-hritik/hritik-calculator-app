@@ -70,6 +70,7 @@ define("components/messageList", [
       messages: PropTypes.arrayOf(MESSAGE_PROP_TYPE).isRequired,
       showAgentNickname: PropTypes.bool,
       onSuggestedFaqClick: PropTypes.func,
+      onActionClick: PropTypes.func,
       onRetryAttachmentClick: PropTypes.func,
       isTyping: PropTypes.bool,
       userIsViewingPastMessages: PropTypes.bool,
@@ -80,7 +81,6 @@ define("components/messageList", [
       onScrollPastExistingConversation: PropTypes.func,
       onLoadMore: PropTypes.func,
       onSkipUserInput: PropTypes.func,
-
       /**
        * Widget is minimized or not
        **/
@@ -191,6 +191,7 @@ define("components/messageList", [
               avatarUrl={avatarUrl}
               showMessageDetails={showMessageDetails}
               key={key}
+              onActionClick={this.props.onActionClick}
             />
           </ErrorBoundaryWithLogging>
         );

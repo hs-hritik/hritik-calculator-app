@@ -1,6 +1,6 @@
 {
   "name": "mirkwood",
-  "version": "2.49.1",
+  "version": "2.53.1",
   "description": "Helpshift web SDK",
   "scripts": {
     "start": "babel-node resources/static/scripts/main",
@@ -22,8 +22,8 @@
     "@babel/preset-env": "7.8.0",
     "@babel/preset-react": "7.8.0",
     "@babel/register": "7.8.0",
-    "@helpshiftdev/eslint-config-hs": "1.0.5",
-    "@helpshiftdev/gunpowder": "3.0.10",
+    "@helpshiftdev/eslint-config-hs": "^1.0.6",
+    "@helpshiftdev/gunpowder": "4.0.4",
     "axios": "https://registry.npmjs.org/axios/-/axios-0.19.0.tgz",
     "axios-mock-adapter": "^1.16.0",
     "babel-plugin-module-resolver": "4.0.0",

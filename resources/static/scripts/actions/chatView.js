@@ -81,7 +81,8 @@ define("actions/chatView", [
     CURSOR_TYPES,
     USER_REDACTION_ERR_MSG,
     USER_REDACTION_ERR_STATUS_CODE,
-    INTENTS_SEARCH_DEBOUNCE_THRESHOLD
+    INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
+    ISSUE_REOPEN_ERR_STATUS_CODE
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -1195,15 +1196,18 @@ define("actions/chatView", [
     // doesn't correspond to a bot message during preissue.
 
     // After preIssue optimization, if there are no bots running on preIssue,
-    // backend directly creates an issue. So in this case we have to re-enable the
-    // footer if issue type is issue.
+    // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
+    // is not running, enable the footer.
     const {
-      appState: {issueType}
+      appState: {issueType},
+      chatView: {
+        botState: {botStepInProgress}
+      }
     } = getState();
 
     if (issueType === ISSUE_TYPE.PRE_ISSUE) {
       handleIssueFooterAndTAI(DISABLE_FOOTER);
-    } else if (issueType === ISSUE_TYPE.ISSUE) {
+    } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
       handleIssueFooterAndTAI(ENABLE_FOOTER);
     }
   };
@@ -1472,6 +1476,8 @@ define("actions/chatView", [
           issue: oldestIssue,
           cursorType: CURSOR_TYPES.BACKWARD
         });
+
+        dispatch(actionCreators.fetchMessagesSuccess());
       },
 
       onFailure: () => {
@@ -1565,6 +1571,8 @@ define("actions/chatView", [
           if (userIsRedacted) {
             dispatch(setUserIsRedacted(false));
           }
+
+          dispatch(actionCreators.fetchMessagesSuccess());
 
           const {has_older_messages: hasOlderMsgs, issues = [], cursor} = response;
 
@@ -2024,16 +2032,23 @@ define("actions/chatView", [
           onSuccess(response);
         }
       },
-      onFailure: () => {
-        // If user reply on
-        // 1. preIssue fails
-        //    a. Hide typing indicator
-        //    b. Enable replyBox
-        // This enables text and pill options input in case of failure
-        // OR
-        // 2. issue fails
-        //    a. Enable reply box
-        if (isPreIssue) {
+      onFailure: (request, statusCode) => {
+        // Handle 410 status code. It is sent in the following cases -
+        // 1. attempt to reopen a closed issue, and
+        // 2. issue is archived
+        // The UX in both the cases is supposed to show the new conversation button with the
+        // conversation closed message.
+        if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
+          handleChatEnd({conversationHasEnded: true});
+        } else if (isPreIssue) {
+          // If user reply on
+          // 1. preIssue fails
+          //    a. Hide typing indicator
+          //    b. Enable replyBox
+          // This enables text and pill options input in case of failure
+          // OR
+          // 2. issue fails
+          //    a. Enable reply box
           dispatch(batchActions([enableReplyBox(), toggleSystemTyping(false)]));
         } else if (isIssue) {
           dispatch(enableReplyBox());
@@ -2220,13 +2235,13 @@ define("actions/chatView", [
   };
 
   /**
-   * Create user message from the selected intents.
+   * Get the labels of the intent selected
    * @param {String[]} selectedIntentIds - Selected intent ids
    * @param {Object} intentsMap - Intents Map
-   * @returns {String} - user message created from the selected intents.
+   * @returns {Array} - Labels of the selected intent.
    */
-  const _createUserMessageFromIntents = (selectedIntentIds, intentsMap) => {
-    return selectedIntentIds.map((id) => intentsMap[id].label).join(" → ");
+  const _getIntentLabels = (selectedIntentIds, intentsMap) => {
+    return selectedIntentIds.map((id) => intentsMap[id].label);
   };
 
   /**
@@ -2329,9 +2344,9 @@ define("actions/chatView", [
     if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
       xhrData.intent = JSON.stringify(intents.selectedIntentIds);
       // Create user message if the intent was selected by the user
-      xhrData.user_message = _createUserMessageFromIntents(
-        intents.selectedIntentIds,
-        intents.tree.intentsMap
+
+      xhrData.intent_labels = JSON.stringify(
+        _getIntentLabels(intents.selectedIntentIds, intents.tree.intentsMap)
       );
 
       // If user entered some text before selecting an intent, send it as search term (st).
@@ -2415,23 +2430,26 @@ define("actions/chatView", [
           // @TODO: Confirm if issue created event has to be tracked from Web Chat.
           // analyticsHelpers.track (EVENT.ISSUE_CREATED);
         },
-        onFailure: () => {
+        onFailure: (request, statusCode) => {
+          const errorType =
+            statusCode === RESPONSE_STATUS_CODE.GATEWAY_TIMEOUT
+              ? ERROR_TYPES.PRE_ISSUE_TIME_OUT
+              : ERROR_TYPES.PRE_ISSUE_FAILURE;
+
           // When start new conversation button is clicked, we clear the current state of the app
           // (app reset), and it is restored when the preIssue call succeeds and starts polling
-          // for messages. In case of failure, we still need to show the messages, but we don't
-          // need to poll for new ones. Hence, we have fetchMessages () call.
+          // for messages. In case of failure, we let the error handler proceed with the flow.
           handleIssueFooterAndTAI(ENABLE_FOOTER);
           dispatch(
             batchActions([
               setChatViewError({
-                type: ERROR_TYPES.PRE_ISSUE_FAILURE,
+                type: errorType,
                 title: networkError,
                 cta: retryBtn
               }),
               actionCreators.toggleChatViewLoading(false)
             ])
           );
-          fetchMessages();
         }
       });
     };
@@ -2967,6 +2985,26 @@ define("actions/chatView", [
     };
   };
 
+  /**
+   * Action to track the click event on an action in a message.
+   * @param {Object} eventData
+   * @param {string} eventData.messageId
+   * @param {string} eventData.actionId
+   * @param {string} eventData.actionType
+   */
+  const trackActionClickEvent = ({messageId, actionId, actionType}) => {
+    return (dispatch, getState) => {
+      const issueId = getState().appState.internalIssueId;
+
+      analyticsHelpers.track(EVENT.MESSAGE_ACTION_CLICKED, {
+        issueId,
+        messageId,
+        actionId,
+        actionType
+      });
+    };
+  };
+
   return {
     createPreIssue,
     updateReplyText,
@@ -2995,6 +3033,7 @@ define("actions/chatView", [
     loadIntentsTree,
     loadIntentsModel,
     selectIntent,
-    updateReplyTextAndSearchIntents
+    updateReplyTextAndSearchIntents,
+    trackActionClickEvent
   };
 });

@@ -736,6 +736,13 @@ define("reducers/chatView", [
           localGreetingMessageId: {$set: action.id}
         });
 
+      case ACTION_TYPES.FETCH_MESSAGES_SUCCESS:
+        // When messages are fetched (updates and history API calls) -
+        // Reset error messages
+        return update(state, {
+          error: {$set: INITIAL_ERROR_STATE}
+        });
+
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
 

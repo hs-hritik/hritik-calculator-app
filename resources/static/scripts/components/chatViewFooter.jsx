@@ -22,7 +22,8 @@ define("components/chatViewFooter", [
   "constants/accessibility",
   "constants/activeView",
   "gunpowder/widgets/dragIt",
-  "gunpowder/widgets/nestedPicker"
+  "gunpowder/widgets/nestedPicker",
+  "utils/browser"
 ], function(
   StarRating,
   JumpToLatestBtn,
@@ -41,7 +42,8 @@ define("components/chatViewFooter", [
   axConstants,
   activeViewConstants,
   dragIt,
-  NestedPicker
+  NestedPicker,
+  browserUtils
 ) {
   "use strict";
 
@@ -59,6 +61,9 @@ define("components/chatViewFooter", [
     REPLY_FOOTER: "reply",
     ACTIVE_FOOTER: "active_footer"
   };
+
+  // Max height of intents widget in case of iOS safari
+  const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
 
   const DraggablePicker = dragIt(Picker);
   const DraggableNestedPicker = dragIt(NestedPicker);
@@ -175,6 +180,7 @@ define("components/chatViewFooter", [
        * Handler to scroll message list to bottom.
        */
       onScrollMessageListToBottom: PropTypes.func.isRequired,
+      onRetry: PropTypes.func.isRequired,
       text: PropTypes.shape({
         resolutionQuestionAccept: PropTypes.string.isRequired,
         resolutionQuestionReject: PropTypes.string.isRequired,
@@ -408,7 +414,7 @@ define("components/chatViewFooter", [
       const {retryBtn} = this.props.text;
 
       return (
-        <a onClick={this.props.onStartNewConversation} className="hs-chat-footer__field-item">
+        <a onClick={this.props.onRetry} className="hs-chat-footer__field-item">
           <strong>{retryBtn}</strong>
         </a>
       );
@@ -536,10 +542,16 @@ define("components/chatViewFooter", [
         );
       }
 
+      let searchIcon = null;
+      if (this._shouldIntentsBeShown() && this.props.intents.enforceIntentSelection) {
+        searchIcon = <i className="ion-magnifier hs-chat-footer__search-icon" />;
+      }
+
       return (
         <div className={footerClasses} ref={this._saveUserInputWrapperRef}>
           {this._renderFooterLabelComponent()}
           <div key="input" className="hs-chat-footer__field">
+            {searchIcon}
             {inputComponentEl}
             {this._renderFooterAction()}
           </div>
@@ -581,6 +593,17 @@ define("components/chatViewFooter", [
         ? intentsEmptySearchDescEis
         : intentsEmptySearchDesc;
 
+      let intentsWidgetMaxHeight = this.state.intentsWidgetMaxHeight;
+
+      // We need to pass fixed height when picker is in opened state for iOS safari
+      // because safari pushes the entire webpage when keyboard is open.
+      // This causes the smart intents to hide above the screen and user is not
+      // able to see/select the intents. Restricting height in safari ensures
+      // even after opening keyboard the intents are displayed to end user.
+      if (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari()) {
+        intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
+      }
+
       return (
         <DraggableNestedPicker
           className={pickerClasses}
@@ -592,7 +615,7 @@ define("components/chatViewFooter", [
           onSelectOption={this._onSelectIntent}
           onUnselectOption={this._onUnselectIntent}
           minHeight={this.state.intentsWidgetMinHeight}
-          maxHeight={this.state.intentsWidgetMaxHeight}
+          maxHeight={intentsWidgetMaxHeight}
           onComponentDidMount={this._onIntentsWidgetMount}
           isSearching={isSearching}
           searchResultOptionIds={searchResultIntentIds}
@@ -610,7 +633,7 @@ define("components/chatViewFooter", [
      */
     _renderFooterAction() {
       if (this._shouldSubmitReplyBeDisabled()) {
-        return null;
+        return this._renderClearIntentsSearchBtn();
       }
 
       const {
@@ -686,6 +709,21 @@ define("components/chatViewFooter", [
           onFocusChange={this._onPickerFocusChange}
           ariaLabels={pickerAriaLabels}
         />
+      );
+    },
+
+    /**
+     * Clears out anything that is typed into the input field
+     * and stops search operation on available intents. This is used
+     * when enforceIntentSelection flag is set to true
+     */
+    _renderClearIntentsSearchBtn() {
+      return (
+        <button
+          className="hs-chat-footer__clear-intents-search"
+          onClick={this._onClickClearIntentsSearchBtn}>
+          <i className="ion-cross-round hs-chat-footer__cross-btn" />
+        </button>
       );
     },
 
@@ -1035,6 +1073,15 @@ define("components/chatViewFooter", [
         intentsAreAvailable &&
         !this.props.userInput.disabled
       );
+    },
+
+    /**
+     * Handles click on clearIntentsSearchBtn when intent selection has been
+     * enforced via the enforceIntentSelection flag. When clicked, search
+     * operation is stopped and the input field is cleared.
+     */
+    _onClickClearIntentsSearchBtn() {
+      this.props.onChangeReplyBoxValue("");
     },
 
     /**
