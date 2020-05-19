@@ -248,11 +248,6 @@ define("reducers/appState", [
           reEngagementId: {$set: action.id}
         });
 
-      case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
-        return update(state, {
-          reEngagementId: {$set: ""}
-        });
-
       case ACTION_TYPES.SET_WINDOW_IS_FOCUSED:
         return update(state, {
           windowIsFocused: {$set: action.windowIsFocused}
@@ -499,6 +494,19 @@ define("reducers/appState", [
         return update(state, {
           keyboardInteractionIsActive: {$set: action.active}
         });
+
+      case ACTION_TYPES.USER_REPLY_REQUEST:
+        const userReplyRequestUpdateObj = {
+          footerIsActive: {$set: false}
+        };
+
+        // If the user replies on a re-engaged issue, reset the reEngagementId because re-engagement
+        // is over with the user reply.
+        if (action.reEngagementId) {
+          userReplyRequestUpdateObj.reEngagementId = {$set: ""};
+        }
+
+        return update(state, userReplyRequestUpdateObj);
 
       default:
         return state;

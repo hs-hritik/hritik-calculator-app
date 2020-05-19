@@ -93,8 +93,12 @@ define("extras/lsMiddleware", [
         lsHelpers.setReEngagementId(action.id);
         break;
 
-      case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
-        lsHelpers.removeReEngagementId();
+      case ACTION_TYPES.USER_REPLY_REQUEST:
+        // If the user replies on a re-engaged issue, reset the reEngagementId because re-engagement
+        // is over with the user reply.
+        if (action.reEngagementId) {
+          lsHelpers.removeReEngagementId();
+        }
         break;
     }
   };

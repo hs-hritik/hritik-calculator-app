@@ -213,14 +213,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   };
 
   /**
-   * Action to reset re-engagement Id
-   * @returns {Object} - Action
-   */
-  const resetReEngagementId = () => ({
-    type: ACTION_TYPES.RESET_RE_ENGAGEMENT_ID
-  });
-
-  /**
    * Return action to change list picker navigation state
    * @param {String} navigationState - Whether the picker is in "closed", "opened" or
    * "resizing" state
@@ -385,7 +377,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     toggleOnlineStatus,
     setFooterActive,
     setFooterInactive,
-    resetReEngagementId,
     updateListPickerNavigationState,
     updateIntentsNavigationState,
     setAppResetTrigger,

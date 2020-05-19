@@ -62,4 +62,60 @@ const clearErrors = () => {
   };
 };
 
-export {createPreissueRequest, createPreissueSuccess, createPreissueFailure, clearErrors};
+/**
+ * Action to dispatch before a user reply submit call is fired.
+ *
+ * @param {Object} payload
+ * @param {string} payload.issueType
+ * @param {boolean} payload.botStepInProgress
+ * @param {string} payload.reEngagementId
+ * @returns {Object} - Action
+ */
+const userReplyRequest = ({issueType, botStepInProgress, reEngagementId}) => {
+  return {
+    type: ACTION_TYPES.USER_REPLY_REQUEST,
+    issueType,
+    botStepInProgress,
+    reEngagementId
+  };
+};
+
+/**
+ * Action to dispatch before a user reply submit call is fired.
+ *
+ * @param {string} issueType
+ * @param {boolean} botStepInProgress
+ * @param {array} messages - List of messages to be added to the message list
+ * @param {string} messageType - Type of the user reply message, e.g. "Text"
+ * @returns {Object} - Action
+ */
+const userReplySuccess = ({issueType, botStepInProgress, messages, messageType}) => {
+  return {
+    type: ACTION_TYPES.USER_REPLY_SUCCESS,
+    issueType,
+    botStepInProgress,
+    messages,
+    messageType
+  };
+};
+
+/**
+ * Action to dispatch before a user reply submit call is fired.
+ *
+ * @returns {Object} - Action
+ */
+const userReplyFailure = () => {
+  return {
+    type: ACTION_TYPES.USER_REPLY_FAILURE
+  };
+};
+
+export {
+  createPreissueRequest,
+  createPreissueSuccess,
+  createPreissueFailure,
+  clearErrors,
+  userReplyRequest,
+  userReplySuccess,
+  userReplyFailure
+};

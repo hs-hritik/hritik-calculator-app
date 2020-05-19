@@ -106,6 +106,9 @@ define("reducers/chatView", [
 
   /**
    * Return a list of messages where existing messages are replaced with redacted messages
+   * When a message is redacted, we get real time update of it in poller.
+   * If a message is redacted and if it's already present in the message list
+   * then that message is replaced with a message having "message deleted" text.
    * @param {Array} existingMessageList - Existing list of messages
    * @param {Array} newMessageList - message list to search for redacted messages
    * @returns {Array} updated list of existing messages
@@ -288,7 +291,7 @@ define("reducers/chatView", [
           systemTyping: {$set: true}
         });
 
-      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS:
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
         // User input should be disabled for preissues.
         const userInputShouldBeDisabled = action.issueDetails.issueType === ISSUE_TYPE.PRE_ISSUE;
         // If the current input type is the default one, reset the value.
@@ -321,6 +324,7 @@ define("reducers/chatView", [
           systemTyping: {$set: false},
           error: {$set: INITIAL_ERROR_STATE}
         });
+      }
 
       case ACTION_TYPES.CREATE_PREISSUE_FAILURE:
         const {error} = action;
@@ -336,6 +340,63 @@ define("reducers/chatView", [
           systemTyping: {$set: false},
           error: {$set: error},
           loading: {$set: false}
+        });
+
+      case ACTION_TYPES.USER_REPLY_REQUEST: {
+        const {issueType, botStepInProgress} = action;
+        const isIssue = issueType === ISSUE_TYPE.ISSUE;
+        const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
+        // Show fake typing indicator for preissues and issues with an ongoing bot
+        const systemTypingShouldRender = isPreIssue || (isIssue && botStepInProgress);
+
+        return update(state, {
+          userInput: {
+            disabled: {$set: true}
+          },
+          systemTyping: {$set: systemTypingShouldRender}
+        });
+      }
+
+      case ACTION_TYPES.USER_REPLY_SUCCESS: {
+        const {messages, issueType, botStepInProgress, messageType} = action;
+
+        // Get the message list to be appended to the state
+        const updatedExistingMessages = _replaceRedactedMessages(state.messageList, messages);
+        const uniqueNewMessages = _getUniqueMessages(state.messageList, messages);
+        const newMessageList = updatedExistingMessages.concat(uniqueNewMessages);
+
+        // Enable user reply for an issue with a non-bot conversation
+        const userInputShouldBeEnabled = issueType === ISSUE_TYPE.ISSUE && !botStepInProgress;
+        // If the current input type is the default one, reset the value.
+        const defaultInputValue = isInputTypeDefault(state)
+          ? ""
+          : state.userInput.defaultInputValue;
+
+        const updateObj = {
+          userInput: {
+            disabled: {$set: !userInputShouldBeEnabled},
+            value: {$set: ""},
+            defaultInputValue: {$set: defaultInputValue},
+            errorMsg: {$set: ""}
+          },
+          messageList: {$set: newMessageList}
+        };
+
+        if (messageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
+          updateObj.readFaqList = {$set: []};
+        }
+
+        return update(state, updateObj);
+      }
+
+      case ACTION_TYPES.USER_REPLY_FAILURE:
+        // In case of a failure, enable the reply box and hide the fake typing indicator.
+        // This will let the user retry sending the message.
+        return update(state, {
+          userInput: {
+            disabled: {$set: false}
+          },
+          systemTyping: {$set: false}
         });
 
       case ACTION_TYPES.SEARCH_INTENTS: {

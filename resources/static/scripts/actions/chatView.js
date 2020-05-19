@@ -1931,9 +1931,7 @@ define("actions/chatView", [
     } = getState();
     const {msgBody, msgType, onSuccess, onEnd} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
-    const actionsToDispatch = [disableReplyBox(), actionCreators.setFooterInactive()];
     const isIssue = issueType === ISSUE_TYPE.ISSUE;
-    const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
     const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage();
     let xhrData = null;
 
@@ -1962,16 +1960,11 @@ define("actions/chatView", [
 
     if (reEngagementId) {
       xhrData.re_engagement_id = reEngagementId;
-
-      // Remove re-engagement id from the state & localStorage
-      dispatch(actionCreators.resetReEngagementId());
     }
 
-    if (isPreIssue || (isIssue && botStepInProgress)) {
-      actionsToDispatch.push(toggleSystemTyping(true));
-    }
-
-    dispatch(batchActions(actionsToDispatch));
+    dispatch(
+      chatViewActionCreators.userReplyRequest({issueType, botStepInProgress, reEngagementId})
+    );
 
     xhr({
       route: routes.postUserReply(domain, activeIssueId, xhrIssueType),
@@ -1981,17 +1974,18 @@ define("actions/chatView", [
       method: "POST",
       headers: xhrHelpers.getCommonHeaders(),
       onSuccess: (response) => {
-        // We do not want to batch following actions as we have to explicitly
-        // enable reply box first and then add messages.
-        // This is to allow reply box to take height first and then message list
-        // updation will scroll the messages to bottom.
-        // In case of preIssue, we do not want to enable reply box as it will be
-        // enabled according to next bot step.
-        // In case of issue, we want to enable reply box only if current step is
-        // not bot.
-        if (isIssue && !botStepInProgress) {
-          dispatch(enableReplyBox());
-        }
+        // Ideally messages should be processed in the reducer, but importing helpers/message in
+        // reducer/chatView introduces a cyclic dependency.
+        const processedMessages = messageHelpers.getProcessedMessages([response]);
+
+        dispatch(
+          chatViewActionCreators.userReplySuccess({
+            issueType,
+            botStepInProgress,
+            messages: processedMessages,
+            messageType: response.type
+          })
+        );
 
         // This response type indicates that the first message from the user was sent.
         // Trigger conversationStartEvent which, then, can be tracked by the
@@ -2008,16 +2002,6 @@ define("actions/chatView", [
           dispatch(postSdkMessage.conversationEndEvent());
         }
 
-        dispatch(
-          batchActions([
-            addMessages({
-              messages: [response],
-              responseType: response.type
-            }),
-            updateReplyText("")
-          ])
-        );
-
         if (onSuccess) {
           onSuccess(response);
         }
@@ -2030,18 +2014,8 @@ define("actions/chatView", [
         // conversation closed message.
         if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
           handleChatEnd({conversationHasEnded: true});
-        } else if (isPreIssue) {
-          // If user reply on
-          // 1. preIssue fails
-          //    a. Hide typing indicator
-          //    b. Enable replyBox
-          // This enables text and pill options input in case of failure
-          // OR
-          // 2. issue fails
-          //    a. Enable reply box
-          dispatch(batchActions([enableReplyBox(), toggleSystemTyping(false)]));
-        } else if (isIssue) {
-          dispatch(enableReplyBox());
+        } else {
+          dispatch(chatViewActionCreators.userReplyFailure());
         }
       },
       onEnd
@@ -2115,8 +2089,6 @@ define("actions/chatView", [
         return;
       }
 
-      dispatch(disableReplyBox());
-
       dispatch(
         updateUserInputData({
           value: trimmedValue
@@ -2136,7 +2108,6 @@ define("actions/chatView", [
         postUserMessage({
           onSuccess: () => {
             handleIssueReopen(issueState);
-            dispatch(updateReplyText(""));
             audioHelpers.playSend();
           }
         });
