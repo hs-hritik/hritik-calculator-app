@@ -1888,7 +1888,8 @@ define("actions/chatView", [
         });
       } else {
         handleChatEnd({
-          conversationHasEnded: issueState === ISSUE_STATE.REJECTED
+          conversationHasEnded:
+            issueState === ISSUE_STATE.REJECTED || issueState === ISSUE_STATE.RESOLVED
         });
       }
     };
