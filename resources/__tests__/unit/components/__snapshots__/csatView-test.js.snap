@@ -35,12 +35,12 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
       setAxActiveIndex={[Function]}
       text={
         Object {
+          "chatViewHeader": "MOCK_VIEW_HEADER",
           "csatBotFormSubmitBtn": "MOCK_FORM_SUBMIT_BUTTON",
           "csatBotRequestMsg": "MOCK_REQUEST_MESSAGE",
           "csatBotResponseMsg": "MOCK_RESPONSE_MESSAGE",
           "csatBotReviewPlaceholder": "MOCK_REVIEW_PLACEHOLDER",
           "csatBotReviewTitle": "MOCK_REVIEW_TITLE",
-          "csatViewHeader": "MOCK_VIEW_HEADER",
         }
       }
     />

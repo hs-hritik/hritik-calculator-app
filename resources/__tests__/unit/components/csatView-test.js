@@ -23,7 +23,7 @@ const setup = () => {
     onUpdateCsatRating: jest.fn(),
     onUpdateCsatReview: jest.fn(),
     text: {
-      csatViewHeader: "MOCK_VIEW_HEADER",
+      chatViewHeader: "MOCK_VIEW_HEADER",
       csatBotRequestMsg: "MOCK_REQUEST_MESSAGE",
       csatBotResponseMsg: "MOCK_RESPONSE_MESSAGE",
       csatBotFormSubmitBtn: "MOCK_FORM_SUBMIT_BUTTON",

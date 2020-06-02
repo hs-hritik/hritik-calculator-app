@@ -146,7 +146,7 @@ define("components/csatView", [
         <div className={viewClasses} style={viewStyles} onKeyDown={onKeyDown} onClick={onClick}>
           <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback()}>
             <ViewHeader
-              title={text.csatViewHeader}
+              title={text.chatViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation}
               avatarUrl={appAvatarUrl}
