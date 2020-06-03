@@ -12,7 +12,7 @@ define("components/containers/businessHoursView", [
 
   const mapStateToProps = (state) => {
     const {
-      appState: {attachmentsWhitelist, showHeaderAvatar, appAvatarUrl},
+      appState: {attachmentsWhitelist},
       businessHoursViewState: {
         contactFormDetails,
         offlineBehaviour,
@@ -30,9 +30,7 @@ define("components/containers/businessHoursView", [
       contactFormSubmitted,
       submitInProgress,
       fullPrivacyEnabled: state.appState.fullPrivacyEnabled,
-      attachmentsWhitelist,
-      showHeaderAvatar,
-      appAvatarUrl
+      attachmentsWhitelist
     };
   };
 
