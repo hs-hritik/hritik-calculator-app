@@ -594,48 +594,49 @@ define("actions/chatView", [
    * @param {Object} message - message object
    */
   const handleMessageInput = (message) => {
-    const {input} = message;
-    const {dispatch, getState} = store;
-    const {
-      appState: {issueType}
-    } = getState();
+    return (dispatch, getState) => {
+      const {input} = message;
+      const {
+        appState: {issueType}
+      } = getState();
 
-    // If bot message does not contain any input, don't process it and hide
-    // the footer.
-    // This is to handle bot info text messages which do not have input.
-    // If the issue type is preIssue, then hide footer and show TAI.
-    // If the issue type is issue, then
-    //   a. explicitly enable the footer
-    //   b. hide TAI
-    //   c. reset user input to default.
+      // If bot message does not contain any input, don't process it and hide
+      // the footer.
+      // This is to handle bot info text messages which do not have input.
+      // If the issue type is preIssue, then hide footer and show TAI.
+      // If the issue type is issue, then
+      //   a. explicitly enable the footer
+      //   b. hide TAI
+      //   c. reset user input to default.
 
-    if (!input) {
-      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
-        handleIssueFooterAndTAI(DISABLE_FOOTER);
-      } else {
-        handleIssueFooterAndTAI(ENABLE_FOOTER);
-        dispatch(resetUserInput());
+      if (!input) {
+        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+          handleIssueFooterAndTAI(DISABLE_FOOTER);
+        } else {
+          handleIssueFooterAndTAI(ENABLE_FOOTER);
+          dispatch(resetUserInput());
+        }
+        return;
       }
-      return;
-    }
 
-    const {type} = message;
-    const processedUserInput = chatViewHelpers.getProcessedUserInput({
-      messageType: type,
-      input
-    });
+      const {type} = message;
+      const processedUserInput = chatViewHelpers.getProcessedUserInput({
+        messageType: type,
+        input
+      });
 
-    dispatch(
-      batchActions([
-        // Set processed user input and save it in store
-        setUserInputData(processedUserInput),
-        // Set footer type as reply because this is bot step, we accept some user input
-        setChatViewFooter(ACTIVE_FOOTER.REPLY)
-      ])
-    );
+      dispatch(
+        batchActions([
+          // Set processed user input and save it in store
+          setUserInputData(processedUserInput),
+          // Set footer type as reply because this is bot step, we accept some user input
+          setChatViewFooter(ACTIVE_FOOTER.REPLY)
+        ])
+      );
 
-    // Once bot input is processed, show the footer
-    handleIssueFooterAndTAI(ENABLE_FOOTER);
+      // Once bot input is processed, show the footer
+      handleIssueFooterAndTAI(ENABLE_FOOTER);
+    };
   };
 
   /**
@@ -643,28 +644,29 @@ define("actions/chatView", [
    * @param {Object} latestMessage - latest message in message list
    */
   const handleLatestMessage = (latestMessage) => {
-    const {dispatch} = store;
-    const {type, has_next_bot: hasNextBot} = latestMessage;
+    return (dispatch) => {
+      const {type, has_next_bot: hasNextBot} = latestMessage;
 
-    switch (type) {
-      case MESSAGE_TYPE.BOT_STARTED:
-        // If the last message in poller is bot start
-        // a] hide the footer
-        handleIssueFooterAndTAI(DISABLE_FOOTER);
-        break;
-
-      case MESSAGE_TYPE.BOT_ENDED:
-        // If the last message in poller is bot end
-        // a] reset previous user input data and
-        // b] depending on whether next step is bot, hide or show the footer
-        dispatch(resetUserInput());
-        if (hasNextBot) {
+      switch (type) {
+        case MESSAGE_TYPE.BOT_STARTED:
+          // If the last message in poller is bot start
+          // a] hide the footer
           handleIssueFooterAndTAI(DISABLE_FOOTER);
-        } else {
-          handleIssueFooterAndTAI(ENABLE_FOOTER);
-        }
-        break;
-    }
+          break;
+
+        case MESSAGE_TYPE.BOT_ENDED:
+          // If the last message in poller is bot end
+          // a] reset previous user input data and
+          // b] depending on whether next step is bot, hide or show the footer
+          dispatch(resetUserInput());
+          if (hasNextBot) {
+            handleIssueFooterAndTAI(DISABLE_FOOTER);
+          } else {
+            handleIssueFooterAndTAI(ENABLE_FOOTER);
+          }
+          break;
+      }
+    };
   };
 
   /**
@@ -1144,61 +1146,62 @@ define("actions/chatView", [
    * @param {Array} messages - list of unprocessed messages
    */
   const saveLatestBotStepAndProcessBotInput = (messages) => {
-    const {dispatch, getState} = store;
-    const msgsLength = messages.length;
+    return (dispatch, getState) => {
+      const msgsLength = messages.length;
 
-    // Reverse loop on list of messages to see if there is any bot message.
-    // If we find any bot message, we will save that message in store and use
-    // the message input to render footer.
-    for (let i = msgsLength - 1; i >= 0; i--) {
-      const msg = messages[i];
-      const {type, isSystemMsg} = msg;
+      // Reverse loop on list of messages to see if there is any bot message.
+      // If we find any bot message, we will save that message in store and use
+      // the message input to render footer.
+      for (let i = msgsLength - 1; i >= 0; i--) {
+        const msg = messages[i];
+        const {type, isSystemMsg} = msg;
 
-      // isBotMessage will also handle the case where we get a non bot message
-      // and it's not supported. For non bot message which is not supported, we
-      // will not post bot cancel message.
-      if (!isSystemMsg && messageHelpers.isBotMessage(msg)) {
-        const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported(type);
-        const botStepIsInProgress = botMsgIsNotSupported || messageHelpers.isBotStepMessage(type);
-        dispatch(
-          batchActions([
-            // Bot step message contains all bot type message except bot control
-            // messages i.e bot_start and bot_end
-            setBotStepInProgress(botStepIsInProgress),
-            saveBotStepMessage(messageHelpers.getProcessedMessage(msg))
-          ])
-        );
+        // isBotMessage will also handle the case where we get a non bot message
+        // and it's not supported. For non bot message which is not supported, we
+        // will not post bot cancel message.
+        if (!isSystemMsg && messageHelpers.isBotMessage(msg)) {
+          const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported(type);
+          const botStepIsInProgress = botMsgIsNotSupported || messageHelpers.isBotStepMessage(type);
+          dispatch(
+            batchActions([
+              // Bot step message contains all bot type message except bot control
+              // messages i.e bot_start and bot_end
+              setBotStepInProgress(botStepIsInProgress),
+              saveBotStepMessage(messageHelpers.getProcessedMessage(msg))
+            ])
+          );
 
-        handleMessageInput(msg);
+          dispatch(handleMessageInput(msg));
 
-        if (botMsgIsNotSupported) {
-          postUserMessage();
+          if (botMsgIsNotSupported) {
+            postUserMessage();
+          }
+
+          return;
         }
-
-        return;
       }
-    }
 
-    // At this point, all the messages have been parsed and no bot message was
-    // encountered. In order to counter any unknown bug during the preissue state
-    // disable the footer so that the end user isn't able to send a message that
-    // doesn't correspond to a bot message during preissue.
+      // At this point, all the messages have been parsed and no bot message was
+      // encountered. In order to counter any unknown bug during the preissue state
+      // disable the footer so that the end user isn't able to send a message that
+      // doesn't correspond to a bot message during preissue.
 
-    // After preIssue optimization, if there are no bots running on preIssue,
-    // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
-    // is not running, enable the footer.
-    const {
-      appState: {issueType},
-      chatView: {
-        botState: {botStepInProgress}
+      // After preIssue optimization, if there are no bots running on preIssue,
+      // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
+      // is not running, enable the footer.
+      const {
+        appState: {issueType},
+        chatView: {
+          botState: {botStepInProgress}
+        }
+      } = getState();
+
+      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+        handleIssueFooterAndTAI(DISABLE_FOOTER);
+      } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
+        handleIssueFooterAndTAI(ENABLE_FOOTER);
       }
-    } = getState();
-
-    if (issueType === ISSUE_TYPE.PRE_ISSUE) {
-      handleIssueFooterAndTAI(DISABLE_FOOTER);
-    } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
-      handleIssueFooterAndTAI(ENABLE_FOOTER);
-    }
+    };
   };
 
   /**
@@ -1675,8 +1678,8 @@ define("actions/chatView", [
             const latestMessage = messages[messagesLength - 1];
             const processedMessages = messageHelpers.getProcessedMessages(messages);
 
-            handleLatestMessage(latestMessage);
-            saveLatestBotStepAndProcessBotInput(messages);
+            dispatch(handleLatestMessage(latestMessage));
+            dispatch(saveLatestBotStepAndProcessBotInput(messages));
 
             dispatch(
               addMessages({
