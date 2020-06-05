@@ -498,20 +498,6 @@ define("actions/chatView", [
   };
 
   /**
-   * Action to set user input data
-   * This action will set a default user input object and merge given input.
-   * Use this action after bot to bot transitions.
-   * @param {Object} input - processed input object
-   * @returns {Object} - Action
-   */
-  const setUserInputData = (input) => {
-    return {
-      type: ACTION_TYPES.SET_USER_INPUT_DATA,
-      input
-    };
-  };
-
-  /**
    * Action to update user input data
    * This action will just update existing user input object in store.
    * Use this action to update user input during bot interaction or set errors
@@ -595,47 +581,26 @@ define("actions/chatView", [
    */
   const handleMessageInput = (message) => {
     return (dispatch, getState) => {
-      const {input} = message;
+      const {input, type: messageType} = message;
       const {
         appState: {issueType}
       } = getState();
 
-      // If bot message does not contain any input, don't process it and hide
-      // the footer.
-      // This is to handle bot info text messages which do not have input.
-      // If the issue type is preIssue, then hide footer and show TAI.
-      // If the issue type is issue, then
-      //   a. explicitly enable the footer
-      //   b. hide TAI
-      //   c. reset user input to default.
-
       if (!input) {
-        if (issueType === ISSUE_TYPE.PRE_ISSUE) {
-          handleIssueFooterAndTAI(DISABLE_FOOTER);
-        } else {
-          handleIssueFooterAndTAI(ENABLE_FOOTER);
-          dispatch(resetUserInput());
-        }
+        dispatch(chatViewActionCreators.botMessageWithNoUserInput({issueType}));
         return;
       }
 
-      const {type} = message;
       const processedUserInput = chatViewHelpers.getProcessedUserInput({
-        messageType: type,
+        messageType,
         input
       });
 
       dispatch(
-        batchActions([
-          // Set processed user input and save it in store
-          setUserInputData(processedUserInput),
-          // Set footer type as reply because this is bot step, we accept some user input
-          setChatViewFooter(ACTIVE_FOOTER.REPLY)
-        ])
+        chatViewActionCreators.botMessageWithUserInput({
+          userInput: processedUserInput
+        })
       );
-
-      // Once bot input is processed, show the footer
-      handleIssueFooterAndTAI(ENABLE_FOOTER);
     };
   };
 

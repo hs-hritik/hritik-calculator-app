@@ -135,6 +135,33 @@ const botEnd = ({nextMessageIsBotStep}) => {
   };
 };
 
+/**
+ * Action to dispatch when the latest bot message doesn't need a user input
+ *
+ * @param {string} issueType - A boolean to indicate if the next message is going to be
+ *    a bot message
+ * @returns {Object} - Action
+ */
+const botMessageWithNoUserInput = ({issueType}) => {
+  return {
+    type: ACTION_TYPES.BOT_MESSAGE_WITH_NO_USER_INPUT,
+    issueType
+  };
+};
+
+/**
+ * Action to dispatch when the latest bot message contains a user input
+ *
+ * @param {Object} userInput - The processed user input to be updated in the state
+ * @returns {Object} - Action
+ */
+const botMessageWithUserInput = ({userInput}) => {
+  return {
+    type: ACTION_TYPES.BOT_MESSAGE_WITH_USER_INPUT,
+    userInput
+  };
+};
+
 export {
   createPreissueRequest,
   createPreissueSuccess,
@@ -144,5 +171,7 @@ export {
   userReplySuccess,
   userReplyFailure,
   botStart,
-  botEnd
+  botEnd,
+  botMessageWithNoUserInput,
+  botMessageWithUserInput
 };

@@ -455,7 +455,7 @@ define("reducers/chatView", [
           }
         });
 
-      case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR:
+      case ACTION_TYPES.SET_ACTIVE_ISSUE_MSG_CURSOR: {
         const {cursorTs, issueType, issueId, preIssueId, cursorType} = action.msgCursor;
 
         return update(state, {
@@ -470,6 +470,7 @@ define("reducers/chatView", [
             }
           }
         });
+      }
 
       case ACTION_TYPES.SET_CHAT_VIEW_FOOTER: {
         let userInputUpdateObj = {};
@@ -544,18 +545,6 @@ define("reducers/chatView", [
           readFaqList: {$push: [action.faqId]}
         });
 
-      case ACTION_TYPES.SET_USER_INPUT_DATA: {
-        const userInputUpdateObj = objUtils.shallowMerge(
-          _getDefaultUserInputConfig(),
-          action.input
-        );
-        // When the default input switches to bot input, save default input value
-        userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
-        return update(state, {
-          userInput: {$set: userInputUpdateObj}
-        });
-      }
-
       case ACTION_TYPES.SET_ALL_MESSAGES_ARE_LOADED:
         return update(state, {
           allMessagesAreLoaded: {$set: action.msgsLoaded}
@@ -614,7 +603,7 @@ define("reducers/chatView", [
           userIsViewingPastMessages: {$set: action.isViewing}
         });
 
-      case ACTION_TYPES.APPEND_MESSAGES:
+      case ACTION_TYPES.APPEND_MESSAGES: {
         /**
          * When message is redacted, we get real time update of it in poller.
          * If message is redacted and if its id is already present in the message list
@@ -636,6 +625,7 @@ define("reducers/chatView", [
         }
 
         return update(state, updateObj);
+      }
 
       case ACTION_TYPES.PREPEND_MESSAGES:
         const uniqMessages = _getUniqueMessages(state.messageList, action.messages);
@@ -845,6 +835,59 @@ define("reducers/chatView", [
         return update(state, {
           userInput: {$set: userInputUpdateObj},
           systemTyping: {$set: !!nextMessageIsBotStep}
+        });
+      }
+
+      case ACTION_TYPES.BOT_MESSAGE_WITH_NO_USER_INPUT: {
+        // If a bot message does not require a user input, AND:
+        // if the issue type is issue
+        //   - reset user input to default.
+        //   - enable the user input
+        //   - hide TAI
+        // if the issue type is preIssue, hide footer and show TAI
+        const {issueType} = action;
+
+        if (issueType === ISSUE_TYPE.ISSUE) {
+          const userInputUpdateObj = objUtils.shallowMerge(_getDefaultUserInputConfig(), {
+            value: state.userInput.defaultInputValue, // Restore value of the default input
+            disabled: false
+          });
+
+          const updateObj = {
+            userInput: {$set: userInputUpdateObj},
+            systemTyping: {$set: false}
+          };
+
+          return update(state, updateObj);
+        }
+
+        // For preissues
+        return update(state, {
+          userInput: {
+            disabled: {$set: true}
+          },
+          systemTyping: {$set: true}
+        });
+      }
+
+      case ACTION_TYPES.BOT_MESSAGE_WITH_USER_INPUT: {
+        // When a bot message with a user input is received
+        // - set action's processed user input to the state
+        // - set active footer to reply
+        // - take a backup of the value of the default input, to be used when the bot input switches
+        //    back to the deafult input
+        // - enable the user input
+        // - hide TAI
+        const {userInput} = action;
+        const userInputUpdateObj = objUtils.shallowMerge(_getDefaultUserInputConfig(), userInput);
+
+        userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
+        userInputUpdateObj.disabled = false;
+
+        return update(state, {
+          userInput: {$set: userInputUpdateObj},
+          activeFooter: {$set: ACTIVE_FOOTER.REPLY},
+          systemTyping: {$set: false}
         });
       }
 
