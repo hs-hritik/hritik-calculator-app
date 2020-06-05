@@ -110,6 +110,31 @@ const userReplyFailure = () => {
   };
 };
 
+/**
+ * Action to dispatch when the latest message is a "bot start" message
+ *
+ * @returns {Object} - Action
+ */
+const botStart = () => {
+  return {
+    type: ACTION_TYPES.BOT_START
+  };
+};
+
+/**
+ * Action to dispatch when the latest message is a "bot end" message
+ *
+ * @param {boolean} nextMessageIsBotStep - A boolean to indicate if the next message is going to be
+ *    a bot message
+ * @returns {Object} - Action
+ */
+const botEnd = ({nextMessageIsBotStep}) => {
+  return {
+    type: ACTION_TYPES.BOT_END,
+    nextMessageIsBotStep
+  };
+};
+
 export {
   createPreissueRequest,
   createPreissueSuccess,
@@ -117,5 +142,7 @@ export {
   clearErrors,
   userReplyRequest,
   userReplySuccess,
-  userReplyFailure
+  userReplyFailure,
+  botStart,
+  botEnd
 };

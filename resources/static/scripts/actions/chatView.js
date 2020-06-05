@@ -645,25 +645,15 @@ define("actions/chatView", [
    */
   const handleLatestMessage = (latestMessage) => {
     return (dispatch) => {
-      const {type, has_next_bot: hasNextBot} = latestMessage;
+      const {type, has_next_bot: nextMessageIsBotStep} = latestMessage;
 
       switch (type) {
         case MESSAGE_TYPE.BOT_STARTED:
-          // If the last message in poller is bot start
-          // a] hide the footer
-          handleIssueFooterAndTAI(DISABLE_FOOTER);
+          dispatch(chatViewActionCreators.botStart());
           break;
 
         case MESSAGE_TYPE.BOT_ENDED:
-          // If the last message in poller is bot end
-          // a] reset previous user input data and
-          // b] depending on whether next step is bot, hide or show the footer
-          dispatch(resetUserInput());
-          if (hasNextBot) {
-            handleIssueFooterAndTAI(DISABLE_FOOTER);
-          } else {
-            handleIssueFooterAndTAI(ENABLE_FOOTER);
-          }
+          dispatch(chatViewActionCreators.botEnd({nextMessageIsBotStep}));
           break;
       }
     };

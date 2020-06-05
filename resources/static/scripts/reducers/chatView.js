@@ -821,6 +821,33 @@ define("reducers/chatView", [
         });
       }
 
+      case ACTION_TYPES.BOT_START:
+        // When a bot start message is received, disable the reply box and show the TAI, while
+        // waiting for the next bot step.
+        return update(state, {
+          userInput: {
+            disabled: {$set: true}
+          },
+          systemTyping: {$set: true}
+        });
+
+      case ACTION_TYPES.BOT_END: {
+        // When a bot end message is received:
+        // reset the current user input data
+        // if the next message is going to a bot step, disable the reply box and show TAI
+        // if the next message is not going to a bot step, enable the reply box and hide TAI
+        const {nextMessageIsBotStep} = action;
+        const userInputUpdateObj = objUtils.shallowMerge(_getDefaultUserInputConfig(), {
+          value: state.userInput.defaultInputValue, // Restore value of the default input
+          disabled: !!nextMessageIsBotStep
+        });
+
+        return update(state, {
+          userInput: {$set: userInputUpdateObj},
+          systemTyping: {$set: !!nextMessageIsBotStep}
+        });
+      }
+
       case ACTION_TYPES.SET_LOCAL_GREETING_MESSAGE_ID:
         return update(state, {
           localGreetingMessageId: {$set: action.id}
