@@ -194,7 +194,7 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_WM_CONFIG:
         const {config} = action;
         const intentsAreEnabled = config.si.enabled;
-        const personalisedConversationIsEnabled = config.personalise_conversation_enabled;
+        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
         const greetingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;

@@ -356,7 +356,7 @@ define("reducers/ui", [
           }
         };
         const businessHoursEnabled = config.business_hours_enabled;
-        const personalisedConversationIsEnabled = config.personalise_conversation_enabled;
+        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
 
         if (businessHoursEnabled) {
           const businessHours = config.business_hours;
