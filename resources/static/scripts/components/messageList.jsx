@@ -305,12 +305,7 @@ define("components/messageList", [
      * Render branding
      */
     _renderBranding() {
-      const {showAvatar, userInput} = this.props;
-
-      if (userInput.type === USER_INPUT_TYPES.PILL_SELECT) {
-        return null;
-      }
-
+      const {showAvatar} = this.props;
       const brandingWrapperClasses = classes({
         "hs-message-list__branding-wrapper": showAvatar
       });
