@@ -8,9 +8,9 @@ exports[`BusinessHoursView should render correctly (snapshot) 1`] = `
     fallbackComponent={<NonBlockingError />}
   >
     <ViewHeader
-      avatarUrl="MOCK_AVATAR_URL"
+      avatarUrl=""
       onCloseBtnClick={[MockFunction]}
-      showAvatar={true}
+      showAvatar={false}
       showBackBtn={false}
       showCloseBtn={false}
       title="MOCK_OOBH_VIEW_HEADER"

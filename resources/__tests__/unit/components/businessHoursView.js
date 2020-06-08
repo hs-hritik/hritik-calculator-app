@@ -77,9 +77,7 @@ const setup = () => {
     submitInProgress: true,
     fullPrivacyEnabled: true,
     keyboardInteractionIsActive: true,
-    attachmentsWhitelist: [],
-    showHeaderAvatar: true,
-    appAvatarUrl: "MOCK_AVATAR_URL"
+    attachmentsWhitelist: []
   };
   const enzymeWrapper = shallow(<BusinessHoursView {...props} />);
 
@@ -108,6 +106,5 @@ describe("BusinessHoursView", () => {
     const viewHeaderProps = enzymeWrapper.find("ViewHeader").props();
     expect(viewHeaderProps.title).toBe("MOCK_OOBH_VIEW_HEADER");
     expect(viewHeaderProps.showCloseBtn).toBe(false);
-    expect(viewHeaderProps.showAvatar).toBe(true);
   });
 });
