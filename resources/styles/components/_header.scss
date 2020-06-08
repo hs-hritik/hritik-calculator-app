@@ -36,6 +36,7 @@
     &__avatar-title-wrapper {
       display: flex;
       align-items: center;
+      min-width: 0;
     }
 
     &__back-btn-link,
@@ -65,6 +66,7 @@
     }
 
     &__title-text {
+      @include ellipsis;
       padding-left: gutter(4);
       font-size: font-size(body, large);
     }
