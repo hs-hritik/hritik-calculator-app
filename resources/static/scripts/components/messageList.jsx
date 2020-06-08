@@ -18,7 +18,8 @@ define("components/messageList", [
   "extras/accessibility",
   "helpers/common",
   "gunpowder/utils/date",
-  "constants/message"
+  "constants/message",
+  "constants/avatar"
 ], function(
   Message,
   BrandingContainer,
@@ -33,7 +34,8 @@ define("components/messageList", [
   ax,
   commonHelpers,
   dateUtils,
-  MESSAGE_CONSTANTS
+  MESSAGE_CONSTANTS,
+  AVATAR_CONSTANTS
 ) {
   "use strict";
 
@@ -63,6 +65,7 @@ define("components/messageList", [
   const LOAD_MORE_SCROLL_THRESHOLD = 500;
   const {METALIST_ITEMS, METALIST_GROUP_NAME, FOOTER_SELECTORS_LIST_MAP} = axConstants;
   const {MESSAGE_ROLES} = MESSAGE_CONSTANTS;
+  const {FALLBACK_AVATAR_BASE64} = AVATAR_CONSTANTS;
 
   return createReactClass({
     displayName: "MessageList",
@@ -356,7 +359,7 @@ define("components/messageList", [
     /**
      * Returns avatar image URL
      * @param {Object} message - A messsage object
-     * @returns {string} - Avatar image url
+     * @returns {Object} - Avatar image urls - fallback, original
      */
     _getAvatarUrl(message) {
       const {showAvatar, avatar, avatarLastUpdatedTs} = this.props;
@@ -377,26 +380,36 @@ define("components/messageList", [
 
       switch (author.role) {
         case MESSAGE_ROLES.SYSTEM_MSG:
-          return appAvatarUrl;
+          return {fallback: FALLBACK_AVATAR_BASE64.APP, original: appAvatarUrl};
 
         case MESSAGE_ROLES.BOT_MSG:
           if (botAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
-            return (
-              avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
-              `?ts=${avatarLastUpdatedTs[author.id]}`
-            );
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.BOT,
+              original:
+                avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
+                `?ts=${avatarLastUpdatedTs[author.id]}`
+            };
           } else {
-            return botDefaultAvatarUrl;
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.BOT,
+              original: botDefaultAvatarUrl
+            };
           }
 
         case MESSAGE_ROLES.AGENT_MSG:
           if (agentAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
-            return (
-              avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
-              `?ts=${avatarLastUpdatedTs[author.id]}`
-            );
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.AGENT,
+              original:
+                avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
+                `?ts=${avatarLastUpdatedTs[author.id]}`
+            };
           } else {
-            return agentDefaultAvatarUrl;
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.AGENT,
+              original: agentDefaultAvatarUrl
+            };
           }
 
         default:

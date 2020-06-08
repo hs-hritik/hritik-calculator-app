@@ -75,7 +75,16 @@ define("components/message", [
        * If true, render avatar in message feed
        */
       showAvatar: PropTypes.bool.isRequired,
-      avatarUrl: PropTypes.string,
+      avatarUrl: PropTypes.shape({
+        /**
+         * Avatar to be shown
+         */
+        original: PropTypes.string,
+        /**
+         * Fallback image to render when original image takes time to load
+         */
+        fallback: PropTypes.string
+      }),
       /**
        * If true, show message details (timestamp, nickname) & avatar
        */
@@ -94,7 +103,8 @@ define("components/message", [
 
     getInitialState() {
       return {
-        imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT
+        imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT,
+        avatarIsLoaded: false
       };
     },
 
@@ -220,7 +230,34 @@ define("components/message", [
         return null;
       }
 
-      return <img src={avatarUrl} alt="Avatar Image" className="hs-message__avatar" aria-hidden />;
+      const originalAvatarClasses = classes("hs-message__avatar", {
+        "hs-message__avatar--hidden": !this.state.avatarIsLoaded
+      });
+      let fallbackAvatarEl = null;
+
+      if (!this.state.avatarIsLoaded) {
+        fallbackAvatarEl = (
+          <img
+            src={avatarUrl.fallback}
+            alt="Avatar Image"
+            aria-hidden
+            className="hs-message__avatar"
+          />
+        );
+      }
+
+      return (
+        <>
+          {fallbackAvatarEl}
+          <img
+            src={avatarUrl.original}
+            alt="Avatar Image"
+            className={originalAvatarClasses}
+            aria-hidden
+            onLoad={this._onAvatarLoad}
+          />
+        </>
+      );
     },
 
     /**
@@ -541,6 +578,15 @@ define("components/message", [
      */
     _onAttachmentClick(url) {
       window.open(url);
+    },
+
+    /**
+     * On load handler for image
+     */
+    _onAvatarLoad() {
+      this.setState({
+        avatarIsLoaded: true
+      });
     },
 
     /**

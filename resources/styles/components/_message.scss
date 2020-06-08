@@ -72,6 +72,10 @@
       height: $avatar-size;
       margin-top: gutter(18);
       border-radius: radius(round);
+
+      &--hidden {
+        display: none;
+      }
     }
 
     &__item {
