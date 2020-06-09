@@ -80,6 +80,7 @@ define("actions/appState", [
   const {EVENT} = analyticsConstants;
 
   const {TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
+  const LATEST_ISSUE_NOT_AVAILABLE = "NOT_AVAILABLE";
 
   const isCssVarSupported =
     window.CSS && window.CSS.supports && window.CSS.supports("--fake-var", 0);
@@ -410,7 +411,9 @@ define("actions/appState", [
       if (!issueExists) {
         dispatch(
           postSdkMessage.conversationStatusEvent({
-            open: false
+            open: false,
+            latestIssueId: LATEST_ISSUE_NOT_AVAILABLE,
+            latestIssuePublishId: LATEST_ISSUE_NOT_AVAILABLE
           })
         );
 
