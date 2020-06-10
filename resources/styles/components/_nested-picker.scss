@@ -63,7 +63,9 @@
       }
 
       &-label {
+        @include word-break;
         flex: 1;
+        hyphens: auto;
         white-space: normal;
       }
 
@@ -79,6 +81,7 @@
       border-bottom: 1px solid $form-border-color;
 
       &-text {
+        @include ellipsis(90%);
         font-weight: font-weight(medium);
         color: $header-txt-color;
         opacity: 0.7;
