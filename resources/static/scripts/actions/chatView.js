@@ -476,23 +476,64 @@ define("actions/chatView", [
   const handlePostChatFeatureSteps = () => {
     const {dispatch, getState} = store;
     const {
-      chatView: {isCsatSubmitted}
+      chatView: {isCsatSubmitted},
+      appState: {
+        expiryTimestamps: {
+          resolutionQuestion: resolutionQuestionExpiryTimestamp,
+          csatBot: csatBotExpiryTimestamp
+        }
+      }
     } = getState();
     const lastMessageType = getLatestMessage().type;
     const actionsToDispatch = [];
+    const resolutionQuestionHasExpired =
+      resolutionQuestionExpiryTimestamp && Date.now() >= resolutionQuestionExpiryTimestamp;
+    const csatBotHasExpired = csatBotExpiryTimestamp && Date.now() >= csatBotExpiryTimestamp;
+
+    if (resolutionQuestionHasExpired || csatBotHasExpired) {
+      trackPostResolutionFeatureExpiryEvents(resolutionQuestionHasExpired, csatBotHasExpired);
+    }
 
     // If type of last message in message list is either accepted or rejected by user,
+    // or if the resolution question timer expires
     // set resolution question step as completed
-    if (lastMessageType === MESSAGE_TYPE.ACCEPTED || lastMessageType === MESSAGE_TYPE.REJECTED) {
+    if (
+      lastMessageType === MESSAGE_TYPE.ACCEPTED ||
+      lastMessageType === MESSAGE_TYPE.REJECTED ||
+      resolutionQuestionHasExpired
+    ) {
       actionsToDispatch.push(actionCreators.setResolutionQuestionCompleted(true));
     }
 
-    // If csat rating is submitted by the user, set csat step as completed
-    if (isCsatSubmitted) {
+    // If csat rating is submitted by the user,
+    // or if the csat bot timer expires
+    // set csat step as completed
+    if (isCsatSubmitted || csatBotHasExpired) {
       actionsToDispatch.push(actionCreators.setCsatCompleted());
     }
 
     dispatch(batchActions(actionsToDispatch));
+  };
+
+  /**
+   * Track the post resolution feature expiry events
+   *
+   * @param {boolean} resolutionQuestionHasExpired - If true, resolution question has expired
+   * @param {boolean} csatBotHasExpired - If true, csat bot has expired
+   */
+  const trackPostResolutionFeatureExpiryEvents = (
+    resolutionQuestionHasExpired,
+    csatBotHasExpired
+  ) => {
+    if (resolutionQuestionHasExpired) {
+      // @TODO: https://helpshift.atlassian.net/browse/CONEX-461
+      // Track the resolution question expiry event.
+    }
+
+    if (csatBotHasExpired) {
+      // @TODO: https://helpshift.atlassian.net/browse/CONEX-462
+      // Track the resolution question expiry event.
+    }
   };
 
   /**
