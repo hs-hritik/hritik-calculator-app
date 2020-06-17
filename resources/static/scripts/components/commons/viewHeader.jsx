@@ -5,8 +5,13 @@
  * @created June 13, 2017
  */
 
-define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(classes) {
+define("components/commons/viewHeader", ["gunpowder/utils/classes", "constants/avatar"], function(
+  classes,
+  AVATAR_CONSTANTS
+) {
   "use strict";
+
+  const {FALLBACK_AVATAR_BASE64} = AVATAR_CONSTANTS;
 
   return createReactClass({
     displayName: "ViewHeader",
@@ -21,7 +26,11 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(cl
       }),
       ariaLabel: PropTypes.string,
       showAvatar: PropTypes.bool,
-      avatarUrl: PropTypes.string
+      avatarUrl: PropTypes.string,
+      /**
+       * Fallback image url when original image takes time to load
+       */
+      fallbackAvatar: PropTypes.string
     },
 
     getDefaultProps() {
@@ -29,7 +38,14 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(cl
         showAvatar: false,
         avatarUrl: "",
         showBackBtn: false,
-        showCloseBtn: false
+        showCloseBtn: false,
+        fallbackAvatar: FALLBACK_AVATAR_BASE64.APP
+      };
+    },
+
+    getInitialState() {
+      return {
+        avatarIsLoaded: false
       };
     },
 
@@ -83,13 +99,35 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(cl
     },
 
     _renderAvatar() {
-      const {showAvatar, avatarUrl} = this.props;
+      const {showAvatar, avatarUrl, fallbackAvatar} = this.props;
 
       if (!showAvatar) {
         return null;
       }
 
-      return <img src={avatarUrl} alt="Avatar Image" className="hs-header__avatar" aria-hidden />;
+      const avatarClasses = classes("hs-header__avatar", {
+        "hs-header__avatar--hidden": !this.state.avatarIsLoaded
+      });
+      let fallbackAvatarEl = null;
+
+      if (!this.state.avatarIsLoaded) {
+        fallbackAvatarEl = (
+          <img src={fallbackAvatar} alt="Avatar Image" aria-hidden className="hs-header__avatar" />
+        );
+      }
+
+      return (
+        <>
+          {fallbackAvatarEl}
+          <img
+            src={avatarUrl}
+            alt="Avatar Image"
+            className={avatarClasses}
+            aria-hidden
+            onLoad={this._onAvatarLoad}
+          />
+        </>
+      );
     },
 
     /**
@@ -105,6 +143,15 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes"], function(cl
           <i className="ion-cross hs-header__close-icon" />
         </a>
       );
+    },
+
+    /**
+     * On load handler for image
+     */
+    _onAvatarLoad() {
+      this.setState({
+        avatarIsLoaded: true
+      });
     },
 
     /**

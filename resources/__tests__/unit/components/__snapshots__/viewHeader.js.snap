@@ -19,6 +19,13 @@ exports[`ViewHeader should render correctly (snapshot) 1`] = `
       alt="Avatar Image"
       aria-hidden={true}
       className="hs-header__avatar"
+      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAACB1BMVEUiJSgfIyYNERQaHSAKDREDBwoXGh0KDREQFBdOUVMcHyP+/v4UFxo1ODuDhYf7+/v///8HDRFcXmEHCg0RFBf6+vrr6+vo6OmVl5lWWFvp6enR0dL////Z2dnz8/P4+flKTVDx8fGeoKD5+fnz8/OmqKj6+vqXmZljZmiWlpj5+fnT09Pe3t78/PxYW17e3t9MT1GWmJjAwsL4+PhJTE/6+vodICPLzMz7+/vg4OH7+/v+/v4HCg7u7u/z8/Slp6d3enwTFxrp6elFSEva2trKysvo6emdn5/w8PBUV1m8vr75+fn8/PylpadJTExHSk3GyMjQ0NLZ2dldX1/6+vrp6+vNzc4/QkXm5uZRU1ZAQ0bj4+QAAAfr7OxdXV/T1dXt7e3R0dPz8/Pv7+/Kysy+vr/ExcdfYmRKTU2+wMDNzs7o6Ojr6+xgYmXw8PDR0dEHChHr7OzAwMLw8PCkpqhYW1vs7e1SVVhnaWzz8/P5+vrg4OD09PRsbG/e4OCXmZvLy8z09PTBw8Tq6uqVl5fs7OyKjI4WGh0ABwr//v/g4OH09PQ3Oj2eoKL+/v4DBw6wsrLt7+9MTE/39/fX19gaHSCTlZVGRkm2uLja2trp6ur5+fmXl5kKDRQnKy6hoaPDw8WKiozz8/Ty8/Pm5ujR0tKjpaVXWVxcXl5aXV9PUVEyNTj///+CPnKjAAAArHRSTlNSUU1QTUtPTE5fUf1OV3X0/kxkTE3z1NCAYtKx/brj713ihPHkifKAZ37vssH3YsJefp/vXvRQq/bD8/5L3OWIb0/RXLuo0YXdYZzy+IhbXaavvGP11K1Zzl9byErWY7XasuXdqZyjZl2drdHWZd+yTNie4Yli2WBo4vLD5GrDgKrlodN/2HhQS/3G5liE+0uR2l7tuU99W5e80/B/TVSFonjk5NCwiGFkY15WVZsmTQAAAntJREFUeF7t1lVz4zAUBeArWbbD0CZlZmamLWy7bZeZmZmZmZmZ+f7IdSf1jNtIsrudvuV70ss5M9YkVxdmXkICUQwE/o8SVjW/e+kGt19TwwpMEWE0fVZmalFuMNhYlJo5P50yAlOgk7TaQrQorE0jOjil0PIMjJNRThVwhDVlZyFHVnYTAwfUQD4K5AdUB/k5URSKFqi2+YJqlKi2a2CBDpTqCDCQ0PJy0EZOngZidDbaWkJBiNV70Za3noEAISnoQAohwMdKQyg21zyESpmooB3FNi5ouI0x7YICpaYEhTZrfero+A2V1CjAEy5GocU+D9Cd8zCmOAw8aiWK7HF5wLdyFY6rVIFH60eB1rH8mlQ0DWnAQfw9yDdICfgGLCOix08gnuKuQK5FRt61cLmlscKt8AqSgpZUVZV52qEb+br1aBFM4hcsQ5P3kq6viB2vGPnI6uvIKZB8wtp1xBNpRcTQkWQCdGQTTpDrbuFe4hY0bR1wgYduw9D2sXxNN050jnuJoA1Z/jC7XEAig7vH8knDOMlezf6HtK/OaPD5AOj+AzjZQRV4DhWjxWF3BAys7CjGOaYDj3K8BC1OnDQa9FOnMc6ZdAW42Fm0ejxCk88XYbwLwnlwMYRW3WW9lzFeKI05HWnRNuS4SggIsGtOhmopm95Y77xBQeim+bDINNySPm3NaOcOkz/O1Wjj7j2PtOF+FOUe9PpA5mEgH+UedYEUe8JfcbxPO2OHZ8kg95y7ZPW/eBl49Xq4DfFNH9hhk9e8t1XvyHuPS+36UPbx02fN8aL5JTfY3Pj12/cfP81Fk2i66prKqvvr95+/mqor01i2WwjMuISEf329XmKdVUfHAAAAAElFTkSuQmCC"
+    />
+    <img
+      alt="Avatar Image"
+      aria-hidden={true}
+      className="hs-header__avatar hs-header__avatar--hidden"
+      onLoad={[Function]}
       src="MOCK_AVATAR_URL"
     />
     <span

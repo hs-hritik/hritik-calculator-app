@@ -63,6 +63,10 @@
       height: $avatar-size;
       margin-right: gutter(4);
       border-radius: radius(round);
+
+      &--hidden {
+        display: none;
+      }
     }
 
     &__title-text {
