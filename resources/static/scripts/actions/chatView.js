@@ -1447,6 +1447,20 @@ define("actions/chatView", [
         });
 
         const oldestIssue = issues[issues.length - 1];
+        const {
+          resolution_question_expiry_at: resolutionQuestionExpiryTimestamp,
+          csat_expiry_at: csatBotExpiryTimestamp
+        } = issues[0];
+
+        // Refactor this to event-based actions and dispatch the success action
+        // in every success callback with updating the state based on whether a
+        // value is present or not.
+        if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+          dispatch({
+            type: ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS,
+            payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+          });
+        }
 
         dispatch(
           batchActions([
@@ -1611,8 +1625,20 @@ define("actions/chatView", [
             publish_id: issueId,
             type: currentIssueType,
             state_data: {state: issueState},
-            csat_received: isCsatSubmitted
+            csat_received: isCsatSubmitted,
+            resolution_question_expiry_at: resolutionQuestionExpiryTimestamp,
+            csat_expiry_at: csatBotExpiryTimestamp
           } = currentIssue;
+
+          // Refactor this to event-based actions and dispatch the success action
+          // in every success callback with updating the state based on whether a
+          // value is present or not.
+          if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+            dispatch({
+              type: ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS,
+              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+            });
+          }
 
           const isPreIssue = currentIssueType === ISSUE_TYPE.PRE_ISSUE;
           const internalIssueId = _getIssueId(currentIssue);
