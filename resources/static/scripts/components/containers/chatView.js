@@ -18,7 +18,7 @@ define("components/containers/chatView", [
   const mapStateToProps = (state) => {
     const {
       appState: {
-        featuresEnabled: {agentNickname, personalisedConversationIsEnabled},
+        featuresEnabled: {personalisedConversationIsEnabled},
         activeIssueId,
         issueType,
         minimized,
@@ -56,7 +56,7 @@ define("components/containers/chatView", [
       messages,
       minimized,
       isTyping: systemTyping || agentTyping,
-      showAgentNickname: agentNickname,
+      showAgentNickname: personalisedConversationIsEnabled,
       personalisedConversationIsEnabled,
       text: text,
       issueIsCreated: commonHelpers.isIssueCreated({
