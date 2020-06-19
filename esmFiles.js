@@ -10,5 +10,6 @@
 
 module.exports = [
   "resources/static/scripts/utils/logReactError.js",
-  "resources/static/scripts/constants/avatar.js"
+  "resources/static/scripts/constants/avatar.js",
+  "resources/static/scripts/components/commons/avatar.jsx"
 ];

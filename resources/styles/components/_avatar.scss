@@ -1,0 +1,23 @@
+// Styles for Helpshift Web SDK UI
+// [helpshift.com](https://helpshift.com)
+// Copyright 2017, Helpshift Inc.
+
+// - - - - - - - - - - - - - - -
+// Styles for avatar
+// - - - - - - - - - - - - - - -
+
+///
+/// @group avatar
+///
+
+@include component(avatar) {
+  .hs-avatar {
+    &__avatar {
+      border-radius: radius(round);
+
+      &--hidden {
+        display: none;
+      }
+    }
+  }
+}
