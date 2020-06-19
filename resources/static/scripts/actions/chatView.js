@@ -1452,6 +1452,9 @@ define("actions/chatView", [
           hasOlderMsgs,
           conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled
         });
+        const avatarsTs = messageHelpers.getAvatarTs(linearMsgs);
+
+        dispatch(updateLatestAvatarTs(avatarsTs));
 
         handleSettingLatestConversationLoadStatus({
           hasOlderMsgs,
