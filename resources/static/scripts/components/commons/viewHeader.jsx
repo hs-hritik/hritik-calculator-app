@@ -5,11 +5,13 @@
  * @created June 13, 2017
  */
 
-define("components/commons/viewHeader", ["gunpowder/utils/classes", "constants/avatar"], function(
-  classes,
-  AVATAR_CONSTANTS
-) {
+define("components/commons/viewHeader", [
+  "gunpowder/utils/classes",
+  "constants/avatar",
+  "components/commons/avatar"
+], function(classes, AVATAR_CONSTANTS, avatarEsm) {
   "use strict";
+  const Avatar = avatarEsm.default;
 
   const {FALLBACK_AVATAR_BASE64} = AVATAR_CONSTANTS;
 
@@ -99,35 +101,9 @@ define("components/commons/viewHeader", ["gunpowder/utils/classes", "constants/a
     },
 
     _renderAvatar() {
-      const {showAvatar, avatarUrl, fallbackAvatar} = this.props;
+      const {showAvatar, avatarUrl} = this.props;
 
-      if (!showAvatar) {
-        return null;
-      }
-
-      const avatarClasses = classes("hs-header__avatar", {
-        "hs-header__avatar--hidden": !this.state.avatarIsLoaded
-      });
-      let fallbackAvatarEl = null;
-
-      if (!this.state.avatarIsLoaded) {
-        fallbackAvatarEl = (
-          <img src={fallbackAvatar} alt="Avatar Image" aria-hidden className="hs-header__avatar" />
-        );
-      }
-
-      return (
-        <>
-          {fallbackAvatarEl}
-          <img
-            src={avatarUrl}
-            alt="Avatar Image"
-            className={avatarClasses}
-            aria-hidden
-            onLoad={this._onAvatarLoad}
-          />
-        </>
-      );
+      return <Avatar showAvatar={showAvatar} avatarUrl={avatarUrl} className="hs-header__avatar" />;
     },
 
     /**
