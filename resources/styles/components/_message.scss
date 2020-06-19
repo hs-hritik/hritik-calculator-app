@@ -68,14 +68,7 @@
       position: absolute;
       top: 0;
       left: -40px;
-      width: $avatar-size;
-      height: $avatar-size;
       margin-top: gutter(18);
-      border-radius: radius(round);
-
-      &--hidden {
-        display: none;
-      }
     }
 
     &__item {

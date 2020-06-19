@@ -16,7 +16,8 @@ define("components/message", [
   "gunpowder/utils/classes",
   "gunpowder/utils/object",
   "helpers/common",
-  "extras/accessibility"
+  "extras/accessibility",
+  "components/commons/avatar"
 ], function(
   attachmentComponents,
   customPropTypes,
@@ -29,9 +30,11 @@ define("components/message", [
   classes,
   objUtils,
   commonHelper,
-  ax
+  ax,
+  avatarEsm
 ) {
   "use strict";
+  const Avatar = avatarEsm.default;
 
   const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
   const {TYPE: MESSAGE_TYPE, MESSAGE_ROLES} = MESSAGE_CONSTANTS;
@@ -225,38 +228,21 @@ define("components/message", [
 
     _renderAvatar() {
       const {avatarUrl} = this.props;
+      let originalAvatar = null;
+      let fallbackAvatar = null;
 
-      if (!this._shouldAvatarRender()) {
-        return null;
-      }
-
-      const originalAvatarClasses = classes("hs-message__avatar", {
-        "hs-message__avatar--hidden": !this.state.avatarIsLoaded
-      });
-      let fallbackAvatarEl = null;
-
-      if (!this.state.avatarIsLoaded) {
-        fallbackAvatarEl = (
-          <img
-            src={avatarUrl.fallback}
-            alt="Avatar Image"
-            aria-hidden
-            className="hs-message__avatar"
-          />
-        );
+      if (avatarUrl) {
+        originalAvatar = avatarUrl.original;
+        fallbackAvatar = avatarUrl.fallback;
       }
 
       return (
-        <>
-          {fallbackAvatarEl}
-          <img
-            src={avatarUrl.original}
-            alt="Avatar Image"
-            className={originalAvatarClasses}
-            aria-hidden
-            onLoad={this._onAvatarLoad}
-          />
-        </>
+        <Avatar
+          showAvatar={this._shouldAvatarRender()}
+          avatarUrl={originalAvatar}
+          className="hs-message__avatar"
+          fallbackAvatar={fallbackAvatar}
+        />
       );
     },
 
