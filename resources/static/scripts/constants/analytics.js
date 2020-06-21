@@ -68,7 +68,8 @@ define("constants/analytics", function() {
     // @TODO: Intents: Confirm the batch events timeout value.
     BATCH_EVENTS_TIMEOUT: 3000,
     EXPIRY_EVENT: {
-      RESOLUTION_QUESTION: "reopen"
+      RESOLUTION_QUESTION: "reopen",
+      CSAT_BOT: "csat"
     }
   };
 });

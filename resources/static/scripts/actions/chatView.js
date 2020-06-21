@@ -542,8 +542,10 @@ define("actions/chatView", [
     }
 
     if (csatBotHasExpired) {
-      // @TODO: https://helpshift.atlassian.net/browse/CONEX-462
-      // Track the resolution question expiry event.
+      analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+        issueId,
+        feature: EXPIRY_EVENT.CSAT_BOT
+      });
     }
   };
 
