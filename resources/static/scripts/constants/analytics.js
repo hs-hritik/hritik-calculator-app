@@ -24,7 +24,8 @@ define("constants/analytics", function() {
       SEARCH_INTENTS: "SEARCH_INTENTS",
       INTENT_TREE_SHOWN: "INTENT_TREE_SHOWN",
       MESSAGE_SENT: "MESSAGE_SENT",
-      MESSAGE_ACTION_CLICKED: "MESSAGE_ACTION_CLICKED"
+      MESSAGE_ACTION_CLICKED: "MESSAGE_ACTION_CLICKED",
+      FEATURE_EXPIRY: "FEATURE_EXPIRY"
     },
     // The PAYLOAD_EVENT constant is to be used with the tracking XHR's payload.
     PAYLOAD_EVENT: {
@@ -49,7 +50,8 @@ define("constants/analytics", function() {
       SEARCH_INTENTS: "sisr",
       INTENT_TREE_SHOWN: "its",
       MESSAGE_SENT: "m",
-      MESSAGE_ACTION_CLICKED: "acl"
+      MESSAGE_ACTION_CLICKED: "acl",
+      FEATURE_EXPIRY: "te"
     },
     // The TRIGGER constant is to be used in web chat internal logic and not with
     // the tracking XHR's payload.
@@ -64,6 +66,9 @@ define("constants/analytics", function() {
     // The events which get triggered within this time will be passed to
     // backend in the same XHR.
     // @TODO: Intents: Confirm the batch events timeout value.
-    BATCH_EVENTS_TIMEOUT: 3000
+    BATCH_EVENTS_TIMEOUT: 3000,
+    EXPIRY_EVENT: {
+      RESOLUTION_QUESTION: "reopen"
+    }
   };
 });

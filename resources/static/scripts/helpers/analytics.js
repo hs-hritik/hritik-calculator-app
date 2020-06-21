@@ -526,6 +526,26 @@ define("helpers/analytics", [
   };
 
   /**
+   * Track feature expiry event. This event is triggered when:
+   * 1) User loads an resolved issue or takes some action on the resolution
+   * question after it has been expired.
+   *
+   * @param {Object} eventData
+   * @param {string} eventData.issueId - Active issue id
+   * @param {string} eventData.feature - Feature that has been expired
+   */
+  const _trackFeatureExpiry = ({issueId, feature}) => {
+    _trackEvent({
+      t: PAYLOAD_EVENT.FEATURE_EXPIRY,
+      ts: Date.now(),
+      d: {
+        type: feature,
+        id: issueId
+      }
+    });
+  };
+
+  /**
    * Track the given event with relevant data.
    * @param {string} event - The event to track.
    * @param {Object} [config]
@@ -575,6 +595,9 @@ define("helpers/analytics", [
         break;
       case EVENT.MESSAGE_ACTION_CLICKED:
         _trackMessageActionClicked(config);
+        break;
+      case EVENT.FEATURE_EXPIRY:
+        _trackFeatureExpiry(config);
         break;
     }
   };

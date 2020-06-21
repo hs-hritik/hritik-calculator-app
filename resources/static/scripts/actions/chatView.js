@@ -96,13 +96,15 @@ define("actions/chatView", [
     ALLOWED_EMPTY_POLLER_COUNT
   } = APP_STATE_CONSTANTS;
 
-  const {EVENT} = analyticsConstants;
+  const {EVENT, EXPIRY_EVENT} = analyticsConstants;
 
   const update = React.addons.update;
 
   const PROCESS = true;
   const ENABLE_FOOTER = true;
   const DISABLE_FOOTER = !ENABLE_FOOTER;
+
+  const RESOLUTION_QUESTION_EXPIRY_MESSAGE = "resolution question timer expired";
 
   let systemTypingTimerId = null,
     pollingEnabled = false,
@@ -478,6 +480,7 @@ define("actions/chatView", [
     const {
       chatView: {isCsatSubmitted},
       appState: {
+        internalIssueId,
         expiryTimestamps: {
           resolutionQuestion: resolutionQuestionExpiryTimestamp,
           csatBot: csatBotExpiryTimestamp
@@ -491,7 +494,11 @@ define("actions/chatView", [
     const csatBotHasExpired = csatBotExpiryTimestamp && Date.now() >= csatBotExpiryTimestamp;
 
     if (resolutionQuestionHasExpired || csatBotHasExpired) {
-      trackPostResolutionFeatureExpiryEvents(resolutionQuestionHasExpired, csatBotHasExpired);
+      trackPostResolutionFeatureExpiryEvents(
+        resolutionQuestionHasExpired,
+        csatBotHasExpired,
+        internalIssueId
+      );
     }
 
     // If type of last message in message list is either accepted or rejected by user,
@@ -520,14 +527,18 @@ define("actions/chatView", [
    *
    * @param {boolean} resolutionQuestionHasExpired - If true, resolution question has expired
    * @param {boolean} csatBotHasExpired - If true, csat bot has expired
+   * @param {string} issueId - Current issue id
    */
   const trackPostResolutionFeatureExpiryEvents = (
     resolutionQuestionHasExpired,
-    csatBotHasExpired
+    csatBotHasExpired,
+    issueId
   ) => {
     if (resolutionQuestionHasExpired) {
-      // @TODO: https://helpshift.atlassian.net/browse/CONEX-461
-      // Track the resolution question expiry event.
+      analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+        issueId,
+        feature: EXPIRY_EVENT.RESOLUTION_QUESTION
+      });
     }
 
     if (csatBotHasExpired) {
@@ -1988,7 +1999,7 @@ define("actions/chatView", [
         userInput,
         botState: {botStepInProgress, botStepMessage}
       },
-      appState: {domain, activeIssueId, issueType, reEngagementId}
+      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId}
     } = getState();
     const {msgBody, msgType, onSuccess, onEnd} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
@@ -2083,7 +2094,9 @@ define("actions/chatView", [
           onSuccess(response);
         }
       },
-      onFailure: (request, statusCode) => {
+      onFailure: (_xhr, statusCode) => {
+        const errorData = JSON.parse(_xhr.response);
+
         // Handle 410 status code. It is sent in the following cases -
         // 1. attempt to reopen a closed issue, and
         // 2. issue is archived
@@ -2091,6 +2104,13 @@ define("actions/chatView", [
         // conversation closed message.
         if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
           handleChatEnd({conversationHasEnded: true});
+
+          if (errorData.msg === RESOLUTION_QUESTION_EXPIRY_MESSAGE) {
+            analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+              issueId: internalIssueId,
+              feature: EXPIRY_EVENT.RESOLUTION_QUESTION
+            });
+          }
         } else if (isPreIssue) {
           // If user reply on
           // 1. preIssue fails
