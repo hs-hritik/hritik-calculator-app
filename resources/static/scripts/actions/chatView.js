@@ -1507,8 +1507,6 @@ define("actions/chatView", [
           issue: oldestIssue,
           cursorType: CURSOR_TYPES.BACKWARD
         });
-
-        dispatch(actionCreators.fetchMessagesSuccess());
       },
 
       onFailure: () => {
@@ -2993,12 +2991,10 @@ define("actions/chatView", [
   return {
     createPreIssue,
     updateReplyText,
-    enableReplyBox,
     submitReply,
     abortCreatePreissueXhr,
     startPollingForMessages,
     stopPollingForMessages,
-    addMessages,
     markMessagesSeen,
     handleScrollPastExistingConversation,
     switchToChatView,
@@ -3008,7 +3004,6 @@ define("actions/chatView", [
     showPostIssueResolutionFooter,
     acceptResolutionQuestion,
     rejectResolutionQuestion,
-    updateUserInputData,
     setUserSelectedOption,
     handleErrorAction,
     skipUserInput,
