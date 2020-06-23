@@ -159,7 +159,11 @@ define("reducers/appState", [
       avatarUrlTemplate: ""
     },
     showHeaderAvatar: false,
-    appAvatarUrl: ""
+    appAvatarUrl: "",
+    expiryTimestamps: {
+      resolutionQuestion: 0,
+      csatBot: 0
+    }
   };
 
   /**
@@ -526,6 +530,15 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_KEYBOARD_INTERACTION_IS_ACTIVE:
         return update(state, {
           keyboardInteractionIsActive: {$set: action.active}
+        });
+
+      case ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS:
+      case ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS:
+        return update(state, {
+          expiryTimestamps: {
+            resolutionQuestion: {$set: action.payload.resolutionQuestionExpiryTimestamp || 0},
+            csatBot: {$set: action.payload.csatBotExpiryTimestamp || 0}
+          }
         });
 
       default:

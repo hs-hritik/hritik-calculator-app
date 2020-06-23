@@ -97,13 +97,15 @@ define("actions/chatView", [
     ALLOWED_EMPTY_POLLER_COUNT
   } = APP_STATE_CONSTANTS;
 
-  const {EVENT} = analyticsConstants;
+  const {EVENT, EXPIRY_EVENT} = analyticsConstants;
 
   const update = React.addons.update;
 
   const PROCESS = true;
   const ENABLE_FOOTER = true;
   const DISABLE_FOOTER = !ENABLE_FOOTER;
+
+  const RESOLUTION_QUESTION_EXPIRY_MESSAGE = "resolution question timer expired";
 
   let systemTypingTimerId = null,
     pollingEnabled = false,
@@ -489,23 +491,75 @@ define("actions/chatView", [
   const handlePostChatFeatureSteps = () => {
     const {dispatch, getState} = store;
     const {
-      chatView: {isCsatSubmitted}
+      chatView: {isCsatSubmitted},
+      appState: {
+        internalIssueId,
+        expiryTimestamps: {
+          resolutionQuestion: resolutionQuestionExpiryTimestamp,
+          csatBot: csatBotExpiryTimestamp
+        }
+      }
     } = getState();
     const lastMessageType = getLatestMessage().type;
     const actionsToDispatch = [];
+    const resolutionQuestionHasExpired =
+      resolutionQuestionExpiryTimestamp && Date.now() >= resolutionQuestionExpiryTimestamp;
+    const csatBotHasExpired = csatBotExpiryTimestamp && Date.now() >= csatBotExpiryTimestamp;
+
+    if (resolutionQuestionHasExpired || csatBotHasExpired) {
+      trackPostResolutionFeatureExpiryEvents(
+        resolutionQuestionHasExpired,
+        csatBotHasExpired,
+        internalIssueId
+      );
+    }
 
     // If type of last message in message list is either accepted or rejected by user,
+    // or if the resolution question timer expires
     // set resolution question step as completed
-    if (lastMessageType === MESSAGE_TYPE.ACCEPTED || lastMessageType === MESSAGE_TYPE.REJECTED) {
+    if (
+      lastMessageType === MESSAGE_TYPE.ACCEPTED ||
+      lastMessageType === MESSAGE_TYPE.REJECTED ||
+      resolutionQuestionHasExpired
+    ) {
       actionsToDispatch.push(actionCreators.setResolutionQuestionCompleted(true));
     }
 
-    // If csat rating is submitted by the user, set csat step as completed
-    if (isCsatSubmitted) {
+    // If csat rating is submitted by the user,
+    // or if the csat bot timer expires
+    // set csat step as completed
+    if (isCsatSubmitted || csatBotHasExpired) {
       actionsToDispatch.push(actionCreators.setCsatCompleted());
     }
 
     dispatch(batchActions(actionsToDispatch));
+  };
+
+  /**
+   * Track the post resolution feature expiry events
+   *
+   * @param {boolean} resolutionQuestionHasExpired - If true, resolution question has expired
+   * @param {boolean} csatBotHasExpired - If true, csat bot has expired
+   * @param {string} issueId - Current issue id
+   */
+  const trackPostResolutionFeatureExpiryEvents = (
+    resolutionQuestionHasExpired,
+    csatBotHasExpired,
+    issueId
+  ) => {
+    if (resolutionQuestionHasExpired) {
+      analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+        issueId,
+        feature: EXPIRY_EVENT.RESOLUTION_QUESTION
+      });
+    }
+
+    if (csatBotHasExpired) {
+      analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+        issueId,
+        feature: EXPIRY_EVENT.CSAT_BOT
+      });
+    }
   };
 
   /**
@@ -1463,6 +1517,20 @@ define("actions/chatView", [
         });
 
         const oldestIssue = issues[issues.length - 1];
+        const {
+          resolution_question_expiry_at: resolutionQuestionExpiryTimestamp,
+          csat_expiry_at: csatBotExpiryTimestamp
+        } = issues[0];
+
+        // Refactor this to event-based actions and dispatch the success action
+        // in every success callback with updating the state based on whether a
+        // value is present or not.
+        if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+          dispatch({
+            type: ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS,
+            payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+          });
+        }
 
         dispatch(
           batchActions([
@@ -1627,8 +1695,20 @@ define("actions/chatView", [
             publish_id: issueId,
             type: currentIssueType,
             state_data: {state: issueState},
-            csat_received: isCsatSubmitted
+            csat_received: isCsatSubmitted,
+            resolution_question_expiry_at: resolutionQuestionExpiryTimestamp,
+            csat_expiry_at: csatBotExpiryTimestamp
           } = currentIssue;
+
+          // Refactor this to event-based actions and dispatch the success action
+          // in every success callback with updating the state based on whether a
+          // value is present or not.
+          if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+            dispatch({
+              type: ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS,
+              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+            });
+          }
 
           const isPreIssue = currentIssueType === ISSUE_TYPE.PRE_ISSUE;
           const internalIssueId = _getIssueId(currentIssue);
@@ -1942,7 +2022,7 @@ define("actions/chatView", [
         userInput,
         botState: {botStepInProgress, botStepMessage}
       },
-      appState: {domain, activeIssueId, issueType, reEngagementId}
+      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId}
     } = getState();
     const {msgBody, msgType, onSuccess, onEnd} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
@@ -2037,7 +2117,9 @@ define("actions/chatView", [
           onSuccess(response);
         }
       },
-      onFailure: (request, statusCode) => {
+      onFailure: (_xhr, statusCode) => {
+        const errorData = JSON.parse(_xhr.response);
+
         // Handle 410 status code. It is sent in the following cases -
         // 1. attempt to reopen a closed issue, and
         // 2. issue is archived
@@ -2045,6 +2127,13 @@ define("actions/chatView", [
         // conversation closed message.
         if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
           handleChatEnd({conversationHasEnded: true});
+
+          if (errorData.msg === RESOLUTION_QUESTION_EXPIRY_MESSAGE) {
+            analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+              issueId: internalIssueId,
+              feature: EXPIRY_EVENT.RESOLUTION_QUESTION
+            });
+          }
         } else if (isPreIssue) {
           // If user reply on
           // 1. preIssue fails
