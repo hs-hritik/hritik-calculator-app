@@ -75,6 +75,10 @@ describe("csatView actions", () => {
         },
         featuresEnabled: {
           resolutionQuestion: false
+        },
+        expiryTimestamps: {
+          resolutionQuestion: 0,
+          csatBot: 0
         }
       },
       csatView: {

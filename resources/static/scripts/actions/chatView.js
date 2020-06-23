@@ -493,48 +493,23 @@ define("actions/chatView", [
   const handlePostChatFeatureSteps = () => {
     const {dispatch, getState} = store;
     const {
-      chatView: {isCsatSubmitted},
-      appState: {
-        internalIssueId,
-        expiryTimestamps: {
-          resolutionQuestion: resolutionQuestionExpiryTimestamp,
-          csatBot: csatBotExpiryTimestamp
-        }
-      }
+      chatView: {isCsatSubmitted}
     } = getState();
     const lastMessageType = getLatestMessage().type;
-    const actionsToDispatch = [];
-    const resolutionQuestionHasExpired =
-      resolutionQuestionExpiryTimestamp && Date.now() >= resolutionQuestionExpiryTimestamp;
-    const csatBotHasExpired = csatBotExpiryTimestamp && Date.now() >= csatBotExpiryTimestamp;
-
-    if (resolutionQuestionHasExpired || csatBotHasExpired) {
-      trackPostResolutionFeatureExpiryEvents(
-        resolutionQuestionHasExpired,
-        csatBotHasExpired,
-        internalIssueId
-      );
-    }
 
     // If type of last message in message list is either accepted or rejected by user,
     // or if the resolution question timer expires
     // set resolution question step as completed
-    if (
-      lastMessageType === MESSAGE_TYPE.ACCEPTED ||
-      lastMessageType === MESSAGE_TYPE.REJECTED ||
-      resolutionQuestionHasExpired
-    ) {
-      actionsToDispatch.push(actionCreators.setResolutionQuestionCompleted(true));
+    if (lastMessageType === MESSAGE_TYPE.ACCEPTED || lastMessageType === MESSAGE_TYPE.REJECTED) {
+      dispatch(actionCreators.setResolutionQuestionCompleted(true));
     }
 
     // If csat rating is submitted by the user,
     // or if the csat bot timer expires
     // set csat step as completed
-    if (isCsatSubmitted || csatBotHasExpired) {
-      actionsToDispatch.push(actionCreators.setCsatCompleted());
+    if (isCsatSubmitted) {
+      dispatch(actionCreators.setCsatCompleted());
     }
-
-    dispatch(batchActions(actionsToDispatch));
   };
 
   /**
@@ -549,14 +524,20 @@ define("actions/chatView", [
     csatBotHasExpired,
     issueId
   ) => {
-    if (resolutionQuestionHasExpired) {
+    const {
+      appState: {
+        postChatFeatures: {resolutionQuestionCompleted, csatCompleted}
+      }
+    } = store.getState();
+
+    if (resolutionQuestionHasExpired && !resolutionQuestionCompleted) {
       analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
         issueId,
         feature: EXPIRY_EVENT.RESOLUTION_QUESTION
       });
     }
 
-    if (csatBotHasExpired) {
+    if (csatBotHasExpired && !csatCompleted) {
       analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
         issueId,
         feature: EXPIRY_EVENT.CSAT_BOT
@@ -1937,13 +1918,25 @@ define("actions/chatView", [
         appState: {
           issueState,
           postChatFeatures: {resolutionQuestionCompleted, csatCompleted},
-          featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled, csatBot: csatBotEnabled}
+          featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled, csatBot: csatBotEnabled},
+          internalIssueId,
+          expiryTimestamps: {
+            resolutionQuestion: resolutionQuestionExpiryTimestamp,
+            csatBot: csatBotExpiryTimestamp
+          }
         }
       } = getState();
+      const resolutionQuestionHasExpired =
+        resolutionQuestionExpiryTimestamp && Date.now() >= resolutionQuestionExpiryTimestamp;
+      const csatBotHasExpired = csatBotExpiryTimestamp && Date.now() >= csatBotExpiryTimestamp;
 
-      if (resolutionQuestionEnabled && !resolutionQuestionCompleted) {
+      if (
+        resolutionQuestionEnabled &&
+        !resolutionQuestionCompleted &&
+        !resolutionQuestionHasExpired
+      ) {
         dispatch(setChatViewFooter(ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION));
-      } else if (csatBotEnabled && !csatCompleted) {
+      } else if (csatBotEnabled && !csatCompleted && !csatBotHasExpired) {
         dispatch(setChatViewFooter(ACTIVE_FOOTER.CSAT));
         // Track the CSAT requested event.
         analyticsHelpers.track(EVENT.CSAT, {
@@ -1953,6 +1946,14 @@ define("actions/chatView", [
         handleChatEnd({
           conversationHasEnded: issueState === ISSUE_STATE.REJECTED
         });
+      }
+
+      if (resolutionQuestionHasExpired || csatBotHasExpired) {
+        trackPostResolutionFeatureExpiryEvents(
+          resolutionQuestionHasExpired,
+          csatBotHasExpired,
+          internalIssueId
+        );
       }
     };
   };
