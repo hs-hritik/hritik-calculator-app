@@ -280,11 +280,6 @@ define("reducers/appState", [
           reEngagementId: {$set: action.id}
         });
 
-      case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
-        return update(state, {
-          reEngagementId: {$set: ""}
-        });
-
       case ACTION_TYPES.SET_WINDOW_IS_FOCUSED:
         return update(state, {
           windowIsFocused: {$set: action.windowIsFocused}
@@ -372,8 +367,8 @@ define("reducers/appState", [
           }
         });
 
-      case ACTION_TYPES.ISSUE_CREATED: {
-        const {activeIssueId, internalIssueId, issueType} = action.config;
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
+        const {activeIssueId, internalIssueId, issueType} = action.issueDetails;
 
         return update(state, {
           conversationStarted: {$set: true},
@@ -540,6 +535,19 @@ define("reducers/appState", [
             csatBot: {$set: action.payload.csatBotExpiryTimestamp || 0}
           }
         });
+
+      case ACTION_TYPES.USER_REPLY_REQUEST:
+        const userReplyRequestUpdateObj = {
+          footerIsActive: {$set: false}
+        };
+
+        // If the user replies on a re-engaged issue, reset the reEngagementId because re-engagement
+        // is over with the user reply.
+        if (action.reEngagementId) {
+          userReplyRequestUpdateObj.reEngagementId = {$set: ""};
+        }
+
+        return update(state, userReplyRequestUpdateObj);
 
       default:
         return state;

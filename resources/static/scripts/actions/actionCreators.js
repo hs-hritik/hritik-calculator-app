@@ -213,14 +213,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   };
 
   /**
-   * Action to reset re-engagement Id
-   * @returns {Object} - Action
-   */
-  const resetReEngagementId = () => ({
-    type: ACTION_TYPES.RESET_RE_ENGAGEMENT_ID
-  });
-
-  /**
    * Return action to change list picker navigation state
    * @param {String} navigationState - Whether the picker is in "closed", "opened" or
    * "resizing" state
@@ -365,16 +357,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
-  /**
-   * Action to dispatch when fetch messages API calls (updates and history) succeed.
-   * @returns {Object} - Action
-   */
-  const fetchMessagesSuccess = () => {
-    return {
-      type: ACTION_TYPES.FETCH_MESSAGES_SUCCESS
-    };
-  };
-
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -395,7 +377,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     toggleOnlineStatus,
     setFooterActive,
     setFooterInactive,
-    resetReEngagementId,
     updateListPickerNavigationState,
     updateIntentsNavigationState,
     setAppResetTrigger,
@@ -408,7 +389,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentsModelSuccess,
     intentSelected,
     intentUnselected,
-    stopIntentsSearch,
-    fetchMessagesSuccess
+    stopIntentsSearch
   };
 });
