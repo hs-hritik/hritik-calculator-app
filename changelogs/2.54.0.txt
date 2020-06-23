@@ -1,0 +1,5 @@
+Branches:
+feature/external-developer-api
+
+Changelog:
+Pass latest issue details to conversationStatusEvent

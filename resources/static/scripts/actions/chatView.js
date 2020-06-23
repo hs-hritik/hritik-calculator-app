@@ -1636,7 +1636,9 @@ define("actions/chatView", [
 
           dispatch(
             postSdkMessage.conversationStatusEvent({
-              open: issueIsActive
+              open: issueIsActive,
+              latestIssueId: internalIssueId,
+              latestIssuePublishId: issueId
             })
           );
 
