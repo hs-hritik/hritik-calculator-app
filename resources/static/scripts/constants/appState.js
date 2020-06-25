@@ -8,7 +8,7 @@ define("constants/appState", function() {
   "use strict";
 
   // Version of web chat (the SDK, should not be confused with the API version)
-  const WEB_CHAT_VERSION = "2.54.0";
+  const WEB_CHAT_VERSION = "2.55.1";
 
   const ISSUE_STATE = {
     // "na" (not applicable) represents the issue state value in the state when
@@ -71,10 +71,6 @@ define("constants/appState", function() {
    */
   const ALLOWED_EMPTY_POLLER_COUNT = 5;
 
-  // @TODO: Remove this constant. This is added in order to deploy a changed app.js so that the
-  // cache is invalidated.
-  const LIFE_UNIVERSE = 42;
-
   return {
     WEB_CHAT_VERSION,
     ISSUE_STATE,
@@ -85,7 +81,6 @@ define("constants/appState", function() {
     ISSUE_STATE_RESET,
     XHR_ISSUE_STATE,
     APP_RESET_TRIGGER,
-    ALLOWED_EMPTY_POLLER_COUNT,
-    LIFE_UNIVERSE
+    ALLOWED_EMPTY_POLLER_COUNT
   };
 });
