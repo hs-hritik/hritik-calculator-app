@@ -226,8 +226,10 @@
     }
 
     &__details {
+      @include word-break;
       display: flex;
       font-size: font-size(body, small);
+      hyphens: auto;
       letter-spacing: -0.5px;
       color: $chat-widget-secondary-text-color;
       opacity: 0.8;
