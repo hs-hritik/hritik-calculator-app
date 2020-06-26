@@ -30,7 +30,6 @@ define("components/csatView", [
   "use strict";
 
   const TEXT_PROP_TYPE = PropTypes.shape({
-    csatViewHeader: PropTypes.string.isRequired,
     csatBotRequestMsg: PropTypes.string.isRequired,
     csatBotResponseMsg: PropTypes.string.isRequired,
     csatBotFormSubmitBtn: PropTypes.string.isRequired,
