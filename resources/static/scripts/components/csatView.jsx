@@ -110,7 +110,7 @@ define("components/csatView", [
       onUpdateStarRating: PropTypes.func,
       keyboardInteractionIsActive: PropTypes.bool.isRequired,
       showHeaderAvatar: PropTypes.bool.isRequired,
-      appAvatarUrl: PropTypes.string.isRequired
+      appAvatarUrl: PropTypes.string
     },
 
     getInitialState() {

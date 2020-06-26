@@ -327,19 +327,19 @@ define("components/chatView", [
       /**
        * Agent default Url
        */
-      agentDefaultAvatarUrl: PropTypes.string.isRequired,
+      agentDefaultAvatarUrl: PropTypes.string,
       /**
        * Bot default Url
        */
-      botDefaultAvatarUrl: PropTypes.string.isRequired,
+      botDefaultAvatarUrl: PropTypes.string,
       /**
        * Template to generate avatar url
        */
-      avatarUrlTemplate: PropTypes.string.isRequired,
+      avatarUrlTemplate: PropTypes.string,
       /**
        * App avatar Url
        */
-      appAvatarUrl: PropTypes.string.isRequired
+      appAvatarUrl: PropTypes.string
     }).isRequired,
     /**
      * Object of avatar id and its last updated timestamp
@@ -403,7 +403,7 @@ define("components/chatView", [
        */
       hasFailure: PropTypes.bool,
       showHeaderAvatar: PropTypes.bool.isRequired,
-      appAvatarUrl: PropTypes.string.isRequired,
+      appAvatarUrl: PropTypes.string,
       /**
        * If true, show agent nickname and show feed avatar only when feed avatar is enabled
        * If false, both nickname and feed avatar should not render
@@ -422,24 +422,24 @@ define("components/chatView", [
          * If true, show agent uploaded avatar
          * If false, show agent default avatar configured by admin
          */
-        agentAvatarIsPersonalised: PropTypes.bool.isRequired,
+        agentAvatarIsPersonalised: PropTypes.bool,
         /**
          * If true, show avatar uploaded for the bot
          * If false, show bot default avatar
          */
-        botAvatarIsPersonalised: PropTypes.bool.isRequired,
+        botAvatarIsPersonalised: PropTypes.bool,
         /**
          * Agent default Url
          */
-        agentDefaultAvatarUrl: PropTypes.string.isRequired,
+        agentDefaultAvatarUrl: PropTypes.string,
         /**
          * Bot default Url
          */
-        botDefaultAvatarUrl: PropTypes.string.isRequired,
+        botDefaultAvatarUrl: PropTypes.string,
         /**
          * Template to generate avatar url
          */
-        avatarUrlTemplate: PropTypes.string.isRequired
+        avatarUrlTemplate: PropTypes.string
       }).isRequired,
       /**
        * Object of avatar id and its last updated timestamp

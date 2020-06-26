@@ -123,19 +123,19 @@ define("components/messageList", [
         /**
          * Agent default Url
          */
-        agentDefaultAvatarUrl: PropTypes.string.isRequired,
+        agentDefaultAvatarUrl: PropTypes.string,
         /**
          * Bot default Url
          */
-        botDefaultAvatarUrl: PropTypes.string.isRequired,
+        botDefaultAvatarUrl: PropTypes.string,
         /**
          * Template to generate avatar url
          */
-        avatarUrlTemplate: PropTypes.string.isRequired,
+        avatarUrlTemplate: PropTypes.string,
         /**
          * App avatar Url
          */
-        appAvatarUrl: PropTypes.string.isRequired
+        appAvatarUrl: PropTypes.string
       }).isRequired,
       avatarLastUpdatedTs: PropTypes.object.isRequired
     },
