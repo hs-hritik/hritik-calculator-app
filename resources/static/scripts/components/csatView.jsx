@@ -33,8 +33,7 @@ define("components/csatView", [
     csatBotRequestMsg: PropTypes.string.isRequired,
     csatBotResponseMsg: PropTypes.string.isRequired,
     csatBotFormSubmitBtn: PropTypes.string.isRequired,
-    csatBotReviewPlaceholder: PropTypes.string.isRequired,
-    csatBotReviewTitle: PropTypes.string.isRequired
+    csatBotReviewPlaceholder: PropTypes.string.isRequired
   }).isRequired;
 
   const CsatViewContents = ({
@@ -53,7 +52,6 @@ define("components/csatView", [
       <div className="hs-csat">
         <CsatViewBody
           csatBotRequestMsg={text.csatBotRequestMsg}
-          csatBotReviewTitle={text.csatBotRequestMsg}
           csatBotReviewPlaceholder={text.csatBotReviewPlaceholder}
           rating={rating}
           review={review}

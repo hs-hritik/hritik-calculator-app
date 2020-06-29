@@ -24,7 +24,6 @@ define("constants/localization", function() {
     "csat_bot_response_msg": "csatBotResponseMsg",
     "csat_bot_form_submit_btn": "csatBotFormSubmitBtn",
     "csat_bot_review_placeholder": "csatBotReviewPlaceholder",
-    "csat_bot_review_title": "csatBotReviewTitle",
     "csat_view_header": "csatViewHeader",
     "loading_messages": "pastConversationsLoadingText",
     "branding": "branding",

@@ -41,7 +41,6 @@ exports[`CsatView should render correctly (snapshot) 1`] = `
           "csatBotRequestMsg": "MOCK_REQUEST_MESSAGE",
           "csatBotResponseMsg": "MOCK_RESPONSE_MESSAGE",
           "csatBotReviewPlaceholder": "MOCK_REVIEW_PLACEHOLDER",
-          "csatBotReviewTitle": "MOCK_REVIEW_TITLE",
         }
       }
     />

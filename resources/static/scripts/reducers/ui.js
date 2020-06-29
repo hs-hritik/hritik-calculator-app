@@ -61,7 +61,6 @@ define("reducers/ui", [
       csatBotResponseMsg: "Thanks for your feedback!",
       csatBotFormSubmitBtn: "Submit",
       csatBotReviewPlaceholder: "Leave us additional feedback",
-      csatBotReviewTitle: "Additional Feedback",
       csatViewHeader: "Chat with us",
       branding: "Powered by Helpshift",
       attachmentUploadingStatus: "Uploading..",
