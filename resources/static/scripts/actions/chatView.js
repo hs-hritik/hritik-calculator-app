@@ -2070,16 +2070,21 @@ define("actions/chatView", [
         // Handle 410 status code. It is sent in the following cases -
         // 1. attempt to reopen a closed issue, and
         // 2. issue is archived
-        // The UX in both the cases is supposed to show the new conversation button with the
-        // conversation closed message.
+        // ( The UX in both the above cases is supposed to show the new conversation button with the
+        //  conversation closed message )
+        // 3. when the resolution question gets expired
+        // ( The UX in this case is to expire the resolution question view and show post issue
+        //  resolution footer view )
         if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
-          handleChatEnd({conversationHasEnded: true});
-
           if (errorData.msg === RESOLUTION_QUESTION_EXPIRY_MESSAGE) {
             analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
               issueId: internalIssueId,
               feature: EXPIRY_EVENT.RESOLUTION_QUESTION
             });
+            dispatch(actionCreators.setResolutionQuestionCompleted(true));
+            dispatch(showPostIssueResolutionFooter());
+          } else {
+            handleChatEnd({conversationHasEnded: true});
           }
         } else {
           dispatch(chatViewActionCreators.userReplyFailure());
