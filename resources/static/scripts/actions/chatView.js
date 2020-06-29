@@ -1924,7 +1924,8 @@ define("actions/chatView", [
             resolutionQuestion: resolutionQuestionExpiryTimestamp,
             csatBot: csatBotExpiryTimestamp
           }
-        }
+        },
+        chatView: {isCsatSubmitted}
       } = getState();
       const resolutionQuestionHasExpired =
         resolutionQuestionExpiryTimestamp && Date.now() >= resolutionQuestionExpiryTimestamp;
@@ -1932,6 +1933,7 @@ define("actions/chatView", [
 
       if (
         resolutionQuestionEnabled &&
+        !isCsatSubmitted &&
         !resolutionQuestionCompleted &&
         !resolutionQuestionHasExpired
       ) {

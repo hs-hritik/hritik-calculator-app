@@ -84,6 +84,9 @@ describe("csatView actions", () => {
       csatView: {
         rating: 1,
         review: "MOCK_REVIEW"
+      },
+      chatView: {
+        isCsatSubmitted: false
       }
     });
 
