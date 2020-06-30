@@ -910,7 +910,11 @@ define("actions/chatView", [
     //
     // In case when there's only one issue in the issueList, hasOlderMsgs would
     // tell us if the latest conversation has loaded.
-    return oldestIssue.preissue_id !== latestIssue.preissue_id || hasOlderMsgs === false;
+    return (
+      oldestIssue.issue_id !== latestIssue.issue_id ||
+      oldestIssue.preissue_id !== latestIssue.preissue_id ||
+      hasOlderMsgs === false
+    );
   };
 
   /**
@@ -1946,7 +1950,8 @@ define("actions/chatView", [
         });
       } else {
         handleChatEnd({
-          conversationHasEnded: issueState === ISSUE_STATE.REJECTED
+          conversationHasEnded:
+            issueState === ISSUE_STATE.REJECTED || issueState === ISSUE_STATE.RESOLVED
         });
       }
 

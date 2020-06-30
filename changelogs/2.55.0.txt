@@ -1,0 +1,7 @@
+Branches:
+feature/webchat-bug-fixes
+
+Changelog:
+Fix loading previous chat when conversation history is off
+Fix CSS of nested picker header and options
+Fix CONEX-212: Show "Conversation Closed" when issue gets resolved

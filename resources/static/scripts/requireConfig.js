@@ -2,7 +2,7 @@ const DOMAIN = "{{ENV_WEB_CHAT_ROOT}}";
 
 require.config({
   baseUrl: `${DOMAIN}/scripts/`,
-  urlArgs: "v=2.54.0",
+  urlArgs: "v=2.55.1",
   paths: {
     libs: `${DOMAIN}/libs/`,
     reduxThunk: `${DOMAIN}/libs/redux-thunk`,
