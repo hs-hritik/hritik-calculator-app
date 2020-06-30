@@ -392,7 +392,7 @@ define("components/messageList", [
             };
           }
 
-        case MESSAGE_ROLES.AGENT_MSG:
+        default:
           if (agentAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
             return {
               fallback: FALLBACK_AVATAR_BASE64.AGENT,
@@ -406,9 +406,6 @@ define("components/messageList", [
               original: agentDefaultAvatarUrl
             };
           }
-
-        default:
-          return null;
       }
     },
 
