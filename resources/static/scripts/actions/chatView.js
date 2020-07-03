@@ -1950,8 +1950,7 @@ define("actions/chatView", [
         });
       } else {
         handleChatEnd({
-          conversationHasEnded:
-            issueState === ISSUE_STATE.REJECTED || issueState === ISSUE_STATE.RESOLVED
+          conversationHasEnded: issueState === ISSUE_STATE.REJECTED
         });
       }
 
