@@ -41,8 +41,8 @@
   $avatar-size: 32px;
   $action-card-width: 200px;
   $action-card-image-height: 150px;
-  $action-card-title-font-size: font-size(body, base);
-  $action-card-action-font-size: font-size(body, large);
+  $action-card-title-font-size: font-size(body, small);
+  $action-card-action-font-size: font-size(body, base);
 
   $sis-parent-text-color: var(--hs-form-secondary-bg-color);
   $image-attachment-size: 160px;
@@ -306,6 +306,7 @@
       padding: gutter(12);
       font-size: $action-card-title-font-size;
       color: $agent-message-primary-text-color;
+      text-align: center;
       background-color: $form-bg-color;
       border-bottom: 1px solid $agent-message-bg-color;
     }
