@@ -1051,7 +1051,8 @@ define("actions/chatView", [
       appState: {
         issueType,
         issueState,
-        featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled}
+        featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled},
+        postChatFeatures: {resolutionQuestionCompleted}
       },
       chatView: {issueCursor}
     } = getState();
@@ -1105,6 +1106,11 @@ define("actions/chatView", [
     // from the start, we use it as a check.
     if (issueCursor) {
       if (issueState === ISSUE_STATE.RESOLVED) {
+        // If the resolution question is disabled and not completed and the issue is resolved,
+        // accept the resolution question.
+        if (!resolutionQuestionEnabled && !resolutionQuestionCompleted) {
+          dispatch(acceptResolutionQuestion());
+        }
         dispatch(postSdkMessage.conversationResolvedEvent());
       } else if (issueState === ISSUE_STATE.REJECTED) {
         dispatch(postSdkMessage.conversationRejectedEvent());
