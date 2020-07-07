@@ -186,14 +186,16 @@ define("actions/appState", [
     // @TODO: feature/ai-powered : Handle rehydration
     const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked(),
       readFaqList = lsHelpers.getReadFaqList(),
-      reEngagementId = lsHelpers.getReEngagementId();
+      reEngagementId = lsHelpers.getReEngagementId(),
+      widgetShouldAutoOpen = lsHelpers.getWidgetShouldAutoOpen();
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
       data: {
         suggestedFaqReadTracked,
         readFaqList,
-        reEngagementId
+        reEngagementId,
+        widgetShouldAutoOpen
       }
     });
   };
