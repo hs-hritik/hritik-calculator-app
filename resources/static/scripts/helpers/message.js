@@ -95,6 +95,7 @@ define("helpers/message", [
             switch (actionType) {
               case ACTION_TYPES.LINK:
                 actionData.url = action.data.url;
+                actionData.shouldOpenInNewTab = action.data.open_in_new_tab;
                 break;
               case ACTION_TYPES.CALL:
                 actionData.phoneNumber = action.data.phone_number;
