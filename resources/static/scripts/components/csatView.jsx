@@ -30,12 +30,10 @@ define("components/csatView", [
   "use strict";
 
   const TEXT_PROP_TYPE = PropTypes.shape({
-    csatViewHeader: PropTypes.string.isRequired,
     csatBotRequestMsg: PropTypes.string.isRequired,
     csatBotResponseMsg: PropTypes.string.isRequired,
     csatBotFormSubmitBtn: PropTypes.string.isRequired,
-    csatBotReviewPlaceholder: PropTypes.string.isRequired,
-    csatBotReviewTitle: PropTypes.string.isRequired
+    csatBotReviewPlaceholder: PropTypes.string.isRequired
   }).isRequired;
 
   const CsatViewContents = ({
@@ -54,7 +52,6 @@ define("components/csatView", [
       <div className="hs-csat">
         <CsatViewBody
           csatBotRequestMsg={text.csatBotRequestMsg}
-          csatBotReviewTitle={text.csatBotRequestMsg}
           csatBotReviewPlaceholder={text.csatBotReviewPlaceholder}
           rating={rating}
           review={review}
@@ -109,7 +106,9 @@ define("components/csatView", [
       }),
       csatSaveInProgress: PropTypes.bool,
       onUpdateStarRating: PropTypes.func,
-      keyboardInteractionIsActive: PropTypes.bool.isRequired
+      keyboardInteractionIsActive: PropTypes.bool.isRequired,
+      showHeaderAvatar: PropTypes.bool.isRequired,
+      appAvatarUrl: PropTypes.string
     },
 
     getInitialState() {
@@ -131,7 +130,9 @@ define("components/csatView", [
         onUpdateStarRating,
         onMinimizeConversation,
         onKeyDown,
-        onClick
+        onClick,
+        showHeaderAvatar,
+        appAvatarUrl
       } = this.props;
 
       const viewClasses = classes("hs-view", {
@@ -142,9 +143,11 @@ define("components/csatView", [
         <div className={viewClasses} style={viewStyles} onKeyDown={onKeyDown} onClick={onClick}>
           <ErrorBoundaryWithLogging fallbackComponent={this._renderHeaderFallback()}>
             <ViewHeader
-              title={text.csatViewHeader}
+              title={text.chatViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation}
+              avatarUrl={appAvatarUrl}
+              showAvatar={showHeaderAvatar}
             />
           </ErrorBoundaryWithLogging>
           <ErrorBoundaryWithLogging

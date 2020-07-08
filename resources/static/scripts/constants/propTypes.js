@@ -22,8 +22,8 @@ define("constants/propTypes", ["gunpowder/constants/widgets/dragIt", "constants/
     isCustomerMsg: PropTypes.bool.isRequired,
     createdTs: PropTypes.number.isRequired,
     author: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired
+      id: PropTypes.string,
+      name: PropTypes.string
     }),
     suggestedFaqs: PropTypes.arrayOf(
       PropTypes.shape({

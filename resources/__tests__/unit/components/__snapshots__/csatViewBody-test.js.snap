@@ -33,14 +33,8 @@ exports[`CsatViewBody should render correctly (snapshot) 1`] = `
   <div
     className="hs-csat__form-item"
   >
-    <small
-      aria-hidden="true"
-      className="hs-csat__form-label"
-    >
-      MOCK_REVIEW_TITLE
-    </small>
     <textarea
-      aria-label="MOCK_REVIEW_TITLE"
+      aria-label="MOCK_REQUEST_MESSAGE"
       className="hs-csat__input"
       data-label="additional-feedback-text-area"
       dir="auto"

@@ -16,7 +16,8 @@ define("components/message", [
   "gunpowder/utils/classes",
   "gunpowder/utils/object",
   "helpers/common",
-  "extras/accessibility"
+  "extras/accessibility",
+  "components/commons/avatar"
 ], function(
   attachmentComponents,
   customPropTypes,
@@ -29,12 +30,14 @@ define("components/message", [
   classes,
   objUtils,
   commonHelper,
-  ax
+  ax,
+  avatarEsm
 ) {
   "use strict";
+  const Avatar = avatarEsm.default;
 
   const {UserAttachmentMessage, ServerAttachmentsMessage} = attachmentComponents;
-  const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
+  const {TYPE: MESSAGE_TYPE, MESSAGE_ROLES} = MESSAGE_CONSTANTS;
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
   const IMAGE_MSG_MAX_HEIGHT = 170;
   const AGENT_NAME_SEPARATOR = ", ";
@@ -48,10 +51,6 @@ define("components/message", [
     propTypes: {
       message: customPropTypes.MESSAGE_PROP_TYPE,
       showAgentNickname: PropTypes.bool,
-      isLastMessage: PropTypes.bool,
-      // @NOTE - isLastMessageInGroup will be used for message grouping in future, so
-      // keeping this prop as it is.
-      isLastMessageInGroup: PropTypes.bool,
       onSuggestedFaqClick: PropTypes.func,
       onRetryAttachmentClick: PropTypes.func,
       onImageLoad: PropTypes.func,
@@ -72,25 +71,49 @@ define("components/message", [
         ariaLabelAttachmentUploading: PropTypes.string,
         ariaLabelUserMessage: PropTypes.string,
         conversationClosed: PropTypes.string,
-        ariaLabelOpenFile: PropTypes.string
-      }).isRequired
+        ariaLabelOpenFile: PropTypes.string,
+        systemNickname: PropTypes.string
+      }).isRequired,
+      /**
+       * If true, render avatar in message feed
+       */
+      showAvatar: PropTypes.bool.isRequired,
+      avatarUrl: PropTypes.shape({
+        /**
+         * Avatar to be shown
+         */
+        original: PropTypes.string,
+        /**
+         * Fallback image to render when original image takes time to load
+         */
+        fallback: PropTypes.string
+      }),
+      /**
+       * If true, show message details (timestamp, nickname) & avatar
+       */
+      showMessageDetails: PropTypes.bool,
+      /**
+       * Unique key of a message
+       */
+      key: PropTypes.string
     },
 
     getDefaultProps() {
       return {
-        showAgentNickname: false,
-        isLastMessage: false
+        showAgentNickname: false
       };
     },
 
     getInitialState() {
       return {
-        imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT
+        imageWrapperHeight: IMAGE_MSG_MAX_HEIGHT,
+        avatarIsLoaded: false
       };
     },
 
     render() {
       const {isCustomerMsg, type, states, body} = this.props.message;
+      const {key} = this.props;
       const {
         ariaLabelSupportMsgAgentName,
         ariaLabelSupportMsgMissingAgentName,
@@ -131,10 +154,8 @@ define("components/message", [
       }
 
       return (
-        <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel}>
+        <div className={msgClasses} onClick={this._onMsgClick} aria-label={msgLabel} key={key}>
           {this._renderMessage()}
-          {this._renderAttachmentErrors()}
-          {this._renderMessageDetails()}
         </div>
       );
     },
@@ -192,12 +213,37 @@ define("components/message", [
       if (messageItemEl) {
         return (
           <div className="hs-message__item-wrapper" aria-hidden={ariaContainerIsHidden}>
-            {messageItemEl}
+            {this._renderAvatar()}
+            <div className="hs-message__details-and-msg-wrapper">
+              {this._renderMessageDetails()}
+              {messageItemEl}
+              {this._renderAttachmentErrors()}
+            </div>
           </div>
         );
       }
 
       return null;
+    },
+
+    _renderAvatar() {
+      const {avatarUrl} = this.props;
+      let originalAvatar = null;
+      let fallbackAvatar = null;
+
+      if (avatarUrl) {
+        originalAvatar = avatarUrl.original;
+        fallbackAvatar = avatarUrl.fallback;
+      }
+
+      return (
+        <Avatar
+          showAvatar={this._shouldAvatarRender()}
+          avatarUrl={originalAvatar}
+          className="hs-message__avatar"
+          fallbackAvatar={fallbackAvatar}
+        />
+      );
     },
 
     /**
@@ -389,7 +435,10 @@ define("components/message", [
      */
     _renderChatSeparator() {
       const {hr, timestamp, infoText} = this.props.message;
-      const {text} = this.props;
+      const {text, showAvatar} = this.props;
+      const chatSeparatorWrapperClasses = classes({
+        "hs-message__chat-separator-wrapper": showAvatar
+      });
       let hrEl, timestampEl, infoTextEl;
 
       if (hr) {
@@ -406,7 +455,7 @@ define("components/message", [
       }
 
       return (
-        <div>
+        <div className={chatSeparatorWrapperClasses}>
           {infoTextEl}
           {hrEl}
           {timestampEl}
@@ -435,6 +484,10 @@ define("components/message", [
      * Render agent name and message timestamp.
      */
     _renderMessageDetails() {
+      if (!this.props.showMessageDetails) {
+        return null;
+      }
+
       const agentName = this._getAgentNickname();
       const time = this._getHumanReadableTime();
       let details = time;
@@ -461,15 +514,27 @@ define("components/message", [
     },
     /**
      * Get agent nickname.
+     * If message is system message return system nickname
      */
     _getAgentNickname() {
-      const {message, showAgentNickname} = this.props;
+      const {message, showAgentNickname, text} = this.props;
 
-      if (!showAgentNickname || message.isCustomerMsg || message.isSystemMsg) {
+      if (!showAgentNickname || message.isCustomerMsg) {
         return null;
+      } else if (this._isSystemMessage(message)) {
+        return text.systemNickname;
       }
 
       return objUtils.getIn(message, ["author", "name"]);
+    },
+
+    /**
+     * Returns true if message is system message
+     * @param {Object} message - message object
+     * @returns {boolean} - True, if message is system message
+     */
+    _isSystemMessage(message) {
+      return message.author && message.author.role === MESSAGE_ROLES.SYSTEM_MSG;
     },
 
     /**
@@ -499,6 +564,15 @@ define("components/message", [
      */
     _onAttachmentClick(url) {
       window.open(url);
+    },
+
+    /**
+     * On load handler for image
+     */
+    _onAvatarLoad() {
+      this.setState({
+        avatarIsLoaded: true
+      });
     },
 
     /**
@@ -595,6 +669,20 @@ define("components/message", [
     },
 
     /**
+     * Check whether avatar should be rendered
+     * @returns {Boolean} - True, if the avatar should be rendered
+     */
+    _shouldAvatarRender() {
+      const {
+        showAvatar,
+        message: {isCustomerMsg},
+        showMessageDetails
+      } = this.props;
+
+      return showAvatar && !isCustomerMsg && showMessageDetails;
+    },
+
+    /*
      * Click handler for an action element of a message
      * @param {Object} actionData - the action data received from the message action component
      */

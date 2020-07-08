@@ -1,0 +1,77 @@
+Branches:
+feature/release-Q2-2020
+
+Changelog:
+Use correct syntax to set min width to avatars
+Update styles for message action cards
+Set min width to avatar image element
+Accept resolution question for a resolved issue when the feature is off
+Fix rendering of conversation closed message
+Fix CONEX-634: Messages are not wrapped in IE
+Fix for a broken avatar for the deleted agent from the system
+Fix CRUX-696: Resolution question does not disappear after expiry
+Fix gap between messages
+Remove CSAT question in form label
+Fix "undefined" warning for avatar object
+Remove "test.csatViewHeader" unused prop
+Fix horizontal scroll of chat feed
+Fix the chat view change on expiry of resolution question
+Fix triggering of post resolution expiry analytics events
+Remove non-existent action dispatch call
+Track csat bot expiry analytics event
+Track resolution question expiry analytics event
+Check for resolution question and csat bot expiry on every load
+Store expiry time for resolution question and csat view in app state
+Dispatch storeExpiryTimers action on poller response
+Add avatar component in Chat feed
+Add avatar component in ViewHeader
+Add avatar component
+Store authorId & timestamp for conversationHistory msgs
+Use personalise conversation toggle to show nickname
+Add fallback image in view header
+Show branding text in option pill footer
+Add ellipsis in view header title
+Show fallback image when avatar takes time to load
+Rename BE config variable
+Fix OOBH view avatar test
+Move state update logic for bot user input to reducer
+Move state update logic to reducer for bot start and end messages
+Convert actions/chatView functions to thunk actions
+Update submit user reply flow with action based events
+Update CSAT header title to same as CHAT view header
+Revert "Support avatar in OOBH view header"
+On create preissue success, disable user reply for preissues
+Clear errors from chat view state when a poller succeeds
+Update state for preissue flow via event based actions
+Make image attachment square
+Add condition to not render non renderable message
+Remove extra div from renderMessage function
+Fix cache invalidation to update removed avatar
+Fix cache invalidation by adding key
+Fix config response key name to match with xhr
+Add nickname for system messages
+Add unit test for component/ChatView
+Add unit test for component/BusinessHoursView
+Generate avatar url using timestamp
+Add an action to store last updated avatar timestamp
+Support grouping of messages
+Add CSS to center align the Branding text
+Add CSS to Center align the chatSeparator
+Update author object props to optional props
+Remove key avatarId from getProcessedMessage
+Add system msg role to greeting message
+Conditionally add avatar url in message component
+Update max-width of message bubble
+Support avatar in message bubble
+Add style to messagelist when avatar is rendered
+Fix default value of avatar url in view header
+Update getProcessedMessage to store avatar data
+Add unit test for view header elements rendering
+Add jest snapshot test for View Header component
+Remove unused props in message component
+Support avatar in OOBH view header
+Support avatar in CSAT view header
+Support avatar in chat view header
+Integrate avatar feature config
+Fix styles of title in view header
+Support avatar in view header

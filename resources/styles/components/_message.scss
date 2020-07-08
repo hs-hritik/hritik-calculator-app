@@ -12,7 +12,7 @@
 
 // @TODO: Refactor & create a new scss block "hs-attachment".
 @include component(message) {
-  $max-width: 88%;
+  $max-width: 80%;
   $failed-img-icon-width: 20px;
   $failed-img-icon-height: 20px;
   $message-item-padding: gutter(8 12);
@@ -38,23 +38,38 @@
   $form-accent-color-light: var(--hs-form-accent-color-light);
   $form-border-color: var(--hs-form-border-color);
 
+  $avatar-size: 32px;
   $action-card-width: 200px;
   $action-card-image-height: 150px;
-  $action-card-title-font-size: font-size(body, base);
-  $action-card-action-font-size: font-size(body, large);
+  $action-card-title-font-size: font-size(body, small);
+  $action-card-action-font-size: font-size(body, base);
 
   $sis-parent-text-color: var(--hs-form-secondary-bg-color);
+  $image-attachment-size: 160px;
 
   .hs-message {
     align-self: flex-start;
     max-width: $max-width;
-    margin-top: gutter(6);
+    margin-top: gutter(4);
 
     &__item-wrapper {
+      position: relative;
       display: flex;
       align-items: flex-start;
-      flex-direction: column;
       max-width: 100%;
+    }
+
+    &__details-and-msg-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    &__avatar {
+      position: absolute;
+      top: 0;
+      left: -40px;
+      margin-top: gutter(18);
     }
 
     &__item {
@@ -98,12 +113,13 @@
     }
 
     &__image-attachment {
-      width: 260px;
+      width: $image-attachment-size;
+      height: $image-attachment-size;
       padding: 0;
       overflow: hidden;
       background-position: center center;
       background-repeat: no-repeat;
-      background-size: 100%;
+      background-size: cover;
     }
 
     &--right {
@@ -211,8 +227,10 @@
     }
 
     &__details {
+      @include word-break;
       display: flex;
       font-size: font-size(body, small);
+      hyphens: auto;
       letter-spacing: -0.5px;
       color: $chat-widget-secondary-text-color;
       opacity: 0.8;
@@ -243,6 +261,10 @@
     &__height-finder {
       width: 100%;
       opacity: 0;
+    }
+
+    &__chat-separator-wrapper {
+      margin-left: gutter(-36);
     }
 
     &--timestamp,
@@ -284,6 +306,7 @@
       padding: gutter(12);
       font-size: $action-card-title-font-size;
       color: $agent-message-primary-text-color;
+      text-align: center;
       background-color: $form-bg-color;
       border-bottom: 1px solid $agent-message-bg-color;
     }
