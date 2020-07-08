@@ -75,11 +75,18 @@ describe("csatView actions", () => {
         },
         featuresEnabled: {
           resolutionQuestion: false
+        },
+        expiryTimestamps: {
+          resolutionQuestion: 0,
+          csatBot: 0
         }
       },
       csatView: {
         rating: 1,
         review: "MOCK_REVIEW"
+      },
+      chatView: {
+        isCsatSubmitted: false
       }
     });
 

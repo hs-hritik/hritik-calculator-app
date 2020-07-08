@@ -9,7 +9,6 @@ import CsatViewBody from "components/csatViewBody";
 const setup = () => {
   const props = {
     csatBotRequestMsg: "MOCK_REQUEST_MESSAGE",
-    csatBotReviewTitle: "MOCK_REVIEW_TITLE",
     csatBotReviewPlaceholder: "MOCK_REVIEW_PLACEHOLDER",
     rating: 0,
     review: "MOCK_REVIEW",
@@ -44,8 +43,6 @@ describe("CsatViewBody", () => {
     expect(starRatingProps.name).toBe("csat");
     expect(starRatingProps.editing).toBe(true);
     expect(starRatingProps.value).toBe(0);
-
-    expect(enzymeWrapper.find(".hs-csat__form-label").text()).toBe("MOCK_REVIEW_TITLE");
 
     const textareaProps = enzymeWrapper.find("textarea").props();
     expect(textareaProps.value).toBe("MOCK_REVIEW");

@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Avatar should render correctly (snapshot) 1`] = `
+<Fragment>
+  <img
+    alt="Avatar Image"
+    aria-hidden={true}
+    className="hs-avatar__avatar"
+    src="MOCK_FALLBACK_AVATAR_URL"
+    style={
+      Object {
+        "height": 32,
+        "minWidth": 32,
+        "width": 32,
+      }
+    }
+  />
+  <img
+    alt="Avatar Image"
+    aria-hidden={true}
+    className="hs-avatar__avatar hs-avatar__avatar--hidden"
+    onLoad={[Function]}
+    src="MOCK_AVATAR_URL"
+    style={
+      Object {
+        "height": 32,
+        "minWidth": 32,
+        "width": 32,
+      }
+    }
+  />
+</Fragment>
+`;

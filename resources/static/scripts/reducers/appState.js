@@ -111,7 +111,8 @@ define("reducers/appState", [
       conversationHistory: true,
       userAttachments: true,
       branding: true,
-      intents: false
+      intents: false,
+      personalisedConversationIsEnabled: false
     },
     // The time after which the intents tree should be updated from the backend.
     intentsTreeSla: 0,
@@ -148,7 +149,21 @@ define("reducers/appState", [
     widgetShouldAutoOpen: false,
     reEngagementId: "",
     windowIsFocused: false,
-    keyboardInteractionIsActive: false
+    keyboardInteractionIsActive: false,
+    avatar: {
+      showMessageFeedAvatar: false,
+      agentAvatarIsPersonalised: true,
+      botAvatarIsPersonalised: true,
+      agentDefaultAvatarUrl: "",
+      botDefaultAvatarUrl: "",
+      avatarUrlTemplate: ""
+    },
+    showHeaderAvatar: false,
+    appAvatarUrl: "",
+    expiryTimestamps: {
+      resolutionQuestion: 0,
+      csatBot: 0
+    }
   };
 
   /**
@@ -183,6 +198,7 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_WM_CONFIG:
         const {config} = action;
         const intentsAreEnabled = config.si.enabled;
+        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
         const greetingFeatureEnabled = config.hasOwnProperty("greeting_enabled")
           ? config.greeting_enabled
           : true;
@@ -198,11 +214,27 @@ define("reducers/appState", [
             agentNickname: {$set: config.agent_nickname_enabled},
             branding: {$set: !config.disable_helpshift_branding},
             audioNotifications: {$set: config.audio_notifications_enabled},
-            intents: {$set: intentsAreEnabled}
+            intents: {$set: intentsAreEnabled},
+            personalisedConversationIsEnabled: {$set: personalisedConversationIsEnabled}
           },
           issueExists: {$set: config.issue_exists},
-          attachmentsWhitelist: {$set: attachmentsWhitelist}
+          attachmentsWhitelist: {$set: attachmentsWhitelist},
+          showHeaderAvatar: {$set: config.appearance.show_header_avatar},
+          appAvatarUrl: {$set: config.appearance.app_avatar}
         };
+
+        if (personalisedConversationIsEnabled) {
+          changeObj.avatar = {
+            $set: {
+              showMessageFeedAvatar: config.avatar.show_feed_avatar,
+              agentAvatarIsPersonalised: config.avatar.show_agent_personalised_avatar,
+              botAvatarIsPersonalised: config.avatar.show_bot_personalised_avatar,
+              agentDefaultAvatarUrl: config.avatar.agent_default_avatar,
+              botDefaultAvatarUrl: config.avatar.bot_default_avatar,
+              avatarUrlTemplate: config.avatar.avatar_template_url
+            }
+          };
+        }
 
         if (intentsAreEnabled) {
           changeObj.intentsModelSla = {$set: config.si.model_sla};
@@ -246,11 +278,6 @@ define("reducers/appState", [
       case ACTION_TYPES.SET_RE_ENGAGEMENT_ID:
         return update(state, {
           reEngagementId: {$set: action.id}
-        });
-
-      case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
-        return update(state, {
-          reEngagementId: {$set: ""}
         });
 
       case ACTION_TYPES.SET_WINDOW_IS_FOCUSED:
@@ -340,8 +367,8 @@ define("reducers/appState", [
           }
         });
 
-      case ACTION_TYPES.ISSUE_CREATED: {
-        const {activeIssueId, internalIssueId, issueType} = action.config;
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
+        const {activeIssueId, internalIssueId, issueType} = action.issueDetails;
 
         return update(state, {
           conversationStarted: {$set: true},
@@ -499,6 +526,28 @@ define("reducers/appState", [
         return update(state, {
           keyboardInteractionIsActive: {$set: action.active}
         });
+
+      case ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS:
+      case ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS:
+        return update(state, {
+          expiryTimestamps: {
+            resolutionQuestion: {$set: action.payload.resolutionQuestionExpiryTimestamp || 0},
+            csatBot: {$set: action.payload.csatBotExpiryTimestamp || 0}
+          }
+        });
+
+      case ACTION_TYPES.USER_REPLY_REQUEST:
+        const userReplyRequestUpdateObj = {
+          footerIsActive: {$set: false}
+        };
+
+        // If the user replies on a re-engaged issue, reset the reEngagementId because re-engagement
+        // is over with the user reply.
+        if (action.reEngagementId) {
+          userReplyRequestUpdateObj.reEngagementId = {$set: ""};
+        }
+
+        return update(state, userReplyRequestUpdateObj);
 
       default:
         return state;

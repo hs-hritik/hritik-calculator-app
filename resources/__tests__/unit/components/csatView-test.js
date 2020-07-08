@@ -23,12 +23,11 @@ const setup = () => {
     onUpdateCsatRating: jest.fn(),
     onUpdateCsatReview: jest.fn(),
     text: {
-      csatViewHeader: "MOCK_VIEW_HEADER",
+      chatViewHeader: "MOCK_VIEW_HEADER",
       csatBotRequestMsg: "MOCK_REQUEST_MESSAGE",
       csatBotResponseMsg: "MOCK_RESPONSE_MESSAGE",
       csatBotFormSubmitBtn: "MOCK_FORM_SUBMIT_BUTTON",
-      csatBotReviewPlaceholder: "MOCK_REVIEW_PLACEHOLDER",
-      csatBotReviewTitle: "MOCK_REVIEW_TITLE"
+      csatBotReviewPlaceholder: "MOCK_REVIEW_PLACEHOLDER"
     },
     viewStyles: {
       fontFamily: "MOCK_FONT_FAMILY"

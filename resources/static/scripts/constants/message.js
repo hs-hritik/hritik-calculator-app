@@ -206,6 +206,12 @@ define("constants/message", function() {
     CUSTOM_BOT: "cb-ai"
   };
 
+  const MESSAGE_ROLES = {
+    SYSTEM_MSG: "s",
+    AGENT_MSG: "a",
+    BOT_MSG: "b"
+  };
+
   // Supported action types with action cards. Data received with the
   // message object depends on the action type, e.g. a URL for "link".
   const ACTION_TYPES = {
@@ -225,6 +231,7 @@ define("constants/message", function() {
     BOT_STEP_MESSAGES,
     BOT_CANCEL_REASON,
     FAQ_SUGGESTION_SOURCES,
+    MESSAGE_ROLES,
     ACTION_TYPES
   };
 });
