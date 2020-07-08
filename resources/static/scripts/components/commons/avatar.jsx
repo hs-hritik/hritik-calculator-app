@@ -26,10 +26,10 @@ class Avatar extends React.PureComponent {
 
     const {fallbackAvatar, avatarUrl, className, size} = this.props;
     const avatarStyles = {
-      "height": size,
-      "width": size,
-      // Setting the min-width is needed to show the round radius on IE 11
-      "min-width": size
+      height: size,
+      width: size,
+      // Setting the minWidth is needed to show the round radius on IE 11
+      minWidth: size
     };
     const avatarClasses = classes(className, "hs-avatar__avatar", {
       "hs-avatar__avatar--hidden": !this.state.avatarIsLoaded
