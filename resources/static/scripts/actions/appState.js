@@ -496,17 +496,11 @@ define("actions/appState", [
           );
 
           const {
-            appState: {featuresEnabled, wcEnabled},
-            widgetShouldAutoOpen
+            appState: {featuresEnabled, wcEnabled}
           } = store.getState();
 
           // Set the ui configuration flags in the state.
           setUiConfig(helpshiftConfig);
-
-          // If widgetShouldAutoOpen is true then reset the value of it to false.
-          if (widgetShouldAutoOpen) {
-            store.dispatch(setWidgetShouldAutoOpen(false));
-          }
 
           if (wcEnabled) {
             // A side-effect of getting the web chat config would be to
