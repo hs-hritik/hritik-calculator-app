@@ -136,7 +136,7 @@ define("extras/api", [
           // Set "widgetShouldAutoOpen" to true in state so that
           // this value will be checked afterwards and widget will be opened
           // automatically.
-          dispatch(appStateActions.setWidgetShouldAutoOpen(true));
+          dispatch(actionCreators.setWidgetShouldAutoOpen(true));
         } else {
           // Current user and re-engagement users are different.
           // Fire the user changed event.
@@ -175,7 +175,7 @@ define("extras/api", [
       // Set "widgetShouldAutoOpen" to true in state so that
       // this value will be checked afterwards and widget will be opened
       // automatically.
-      dispatch(appStateActions.setWidgetShouldAutoOpen(true));
+      dispatch(actionCreators.setWidgetShouldAutoOpen(true));
     }
 
     dispatch(appStateActions.setReEngagementId(reEngagementData.re_engagement_id));
@@ -325,7 +325,7 @@ define("extras/api", [
       // load when the widget opens, we should reset the flag.
       // If widgetShouldAutoOpen is true then reset the value of it to false.
       if (widgetShouldAutoOpen) {
-        store.dispatch(appStateActions.setWidgetShouldAutoOpen(false));
+        store.dispatch(actionCreators.setWidgetShouldAutoOpen(false));
       }
     } else if (isIssueClosed(issueState)) {
       // @TODO : Change this default rating submission after confirming with product
