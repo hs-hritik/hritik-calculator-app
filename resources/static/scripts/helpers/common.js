@@ -357,12 +357,13 @@ define("helpers/common", [
         if (sameTagSiblings.length > 1) {
           let nameCount = 0;
           const index =
-            [...sameTagSiblings].findIndex((child) => {
+            arrayUtils.findIndex(Array.prototype.slice.call(sameTagSiblings, 0), (child) => {
               if (elem.localName === child.localName) {
                 nameCount++;
               }
               return child === elem;
             }) + 1;
+
           if (index > 1 && nameCount > 1) {
             subSelector += ":nth-child(" + index + ")";
           }
