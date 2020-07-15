@@ -58,6 +58,7 @@
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
+    globalApiEventHandler: null,
     apiEvents: [],
     webChatVisibility: {
       launcher: "block",
@@ -129,7 +130,11 @@
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle",
-    CONVERSATION_STATUS: "conversationStatus"
+    CONVERSATION_STATUS: "conversationStatus",
+    // This global event will basically expose the other SUPPORTED_EVENTS. We need
+    // this in case liteSDK to minimize the code on its end as instead of handling all
+    // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
+    GLOBAL_API_EVENT: "globalApiEvent"
   };
 
   // Errors message strings
@@ -1049,6 +1054,10 @@
   const callApiEventHandler = (eventName, eventData) => {
     let handlerIsFound = false;
 
+    if (state.globalApiEventHandler) {
+      state.globalApiEventHandler({[eventName]: eventData || null});
+    }
+
     state.apiEvents.forEach((apiEvent) => {
       if (apiEvent.eventName === eventName) {
         apiEvent.eventHandler(eventData);
@@ -1395,8 +1404,14 @@
    * @param {Function} eventHandler - event handler
    */
   const addEventListener = (eventName, eventHandler) => {
-    // If event name is supported, add that event
+    // If event name is supported, add that event in globalEvent
+    // if its the global api event else add it inside apiEvents
     if (isEventSupported(eventName) && eventHandler) {
+      if (eventName === SUPPORTED_EVENTS.GLOBAL_API_EVENT) {
+        state.globalApiEventHandler = eventHandler;
+        return;
+      }
+
       state.apiEvents.push({
         eventName,
         eventHandler
