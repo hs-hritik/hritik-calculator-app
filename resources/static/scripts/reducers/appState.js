@@ -184,7 +184,9 @@ define("reducers/appState", [
   return (state = INITIAL_STATE, action) => {
     switch (action.type) {
       case ACTION_TYPES.REHYDRATE:
-        const updateObj = {};
+        const updateObj = {
+          widgetShouldAutoOpen: {$set: !!action.data.widgetShouldAutoOpen}
+        };
         updateObj.analytics = {};
 
         if (action.data.suggestedFaqReadTracked) {

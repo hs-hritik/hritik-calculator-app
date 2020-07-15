@@ -186,14 +186,16 @@ define("actions/appState", [
     // @TODO: feature/ai-powered : Handle rehydration
     const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked(),
       readFaqList = lsHelpers.getReadFaqList(),
-      reEngagementId = lsHelpers.getReEngagementId();
+      reEngagementId = lsHelpers.getReEngagementId(),
+      widgetShouldAutoOpen = lsHelpers.getWidgetShouldAutoOpen();
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
       data: {
         suggestedFaqReadTracked,
         readFaqList,
-        reEngagementId
+        reEngagementId,
+        widgetShouldAutoOpen
       }
     });
   };
@@ -494,17 +496,11 @@ define("actions/appState", [
           );
 
           const {
-            appState: {featuresEnabled, wcEnabled},
-            widgetShouldAutoOpen
+            appState: {featuresEnabled, wcEnabled}
           } = store.getState();
 
           // Set the ui configuration flags in the state.
           setUiConfig(helpshiftConfig);
-
-          // If widgetShouldAutoOpen is true then reset the value of it to false.
-          if (widgetShouldAutoOpen) {
-            store.dispatch(setWidgetShouldAutoOpen(false));
-          }
 
           if (wcEnabled) {
             // A side-effect of getting the web chat config would be to
@@ -1017,17 +1013,6 @@ define("actions/appState", [
   };
 
   /**
-   * Action to set the value in the state which represents whether
-   * the widget should auto open after config has been fetched.
-   * @param {Boolean} widgetShouldAutoOpen - default is true
-   * @returns {Object}
-   */
-  const setWidgetShouldAutoOpen = (widgetShouldAutoOpen = true) => ({
-    type: ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN,
-    widgetShouldAutoOpen
-  });
-
-  /**
    * Action to set re-engagement id
    * @param {String} id - re-engagement id
    * @returns {Object}
@@ -1104,7 +1089,6 @@ define("actions/appState", [
     executeProactiveChatRules,
     updateStyles,
     resetPreIssue,
-    setWidgetShouldAutoOpen,
     setReEngagementId,
     setWindowIsFocused,
     abortGetConfigXhr,

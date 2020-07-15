@@ -2987,15 +2987,26 @@ define("actions/chatView", [
   };
 
   /**
-   * Action to track the click event on an action in a message.
-   * @param {Object} eventData
-   * @param {string} eventData.messageId
-   * @param {string} eventData.actionId
-   * @param {string} eventData.actionType
+   * Handler for message with action card clicks
+   * @param {Object} actionData
+   * @param {string} actionData.messageId
+   * @param {string} actionData.actionId
+   * @param {string} actionData.actionType
+   * @param {boolean} actionData.linkShouldOpenInNewTab
    */
-  const trackActionClickEvent = ({messageId, actionId, actionType}) => {
+  const handleActionClick = ({messageId, actionId, actionType, linkShouldOpenInNewTab}) => {
     return (dispatch, getState) => {
-      const issueId = getState().appState.internalIssueId;
+      // On action click
+      // 1. Track the action click event, and
+      // 2. If the clicked link opens in the same tab AND if web chat doesn't open in full screen
+      //    mode, set widgetShouldAutoOpen to true, so that when the link opens, web chat auto opens
+      //    if it exists on the page.
+      const {
+        appState: {
+          internalIssueId: issueId,
+          sdkConfigOptions: {fullScreen}
+        }
+      } = getState();
 
       analyticsHelpers.track(EVENT.MESSAGE_ACTION_CLICKED, {
         issueId,
@@ -3003,6 +3014,10 @@ define("actions/chatView", [
         actionId,
         actionType
       });
+
+      if (!linkShouldOpenInNewTab && !fullScreen) {
+        dispatch(actionCreators.setWidgetShouldAutoOpen(true));
+      }
     };
   };
 
@@ -3030,6 +3045,6 @@ define("actions/chatView", [
     loadIntentsModel,
     selectIntent,
     updateReplyTextAndSearchIntents,
-    trackActionClickEvent
+    handleActionClick
   };
 });

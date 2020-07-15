@@ -73,6 +73,8 @@ const PATHS = {
   // IMPORTANT - Make sure the the require js item is the last one. Add your
   // library file above it.
   bundleLibsSource: [
+    "static/libs/symbol-polyfill-min.js",
+    "static/libs/promise-polyfill-min.js",
     "static/libs/react-min.js",
     "static/libs/react-pure-render-mixin-fake.js",
     "static/libs/react-dom-min.js",
@@ -148,6 +150,8 @@ const PATHS = {
 const TEMPLATE_PATHS = {
   LIBS: {
     DEV: `
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/symbol-polyfill-min.js"></script>
+    <script src="{{ENV_WEB_CHAT_ROOT}}/libs/promise-polyfill-min.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/axios.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react.js"></script>
     <script src="{{ENV_WEB_CHAT_ROOT}}/libs/react-pure-render-mixin-fake.js"></script>

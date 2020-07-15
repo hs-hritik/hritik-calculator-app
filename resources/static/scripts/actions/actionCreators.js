@@ -357,6 +357,17 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to set the value in the state which represents whether
+   * the widget should auto open after config has been fetched.
+   * @param {boolean} widgetShouldAutoOpen - default is true
+   * @returns {Object}
+   */
+  const setWidgetShouldAutoOpen = (widgetShouldAutoOpen = true) => ({
+    type: ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN,
+    widgetShouldAutoOpen
+  });
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -389,6 +400,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentsModelSuccess,
     intentSelected,
     intentUnselected,
-    stopIntentsSearch
+    stopIntentsSearch,
+    setWidgetShouldAutoOpen
   };
 });
