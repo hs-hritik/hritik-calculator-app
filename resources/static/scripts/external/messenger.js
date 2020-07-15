@@ -1436,6 +1436,12 @@
   const removeEventListener = (eventName, eventHandler) => {
     // If event name is supported, remove that event
     if (isEventSupported(eventName) && eventHandler) {
+      if (eventName === SUPPORTED_EVENTS.GLOBAL_API_EVENT) {
+        state.globalApiEventHandler = null;
+
+        return;
+      }
+
       state.apiEvents = state.apiEvents.filter((apiEvent) => {
         return !(apiEvent.eventName === eventName && apiEvent.eventHandler === eventHandler);
       });
