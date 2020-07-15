@@ -88,7 +88,7 @@ define("components/containers/chatView", [
         dispatch(faqViewActions.getFaq(faqId, language, msgId, faqSource));
       },
       onActionClick: (actionData) => {
-        dispatch(chatViewActions.trackActionClickEvent(actionData));
+        dispatch(chatViewActions.handleActionClick(actionData));
       },
       onFilesDrop: (files) => {
         dispatch(chatViewActions.createAttachmentMessages(files));

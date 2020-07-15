@@ -1,0 +1,13 @@
+Branches:
+feature/action-card-same-tab
+
+Changelog:
+Update gunpowder package version
+Add Symbol polyfill
+Add polyfill for Promise
+Remove the usage of findIndex with array spread operator
+Update word-break mixin
+Auto open web chat for action link click
+Reset widgetShouldAutoOpen flag on widget open
+Store widget should auto open flag in localstorage
+Add open in new tab value to message's action data

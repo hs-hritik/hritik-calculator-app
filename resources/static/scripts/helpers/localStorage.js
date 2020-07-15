@@ -23,7 +23,8 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
     LS_MIGRATED: "lm",
     RE_ENGAGEMENT_REDIRECTED: "redirected",
     RE_ENGAGEMENT_DATA: "red",
-    RE_ENGAGEMENT_ID: "rid"
+    RE_ENGAGEMENT_ID: "rid",
+    WIDGET_SHOULD_AUTO_OPEN: "wsao"
   };
 
   const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
@@ -257,6 +258,21 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
 
   const removeReEngagementId = () => lsUtils.removeItem(KEYS.RE_ENGAGEMENT_ID);
 
+  /**
+   * Get the boolean representing whether the web chat widget should auto open on page load
+   * @returns {boolean}
+   */
+  const getWidgetShouldAutoOpen = () => lsUtils.getItem(KEYS.WIDGET_SHOULD_AUTO_OPEN) === "true";
+
+  /**
+   * Set a boolean in localstorage representing whether the web chat widget should auto open on page
+   * load
+   * @param {boolean} widgetShouldAutoOpen
+   */
+  const setWidgetShouldAutoOpen = (widgetShouldAutoOpen) => {
+    lsUtils.setItem(KEYS.WIDGET_SHOULD_AUTO_OPEN, widgetShouldAutoOpen);
+  };
+
   return {
     LS_KEYS: KEYS,
     getUserId,
@@ -287,6 +303,8 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
     setReEngagementId,
     getReEngagementId,
     removeReEngagementData,
-    removeReEngagementId
+    removeReEngagementId,
+    getWidgetShouldAutoOpen,
+    setWidgetShouldAutoOpen
   };
 });

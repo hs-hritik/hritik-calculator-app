@@ -100,6 +100,10 @@ define("extras/lsMiddleware", [
           lsHelpers.removeReEngagementId();
         }
         break;
+
+      case ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN:
+        lsHelpers.setWidgetShouldAutoOpen(action.widgetShouldAutoOpen);
+        break;
     }
   };
 
