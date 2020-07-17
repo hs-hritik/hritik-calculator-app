@@ -163,7 +163,9 @@ define("reducers/appState", [
     expiryTimestamps: {
       resolutionQuestion: 0,
       csatBot: 0
-    }
+    },
+    // False, when minimizes the window or switches to another tab
+    parentPageIsVisible: true
   };
 
   /**
@@ -550,6 +552,11 @@ define("reducers/appState", [
         }
 
         return update(state, userReplyRequestUpdateObj);
+
+      case ACTION_TYPES.PARENT_PAGE_IS_VISIBLE:
+        return update(state, {
+          parentPageIsVisible: {$set: action.parentPageIsVisible}
+        });
 
       default:
         return state;

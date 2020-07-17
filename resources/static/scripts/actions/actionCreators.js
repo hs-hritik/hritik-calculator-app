@@ -368,6 +368,16 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     widgetShouldAutoOpen
   });
 
+  /**
+   * Action to set parent page visibility
+   * @param {boolean} parentPageIsVisible - True, when the page is visible to user
+   * @returns {Object} - Action object
+   */
+  const handleParentPageVisibilityChange = (parentPageIsVisible) => ({
+    type: ACTION_TYPES.PARENT_PAGE_IS_VISIBLE,
+    parentPageIsVisible
+  });
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -401,6 +411,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentSelected,
     intentUnselected,
     stopIntentsSearch,
-    setWidgetShouldAutoOpen
+    setWidgetShouldAutoOpen,
+    handleParentPageVisibilityChange
   };
 });

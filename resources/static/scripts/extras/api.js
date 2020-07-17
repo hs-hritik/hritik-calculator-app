@@ -413,6 +413,9 @@ define("extras/api", [
           })
         );
         break;
+      case EVENT_TYPES.CMD_SET_PARENT_PAGE_VISIBILITY:
+        store.dispatch(actionCreators.handleParentPageVisibilityChange(data.parentPageIsVisible));
+        break;
     }
   };
 

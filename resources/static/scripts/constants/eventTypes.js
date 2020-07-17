@@ -38,6 +38,7 @@ define("constants/eventTypes", function() {
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
     CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
-    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config"
+    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
+    CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility"
   };
 });
