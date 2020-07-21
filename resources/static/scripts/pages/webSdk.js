@@ -36,6 +36,7 @@ require(["store", "extras/api", "extras/globalEvents", "actions/postSdkMessage"]
 
   globalEvents.addFocusAndBlurEventListener();
   globalEvents.addDomPurifyTargetHook();
+  globalEvents.subscribeLocalStorageUpdateEvent();
 
   store.dispatch(postSdkMessage.jsLoaded());
 });
