@@ -4,10 +4,11 @@
  * @created Aug 3, 2017
  */
 
-define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils/object"], function(
-  lsUtils,
-  objUtils
-) {
+define("helpers/localStorage", [
+  "gunpowder/utils/localStorage",
+  "gunpowder/utils/object",
+  "gunpowder/utils/pubsub"
+], function(lsUtils, objUtils, pubsub) {
   "use strict";
 
   const KEYS = {
@@ -30,6 +31,11 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
   const DEVICE_ID_KEY = "DEVICE_ID";
   const ANALYTICS_SESSION_ID_KEY = "ANALYTICS_SESSION_ID";
+
+  const LS_UPDATE_TYPES = {
+    SET: "set",
+    REMOVE: "remove"
+  };
 
   /**
    * A helper function to check if a localstorage key should be
@@ -64,11 +70,16 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
    *                  related data. By default, they won't be reset.
    */
   const reset = (options = {}) => {
+    const keysToBeRemoved = [];
+
     objUtils.forEachKey(KEYS, (key) => {
       if (_shouldKeyReset(key, options)) {
+        keysToBeRemoved.push(KEYS[key]);
         lsUtils.removeItem(KEYS[key]);
       }
     });
+
+    pubsub.fire("LS_UPDATE", {type: LS_UPDATE_TYPES.REMOVE, data: {data: keysToBeRemoved}});
   };
 
   /**
@@ -80,6 +91,8 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
   const set = (key, value) => {
     if (key && value) {
       lsUtils.setItem(key, value);
+      // Fire a ls update event to communicate it to parent site
+      pubsub.fire("LS_UPDATE", {type: LS_UPDATE_TYPES.SET, data: {[key]: value}});
     }
   };
 
@@ -101,11 +114,14 @@ define("helpers/localStorage", ["gunpowder/utils/localStorage", "gunpowder/utils
   const remove = (key) => {
     if (key) {
       lsUtils.removeItem(key);
+      // Fire a ls update event to communicate it to parent site
+      pubsub.fire("LS_UPDATE", {type: LS_UPDATE_TYPES.REMOVE, data: {data: [key]}});
     }
   };
 
   return {
     LS_KEYS: KEYS,
+    LS_UPDATE_TYPES,
     set,
     get,
     remove,

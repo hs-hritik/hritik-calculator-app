@@ -10,8 +10,10 @@ define("extras/globalEvents", [
   "actions/appState",
   "actions/chatView",
   "domPurify",
-  "gunpowder/utils/pubsub"
-], function(store, appStateActions, chatViewActions, DOMPurify, pubsub) {
+  "gunpowder/utils/pubsub",
+  "actions/postSdkMessage",
+  "helpers/localStorage"
+], function(store, appStateActions, chatViewActions, DOMPurify, pubsub, postSdkMessage, lsHelpers) {
   "use strict";
 
   const {dispatch} = store;
@@ -79,8 +81,12 @@ define("extras/globalEvents", [
    * pass it to parent site via postMessage API
    */
   const subscribeLocalStorageUpdateEvent = () => {
-    pubsub.on("LS_UPDATE", () => {
-      // Dispatch postSdkMessage action for local storage data update here
+    pubsub.on("LS_UPDATE", (event) => {
+      if (event.type === lsHelpers.LS_UPDATE_TYPES.SET) {
+        store.dispatch(postSdkMessage.onSetLocalStorageData(event.data));
+      } else if (event.type === lsHelpers.LS_UPDATE_TYPES.REMOVE) {
+        store.dispatch(postSdkMessage.onRemoveLocalStorageData(event.data));
+      }
     });
   };
 
