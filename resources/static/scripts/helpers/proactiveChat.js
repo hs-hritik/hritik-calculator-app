@@ -15,6 +15,8 @@ define("helpers/proactiveChat", [
 
   const {CONDITION, OPERATOR, ACTION, TIME_RELATION} = proactiveChatConstants;
 
+  const {LS_KEYS} = lsHelpers;
+
   let _ruleExecuted = false;
 
   /**
@@ -152,7 +154,8 @@ define("helpers/proactiveChat", [
 
     const outOfBusinessHours =
       businessHoursViewState.businessHoursEnabled && !businessHoursViewState.inBusinessHours;
-    const ruleExecutedOnSite = rule.onceOnSite && lsHelpers.getProactiveChatHasTriggered();
+    const ruleExecutedOnSite =
+      rule.onceOnSite && lsHelpers.get(LS_KEYS.PROACTIVE_CHAT_HAS_TRIGGERED);
 
     // Execute the proactive chat rule only if
     // the conversation hasn't started already
@@ -171,7 +174,7 @@ define("helpers/proactiveChat", [
       _ruleExecuted = true;
 
       if (rule.onceOnSite) {
-        lsHelpers.setProactiveChatHasTriggered(true);
+        lsHelpers.set(LS_KEYS.PROACTIVE_CHAT_HAS_TRIGGERED, true);
       }
     }
   };
@@ -216,7 +219,7 @@ define("helpers/proactiveChat", [
     const timeOnSite = rule.timeOnSite;
     const timeRelation = rule.timeRelationOperator;
 
-    const siteActivityStartTime = lsHelpers.getSiteActivityStartTime();
+    const siteActivityStartTime = lsHelpers.get(lsHelpers.LS_KEYS.SITE_ACTIVITY_START_TIME);
     const siteActivityStartedAgo = Date.now() - siteActivityStartTime;
 
     const effectiveTimeOnSite = timeOnSite - siteActivityStartedAgo;

@@ -85,6 +85,8 @@ define("actions/appState", [
   const isCssVarSupported =
     window.CSS && window.CSS.supports && window.CSS.supports("--fake-var", 0);
 
+  const {LS_KEYS} = lsHelpers;
+
   let getConfigXhr = null;
 
   /**
@@ -94,7 +96,7 @@ define("actions/appState", [
    */
   const setDeviceId = () => {
     return () => {
-      let dId = lsHelpers.getDeviceId();
+      let dId = lsHelpers.get(LS_KEYS.DEVICE_ID);
 
       // Create a new device id if one doesn't exist already.
       // Set it in the local storage.
@@ -115,7 +117,7 @@ define("actions/appState", [
    */
   const setAnalyticsSessionId = () => {
     return (dispatch) => {
-      let sessionId = lsHelpers.getAnalyticsSessionId();
+      let sessionId = lsHelpers.get(LS_KEYS.ANALYTICS_SESSION_ID);
 
       // Create a new session id if one doesn't exist already.
       // Set it in the local storage.
@@ -150,13 +152,13 @@ define("actions/appState", [
      */
   const setAnonUserId = () => {
     return () => {
-      const currentAnonUserId = lsHelpers.getAnonUserId();
+      const currentAnonUserId = lsHelpers.get(LS_KEYS.ANON_USER_ID);
 
       if (!currentAnonUserId) {
         const anonUserId = commonHelpers.getAnonUserId();
 
         store.dispatch(setAnonUserIdValue(anonUserId));
-        lsHelpers.setAnonUserId(anonUserId);
+        lsHelpers.set(LS_KEYS.ANON_USER_ID, anonUserId);
       } else {
         store.dispatch(setAnonUserIdValue(currentAnonUserId));
       }
@@ -184,9 +186,9 @@ define("actions/appState", [
    */
   const rehydrateState = () => {
     // @TODO: feature/ai-powered : Handle rehydration
-    const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked(),
-      readFaqList = lsHelpers.getReadFaqList(),
-      reEngagementId = lsHelpers.getReEngagementId();
+    const suggestedFaqReadTracked = lsHelpers.get(LS_KEYS.SUGGESTED_FAQ_READ_TRACKED),
+      readFaqList = lsHelpers.get(LS_KEYS.READ_FAQ_LIST, true),
+      reEngagementId = lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_ID);
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -311,11 +313,11 @@ define("actions/appState", [
    */
   const handleAnonUserReset = (userId, clearAnonymousUserOnLogin) => {
     // Clear anon user id after 7 days of inactivity
-    const lastActivityTime = lsHelpers.getLastActivityTime();
+    const lastActivityTime = lsHelpers.get(LS_KEYS.LAST_ACTIVITY_TIME, true);
     const inactivityDuration = Date.now() - lastActivityTime;
 
     if (lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
-      lsHelpers.removeAnonUserId();
+      lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
 
     // Clear anon user if a user logs in and clearAnonymousUserOnLogin flag is true
@@ -323,14 +325,14 @@ define("actions/appState", [
       return;
     }
 
-    const previousUserId = lsHelpers.getUserId();
+    const previousUserId = lsHelpers.get(LS_KEYS.USER_ID);
 
     if (userId !== previousUserId) {
       // If previousUserId is not present,
       // anon user -> a user logged in
       // If previousUserId is present,
       // A user was logged in -> they logged out -> a new user logged in.
-      lsHelpers.removeAnonUserId();
+      lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
   };
 
