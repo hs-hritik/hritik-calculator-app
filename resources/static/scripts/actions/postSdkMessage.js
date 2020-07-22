@@ -312,6 +312,20 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to communicate the removed data in the local storage
+   * @param {Object} data - Key value pair updated in the local storage
+   */
+  const onRemoveLocalStorageData = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA,
+        data,
+        parentPageOrigin: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -331,6 +345,7 @@ define("actions/postSdkMessage", [
     csatSubmitEvent,
     conversationStatusEvent,
     focusLauncher,
-    onSetLocalStorageData
+    onSetLocalStorageData,
+    onRemoveLocalStorageData
   };
 });

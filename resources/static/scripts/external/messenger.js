@@ -101,6 +101,7 @@
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
     SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
+    SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -136,7 +137,8 @@
     // this in case liteSDK to minimize the code on its end as instead of handling all
     // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
     GLOBAL_API_EVENT: "globalApiEvent",
-    ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData"
+    ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
+    ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData"
   };
 
   // Errors message strings
@@ -1282,6 +1284,11 @@
           case EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA:
             // Call the event handler on set of local storage items
             callApiEventHandler(SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA:
+            // Call the event handler on removal of local storage items
+            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA, data);
             break;
         }
       },
