@@ -9,8 +9,9 @@ define("extras/lsMiddleware", [
   "constants/actionTypes",
   "constants/message",
   "gunpowder/utils/throttle",
-  "helpers/localStorage"
-], function(ACTION_TYPES, msgConstants, throttle, lsHelpers) {
+  "helpers/localStorage",
+  "gunpowder/utils/object"
+], function(ACTION_TYPES, msgConstants, throttle, lsHelpers, objUtils) {
   "use strict";
 
   // @TODO: Confirm what is the correct timeout for saving the
@@ -96,6 +97,12 @@ define("extras/lsMiddleware", [
 
       case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
         lsHelpers.remove(LS_KEYS.RE_ENGAGEMENT_ID);
+        break;
+
+      case ACTION_TYPES.SET_LOCAL_STORAGE_DATA:
+        objUtils.forEachKey(action.data, (key) => {
+          lsHelpers.set(key, action.data[key]);
+        });
         break;
     }
   };

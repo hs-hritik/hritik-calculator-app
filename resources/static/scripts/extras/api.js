@@ -200,6 +200,13 @@ define("extras/api", [
     const clientConfigCopy = objUtils.shallowMerge({}, clientConfig);
     _handleReEngagement(clientConfigCopy);
 
+    if (
+      clientConfig.liteSdkConfig &&
+      clientConfig.liteSdkConfig.localStorageData &&
+      Object.keys(clientConfig.liteSdkConfig.localStorageData).length
+    ) {
+      dispatch(actionCreators.setLocalStorageData(clientConfig.liteSdkConfig.localStorageData));
+    }
     dispatch(appStateActions.setParentPageInfo(parentPageInfo));
     dispatch(appStateActions.setClientConfig(clientConfig));
     dispatch(appStateActions.setDeviceId());

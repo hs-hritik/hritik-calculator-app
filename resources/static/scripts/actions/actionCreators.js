@@ -375,6 +375,15 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     };
   };
 
+  /**
+   * Action to set local storage data
+   * @param {Object[]} data - Local storage items
+   */
+  const setLocalStorageData = (data) => ({
+    type: ACTION_TYPES.SET_LOCAL_STORAGE_DATA,
+    data
+  });
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -409,6 +418,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentSelected,
     intentUnselected,
     stopIntentsSearch,
-    fetchMessagesSuccess
+    fetchMessagesSuccess,
+    setLocalStorageData
   };
 });
