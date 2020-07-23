@@ -78,13 +78,15 @@ define("actions/chatView", [
 
   const {
     ACTIVE_FOOTER,
-    MESSAGES_POLLING_TIMEOUT,
     MESSAGES_FORCE_POLLING_TIMEOUT,
     CURSOR_TYPES,
     USER_REDACTION_ERR_MSG,
     USER_REDACTION_ERR_STATUS_CODE,
     INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
-    ISSUE_REOPEN_ERR_STATUS_CODE
+    ISSUE_REOPEN_ERR_STATUS_CODE,
+    POLLING_STRATEGY_TYPES,
+    CONSERVATIVE_POLLING_BASE_MULTIPLIER,
+    CONSERVATIVE_POLLING_INTERVAL
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -252,6 +254,9 @@ define("actions/chatView", [
     }
 
     if (lastFetchCompleted) {
+      // After completing the last poller fetch. Update polling interval
+      // condiionally and start fetching again.
+      _updatePollingInterval();
       fetchMessages();
       return;
     }
@@ -263,6 +268,7 @@ define("actions/chatView", [
         fetchMessagesXhr.abort();
         fetchMessagesXhr = null;
       }
+      _updatePollingInterval();
       fetchMessages();
     }
   };
@@ -311,6 +317,40 @@ define("actions/chatView", [
   };
 
   /**
+   * Set exponential backoff interval when the poller strategy is conservative
+   * Note : Exponential backoff interval means multiplicatively
+   * decrease the rate of polling call until find an acceptable rate.
+   * For conservative polling - 0, 5, 10, 20, 60, 60,
+   */
+  const _updatePollingInterval = () => {
+    const {
+      chatView: {pollingInterval: currentPollingInterval, pollingStrategy}
+    } = store.getState();
+
+    // If current polling strategy is conservative. Exponential increase
+    // the polling interval till 60
+    if (pollingStrategy === POLLING_STRATEGY_TYPES.CONSERVATIVE) {
+      let newPollingInterval = CONSERVATIVE_POLLING_INTERVAL.MAXIMUM;
+
+      if (currentPollingInterval === CONSERVATIVE_POLLING_INTERVAL.MINIMUM) {
+        newPollingInterval = CONSERVATIVE_POLLING_BASE_MULTIPLIER * 2;
+      } else if (currentPollingInterval * 2 < CONSERVATIVE_POLLING_INTERVAL.MAXIMUM) {
+        newPollingInterval = currentPollingInterval * 2;
+      }
+
+      // Clear the current polling interval and start fetching again with new polling interval
+      window.clearInterval(fetchMessagesTimer);
+      fetchMessagesTimer = window.setInterval(_restartFetchMessages, newPollingInterval);
+      store.dispatch(
+        chatViewActionCreators.updatePollingData({
+          pollingInterval: newPollingInterval,
+          pollingStrategy: POLLING_STRATEGY_TYPES.CONSERVATIVE
+        })
+      );
+    }
+  };
+
+  /**
    * Handle agent live updates
    */
   const handleAgentLiveUpdates = () => {
@@ -339,7 +379,11 @@ define("actions/chatView", [
     pollingEnabled = true;
     lastFetchCompleted = true;
     fetchMessages();
-    fetchMessagesTimer = window.setInterval(_restartFetchMessages, MESSAGES_POLLING_TIMEOUT);
+    const {
+      chatView: {pollingInterval}
+    } = store.getState();
+
+    fetchMessagesTimer = window.setInterval(_restartFetchMessages, pollingInterval);
   };
 
   /**

@@ -86,6 +86,12 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     CONSERVATIVE: "conservative"
   };
 
+  const CONSERVATIVE_POLLING_BASE_MULTIPLIER = 5000;
+  const CONSERVATIVE_POLLING_INTERVAL = {
+    MINIMUM: 0,
+    MAXIMUM: 60000
+  };
+
   return {
     ACTIVE_FOOTER,
     AGRESSIVE_POLLING_TIMEOUT,
@@ -106,6 +112,8 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     MAX_LEAF_NODE_INTENT_RESULTS,
     MAX_PARENT_INTENT_RESULTS,
     INTENTS_SEARCH_ALGO,
-    POLLING_STRATEGY_TYPES
+    POLLING_STRATEGY_TYPES,
+    CONSERVATIVE_POLLING_BASE_MULTIPLIER,
+    CONSERVATIVE_POLLING_INTERVAL
   };
 });

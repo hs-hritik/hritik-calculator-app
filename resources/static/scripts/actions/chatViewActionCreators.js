@@ -179,6 +179,23 @@ const pageVisibilityChange = (data) => {
   };
 };
 
+/**
+ * Action to update polling data
+ * @param {Object} data
+ * @param {Number} data.pollingInterval - Time interval to execute the poller call again
+ * @param {String} data.pollingStrategy - Updated polling strategy
+ * @returns {Object} - action
+ */
+const updatePollingData = (data) => {
+  const {pollingStrategy, pollingInterval} = data;
+
+  return {
+    type: ACTION_TYPES.UPDATE_POLLING_DATA,
+    pollingStrategy,
+    pollingInterval
+  };
+};
+
 export {
   createPreissueRequest,
   createPreissueSuccess,
@@ -191,5 +208,6 @@ export {
   botEnd,
   botMessageWithNoUserInput,
   botMessageWithUserInput,
-  pageVisibilityChange
+  pageVisibilityChange,
+  updatePollingData
 };

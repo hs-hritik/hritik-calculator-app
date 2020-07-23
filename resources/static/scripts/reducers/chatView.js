@@ -560,6 +560,12 @@ define("reducers/chatView", [
           pollingInterval: {$set: state.pollingInterval}
         });
 
+      case ACTION_TYPES.UPDATE_POLLING_DATA:
+        return update(state, {
+          pollingStrategy: {$set: action.pollingStrategy},
+          pollingInterval: {$set: action.pollingInterval}
+        });
+
       case ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_REQUEST:
         return update(state, {
           markMessageAsSeenXhrIsInProgress: {$set: true}
