@@ -162,6 +162,23 @@ const botMessageWithUserInput = ({userInput}) => {
   };
 };
 
+/**
+ * Action to update polling strategy
+ * @param {Object} data
+ * @param {boolean} data.issueExists - True, if issue exists
+ * @param {String} data.issueState - State of issue
+ * @param {boolean} data.widgetIsMinimized - Messenger minimized state
+ * @param {boolean} data.parentPageIsVisible - False, when window is minimized or
+ * focus is on another tab
+ * @param {String} data.pollingStrategy - Current polling strategy
+ */
+const pageVisibilityChange = (data) => {
+  return {
+    type: ACTION_TYPES.PAGE_VISIBILITY_CHANGE,
+    data
+  };
+};
+
 export {
   createPreissueRequest,
   createPreissueSuccess,
@@ -173,5 +190,6 @@ export {
   botStart,
   botEnd,
   botMessageWithNoUserInput,
-  botMessageWithUserInput
+  botMessageWithUserInput,
+  pageVisibilityChange
 };

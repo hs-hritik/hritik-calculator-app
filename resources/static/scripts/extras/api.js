@@ -253,9 +253,21 @@ define("extras/api", [
         issueState,
         issueType,
         sdkConfigOptions: {initialUserMessage},
-        widgetShouldAutoOpen
-      }
+        widgetShouldAutoOpen,
+        parentPageIsVisible
+      },
+      chatView: {pollingStrategy}
     } = store.getState();
+
+    store.dispatch(
+      chatViewActions.handleParentPageVisibilityChange({
+        issueState,
+        pollingStrategy,
+        widgetIsMinimized: widgetHasMinimized,
+        parentPageIsVisible,
+        issueExists
+      })
+    );
 
     if (!widgetHasMinimized) {
       if (!app.isMounted()) {
@@ -414,7 +426,21 @@ define("extras/api", [
         );
         break;
       case EVENT_TYPES.CMD_SET_PARENT_PAGE_VISIBILITY:
+        const {
+          appState: {issueState, minimized: widgetIsMinimized, issueExists},
+          chatView: {pollingStrategy}
+        } = store.getState();
+
         store.dispatch(actionCreators.handleParentPageVisibilityChange(data.parentPageIsVisible));
+        store.dispatch(
+          chatViewActions.handleParentPageVisibilityChange({
+            issueState,
+            pollingStrategy,
+            widgetIsMinimized,
+            parentPageIsVisible: data.parentPageIsVisible,
+            issueExists
+          })
+        );
         break;
     }
   };

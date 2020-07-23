@@ -35,8 +35,11 @@ define("reducers/chatView", [
     CURSOR_TYPES,
     DEFAULT_LIST_PICKER_NAVIGATION_STATE,
     INTENTS_MINIMUM_CHAR_FOR_SEARCH,
-    INTENTS_SEARCH_ALGO
+    INTENTS_SEARCH_ALGO,
+    POLLING_STRATEGY_TYPES,
+    AGRESSIVE_POLLING_TIMEOUT
   } = CHAT_VIEW_CONSTANTS;
+  const {ISSUE_STATE} = APP_STATE_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
 
@@ -233,7 +236,9 @@ define("reducers/chatView", [
     error: INITIAL_ERROR_STATE,
     localGreetingMessageId: "",
     // It contains key-value pair of avatarId and last updated timestamp
-    avatarLastUpdatedTs: {}
+    avatarLastUpdatedTs: {},
+    pollingStrategy: POLLING_STRATEGY_TYPES.CONSERVATIVE,
+    pollingInterval: 0
   };
 
   /**
@@ -524,6 +529,35 @@ define("reducers/chatView", [
         return update(state, {
           unreadIssues: {$merge: action.issues},
           unreadMessageIds: {$push: action.messageIds}
+        });
+
+      case ACTION_TYPES.PAGE_VISIBILITY_CHANGE:
+        const {issueState, parentPageIsVisible, pollingStrategy, widgetIsMinimized} = action.data;
+
+        if (issueState !== ISSUE_STATE.RESOLVED && issueState !== ISSUE_STATE.REJECTED) {
+          if (
+            (widgetIsMinimized || !parentPageIsVisible) &&
+            pollingStrategy !== POLLING_STRATEGY_TYPES.CONSERVATIVE
+          ) {
+            return update(state, {
+              pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE},
+              pollingInterval: {$set: 0}
+            });
+          } else if (
+            parentPageIsVisible &&
+            !widgetIsMinimized &&
+            pollingStrategy !== POLLING_STRATEGY_TYPES.AGGRESSIVE
+          ) {
+            return update(state, {
+              pollingStrategy: {$set: POLLING_STRATEGY_TYPES.AGGRESSIVE},
+              pollingInterval: {$set: AGRESSIVE_POLLING_TIMEOUT}
+            });
+          }
+        }
+
+        return update(state, {
+          pollingStrategy: {$set: state.pollingStrategy},
+          pollingInterval: {$set: state.pollingInterval}
         });
 
       case ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_REQUEST:

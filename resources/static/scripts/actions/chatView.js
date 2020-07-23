@@ -268,6 +268,49 @@ define("actions/chatView", [
   };
 
   /**
+   * Handle parent page visibility change
+   * @param {Object} data
+   * @param {boolean} data.issueExists - True, if issue exists
+   * @param {String} data.issueState - State of issue
+   * @param {boolean} data.widgetIsMinimized - Messenger minimized state
+   * @param {boolean} data.parentPageIsVisible - False, when window is minimized or
+   * focus is on another tab
+   * @param {String} data.pollingStrategy - Current polling strategy
+   */
+  const handleParentPageVisibilityChange = (data) => {
+    return (dispatch) => {
+      const {
+        issueExists,
+        issueState,
+        widgetIsMinimized,
+        parentPageIsVisible,
+        pollingStrategy: currentPollingStrategy
+      } = data;
+
+      dispatch(chatViewActionCreators.pageVisibilityChange(data));
+
+      // If issue is in active state and polling strategy gets updated.
+      // Stop polling & start pollig with new polling interval and strategy
+      if (
+        issueExists &&
+        issueState !== ISSUE_STATE.RESOLVED &&
+        issueState !== ISSUE_STATE.REJECTED
+      ) {
+        if (
+          chatViewHelpers.shouldPollerRestart({
+            widgetIsMinimized,
+            parentPageIsVisible,
+            currentPollingStrategy
+          })
+        ) {
+          stopPollingForMessages();
+          startPollingForMessages();
+        }
+      }
+    };
+  };
+
+  /**
    * Handle agent live updates
    */
   const handleAgentLiveUpdates = () => {
@@ -1784,7 +1827,7 @@ define("actions/chatView", [
         } catch (ex) {
           // @TODO - Ideally, this exception should be logged to server.
           // eslint-disable-next-line
-            console.error ("Something went wrong = ", ex);
+          console.error("Something went wrong = ", ex);
         }
       },
       onFailure: (request, statusCode) => {
@@ -3045,6 +3088,7 @@ define("actions/chatView", [
     loadIntentsModel,
     selectIntent,
     updateReplyTextAndSearchIntents,
-    handleActionClick
+    handleActionClick,
+    handleParentPageVisibilityChange
   };
 });
