@@ -141,6 +141,11 @@
     ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData"
   };
 
+  const LITE_SDK_SUPPORTED_EVENTS = [
+    SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA
+  ];
+
   // Errors message strings
   const ERROR_MSG = {
     NO_API_NAME: "API name is not passed with the Helpshift call",
@@ -1058,7 +1063,9 @@
   const callApiEventHandler = (eventName, eventData) => {
     let handlerIsFound = false;
 
-    if (state.globalApiEventHandler) {
+    // Expose only those events which are handled internally
+    // [like "onSetLocalStorageData" & "onRemoveLocalStorageData"] in the globalApiEvent
+    if (state.globalApiEventHandler && LITE_SDK_SUPPORTED_EVENTS.indexOf(eventName) === -1) {
       state.globalApiEventHandler({[eventName]: eventData || null});
     }
 
