@@ -261,11 +261,9 @@ define("extras/api", [
 
     store.dispatch(
       chatViewActions.handleParentPageVisibilityChange({
-        issueState,
         pollingStrategy,
         widgetIsMinimized: widgetHasMinimized,
-        parentPageIsVisible,
-        issueExists
+        parentPageIsVisible
       })
     );
 
@@ -427,20 +425,19 @@ define("extras/api", [
         break;
       case EVENT_TYPES.CMD_SET_PARENT_PAGE_VISIBILITY:
         const {
-          appState: {issueState, minimized: widgetIsMinimized, issueExists},
+          appState: {minimized: widgetIsMinimized},
           chatView: {pollingStrategy}
         } = store.getState();
 
         store.dispatch(actionCreators.handleParentPageVisibilityChange(data.parentPageIsVisible));
         store.dispatch(
           chatViewActions.handleParentPageVisibilityChange({
-            issueState,
             pollingStrategy,
             widgetIsMinimized,
-            parentPageIsVisible: data.parentPageIsVisible,
-            issueExists
+            parentPageIsVisible: data.parentPageIsVisible
           })
         );
+
         break;
     }
   };

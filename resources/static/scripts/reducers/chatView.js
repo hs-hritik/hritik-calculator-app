@@ -39,7 +39,6 @@ define("reducers/chatView", [
     POLLING_STRATEGY_TYPES,
     AGRESSIVE_POLLING_TIMEOUT
   } = CHAT_VIEW_CONSTANTS;
-  const {ISSUE_STATE} = APP_STATE_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
 
@@ -532,27 +531,25 @@ define("reducers/chatView", [
         });
 
       case ACTION_TYPES.PAGE_VISIBILITY_CHANGE:
-        const {issueState, parentPageIsVisible, pollingStrategy, widgetIsMinimized} = action.data;
+        const {parentPageIsVisible, pollingStrategy, widgetIsMinimized} = action.data;
 
-        if (issueState !== ISSUE_STATE.RESOLVED && issueState !== ISSUE_STATE.REJECTED) {
-          if (
-            (widgetIsMinimized || !parentPageIsVisible) &&
-            pollingStrategy !== POLLING_STRATEGY_TYPES.CONSERVATIVE
-          ) {
-            return update(state, {
-              pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE},
-              pollingInterval: {$set: 0}
-            });
-          } else if (
-            parentPageIsVisible &&
-            !widgetIsMinimized &&
-            pollingStrategy !== POLLING_STRATEGY_TYPES.AGGRESSIVE
-          ) {
-            return update(state, {
-              pollingStrategy: {$set: POLLING_STRATEGY_TYPES.AGGRESSIVE},
-              pollingInterval: {$set: AGRESSIVE_POLLING_TIMEOUT}
-            });
-          }
+        if (
+          (widgetIsMinimized || !parentPageIsVisible) &&
+          pollingStrategy !== POLLING_STRATEGY_TYPES.CONSERVATIVE
+        ) {
+          return update(state, {
+            pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE},
+            pollingInterval: {$set: 0}
+          });
+        } else if (
+          parentPageIsVisible &&
+          !widgetIsMinimized &&
+          pollingStrategy !== POLLING_STRATEGY_TYPES.AGGRESSIVE
+        ) {
+          return update(state, {
+            pollingStrategy: {$set: POLLING_STRATEGY_TYPES.AGGRESSIVE},
+            pollingInterval: {$set: AGRESSIVE_POLLING_TIMEOUT}
+          });
         }
 
         return update(state, {

@@ -286,8 +286,6 @@ define("actions/chatView", [
   const handleParentPageVisibilityChange = (data) => {
     return (dispatch) => {
       const {
-        issueExists,
-        issueState,
         widgetIsMinimized,
         parentPageIsVisible,
         pollingStrategy: currentPollingStrategy
@@ -295,13 +293,9 @@ define("actions/chatView", [
 
       dispatch(chatViewActionCreators.pageVisibilityChange(data));
 
-      // If issue is in active state and polling strategy gets updated.
+      // If polling is enabled and polling strategy gets updated.
       // Stop polling & start pollig with new polling interval and strategy
-      if (
-        issueExists &&
-        issueState !== ISSUE_STATE.RESOLVED &&
-        issueState !== ISSUE_STATE.REJECTED
-      ) {
+      if (pollingEnabled) {
         if (
           chatViewHelpers.shouldPollerRestart({
             widgetIsMinimized,
@@ -320,7 +314,7 @@ define("actions/chatView", [
    * Set exponential backoff interval when the poller strategy is conservative
    * Note : Exponential backoff interval means multiplicatively
    * decrease the rate of polling call until find an acceptable rate.
-   * For conservative polling - 0, 5, 10, 20, 60, 60,
+   * For conservative polling - 0, 5, 10, 20, 60, 60, 60...
    */
   const _updatePollingInterval = () => {
     const {
