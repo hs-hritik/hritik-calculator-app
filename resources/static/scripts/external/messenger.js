@@ -1079,10 +1079,19 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && !eventRegister[eventName]) {
+    if (!handlerIsFound) {
+      let cumulativeEventData;
+
+      // If the event is already registered, then enqueue the data to
+      // already registered event's data
+      if (eventRegister[eventName] && eventRegister[eventName].data) {
+        cumulativeEventData = {...eventRegister[eventName].data, ...eventData};
+      } else {
+        cumulativeEventData = eventData;
+      }
       eventRegister[eventName] = {
         eventHasOccured: true,
-        data: eventData
+        data: cumulativeEventData
       };
     }
   };
