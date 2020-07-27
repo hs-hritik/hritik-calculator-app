@@ -232,7 +232,8 @@ define("components/chatViewFooter", [
         pickerMaxHeight: PICKER_MIN_HEIGHT,
         intentsWidgetMaxHeight: PICKER_MIN_HEIGHT,
         intentsWidgetMinHeight: PICKER_MIN_HEIGHT,
-        intentsWidgetIsReadyForRendering: false
+        intentsWidgetIsReadyForRendering: false,
+        shouldVirtualKeyboardRemainOpen: false
       };
     },
 
@@ -495,6 +496,8 @@ define("components/chatViewFooter", [
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
             ariaLabel={ariaLabel}
+            shouldVirtualKeyboardRemainOpen={this.state.shouldVirtualKeyboardRemainOpen}
+            onReplyBoxFocusAfterReplySubmit={this._onReplyBoxFocusAfterReplySubmit}
           />
         );
       } else {
@@ -741,8 +744,14 @@ define("components/chatViewFooter", [
         selector: METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR
       });
 
-      const _onSubmitReply = () => {
+      const _onSubmitReply = (ev) => {
         onSubmitReply();
+        // Cancal the click event to not loose focus from the reply box
+        // (ie. to not collapse the virtual keyboard in case of mobile phones)
+        ev.preventDefault();
+        this.setState({
+          shouldVirtualKeyboardRemainOpen: true
+        });
         _setAxActiveIndex();
       };
       const fieldIsInvalid = !!errorMsg;
@@ -964,6 +973,15 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    /**
+     * Function to set the shouldVirtualKeyboardRemainOpen flag to false
+     */
+    _onReplyBoxFocusAfterReplySubmit() {
+      this.setState({
+        shouldVirtualKeyboardRemainOpen: false
+      });
     },
 
     /**
