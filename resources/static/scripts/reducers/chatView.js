@@ -37,7 +37,8 @@ define("reducers/chatView", [
     INTENTS_MINIMUM_CHAR_FOR_SEARCH,
     INTENTS_SEARCH_ALGO,
     POLLING_STRATEGY_TYPES,
-    AGRESSIVE_POLLING_TIMEOUT
+    AGRESSIVE_POLLING_TIMEOUT,
+    CONSERVATIVE_POLLING_INTERVAL
   } = CHAT_VIEW_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
@@ -237,7 +238,7 @@ define("reducers/chatView", [
     // It contains key-value pair of avatarId and last updated timestamp
     avatarLastUpdatedTs: {},
     pollingStrategy: POLLING_STRATEGY_TYPES.CONSERVATIVE,
-    pollingInterval: 0
+    pollingInterval: CONSERVATIVE_POLLING_INTERVAL.MINIMUM
   };
 
   /**
