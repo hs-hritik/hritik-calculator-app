@@ -224,7 +224,8 @@ define("reducers/chatView", [
     // This represents the error in the whole chat view
     // @TODO: Move the error handling to the error reducer.
     error: INITIAL_ERROR_STATE,
-    localGreetingMessageId: ""
+    localGreetingMessageId: "",
+    liteSdkOs: ""
   };
 
   /**
@@ -738,6 +739,11 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        return update(state, {
+          liteSdkOs: {$set: action.data.os}
+        });
 
       default:
         return state;

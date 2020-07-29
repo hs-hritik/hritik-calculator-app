@@ -376,11 +376,12 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   };
 
   /**
-   * Action to set local storage data
-   * @param {Object[]} data - Local storage items
+   * Action to set lite sdk config data
+   * @param {Object[]} data - Config data
+   * @returns {Object} - Action
    */
-  const setLocalStorageData = (data) => ({
-    type: ACTION_TYPES.SET_LOCAL_STORAGE_DATA,
+  const setLightSdkConfig = (data) => ({
+    type: ACTION_TYPES.SET_LITE_SDK_CONFIG,
     data
   });
 
@@ -419,6 +420,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentUnselected,
     stopIntentsSearch,
     fetchMessagesSuccess,
-    setLocalStorageData
+    setLightSdkConfig
   };
 });

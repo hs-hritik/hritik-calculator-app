@@ -99,9 +99,9 @@ define("extras/lsMiddleware", [
         lsHelpers.remove(LS_KEYS.RE_ENGAGEMENT_ID);
         break;
 
-      case ACTION_TYPES.SET_LOCAL_STORAGE_DATA:
-        objUtils.forEachKey(action.data, (key) => {
-          lsHelpers.set(key, action.data[key]);
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        objUtils.forEachKey(action.data.localStorageData, (key) => {
+          lsHelpers.set(key, action.data.localStorageData[key]);
         });
         break;
     }

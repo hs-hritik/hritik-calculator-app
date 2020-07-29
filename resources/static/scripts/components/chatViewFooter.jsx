@@ -62,6 +62,10 @@ define("components/chatViewFooter", [
     ACTIVE_FOOTER: "active_footer"
   };
 
+  const LITE_SDK_OS = {
+    IOS: "ios"
+  };
+
   // Max height of intents widget in case of iOS safari
   const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
 
@@ -225,7 +229,8 @@ define("components/chatViewFooter", [
       /**
        * Allowed file mime types list
        */
-      attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired
+      attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
+      liteSdkOs: PropTypes.string
     },
     getInitialState() {
       return {
@@ -599,11 +604,14 @@ define("components/chatViewFooter", [
       let intentsWidgetMaxHeight = this.state.intentsWidgetMaxHeight;
 
       // We need to pass fixed height when picker is in opened state for iOS safari
-      // because safari pushes the entire webpage when keyboard is open.
+      // and iOS liteSdk because safari pushes the entire webpage when keyboard is open.
       // This causes the smart intents to hide above the screen and user is not
       // able to see/select the intents. Restricting height in safari ensures
       // even after opening keyboard the intents are displayed to end user.
-      if (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari()) {
+      if (
+        this.props.liteSdkOs === LITE_SDK_OS.IOS ||
+        (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari())
+      ) {
         intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
       }
 
