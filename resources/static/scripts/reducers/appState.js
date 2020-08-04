@@ -163,7 +163,8 @@ define("reducers/appState", [
     expiryTimestamps: {
       resolutionQuestion: 0,
       csatBot: 0
-    }
+    },
+    liteSdkConfig: {}
   };
 
   /**
@@ -550,6 +551,14 @@ define("reducers/appState", [
         }
 
         return update(state, userReplyRequestUpdateObj);
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        return update(state, {
+          liteSdkConfig: {
+            os: {$set: action.data.os},
+            metaData: {$set: action.data.metaData}
+          }
+        });
 
       default:
         return state;
