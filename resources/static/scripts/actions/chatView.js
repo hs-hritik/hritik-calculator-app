@@ -87,7 +87,7 @@ define("actions/chatView", [
     ISSUE_REOPEN_ERR_STATUS_CODE
   } = CHAT_VIEW_CONSTANTS;
 
-  const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
+  const {getPreparedDeviceInfo, getPreparedLiteSdkDeviceInfo} = prepareProcessXhrDataHelpers;
 
   const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES, RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
 
@@ -2291,7 +2291,8 @@ define("actions/chatView", [
         userId,
         analytics,
         sdkConfigOptions: {initialUserMessage},
-        internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}}
+        internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}},
+        liteSdkConfig
       },
       chatView: {intents, userInput},
       ui: {
@@ -2300,8 +2301,12 @@ define("actions/chatView", [
     } = state;
 
     const meta = {
-      device_info: getPreparedDeviceInfo()
+      device_info: liteSdkConfig.metaData ? getPreparedLiteSdkDeviceInfo() : getPreparedDeviceInfo()
     };
+
+    if (liteSdkConfig && liteSdkConfig.os) {
+      meta.lite_sdk_os = liteSdkConfig.os;
+    }
 
     if (tags) {
       meta.custom_meta = {
