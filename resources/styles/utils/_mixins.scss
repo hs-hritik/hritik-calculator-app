@@ -312,9 +312,14 @@
 }
 
 @mixin word-break {
-  word-break: break-all;
-  /* stylelint-disable-next-line declaration-block-no-duplicate-properties */
+  overflow-wrap: break-word;
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
   word-break: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 @mixin rotate($degrees) {

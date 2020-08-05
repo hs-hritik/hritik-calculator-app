@@ -55,7 +55,7 @@ define("extras/lsMiddleware", [
         }
         break;
 
-      case ACTION_TYPES.ISSUE_CREATED:
+      case ACTION_TYPES.CREATE_PREISSUE_SUCCESS:
         throttledSetLastActivityTime();
         break;
 
@@ -95,15 +95,22 @@ define("extras/lsMiddleware", [
         lsHelpers.set(LS_KEYS.RE_ENGAGEMENT_ID, action.id);
         break;
 
-      case ACTION_TYPES.RESET_RE_ENGAGEMENT_ID:
-        lsHelpers.remove(LS_KEYS.RE_ENGAGEMENT_ID);
+      case ACTION_TYPES.USER_REPLY_REQUEST:
+        // If the user replies on a re-engaged issue, reset the reEngagementId because re-engagement
+        // is over with the user reply.
+        if (action.reEngagementId) {
+          lsHelpers.remove(LS_KEYS.RE_ENGAGEMENT_ID);
+        }
+        break;
+
+      case ACTION_TYPES.SET_WIDGET_SHOULD_AUTO_OPEN:
+        lsHelpers.set(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN, action.widgetShouldAutoOpen);
         break;
 
       case ACTION_TYPES.SET_LITE_SDK_CONFIG:
         objUtils.forEachKey(action.data.localStorageData, (key) => {
           lsHelpers.set(key, action.data.localStorageData[key]);
         });
-        break;
     }
   };
 

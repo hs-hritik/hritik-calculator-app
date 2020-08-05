@@ -14,7 +14,6 @@ define("components/csatViewBody", ["components/starRating", "constants/accessibi
 
   const CsatViewBody = ({
     csatBotRequestMsg,
-    csatBotReviewTitle,
     csatBotReviewPlaceholder,
     rating,
     review,
@@ -47,9 +46,6 @@ define("components/csatViewBody", ["components/starRating", "constants/accessibi
           />
         </div>
         <div className="hs-csat__form-item">
-          <small className="hs-csat__form-label" aria-hidden="true">
-            {csatBotReviewTitle}
-          </small>
           <textarea
             value={review}
             dir="auto"
@@ -61,7 +57,7 @@ define("components/csatViewBody", ["components/starRating", "constants/accessibi
             data-label={METALIST_ITEMS.CSAT.FEEDBACK_TEXT_AREA.DATA_LABEL}
             onFocus={_setTextAreaAxActiveIndex}
             onClick={_setTextAreaAxActiveIndex}
-            aria-label={csatBotReviewTitle}
+            aria-label={csatBotRequestMsg}
           />
         </div>
       </div>
@@ -70,7 +66,6 @@ define("components/csatViewBody", ["components/starRating", "constants/accessibi
 
   CsatViewBody.propTypes = {
     csatBotRequestMsg: PropTypes.string.isRequired,
-    csatBotReviewTitle: PropTypes.string.isRequired,
     csatBotReviewPlaceholder: PropTypes.string.isRequired,
     rating: PropTypes.number.isRequired,
     review: PropTypes.string,

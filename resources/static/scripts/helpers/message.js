@@ -53,7 +53,13 @@ define("helpers/message", [
       states: {}, // Applicable only in case of attachments
       createdTs: msg.created_at,
       redacted: msg.redacted,
-      author: msg.author,
+      author: {
+        name: msg.author.name,
+        role: msg.author.role,
+        roles: msg.author.roles,
+        id: msg.author.id,
+        lastUpdatedAvatarTimestamp: msg.author.avatar_updated_at
+      },
       isCustomerMsg: msg.origin !== MESSAGE_ORIGIN.ADMIN,
       attachments: getProcessedAttachments(msg)
     };
@@ -89,6 +95,7 @@ define("helpers/message", [
             switch (actionType) {
               case ACTION_TYPES.LINK:
                 actionData.url = action.data.url;
+                actionData.shouldOpenInNewTab = action.data.open_in_new_tab;
                 break;
               case ACTION_TYPES.CALL:
                 actionData.phoneNumber = action.data.phone_number;
@@ -112,6 +119,25 @@ define("helpers/message", [
     }
 
     return msgObj;
+  };
+
+  /**
+   * Return an object of avatars timestamp
+   *
+   * @param {Array.<Object>} messages - Array of unprocessed message object
+   * @return {Object} - Key value pair of avatar id and timestamp
+   */
+  const getAvatarTs = (messages) => {
+    return messages
+      .filter((message) => {
+        return message.author && message.author.id;
+      })
+      .reduce((avatarLastUpdatedTsObject, message) => {
+        return {
+          ...avatarLastUpdatedTsObject,
+          [message.author.id]: message.author.avatar_updated_at || null
+        };
+      }, {});
   };
 
   /**
@@ -338,7 +364,7 @@ define("helpers/message", [
    * @returns {Object} - message object.
    */
   const createTextMessage = (options = {}) => {
-    const {body, isCustomerMsg = true, isGreetingMessage = false} = options;
+    const {body, isCustomerMsg = true, isGreetingMessage = false, author} = options;
 
     return {
       id: `${MSG_ID_PREFIX}${uuidGenerator()}`,
@@ -347,7 +373,8 @@ define("helpers/message", [
       body,
       createdTs: Date.now(),
       isCustomerMsg,
-      isGreetingMessage
+      isGreetingMessage,
+      author
     };
   };
 
@@ -487,6 +514,7 @@ define("helpers/message", [
     isRenderableMessage,
     isBotMessage,
     isBotStepMessage,
-    isMessageTypeSupported
+    isMessageTypeSupported,
+    getAvatarTs
   };
 });

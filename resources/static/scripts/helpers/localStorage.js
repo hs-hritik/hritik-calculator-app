@@ -24,7 +24,8 @@ define("helpers/localStorage", [
     LS_MIGRATED: "lm",
     RE_ENGAGEMENT_REDIRECTED: "redirected",
     RE_ENGAGEMENT_DATA: "red",
-    RE_ENGAGEMENT_ID: "rid"
+    RE_ENGAGEMENT_ID: "rid",
+    WIDGET_SHOULD_AUTO_OPEN: "wsao"
   };
 
   const USER_KEYS = ["USER_ID", "ANON_USER_ID"];

@@ -16,7 +16,10 @@ define("components/messageList", [
   "components/errorBoundaryWithLogging",
   "constants/accessibility",
   "extras/accessibility",
-  "helpers/common"
+  "helpers/common",
+  "gunpowder/utils/date",
+  "constants/message",
+  "constants/avatar"
 ], function(
   Message,
   BrandingContainer,
@@ -29,7 +32,10 @@ define("components/messageList", [
   ErrorBoundaryWithLogging,
   axConstants,
   ax,
-  commonHelpers
+  commonHelpers,
+  dateUtils,
+  MESSAGE_CONSTANTS,
+  AVATAR_CONSTANTS
 ) {
   "use strict";
 
@@ -58,6 +64,8 @@ define("components/messageList", [
   // be loaded?
   const LOAD_MORE_SCROLL_THRESHOLD = 500;
   const {METALIST_ITEMS, METALIST_GROUP_NAME, FOOTER_SELECTORS_LIST_MAP} = axConstants;
+  const {MESSAGE_ROLES} = MESSAGE_CONSTANTS;
+  const {FALLBACK_AVATAR_BASE64} = AVATAR_CONSTANTS;
 
   return createReactClass({
     displayName: "MessageList",
@@ -88,10 +96,57 @@ define("components/messageList", [
       /**
        * Callback that gets called whenever a message fails to render
        */
-      onMessageError: PropTypes.func
+      onMessageError: PropTypes.func,
+
+      /**
+       * If true, render avatar in message feed
+       */
+      showAvatar: PropTypes.bool,
+      /**
+       * Avatar render data
+       */
+      avatar: PropTypes.shape({
+        /**
+         * If true, show avatar with message bubble
+         */
+        showMessageFeedAvatar: PropTypes.bool,
+        /**
+         * If true, show agent uploaded avatar
+         * If false, show agent default avatar configured by admin
+         */
+        agentAvatarIsPersonalised: PropTypes.bool,
+        /**
+         * If true, show avatar uploaded for the bot
+         * If false, show bot default avatar
+         */
+        botAvatarIsPersonalised: PropTypes.bool,
+        /**
+         * Agent default Url
+         */
+        agentDefaultAvatarUrl: PropTypes.string,
+        /**
+         * Bot default Url
+         */
+        botDefaultAvatarUrl: PropTypes.string,
+        /**
+         * Template to generate avatar url
+         */
+        avatarUrlTemplate: PropTypes.string,
+        /**
+         * App avatar Url
+         */
+        appAvatarUrl: PropTypes.string
+      }).isRequired,
+      avatarLastUpdatedTs: PropTypes.object.isRequired
     },
 
     render() {
+      const {showAvatar} = this.props;
+
+      const messagListClasses = classes("hs-message-list", {
+        "hs-message-list--with-avatar": showAvatar
+      });
+
       return (
         <div
           ref={this._refCallback}
@@ -99,7 +154,7 @@ define("components/messageList", [
           onScroll={this._eventPresistedScroll}
           data-label={METALIST_ITEMS.CHAT.MSGS_SCROLL_WRAPPER.DATA_LABEL}
           tabIndex="0">
-          <div className="hs-message-list">
+          <div className={messagListClasses}>
             {this._renderMessages()}
             {this._renderTypingIndicator()}
             {this._renderPillOptions()}
@@ -113,32 +168,32 @@ define("components/messageList", [
      * Render messages and timestamp.
      */
     _renderMessages() {
-      const {messages} = this.props;
+      const {messages, showAvatar} = this.props;
+      let previousMessage = null;
 
-      return messages.map((message, index) => {
-        // Avoid rendering of unnecessary message types.
+      return messages.map((message) => {
         if (!messageHelpers.isRenderableMessage(message.type)) {
           return null;
         }
 
-        const nextMsg = messages[index + 1];
-        let isLastMessageInGroup = true;
-
-        if (nextMsg) {
-          isLastMessageInGroup = nextMsg.isCustomerMsg !== message.isCustomerMsg;
-        }
+        const showMessageDetails = this._shouldMessageDetailsRender(message, previousMessage);
+        const avatarUrl = this._getAvatarUrl(message);
+        const key = this._getUniqueKey(message);
+        previousMessage = message;
 
         return (
           <ErrorBoundaryWithLogging key={message.id} onError={this.props.onMessageError}>
             <Message
               message={message}
-              isLastMessage={messages.length === index + 1}
-              isLastMessageInGroup={isLastMessageInGroup}
               showAgentNickname={this.props.showAgentNickname}
               text={this.props.text}
               onImageLoad={this._onImageAttachmentLoad}
               onRetryAttachmentClick={this.props.onRetryAttachmentClick}
               onSuggestedFaqClick={this.props.onSuggestedFaqClick}
+              showAvatar={showAvatar}
+              avatarUrl={avatarUrl}
+              showMessageDetails={showMessageDetails}
+              key={key}
               onActionClick={this.props.onActionClick}
             />
           </ErrorBoundaryWithLogging>
@@ -250,10 +305,16 @@ define("components/messageList", [
      * Render branding
      */
     _renderBranding() {
-      if (this.props.userInput.type === USER_INPUT_TYPES.PILL_SELECT) {
-        return null;
-      }
-      return <BrandingContainer />;
+      const {showAvatar} = this.props;
+      const brandingWrapperClasses = classes({
+        "hs-message-list__branding-wrapper": showAvatar
+      });
+
+      return (
+        <div className={brandingWrapperClasses}>
+          <BrandingContainer />
+        </div>
+      );
     },
 
     /**
@@ -275,6 +336,98 @@ define("components/messageList", [
       if (!this.props.userIsViewingPastMessages) {
         this._throttledScrollBottom();
       }
+    },
+
+    /**
+     * Returns author unique Id
+     * @param {Object} message - A message object
+     * @returns {string} - Author id
+     */
+    _getAuthorId(message) {
+      if (!message || !message.author) {
+        return null;
+      }
+
+      return message.author.id;
+    },
+
+    /**
+     * Returns avatar image URL
+     * @param {Object} message - A messsage object
+     * @returns {Object} - Avatar image urls - fallback, original
+     */
+    _getAvatarUrl(message) {
+      const {showAvatar, avatar, avatarLastUpdatedTs} = this.props;
+      const {author} = message;
+
+      if (!showAvatar || !author) {
+        return null;
+      }
+
+      const {
+        appAvatarUrl,
+        avatarUrlTemplate,
+        botDefaultAvatarUrl,
+        agentDefaultAvatarUrl,
+        botAvatarIsPersonalised,
+        agentAvatarIsPersonalised
+      } = avatar;
+
+      switch (author.role) {
+        case MESSAGE_ROLES.SYSTEM_MSG:
+          return {fallback: FALLBACK_AVATAR_BASE64.APP, original: appAvatarUrl};
+
+        case MESSAGE_ROLES.BOT_MSG:
+          if (botAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.BOT,
+              original:
+                avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
+                `?ts=${avatarLastUpdatedTs[author.id]}`
+            };
+          } else {
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.BOT,
+              original: botDefaultAvatarUrl
+            };
+          }
+
+        default:
+          if (agentAvatarIsPersonalised && author.id && avatarLastUpdatedTs[author.id]) {
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.AGENT,
+              original:
+                avatarUrlTemplate.replace("{{avatar_id}}", author.id) +
+                `?ts=${avatarLastUpdatedTs[author.id]}`
+            };
+          } else {
+            return {
+              fallback: FALLBACK_AVATAR_BASE64.AGENT,
+              original: agentDefaultAvatarUrl
+            };
+          }
+      }
+    },
+
+    /**
+     * Returns unique key of a message
+     * @param {Object} message - A messsage object
+     * @returns {string} - Unique key of a message
+     */
+    _getUniqueKey(message) {
+      const {avatarLastUpdatedTs} = this.props;
+      let key = "" + message.id;
+
+      if (
+        message &&
+        message.author &&
+        message.author.id &&
+        avatarLastUpdatedTs[message.author.id]
+      ) {
+        key += avatarLastUpdatedTs[message.author.id];
+      }
+
+      return key;
     },
 
     /**
@@ -478,6 +631,38 @@ define("components/messageList", [
       } = this.props;
 
       return !(hasFailure || type !== USER_INPUT_TYPES.PILL_SELECT || disabled);
+    },
+
+    /**
+     * Check whether message details(avatar, nickname & timestamp) should render
+     * @param {Object} message - message object
+     * @param {Object} previousMessage - previous message object
+     * @returns {Boolean} - True, if the details should render
+     */
+    _shouldMessageDetailsRender(message, previousMessage) {
+      // Messages are grouped only when two messages have exact same
+      // timestamp, author name and avatar
+      const previousMessageAuthorId = this._getAuthorId(previousMessage);
+      const currentMessageAuthorId = this._getAuthorId(message);
+      const previousMessageTs = this._getFormattedMessageDate(previousMessage);
+      const currentMessageTs = this._getFormattedMessageDate(message);
+
+      return !(
+        previousMessageAuthorId &&
+        currentMessageAuthorId &&
+        previousMessageTs &&
+        currentMessageTs &&
+        previousMessageAuthorId === currentMessageAuthorId &&
+        previousMessageTs === currentMessageTs
+      );
+    },
+
+    /**
+     * Returns formatted date
+     * @param {Object} message - A message object
+     */
+    _getFormattedMessageDate(message) {
+      return message ? dateUtils.format(message.createdTs, "{hh}:{MM} {a}") : null;
     },
 
     /**

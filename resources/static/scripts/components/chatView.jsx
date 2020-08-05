@@ -78,7 +78,10 @@ define("components/chatView", [
         botStepInProgress,
         minimized,
         onMessageError,
-        onFooterError
+        onFooterError,
+        showAvatar,
+        avatar,
+        avatarLastUpdatedTs
       } = this.props;
 
       const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -113,6 +116,9 @@ define("components/chatView", [
               ref={this._msgListRef}
               minimized={minimized}
               onMessageError={onMessageError}
+              showAvatar={showAvatar}
+              avatar={avatar}
+              avatarLastUpdatedTs={avatarLastUpdatedTs}
             />
             {this._renderJumpToLatestBtn()}
           </div>
@@ -295,7 +301,50 @@ define("components/chatView", [
      * If chat view footer has any failure
      */
     hasFailure: PropTypes.bool,
-    botStepInProgress: PropTypes.bool
+    botStepInProgress: PropTypes.bool,
+    /**
+     * If true, render avatar in message feed
+     */
+    showAvatar: PropTypes.bool,
+    /**
+     * Avatar render data
+     */
+    avatar: PropTypes.shape({
+      /**
+       * If true, show avatar with message bubble
+       */
+      showMessageFeedAvatar: PropTypes.bool,
+      /**
+       * If true, show agent uploaded avatar
+       * If false, show agent default avatar configured by admin
+       */
+      agentAvatarIsPersonalised: PropTypes.bool,
+      /**
+       * If true, show avatar uploaded for the bot
+       * If false, show bot default avatar
+       */
+      botAvatarIsPersonalised: PropTypes.bool,
+      /**
+       * Agent default Url
+       */
+      agentDefaultAvatarUrl: PropTypes.string,
+      /**
+       * Bot default Url
+       */
+      botDefaultAvatarUrl: PropTypes.string,
+      /**
+       * Template to generate avatar url
+       */
+      avatarUrlTemplate: PropTypes.string,
+      /**
+       * App avatar Url
+       */
+      appAvatarUrl: PropTypes.string
+    }).isRequired,
+    /**
+     * Object of avatar id and its last updated timestamp
+     */
+    avatarLastUpdatedTs: PropTypes.object.isRequired
   };
 
   return createReactClass({
@@ -352,7 +401,50 @@ define("components/chatView", [
       /**
        * If chat view footer has any failure
        */
-      hasFailure: PropTypes.bool
+      hasFailure: PropTypes.bool,
+      showHeaderAvatar: PropTypes.bool.isRequired,
+      appAvatarUrl: PropTypes.string,
+      /**
+       * If true, show agent nickname and show feed avatar only when feed avatar is enabled
+       * If false, both nickname and feed avatar should not render
+       * Note: Both personalisedConversationIsEnabled & showAgentNickname has same value
+       */
+      personalisedConversationIsEnabled: PropTypes.bool.isRequired,
+      /**
+       * Avatar render data
+       */
+      avatar: PropTypes.shape({
+        /**
+         * If true, show avatar with message bubble
+         */
+        showMessageFeedAvatar: PropTypes.bool.isRequired,
+        /**
+         * If true, show agent uploaded avatar
+         * If false, show agent default avatar configured by admin
+         */
+        agentAvatarIsPersonalised: PropTypes.bool,
+        /**
+         * If true, show avatar uploaded for the bot
+         * If false, show bot default avatar
+         */
+        botAvatarIsPersonalised: PropTypes.bool,
+        /**
+         * Agent default Url
+         */
+        agentDefaultAvatarUrl: PropTypes.string,
+        /**
+         * Bot default Url
+         */
+        botDefaultAvatarUrl: PropTypes.string,
+        /**
+         * Template to generate avatar url
+         */
+        avatarUrlTemplate: PropTypes.string
+      }).isRequired,
+      /**
+       * Object of avatar id and its last updated timestamp
+       */
+      avatarLastUpdatedTs: PropTypes.object.isRequired
     },
 
     getInitialState() {
@@ -372,7 +464,9 @@ define("components/chatView", [
         keyboardInteractionIsActive,
         onMinimizeConversation,
         onKeyDown,
-        onClick
+        onClick,
+        showHeaderAvatar,
+        appAvatarUrl
       } = this.props;
 
       // In certain cases, Safari ignores scroll events on
@@ -398,6 +492,8 @@ define("components/chatView", [
               title={text.chatViewHeader}
               showCloseBtn={showCloseButton}
               onCloseBtnClick={onMinimizeConversation}
+              avatarUrl={appAvatarUrl}
+              showAvatar={showHeaderAvatar}
             />
           </ErrorBoundaryWithLogging>
           {this._renderNonBlockingError()}
@@ -432,8 +528,15 @@ define("components/chatView", [
         latestConversationHasLoaded,
         allMessagesAreLoaded,
         pastConversationsLoading,
-        loading
+        loading,
+        personalisedConversationIsEnabled,
+        appAvatarUrl,
+        avatar,
+        avatarLastUpdatedTs
       } = this.props;
+      const avatarProps = {...avatar, ...{appAvatarUrl}};
+      const avatarShouldRenderInMessageFeed =
+        personalisedConversationIsEnabled && avatar.showMessageFeedAvatar;
 
       return (
         <ErrorBoundaryWithLogging
@@ -467,6 +570,9 @@ define("components/chatView", [
             allMessagesAreLoaded={allMessagesAreLoaded}
             pastConversationsLoading={pastConversationsLoading}
             loading={loading}
+            showAvatar={avatarShouldRenderInMessageFeed}
+            avatar={avatarProps}
+            avatarLastUpdatedTs={avatarLastUpdatedTs}
           />
         </ErrorBoundaryWithLogging>
       );

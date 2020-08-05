@@ -138,7 +138,7 @@ define("extras/api", [
           // Set "widgetShouldAutoOpen" to true in state so that
           // this value will be checked afterwards and widget will be opened
           // automatically.
-          dispatch(appStateActions.setWidgetShouldAutoOpen(true));
+          dispatch(actionCreators.setWidgetShouldAutoOpen(true));
         } else {
           // Current user and re-engagement users are different.
           // Fire the user changed event.
@@ -177,7 +177,7 @@ define("extras/api", [
       // Set "widgetShouldAutoOpen" to true in state so that
       // this value will be checked afterwards and widget will be opened
       // automatically.
-      dispatch(appStateActions.setWidgetShouldAutoOpen(true));
+      dispatch(actionCreators.setWidgetShouldAutoOpen(true));
     }
 
     dispatch(appStateActions.setReEngagementId(reEngagementData.re_engagement_id));
@@ -258,7 +258,8 @@ define("extras/api", [
         appResetTrigger,
         issueState,
         issueType,
-        sdkConfigOptions: {initialUserMessage}
+        sdkConfigOptions: {initialUserMessage},
+        widgetShouldAutoOpen
       }
     } = store.getState();
 
@@ -320,6 +321,17 @@ define("extras/api", [
             })
           );
         }
+      }
+
+      // widgetShouldAutoOpen flag is used for two features - re-engagement and message with actions
+      // In case of re-engagement, this flag is determined on page load (_handleReEngagement). So
+      // after page load, when the widget opens (this function), we should reset the flag.
+      // In case of message with actions, the flag is set in the previous session in the
+      // localstorage. On page load, the flag is set in the state from the localstorage. After page
+      // load when the widget opens, we should reset the flag.
+      // If widgetShouldAutoOpen is true then reset the value of it to false.
+      if (widgetShouldAutoOpen) {
+        store.dispatch(actionCreators.setWidgetShouldAutoOpen(false));
       }
     } else if (isIssueClosed(issueState)) {
       // @TODO : Change this default rating submission after confirming with product

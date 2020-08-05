@@ -19,6 +19,7 @@ define("actions/chatView", [
   "gunpowder/utils/date",
   "actions/batch",
   "actions/actionCreators",
+  "actions/chatViewActionCreators",
   "actions/postSdkMessage",
   "helpers/message",
   "helpers/chatView",
@@ -48,6 +49,7 @@ define("actions/chatView", [
   dateUtils,
   batchActions,
   actionCreators,
+  chatViewActionCreators,
   postSdkMessage,
   messageHelpers,
   chatViewHelpers,
@@ -70,7 +72,8 @@ define("actions/chatView", [
     STATE: MESSAGES_STATE,
     BODY: MESSAGE_BODY,
     TEXT_INPUT_MESSAGE_TYPES,
-    MESSAGE_ADD_EVENT_TYPES
+    MESSAGE_ADD_EVENT_TYPES,
+    MESSAGE_ROLES
   } = MESSAGE_CONSTANTS;
 
   const {
@@ -96,13 +99,15 @@ define("actions/chatView", [
     ALLOWED_EMPTY_POLLER_COUNT
   } = APP_STATE_CONSTANTS;
 
-  const {EVENT} = analyticsConstants;
+  const {EVENT, EXPIRY_EVENT} = analyticsConstants;
 
   const update = React.addons.update;
 
   const PROCESS = true;
   const ENABLE_FOOTER = true;
   const DISABLE_FOOTER = !ENABLE_FOOTER;
+
+  const RESOLUTION_QUESTION_EXPIRY_MESSAGE = "resolution question timer expired";
 
   let systemTypingTimerId = null,
     pollingEnabled = false,
@@ -219,6 +224,18 @@ define("actions/chatView", [
       type: ACTION_TYPES.APPEND_MESSAGES,
       messages: processedMessages,
       responseType
+    };
+  };
+
+  /**
+   * Action to update/add the avatar timestamp
+   * @param {Object} avatarsTs - key-value pair of avatar Id and timestamp
+   * @returns {Object} - action
+   */
+  const updateLatestAvatarTs = (avatarsTs) => {
+    return {
+      type: ACTION_TYPES.UPDATE_AVATAR_LAST_UPDATED_TS,
+      avatarsTs
     };
   };
 
@@ -479,34 +496,53 @@ define("actions/chatView", [
       chatView: {isCsatSubmitted}
     } = getState();
     const lastMessageType = getLatestMessage().type;
-    const actionsToDispatch = [];
 
     // If type of last message in message list is either accepted or rejected by user,
+    // or if the resolution question timer expires
     // set resolution question step as completed
     if (lastMessageType === MESSAGE_TYPE.ACCEPTED || lastMessageType === MESSAGE_TYPE.REJECTED) {
-      actionsToDispatch.push(actionCreators.setResolutionQuestionCompleted(true));
+      dispatch(actionCreators.setResolutionQuestionCompleted(true));
     }
 
-    // If csat rating is submitted by the user, set csat step as completed
+    // If csat rating is submitted by the user,
+    // or if the csat bot timer expires
+    // set csat step as completed
     if (isCsatSubmitted) {
-      actionsToDispatch.push(actionCreators.setCsatCompleted());
+      dispatch(actionCreators.setCsatCompleted());
     }
-
-    dispatch(batchActions(actionsToDispatch));
   };
 
   /**
-   * Action to set user input data
-   * This action will set a default user input object and merge given input.
-   * Use this action after bot to bot transitions.
-   * @param {Object} input - processed input object
-   * @returns {Object} - Action
+   * Track the post resolution feature expiry events
+   *
+   * @param {boolean} resolutionQuestionHasExpired - If true, resolution question has expired
+   * @param {boolean} csatBotHasExpired - If true, csat bot has expired
+   * @param {string} issueId - Current issue id
    */
-  const setUserInputData = (input) => {
-    return {
-      type: ACTION_TYPES.SET_USER_INPUT_DATA,
-      input
-    };
+  const trackPostResolutionFeatureExpiryEvents = (
+    resolutionQuestionHasExpired,
+    csatBotHasExpired,
+    issueId
+  ) => {
+    const {
+      appState: {
+        postChatFeatures: {resolutionQuestionCompleted, csatCompleted}
+      }
+    } = store.getState();
+
+    if (resolutionQuestionHasExpired && !resolutionQuestionCompleted) {
+      analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+        issueId,
+        feature: EXPIRY_EVENT.RESOLUTION_QUESTION
+      });
+    }
+
+    if (csatBotHasExpired && !csatCompleted) {
+      analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+        issueId,
+        feature: EXPIRY_EVENT.CSAT_BOT
+      });
+    }
   };
 
   /**
@@ -592,77 +628,48 @@ define("actions/chatView", [
    * @param {Object} message - message object
    */
   const handleMessageInput = (message) => {
-    const {input} = message;
-    const {dispatch, getState} = store;
-    const {
-      appState: {issueType}
-    } = getState();
+    return (dispatch, getState) => {
+      const {input, type: messageType} = message;
+      const {
+        appState: {issueType}
+      } = getState();
 
-    // If bot message does not contain any input, don't process it and hide
-    // the footer.
-    // This is to handle bot info text messages which do not have input.
-    // If the issue type is preIssue, then hide footer and show TAI.
-    // If the issue type is issue, then
-    //   a. explicitly enable the footer
-    //   b. hide TAI
-    //   c. reset user input to default.
-
-    if (!input) {
-      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
-        handleIssueFooterAndTAI(DISABLE_FOOTER);
-      } else {
-        handleIssueFooterAndTAI(ENABLE_FOOTER);
-        dispatch(resetUserInput());
+      if (!input) {
+        dispatch(chatViewActionCreators.botMessageWithNoUserInput({issueType}));
+        return;
       }
-      return;
-    }
 
-    const {type} = message;
-    const processedUserInput = chatViewHelpers.getProcessedUserInput({
-      messageType: type,
-      input
-    });
+      const processedUserInput = chatViewHelpers.getProcessedUserInput({
+        messageType,
+        input
+      });
 
-    dispatch(
-      batchActions([
-        // Set processed user input and save it in store
-        setUserInputData(processedUserInput),
-        // Set footer type as reply because this is bot step, we accept some user input
-        setChatViewFooter(ACTIVE_FOOTER.REPLY)
-      ])
-    );
-
-    // Once bot input is processed, show the footer
-    handleIssueFooterAndTAI(ENABLE_FOOTER);
+      dispatch(
+        chatViewActionCreators.botMessageWithUserInput({
+          userInput: processedUserInput
+        })
+      );
+    };
   };
 
   /**
-   * Handle latest message for bot actions and bot input and take actions
+   * Handle bot started and bot ended steps for the latest message
    * @param {Object} latestMessage - latest message in message list
    */
   const handleLatestMessage = (latestMessage) => {
-    const {dispatch} = store;
-    const {type, has_next_bot: hasNextBot} = latestMessage;
+    return (dispatch) => {
+      const {type, has_next_bot: nextMessageIsBotStep} = latestMessage;
 
-    switch (type) {
-      case MESSAGE_TYPE.BOT_STARTED:
-        // If the last message in poller is bot start
-        // a] hide the footer
-        handleIssueFooterAndTAI(DISABLE_FOOTER);
-        break;
+      switch (type) {
+        case MESSAGE_TYPE.BOT_STARTED:
+          dispatch(chatViewActionCreators.botStart());
+          break;
 
-      case MESSAGE_TYPE.BOT_ENDED:
-        // If the last message in poller is bot end
-        // a] reset previous user input data and
-        // b] depending on whether next step is bot, hide or show the footer
-        dispatch(resetUserInput());
-        if (hasNextBot) {
-          handleIssueFooterAndTAI(DISABLE_FOOTER);
-        } else {
-          handleIssueFooterAndTAI(ENABLE_FOOTER);
-        }
-        break;
-    }
+        case MESSAGE_TYPE.BOT_ENDED:
+          dispatch(chatViewActionCreators.botEnd({nextMessageIsBotStep}));
+          break;
+      }
+    };
   };
 
   /**
@@ -1044,7 +1051,8 @@ define("actions/chatView", [
       appState: {
         issueType,
         issueState,
-        featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled}
+        featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled},
+        postChatFeatures: {resolutionQuestionCompleted}
       },
       chatView: {issueCursor}
     } = getState();
@@ -1098,6 +1106,11 @@ define("actions/chatView", [
     // from the start, we use it as a check.
     if (issueCursor) {
       if (issueState === ISSUE_STATE.RESOLVED) {
+        // If the resolution question is disabled and not completed and the issue is resolved,
+        // accept the resolution question.
+        if (!resolutionQuestionEnabled && !resolutionQuestionCompleted) {
+          dispatch(acceptResolutionQuestion());
+        }
         dispatch(postSdkMessage.conversationResolvedEvent());
       } else if (issueState === ISSUE_STATE.REJECTED) {
         dispatch(postSdkMessage.conversationRejectedEvent());
@@ -1146,61 +1159,62 @@ define("actions/chatView", [
    * @param {Array} messages - list of unprocessed messages
    */
   const saveLatestBotStepAndProcessBotInput = (messages) => {
-    const {dispatch, getState} = store;
-    const msgsLength = messages.length;
+    return (dispatch, getState) => {
+      const msgsLength = messages.length;
 
-    // Reverse loop on list of messages to see if there is any bot message.
-    // If we find any bot message, we will save that message in store and use
-    // the message input to render footer.
-    for (let i = msgsLength - 1; i >= 0; i--) {
-      const msg = messages[i];
-      const {type, isSystemMsg} = msg;
+      // Reverse loop on list of messages to see if there is any bot message.
+      // If we find any bot message, we will save that message in store and use
+      // the message input to render footer.
+      for (let i = msgsLength - 1; i >= 0; i--) {
+        const msg = messages[i];
+        const {type, isSystemMsg} = msg;
 
-      // isBotMessage will also handle the case where we get a non bot message
-      // and it's not supported. For non bot message which is not supported, we
-      // will not post bot cancel message.
-      if (!isSystemMsg && messageHelpers.isBotMessage(msg)) {
-        const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported(type);
-        const botStepIsInProgress = botMsgIsNotSupported || messageHelpers.isBotStepMessage(type);
-        dispatch(
-          batchActions([
-            // Bot step message contains all bot type message except bot control
-            // messages i.e bot_start and bot_end
-            setBotStepInProgress(botStepIsInProgress),
-            saveBotStepMessage(messageHelpers.getProcessedMessage(msg))
-          ])
-        );
+        // isBotMessage will also handle the case where we get a non bot message
+        // and it's not supported. For non bot message which is not supported, we
+        // will not post bot cancel message.
+        if (!isSystemMsg && messageHelpers.isBotMessage(msg)) {
+          const botMsgIsNotSupported = !messageHelpers.isMessageTypeSupported(type);
+          const botStepIsInProgress = botMsgIsNotSupported || messageHelpers.isBotStepMessage(type);
+          dispatch(
+            batchActions([
+              // Bot step message contains all bot type message except bot control
+              // messages i.e bot_start and bot_end
+              setBotStepInProgress(botStepIsInProgress),
+              saveBotStepMessage(messageHelpers.getProcessedMessage(msg))
+            ])
+          );
 
-        handleMessageInput(msg);
+          dispatch(handleMessageInput(msg));
 
-        if (botMsgIsNotSupported) {
-          postUserMessage();
+          if (botMsgIsNotSupported) {
+            postUserMessage();
+          }
+
+          return;
         }
-
-        return;
       }
-    }
 
-    // At this point, all the messages have been parsed and no bot message was
-    // encountered. In order to counter any unknown bug during the preissue state
-    // disable the footer so that the end user isn't able to send a message that
-    // doesn't correspond to a bot message during preissue.
+      // At this point, all the messages have been parsed and no bot message was
+      // encountered. In order to counter any unknown bug during the preissue state
+      // disable the footer so that the end user isn't able to send a message that
+      // doesn't correspond to a bot message during preissue.
 
-    // After preIssue optimization, if there are no bots running on preIssue,
-    // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
-    // is not running, enable the footer.
-    const {
-      appState: {issueType},
-      chatView: {
-        botState: {botStepInProgress}
+      // After preIssue optimization, if there are no bots running on preIssue,
+      // backend directly creates an issue. In this case, if the issue type is "issue" and a bot
+      // is not running, enable the footer.
+      const {
+        appState: {issueType},
+        chatView: {
+          botState: {botStepInProgress}
+        }
+      } = getState();
+
+      if (issueType === ISSUE_TYPE.PRE_ISSUE) {
+        handleIssueFooterAndTAI(DISABLE_FOOTER);
+      } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
+        handleIssueFooterAndTAI(ENABLE_FOOTER);
       }
-    } = getState();
-
-    if (issueType === ISSUE_TYPE.PRE_ISSUE) {
-      handleIssueFooterAndTAI(DISABLE_FOOTER);
-    } else if (issueType === ISSUE_TYPE.ISSUE && !botStepInProgress) {
-      handleIssueFooterAndTAI(ENABLE_FOOTER);
-    }
+    };
   };
 
   /**
@@ -1443,6 +1457,9 @@ define("actions/chatView", [
           hasOlderMsgs,
           conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled
         });
+        const avatarsTs = messageHelpers.getAvatarTs(linearMsgs);
+
+        dispatch(updateLatestAvatarTs(avatarsTs));
 
         handleSettingLatestConversationLoadStatus({
           hasOlderMsgs,
@@ -1451,6 +1468,20 @@ define("actions/chatView", [
         });
 
         const oldestIssue = issues[issues.length - 1];
+        const {
+          resolution_question_expiry_at: resolutionQuestionExpiryTimestamp,
+          csat_expiry_at: csatBotExpiryTimestamp
+        } = issues[0];
+
+        // Refactor this to event-based actions and dispatch the success action
+        // in every success callback with updating the state based on whether a
+        // value is present or not.
+        if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+          dispatch({
+            type: ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS,
+            payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+          });
+        }
 
         dispatch(
           batchActions([
@@ -1467,8 +1498,6 @@ define("actions/chatView", [
           issue: oldestIssue,
           cursorType: CURSOR_TYPES.BACKWARD
         });
-
-        dispatch(actionCreators.fetchMessagesSuccess());
       },
 
       onFailure: () => {
@@ -1517,7 +1546,8 @@ define("actions/chatView", [
         issueCursor,
         pollerFailureCount: prevPollerFailureCount,
         userIsRedacted,
-        localGreetingMessageId
+        localGreetingMessageId,
+        error: chatViewError
       }
     } = store.getState();
 
@@ -1563,7 +1593,10 @@ define("actions/chatView", [
             dispatch(setUserIsRedacted(false));
           }
 
-          dispatch(actionCreators.fetchMessagesSuccess());
+          // If an error exists, clear them on a successful fetch messages call
+          if (chatViewError.type) {
+            dispatch(chatViewActionCreators.clearErrors());
+          }
 
           const {has_older_messages: hasOlderMsgs, issues = [], cursor} = response;
 
@@ -1615,8 +1648,20 @@ define("actions/chatView", [
             publish_id: issueId,
             type: currentIssueType,
             state_data: {state: issueState},
-            csat_received: isCsatSubmitted
+            csat_received: isCsatSubmitted,
+            resolution_question_expiry_at: resolutionQuestionExpiryTimestamp,
+            csat_expiry_at: csatBotExpiryTimestamp
           } = currentIssue;
+
+          // Refactor this to event-based actions and dispatch the success action
+          // in every success callback with updating the state based on whether a
+          // value is present or not.
+          if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+            dispatch({
+              type: ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS,
+              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+            });
+          }
 
           const isPreIssue = currentIssueType === ISSUE_TYPE.PRE_ISSUE;
           const internalIssueId = _getIssueId(currentIssue);
@@ -1674,9 +1719,10 @@ define("actions/chatView", [
           if (messagesLength) {
             const latestMessage = messages[messagesLength - 1];
             const processedMessages = messageHelpers.getProcessedMessages(messages);
+            const avatarsTs = messageHelpers.getAvatarTs(messages);
 
-            handleLatestMessage(latestMessage);
-            saveLatestBotStepAndProcessBotInput(messages);
+            dispatch(handleLatestMessage(latestMessage));
+            dispatch(saveLatestBotStepAndProcessBotInput(messages));
 
             dispatch(
               addMessages({
@@ -1684,6 +1730,8 @@ define("actions/chatView", [
                 process: false
               })
             );
+
+            dispatch(updateLatestAvatarTs(avatarsTs));
 
             if (localGreetingMessageId) {
               dispatch(removeMessage(localGreetingMessageId));
@@ -1880,13 +1928,27 @@ define("actions/chatView", [
         appState: {
           issueState,
           postChatFeatures: {resolutionQuestionCompleted, csatCompleted},
-          featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled, csatBot: csatBotEnabled}
-        }
+          featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled, csatBot: csatBotEnabled},
+          internalIssueId,
+          expiryTimestamps: {
+            resolutionQuestion: resolutionQuestionExpiryTimestamp,
+            csatBot: csatBotExpiryTimestamp
+          }
+        },
+        chatView: {isCsatSubmitted}
       } = getState();
+      const resolutionQuestionHasExpired =
+        resolutionQuestionExpiryTimestamp && Date.now() >= resolutionQuestionExpiryTimestamp;
+      const csatBotHasExpired = csatBotExpiryTimestamp && Date.now() >= csatBotExpiryTimestamp;
 
-      if (resolutionQuestionEnabled && !resolutionQuestionCompleted) {
+      if (
+        resolutionQuestionEnabled &&
+        !isCsatSubmitted &&
+        !resolutionQuestionCompleted &&
+        !resolutionQuestionHasExpired
+      ) {
         dispatch(setChatViewFooter(ACTIVE_FOOTER.CONVERSATION_RESOLUTION_QUESTION));
-      } else if (csatBotEnabled && !csatCompleted) {
+      } else if (csatBotEnabled && !csatCompleted && !csatBotHasExpired) {
         dispatch(setChatViewFooter(ACTIVE_FOOTER.CSAT));
         // Track the CSAT requested event.
         analyticsHelpers.track(EVENT.CSAT, {
@@ -1894,9 +1956,16 @@ define("actions/chatView", [
         });
       } else {
         handleChatEnd({
-          conversationHasEnded:
-            issueState === ISSUE_STATE.REJECTED || issueState === ISSUE_STATE.RESOLVED
+          conversationHasEnded: issueState === ISSUE_STATE.REJECTED
         });
+      }
+
+      if (resolutionQuestionHasExpired || csatBotHasExpired) {
+        trackPostResolutionFeatureExpiryEvents(
+          resolutionQuestionHasExpired,
+          csatBotHasExpired,
+          internalIssueId
+        );
       }
     };
   };
@@ -1928,13 +1997,11 @@ define("actions/chatView", [
         userInput,
         botState: {botStepInProgress, botStepMessage}
       },
-      appState: {domain, activeIssueId, issueType, reEngagementId}
+      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId}
     } = getState();
     const {msgBody, msgType, onSuccess, onEnd} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
-    const actionsToDispatch = [disableReplyBox(), actionCreators.setFooterInactive()];
     const isIssue = issueType === ISSUE_TYPE.ISSUE;
-    const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
     const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage();
     let xhrData = null;
 
@@ -1963,16 +2030,11 @@ define("actions/chatView", [
 
     if (reEngagementId) {
       xhrData.re_engagement_id = reEngagementId;
-
-      // Remove re-engagement id from the state & localStorage
-      dispatch(actionCreators.resetReEngagementId());
     }
 
-    if (isPreIssue || (isIssue && botStepInProgress)) {
-      actionsToDispatch.push(toggleSystemTyping(true));
-    }
-
-    dispatch(batchActions(actionsToDispatch));
+    dispatch(
+      chatViewActionCreators.userReplyRequest({issueType, botStepInProgress, reEngagementId})
+    );
 
     xhr({
       route: routes.postUserReply(domain, activeIssueId, xhrIssueType),
@@ -1982,17 +2044,18 @@ define("actions/chatView", [
       method: "POST",
       headers: xhrHelpers.getCommonHeaders(),
       onSuccess: (response) => {
-        // We do not want to batch following actions as we have to explicitly
-        // enable reply box first and then add messages.
-        // This is to allow reply box to take height first and then message list
-        // updation will scroll the messages to bottom.
-        // In case of preIssue, we do not want to enable reply box as it will be
-        // enabled according to next bot step.
-        // In case of issue, we want to enable reply box only if current step is
-        // not bot.
-        if (isIssue && !botStepInProgress) {
-          dispatch(enableReplyBox());
-        }
+        // Ideally messages should be processed in the reducer, but importing helpers/message in
+        // reducer/chatView introduces a cyclic dependency.
+        const processedMessages = messageHelpers.getProcessedMessages([response]);
+
+        dispatch(
+          chatViewActionCreators.userReplySuccess({
+            issueType,
+            botStepInProgress,
+            messages: processedMessages,
+            messageType: response.type
+          })
+        );
 
         // This response type indicates that the first message from the user was sent.
         // Trigger conversationStartEvent which, then, can be tracked by the
@@ -2009,40 +2072,34 @@ define("actions/chatView", [
           dispatch(postSdkMessage.conversationEndEvent());
         }
 
-        dispatch(
-          batchActions([
-            addMessages({
-              messages: [response],
-              responseType: response.type
-            }),
-            updateReplyText("")
-          ])
-        );
-
         if (onSuccess) {
           onSuccess(response);
         }
       },
-      onFailure: (request, statusCode) => {
+      onFailure: (_xhr, statusCode) => {
+        const errorData = JSON.parse(_xhr.response);
+
         // Handle 410 status code. It is sent in the following cases -
         // 1. attempt to reopen a closed issue, and
         // 2. issue is archived
-        // The UX in both the cases is supposed to show the new conversation button with the
-        // conversation closed message.
+        // ( The UX in both the above cases is supposed to show the new conversation button with the
+        //  conversation closed message )
+        // 3. when the resolution question gets expired
+        // ( The UX in this case is to expire the resolution question view and show post issue
+        //  resolution footer view )
         if (statusCode === ISSUE_REOPEN_ERR_STATUS_CODE) {
-          handleChatEnd({conversationHasEnded: true});
-        } else if (isPreIssue) {
-          // If user reply on
-          // 1. preIssue fails
-          //    a. Hide typing indicator
-          //    b. Enable replyBox
-          // This enables text and pill options input in case of failure
-          // OR
-          // 2. issue fails
-          //    a. Enable reply box
-          dispatch(batchActions([enableReplyBox(), toggleSystemTyping(false)]));
-        } else if (isIssue) {
-          dispatch(enableReplyBox());
+          if (errorData.msg === RESOLUTION_QUESTION_EXPIRY_MESSAGE) {
+            analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+              issueId: internalIssueId,
+              feature: EXPIRY_EVENT.RESOLUTION_QUESTION
+            });
+            dispatch(actionCreators.setResolutionQuestionCompleted(true));
+            dispatch(showPostIssueResolutionFooter());
+          } else {
+            handleChatEnd({conversationHasEnded: true});
+          }
+        } else {
+          dispatch(chatViewActionCreators.userReplyFailure());
         }
       },
       onEnd
@@ -2116,8 +2173,6 @@ define("actions/chatView", [
         return;
       }
 
-      dispatch(disableReplyBox());
-
       dispatch(
         updateUserInputData({
           value: trimmedValue
@@ -2137,7 +2192,6 @@ define("actions/chatView", [
         postUserMessage({
           onSuccess: () => {
             handleIssueReopen(issueState);
-            dispatch(updateReplyText(""));
             audioHelpers.playSend();
           }
         });
@@ -2190,22 +2244,6 @@ define("actions/chatView", [
       chatView: {messageList}
     } = store.getState();
     return messageList[messageList.length - 1];
-  };
-
-  /**
-   * Action to set chat view error.
-   * @param {Object} error
-   * @param {String} error.type - Error type - For example, pre issue failure
-   * @param {String} error.title
-   * @param {String} [error.subtitle]
-   * @param {String} [error.cta] - Call to action text
-   * @returns {Object} - action
-   */
-  const setChatViewError = (error) => {
-    return {
-      type: ACTION_TYPES.SET_CHAT_VIEW_ERROR,
-      error
-    };
   };
 
   /**
@@ -2389,9 +2427,7 @@ define("actions/chatView", [
         }
       } = state;
 
-      // We need to hide footer while creating preIssue because the default
-      // value of input disabled is false, in store on page refresh.
-      handleIssueFooterAndTAI(DISABLE_FOOTER);
+      dispatch(chatViewActionCreators.createPreissueRequest());
 
       createPreissueXhr = xhr({
         route: routes.postPreIssue(domain),
@@ -2405,21 +2441,15 @@ define("actions/chatView", [
             return;
           }
 
-          const config = {
+          const issueDetails = {
             activeIssueId: response.id,
             internalIssueId: response.internal_id,
-            // @TODO: Intents: Remove hardcoded "preissue" after backend starts sending type
-            issueType: response.type || "preissue"
+            issueType: response.type
           };
 
-          dispatch(issueCreated(config));
-
+          dispatch(chatViewActionCreators.createPreissueSuccess(issueDetails));
           startPollingForMessages();
-
           _trackFirstMessage(response.messages);
-          // Track the issue created event.
-          // @TODO: Confirm if issue created event has to be tracked from Web Chat.
-          // analyticsHelpers.track (EVENT.ISSUE_CREATED);
         },
         onFailure: (request, statusCode) => {
           const errorType =
@@ -2427,19 +2457,14 @@ define("actions/chatView", [
               ? ERROR_TYPES.PRE_ISSUE_TIME_OUT
               : ERROR_TYPES.PRE_ISSUE_FAILURE;
 
-          // When start new conversation button is clicked, we clear the current state of the app
-          // (app reset), and it is restored when the preIssue call succeeds and starts polling
-          // for messages. In case of failure, we let the error handler proceed with the flow.
-          handleIssueFooterAndTAI(ENABLE_FOOTER);
           dispatch(
-            batchActions([
-              setChatViewError({
+            chatViewActionCreators.createPreissueFailure({
+              error: {
                 type: errorType,
                 title: networkError,
                 cta: retryBtn
-              }),
-              actionCreators.toggleChatViewLoading(false)
-            ])
+              }
+            })
           );
         }
       });
@@ -2853,28 +2878,16 @@ define("actions/chatView", [
           messageConfig: {
             body: greetingMessageBody,
             isCustomerMsg: false,
-            isGreetingMessage: true
+            isGreetingMessage: true,
+            author: {
+              role: MESSAGE_ROLES.SYSTEM_MSG
+            }
           },
           onAddMessage: (localGreetingMessage) => {
             dispatch(saveLocalGreetingMessageId(localGreetingMessage.id));
           }
         })
       );
-    };
-  };
-
-  /**
-   * Return the action to be dispatched when an issue/preissue is created.
-   * @param {Object} config
-   * @param {String} config.activeIssueId
-   * @param {String} config.internalIssueId
-   * @param {String} config.issueType
-   * @returns {Object} - the action object
-   */
-  const issueCreated = (config) => {
-    return {
-      type: ACTION_TYPES.ISSUE_CREATED,
-      config
     };
   };
 
@@ -2974,15 +2987,26 @@ define("actions/chatView", [
   };
 
   /**
-   * Action to track the click event on an action in a message.
-   * @param {Object} eventData
-   * @param {string} eventData.messageId
-   * @param {string} eventData.actionId
-   * @param {string} eventData.actionType
+   * Handler for message with action card clicks
+   * @param {Object} actionData
+   * @param {string} actionData.messageId
+   * @param {string} actionData.actionId
+   * @param {string} actionData.actionType
+   * @param {boolean} actionData.linkShouldOpenInNewTab
    */
-  const trackActionClickEvent = ({messageId, actionId, actionType}) => {
+  const handleActionClick = ({messageId, actionId, actionType, linkShouldOpenInNewTab}) => {
     return (dispatch, getState) => {
-      const issueId = getState().appState.internalIssueId;
+      // On action click
+      // 1. Track the action click event, and
+      // 2. If the clicked link opens in the same tab AND if web chat doesn't open in full screen
+      //    mode, set widgetShouldAutoOpen to true, so that when the link opens, web chat auto opens
+      //    if it exists on the page.
+      const {
+        appState: {
+          internalIssueId: issueId,
+          sdkConfigOptions: {fullScreen}
+        }
+      } = getState();
 
       analyticsHelpers.track(EVENT.MESSAGE_ACTION_CLICKED, {
         issueId,
@@ -2990,18 +3014,20 @@ define("actions/chatView", [
         actionId,
         actionType
       });
+
+      if (!linkShouldOpenInNewTab && !fullScreen) {
+        dispatch(actionCreators.setWidgetShouldAutoOpen(true));
+      }
     };
   };
 
   return {
     createPreIssue,
     updateReplyText,
-    enableReplyBox,
     submitReply,
     abortCreatePreissueXhr,
     startPollingForMessages,
     stopPollingForMessages,
-    addMessages,
     markMessagesSeen,
     handleScrollPastExistingConversation,
     switchToChatView,
@@ -3009,11 +3035,8 @@ define("actions/chatView", [
     createAttachmentMessages,
     createAttachmentMessage,
     showPostIssueResolutionFooter,
-    setUserIsViewingPastMessages,
     acceptResolutionQuestion,
     rejectResolutionQuestion,
-    setUserInputData,
-    updateUserInputData,
     setUserSelectedOption,
     handleErrorAction,
     skipUserInput,
@@ -3022,6 +3045,6 @@ define("actions/chatView", [
     loadIntentsModel,
     selectIntent,
     updateReplyTextAndSearchIntents,
-    trackActionClickEvent
+    handleActionClick
   };
 });

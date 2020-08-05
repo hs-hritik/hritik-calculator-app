@@ -35,7 +35,9 @@ define("actions/csatView", [
 ) {
   "use strict";
 
-  const {EVENT} = analyticsConstants;
+  const {EVENT, EXPIRY_EVENT} = analyticsConstants;
+
+  const CSAT_BOT_EXPIRY_MESSAGE = "csat timer expired";
 
   /**
    * Action to set csat save in progress
@@ -56,7 +58,7 @@ define("actions/csatView", [
   const submitCsat = (skipReviewComments = false) => {
     return (dispatch, getState) => {
       const {
-        appState: {domain, activeIssueId},
+        appState: {domain, activeIssueId, internalIssueId},
         csatView: {rating, review}
       } = getState();
 
@@ -92,6 +94,14 @@ define("actions/csatView", [
               review: csatReview
             })
           );
+        })
+        .catch((error) => {
+          if (error.response.data.msg === CSAT_BOT_EXPIRY_MESSAGE) {
+            analyticsHelpers.track(EVENT.FEATURE_EXPIRY, {
+              issueId: internalIssueId,
+              feature: EXPIRY_EVENT.CSAT_BOT
+            });
+          }
         })
         .finally(() => {
           ax.setFlatListActiveIndex(0);
