@@ -27,12 +27,6 @@
     color: $header-text-color;
     background-color: $bg-color;
 
-    &--with-avatar {
-      .hs-header__back-icon {
-        padding-right: gutter(12);
-      }
-    }
-
     &__avatar-title-wrapper {
       display: flex;
       align-items: center;
@@ -66,6 +60,22 @@
       @include ellipsis;
       padding-left: gutter(4);
       font-size: font-size(body, large);
+    }
+
+    &--with-avatar {
+      .hs-header__back-icon {
+        padding-right: gutter(12);
+      }
+    }
+
+    &--mobile {
+      justify-content: initial;
+
+      .hs-header__avatar-title-wrapper {
+        margin: 0 auto;
+        margin-left: calc(50% - 24px);
+        transform: translateX(-50%);
+      }
     }
   }
 }
