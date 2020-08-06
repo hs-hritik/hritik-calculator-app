@@ -373,7 +373,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
    * @param {Object[]} data - Config data
    * @returns {Object} - Action
    */
-  const setLightSdkConfig = (data) => ({
+  const setLiteSdkConfig = (data) => ({
     type: ACTION_TYPES.SET_LITE_SDK_CONFIG,
     data
   });
@@ -412,6 +412,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentUnselected,
     stopIntentsSearch,
     setWidgetShouldAutoOpen,
-    setLightSdkConfig
+    setLiteSdkConfig
   };
 });
