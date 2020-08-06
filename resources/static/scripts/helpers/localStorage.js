@@ -90,7 +90,7 @@ define("helpers/localStorage", [
    * object or an array.
    */
   const set = (key, value) => {
-    if (key && value) {
+    if (key) {
       lsUtils.setItem(key, value);
       // Fire a ls update event to communicate it to parent site
       pubsub.fire("LS_UPDATE", {type: LS_UPDATE_TYPES.SET, data: {[key]: value}});
