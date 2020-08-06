@@ -326,6 +326,22 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to communicate the ui config changes
+   * @param {Object} data - Payload data
+   * @param {string} data.primaryColor - Webchat widget primary color
+   * @param {string} data.chatWidgetBgColor - Chat widget background color
+   */
+  const onUiConfigChange = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -346,6 +362,7 @@ define("actions/postSdkMessage", [
     conversationStatusEvent,
     focusLauncher,
     onSetLocalStorageData,
-    onRemoveLocalStorageData
+    onRemoveLocalStorageData,
+    onUiConfigChange
   };
 });

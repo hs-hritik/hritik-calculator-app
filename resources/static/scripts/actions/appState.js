@@ -73,7 +73,8 @@ define("actions/appState", [
       BASE_COLOR,
       INITIAL_SECONDARY_BG_COLOR,
       INITIAL_SECONDARY_TEXT_COLOR,
-      BASE_FOCUS_RING_COLOR
+      BASE_FOCUS_RING_COLOR,
+      CHAT_WIDGET_BG_COLOR
     },
     SHADES
   } = UI_CONFIG_CONSTANTS;
@@ -483,8 +484,9 @@ define("actions/appState", [
    */
   const setWmConfig = ({trigger, helpshiftConfig}) => {
     return (dispatch, getState) => {
-      const state = getState();
-      const {domain} = state.appState;
+      const {
+        appState: {domain}
+      } = getState();
 
       getWmConfig(domain, {
         onSuccess: (response) => {
@@ -503,6 +505,18 @@ define("actions/appState", [
 
           // Set the ui configuration flags in the state.
           setUiConfig(helpshiftConfig);
+
+          const {
+            ui: {uiConfig: updatedUiConfig}
+          } = store.getState();
+
+          // Send the ui config change event to the client
+          store.dispatch(
+            postSdkMessage.onUiConfigChange({
+              primaryColor: updatedUiConfig[BASE_COLOR].value,
+              chatWidgetBgColor: updatedUiConfig[CHAT_WIDGET_BG_COLOR].value
+            })
+          );
 
           if (wcEnabled) {
             // A side-effect of getting the web chat config would be to
