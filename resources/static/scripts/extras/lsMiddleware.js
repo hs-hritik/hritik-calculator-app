@@ -121,6 +121,7 @@ define("extras/lsMiddleware", [
         }
 
         lsHelpers.set(LS_KEYS.LAST_CONFIG_FETCH_TS, action.currentTime);
+        lsHelpers.set(LS_KEYS.CONFIG, action.response);
         break;
     }
   };

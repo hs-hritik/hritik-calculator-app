@@ -27,7 +27,8 @@ define("helpers/localStorage", [
     RE_ENGAGEMENT_ID: "rid",
     WIDGET_SHOULD_AUTO_OPEN: "wsao",
     PFI_VALUE: "pfi",
-    LAST_CONFIG_FETCH_TS: "cts"
+    LAST_CONFIG_FETCH_TS: "cts",
+    CONFIG: "config"
   };
 
   const USER_KEYS = ["USER_ID", "ANON_USER_ID"];

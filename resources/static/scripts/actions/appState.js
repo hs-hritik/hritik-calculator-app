@@ -490,80 +490,19 @@ define("actions/appState", [
     return (dispatch, getState) => {
       rehydrateState();
       const state = getState();
-      const {domain, pfiValue, lastConfigFetchTs} = state.appState;
+      const {pfiValue, lastConfigFetchTs} = state.appState;
       const currentTime = Date.now();
 
       if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime})) {
-        getWmConfig(domain, {
-          onSuccess: (response) => {
-            dispatch({type: ACTION_TYPES.FETCH_CONFIG_SUCCESS, response, currentTime});
-            dispatch(
-              batchActions([
-                // Set the config values to the store
-                setWmConfigValues(response),
-                actionCreators.setMobileInfo(browserUtils.isMobile()),
-                setUiTextValues(response)
-              ])
-            );
+        _fireConfigXhr({currentTime, trigger, helpshiftConfig});
+      } else {
+        const configObject = JSON.parse(lsHelpers.get(LS_KEYS.CONFIG));
 
-            const {
-              appState: {featuresEnabled, wcEnabled}
-            } = store.getState();
-
-            // Set the ui configuration flags in the state.
-            setUiConfig(helpshiftConfig);
-
-            const {
-              ui: {uiConfig: updatedUiConfig}
-            } = store.getState();
-
-            // Send the ui config change event to the client
-            store.dispatch(
-              postSdkMessage.onUiConfigChange({
-                primaryColor: updatedUiConfig[BASE_COLOR].value,
-                chatWidgetBgColor: updatedUiConfig[CHAT_WIDGET_BG_COLOR].value
-              })
-            );
-
-            if (wcEnabled) {
-              // A side-effect of getting the web chat config would be to
-              // add the stylesheet with the primary color (and any other
-              // configurable CSS value) to the document head.
-              // The `config loaded` event should be sent to the client after the CSS is loaded.
-              setStyles({
-                onSuccess: () => {
-                  dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
-                }
-              });
-
-              // Apply styles to page
-              applyPageStyles();
-
-              // Rehydrate the state with localstorage data if applicable
-              rehydrateState();
-
-              // Initialize conversation by either going to the out of business
-              // hours view or by handling the chat view conversation.
-              initializeConversation();
-
-              // If the widget is enabled, track the widget load event
-              // Do not track this event if the config was set via the reset flow.
-              if (trigger !== TRIGGER.RESET) {
-                analyticsHelpers.track(EVENT.WIDGET_LOAD);
-              }
-
-              if (featuresEnabled.audioNotifications) {
-                audioHelpers.init();
-              }
-            } else {
-              // Send the config event loaded back to the client
-              dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
-            }
-          },
-          onFailure: (response) => {
-            xhrHelpers.handleAuthFailure(response);
-          }
-        });
+        if (configObject) {
+          _setWmConfig({configObject, trigger, helpshiftConfig});
+        } else {
+          _fireConfigXhr({currentTime, trigger, helpshiftConfig});
+        }
       }
     };
   };
@@ -584,6 +523,103 @@ define("actions/appState", [
       !pfiValue ||
       (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime)
     );
+  };
+
+  /*
+   * Fire xhr to set config data
+   * @param {Object} data
+   * @param {string} data.currentTime - Current time in milli second
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   */
+  const _fireConfigXhr = ({currentTime, trigger, helpshiftConfig}) => {
+    const {dispatch, getState} = store;
+    const {
+      appState: {domain}
+    } = getState();
+
+    getWmConfig(domain, {
+      onSuccess: (response) => {
+        dispatch({type: ACTION_TYPES.FETCH_CONFIG_SUCCESS, response, currentTime});
+        _setWmConfig({response, trigger, helpshiftConfig});
+      },
+      onFailure: (response) => {
+        xhrHelpers.handleAuthFailure(response);
+      }
+    });
+  };
+
+  /**
+   * Set config in the store. Post message to the client with the config.
+   * @param {Object} data
+   * @param {Object} data.response - Config data
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   */
+  const _setWmConfig = ({response, trigger, helpshiftConfig}) => {
+    const {dispatch} = store;
+    dispatch(
+      batchActions([
+        // Set the config values to the store
+        setWmConfigValues(response),
+        actionCreators.setMobileInfo(browserUtils.isMobile()),
+        setUiTextValues(response)
+      ])
+    );
+
+    const {
+      appState: {featuresEnabled, wcEnabled}
+    } = store.getState();
+
+    // Set the ui configuration flags in the state.
+    setUiConfig(helpshiftConfig);
+
+    const {
+      ui: {uiConfig: updatedUiConfig}
+    } = store.getState();
+
+    // Send the ui config change event to the client
+    store.dispatch(
+      postSdkMessage.onUiConfigChange({
+        primaryColor: updatedUiConfig[BASE_COLOR].value,
+        chatWidgetBgColor: updatedUiConfig[CHAT_WIDGET_BG_COLOR].value
+      })
+    );
+
+    if (wcEnabled) {
+      // A side-effect of getting the web chat config would be to
+      // add the stylesheet with the primary color (and any other
+      // configurable CSS value) to the document head.
+      // The `config loaded` event should be sent to the client after the CSS is loaded.
+      setStyles({
+        onSuccess: () => {
+          dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+        }
+      });
+
+      // Apply styles to page
+      applyPageStyles();
+
+      // Rehydrate the state with localstorage data if applicable
+      rehydrateState();
+
+      // Initialize conversation by either going to the out of business
+      // hours view or by handling the chat view conversation.
+      initializeConversation();
+
+      // If the widget is enabled, track the widget load event
+      // Do not track this event if the config was set via the reset flow.
+      if (trigger !== TRIGGER.RESET) {
+        analyticsHelpers.track(EVENT.WIDGET_LOAD);
+      }
+
+      if (featuresEnabled.audioNotifications) {
+        audioHelpers.init();
+      } else {
+        // Send the config event loaded back to the client
+        dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+      }
+    }
   };
 
   /**
