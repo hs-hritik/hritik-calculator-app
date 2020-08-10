@@ -544,7 +544,15 @@ define("actions/appState", [
         _setWmConfig({response, trigger, helpshiftConfig});
       },
       onFailure: (response) => {
-        xhrHelpers.handleAuthFailure(response);
+        // If config fails and config is present in localstorage,
+        // use localstorage config to load webchat
+        const configObject = JSON.parse(lsHelpers.get(LS_KEYS.CONFIG));
+
+        if (configObject) {
+          _setWmConfig(configObject, {trigger, helpshiftConfig});
+        } else {
+          xhrHelpers.handleAuthFailure(response);
+        }
       }
     });
   };
