@@ -22,7 +22,7 @@
     list-style: none;
 
     &__option-item {
-      @include ellipsis;
+      @include word-break;
       padding: gutter(12 16);
       cursor: pointer;
       -webkit-tap-highlight-color: $no-tap-highlight-color;
