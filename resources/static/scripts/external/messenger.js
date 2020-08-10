@@ -58,6 +58,7 @@
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
+    globalApiEventHandler: null,
     apiEvents: [],
     webChatVisibility: {
       launcher: "block",
@@ -99,6 +100,8 @@
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
+    SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
+    SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -130,8 +133,19 @@
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle",
-    CONVERSATION_STATUS: "conversationStatus"
+    CONVERSATION_STATUS: "conversationStatus",
+    // This global event will basically expose the other SUPPORTED_EVENTS. We need
+    // this in case liteSDK to minimize the code on its end as instead of handling all
+    // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
+    GLOBAL_API_EVENT: "globalApiEvent",
+    ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
+    ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData"
   };
+
+  const LITE_SDK_SUPPORTED_EVENTS = [
+    SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA
+  ];
 
   // Errors message strings
   const ERROR_MSG = {
@@ -1050,6 +1064,12 @@
   const callApiEventHandler = (eventName, eventData) => {
     let handlerIsFound = false;
 
+    // Expose only those events which are handled internally
+    // [like "onSetLocalStorageData" & "onRemoveLocalStorageData"] in the globalApiEvent
+    if (state.globalApiEventHandler && LITE_SDK_SUPPORTED_EVENTS.indexOf(eventName) === -1) {
+      state.globalApiEventHandler({[eventName]: eventData || null});
+    }
+
     state.apiEvents.forEach((apiEvent) => {
       if (apiEvent.eventName === eventName) {
         apiEvent.eventHandler(eventData);
@@ -1060,10 +1080,19 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && !eventRegister[eventName]) {
+    if (!handlerIsFound) {
+      let cumulativeEventData;
+
+      // If the event is already registered, then enqueue the data to
+      // already registered event's data
+      if (eventRegister[eventName] && eventRegister[eventName].data) {
+        cumulativeEventData = {...eventRegister[eventName].data, ...eventData};
+      } else {
+        cumulativeEventData = eventData;
+      }
       eventRegister[eventName] = {
         eventHasOccured: true,
-        data: eventData
+        data: cumulativeEventData
       };
     }
   };
@@ -1268,6 +1297,16 @@
           case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
             logUiConfigErrors(data.errors);
             break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA:
+            // Call the event handler on set of local storage items
+            callApiEventHandler(SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA:
+            // Call the event handler on removal of local storage items
+            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA, data);
+            break;
         }
       },
       false
@@ -1412,8 +1451,14 @@
    * @param {Function} eventHandler - event handler
    */
   const addEventListener = (eventName, eventHandler) => {
-    // If event name is supported, add that event
+    // If event name is supported, add that event in globalEvent
+    // if its the global api event else add it inside apiEvents
     if (isEventSupported(eventName) && eventHandler) {
+      if (eventName === SUPPORTED_EVENTS.GLOBAL_API_EVENT) {
+        state.globalApiEventHandler = eventHandler;
+        return;
+      }
+
       state.apiEvents.push({
         eventName,
         eventHandler
@@ -1438,6 +1483,12 @@
   const removeEventListener = (eventName, eventHandler) => {
     // If event name is supported, remove that event
     if (isEventSupported(eventName) && eventHandler) {
+      if (eventName === SUPPORTED_EVENTS.GLOBAL_API_EVENT) {
+        state.globalApiEventHandler = null;
+
+        return;
+      }
+
       state.apiEvents = state.apiEvents.filter((apiEvent) => {
         return !(apiEvent.eventName === eventName && apiEvent.eventHandler === eventHandler);
       });

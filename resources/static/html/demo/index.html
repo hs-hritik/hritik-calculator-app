@@ -240,7 +240,11 @@
       };
     }) ();
 
-!function(t,e){if("function"!=typeof window.Helpshift){var n=function(){n.q.push(arguments)};n.q=[],window.Helpshift=n;var i,a=t.getElementsByTagName("script")[0];if(t.getElementById(e))return;i=t.createElement("script"),i.async=!0,i.id=e,i.src="{{ENV_WEB_CHAT_ROOT}}/webChat.js";var o=function(){window.Helpshift("init")};window.attachEvent?i.attachEvent("onload",o):i.addEventListener("load",o,!1),a.parentNode.insertBefore(i,a)}else window.Helpshift("update")}(document,"hs-chat");
+    function errorCallback(){
+      console.log("webChat.js failed to load")
+    }
+
+    !function(t,e,n){if("function"!=typeof window.Helpshift){var i=function(){i.q.push(arguments)};i.q=[],window.Helpshift=i;var o,a=t.getElementsByTagName("script")[0];if(t.getElementById(e))return;(o=t.createElement("script")).async=!0,o.id=e,o.src="{{ENV_WEB_CHAT_ROOT}}/webChat.js";function r(){window.Helpshift("init")}window.attachEvent?(o.attachEvent("onload",r),"function"==typeof n&&o.attachEvent("onerror",n)):(o.addEventListener("load",r,!1),"function"==typeof n&&o.addEventListener("error",n)),a.parentNode.insertBefore(o,a)}else window.Helpshift("update")}(document,"hs-chat",errorCallback);
     /* eslint-enable */
   </script>
 </body>

@@ -62,6 +62,8 @@ define("extras/api", [
   };
   const {DIRECTIONS} = axConstants;
 
+  const {LS_KEYS} = lsHelpers;
+
   /**
    * Check if preIssue reset is applicable.
    * PreIssue should reset if
@@ -75,7 +77,7 @@ define("extras/api", [
       appState: {activeIssueId, issueType, issueState}
     } = store.getState();
 
-    const lastActivityTime = lsHelpers.getLastActivityTime();
+    const lastActivityTime = lsHelpers.get(LS_KEYS.LAST_ACTIVITY_TIME, true);
     const inactivityDuration = Date.now() - lastActivityTime;
 
     return (
@@ -110,11 +112,11 @@ define("extras/api", [
    * @param {Object} clientConfig - helpshift config provided by the developer
    */
   const _handleReEngagement = (clientConfig) => {
-    if (!lsHelpers.getRedirectedFlag()) {
+    if (!lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_REDIRECTED)) {
       return;
     }
 
-    const reEngagementData = lsHelpers.getReEngagementData();
+    const reEngagementData = lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_DATA, true);
 
     // If user is redacted then don't do anything
     if (!(reEngagementData.uid || reEngagementData.email)) {
@@ -170,7 +172,7 @@ define("extras/api", [
       // Current user is anonymous & re-engagement user is also anonymous.
       // Set value in localStorage as anon user id is picked up from the
       // localStorage.
-      lsHelpers.setAnonUserId(reEngagementData.uid);
+      lsHelpers.set(LS_KEYS.ANON_USER_ID, reEngagementData.uid);
 
       // Set "widgetShouldAutoOpen" to true in state so that
       // this value will be checked afterwards and widget will be opened
@@ -179,7 +181,8 @@ define("extras/api", [
     }
 
     dispatch(appStateActions.setReEngagementId(reEngagementData.re_engagement_id));
-    lsHelpers.removeReEngagementData();
+    lsHelpers.remove(LS_KEYS.RE_ENGAGEMENT_REDIRECTED);
+    lsHelpers.remove(LS_KEYS.RE_ENGAGEMENT_DATA);
   };
 
   /**
@@ -197,6 +200,9 @@ define("extras/api", [
     const clientConfigCopy = objUtils.shallowMerge({}, clientConfig);
     _handleReEngagement(clientConfigCopy);
 
+    if (clientConfig.liteSdkConfig) {
+      dispatch(actionCreators.setLightSdkConfig(clientConfig.liteSdkConfig));
+    }
     dispatch(appStateActions.setParentPageInfo(parentPageInfo));
     dispatch(appStateActions.setClientConfig(clientConfig));
     dispatch(appStateActions.setDeviceId());

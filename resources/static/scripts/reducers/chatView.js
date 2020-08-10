@@ -238,7 +238,8 @@ define("reducers/chatView", [
     // It contains key-value pair of avatarId and last updated timestamp
     avatarLastUpdatedTs: {},
     pollingStrategy: POLLING_STRATEGY_TYPES.CONSERVATIVE,
-    pollingInterval: CONSERVATIVE_POLLING_INTERVAL.MINIMUM
+    pollingInterval: CONSERVATIVE_POLLING_INTERVAL.MINIMUM,
+    liteSdkOs: ""
   };
 
   /**
@@ -948,6 +949,11 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        return update(state, {
+          liteSdkOs: {$set: action.data.os}
+        });
 
       default:
         return state;

@@ -123,7 +123,7 @@ define("actions/faqView", [
             });
           } else if (
             faqSource === FAQ_SUGGESTION_SOURCES.CUSTOM_BOT &&
-            !lsHelpers.getSuggestedFaqReadTracked(commonHelpers.getCbFaqSuggestionReadLsKey(msgId))
+            !lsHelpers.get(commonHelpers.getCbFaqSuggestionReadLsKey(msgId))
           ) {
             analyticsHelpers.track(EVENT.SUGGESTED_FAQ_READ, {
               faqId,

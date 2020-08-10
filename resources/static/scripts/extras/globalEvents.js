@@ -9,8 +9,11 @@ define("extras/globalEvents", [
   "store",
   "actions/appState",
   "actions/chatView",
-  "domPurify"
-], function(store, appStateActions, chatViewActions, DOMPurify) {
+  "domPurify",
+  "gunpowder/utils/pubsub",
+  "actions/postSdkMessage",
+  "helpers/localStorage"
+], function(store, appStateActions, chatViewActions, DOMPurify, pubsub, postSdkMessage, lsHelpers) {
   "use strict";
 
   const {dispatch} = store;
@@ -73,8 +76,23 @@ define("extras/globalEvents", [
     });
   };
 
+  /**
+   * This function will subscribe to local storage data updates and
+   * pass it to parent site via postMessage API
+   */
+  const subscribeLocalStorageUpdateEvent = () => {
+    pubsub.on("LS_UPDATE", (event) => {
+      if (event.type === lsHelpers.LS_UPDATE_TYPES.SET) {
+        store.dispatch(postSdkMessage.onSetLocalStorageData(event.data));
+      } else if (event.type === lsHelpers.LS_UPDATE_TYPES.REMOVE) {
+        store.dispatch(postSdkMessage.onRemoveLocalStorageData(event.data));
+      }
+    });
+  };
+
   return {
     addFocusAndBlurEventListener,
-    addDomPurifyTargetHook
+    addDomPurifyTargetHook,
+    subscribeLocalStorageUpdateEvent
   };
 });

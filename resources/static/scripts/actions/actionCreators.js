@@ -378,6 +378,16 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     parentPageIsVisible
   });
 
+  /*
+   * Action to set lite sdk config data
+   * @param {Object[]} data - Config data
+   * @returns {Object} - Action
+   */
+  const setLightSdkConfig = (data) => ({
+    type: ACTION_TYPES.SET_LITE_SDK_CONFIG,
+    data
+  });
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -412,6 +422,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentUnselected,
     stopIntentsSearch,
     setWidgetShouldAutoOpen,
-    handleParentPageVisibilityChange
+    handleParentPageVisibilityChange,
+    setLightSdkConfig
   };
 });
