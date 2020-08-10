@@ -9,8 +9,11 @@ define("helpers/xhr", [
   "constants/errors",
   "gunpowder/utils/object",
   "utils/browser",
-  "store"
-], function(actionTypes, errorConstants, objUtils, browserUtils, store) {
+  "store",
+  "constants/routes",
+  "gunpowder/utils/xhr",
+  "helpers/errors"
+], function(actionTypes, errorConstants, objUtils, browserUtils, store, routes, xhr, errorHelpers) {
   "use strict";
 
   const API_VERSION_HEADER = "application/vnd+hsapi-v2+json";
@@ -214,10 +217,35 @@ define("helpers/xhr", [
     }
   };
 
+  /**
+   * This function syncs push token with the backend
+   */
+  const syncPushToken = () => {
+    const {domain, liteSdkConfig} = store.getState().appState;
+
+    xhr({
+      route: routes.postPushToken(domain),
+      headers: getCommonHeaders(),
+      method: "POST",
+      data: getPreparedXhrData({
+        token: liteSdkConfig.pushToken
+      }),
+      onFailure: (request, statusCode) => {
+        // @TODO: Lite SDK - Change the retry mechanism
+        // If the status code of response is 5xx
+        if (errorHelpers.isServerSideError(statusCode)) {
+          // Retry syncing token with backend
+          syncPushToken();
+        }
+      }
+    });
+  };
+
   return {
     getCommonHeaders,
     getCommonHeadersForAxios,
     getPreparedXhrData,
-    handleAuthFailure
+    handleAuthFailure,
+    syncPushToken
   };
 });

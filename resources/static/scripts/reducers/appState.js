@@ -168,7 +168,8 @@ define("reducers/appState", [
     parentPageIsVisible: true,
     liteSdkConfig: {},
     pfiValue: 0,
-    lastConfigFetchTs: 0
+    lastConfigFetchTs: 0,
+    pushTokenSyncMap: {}
   };
 
   /**
@@ -571,7 +572,8 @@ define("reducers/appState", [
         return update(state, {
           liteSdkConfig: {
             os: {$set: action.data.os},
-            metaData: {$set: action.data.metaData}
+            metaData: {$set: action.data.metaData},
+            pushToken: {$set: action.data.pushToken}
           }
         });
 

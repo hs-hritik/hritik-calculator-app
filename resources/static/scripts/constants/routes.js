@@ -56,6 +56,8 @@ define("constants/routes", function() {
 
   const getIntentModel = (domain, treeId) => `${BASE}${domain}/intent-trees/${treeId}/models`;
 
+  const postPushToken = (domain) => `${BASE}${domain}/update-push-token`;
+
   return {
     getWmConfig,
     getCss,
@@ -73,6 +75,7 @@ define("constants/routes", function() {
     postSuggestedFaqRead,
     postIssue,
     getIntentTree,
-    getIntentModel
+    getIntentModel,
+    postPushToken
   };
 });
