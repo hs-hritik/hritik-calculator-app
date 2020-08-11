@@ -12,8 +12,19 @@ define("helpers/xhr", [
   "store",
   "constants/routes",
   "gunpowder/utils/xhr",
-  "helpers/errors"
-], function(actionTypes, errorConstants, objUtils, browserUtils, store, routes, xhr, errorHelpers) {
+  "helpers/errors",
+  "actions/postSdkMessage"
+], function(
+  actionTypes,
+  errorConstants,
+  objUtils,
+  browserUtils,
+  store,
+  routes,
+  xhr,
+  errorHelpers,
+  postSdkMessage
+) {
   "use strict";
 
   const API_VERSION_HEADER = "application/vnd+hsapi-v2+json";
@@ -222,14 +233,26 @@ define("helpers/xhr", [
    */
   const syncPushToken = () => {
     const {domain, liteSdkConfig} = store.getState().appState;
+    const headers = getCommonHeaders();
 
     xhr({
       route: routes.postPushToken(domain),
-      headers: getCommonHeaders(),
+      headers,
       method: "POST",
       data: getPreparedXhrData({
         token: liteSdkConfig.pushToken
       }),
+      onSuccess: (response) => {
+        store.dispatch(
+          postSdkMessage.onPushTokenSync({
+            token: response.token,
+            route: routes.postPushToken(domain),
+            method: "POST",
+            headers,
+            requestPayload: getPreparedXhrData()
+          })
+        );
+      },
       onFailure: (request, statusCode) => {
         // @TODO: Lite SDK - Change the retry mechanism
         // If the status code of response is 5xx

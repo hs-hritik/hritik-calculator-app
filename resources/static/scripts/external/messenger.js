@@ -103,6 +103,7 @@
     SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
     SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
     SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
+    SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -141,13 +142,15 @@
     GLOBAL_API_EVENT: "globalApiEvent",
     ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
     ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
-    ON_UI_CONFIG_CHANGE: "onUiConfigChange"
+    ON_UI_CONFIG_CHANGE: "onUiConfigChange",
+    ON_PUSH_TOKEN_SYNC: "onPushTokenSync"
   };
 
   const LITE_SDK_SUPPORTED_EVENTS = [
     SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
     SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA,
-    SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE
+    SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
+    SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC
   ];
 
   // Errors message strings
@@ -1313,6 +1316,10 @@
 
           case EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE:
             callApiEventHandler(SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC, data);
             break;
         }
       },

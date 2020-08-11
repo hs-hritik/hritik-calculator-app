@@ -342,6 +342,23 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to communicate the push token sync data
+   * @param {object} data - Payload data
+   * @param {string} data.headers - Common headers required for firing an XHR in webchat
+   * @param {string} data.requestPayload - Request payload data required for firing an
+   * XHR in webchat
+   */
+  const onPushTokenSync = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -363,6 +380,7 @@ define("actions/postSdkMessage", [
     focusLauncher,
     onSetLocalStorageData,
     onRemoveLocalStorageData,
-    onUiConfigChange
+    onUiConfigChange,
+    onPushTokenSync
   };
 });
