@@ -2057,13 +2057,6 @@ define("actions/chatView", [
           })
         );
 
-        // This response type indicates that the first message from the user was sent.
-        // Trigger conversationStartEvent which, then, can be tracked by the
-        // addEventListener callbacks
-        if (response.type === MESSAGE_TYPE.RESP_EMPTY_MSG_WITH_TEXT_INPUT) {
-          dispatch(postSdkMessage.conversationStartEvent(response.body));
-        }
-
         if (TEXT_INPUT_MESSAGE_TYPES.indexOf(response.type) !== -1) {
           dispatch(postSdkMessage.messageAddEvent(MESSAGE_ADD_EVENT_TYPES.TEXT, response.body));
         }
@@ -2421,7 +2414,11 @@ define("actions/chatView", [
       const state = getState();
       const xhrData = _getPreparedPreIssueData(state);
       const {
-        appState: {domain},
+        appState: {
+          domain,
+          // initialUserMessage is used with the conversationStart event (check the success cb)
+          sdkConfigOptions: {initialUserMessage}
+        },
         ui: {
           text: {networkError, retryBtn}
         }
@@ -2450,6 +2447,7 @@ define("actions/chatView", [
           dispatch(chatViewActionCreators.createPreissueSuccess(issueDetails));
           startPollingForMessages();
           _trackFirstMessage(response.messages);
+          dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
         },
         onFailure: (request, statusCode) => {
           const errorType =
