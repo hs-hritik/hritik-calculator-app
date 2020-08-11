@@ -1,0 +1,3 @@
+Changelog:
+Remove ellipsis from picker options
+Fire conversationStart event on create preissue success
