@@ -166,7 +166,9 @@ define("reducers/appState", [
     },
     // False, when minimizes the window or switches to another tab
     parentPageIsVisible: true,
-    liteSdkConfig: {}
+    liteSdkConfig: {},
+    pfiValue: 0,
+    lastConfigFetchTs: 0
   };
 
   /**
@@ -192,6 +194,12 @@ define("reducers/appState", [
         };
         updateObj.analytics = {};
 
+        if (action.data.pfiValue || action.data.pfiValue === 0) {
+          updateObj.pfiValue = {$set: action.data.pfiValue};
+        }
+        if (action.data.lastConfigFetchTs) {
+          updateObj.lastConfigFetchTs = {$set: action.data.lastConfigFetchTs};
+        }
         if (action.data.suggestedFaqReadTracked) {
           updateObj.analytics.suggestedFaqReadTracked = {
             $set: action.data.suggestedFaqReadTracked

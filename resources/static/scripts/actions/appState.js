@@ -190,7 +190,9 @@ define("actions/appState", [
     const suggestedFaqReadTracked = lsHelpers.get(LS_KEYS.SUGGESTED_FAQ_READ_TRACKED),
       readFaqList = lsHelpers.get(LS_KEYS.READ_FAQ_LIST, true),
       reEngagementId = lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_ID),
-      widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN);
+      widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN),
+      pfiValue = lsHelpers.get(LS_KEYS.PFI_VALUE) ? lsHelpers.get(LS_KEYS.PFI_VALUE) : 0,
+      lastConfigFetchTs = lsHelpers.get(LS_KEYS.LAST_CONFIG_FETCH_TS);
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -198,7 +200,9 @@ define("actions/appState", [
         suggestedFaqReadTracked,
         readFaqList,
         reEngagementId,
-        widgetShouldAutoOpen
+        widgetShouldAutoOpen,
+        pfiValue,
+        lastConfigFetchTs
       }
     });
   };
@@ -484,80 +488,102 @@ define("actions/appState", [
    */
   const setWmConfig = ({trigger, helpshiftConfig}) => {
     return (dispatch, getState) => {
-      const {
-        appState: {domain}
-      } = getState();
+      rehydrateState();
+      const state = getState();
+      const {domain, pfiValue, lastConfigFetchTs} = state.appState;
+      const currentTime = Date.now();
 
-      getWmConfig(domain, {
-        onSuccess: (response) => {
-          dispatch(
-            batchActions([
-              // Set the config values to the store
-              setWmConfigValues(response),
-              actionCreators.setMobileInfo(browserUtils.isMobile()),
-              setUiTextValues(response)
-            ])
-          );
+      if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime})) {
+        getWmConfig(domain, {
+          onSuccess: (response) => {
+            dispatch({type: ACTION_TYPES.FETCH_CONFIG_SUCCESS, response, currentTime});
+            dispatch(
+              batchActions([
+                // Set the config values to the store
+                setWmConfigValues(response),
+                actionCreators.setMobileInfo(browserUtils.isMobile()),
+                setUiTextValues(response)
+              ])
+            );
 
-          const {
-            appState: {featuresEnabled, wcEnabled}
-          } = store.getState();
+            const {
+              appState: {featuresEnabled, wcEnabled}
+            } = store.getState();
 
-          // Set the ui configuration flags in the state.
-          setUiConfig(helpshiftConfig);
+            // Set the ui configuration flags in the state.
+            setUiConfig(helpshiftConfig);
 
-          const {
-            ui: {uiConfig: updatedUiConfig}
-          } = store.getState();
+            const {
+              ui: {uiConfig: updatedUiConfig}
+            } = store.getState();
 
-          // Send the ui config change event to the client
-          store.dispatch(
-            postSdkMessage.onUiConfigChange({
-              primaryColor: updatedUiConfig[BASE_COLOR].value,
-              chatWidgetBgColor: updatedUiConfig[CHAT_WIDGET_BG_COLOR].value
-            })
-          );
+            // Send the ui config change event to the client
+            store.dispatch(
+              postSdkMessage.onUiConfigChange({
+                primaryColor: updatedUiConfig[BASE_COLOR].value,
+                chatWidgetBgColor: updatedUiConfig[CHAT_WIDGET_BG_COLOR].value
+              })
+            );
 
-          if (wcEnabled) {
-            // A side-effect of getting the web chat config would be to
-            // add the stylesheet with the primary color (and any other
-            // configurable CSS value) to the document head.
-            // The `config loaded` event should be sent to the client after the CSS is loaded.
-            setStyles({
-              onSuccess: () => {
-                dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+            if (wcEnabled) {
+              // A side-effect of getting the web chat config would be to
+              // add the stylesheet with the primary color (and any other
+              // configurable CSS value) to the document head.
+              // The `config loaded` event should be sent to the client after the CSS is loaded.
+              setStyles({
+                onSuccess: () => {
+                  dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+                }
+              });
+
+              // Apply styles to page
+              applyPageStyles();
+
+              // Rehydrate the state with localstorage data if applicable
+              rehydrateState();
+
+              // Initialize conversation by either going to the out of business
+              // hours view or by handling the chat view conversation.
+              initializeConversation();
+
+              // If the widget is enabled, track the widget load event
+              // Do not track this event if the config was set via the reset flow.
+              if (trigger !== TRIGGER.RESET) {
+                analyticsHelpers.track(EVENT.WIDGET_LOAD);
               }
-            });
 
-            // Apply styles to page
-            applyPageStyles();
-
-            // Rehydrate the state with localstorage data if applicable
-            rehydrateState();
-
-            // Initialize conversation by either going to the out of business
-            // hours view or by handling the chat view conversation.
-            initializeConversation();
-
-            // If the widget is enabled, track the widget load event
-            // Do not track this event if the config was set via the reset flow.
-            if (trigger !== TRIGGER.RESET) {
-              analyticsHelpers.track(EVENT.WIDGET_LOAD);
+              if (featuresEnabled.audioNotifications) {
+                audioHelpers.init();
+              }
+            } else {
+              // Send the config event loaded back to the client
+              dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
             }
-
-            if (featuresEnabled.audioNotifications) {
-              audioHelpers.init();
-            }
-          } else {
-            // Send the config event loaded back to the client
-            dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+          },
+          onFailure: (response) => {
+            xhrHelpers.handleAuthFailure(response);
           }
-        },
-        onFailure: (response) => {
-          xhrHelpers.handleAuthFailure(response);
-        }
-      });
+        });
+      }
     };
+  };
+
+  /**
+   * Whether the config call can be made
+   * @param {Object} data
+   * @param {string} data.pfiValue - Periodic fetch interval value
+   * @param {string} data.lastConfigFetchTs - Last config fetched timestamp in milli seconds
+   * @param {number} data.currentTime - Current time in milli seconds
+   * @returns {boolean} - True, if the config xhr should be called
+   */
+  const _shouldFetchConfig = ({pfiValue, lastConfigFetchTs, currentTime}) => {
+    // Get config from the backend in the following case
+    // 1. Periodic fetch interval value is not set
+    // 2. Current time is greater than adding pfi value to last fetched ts
+    return (
+      !pfiValue ||
+      (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime)
+    );
   };
 
   /**
