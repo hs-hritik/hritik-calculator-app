@@ -209,7 +209,7 @@ define("extras/api", [
     dispatch(appStateActions.setAnalyticsSessionId());
     dispatch(appStateActions.setAnonUserId());
     dispatch(
-      appStateActions.setWmConfig({
+      appStateActions.setConfig({
         trigger,
         helpshiftConfig: clientConfig
       })
