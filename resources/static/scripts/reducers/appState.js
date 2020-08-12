@@ -165,7 +165,8 @@ define("reducers/appState", [
       csatBot: 0
     },
     // False, when minimizes the window or switches to another tab
-    parentPageIsVisible: true
+    parentPageIsVisible: true,
+    liteSdkConfig: {}
   };
 
   /**
@@ -556,6 +557,14 @@ define("reducers/appState", [
       case ACTION_TYPES.PARENT_PAGE_IS_VISIBLE:
         return update(state, {
           parentPageIsVisible: {$set: action.parentPageIsVisible}
+        });
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        return update(state, {
+          liteSdkConfig: {
+            os: {$set: action.data.os},
+            metaData: {$set: action.data.metaData}
+          }
         });
 
       default:

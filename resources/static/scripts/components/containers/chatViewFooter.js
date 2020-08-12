@@ -45,7 +45,11 @@ define("components/containers/chatViewFooter", [
         online,
         browserIsMobile,
         attachmentsWhitelist,
-        featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsFeatureIsEnabled}
+        featuresEnabled: {
+          userAttachments: userAttachmentsEnabled,
+          intents: intentsFeatureIsEnabled
+        },
+        liteSdkConfig: {os}
       },
       chatView: {
         userInput,
@@ -56,8 +60,7 @@ define("components/containers/chatViewFooter", [
         unreadMessageIds,
         error,
         botState: {botStepInProgress},
-        intents,
-        liteSdkOs
+        intents
       },
       csatView: {rating},
       ui: {text}
@@ -107,7 +110,7 @@ define("components/containers/chatViewFooter", [
       intentsFeatureIsEnabled,
       issueType,
       attachmentsWhitelist,
-      liteSdkOs
+      liteSdkOs: os
     };
 
     if (intentsFeatureIsEnabled) {

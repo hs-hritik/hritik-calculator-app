@@ -201,7 +201,7 @@ define("extras/api", [
     _handleReEngagement(clientConfigCopy);
 
     if (clientConfig.liteSdkConfig) {
-      dispatch(actionCreators.setLightSdkConfig(clientConfig.liteSdkConfig));
+      dispatch(actionCreators.setLiteSdkConfig(clientConfig.liteSdkConfig));
     }
     dispatch(appStateActions.setParentPageInfo(parentPageInfo));
     dispatch(appStateActions.setClientConfig(clientConfig));
