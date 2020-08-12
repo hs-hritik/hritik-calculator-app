@@ -1652,7 +1652,8 @@
     setFullPrivacy,
     updateHelpshiftConfig,
     hide,
-    show
+    show,
+    updateParentPageVisibility
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them
