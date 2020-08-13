@@ -62,7 +62,8 @@ define("actions/appState", [
     ANON_USER_RESET_TIMEOUT,
     TRIGGER,
     ISSUE_STATE_RESET,
-    APP_RESET_TRIGGER
+    APP_RESET_TRIGGER,
+    ISSUE_STATE
   } = APP_STATE_CONSTANTS;
 
   const {
@@ -529,7 +530,15 @@ define("actions/appState", [
     });
 
     const {
-      appState: {featuresEnabled},
+      appState: {
+        featuresEnabled,
+        userId,
+        userEmail,
+        anonUserIdentifier,
+        liteSdkConfig,
+        issueState,
+        pushTokenSyncMap
+      },
       ui: {uiConfig: updatedUiConfig}
     } = store.getState();
 
@@ -558,6 +567,24 @@ define("actions/appState", [
       // Initialize conversation by either going to the out of business
       // hours view or by handling the chat view conversation.
       initializeConversation();
+
+      // Sync push token with backend if liteSdk sends it and
+      // the issue is ongoing
+      if (liteSdkConfig.pushToken) {
+        const userIdentifier = userId || userEmail || anonUserIdentifier;
+
+        // Check whether the token is already stored (synced) against the current
+        // user identifier (userId/ userEmail) in the local storage
+        // If yes, then update the token if it gets updated
+        // else store the new
+        if (
+          issueState === ISSUE_STATE.ACTIVE &&
+          pushTokenSyncMap[userIdentifier] &&
+          pushTokenSyncMap[userIdentifier] !== liteSdkConfig.pushToken
+        ) {
+          xhrHelpers.syncPushToken();
+        }
+      }
 
       // If the widget is enabled, track the widget load event
       // Do not track this event if the config was set via the reset flow.
