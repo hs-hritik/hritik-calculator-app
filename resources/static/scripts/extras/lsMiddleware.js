@@ -114,14 +114,16 @@ define("extras/lsMiddleware", [
         break;
 
       case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
-        if (action.response.config_fetch_interval) {
-          lsHelpers.set(LS_KEYS.PFI_VALUE, action.response.config_fetch_interval);
-        } else {
-          lsHelpers.set(LS_KEYS.PFI_VALUE, 0);
-        }
+        if (action.updateLs) {
+          if (action.config.config_fetch_interval) {
+            lsHelpers.set(LS_KEYS.PFI_VALUE, action.config.config_fetch_interval);
+          } else {
+            lsHelpers.set(LS_KEYS.PFI_VALUE, 0);
+          }
 
-        lsHelpers.set(LS_KEYS.LAST_CONFIG_FETCH_TS, action.currentTime);
-        lsHelpers.set(LS_KEYS.CONFIG, action.response);
+          lsHelpers.set(LS_KEYS.LAST_CONFIG_FETCH_TS, action.currentTime);
+          lsHelpers.set(LS_KEYS.CONFIG, action.config);
+        }
         break;
     }
   };

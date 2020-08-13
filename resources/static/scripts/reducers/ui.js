@@ -166,19 +166,51 @@ define("reducers/ui", [
 
   /**
    * Return update object to update text strings in state
-   * @param {Object} xhrTextStrings - map of strings received from XHR
+   * @param {Object} config - XHR returned response
+   * @param {Object} config.translations - map of strings received from XHR
    * @returns {Object} - update object to set values in the store
    */
-  const getUiTextUpdateObj = (xhrTextStrings) => {
-    const updateObj = {};
+  const getUiTextUpdateObj = (config) => {
+    const xhrTextStrings = config.translations;
     const {UI_STRING_KEYS} = localizationConstants;
+    const textUpdateObj = {
+      greetingMsg: {$set: config.greeting},
+      chatViewHeader: {$set: config.appearance.widget_title},
+      csatViewHeader: {$set: config.appearance.widget_title},
+      csatBotRequestMsg: {$set: config.csat_bot.req_msg},
+      chatViewConversationResolutionQuestion: {
+        // @TODO - Confirm the key after BE integration
+        $set: config.resolution_question
+      }
+    };
+    const businessHoursEnabled = config.business_hours_enabled;
+    const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
+
+    if (businessHoursEnabled) {
+      const businessHours = config.business_hours;
+      textUpdateObj.businessHoursViewHeader = {
+        $set: businessHours.offline_title
+      };
+      textUpdateObj.businessHoursContactFormMessage = {
+        $set: businessHours.cf_message
+      };
+      textUpdateObj.businessHoursOfflineMessage = {
+        $set: businessHours.offline_message
+      };
+    }
+
+    if (personalisedConversationIsEnabled) {
+      textUpdateObj.systemNickname = {
+        $set: config.avatar.system_nickname
+      };
+    }
 
     objUtils.forEachKey(xhrTextStrings, (xhrKey, uiString) => {
       const stateKey = UI_STRING_KEYS[xhrKey];
-      updateObj[stateKey] = {$set: uiString};
+      textUpdateObj[stateKey] = {$set: uiString};
     });
 
-    return updateObj;
+    return textUpdateObj;
   };
 
   /**
@@ -341,43 +373,11 @@ define("reducers/ui", [
 
   return (state = INITIAL_STATE, action) => {
     switch (action.type) {
-      case ACTION_TYPES.SET_WM_CONFIG:
+      case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {config} = action;
 
-        const textUpdateObj = {
-          greetingMsg: {$set: config.greeting},
-          chatViewHeader: {$set: config.appearance.widget_title},
-          csatViewHeader: {$set: config.appearance.widget_title},
-          csatBotRequestMsg: {$set: config.csat_bot.req_msg},
-          chatViewConversationResolutionQuestion: {
-            // @TODO - Confirm the key after BE integration
-            $set: config.resolution_question
-          }
-        };
-        const businessHoursEnabled = config.business_hours_enabled;
-        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
-
-        if (businessHoursEnabled) {
-          const businessHours = config.business_hours;
-          textUpdateObj.businessHoursViewHeader = {
-            $set: businessHours.offline_title
-          };
-          textUpdateObj.businessHoursContactFormMessage = {
-            $set: businessHours.cf_message
-          };
-          textUpdateObj.businessHoursOfflineMessage = {
-            $set: businessHours.offline_message
-          };
-        }
-
-        if (personalisedConversationIsEnabled) {
-          textUpdateObj.systemNickname = {
-            $set: config.avatar.system_nickname
-          };
-        }
-
         return update(state, {
-          text: textUpdateObj,
+          text: getUiTextUpdateObj(config),
           uiConfig: {
             [BASE_COLOR]: {
               value: {$set: config.appearance.primary_color}
@@ -395,11 +395,6 @@ define("reducers/ui", [
       case ACTION_TYPES.SET_UI_CONFIG:
         return update(state, {
           uiConfig: getSetUiConfigUpdateObj(state.uiConfig, action.uiConfig)
-        });
-
-      case ACTION_TYPES.SET_UI_TEXT:
-        return update(state, {
-          text: getUiTextUpdateObj(action.text)
         });
 
       case ACTION_TYPES.UPDATE_UI_CONFIG:

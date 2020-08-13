@@ -28,16 +28,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   });
 
   /**
-   * Return action to set mobile info
-   * @param {Boolean} browserIsMobile
-   * @returns {Object} - the action object
-   */
-  const setMobileInfo = (browserIsMobile) => ({
-    type: ACTION_TYPES.SET_MOBILE_INFO,
-    browserIsMobile
-  });
-
-  /**
    * Return action to reset state
    * @returns {Object} - the action object
    */
@@ -391,7 +381,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   return {
     updateActiveView,
     toggleAgentTyping,
-    setMobileInfo,
     reset,
     setGreetingMsg,
     setLanguage,

@@ -209,7 +209,7 @@ define("reducers/appState", [
 
         return update(state, updateObj);
 
-      case ACTION_TYPES.SET_WM_CONFIG:
+      case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {config} = action;
         const intentsAreEnabled = config.si.enabled;
         const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
@@ -234,7 +234,8 @@ define("reducers/appState", [
           issueExists: {$set: config.issue_exists},
           attachmentsWhitelist: {$set: attachmentsWhitelist},
           showHeaderAvatar: {$set: config.appearance.show_header_avatar},
-          appAvatarUrl: {$set: config.appearance.app_avatar}
+          appAvatarUrl: {$set: config.appearance.app_avatar},
+          browserIsMobile: {$set: action.browserIsMobile}
         };
 
         if (personalisedConversationIsEnabled) {
@@ -428,11 +429,6 @@ define("reducers/appState", [
       case ACTION_TYPES.UPDATE_ISSUE_STATE:
         return update(state, {
           issueState: {$set: action.state}
-        });
-
-      case ACTION_TYPES.SET_MOBILE_INFO:
-        return update(state, {
-          browserIsMobile: {$set: action.browserIsMobile}
         });
 
       case ACTION_TYPES.SET_INITIAL_USER_MESSAGE:
