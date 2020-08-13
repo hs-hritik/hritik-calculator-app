@@ -192,7 +192,8 @@ define("actions/appState", [
       widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN),
       pfiValue = lsHelpers.get(LS_KEYS.PFI_VALUE) ? lsHelpers.get(LS_KEYS.PFI_VALUE) : 0,
       lastConfigFetchTs = lsHelpers.get(LS_KEYS.LAST_CONFIG_FETCH_TS),
-      respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true);
+      respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true),
+      pushTokenSyncMap = lsHelpers.get(LS_KEYS.PUSH_TOKEN_SYNC_MAP, true);
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -203,7 +204,8 @@ define("actions/appState", [
         widgetShouldAutoOpen,
         pfiValue,
         lastConfigFetchTs,
-        respectPfi
+        respectPfi,
+        pushTokenSyncMap
       }
     });
   };

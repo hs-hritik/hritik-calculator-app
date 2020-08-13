@@ -208,6 +208,11 @@ define("reducers/appState", [
             $set: action.data.suggestedFaqReadTracked
           };
         }
+        if (action.data.pushTokenSyncMap) {
+          updateObj.pushTokenSyncMap = {
+            $set: action.data.pushTokenSyncMap
+          };
+        }
 
         return update(state, updateObj);
 
