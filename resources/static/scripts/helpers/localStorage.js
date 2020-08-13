@@ -29,13 +29,16 @@ define("helpers/localStorage", [
     PFI_VALUE: "pfi",
     LAST_CONFIG_FETCH_TS: "cts",
     CONFIG: "config",
-    RESPECT_PFI: "rf"
+    RESPECT_PFI: "rf",
+    // Mapping of user to its synced push token
+    PUSH_TOKEN_SYNC_MAP: "ptsm"
   };
 
   const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
   const DEVICE_ID_KEY = "DEVICE_ID";
   const ANALYTICS_SESSION_ID_KEY = "ANALYTICS_SESSION_ID";
+  const PUSH_TOKEN_SYNC_MAP_KEY = "PUSH_TOKEN_SYNC_MAP";
 
   const LS_UPDATE_TYPES = {
     SET: "set",
@@ -62,7 +65,8 @@ define("helpers/localStorage", [
       !(USER_KEYS.indexOf(key) !== -1) &&
       !(!options.resetProactiveChat && PROACTIVE_CHAT_KEYS.indexOf(key) !== -1) &&
       !(key === DEVICE_ID_KEY) &&
-      !(key === ANALYTICS_SESSION_ID_KEY)
+      !(key === ANALYTICS_SESSION_ID_KEY) &&
+      !(key === PUSH_TOKEN_SYNC_MAP_KEY)
     );
   };
 

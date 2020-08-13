@@ -13,7 +13,8 @@ define("helpers/xhr", [
   "constants/routes",
   "gunpowder/utils/xhr",
   "helpers/errors",
-  "actions/postSdkMessage"
+  "actions/postSdkMessage",
+  "constants/actionTypes"
 ], function(
   actionTypes,
   errorConstants,
@@ -23,7 +24,8 @@ define("helpers/xhr", [
   routes,
   xhr,
   errorHelpers,
-  postSdkMessage
+  postSdkMessage,
+  ACTION_TYPES
 ) {
   "use strict";
 
@@ -232,7 +234,13 @@ define("helpers/xhr", [
    * This function syncs push token with the backend
    */
   const syncPushToken = () => {
-    const {domain, liteSdkConfig} = store.getState().appState;
+    const {
+      domain,
+      userId,
+      userEmail,
+      anonUserIdentifier,
+      liteSdkConfig
+    } = store.getState().appState;
     const headers = getCommonHeaders();
 
     xhr({
@@ -252,6 +260,13 @@ define("helpers/xhr", [
             requestPayload: getPreparedXhrData()
           })
         );
+
+        store.dispatch({
+          type: ACTION_TYPES.SYNC_PUSH_TOKEN_SUCCESS,
+          payload: {
+            [userId || userEmail || anonUserIdentifier]: response.token
+          }
+        });
       },
       onFailure: (request, statusCode) => {
         // @TODO: Lite SDK - Change the retry mechanism
