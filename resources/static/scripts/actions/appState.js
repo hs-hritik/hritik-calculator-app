@@ -54,8 +54,7 @@ define("actions/appState", [
   actionCreators,
   postSdkMessage,
   commonActions,
-  browserUtils,
-  dataTypeUtils
+  browserUtils
 ) {
   "use strict";
 
@@ -360,45 +359,6 @@ define("actions/appState", [
   };
 
   /**
-   * Set UI configuration in the state using the configuration set in the admin
-   * dashboard and by the custom configuration passed with helpshiftConfig.
-   * @param {Object} helpshiftConfig - The global client config object
-   */
-  const setUiConfig = (helpshiftConfig) => {
-    const {
-      ui: {uiConfig, developerUiConfig}
-    } = store.getState();
-
-    let finalUiConfig;
-
-    // If ui config is passed in helpshift config options, use that
-    // Else use previously set developer config
-    // Else create a ui config having base color set from dashboard
-    if (
-      dataTypeUtils.isObject(helpshiftConfig.uiConfig) &&
-      Object.keys(helpshiftConfig.uiConfig).length
-    ) {
-      finalUiConfig = helpshiftConfig.uiConfig;
-    } else if (developerUiConfig) {
-      finalUiConfig = developerUiConfig;
-    } else {
-      const baseData = BASE_COLOR.split(".");
-      // name of base set
-      const baseSet = baseData[0];
-      // value of base set
-      const baseValue = baseData[1];
-
-      finalUiConfig = {
-        [baseSet]: {
-          [baseValue]: uiConfig[BASE_COLOR].value
-        }
-      };
-    }
-    store.dispatch(uiActions.setUiConfig(finalUiConfig));
-    store.dispatch(uiActions.setDeveloperUiConfig(finalUiConfig));
-  };
-
-  /**
    * Initialize conversation - either enable the chat view or the out of
    * business hours view.
    */
@@ -557,14 +517,12 @@ define("actions/appState", [
       config: response,
       currentTime,
       updateLs,
-      browserIsMobile: browserUtils.isMobile()
+      browserIsMobile: browserUtils.isMobile(),
+      helpshiftConfig
     });
 
-    // Set the ui configuration flags in the state.
-    setUiConfig(helpshiftConfig);
-
     const {
-      appState: {featuresEnabled, wcEnabled},
+      appState: {featuresEnabled},
       ui: {uiConfig: updatedUiConfig}
     } = store.getState();
 
@@ -576,7 +534,7 @@ define("actions/appState", [
       })
     );
 
-    if (wcEnabled) {
+    if (response.wm_widget_enabled) {
       // A side-effect of getting the web chat config would be to
       // add the stylesheet with the primary color (and any other
       // configurable CSS value) to the document head.

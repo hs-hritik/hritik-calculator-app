@@ -10,14 +10,16 @@ define("reducers/ui", [
   "constants/errors",
   "constants/localization",
   "helpers/ui",
-  "gunpowder/utils/object"
+  "gunpowder/utils/object",
+  "utils/dataType"
 ], function(
   ACTION_TYPES,
   UI_CONFIG_CONSTANTS,
   errorConstants,
   localizationConstants,
   uiHelpers,
-  objUtils
+  objUtils,
+  dataTypeUtils
 ) {
   "use strict";
 
@@ -215,18 +217,26 @@ define("reducers/ui", [
 
   /**
    * Return update object for given ui config
-   * @param {Object} storeUiConfig - config object already set in ui store
-   * @param {Object} uiConfig - config object passed by developers
+   * @param {Object} state - UI Store object
+   * @param {Object} helpshiftConfig - The global client config object
+   * @param {Object} configObj - fetch config success respose
    * @returns {Object} - update ui object used to set in store
    */
-  const getSetUiConfigUpdateObj = (storeUiConfig, uiConfig) => {
+  const _getSetUiConfigUpdateObj = (state, helpshiftConfig, configObj) => {
+    const uiConfig = _getUiConfig(state, helpshiftConfig);
+    const validUiConfig = uiHelpers.getValidUiConfig(uiConfig);
+    const storeUiConfig = state.uiConfig;
     const allowedUpdateKeys = ["key", "value"];
     let baseColor = storeUiConfig[BASE_COLOR].value;
-    const updateObj = {};
+    const updateObj = {
+      [BASE_COLOR]: {
+        value: {$set: configObj.appearance.primary_color}
+      }
+    };
 
-    for (const key in uiConfig) {
-      if (uiConfig.hasOwnProperty(key)) {
-        const config = uiConfig[key];
+    for (const key in validUiConfig) {
+      if (validUiConfig.hasOwnProperty(key)) {
+        const config = validUiConfig[key];
         updateObj[key] = {};
         // Bypass unwanted keys set in ui config
         allowedUpdateKeys.forEach((allowedKey) => {
@@ -255,7 +265,7 @@ define("reducers/ui", [
       const accentColor = FLATTENED_UI_CONFIG[`${set}_ACCENT_COLOR`];
       const accentColorLight = FLATTENED_UI_CONFIG[`${set}_ACCENT_COLOR_LIGHT`];
       const accentColorConfig =
-        uiConfig[accentColor] || uiConfig[BASE_COLOR] || storeUiConfig[BASE_COLOR];
+        validUiConfig[accentColor] || validUiConfig[BASE_COLOR] || storeUiConfig[BASE_COLOR];
 
       updateObj[accentColor] = {
         value: {$set: accentColorConfig.value}
@@ -274,8 +284,8 @@ define("reducers/ui", [
     // 2. developer config's 'base' set
     // 3. ui state (default)
     const headerBgConfig =
-      uiConfig[INITIAL_PRIMARY_BG_COLOR] ||
-      uiConfig[BASE_COLOR] ||
+      validUiConfig[INITIAL_PRIMARY_BG_COLOR] ||
+      validUiConfig[BASE_COLOR] ||
       storeUiConfig[INITIAL_PRIMARY_BG_COLOR];
     updateObj[HEADER_BG_COLOR] = {
       value: {$set: headerBgConfig.value}
@@ -286,7 +296,7 @@ define("reducers/ui", [
     // 2. ui state (default)
     // @NOTE :- There is no option to set primary text color in 'base' set
     const headerTextConfig =
-      uiConfig[INITIAL_PRIMARY_TEXT_COLOR] || storeUiConfig[INITIAL_PRIMARY_TEXT_COLOR];
+      validUiConfig[INITIAL_PRIMARY_TEXT_COLOR] || storeUiConfig[INITIAL_PRIMARY_TEXT_COLOR];
     updateObj[HEADER_TEXT_COLOR] = {
       value: {$set: headerTextConfig.value}
     };
@@ -371,18 +381,59 @@ define("reducers/ui", [
     return updateObj;
   };
 
+  /**
+   * Returns the UI config
+   * @param {Object} state - UI Store object
+   * @param {Object} helpshiftConfig - The global client config object
+   * @returns {Object} - UI config object
+   */
+  const _getUiConfig = (state, helpshiftConfig) => {
+    const {uiConfig, developerUiConfig} = state;
+
+    let finalUiConfig;
+
+    // If ui config is passed in helpshift config options, use that
+    // Else use previously set developer config
+    // Else create a ui config having base color set from dashboard
+    if (
+      dataTypeUtils.isObject(helpshiftConfig.uiConfig) &&
+      Object.keys(helpshiftConfig.uiConfig).length
+    ) {
+      finalUiConfig = helpshiftConfig.uiConfig;
+    } else if (developerUiConfig) {
+      finalUiConfig = developerUiConfig;
+    } else {
+      const baseData = BASE_COLOR.split(".");
+      // name of base set
+      const baseSet = baseData[0];
+      // value of base set
+      const baseValue = baseData[1];
+
+      finalUiConfig = {
+        [baseSet]: {
+          [baseValue]: uiConfig[BASE_COLOR].value
+        }
+      };
+    }
+
+    return finalUiConfig;
+  };
+
   return (state = INITIAL_STATE, action) => {
     switch (action.type) {
       case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {config} = action;
+        /**
+         * Set UI configuration in the state using the configuration set in the admin
+         * dashboard and by the custom configuration passed with helpshiftConfig.
+         */
+        const uiConfig = _getSetUiConfigUpdateObj(state, action.helpshiftConfig, config);
+        const developerUiConfig = _getUiConfig(state, action.helpshiftConfig);
 
         return update(state, {
           text: getUiTextUpdateObj(config),
-          uiConfig: {
-            [BASE_COLOR]: {
-              value: {$set: config.appearance.primary_color}
-            }
-          }
+          uiConfig: uiConfig,
+          developerUiConfig: {$set: developerUiConfig}
         });
 
       case ACTION_TYPES.SET_GREETING_MESSAGE:
@@ -390,11 +441,6 @@ define("reducers/ui", [
           text: {
             greetingMsg: {$set: action.message}
           }
-        });
-
-      case ACTION_TYPES.SET_UI_CONFIG:
-        return update(state, {
-          uiConfig: getSetUiConfigUpdateObj(state.uiConfig, action.uiConfig)
         });
 
       case ACTION_TYPES.UPDATE_UI_CONFIG:
