@@ -104,6 +104,7 @@
     SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
     SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
     SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
+    SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -145,7 +146,8 @@
     ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
     ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
     ON_UI_CONFIG_CHANGE: "onUiConfigChange",
-    ON_PUSH_TOKEN_SYNC: "onPushTokenSync"
+    ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
+    ON_USER_AUTH_FAILURE: "onUserAuthFailure"
   };
 
   const LITE_SDK_SUPPORTED_EVENTS = [
@@ -1322,6 +1324,10 @@
 
           case EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC:
             callApiEventHandler(SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_USER_AUTH_FAILURE, data);
             break;
         }
       },

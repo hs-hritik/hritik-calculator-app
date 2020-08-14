@@ -30,6 +30,7 @@ define("constants/eventTypes", function() {
     SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
     SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
     SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
+    SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",

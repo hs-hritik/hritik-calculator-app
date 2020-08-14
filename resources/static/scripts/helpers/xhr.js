@@ -197,6 +197,15 @@ define("helpers/xhr", [
       return;
     }
 
+    // Pass the user authentication failure response to parent site
+    // via postMessage API
+    store.dispatch(
+      postSdkMessage.onUserAuthFailure({
+        type: response.status,
+        message: response.responseText
+      })
+    );
+
     const {
       ui: {
         text: {errorMessage}

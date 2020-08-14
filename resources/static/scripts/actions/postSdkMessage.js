@@ -359,6 +359,22 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to communicate the reason for user auth failure
+   * @param {object} data - Payload data
+   * @param {string} data.type - Auth failure status code
+   * @param {string} data.message - Auth failure reason
+   */
+  const onUserAuthFailure = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -381,6 +397,7 @@ define("actions/postSdkMessage", [
     onSetLocalStorageData,
     onRemoveLocalStorageData,
     onUiConfigChange,
-    onPushTokenSync
+    onPushTokenSync,
+    onUserAuthFailure
   };
 });
