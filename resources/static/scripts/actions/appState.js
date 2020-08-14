@@ -191,7 +191,8 @@ define("actions/appState", [
       reEngagementId = lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_ID),
       widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN),
       pfiValue = lsHelpers.get(LS_KEYS.PFI_VALUE) ? lsHelpers.get(LS_KEYS.PFI_VALUE) : 0,
-      lastConfigFetchTs = lsHelpers.get(LS_KEYS.LAST_CONFIG_FETCH_TS);
+      lastConfigFetchTs = lsHelpers.get(LS_KEYS.LAST_CONFIG_FETCH_TS),
+      respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true);
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -201,7 +202,8 @@ define("actions/appState", [
         reEngagementId,
         widgetShouldAutoOpen,
         pfiValue,
-        lastConfigFetchTs
+        lastConfigFetchTs,
+        respectPfi
       }
     });
   };
@@ -442,13 +444,16 @@ define("actions/appState", [
    * @param {string} data.pfiValue - Periodic fetch interval value
    * @param {string} data.lastConfigFetchTs - Last config fetched timestamp in milli seconds
    * @param {number} data.currentTime - Current time in milli seconds
+   * @param {boolean} data.respectPfi - True, if debug mode is enabled
    * @returns {boolean} - True, if the config xhr should be called
    */
-  const _shouldFetchConfig = ({pfiValue, lastConfigFetchTs, currentTime}) => {
+  const _shouldFetchConfig = ({pfiValue, lastConfigFetchTs, currentTime, respectPfi}) => {
     // Get config from the backend in the following case
+    // 1. Debug mode is enabled through Helpshift API which means not respecting the PFI value
     // 1. Periodic fetch interval value is not set
     // 2. Current time is greater than adding pfi value to last fetched ts
     return (
+      !respectPfi ||
       !pfiValue ||
       (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime)
     );
@@ -603,9 +608,9 @@ define("actions/appState", [
       // This is done to check if the config should fetch from backend
       rehydrateState();
 
-      const {pfiValue, lastConfigFetchTs} = getState().appState;
+      const {pfiValue, lastConfigFetchTs, respectPfi} = getState().appState;
 
-      if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime})) {
+      if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime, respectPfi})) {
         dispatch(_getConfigFromBackend({callbacks}));
       } else {
         dispatch(_getConfigFromLs({trigger, helpshiftConfig, callbacks}));

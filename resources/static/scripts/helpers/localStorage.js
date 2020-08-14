@@ -28,7 +28,8 @@ define("helpers/localStorage", [
     WIDGET_SHOULD_AUTO_OPEN: "wsao",
     PFI_VALUE: "pfi",
     LAST_CONFIG_FETCH_TS: "cts",
-    CONFIG: "config"
+    CONFIG: "config",
+    RESPECT_PFI: "rf"
   };
 
   const USER_KEYS = ["USER_ID", "ANON_USER_ID"];

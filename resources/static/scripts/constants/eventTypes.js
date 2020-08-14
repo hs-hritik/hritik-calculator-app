@@ -43,6 +43,8 @@ define("constants/eventTypes", function() {
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
     CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
     CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
-    CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility"
+    CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
+    CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
+    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi"
   };
 });

@@ -117,7 +117,9 @@
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
     CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
     CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
-    CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility"
+    CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
+    CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
+    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi"
   };
 
   /**
@@ -1425,6 +1427,19 @@
   };
 
   /**
+   * JS API to disable periodic fetch config interval
+   */
+  const disableConfigPeriodicFetch = () => {
+    _postMessage(EVENT_TYPES.CMD_SET_DISABLE_PFI, {respectPfi: false});
+  };
+
+  /**
+   * JS API to enable periodic fetch config interval
+   */
+  const enableConfigPeriodicFetch = () => {
+    _postMessage(EVENT_TYPES.CMD_SET_ENABLE_PFI);
+  };
+  /**
    * JS API to set greeting message
    * @param {String} message - greeting message
    */
@@ -1653,7 +1668,9 @@
     updateHelpshiftConfig,
     hide,
     show,
-    updateParentPageVisibility
+    updateParentPageVisibility,
+    disableConfigPeriodicFetch,
+    enableConfigPeriodicFetch
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

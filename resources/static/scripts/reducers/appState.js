@@ -169,6 +169,7 @@ define("reducers/appState", [
     liteSdkConfig: {},
     pfiValue: 0,
     lastConfigFetchTs: 0,
+    respectPfi: true,
     pushTokenSyncMap: {}
   };
 
@@ -191,7 +192,8 @@ define("reducers/appState", [
     switch (action.type) {
       case ACTION_TYPES.REHYDRATE:
         const updateObj = {
-          widgetShouldAutoOpen: {$set: !!action.data.widgetShouldAutoOpen}
+          widgetShouldAutoOpen: {$set: !!action.data.widgetShouldAutoOpen},
+          respectPfi: {$set: action.data.respectPfi}
         };
         updateObj.analytics = {};
 

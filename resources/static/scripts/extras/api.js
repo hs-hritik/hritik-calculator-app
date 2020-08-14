@@ -359,6 +359,22 @@ define("extras/api", [
     store.dispatch(actionCreators.setInitialUserMsg(message));
   };
 
+  /**
+   * Handle disable periodic fetch interval
+   * @param {Object} [config]
+   * @param {boolean} [config.respectPfi] - false
+   */
+  const handleDisablePfi = ({respectPfi}) => {
+    lsHelpers.set(LS_KEYS.RESPECT_PFI, respectPfi);
+  };
+
+  /**
+   * Handle enable periodic fetch interval
+   */
+  const handleEnablePfi = () => {
+    lsHelpers.remove(LS_KEYS.RESPECT_PFI);
+  };
+
   const handleApis = (type, data) => {
     switch (type) {
       case EVENT_TYPES.CMD_SET_CONFIG:
@@ -369,6 +385,12 @@ define("extras/api", [
         break;
       case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
         handleInitialUserMsg(data);
+        break;
+      case EVENT_TYPES.CMD_SET_DISABLE_PFI:
+        handleDisablePfi(data);
+        break;
+      case EVENT_TYPES.CMD_SET_ENABLE_PFI:
+        handleEnablePfi();
         break;
       case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
         store.dispatch(actionCreators.setGreetingMsg(data.message));
