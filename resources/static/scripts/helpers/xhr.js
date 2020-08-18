@@ -265,9 +265,13 @@ define("helpers/xhr", [
     const {
       domain,
       userId,
+      userName,
+      phoneNumber,
       userEmail,
+      userAuthToken,
       anonUserIdentifier,
-      liteSdkConfig
+      liteSdkConfig,
+      fullPrivacyEnabled
     } = store.getState().appState;
     const headers = getCommonHeaders();
 
@@ -279,13 +283,49 @@ define("helpers/xhr", [
         token: liteSdkConfig.pushToken
       }),
       onSuccess: (response) => {
+        // This is used by lite Sdk to match the md5 hash created on the
+        // their end (hash created on developer passed user details and token)
+        // to know whether they want to make a network call on push token update.
+        // @TODO: Lite SDK - Fix the below complex if-else block
+        const userDetails = {};
+
+        if (userName) {
+          userDetails.userName = userName;
+        }
+
+        if (
+          (!userId && !userEmail && !phoneNumber) ||
+          (!userId && userEmail && fullPrivacyEnabled)
+        ) {
+          userDetails.userId = anonUserIdentifier;
+        } else if (userId) {
+          userDetails.userId = userId;
+        }
+
+        if (!fullPrivacyEnabled) {
+          if (userEmail) {
+            userDetails.userEmail = userEmail;
+          }
+
+          if (phoneNumber) {
+            userDetails.phoneNumber = phoneNumber;
+          }
+
+          if (userAuthToken) {
+            userDetails.userAuthToken = userAuthToken;
+          }
+        } else if (!userEmail && userId && userAuthToken) {
+          userDetails.userAuthToken = userAuthToken;
+        }
+
         store.dispatch(
           postSdkMessage.onPushTokenSync({
             token: response.token,
             route: routes.postPushToken(domain),
             method: "POST",
             headers,
-            requestPayload: getPreparedXhrData()
+            requestPayload: getPreparedXhrData(),
+            userDetails
           })
         );
 
