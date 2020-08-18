@@ -36,7 +36,8 @@ define("helpers/xhr", [
     RESPONSE_STATUS_CODE: {
       NO_AUTH_TOKEN: NO_AUTH_RESPONSE,
       INVALID_USER_AUTH_TOKEN: INVALID_AUTH_RESPONSE
-    }
+    },
+    XHR_AUTO_RETRY: {BASE_TIMEOUT, TIMEOUT_MULTIPLIER, MAXIMUM_RETRY_COUNT}
   } = errorConstants;
 
   /**
@@ -240,9 +241,27 @@ define("helpers/xhr", [
   };
 
   /**
-   * This function syncs push token with the backend
+   * Function to handle auto retry for an xhr
+   * @param {Number} statusCode - Response status code of the xhr
+   * @param {Function} xhrCallback - Callback firing the xhr on auto retry
+   * @param {Number} xhrTimeout - Time after which the xhr has to be fired
+   * @param {Number} retryCount - Current retry count
    */
-  const syncPushToken = () => {
+  const handleXhrAutoRetry = ({statusCode, xhrCallback, xhrTimeout, retryCount}) => {
+    if (errorHelpers.isServerSideError(statusCode) && retryCount < MAXIMUM_RETRY_COUNT) {
+      const newRetryCount = retryCount + 1;
+      const newXhrTimeout = xhrTimeout * TIMEOUT_MULTIPLIER;
+
+      setTimeout(xhrCallback.bind(this, newXhrTimeout, newRetryCount), xhrTimeout);
+    }
+  };
+
+  /**
+   * This function syncs push token with the backend
+   * @param {Number} xhrTimeout - Time after which the xhr has to be fired
+   * @param {Number} retryCount - Current retry count
+   */
+  const syncPushToken = (xhrTimeout = BASE_TIMEOUT, retryCount = 0) => {
     const {
       domain,
       userId,
@@ -278,12 +297,7 @@ define("helpers/xhr", [
         });
       },
       onFailure: (request, statusCode) => {
-        // @TODO: Lite SDK - Change the retry mechanism
-        // If the status code of response is 5xx
-        if (errorHelpers.isServerSideError(statusCode)) {
-          // Retry syncing token with backend
-          syncPushToken();
-        }
+        handleXhrAutoRetry({statusCode, syncPushToken, xhrTimeout, retryCount});
       }
     });
   };
