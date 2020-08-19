@@ -472,7 +472,7 @@ define("components/chatViewFooter", [
             }
           }
         } = METALIST_ITEMS;
-        let ariaLabel;
+        let ariaLabel = text.replyBtnPlaceholder;
 
         if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
           ariaLabel = text.chatViewIssueRejectionQuestion;
