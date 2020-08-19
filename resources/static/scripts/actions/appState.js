@@ -476,37 +476,6 @@ define("actions/appState", [
       dispatch(actionCreators.setAppResetTrigger(APP_RESET_TRIGGER.INITIAL));
     }
   };
-
-  /**
-   * Action to set the web chat configuration set by the Helpshift admin
-   * and set it to the store. Post message to the client with the config.
-   * This configuration contains settings like if web chat is enabled,
-   * appearance, etc.
-   * @param {Object} options
-   * @param {string} options.trigger - The source that triggered setting the config
-   * @param {Object} options.helpshiftConfig - The global client config object
-   */
-  const setWmConfig = ({trigger, helpshiftConfig}) => {
-    return (dispatch, getState) => {
-      rehydrateState();
-      const state = getState();
-      const {pfiValue, lastConfigFetchTs} = state.appState;
-      const currentTime = Date.now();
-
-      if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime})) {
-        _fireConfigXhr({currentTime, trigger, helpshiftConfig});
-      } else {
-        const configObject = JSON.parse(lsHelpers.get(LS_KEYS.CONFIG));
-
-        if (configObject) {
-          _setWmConfig({configObject, trigger, helpshiftConfig});
-        } else {
-          _fireConfigXhr({currentTime, trigger, helpshiftConfig});
-        }
-      }
-    };
-  };
-
   /**
    * Whether the config call can be made
    * @param {Object} data
@@ -525,36 +494,133 @@ define("actions/appState", [
     );
   };
 
-  /*
-   * Fire xhr to set config data
+  /**
+   * Get web chat config via the HS API
    * @param {Object} data
-   * @param {string} data.currentTime - Current time in milli second
+   * @param {Object} data.callbacks - callbacks passed by the caller e.g. onSuccess
+   */
+  const _getConfigFromBackend = ({callbacks}) => {
+    return (dispatch, getState) => {
+      const {
+        appState: {domain}
+      } = getState();
+
+      // IE 11 caches config call which causes new preIssues to be created for
+      // new user. In order to invalidate browser cache we are sending a new
+      // timestamp in every request.
+      const requestData = xhrHelpers.getPreparedXhrData();
+      requestData.nonce = Date.now();
+
+      getConfigXhr = xhr({
+        route: routes.getWmConfig(domain),
+        headers: xhrHelpers.getCommonHeaders(),
+        data: requestData,
+        onSuccess: callbacks.onSuccess,
+        onFailure: callbacks.onFailure
+      });
+    };
+  };
+
+  /**
+   * An action to get data from the local storage
+   * @param {Object} data
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {Object} data.callbacks - Config call success and failure callbacks
+   */
+  const _getConfigFromLs = ({trigger, helpshiftConfig, callbacks}) => {
+    return (dispatch) => {
+      const configFromLs = lsHelpers.get(LS_KEYS.CONFIG, true);
+
+      if (configFromLs) {
+        _setWmConfig({response: configFromLs, trigger, helpshiftConfig});
+      } else {
+        dispatch(_getConfigFromBackend({callbacks}));
+      }
+    };
+  };
+
+  /**
+   * Callback function for config success
+   * @param {object} data
+   * @param {object} data.response - Config xhr success response
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {string} data.currentTime - Current time in milliseconds
+   */
+  const _onConfigSuccess = ({response, trigger, helpshiftConfig, currentTime}) => {
+    const {dispatch} = store;
+
+    dispatch({type: ACTION_TYPES.FETCH_CONFIG_SUCCESS, response, currentTime});
+    _setWmConfig({response, trigger, helpshiftConfig});
+  };
+
+  /**
+   * Callback function for config failure
+   * @param {object} data
+   * @param {object} data.response - Config xhr success response
    * @param {string} data.trigger - The source that triggered setting the config
    * @param {Object} data.helpshiftConfig - The global client config object
    */
-  const _fireConfigXhr = ({currentTime, trigger, helpshiftConfig}) => {
-    const {dispatch, getState} = store;
-    const {
-      appState: {domain}
-    } = getState();
+  const _onConfigFailure = ({response, trigger, helpshiftConfig}) => {
+    // If config fails and config is present in localstorage,
+    // use localstorage config to load webchat
+    const configFromLs = lsHelpers.get(LS_KEYS.CONFIG, true);
 
-    getWmConfig(domain, {
-      onSuccess: (response) => {
-        dispatch({type: ACTION_TYPES.FETCH_CONFIG_SUCCESS, response, currentTime});
-        _setWmConfig({response, trigger, helpshiftConfig});
-      },
-      onFailure: (response) => {
-        // If config fails and config is present in localstorage,
-        // use localstorage config to load webchat
-        const configObject = JSON.parse(lsHelpers.get(LS_KEYS.CONFIG));
+    // @TODO: [Config Optimisation] - Remove circular dependency - If config is not available
+    // in local storage and set config XHR fails which triggers _onConfigFailure again.
+    // _onConfigFailure function calls keep repeating if the XHR keeps failing
+    if (configFromLs) {
+      _setWmConfig({response: configFromLs, trigger, helpshiftConfig});
+    } else {
+      xhrHelpers.handleAuthFailure(response);
+    }
+  };
 
-        if (configObject) {
-          _setWmConfig(configObject, {trigger, helpshiftConfig});
-        } else {
-          xhrHelpers.handleAuthFailure(response);
-        }
+  /**
+   * Action to get the config response either from backend or localstorage
+   * @param {Object} data
+   * @param {Object} data.callbacks - Config call success and failure callbacks
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {string} data.currentTime - Current time in milliseconds
+   */
+  const getConfig = ({callbacks, trigger, helpshiftConfig, currentTime}) => {
+    return (dispatch, getState) => {
+      // Rehydrate pfi and last config fetch timestamp from the local storage
+      // This is done to check if the config should fetch from backend
+      rehydrateState();
+
+      const {pfiValue, lastConfigFetchTs} = getState().appState;
+
+      if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime})) {
+        dispatch(_getConfigFromBackend({callbacks}));
+      } else {
+        dispatch(_getConfigFromLs({trigger, helpshiftConfig, callbacks}));
       }
-    });
+    };
+  };
+
+  /**
+   * Action to set config object
+   * @param {Object} data
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   */
+  const setConfig = ({trigger, helpshiftConfig}) => {
+    return (dispatch) => {
+      const currentTime = Date.now();
+      const callbacks = {
+        onSuccess: (response) => {
+          _onConfigSuccess({response, trigger, helpshiftConfig, currentTime});
+        },
+        onFailure: (response) => {
+          _onConfigFailure({response, trigger, helpshiftConfig});
+        }
+      };
+
+      dispatch(getConfig({callbacks, trigger, helpshiftConfig, currentTime}));
+    };
   };
 
   /**
@@ -628,27 +694,6 @@ define("actions/appState", [
         dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
       }
     }
-  };
-
-  /**
-   * Get web chat config via the HS API.
-   * @param {string} domain
-   * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
-   */
-  const getWmConfig = (domain, callbacks) => {
-    // IE 11 caches config call which causes new preIssues to be created for
-    // new user. In order to invalidate browser cache we are sending a new
-    // timestamp in every request.
-    const requestData = xhrHelpers.getPreparedXhrData();
-    requestData.nonce = Date.now();
-
-    getConfigXhr = xhr({
-      route: routes.getWmConfig(domain),
-      headers: xhrHelpers.getCommonHeaders(),
-      data: requestData,
-      onSuccess: callbacks.onSuccess,
-      onFailure: callbacks.onFailure
-    });
   };
 
   /**
@@ -1166,7 +1211,7 @@ define("actions/appState", [
     setAnalyticsSessionId,
     setAnonUserId,
     setClientConfig,
-    setWmConfig,
+    setConfig,
     toggleMinimized,
     startNewConversation,
     replaceCif,
