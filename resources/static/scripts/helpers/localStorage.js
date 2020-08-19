@@ -34,11 +34,20 @@ define("helpers/localStorage", [
     PUSH_TOKEN_SYNC_MAP: "ptsm"
   };
 
-  const USER_KEYS = ["USER_ID", "ANON_USER_ID"];
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
-  const DEVICE_ID_KEY = "DEVICE_ID";
-  const ANALYTICS_SESSION_ID_KEY = "ANALYTICS_SESSION_ID";
-  const PUSH_TOKEN_SYNC_MAP_KEY = "PUSH_TOKEN_SYNC_MAP";
+
+  // The DEVICE_ID key should never be reset. We use DEVICE_ID to
+  // identify a browser (the device). Its value should remain the
+  // same irrespective of who (the user) is using it.
+  // The analytics session id should not reset. It is supposed to be reset
+  // only when a new conversation starts.
+  const NON_RESETABLE_KEYS = [
+    "USER_ID",
+    "ANON_USER_ID",
+    "DEVICE_ID",
+    "ANALYTICS_SESSION_ID",
+    "PUSH_TOKEN_SYNC_MAP"
+  ];
 
   const LS_UPDATE_TYPES = {
     SET: "set",
@@ -48,12 +57,8 @@ define("helpers/localStorage", [
   /**
    * A helper function to check if a localstorage key should be
    * cleared. It depends on the `options` object passed with the
-   * `reset` call and, of course, the key.
-   * The DEVICE_ID key should never be reset. We use DEVICE_ID to
-   * identify a browser (the device). Its value should remain the
-   * same irrespective of who (the user) is using it.
-   * The analytics session id should not reset. It is supposed to be reset
-   * only when a new conversation starts.
+   * `reset` call and NON_RESETABLE_KEYS.
+   *
    * @param {string} key
    * @param {Object} [options]
    * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
@@ -62,19 +67,14 @@ define("helpers/localStorage", [
    */
   const _shouldKeyReset = (key, options) => {
     return (
-      !(USER_KEYS.indexOf(key) !== -1) &&
-      !(!options.resetProactiveChat && PROACTIVE_CHAT_KEYS.indexOf(key) !== -1) &&
-      !(key === DEVICE_ID_KEY) &&
-      !(key === ANALYTICS_SESSION_ID_KEY) &&
-      !(key === PUSH_TOKEN_SYNC_MAP_KEY)
+      !(NON_RESETABLE_KEYS.indexOf(key) !== -1) &&
+      !(!options.resetProactiveChat && PROACTIVE_CHAT_KEYS.indexOf(key) !== -1)
     );
   };
 
   /**
    * Clear previously saved state from the localstorage.
    * @param {Object} [options]
-   * @param {Boolean} [options.skipUser] - Whether to skip resetting for user related data.
-   *                  By default, user related data will be reset.
    * @param {Boolean} [options.resetProactiveChat] - Whether to reset proactive chat
    *                  related data. By default, they won't be reset.
    */
