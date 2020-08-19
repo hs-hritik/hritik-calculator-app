@@ -425,6 +425,7 @@
    */
   const createLauncherIframe = () => {
     const iframe = doc.createElement("iframe");
+    iframe.setAttribute("role", "none");
     setStyle(iframe, LAUNCHER_IFRAME_STYLES);
 
     // Update z-index of launcher if it was passed with helpshfitConfig
@@ -516,6 +517,7 @@
    */
   const createWebSdkIframe = () => {
     const iframe = doc.createElement("iframe");
+    iframe.setAttribute("role", "none");
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
     setStyle(iframe, {
