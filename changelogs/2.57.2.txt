@@ -1,0 +1,4 @@
+Changelog:
+Add aria-lable for input field in chat view footer
+Fix aria-label undefined for the chat view footer text area
+Add role to the iframes
