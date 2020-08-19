@@ -242,18 +242,20 @@ define("helpers/xhr", [
 
   /**
    * Function to handle auto retry for an xhr
-   * @param {Number} statusCode - Response status code of the xhr
+   * @param {object} response - On failure response
    * @param {Function} xhrCallback - Callback firing the xhr on auto retry
    * @param {Number} xhrTimeout - Time after which the xhr has to be fired
    * @param {Number} retryCount - Current retry count
    */
-  const handleXhrAutoRetry = ({statusCode, xhrCallback, xhrTimeout, retryCount}) => {
-    if (errorHelpers.isServerSideError(statusCode) && retryCount < MAXIMUM_RETRY_COUNT) {
+  const handleXhrAutoRetry = ({response, xhrCallback, xhrTimeout, retryCount}) => {
+    if (errorHelpers.isServerSideError(response.status) && retryCount < MAXIMUM_RETRY_COUNT) {
       const newRetryCount = retryCount + 1;
       const newXhrTimeout = xhrTimeout * TIMEOUT_MULTIPLIER;
 
       setTimeout(xhrCallback.bind(this, newXhrTimeout, newRetryCount), xhrTimeout);
     }
+
+    handleAuthFailure(response);
   };
 
   /**
@@ -336,8 +338,8 @@ define("helpers/xhr", [
           }
         });
       },
-      onFailure: (request, statusCode) => {
-        handleXhrAutoRetry({statusCode, syncPushToken, xhrTimeout, retryCount});
+      onFailure: (response) => {
+        handleXhrAutoRetry({response, syncPushToken, xhrTimeout, retryCount});
       }
     });
   };
