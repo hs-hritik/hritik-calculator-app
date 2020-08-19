@@ -529,6 +529,7 @@ define("components/chatViewFooter", [
             onClick={_setAxActiveIndex}
             aria-invalid={inputIsInvalid}
             aria-required
+            aria-label={inputPlaceholder}
           />
         );
       }
