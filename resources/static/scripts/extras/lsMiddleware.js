@@ -35,7 +35,6 @@ define("extras/lsMiddleware", [
    */
   const saveStateInLs = (store, action) => {
     const state = store.getState();
-    const {userId, userEmail, anonUserIdentifier, pushTokenSyncMap} = state.appState;
 
     switch (action.type) {
       case ACTION_TYPES.SET_CLIENT_CONFIG:
@@ -124,28 +123,6 @@ define("extras/lsMiddleware", [
 
           lsHelpers.set(LS_KEYS.LAST_CONFIG_FETCH_TS, action.currentTime);
           lsHelpers.set(LS_KEYS.CONFIG, action.config);
-        }
-        break;
-
-      case ACTION_TYPES.SYNC_PUSH_TOKEN_SUCCESS:
-        const userIdentifier = userId || userEmail || anonUserIdentifier;
-
-        // Check whether the token is already stored (synced) against the current
-        // user identifier (userId/ userEmail) in the local storage
-        // If yes, then update the token if it gets updated
-        // else store the <userIdentifier> : <token> mapping in pushTokenSyncMap
-        // in local storage.
-        if (
-          pushTokenSyncMap[userIdentifier] &&
-          pushTokenSyncMap[userIdentifier] !== action.payload[userIdentifier]
-        ) {
-          pushTokenSyncMap[userIdentifier] = action.payload[userIdentifier];
-          lsHelpers.set(LS_KEYS.PUSH_TOKEN_SYNC_MAP, pushTokenSyncMap);
-        } else {
-          lsHelpers.set(
-            LS_KEYS.PUSH_TOKEN_SYNC_MAP,
-            objUtils.shallowMerge(pushTokenSyncMap, action.payload)
-          );
         }
         break;
     }

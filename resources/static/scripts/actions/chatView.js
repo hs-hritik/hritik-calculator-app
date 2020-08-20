@@ -2507,7 +2507,7 @@ define("actions/chatView", [
       const state = getState();
       const xhrData = _getPreparedPreIssueData(state);
       const {
-        appState: {domain, liteSdkConfig, userId, userEmail, anonUserIdentifier, pushTokenSyncMap},
+        appState: {domain, liteSdkConfig},
         ui: {
           text: {networkError, retryBtn}
         }
@@ -2523,14 +2523,7 @@ define("actions/chatView", [
         onSuccess: (response, xhrObj, statusCode) => {
           // In case of liteSdk, sync the push token with the backend
           if (liteSdkConfig.pushToken) {
-            const userIdentifier = userId || userEmail || anonUserIdentifier;
-
-            if (
-              !pushTokenSyncMap[userIdentifier] ||
-              pushTokenSyncMap[userIdentifier] !== liteSdkConfig.pushToken
-            ) {
-              xhrHelpers.syncPushToken();
-            }
+            xhrHelpers.syncPushToken();
           }
 
           // If pre-issue exists then just start the poller to fetch existing.

@@ -29,9 +29,7 @@ define("helpers/localStorage", [
     PFI_VALUE: "pfi",
     LAST_CONFIG_FETCH_TS: "cts",
     CONFIG: "config",
-    RESPECT_PFI: "rf",
-    // Mapping of user to its synced push token
-    PUSH_TOKEN_SYNC_MAP: "ptsm"
+    RESPECT_PFI: "rf"
   };
 
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
@@ -41,13 +39,7 @@ define("helpers/localStorage", [
   // same irrespective of who (the user) is using it.
   // The analytics session id should not reset. It is supposed to be reset
   // only when a new conversation starts.
-  const NON_RESETABLE_KEYS = [
-    "USER_ID",
-    "ANON_USER_ID",
-    "DEVICE_ID",
-    "ANALYTICS_SESSION_ID",
-    "PUSH_TOKEN_SYNC_MAP"
-  ];
+  const NON_RESETABLE_KEYS = ["USER_ID", "ANON_USER_ID", "DEVICE_ID", "ANALYTICS_SESSION_ID"];
 
   const LS_UPDATE_TYPES = {
     SET: "set",

@@ -24,8 +24,7 @@ define("helpers/xhr", [
   routes,
   xhr,
   errorHelpers,
-  postSdkMessage,
-  ACTION_TYPES
+  postSdkMessage
 ) {
   "use strict";
 
@@ -264,13 +263,7 @@ define("helpers/xhr", [
    * @param {Number} retryCount - Current retry count
    */
   const syncPushToken = (xhrTimeout = BASE_TIMEOUT, retryCount = 0) => {
-    const {
-      domain,
-      userId,
-      userEmail,
-      anonUserIdentifier,
-      liteSdkConfig
-    } = store.getState().appState;
+    const {domain, liteSdkConfig} = store.getState().appState;
     const headers = getCommonHeaders();
 
     xhr({
@@ -290,13 +283,6 @@ define("helpers/xhr", [
             requestPayload: getPreparedXhrData()
           })
         );
-
-        store.dispatch({
-          type: ACTION_TYPES.SYNC_PUSH_TOKEN_SUCCESS,
-          payload: {
-            [userId || userEmail || anonUserIdentifier]: response.token
-          }
-        });
       },
       onFailure: (response) => {
         handleXhrAutoRetry({response, syncPushToken, xhrTimeout, retryCount});

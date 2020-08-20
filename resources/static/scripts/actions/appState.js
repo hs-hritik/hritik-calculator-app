@@ -193,8 +193,7 @@ define("actions/appState", [
       widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN),
       pfiValue = lsHelpers.get(LS_KEYS.PFI_VALUE) ? lsHelpers.get(LS_KEYS.PFI_VALUE) : 0,
       lastConfigFetchTs = lsHelpers.get(LS_KEYS.LAST_CONFIG_FETCH_TS),
-      respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true),
-      pushTokenSyncMap = lsHelpers.get(LS_KEYS.PUSH_TOKEN_SYNC_MAP, true);
+      respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true);
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -205,8 +204,7 @@ define("actions/appState", [
         widgetShouldAutoOpen,
         pfiValue,
         lastConfigFetchTs,
-        respectPfi,
-        pushTokenSyncMap
+        respectPfi
       }
     });
   };
@@ -530,15 +528,7 @@ define("actions/appState", [
     });
 
     const {
-      appState: {
-        featuresEnabled,
-        userId,
-        userEmail,
-        anonUserIdentifier,
-        liteSdkConfig,
-        issueState,
-        pushTokenSyncMap
-      },
+      appState: {featuresEnabled, liteSdkConfig, issueState},
       ui: {uiConfig: updatedUiConfig}
     } = store.getState();
 
@@ -570,20 +560,8 @@ define("actions/appState", [
 
       // Sync push token with backend if liteSdk sends it and
       // the issue is ongoing
-      if (liteSdkConfig.pushToken) {
-        const userIdentifier = userId || userEmail || anonUserIdentifier;
-
-        // Check whether the token is already stored (synced) against the current
-        // user identifier (userId/ userEmail) in the local storage
-        // If yes, then update the token if it gets updated
-        // else store the new
-        if (
-          issueState === ISSUE_STATE.ACTIVE &&
-          pushTokenSyncMap[userIdentifier] &&
-          pushTokenSyncMap[userIdentifier] !== liteSdkConfig.pushToken
-        ) {
-          xhrHelpers.syncPushToken();
-        }
+      if (liteSdkConfig.pushToken && issueState === ISSUE_STATE.ACTIVE) {
+        xhrHelpers.syncPushToken();
       }
 
       // If the widget is enabled, track the widget load event

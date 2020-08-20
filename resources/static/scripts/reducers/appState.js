@@ -169,8 +169,7 @@ define("reducers/appState", [
     liteSdkConfig: {},
     pfiValue: 0,
     lastConfigFetchTs: 0,
-    respectPfi: true,
-    pushTokenSyncMap: {}
+    respectPfi: true
   };
 
   /**
@@ -206,11 +205,6 @@ define("reducers/appState", [
         if (action.data.suggestedFaqReadTracked) {
           updateObj.analytics.suggestedFaqReadTracked = {
             $set: action.data.suggestedFaqReadTracked
-          };
-        }
-        if (action.data.pushTokenSyncMap) {
-          updateObj.pushTokenSyncMap = {
-            $set: action.data.pushTokenSyncMap
           };
         }
 
