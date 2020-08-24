@@ -446,18 +446,26 @@ define("actions/appState", [
    * @param {string} data.lastConfigFetchTs - Last config fetched timestamp in milli seconds
    * @param {number} data.currentTime - Current time in milli seconds
    * @param {boolean} data.respectPfi - True, if debug mode is enabled
+   * @param {Object} data.configFromLs - Config from local storage
    * @returns {boolean} - True, if the config xhr should be called
    */
-  const _shouldFetchConfig = ({pfiValue, lastConfigFetchTs, currentTime, respectPfi}) => {
-    // Get config from the backend in the following case
+  const _shouldFetchConfig = ({
+    pfiValue,
+    lastConfigFetchTs,
+    currentTime,
+    respectPfi,
+    configFromLs
+  }) => {
+    // The PFI session gets expired in the following case
     // 1. Debug mode is enabled through Helpshift API which means not respecting the PFI value
     // 1. Periodic fetch interval value is not set
     // 2. Current time is greater than adding pfi value to last fetched ts
-    return (
+    const pfiSessionIsExpired =
       !respectPfi ||
       !pfiValue ||
-      (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime)
-    );
+      (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime);
+
+    return pfiSessionIsExpired || (!pfiSessionIsExpired && !configFromLs);
   };
 
   /**
@@ -488,22 +496,11 @@ define("actions/appState", [
   };
 
   /**
-   * An action to get data from the local storage
-   * @param {Object} data
-   * @param {string} data.trigger - The source that triggered setting the config
-   * @param {Object} data.helpshiftConfig - The global client config object
-   * @param {Object} data.callbacks - Config call success and failure callbacks
+   * Return config object from local storage
+   * @returns {Object} - Returns config object
    */
-  const _getConfigFromLs = ({trigger, helpshiftConfig, callbacks}) => {
-    return (dispatch) => {
-      const configFromLs = lsHelpers.get(LS_KEYS.CONFIG, true);
-
-      if (configFromLs) {
-        _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
-      } else {
-        dispatch(_getConfigFromBackend({callbacks}));
-      }
-    };
+  const _getConfigFromLs = () => {
+    return lsHelpers.get(LS_KEYS.CONFIG, true);
   };
 
   /**
@@ -589,11 +586,8 @@ define("actions/appState", [
   const _onConfigFailure = ({response, trigger, helpshiftConfig}) => {
     // If config fails and config is present in localstorage,
     // use localstorage config to load webchat
-    const configFromLs = lsHelpers.get(LS_KEYS.CONFIG, true);
+    const configFromLs = _getConfigFromLs();
 
-    // @TODO: [Config Optimisation] - Remove circular dependency - If config is not available
-    // in local storage and set config XHR fails which triggers _onConfigFailure again.
-    // _onConfigFailure function calls keep repeating if the XHR keeps failing
     if (configFromLs) {
       _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
     } else {
@@ -616,11 +610,19 @@ define("actions/appState", [
       rehydrateState();
 
       const {pfiValue, lastConfigFetchTs, respectPfi} = getState().appState;
+      const configFromLs = _getConfigFromLs();
+      const fetchConfigFromBackend = _shouldFetchConfig({
+        pfiValue,
+        lastConfigFetchTs,
+        currentTime,
+        respectPfi,
+        configFromLs
+      });
 
-      if (_shouldFetchConfig({pfiValue, lastConfigFetchTs, currentTime, respectPfi})) {
+      if (fetchConfigFromBackend) {
         dispatch(_getConfigFromBackend({callbacks}));
       } else {
-        dispatch(_getConfigFromLs({trigger, helpshiftConfig, callbacks}));
+        _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
       }
     };
   };

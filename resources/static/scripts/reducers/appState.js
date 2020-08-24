@@ -191,11 +191,13 @@ define("reducers/appState", [
     switch (action.type) {
       case ACTION_TYPES.REHYDRATE:
         const updateObj = {
-          widgetShouldAutoOpen: {$set: !!action.data.widgetShouldAutoOpen},
-          respectPfi: {$set: action.data.respectPfi}
+          widgetShouldAutoOpen: {$set: !!action.data.widgetShouldAutoOpen}
         };
         updateObj.analytics = {};
 
+        if (action.data.respectPfi) {
+          updateObj.respectPfi = {$set: action.data.respectPfi};
+        }
         if (action.data.pfiValue || action.data.pfiValue === 0) {
           updateObj.pfiValue = {$set: action.data.pfiValue};
         }
