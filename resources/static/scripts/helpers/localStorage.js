@@ -27,7 +27,6 @@ define("helpers/localStorage", [
     RE_ENGAGEMENT_ID: "rid",
     WIDGET_SHOULD_AUTO_OPEN: "wsao",
     PFI_VALUE: "pfi",
-    LAST_CONFIG_FETCH_TS: "cts",
     CONFIG: "config",
     RESPECT_PFI: "rf"
   };

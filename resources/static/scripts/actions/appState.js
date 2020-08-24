@@ -184,16 +184,22 @@ define("actions/appState", [
    * there are some values that are web chat client specific and need to be
    * added back to the state. For example - which FAQs have been read by the
    * user so far.
+   * @param {String} uniqueUserIdentifier - Unique identifier of a user
    */
-  const rehydrateState = () => {
+  const rehydrateState = (uniqueUserIdentifier) => {
     // @TODO: feature/ai-powered : Handle rehydration
     const suggestedFaqReadTracked = lsHelpers.get(LS_KEYS.SUGGESTED_FAQ_READ_TRACKED),
       readFaqList = lsHelpers.get(LS_KEYS.READ_FAQ_LIST, true),
       reEngagementId = lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_ID),
       widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN),
       pfiValue = lsHelpers.get(LS_KEYS.PFI_VALUE) ? lsHelpers.get(LS_KEYS.PFI_VALUE) : 0,
-      lastConfigFetchTs = lsHelpers.get(LS_KEYS.LAST_CONFIG_FETCH_TS),
+      config = lsHelpers.get(LS_KEYS.CONFIG, true),
       respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true);
+    let lastConfigFetchTs = null;
+
+    if (config && config[uniqueUserIdentifier]) {
+      lastConfigFetchTs = config[uniqueUserIdentifier].lastConfigFetchTs;
+    }
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -497,10 +503,17 @@ define("actions/appState", [
 
   /**
    * Return config object from local storage
+   * @param {String} uniqueUserIdentifier - Unique identifier of a user
    * @returns {Object} - Returns config object
    */
-  const _getConfigFromLs = () => {
-    return lsHelpers.get(LS_KEYS.CONFIG, true);
+  const _getConfigFromLs = (uniqueUserIdentifier) => {
+    const config = lsHelpers.get(LS_KEYS.CONFIG, true);
+
+    if (!config || !config[uniqueUserIdentifier]) {
+      return null;
+    }
+
+    return config[uniqueUserIdentifier].config;
   };
 
   /**
@@ -513,7 +526,14 @@ define("actions/appState", [
    * @param {boolean} data.updateLs - True, if config fetched from backend XHR directly
    */
   const _onConfigSuccess = ({response, trigger, helpshiftConfig, currentTime, updateLs}) => {
-    const {dispatch} = store;
+    const {dispatch, getState} = store;
+    const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+    const uniqueUserIdentifier = _getUniqueUserIdentifier({
+      userId,
+      phoneNumber,
+      userEmail,
+      anonUserIdentifier
+    });
 
     dispatch({
       type: ACTION_TYPES.FETCH_CONFIG_SUCCESS,
@@ -521,7 +541,8 @@ define("actions/appState", [
       currentTime,
       updateLs,
       browserIsMobile: browserUtils.isMobile(),
-      helpshiftConfig
+      helpshiftConfig,
+      uniqueUserIdentifier
     });
 
     const {
@@ -582,11 +603,12 @@ define("actions/appState", [
    * @param {object} data.response - Config xhr success response
    * @param {string} data.trigger - The source that triggered setting the config
    * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {String} uniqueUserIdentifier - Unique identifier of a user
    */
-  const _onConfigFailure = ({response, trigger, helpshiftConfig}) => {
+  const _onConfigFailure = ({response, trigger, helpshiftConfig, uniqueUserIdentifier}) => {
     // If config fails and config is present in localstorage,
     // use localstorage config to load webchat
-    const configFromLs = _getConfigFromLs();
+    const configFromLs = _getConfigFromLs(uniqueUserIdentifier);
 
     if (configFromLs) {
       _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
@@ -607,10 +629,18 @@ define("actions/appState", [
     return (dispatch, getState) => {
       // Rehydrate pfi and last config fetch timestamp from the local storage
       // This is done to check if the config should fetch from backend
-      rehydrateState();
+      const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+      const uniqueUserIdentifier = _getUniqueUserIdentifier({
+        userId,
+        phoneNumber,
+        userEmail,
+        anonUserIdentifier
+      });
+
+      rehydrateState(uniqueUserIdentifier);
 
       const {pfiValue, lastConfigFetchTs, respectPfi} = getState().appState;
-      const configFromLs = _getConfigFromLs();
+      const configFromLs = _getConfigFromLs(uniqueUserIdentifier);
       const fetchConfigFromBackend = _shouldFetchConfig({
         pfiValue,
         lastConfigFetchTs,
@@ -628,20 +658,63 @@ define("actions/appState", [
   };
 
   /**
+   * Returns the concatenation of the identifiers
+   * Unique user identifier is needed to store the config respective to every person
+   * who login. The user can log in with the userId, email, phone number, and the
+   * combination of the identifier. Multiple users can have the same email, phone
+   * number. As the data of the same user is stored multiple times if the user login with
+   * different identifier. This is not the ideal solution. We need the same mechanism
+   * as the backend to identify the user.
+   * @param {String} userId - Current user Id
+   * @param {number} phoneNumber - Current user phone number
+   * @param {String} userEmail - Current user email
+   * @param {String} anonUserIdentifier - Current user id
+   * @returns {String} - A unique identifier
+   */
+  const _getUniqueUserIdentifier = ({userId, phoneNumber, userEmail, anonUserIdentifier}) => {
+    // @TODO : COGS Optimization - Generate identifier by using hashing technique.
+    // Ex - MD5 hash, SHA256 etc
+    let identifier = "";
+
+    if (!userId && !phoneNumber && !userEmail) {
+      return anonUserIdentifier;
+    }
+
+    if (userId) {
+      identifier += userId;
+    }
+    if (phoneNumber) {
+      identifier += phoneNumber;
+    }
+    if (userEmail) {
+      identifier += userEmail;
+    }
+
+    return identifier;
+  };
+
+  /**
    * Action to set config object
    * @param {Object} data
    * @param {string} data.trigger - The source that triggered setting the config
    * @param {Object} data.helpshiftConfig - The global client config object
    */
   const setConfig = ({trigger, helpshiftConfig}) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+      const uniqueUserIdentifier = _getUniqueUserIdentifier({
+        userId,
+        phoneNumber,
+        userEmail,
+        anonUserIdentifier
+      });
       const currentTime = Date.now();
       const callbacks = {
         onSuccess: (response) => {
           _onConfigSuccess({response, trigger, helpshiftConfig, currentTime, updateLs: true});
         },
         onFailure: (response) => {
-          _onConfigFailure({response, trigger, helpshiftConfig});
+          _onConfigFailure({response, trigger, helpshiftConfig, uniqueUserIdentifier});
         }
       };
 

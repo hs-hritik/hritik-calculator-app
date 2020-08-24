@@ -29,6 +29,33 @@ define("extras/lsMiddleware", [
   });
 
   /**
+   * Returns the updated Config Object
+   * @param {Object} action
+   * @param {String} action.uniqueUserIdentifier - Unique identifier of a user
+   * @param {Number} action.currentTime - Current time in milliseconds
+   * @returns {Object} - Returns the updated config object
+   */
+  const _getUpdatedConfig = (action) => {
+    let configObject = lsHelpers.get(LS_KEYS.CONFIG, true);
+
+    if (configObject) {
+      configObject[action.uniqueUserIdentifier] = {
+        config: action.config,
+        lastConfigFetchTs: action.currentTime
+      };
+    } else {
+      configObject = {
+        [action.uniqueUserIdentifier]: {
+          config: action.config,
+          lastConfigFetchTs: action.currentTime
+        }
+      };
+    }
+
+    return configObject;
+  };
+
+  /**
    * Save the required state in localStorage.
    * @param {Object} store
    * @param {Object} action
@@ -115,14 +142,18 @@ define("extras/lsMiddleware", [
 
       case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         if (action.updateLs) {
+          // The config is stored as a property in nested object
+          // The key is user unique identifier and the value is an object with
+          // the timestamp and config as property
+          const config = _getUpdatedConfig(action);
+
           if (action.config.config_fetch_interval) {
             lsHelpers.set(LS_KEYS.PFI_VALUE, action.config.config_fetch_interval);
           } else {
             lsHelpers.set(LS_KEYS.PFI_VALUE, 0);
           }
 
-          lsHelpers.set(LS_KEYS.LAST_CONFIG_FETCH_TS, action.currentTime);
-          lsHelpers.set(LS_KEYS.CONFIG, action.config);
+          lsHelpers.set(LS_KEYS.CONFIG, config);
         }
         break;
     }
