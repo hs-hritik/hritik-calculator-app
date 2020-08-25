@@ -80,7 +80,7 @@ define("actions/appState", [
   } = UI_CONFIG_CONSTANTS;
   const {EVENT} = analyticsConstants;
 
-  const {TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
+  const {TYPE: ERROR_TYPES, RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
   const LATEST_ISSUE_NOT_AVAILABLE = "NOT_AVAILABLE";
 
   const isCssVarSupported =
@@ -610,10 +610,10 @@ define("actions/appState", [
     // use localstorage config to load webchat
     const configFromLs = _getConfigFromLs(uniqueUserIdentifier);
 
-    if (configFromLs) {
-      _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
-    } else {
+    if (response.status === RESPONSE_STATUS_CODE.NO_AUTH_TOKEN || !configFromLs) {
       xhrHelpers.handleAuthFailure(response);
+    } else {
+      _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
     }
   };
 
