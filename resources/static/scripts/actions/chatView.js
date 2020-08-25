@@ -845,12 +845,15 @@ define("actions/chatView", [
   const getLinearMessages = (issues, config) => {
     const finalMessages = [];
     const {hasOlderMsgs} = config;
+    const {
+      chatView: {localGreetingMessageId}
+    } = store.getState();
 
     let previousGroupId = config.lastGroupId;
     let redactionCount = 0;
 
     issues.forEach((issue) => {
-      const currentGroupId = issue.preissue_id;
+      const currentGroupId = issue.preissue_id || issue.issue_id;
 
       // Count the number of redacted issues in succession.
       // Essentially, we want to show "5 Conversations Redacted"
@@ -865,7 +868,7 @@ define("actions/chatView", [
       //
       // Since issues are received with the latest issue at the top and the
       // oldest at the last, we create the right rendering order by using unshift
-      if (previousGroupId && currentGroupId !== previousGroupId) {
+      if (!localGreetingMessageId && previousGroupId && currentGroupId !== previousGroupId) {
         finalMessages.unshift(_getIssueDateSeparator(issue.created_at));
       }
 
@@ -1063,7 +1066,7 @@ define("actions/chatView", [
     let messages = [];
 
     messages = createLinearMessageList(issues, {
-      lastIssueId: null,
+      lastGroupId: null,
       conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
       hasOlderMsgs
     });
@@ -1190,7 +1193,7 @@ define("actions/chatView", [
         // If the resolution question is disabled and not completed and the issue is resolved,
         // accept the resolution question.
         if (!resolutionQuestionEnabled && !resolutionQuestionCompleted) {
-          dispatch(acceptResolutionQuestion());
+          dispatch(acceptResolutionQuestion(true));
         }
         dispatch(postSdkMessage.conversationResolvedEvent());
       } else if (issueState === ISSUE_STATE.REJECTED) {
@@ -2879,16 +2882,22 @@ define("actions/chatView", [
 
   /**
    * Action to accept resolution question
+   * @param {Boolean} autoAccept - If true, then we don't need to dispatch
+   * showPostIssueResolutionFooter action as we only auto accept resolution
+   * question when the issue is resolved and the feature is disabled as in
+   * this case we don't want to show issue resolution footer.
    * @returns {Function} - Action
    */
-  const acceptResolutionQuestion = () => {
+  const acceptResolutionQuestion = (autoAccept = false) => {
     return (dispatch) => {
       postUserMessage({
         msgBody: MESSAGE_BODY.SOLUTION_ACCEPTED,
         msgType: MESSAGE_TYPE.ACCEPTED,
         onSuccess: () => {
           dispatch(actionCreators.setResolutionQuestionCompleted(true));
-          dispatch(showPostIssueResolutionFooter());
+          if (!autoAccept) {
+            dispatch(showPostIssueResolutionFooter());
+          }
         }
       });
     };
