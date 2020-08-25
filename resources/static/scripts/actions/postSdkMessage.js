@@ -375,6 +375,18 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to communicate the removal of anonymous user
+   */
+  const onRemoveAnonymousUser = () => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -398,6 +410,7 @@ define("actions/postSdkMessage", [
     onRemoveLocalStorageData,
     onUiConfigChange,
     onPushTokenSync,
-    onUserAuthFailure
+    onUserAuthFailure,
+    onRemoveAnonymousUser
   };
 });

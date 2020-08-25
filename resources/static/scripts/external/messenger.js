@@ -105,6 +105,7 @@
     SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
     SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
     SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
+    SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -143,18 +144,27 @@
     // this in case liteSDK to minimize the code on its end as instead of handling all
     // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
     GLOBAL_API_EVENT: "globalApiEvent",
+    ON_USER_AUTH_FAILURE: "onUserAuthFailure",
+    // The below events are not exposed to developers and are specific to lite SDK
+    // Below events are to be added in the LITE_SDK_SUPPORTED_EVENTS list to not expose
+    // them in the globalApiEvent
     ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
     ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
     ON_UI_CONFIG_CHANGE: "onUiConfigChange",
     ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
-    ON_USER_AUTH_FAILURE: "onUserAuthFailure"
+    ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser"
   };
 
+  /**
+   * List of events that webchat supports but are specific to lite SDK
+   * This is needed to not send these events in the globalApiEvent
+   */
   const LITE_SDK_SUPPORTED_EVENTS = [
     SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
     SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA,
     SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
-    SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC
+    SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC,
+    SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER
   ];
 
   // Errors message strings
@@ -1328,6 +1338,10 @@
 
           case EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE:
             callApiEventHandler(SUPPORTED_EVENTS.ON_USER_AUTH_FAILURE, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER);
             break;
         }
       },
