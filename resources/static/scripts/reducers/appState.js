@@ -195,8 +195,10 @@ define("reducers/appState", [
         };
         updateObj.analytics = {};
 
-        if (action.data.respectPfi) {
-          updateObj.respectPfi = {$set: action.data.respectPfi};
+        if (action.data.respectPfi === false) {
+          updateObj.respectPfi = {$set: false};
+        } else {
+          updateObj.respectPfi = {$set: true};
         }
         if (action.data.pfiValue || action.data.pfiValue === 0) {
           updateObj.pfiValue = {$set: action.data.pfiValue};
