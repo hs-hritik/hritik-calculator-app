@@ -88,9 +88,9 @@ define("helpers/localStorage", [
    * @param {string} value - Value to be set against the ls. JSON.stringify the value if its an
    * object or an array.
    */
-  const set = (key, value) => {
+  const set = (key, value, onLocalStorageFull) => {
     if (key) {
-      lsUtils.setItem(key, value);
+      lsUtils.setItem(key, value, null, onLocalStorageFull);
       // Fire a ls update event to communicate it to parent site
       pubsub.fire("LS_UPDATE", {type: LS_UPDATE_TYPES.SET, data: {[key]: value}});
     }

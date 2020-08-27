@@ -29,6 +29,26 @@ define("extras/lsMiddleware", [
   });
 
   /**
+   * Handle the case when localstorage gets full
+   * Most occuping space in localstorage is the config key value pair.
+   * Remove all the config stored by removing the config object and
+   * store the lastest config in the local storage.
+   * @param {Object} action
+   * @param {String} action.uniqueIdentifier - A unique key to identify a user
+   * @param {Number} action.currentTime - Current time in milliseconds
+   * @param {Object} action.config - Config data
+   */
+  const _onLocalStorageFull = (action) => {
+    lsHelpers.remove(LS_KEYS.CONFIG);
+    lsHelpers.set(LS_KEYS.CONFIG, {
+      [action.uniqueIdentifier]: {
+        config: action.config,
+        lastConfigFetchTs: action.currentTime
+      }
+    });
+  };
+
+  /**
    * Returns the updated Config Object
    * @param {Object} action
    * @param {String} action.uniqueUserIdentifier - Unique identifier of a user
@@ -146,6 +166,7 @@ define("extras/lsMiddleware", [
           // The key is user unique identifier and the value is an object with
           // the timestamp and config as property
           const config = _getUpdatedConfig(action);
+          const onLocalStorageOutOfSpace = _onLocalStorageFull.bind(null, action);
 
           if (action.config.config_fetch_interval) {
             lsHelpers.set(LS_KEYS.PFI_VALUE, action.config.config_fetch_interval);
@@ -153,7 +174,7 @@ define("extras/lsMiddleware", [
             lsHelpers.set(LS_KEYS.PFI_VALUE, 0);
           }
 
-          lsHelpers.set(LS_KEYS.CONFIG, config);
+          lsHelpers.set(LS_KEYS.CONFIG, config, onLocalStorageOutOfSpace);
         }
         break;
     }
