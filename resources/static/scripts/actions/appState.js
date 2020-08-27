@@ -307,7 +307,7 @@ define("actions/appState", [
     // The following action (SET_CLIENT_CONFIG) sets the userId passed by the
     // developer in the state and localstorage. Before setting it in localstorage
     // we need to determine if we should handle the user login change.
-    handleAnonUserReset(config.userId, clearAnonymousUserOnLogin);
+    handleAnonUserReset({userId, clearAnonymousUserOnLogin, isLiteSdk: !!config.liteSdkConfig});
 
     return {
       type: ACTION_TYPES.SET_CLIENT_CONFIG,
@@ -322,15 +322,19 @@ define("actions/appState", [
    * Based on the client's config value of clearAnonymousUserOnLogin, reset the
    * anon user id.
    * Also, clear the anonymous user id after 7 days of inactivity.
-   * @param {string} userId - The userId value passed with `helpshiftConfig`.
-   * @param {boolean} clearAnonymousUserOnLogin
+   * @param {Object} data
+   * @param {string} data.userId - The userId value passed with `helpshiftConfig`.
+   * @param {boolean} data.clearAnonymousUserOnLogin - If true, remove anonymous user
+   * id from local storage
+   * @param {boolean} data.isLiteSdk - If true, do not remove anonymous user id after
+   * 7 days of inactivity from local storage
    */
-  const handleAnonUserReset = (userId, clearAnonymousUserOnLogin) => {
+  const handleAnonUserReset = ({userId, clearAnonymousUserOnLogin, isLiteSdk}) => {
     // Clear anon user id after 7 days of inactivity
     const lastActivityTime = lsHelpers.get(LS_KEYS.LAST_ACTIVITY_TIME, true);
     const inactivityDuration = Date.now() - lastActivityTime;
 
-    if (lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
+    if (!isLiteSdk && lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
       lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
 
