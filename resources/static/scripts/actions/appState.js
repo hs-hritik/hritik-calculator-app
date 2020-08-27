@@ -29,7 +29,7 @@ define("actions/appState", [
   "actions/postSdkMessage",
   "actions/common",
   "utils/browser",
-  "utils/dataType"
+  "utils/color"
 ], function(
   ACTION_TYPES,
   routes,
@@ -54,7 +54,8 @@ define("actions/appState", [
   actionCreators,
   postSdkMessage,
   commonActions,
-  browserUtils
+  browserUtils,
+  colorUtils
 ) {
   "use strict";
 
@@ -69,7 +70,6 @@ define("actions/appState", [
     FLATTENED_UI_CONFIG: {
       HEADER_BG_COLOR,
       HEADER_TEXT_COLOR,
-      BASE_COLOR,
       INITIAL_SECONDARY_BG_COLOR,
       INITIAL_SECONDARY_TEXT_COLOR,
       BASE_FOCUS_RING_COLOR,
@@ -86,6 +86,8 @@ define("actions/appState", [
     window.CSS && window.CSS.supports && window.CSS.supports("--fake-var", 0);
 
   const {LS_KEYS} = lsHelpers;
+
+  const THREE_CHAR_HEX_CODE_LENGTH = 4;
 
   let getConfigXhr = null;
 
@@ -550,14 +552,25 @@ define("actions/appState", [
 
     const {
       appState: {featuresEnabled},
-      ui: {uiConfig: updatedUiConfig}
+      ui: {
+        uiConfig: {
+          [HEADER_BG_COLOR]: {value: primaryColor},
+          [CHAT_WIDGET_BG_COLOR]: {value: chatWidgetBgColor}
+        }
+      }
     } = store.getState();
 
     // Send the ui config change event to the client
     store.dispatch(
       postSdkMessage.onUiConfigChange({
-        primaryColor: updatedUiConfig[BASE_COLOR].value,
-        chatWidgetBgColor: updatedUiConfig[CHAT_WIDGET_BG_COLOR].value
+        primaryColor:
+          primaryColor.length === THREE_CHAR_HEX_CODE_LENGTH
+            ? colorUtils.convertThreeToSixCharHexColorCode(primaryColor)
+            : primaryColor,
+        chatWidgetBgColor:
+          chatWidgetBgColor.length === THREE_CHAR_HEX_CODE_LENGTH
+            ? colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
+            : chatWidgetBgColor
       })
     );
 
