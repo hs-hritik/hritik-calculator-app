@@ -169,7 +169,8 @@ define("reducers/appState", [
     liteSdkConfig: {},
     pfiValue: 0,
     lastConfigFetchTs: 0,
-    respectPfi: true
+    respectPfi: true,
+    isPushTokenSynced: false
   };
 
   /**
@@ -576,6 +577,11 @@ define("reducers/appState", [
             metaData: {$set: action.data.metaData},
             pushToken: {$set: action.data.pushToken}
           }
+        });
+
+      case ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS:
+        return update(state, {
+          isPushTokenSynced: {$set: action.payload}
         });
 
       default:

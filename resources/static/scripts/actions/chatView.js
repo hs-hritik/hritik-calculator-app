@@ -1136,7 +1136,9 @@ define("actions/chatView", [
         issueType,
         issueState,
         featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled},
-        postChatFeatures: {resolutionQuestionCompleted}
+        postChatFeatures: {resolutionQuestionCompleted},
+        liteSdkConfig,
+        isPushTokenSynced
       },
       chatView: {issueCursor}
     } = getState();
@@ -1145,6 +1147,17 @@ define("actions/chatView", [
 
     // Do not handle active state as we will wait for user input/bot steps
     if (issueState === ISSUE_STATE.ACTIVE) {
+      // Sync push token with backend if liteSdk sends it and
+      // the issue is ongoing
+      if (liteSdkConfig.pushToken && !isPushTokenSynced) {
+        xhrHelpers.syncPushToken();
+
+        dispatch({
+          type: ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS,
+          payload: true
+        });
+      }
+
       return;
     }
 
@@ -2510,7 +2523,7 @@ define("actions/chatView", [
       const state = getState();
       const xhrData = _getPreparedPreIssueData(state);
       const {
-        appState: {domain, liteSdkConfig},
+        appState: {domain, liteSdkConfig, isPushTokenSynced},
         ui: {
           text: {networkError, retryBtn}
         }
@@ -2525,8 +2538,13 @@ define("actions/chatView", [
         method: "POST",
         onSuccess: (response, xhrObj, statusCode) => {
           // In case of liteSdk, sync the push token with the backend
-          if (liteSdkConfig.pushToken) {
+          if (liteSdkConfig.pushToken && !isPushTokenSynced) {
             xhrHelpers.syncPushToken();
+
+            dispatch({
+              type: ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS,
+              payload: true
+            });
           }
 
           // If pre-issue exists then just start the poller to fetch existing.
