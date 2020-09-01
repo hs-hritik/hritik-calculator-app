@@ -300,7 +300,7 @@ define("actions/chatView", [
           chatViewHelpers.shouldPollerRestart({
             widgetIsMinimized,
             parentPageIsVisible,
-            currentPollingStrategy
+            pollingStrategy: currentPollingStrategy
           })
         ) {
           stopPollingForMessages();
