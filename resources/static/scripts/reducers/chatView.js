@@ -237,8 +237,8 @@ define("reducers/chatView", [
     localGreetingMessageId: "",
     // It contains key-value pair of avatarId and last updated timestamp
     avatarLastUpdatedTs: {},
-    pollingStrategy: POLLING_STRATEGY_TYPES.CONSERVATIVE,
-    pollingInterval: CONSERVATIVE_POLLING_INTERVAL.MINIMUM
+    pollingStrategy: POLLING_STRATEGY_TYPES.AGGRESSIVE,
+    pollingInterval: AGRESSIVE_POLLING_TIMEOUT
   };
 
   /**
@@ -948,6 +948,13 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        // If lite sdk, change the default value of polling interval stragtegy
+        return update(state, {
+          pollingInterval: {$set: CONSERVATIVE_POLLING_INTERVAL.MINIMUM},
+          pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE}
+        });
 
       default:
         return state;

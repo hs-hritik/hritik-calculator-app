@@ -260,18 +260,23 @@ define("extras/api", [
         issueType,
         sdkConfigOptions: {initialUserMessage},
         widgetShouldAutoOpen,
-        parentPageIsVisible
+        parentPageIsVisible,
+        liteSdkConfig
       },
       chatView: {pollingStrategy}
     } = store.getState();
+    const isLiteSdk = Object.keys(liteSdkConfig).length;
 
-    store.dispatch(
-      chatViewActions.handleParentPageVisibilityChange({
-        pollingStrategy,
-        widgetIsMinimized: widgetHasMinimized,
-        parentPageIsVisible
-      })
-    );
+    // For Lite SDK use-case - On toggle, change the polling strategy.
+    if (isLiteSdk) {
+      store.dispatch(
+        chatViewActions.handleParentPageVisibilityChange({
+          pollingStrategy,
+          widgetIsMinimized: widgetHasMinimized,
+          parentPageIsVisible
+        })
+      );
+    }
 
     if (!widgetHasMinimized) {
       if (!app.isMounted()) {

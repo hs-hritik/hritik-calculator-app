@@ -1347,22 +1347,6 @@
       },
       false
     );
-
-    // Page visibility event provides the current visibility state of the page.
-    // Visibility states of iframes are the same as the parent document.
-    // @NOTE - This is to make sure that parentPageIsVisible is set even if
-    // event results in an Exception.
-    try {
-      win.addEventListener("visibilitychange", () => {
-        if (doc.visibilityState === "visible") {
-          updateParentPageVisibility();
-        } else {
-          updateParentPageVisibility(false);
-        }
-      });
-    } catch (err) {
-      updateParentPageVisibility();
-    }
   };
 
   /**

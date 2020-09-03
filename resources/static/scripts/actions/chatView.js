@@ -268,6 +268,7 @@ define("actions/chatView", [
         fetchMessagesXhr.abort();
         fetchMessagesXhr = null;
       }
+
       _updatePollingInterval();
       fetchMessages();
     }
@@ -318,8 +319,16 @@ define("actions/chatView", [
    */
   const _updatePollingInterval = () => {
     const {
-      chatView: {pollingInterval: currentPollingInterval, pollingStrategy}
+      chatView: {pollingInterval: currentPollingInterval, pollingStrategy},
+      appState: {liteSdkConfig}
     } = store.getState();
+    const isLiteSdk = Object.keys(liteSdkConfig).length;
+
+    // Use default polling interval and strategy for usual (non lite-sdk) use-cases.
+    // Poller optimization current applies only to Lite SDK.
+    if (!isLiteSdk) {
+      return;
+    }
 
     // If current polling strategy is conservative. Exponential increase
     // the polling interval till 60
