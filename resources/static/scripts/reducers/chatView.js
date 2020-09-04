@@ -300,7 +300,7 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
         // User input should be disabled for preissues.
-        const userInputShouldBeDisabled = action.issueDetails.issueType === ISSUE_TYPE.PRE_ISSUE;
+        const userInputShouldBeDisabled = action.issueType === ISSUE_TYPE.PRE_ISSUE;
         // If the current input type is the default one, reset the value.
         const defaultInputValue = isInputTypeDefault(state)
           ? ""

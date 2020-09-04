@@ -26,10 +26,20 @@ const createPreissueRequest = () => {
  * @param {String} issueDetails.issueType
  * @returns {Object} - Action
  */
-const createPreissueSuccess = (issueDetails) => {
+const createPreissueSuccess = ({
+  activeIssueId,
+  internalIssueId,
+  issueType,
+  userIdentifier,
+  issueExists
+}) => {
   return {
     type: ACTION_TYPES.CREATE_PREISSUE_SUCCESS,
-    issueDetails
+    activeIssueId,
+    internalIssueId,
+    issueType,
+    userIdentifier,
+    issueExists
   };
 };
 

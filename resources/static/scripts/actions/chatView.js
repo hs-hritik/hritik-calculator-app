@@ -2532,7 +2532,16 @@ define("actions/chatView", [
       const state = getState();
       const xhrData = _getPreparedPreIssueData(state);
       const {
-        appState: {domain, liteSdkConfig, isPushTokenSynced},
+        appState: {
+          domain,
+          liteSdkConfig,
+          isPushTokenSynced,
+          userId,
+          phoneNumber,
+          userEmail,
+          anonUserIdentifier,
+          issueExists
+        },
         ui: {
           text: {networkError, retryBtn}
         }
@@ -2562,13 +2571,22 @@ define("actions/chatView", [
             return;
           }
 
-          const issueDetails = {
+          const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
+            userId,
+            phoneNumber,
+            userEmail,
+            anonUserIdentifier
+          });
+          const actionData = {
             activeIssueId: response.id,
             internalIssueId: response.internal_id,
-            issueType: response.type
+            issueType: response.type,
+            userIdentifier: uniqueUserIdentifier,
+            issueExists
           };
 
-          dispatch(chatViewActionCreators.createPreissueSuccess(issueDetails));
+          dispatch(chatViewActionCreators.createPreissueSuccess(actionData));
+
           startPollingForMessages();
           _trackFirstMessage(response.messages);
         },

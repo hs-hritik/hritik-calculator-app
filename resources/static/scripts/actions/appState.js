@@ -197,9 +197,12 @@ define("actions/appState", [
       config = lsHelpers.get(LS_KEYS.CONFIG, true),
       respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true);
     let lastConfigFetchTs = null;
+    let issueExistsDataIsStaleInLocalStorage = null;
 
     if (config && config[uniqueUserIdentifier]) {
       lastConfigFetchTs = config[uniqueUserIdentifier].lastConfigFetchTs;
+      issueExistsDataIsStaleInLocalStorage =
+        config[uniqueUserIdentifier].issueExistsDataIsStaleInLocalStorage;
     }
 
     store.dispatch({
@@ -211,7 +214,8 @@ define("actions/appState", [
         widgetShouldAutoOpen,
         pfiValue,
         lastConfigFetchTs,
-        respectPfi
+        respectPfi,
+        issueExistsDataIsStaleInLocalStorage
       }
     });
   };
@@ -465,7 +469,8 @@ define("actions/appState", [
     lastConfigFetchTs,
     currentTime,
     respectPfi,
-    configFromLs
+    configFromLs,
+    issueExistsDataIsStaleInLocalStorage
   }) => {
     // The PFI session gets expired in the following case
     // 1. Debug mode is enabled through Helpshift API which means not respecting the PFI value
@@ -476,7 +481,11 @@ define("actions/appState", [
       !pfiValue ||
       (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime);
 
-    return pfiSessionIsExpired || (!pfiSessionIsExpired && !configFromLs);
+    return (
+      !(issueExistsDataIsStaleInLocalStorage === false) ||
+      pfiSessionIsExpired ||
+      (!pfiSessionIsExpired && !configFromLs)
+    );
   };
 
   /**
@@ -533,7 +542,13 @@ define("actions/appState", [
   const _onConfigSuccess = ({response, trigger, helpshiftConfig, currentTime, updateLs}) => {
     const {dispatch, getState} = store;
     const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
-    const uniqueUserIdentifier = _getUniqueUserIdentifier({
+    // Unique user identifier is needed to store the config respective to every person
+    // who login. The user can log in with the userId, email, phone number, and the
+    // combination of the identifier. Multiple users can have the same email, phone
+    // number. As the data of the same user is stored multiple times if the user login with
+    // different identifier. This is not the ideal solution. We need the same mechanism
+    // as the backend to identify the user.
+    const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
       userId,
       phoneNumber,
       userEmail,
@@ -640,7 +655,7 @@ define("actions/appState", [
       // Rehydrate pfi and last config fetch timestamp from the local storage
       // This is done to check if the config should fetch from backend
       const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
-      const uniqueUserIdentifier = _getUniqueUserIdentifier({
+      const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
         userId,
         phoneNumber,
         userEmail,
@@ -649,6 +664,7 @@ define("actions/appState", [
 
       rehydrateState(uniqueUserIdentifier);
 
+      const {issueExistsDataIsStaleInLocalStorage} = getState().appState;
       const {pfiValue, lastConfigFetchTs, respectPfi} = getState().appState;
       const configFromLs = _getConfigFromLs(uniqueUserIdentifier);
       const fetchConfigFromBackend = _shouldFetchConfig({
@@ -656,7 +672,8 @@ define("actions/appState", [
         lastConfigFetchTs,
         currentTime,
         respectPfi,
-        configFromLs
+        configFromLs,
+        issueExistsDataIsStaleInLocalStorage
       });
 
       if (fetchConfigFromBackend) {
@@ -668,42 +685,6 @@ define("actions/appState", [
   };
 
   /**
-   * Returns the concatenation of the identifiers
-   * Unique user identifier is needed to store the config respective to every person
-   * who login. The user can log in with the userId, email, phone number, and the
-   * combination of the identifier. Multiple users can have the same email, phone
-   * number. As the data of the same user is stored multiple times if the user login with
-   * different identifier. This is not the ideal solution. We need the same mechanism
-   * as the backend to identify the user.
-   * @param {String} userId - Current user Id
-   * @param {number} phoneNumber - Current user phone number
-   * @param {String} userEmail - Current user email
-   * @param {String} anonUserIdentifier - Current user id
-   * @returns {String} - A unique identifier
-   */
-  const _getUniqueUserIdentifier = ({userId, phoneNumber, userEmail, anonUserIdentifier}) => {
-    // @TODO : COGS Optimization - Generate identifier by using hashing technique.
-    // Ex - MD5 hash, SHA256 etc
-    let identifier = "";
-
-    if (!userId && !phoneNumber && !userEmail) {
-      return anonUserIdentifier;
-    }
-
-    if (userId) {
-      identifier += userId;
-    }
-    if (phoneNumber) {
-      identifier += phoneNumber;
-    }
-    if (userEmail) {
-      identifier += userEmail;
-    }
-
-    return identifier;
-  };
-
-  /**
    * Action to set config object
    * @param {Object} data
    * @param {string} data.trigger - The source that triggered setting the config
@@ -712,7 +693,7 @@ define("actions/appState", [
   const setConfig = ({trigger, helpshiftConfig}) => {
     return (dispatch, getState) => {
       const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
-      const uniqueUserIdentifier = _getUniqueUserIdentifier({
+      const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
         userId,
         phoneNumber,
         userEmail,

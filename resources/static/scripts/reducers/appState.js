@@ -170,7 +170,9 @@ define("reducers/appState", [
     pfiValue: 0,
     lastConfigFetchTs: 0,
     respectPfi: true,
-    isPushTokenSynced: false
+    isPushTokenSynced: false,
+    // True, when issueExists is false in config and the issue is created
+    issueExistsDataIsStaleInLocalStorage: false
   };
 
   /**
@@ -206,6 +208,11 @@ define("reducers/appState", [
         }
         if (action.data.lastConfigFetchTs) {
           updateObj.lastConfigFetchTs = {$set: action.data.lastConfigFetchTs};
+        }
+        if (action.data.issueExistsDataIsStaleInLocalStorage) {
+          updateObj.issueExistsDataIsStaleInLocalStorage = {
+            $set: action.data.issueExistsDataIsStaleInLocalStorage
+          };
         }
         if (action.data.suggestedFaqReadTracked) {
           updateObj.analytics.suggestedFaqReadTracked = {
@@ -389,7 +396,7 @@ define("reducers/appState", [
         });
 
       case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
-        const {activeIssueId, internalIssueId, issueType} = action.issueDetails;
+        const {activeIssueId, internalIssueId, issueType} = action;
 
         return update(state, {
           conversationStarted: {$set: true},

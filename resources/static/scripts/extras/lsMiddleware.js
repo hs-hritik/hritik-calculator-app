@@ -58,16 +58,20 @@ define("extras/lsMiddleware", [
   const _getUpdatedConfig = (action) => {
     let configObject = lsHelpers.get(LS_KEYS.CONFIG, true);
 
+    // The value is stale when the issue exists is true and
+    // create pre-issue is succeded or the value is not set
     if (configObject) {
       configObject[action.uniqueUserIdentifier] = {
         config: action.config,
-        lastConfigFetchTs: action.currentTime
+        lastConfigFetchTs: action.currentTime,
+        issueExistsDataIsStaleInLocalStorage: false
       };
     } else {
       configObject = {
         [action.uniqueUserIdentifier]: {
           config: action.config,
-          lastConfigFetchTs: action.currentTime
+          lastConfigFetchTs: action.currentTime,
+          issueExistsDataIsStaleInLocalStorage: false
         }
       };
     }
@@ -104,6 +108,15 @@ define("extras/lsMiddleware", [
 
       case ACTION_TYPES.CREATE_PREISSUE_SUCCESS:
         throttledSetLastActivityTime();
+
+        const {userIdentifier, issueExists} = action;
+
+        if (!issueExists) {
+          const configMap = lsHelpers.get(LS_KEYS.CONFIG, true);
+          configMap[userIdentifier].issueExistsDataIsStaleInLocalStorage = !issueExists;
+
+          lsHelpers.set(LS_KEYS.CONFIG, configMap);
+        }
         break;
 
       case ACTION_TYPES.SET_PROACTIVE_CHAT_RULES:
