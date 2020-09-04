@@ -106,6 +106,7 @@
     SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
     SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
     SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
+    SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -152,7 +153,8 @@
     ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
     ON_UI_CONFIG_CHANGE: "onUiConfigChange",
     ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
-    ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser"
+    ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser",
+    SAFE_AREA_COLOR: "safeAreaColor"
   };
 
   /**
@@ -164,7 +166,8 @@
     SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA,
     SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
     SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC,
-    SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER
+    SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER,
+    SUPPORTED_EVENTS.SAFE_AREA_COLOR
   ];
 
   // Errors message strings
@@ -1344,6 +1347,10 @@
 
           case EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER:
             callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_SAFE_AREA_COLOR:
+            callApiEventHandler(SUPPORTED_EVENTS.SAFE_AREA_COLOR, data);
             break;
         }
       },

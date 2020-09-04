@@ -387,6 +387,25 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * In case of brezel-less devices, lite sdk applies a safe
+   * area (which is nothing but an empty ui component having
+   * color similar to chat footer), therefore webchat needs to
+   * send the active footer color.
+   *
+   * @param {Object} data - Event data
+   * @param {String} data.safeAreaColor - Hex code color to be applied in the safe area
+   */
+  const sendSafeAreaColorToLiteSdk = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_SAFE_AREA_COLOR,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -411,6 +430,7 @@ define("actions/postSdkMessage", [
     onUiConfigChange,
     onPushTokenSync,
     onUserAuthFailure,
-    onRemoveAnonymousUser
+    onRemoveAnonymousUser,
+    sendSafeAreaColorToLiteSdk
   };
 });

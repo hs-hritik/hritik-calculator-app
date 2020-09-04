@@ -32,6 +32,7 @@ define("constants/eventTypes", function() {
     SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
     SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
     SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
+    SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",

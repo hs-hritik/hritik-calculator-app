@@ -73,7 +73,8 @@ define("actions/appState", [
       INITIAL_SECONDARY_BG_COLOR,
       INITIAL_SECONDARY_TEXT_COLOR,
       BASE_FOCUS_RING_COLOR,
-      CHAT_WIDGET_BG_COLOR
+      CHAT_WIDGET_BG_COLOR,
+      FORM_BG_COLOR
     },
     SHADES
   } = UI_CONFIG_CONSTANTS;
@@ -389,11 +390,24 @@ define("actions/appState", [
       // the out of business hours case, we need to start the conversation on the
       // chat view.
       const {
-        appState: {issueExists, appResetTrigger, minimized}
+        appState: {issueExists, appResetTrigger, minimized, liteSdkConfig},
+        ui: {
+          uiConfig: {
+            [FORM_BG_COLOR]: {value: formBgColor}
+          }
+        }
       } = getState();
       const widgetIsOpen = !minimized;
 
       if (!issueExists) {
+        if (liteSdkConfig.os) {
+          dispatch(
+            postSdkMessage.sendSafeAreaColorToLiteSdk({
+              safeAreaColor: colorUtils.convertThreeToSixCharHexColorCode(formBgColor)
+            })
+          );
+        }
+
         dispatch(
           postSdkMessage.conversationStatusEvent({
             open: false,

@@ -33,7 +33,9 @@ define("actions/chatView", [
   "utils/browser",
   "utils/upload",
   "extras/accessibility",
-  "utils/debounceAction"
+  "utils/debounceAction",
+  "constants/uiConfig",
+  "utils/color"
 ], function(
   store,
   ACTION_TYPES,
@@ -63,7 +65,9 @@ define("actions/chatView", [
   browserUtils,
   upload,
   ax,
-  debounceAction
+  debounceAction,
+  UI_CONFIG_CONSTANTS,
+  colorUtils
 ) {
   "use strict";
 
@@ -86,7 +90,8 @@ define("actions/chatView", [
     ISSUE_REOPEN_ERR_STATUS_CODE,
     POLLING_STRATEGY_TYPES,
     CONSERVATIVE_POLLING_BASE_MULTIPLIER,
-    CONSERVATIVE_POLLING_INTERVAL
+    CONSERVATIVE_POLLING_INTERVAL,
+    USER_INPUT_TYPES
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo, getPreparedLiteSdkDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -111,6 +116,10 @@ define("actions/chatView", [
 
   const RESOLUTION_QUESTION_EXPIRY_MESSAGE = "resolution question timer expired";
 
+  const {
+    FLATTENED_UI_CONFIG: {CHAT_WIDGET_BG_COLOR, FORM_BG_COLOR}
+  } = UI_CONFIG_CONSTANTS;
+
   let systemTypingTimerId = null,
     pollingEnabled = false,
     createPreissueXhr = null,
@@ -122,7 +131,6 @@ define("actions/chatView", [
     agentActivitySubscribed = false,
     emptyPollerCount = 0,
     markAsSeenXhrs = [];
-
   /**
    * Action to update reply text.
    * @param {String} value - new reply value.
@@ -1154,6 +1162,10 @@ define("actions/chatView", [
 
     let conversationEndEventShouldTrigger = false;
 
+    if (Object.keys(liteSdkConfig).length) {
+      dispatch(_sendSafeAreaColorToLiteSdk());
+    }
+
     // Do not handle active state as we will wait for user input/bot steps
     if (issueState === ISSUE_STATE.ACTIVE) {
       // Sync push token with backend if liteSdk sends it and
@@ -1226,6 +1238,48 @@ define("actions/chatView", [
         dispatch(postSdkMessage.conversationEndEvent());
       }
     }
+  };
+
+  /**
+   * Send safe area color to lite sdk
+   * In case of brezel-less devices, lite sdk applies a safe
+   * area (which is nothing but an empty ui component having
+   * color similar to chat footer), therefore webchat needs to
+   * send the active footer color.
+   */
+  const _sendSafeAreaColorToLiteSdk = () => {
+    return (dispatch, getState) => {
+      const {
+        chatView: {userInput},
+        ui: {
+          uiConfig: {
+            [FORM_BG_COLOR]: {value: formBgColor},
+            [CHAT_WIDGET_BG_COLOR]: {value: chatWidgetBgColor}
+          }
+        }
+      } = getState();
+      let safeAreaColor = chatWidgetBgColor;
+
+      switch (userInput.type) {
+        case USER_INPUT_TYPES.DEFAULT_INPUT:
+          safeAreaColor = formBgColor;
+          break;
+
+        case USER_INPUT_TYPES.PILL_SELECT:
+          safeAreaColor = chatWidgetBgColor;
+          break;
+
+        case USER_INPUT_TYPES.LIST_PICKER:
+          safeAreaColor = formBgColor;
+          break;
+      }
+
+      dispatch(
+        postSdkMessage.sendSafeAreaColorToLiteSdk({
+          safeAreaColor: colorUtils.convertThreeToSixCharHexColorCode(safeAreaColor)
+        })
+      );
+    };
   };
 
   /**
