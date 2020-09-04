@@ -87,8 +87,6 @@ define("actions/appState", [
 
   const {LS_KEYS} = lsHelpers;
 
-  const THREE_CHAR_HEX_CODE_LENGTH = 4;
-
   let getConfigXhr = null;
 
   /**
@@ -578,14 +576,8 @@ define("actions/appState", [
     // Send the ui config change event to the client
     store.dispatch(
       postSdkMessage.onUiConfigChange({
-        primaryColor:
-          primaryColor.length === THREE_CHAR_HEX_CODE_LENGTH
-            ? colorUtils.convertThreeToSixCharHexColorCode(primaryColor)
-            : primaryColor,
-        chatWidgetBgColor:
-          chatWidgetBgColor.length === THREE_CHAR_HEX_CODE_LENGTH
-            ? colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
-            : chatWidgetBgColor
+        primaryColor: colorUtils.convertThreeToSixCharHexColorCode(primaryColor),
+        chatWidgetBgColor: colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
       })
     );
 
