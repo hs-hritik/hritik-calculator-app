@@ -578,7 +578,7 @@ define("actions/appState", [
     });
 
     const {
-      appState: {featuresEnabled},
+      appState: {featuresEnabled, liteSdkConfig},
       ui: {
         uiConfig: {
           [HEADER_BG_COLOR]: {value: primaryColor},
@@ -619,7 +619,7 @@ define("actions/appState", [
         analyticsHelpers.track(EVENT.WIDGET_LOAD);
       }
 
-      if (featuresEnabled.audioNotifications) {
+      if (featuresEnabled.audioNotifications && !Object.keys(liteSdkConfig).length) {
         audioHelpers.init();
       } else {
         // Send the config event loaded back to the client
