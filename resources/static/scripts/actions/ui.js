@@ -8,20 +8,6 @@ define("actions/ui", ["constants/actionTypes", "helpers/ui"], function(ACTION_TY
   "use strict";
 
   /**
-   * Action to set UI configuration
-   * @param {Object} hsUiConfig - helpshift UI config
-   * @returns {Object} - Action
-   */
-  const setUiConfig = (hsUiConfig) => {
-    const validUiConfig = uiHelpers.getValidUiConfig(hsUiConfig);
-
-    return {
-      type: ACTION_TYPES.SET_UI_CONFIG,
-      uiConfig: validUiConfig
-    };
-  };
-
-  /**
    * Action to update UI configuration
    * @param {Object} hsUiConfig - helpshift UI config
    * @returns {Object} - Action
@@ -48,7 +34,6 @@ define("actions/ui", ["constants/actionTypes", "helpers/ui"], function(ACTION_TY
   };
 
   return {
-    setUiConfig,
     updateUiConfig,
     setDeveloperUiConfig
   };

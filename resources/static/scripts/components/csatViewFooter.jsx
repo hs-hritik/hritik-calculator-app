@@ -6,8 +6,9 @@
 
 define("components/csatViewFooter", [
   "gunpowder/utils/classes",
-  "constants/accessibility"
-], function(classes, axConstants) {
+  "constants/accessibility",
+  "utils/browser"
+], function(classes, axConstants, browserUtils) {
   "use strict";
 
   const {METALIST_ITEMS} = axConstants;
@@ -20,10 +21,12 @@ define("components/csatViewFooter", [
     onSubmitCsat,
     setAxActiveIndex
   }) => {
+    const isMobile = browserUtils.isMobile();
     const btnClasses = classes("hs-button", "hs-footer__btn");
     const btnDisabled = rating === 0 || csatSaveInProgress;
     const footerClasses = classes("hs-footer", "hs-footer--center-items", {
-      "hs-footer--full-screen": allowFullScreen
+      "hs-footer--full-screen": allowFullScreen,
+      "hs-footer--mobile": isMobile
     });
 
     const _setAxActiveIndex = setAxActiveIndex.bind(null, {

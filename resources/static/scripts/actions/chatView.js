@@ -78,16 +78,18 @@ define("actions/chatView", [
 
   const {
     ACTIVE_FOOTER,
-    MESSAGES_POLLING_TIMEOUT,
     MESSAGES_FORCE_POLLING_TIMEOUT,
     CURSOR_TYPES,
     USER_REDACTION_ERR_MSG,
     USER_REDACTION_ERR_STATUS_CODE,
     INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
-    ISSUE_REOPEN_ERR_STATUS_CODE
+    ISSUE_REOPEN_ERR_STATUS_CODE,
+    POLLING_STRATEGY_TYPES,
+    CONSERVATIVE_POLLING_BASE_MULTIPLIER,
+    CONSERVATIVE_POLLING_INTERVAL
   } = CHAT_VIEW_CONSTANTS;
 
-  const {getPreparedDeviceInfo} = prepareProcessXhrDataHelpers;
+  const {getPreparedDeviceInfo, getPreparedLiteSdkDeviceInfo} = prepareProcessXhrDataHelpers;
 
   const {FILE_UPLOAD_ERRORS, TYPE: ERROR_TYPES, RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
 
@@ -252,6 +254,9 @@ define("actions/chatView", [
     }
 
     if (lastFetchCompleted) {
+      // After completing the last poller fetch. Update polling interval
+      // condiionally and start fetching again.
+      _updatePollingInterval();
       fetchMessages();
       return;
     }
@@ -263,7 +268,88 @@ define("actions/chatView", [
         fetchMessagesXhr.abort();
         fetchMessagesXhr = null;
       }
+
+      _updatePollingInterval();
       fetchMessages();
+    }
+  };
+
+  /**
+   * Handle parent page visibility change
+   * @param {Object} data
+   * @param {boolean} data.issueExists - True, if issue exists
+   * @param {String} data.issueState - State of issue
+   * @param {boolean} data.widgetIsMinimized - Messenger minimized state
+   * @param {boolean} data.parentPageIsVisible - False, when window is minimized or
+   * focus is on another tab
+   * @param {String} data.pollingStrategy - Current polling strategy
+   */
+  const handleParentPageVisibilityChange = (data) => {
+    return (dispatch) => {
+      const {
+        widgetIsMinimized,
+        parentPageIsVisible,
+        pollingStrategy: currentPollingStrategy
+      } = data;
+
+      dispatch(chatViewActionCreators.pageVisibilityChange(data));
+
+      // If polling is enabled and polling strategy gets updated.
+      // Stop polling & start pollig with new polling interval and strategy
+      if (pollingEnabled) {
+        if (
+          chatViewHelpers.shouldPollerRestart({
+            widgetIsMinimized,
+            parentPageIsVisible,
+            pollingStrategy: currentPollingStrategy
+          })
+        ) {
+          stopPollingForMessages();
+          startPollingForMessages();
+        }
+      }
+    };
+  };
+
+  /**
+   * Set exponential backoff interval when the poller strategy is conservative
+   * Note : Exponential backoff interval means multiplicatively
+   * decrease the rate of polling call until find an acceptable rate.
+   * For conservative polling - 0, 5, 10, 20, 60, 60, 60...
+   */
+  const _updatePollingInterval = () => {
+    const {
+      chatView: {pollingInterval: currentPollingInterval, pollingStrategy},
+      appState: {liteSdkConfig}
+    } = store.getState();
+    const isLiteSdk = Object.keys(liteSdkConfig).length;
+
+    // Use default polling interval and strategy for usual (non lite-sdk) use-cases.
+    // Poller optimization current applies only to Lite SDK.
+    if (!isLiteSdk) {
+      return;
+    }
+
+    // If current polling strategy is conservative. Exponential increase
+    // the polling interval till 60
+    if (pollingStrategy === POLLING_STRATEGY_TYPES.CONSERVATIVE) {
+      let newPollingInterval = CONSERVATIVE_POLLING_INTERVAL.MAXIMUM;
+
+      if (currentPollingInterval === CONSERVATIVE_POLLING_INTERVAL.MINIMUM) {
+        newPollingInterval = CONSERVATIVE_POLLING_BASE_MULTIPLIER * 2;
+      } else if (currentPollingInterval * 2 < CONSERVATIVE_POLLING_INTERVAL.MAXIMUM) {
+        newPollingInterval = currentPollingInterval * 2;
+      }
+
+      // Clear the current polling interval and start fetching again with new polling interval
+      window.clearInterval(fetchMessagesTimer);
+      fetchMessagesTimer = window.setInterval(_restartFetchMessages, newPollingInterval);
+      store.dispatch(
+        chatViewActionCreators.updatePollingData({
+          pollingInterval: newPollingInterval,
+          pollingStrategy: POLLING_STRATEGY_TYPES.CONSERVATIVE
+        })
+      );
     }
   };
 
@@ -296,7 +382,11 @@ define("actions/chatView", [
     pollingEnabled = true;
     lastFetchCompleted = true;
     fetchMessages();
-    fetchMessagesTimer = window.setInterval(_restartFetchMessages, MESSAGES_POLLING_TIMEOUT);
+    const {
+      chatView: {pollingInterval}
+    } = store.getState();
+
+    fetchMessagesTimer = window.setInterval(_restartFetchMessages, pollingInterval);
   };
 
   /**
@@ -764,12 +854,15 @@ define("actions/chatView", [
   const getLinearMessages = (issues, config) => {
     const finalMessages = [];
     const {hasOlderMsgs} = config;
+    const {
+      chatView: {localGreetingMessageId}
+    } = store.getState();
 
     let previousGroupId = config.lastGroupId;
     let redactionCount = 0;
 
     issues.forEach((issue) => {
-      const currentGroupId = issue.preissue_id;
+      const currentGroupId = issue.preissue_id || issue.issue_id;
 
       // Count the number of redacted issues in succession.
       // Essentially, we want to show "5 Conversations Redacted"
@@ -784,7 +877,7 @@ define("actions/chatView", [
       //
       // Since issues are received with the latest issue at the top and the
       // oldest at the last, we create the right rendering order by using unshift
-      if (previousGroupId && currentGroupId !== previousGroupId) {
+      if (!localGreetingMessageId && previousGroupId && currentGroupId !== previousGroupId) {
         finalMessages.unshift(_getIssueDateSeparator(issue.created_at));
       }
 
@@ -982,7 +1075,7 @@ define("actions/chatView", [
     let messages = [];
 
     messages = createLinearMessageList(issues, {
-      lastIssueId: null,
+      lastGroupId: null,
       conversationHistoryEnabled: conversationHistoryEnabled && !fullPrivacyEnabled,
       hasOlderMsgs
     });
@@ -1052,7 +1145,9 @@ define("actions/chatView", [
         issueType,
         issueState,
         featuresEnabled: {resolutionQuestion: resolutionQuestionEnabled},
-        postChatFeatures: {resolutionQuestionCompleted}
+        postChatFeatures: {resolutionQuestionCompleted},
+        liteSdkConfig,
+        isPushTokenSynced
       },
       chatView: {issueCursor}
     } = getState();
@@ -1061,6 +1156,17 @@ define("actions/chatView", [
 
     // Do not handle active state as we will wait for user input/bot steps
     if (issueState === ISSUE_STATE.ACTIVE) {
+      // Sync push token with backend if liteSdk sends it and
+      // the issue is ongoing
+      if (liteSdkConfig.pushToken && !isPushTokenSynced) {
+        xhrHelpers.syncPushToken();
+
+        dispatch({
+          type: ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS,
+          payload: true
+        });
+      }
+
       return;
     }
 
@@ -1109,7 +1215,7 @@ define("actions/chatView", [
         // If the resolution question is disabled and not completed and the issue is resolved,
         // accept the resolution question.
         if (!resolutionQuestionEnabled && !resolutionQuestionCompleted) {
-          dispatch(acceptResolutionQuestion());
+          dispatch(acceptResolutionQuestion(true));
         }
         dispatch(postSdkMessage.conversationResolvedEvent());
       } else if (issueState === ISSUE_STATE.REJECTED) {
@@ -1784,7 +1890,7 @@ define("actions/chatView", [
         } catch (ex) {
           // @TODO - Ideally, this exception should be logged to server.
           // eslint-disable-next-line
-            console.error ("Something went wrong = ", ex);
+          console.error("Something went wrong = ", ex);
         }
       },
       onFailure: (request, statusCode) => {
@@ -2284,7 +2390,8 @@ define("actions/chatView", [
         userId,
         analytics,
         sdkConfigOptions: {initialUserMessage},
-        internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}}
+        internalHsConfigData: {voiceMeta: {deflectionContactFlowId = ""} = {}},
+        liteSdkConfig
       },
       chatView: {intents, userInput},
       ui: {
@@ -2293,8 +2400,12 @@ define("actions/chatView", [
     } = state;
 
     const meta = {
-      device_info: getPreparedDeviceInfo()
+      device_info: liteSdkConfig.metaData ? getPreparedLiteSdkDeviceInfo() : getPreparedDeviceInfo()
     };
+
+    if (liteSdkConfig && liteSdkConfig.os) {
+      meta.lite_sdk_os = liteSdkConfig.os;
+    }
 
     if (tags) {
       meta.custom_meta = {
@@ -2417,7 +2528,14 @@ define("actions/chatView", [
         appState: {
           domain,
           // initialUserMessage is used with the conversationStart event (check the success cb)
-          sdkConfigOptions: {initialUserMessage}
+          sdkConfigOptions: {initialUserMessage},
+          liteSdkConfig,
+          isPushTokenSynced,
+          userId,
+          phoneNumber,
+          userEmail,
+          anonUserIdentifier,
+          issueExists
         },
         ui: {
           text: {networkError, retryBtn}
@@ -2432,19 +2550,38 @@ define("actions/chatView", [
         headers: xhrHelpers.getCommonHeaders(),
         method: "POST",
         onSuccess: (response, xhrObj, statusCode) => {
+          // In case of liteSdk, sync the push token with the backend
+          if (liteSdkConfig.pushToken && !isPushTokenSynced) {
+            xhrHelpers.syncPushToken();
+
+            dispatch({
+              type: ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS,
+              payload: true
+            });
+          }
+
           // If pre-issue exists then just start the poller to fetch existing.
           if (statusCode === RESPONSE_STATUS_CODE.PRE_ISSUE_EXISTS) {
             startPollingForMessages();
             return;
           }
 
-          const issueDetails = {
+          const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
+            userId,
+            phoneNumber,
+            userEmail,
+            anonUserIdentifier
+          });
+          const actionData = {
             activeIssueId: response.id,
             internalIssueId: response.internal_id,
-            issueType: response.type
+            issueType: response.type,
+            userIdentifier: uniqueUserIdentifier,
+            issueExists
           };
 
-          dispatch(chatViewActionCreators.createPreissueSuccess(issueDetails));
+          dispatch(chatViewActionCreators.createPreissueSuccess(actionData));
+
           startPollingForMessages();
           _trackFirstMessage(response.messages);
           dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
@@ -2786,16 +2923,22 @@ define("actions/chatView", [
 
   /**
    * Action to accept resolution question
+   * @param {Boolean} autoAccept - If true, then we don't need to dispatch
+   * showPostIssueResolutionFooter action as we only auto accept resolution
+   * question when the issue is resolved and the feature is disabled as in
+   * this case we don't want to show issue resolution footer.
    * @returns {Function} - Action
    */
-  const acceptResolutionQuestion = () => {
+  const acceptResolutionQuestion = (autoAccept = false) => {
     return (dispatch) => {
       postUserMessage({
         msgBody: MESSAGE_BODY.SOLUTION_ACCEPTED,
         msgType: MESSAGE_TYPE.ACCEPTED,
         onSuccess: () => {
           dispatch(actionCreators.setResolutionQuestionCompleted(true));
-          dispatch(showPostIssueResolutionFooter());
+          if (!autoAccept) {
+            dispatch(showPostIssueResolutionFooter());
+          }
         }
       });
     };
@@ -3043,6 +3186,7 @@ define("actions/chatView", [
     loadIntentsModel,
     selectIntent,
     updateReplyTextAndSearchIntents,
-    handleActionClick
+    handleActionClick,
+    handleParentPageVisibilityChange
   };
 });

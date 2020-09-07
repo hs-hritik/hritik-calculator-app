@@ -8,12 +8,15 @@
 define("components/commons/viewHeader", [
   "gunpowder/utils/classes",
   "constants/avatar",
-  "components/commons/avatar"
-], function(classes, AVATAR_CONSTANTS, avatarEsm) {
+  "components/commons/avatar",
+  "utils/browser"
+], function(classes, AVATAR_CONSTANTS, avatarEsm, browserUtils) {
   "use strict";
   const Avatar = avatarEsm.default;
 
   const {FALLBACK_AVATAR_BASE64} = AVATAR_CONSTANTS;
+
+  const IS_MOBILE = browserUtils.isMobile();
 
   return createReactClass({
     displayName: "ViewHeader",
@@ -54,8 +57,18 @@ define("components/commons/viewHeader", [
     render() {
       const {showAvatar} = this.props;
       const headerClasses = classes("hs-header", {
-        "hs-header--with-avatar": showAvatar
+        "hs-header--with-avatar": showAvatar,
+        "hs-header--mobile": IS_MOBILE
       });
+
+      if (IS_MOBILE) {
+        return (
+          <div className={headerClasses}>
+            {this._renderCloseButton()}
+            {this._renderTitleAndAvatar()}
+          </div>
+        );
+      }
 
       return (
         <div className={headerClasses}>

@@ -163,7 +163,16 @@ define("reducers/appState", [
     expiryTimestamps: {
       resolutionQuestion: 0,
       csatBot: 0
-    }
+    },
+    // False, when minimizes the window or switches to another tab
+    parentPageIsVisible: true,
+    liteSdkConfig: {},
+    pfiValue: 0,
+    lastConfigFetchTs: 0,
+    respectPfi: true,
+    isPushTokenSynced: false,
+    // True, when issueExists is false in config and the issue is created
+    issueExistsDataIsStaleInLocalStorage: false
   };
 
   /**
@@ -189,6 +198,22 @@ define("reducers/appState", [
         };
         updateObj.analytics = {};
 
+        if (action.data.respectPfi === false) {
+          updateObj.respectPfi = {$set: false};
+        } else {
+          updateObj.respectPfi = {$set: true};
+        }
+        if (action.data.pfiValue || action.data.pfiValue === 0) {
+          updateObj.pfiValue = {$set: action.data.pfiValue};
+        }
+        if (action.data.lastConfigFetchTs) {
+          updateObj.lastConfigFetchTs = {$set: action.data.lastConfigFetchTs};
+        }
+        if (action.data.issueExistsDataIsStaleInLocalStorage) {
+          updateObj.issueExistsDataIsStaleInLocalStorage = {
+            $set: action.data.issueExistsDataIsStaleInLocalStorage
+          };
+        }
         if (action.data.suggestedFaqReadTracked) {
           updateObj.analytics.suggestedFaqReadTracked = {
             $set: action.data.suggestedFaqReadTracked
@@ -197,7 +222,7 @@ define("reducers/appState", [
 
         return update(state, updateObj);
 
-      case ACTION_TYPES.SET_WM_CONFIG:
+      case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {config} = action;
         const intentsAreEnabled = config.si.enabled;
         const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
@@ -222,7 +247,8 @@ define("reducers/appState", [
           issueExists: {$set: config.issue_exists},
           attachmentsWhitelist: {$set: attachmentsWhitelist},
           showHeaderAvatar: {$set: config.appearance.show_header_avatar},
-          appAvatarUrl: {$set: config.appearance.app_avatar}
+          appAvatarUrl: {$set: config.appearance.app_avatar},
+          browserIsMobile: {$set: action.browserIsMobile}
         };
 
         if (personalisedConversationIsEnabled) {
@@ -370,7 +396,7 @@ define("reducers/appState", [
         });
 
       case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
-        const {activeIssueId, internalIssueId, issueType} = action.issueDetails;
+        const {activeIssueId, internalIssueId, issueType} = action;
 
         return update(state, {
           conversationStarted: {$set: true},
@@ -416,11 +442,6 @@ define("reducers/appState", [
       case ACTION_TYPES.UPDATE_ISSUE_STATE:
         return update(state, {
           issueState: {$set: action.state}
-        });
-
-      case ACTION_TYPES.SET_MOBILE_INFO:
-        return update(state, {
-          browserIsMobile: {$set: action.browserIsMobile}
         });
 
       case ACTION_TYPES.SET_INITIAL_USER_MESSAGE:
@@ -550,6 +571,25 @@ define("reducers/appState", [
         }
 
         return update(state, userReplyRequestUpdateObj);
+
+      case ACTION_TYPES.PARENT_PAGE_IS_VISIBLE:
+        return update(state, {
+          parentPageIsVisible: {$set: action.parentPageIsVisible}
+        });
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        return update(state, {
+          liteSdkConfig: {
+            os: {$set: action.data.os},
+            metaData: {$set: action.data.metaData},
+            pushToken: {$set: action.data.pushToken}
+          }
+        });
+
+      case ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS:
+        return update(state, {
+          isPushTokenSynced: {$set: action.payload}
+        });
 
       default:
         return state;

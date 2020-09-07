@@ -15,7 +15,12 @@ define("helpers/chatView", [
 
   const {TYPE: MESSAGE_TYPE} = MESSAGE_CONSTANTS;
   const {ISSUE_STATE, XHR_ISSUE_STATE} = appStateConstants;
-  const {USER_INPUT_TYPES, PICKER_INPUT_THRESHOLD, OPTIONS_INPUT_TYPES} = chatViewConstants;
+  const {
+    USER_INPUT_TYPES,
+    PICKER_INPUT_THRESHOLD,
+    OPTIONS_INPUT_TYPES,
+    POLLING_STRATEGY_TYPES
+  } = chatViewConstants;
 
   // Input types for which validations are not required
   const NO_INPUT_VALIDATIONS_REQUIRED_TYPES = [
@@ -198,10 +203,37 @@ define("helpers/chatView", [
     }
   };
 
+  /**
+   * Poller should be restarted based on the following conditions.
+   * If there is a switch in stragtegy, i.e conservative to aggressive, vice versa
+   * + Widget Open:
+   *   - AGGRESSIVE Polling - When page is visible to user.
+   *   - CONSERVATIVE Polling - When page is not visible to user.
+   * + Widger Close:
+   *   - CONSERVATIVE Polling - This is when user closes chat screen.
+   *     Switch tab or minimise the browser.
+   * + For inactive issue, we don't poll.
+   * @param {Object} config -
+   * @param {boolean} config.widgetIsMinimized - Messenger minimized state
+   * @param {boolean} config.parentPageIsVisible - False, when window is minimized or
+   * focus is on another tab
+   * @param {String} config.pollingStrategy - Current polling strategy
+   */
+  const shouldPollerRestart = ({widgetIsMinimized, parentPageIsVisible, pollingStrategy}) => {
+    return (
+      ((widgetIsMinimized || !parentPageIsVisible) &&
+        pollingStrategy !== POLLING_STRATEGY_TYPES.CONSERVATIVE) ||
+      (parentPageIsVisible &&
+        !widgetIsMinimized &&
+        pollingStrategy !== POLLING_STRATEGY_TYPES.AGGRESSIVE)
+    );
+  };
+
   return {
     getProcessedUserInput,
     getPluralizedIssueType,
     validateUserInput,
-    getProcessedIssueState
+    getProcessedIssueState,
+    shouldPollerRestart
   };
 });

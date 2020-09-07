@@ -53,7 +53,7 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     LIST_PICKER: "list_picker"
   };
 
-  const MESSAGES_POLLING_TIMEOUT = 3000; // in milliseconds
+  const AGRESSIVE_POLLING_TIMEOUT = 3000; // in milliseconds
   // @TODO - Below time interval's value is open to discussion
   // 6500 seems too low according to new conditions
   const MESSAGES_FORCE_POLLING_TIMEOUT = 6500;
@@ -78,9 +78,23 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     ML: "ml"
   };
 
+  // AGGRESSIVE : Poll every 3 secs
+  // CONSERVATIVE : Poll with exponential backoff to 1 mins.
+  // Polling steps are 0, 10, 20, 40, 60, 60,..
+  const POLLING_STRATEGY_TYPES = {
+    AGGRESSIVE: "aggressive",
+    CONSERVATIVE: "conservative"
+  };
+
+  const CONSERVATIVE_POLLING_BASE_MULTIPLIER = 5000;
+  const CONSERVATIVE_POLLING_INTERVAL = {
+    MINIMUM: 0,
+    MAXIMUM: 60000
+  };
+
   return {
     ACTIVE_FOOTER,
-    MESSAGES_POLLING_TIMEOUT,
+    AGRESSIVE_POLLING_TIMEOUT,
     MESSAGES_FORCE_POLLING_TIMEOUT,
     USER_INPUT_TYPES,
     HTML_INPUT_TYPES,
@@ -97,6 +111,9 @@ define("constants/chatView", ["gunpowder/constants/widgets/dragIt"], function(dr
     INTENTS_MINIMUM_CHAR_FOR_SEARCH,
     MAX_LEAF_NODE_INTENT_RESULTS,
     MAX_PARENT_INTENT_RESULTS,
-    INTENTS_SEARCH_ALGO
+    INTENTS_SEARCH_ALGO,
+    POLLING_STRATEGY_TYPES,
+    CONSERVATIVE_POLLING_BASE_MULTIPLIER,
+    CONSERVATIVE_POLLING_INTERVAL
   };
 });

@@ -14,7 +14,8 @@ define("components/csatView", [
   "components/errors/nonBlockingError",
   "extras/accessibility",
   "constants/activeView",
-  "gunpowder/utils/classes"
+  "gunpowder/utils/classes",
+  "utils/browser"
 ], function(
   ViewHeader,
   CsatViewBody,
@@ -25,9 +26,12 @@ define("components/csatView", [
   NonBlockingError,
   ax,
   activeViewConstants,
-  classes
+  classes,
+  browserUtils
 ) {
   "use strict";
+
+  const IS_MOBILE = browserUtils.isMobile();
 
   const TEXT_PROP_TYPE = PropTypes.shape({
     csatBotRequestMsg: PropTypes.string.isRequired,
@@ -47,32 +51,77 @@ define("components/csatView", [
     onSubmitCsat,
     setAxActiveIndex,
     onUpdateStarRating
-  }) => (
-    <div className="hs-view__content">
-      <div className="hs-csat">
-        <CsatViewBody
-          csatBotRequestMsg={text.csatBotRequestMsg}
-          csatBotReviewPlaceholder={text.csatBotReviewPlaceholder}
-          rating={rating}
-          review={review}
-          csatSaveInProgress={csatSaveInProgress}
-          onStarClick={onStarClick}
-          onCsatReviewChange={onCsatReviewChange}
-          setAxActiveIndex={setAxActiveIndex}
-          onUpdateStarRating={onUpdateStarRating}
-        />
-        <BrandingContainer />
-        <CsatViewFooter
-          rating={rating}
-          csatSaveInProgress={csatSaveInProgress}
-          allowFullScreen={allowFullScreen}
-          submitBtnText={text.csatBotFormSubmitBtn}
-          onSubmitCsat={onSubmitCsat}
-          setAxActiveIndex={setAxActiveIndex}
-        />
+  }) => {
+    // In case of mobile browsers, the layout for csatView is
+    // <div>
+    //   <CsatViewBody>
+    //   <CsatViewFooter>
+    // </div>
+    // <BrandingContainer>
+    // This is because in case of mobile browsers, when a user clicks on the textarea to provide
+    // feeback, the virtual keybaord pops up and the CsatViewFooter gets hidden behind it.
+    // So to make it come into view, we have clubbed CsatViewBody and CsatViewFooter together and
+    // placed the branding container at the bottom
+    if (IS_MOBILE) {
+      return (
+        <div className="hs-view__content">
+          <div className="hs-csat">
+            <div>
+              <CsatViewBody
+                csatBotRequestMsg={text.csatBotRequestMsg}
+                csatBotReviewTitle={text.csatBotRequestMsg}
+                csatBotReviewPlaceholder={text.csatBotReviewPlaceholder}
+                rating={rating}
+                review={review}
+                csatSaveInProgress={csatSaveInProgress}
+                onStarClick={onStarClick}
+                onCsatReviewChange={onCsatReviewChange}
+                setAxActiveIndex={setAxActiveIndex}
+                onUpdateStarRating={onUpdateStarRating}
+              />
+              <CsatViewFooter
+                rating={rating}
+                csatSaveInProgress={csatSaveInProgress}
+                allowFullScreen={allowFullScreen}
+                submitBtnText={text.csatBotFormSubmitBtn}
+                onSubmitCsat={onSubmitCsat}
+                setAxActiveIndex={setAxActiveIndex}
+              />
+            </div>
+            <BrandingContainer />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="hs-view__content">
+        <div className="hs-csat">
+          <CsatViewBody
+            csatBotRequestMsg={text.csatBotRequestMsg}
+            csatBotReviewTitle={text.csatBotRequestMsg}
+            csatBotReviewPlaceholder={text.csatBotReviewPlaceholder}
+            rating={rating}
+            review={review}
+            csatSaveInProgress={csatSaveInProgress}
+            onStarClick={onStarClick}
+            onCsatReviewChange={onCsatReviewChange}
+            setAxActiveIndex={setAxActiveIndex}
+            onUpdateStarRating={onUpdateStarRating}
+          />
+          <BrandingContainer />
+          <CsatViewFooter
+            rating={rating}
+            csatSaveInProgress={csatSaveInProgress}
+            allowFullScreen={allowFullScreen}
+            submitBtnText={text.csatBotFormSubmitBtn}
+            onSubmitCsat={onSubmitCsat}
+            setAxActiveIndex={setAxActiveIndex}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   CsatViewContents.propTypes = {
     text: TEXT_PROP_TYPE,
@@ -215,7 +264,10 @@ define("components/csatView", [
 
     componentDidMount() {
       ax.setActiveView(activeViewConstants.CSAT);
-      ax.focus();
+
+      if (!IS_MOBILE) {
+        ax.focus();
+      }
     }
   });
 });

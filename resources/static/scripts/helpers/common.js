@@ -391,6 +391,36 @@ define("helpers/common", [
     return `${msgId}_cb_fsr`;
   };
 
+  /**
+   * Returns the concatenation of the identifiers
+   * @param {String} userId - Current user Id
+   * @param {number} phoneNumber - Current user phone number
+   * @param {String} userEmail - Current user email
+   * @param {String} anonUserIdentifier - Current user id
+   * @returns {String} - A unique identifier
+   */
+  const getUniqueUserIdentifier = ({userId, phoneNumber, userEmail, anonUserIdentifier}) => {
+    // @TODO : COGS Optimization - Generate identifier by using hashing technique.
+    // Ex - MD5 hash, SHA256 etc
+    let identifier = "";
+
+    if (!userId && !phoneNumber && !userEmail) {
+      return anonUserIdentifier;
+    }
+
+    if (userId) {
+      identifier += userId;
+    }
+    if (phoneNumber) {
+      identifier += phoneNumber;
+    }
+    if (userEmail) {
+      identifier += userEmail;
+    }
+
+    return identifier;
+  };
+
   return {
     isOutOfBusinessHours,
     isWidgetHiddenOutOfBusinessHours,
@@ -407,6 +437,7 @@ define("helpers/common", [
     isNumberValid,
     areMessagesSeen,
     getSelectorForElement,
-    getCbFaqSuggestionReadLsKey
+    getCbFaqSuggestionReadLsKey,
+    getUniqueUserIdentifier
   };
 });
