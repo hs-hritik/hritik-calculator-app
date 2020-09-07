@@ -219,20 +219,15 @@ define("reducers/ui", [
    * Return update object for given ui config
    * @param {Object} state - UI Store object
    * @param {Object} helpshiftConfig - The global client config object
-   * @param {Object} configObj - fetch config success respose
    * @returns {Object} - update ui object used to set in store
    */
-  const _getSetUiConfigUpdateObj = (state, helpshiftConfig, configObj) => {
+  const _getSetUiConfigUpdateObj = (state, helpshiftConfig) => {
     const uiConfig = _getUiConfig(state, helpshiftConfig);
     const validUiConfig = uiHelpers.getValidUiConfig(uiConfig);
     const storeUiConfig = state.uiConfig;
     const allowedUpdateKeys = ["key", "value"];
     let baseColor = storeUiConfig[BASE_COLOR].value;
-    const updateObj = {
-      [BASE_COLOR]: {
-        value: {$set: configObj.appearance.primary_color}
-      }
-    };
+    const updateObj = {};
 
     for (const key in validUiConfig) {
       if (validUiConfig.hasOwnProperty(key)) {
@@ -423,11 +418,19 @@ define("reducers/ui", [
     switch (action.type) {
       case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {config} = action;
+        const updatedConfig = update(state, {
+          uiConfig: {
+            [BASE_COLOR]: {
+              value: {$set: config.appearance.primary_color}
+            }
+          }
+        });
+
         /**
          * Set UI configuration in the state using the configuration set in the admin
          * dashboard and by the custom configuration passed with helpshiftConfig.
          */
-        const uiConfig = _getSetUiConfigUpdateObj(state, action.helpshiftConfig, config);
+        const uiConfig = _getSetUiConfigUpdateObj(updatedConfig, action.helpshiftConfig);
         const developerUiConfig = _getUiConfig(state, action.helpshiftConfig);
 
         return update(state, {
