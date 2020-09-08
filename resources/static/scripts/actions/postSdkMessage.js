@@ -298,6 +298,95 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to communicate the added data in the local storage
+   * @param {Object} data - Key value pair updated in the local storage
+   */
+  const onSetLocalStorageData = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA,
+        data,
+        parentPageOrigin: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
+  /**
+   * Post sdk event to communicate the removed data in the local storage
+   * @param {Object} data - Key value pair updated in the local storage
+   */
+  const onRemoveLocalStorageData = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA,
+        data,
+        parentPageOrigin: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
+  /**
+   * Post sdk event to communicate the ui config changes
+   * @param {Object} data - Payload data
+   * @param {string} data.primaryColor - Webchat widget primary color
+   * @param {string} data.chatWidgetBgColor - Chat widget background color
+   */
+  const onUiConfigChange = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
+  /**
+   * Post sdk event to communicate the push token sync data
+   * @param {object} data - Payload data
+   * @param {string} data.headers - Common headers required for firing an XHR in webchat
+   * @param {string} data.requestPayload - Request payload data required for firing an
+   * XHR in webchat
+   */
+  const onPushTokenSync = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
+  /**
+   * Post sdk event to communicate the reason for user auth failure
+   * @param {object} data - Payload data
+   * @param {string} data.type - Auth failure status code
+   * @param {string} data.message - Auth failure reason
+   */
+  const onUserAuthFailure = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
+  /**
+   * Post sdk event to communicate the removal of anonymous user
+   */
+  const onRemoveAnonymousUser = () => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -316,6 +405,12 @@ define("actions/postSdkMessage", [
     messageAddEvent,
     csatSubmitEvent,
     conversationStatusEvent,
-    focusLauncher
+    focusLauncher,
+    onSetLocalStorageData,
+    onRemoveLocalStorageData,
+    onUiConfigChange,
+    onPushTokenSync,
+    onUserAuthFailure,
+    onRemoveAnonymousUser
   };
 });

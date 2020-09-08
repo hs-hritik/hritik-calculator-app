@@ -9,8 +9,23 @@ define("helpers/xhr", [
   "constants/errors",
   "gunpowder/utils/object",
   "utils/browser",
-  "store"
-], function(actionTypes, errorConstants, objUtils, browserUtils, store) {
+  "store",
+  "constants/routes",
+  "gunpowder/utils/xhr",
+  "helpers/errors",
+  "actions/postSdkMessage",
+  "constants/actionTypes"
+], function(
+  actionTypes,
+  errorConstants,
+  objUtils,
+  browserUtils,
+  store,
+  routes,
+  xhr,
+  errorHelpers,
+  postSdkMessage
+) {
   "use strict";
 
   const API_VERSION_HEADER = "application/vnd+hsapi-v2+json";
@@ -20,7 +35,8 @@ define("helpers/xhr", [
     RESPONSE_STATUS_CODE: {
       NO_AUTH_TOKEN: NO_AUTH_RESPONSE,
       INVALID_USER_AUTH_TOKEN: INVALID_AUTH_RESPONSE
-    }
+    },
+    XHR_AUTO_RETRY: {BASE_TIMEOUT, TIMEOUT_MULTIPLIER, MAXIMUM_RETRY_COUNT}
   } = errorConstants;
 
   /**
@@ -181,6 +197,15 @@ define("helpers/xhr", [
       return;
     }
 
+    // Pass the user authentication failure response to parent site
+    // via postMessage API
+    store.dispatch(
+      postSdkMessage.onUserAuthFailure({
+        type: response.status,
+        message: response.responseText
+      })
+    );
+
     const {
       ui: {
         text: {errorMessage}
@@ -214,10 +239,62 @@ define("helpers/xhr", [
     }
   };
 
+  /**
+   * Function to handle auto retry for an xhr
+   * @param {object} response - On failure response
+   * @param {Function} xhrCallback - Callback firing the xhr on auto retry
+   * @param {Number} xhrTimeout - Time after which the xhr has to be fired
+   * @param {Number} retryCount - Current retry count
+   */
+  const handleXhrAutoRetry = ({response, xhrCallback, xhrTimeout, retryCount}) => {
+    if (errorHelpers.isServerSideError(response.status) && retryCount < MAXIMUM_RETRY_COUNT) {
+      const newRetryCount = retryCount + 1;
+      const newXhrTimeout = xhrTimeout * TIMEOUT_MULTIPLIER;
+
+      setTimeout(xhrCallback.bind(this, newXhrTimeout, newRetryCount), xhrTimeout);
+    }
+
+    handleAuthFailure(response);
+  };
+
+  /**
+   * This function syncs push token with the backend
+   * @param {Number} xhrTimeout - Time after which the xhr has to be fired
+   * @param {Number} retryCount - Current retry count
+   */
+  const syncPushToken = (xhrTimeout = BASE_TIMEOUT, retryCount = 0) => {
+    const {domain, liteSdkConfig} = store.getState().appState;
+    const headers = getCommonHeaders();
+
+    xhr({
+      route: routes.postPushToken(domain),
+      headers,
+      method: "POST",
+      data: getPreparedXhrData({
+        token: liteSdkConfig.pushToken
+      }),
+      onSuccess: (response) => {
+        store.dispatch(
+          postSdkMessage.onPushTokenSync({
+            token: response.token,
+            route: routes.postPushToken(domain),
+            method: "POST",
+            headers,
+            requestPayload: getPreparedXhrData()
+          })
+        );
+      },
+      onFailure: (response) => {
+        handleXhrAutoRetry({response, syncPushToken, xhrTimeout, retryCount});
+      }
+    });
+  };
+
   return {
     getCommonHeaders,
     getCommonHeadersForAxios,
     getPreparedXhrData,
-    handleAuthFailure
+    handleAuthFailure,
+    syncPushToken
   };
 });

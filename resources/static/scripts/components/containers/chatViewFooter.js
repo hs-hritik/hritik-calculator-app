@@ -45,7 +45,11 @@ define("components/containers/chatViewFooter", [
         online,
         browserIsMobile,
         attachmentsWhitelist,
-        featuresEnabled: {userAttachments: userAttachmentsEnabled, intents: intentsFeatureIsEnabled}
+        featuresEnabled: {
+          userAttachments: userAttachmentsEnabled,
+          intents: intentsFeatureIsEnabled
+        },
+        liteSdkConfig: {os}
       },
       chatView: {
         userInput,
@@ -105,7 +109,8 @@ define("components/containers/chatViewFooter", [
       browserIsMobile,
       intentsFeatureIsEnabled,
       issueType,
-      attachmentsWhitelist
+      attachmentsWhitelist,
+      liteSdkOs: os
     };
 
     if (intentsFeatureIsEnabled) {

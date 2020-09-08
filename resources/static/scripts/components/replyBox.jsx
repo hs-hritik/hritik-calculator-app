@@ -42,7 +42,9 @@ define("components/replyBox", [
       placeholder: PropTypes.string,
       dataLabel: PropTypes.string,
       onClick: PropTypes.func,
-      ariaLabel: PropTypes.string
+      ariaLabel: PropTypes.string,
+      shouldVirtualKeyboardRemainOpen: PropTypes.bool,
+      onReplyBoxFocusAfterReplySubmit: PropTypes.func
     },
 
     render() {
@@ -158,6 +160,11 @@ define("components/replyBox", [
       const browserIsNotMobile = !this.props.browserIsMobile;
       if ((messageIsAdded || widgetIsOpened) && browserIsNotMobile) {
         this._textAreaRef.focus();
+      }
+
+      if (this.props.shouldVirtualKeyboardRemainOpen) {
+        this._textAreaRef.focus();
+        this.props.onReplyBoxFocusAfterReplySubmit();
       }
     },
 

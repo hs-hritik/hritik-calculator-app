@@ -16,7 +16,7 @@
   };
 })();
 
-(function(doc, scriptId) {
+(function(doc, scriptId, errorCallback) {
   if (typeof window.Helpshift !== "function") {
     var hs = function() {
       hs.q.push(arguments);
@@ -44,12 +44,18 @@
 
     if (window.attachEvent) {
       js.attachEvent("onload", initializeHelpshift);
+      if (typeof errorCallback === "function") {
+        js.attachEvent("onerror", errorCallback);
+      }
     } else {
       js.addEventListener("load", initializeHelpshift, false);
+      if (typeof errorCallback === "function") {
+        js.addEventListener("error", errorCallback);
+      }
     }
 
     scriptNode.parentNode.insertBefore(js, scriptNode);
   } else {
     window.Helpshift("update");
   }
-})(document, "hs-chat");
+})(document, "hs-chat", errorCallback);

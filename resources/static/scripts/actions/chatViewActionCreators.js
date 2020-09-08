@@ -26,10 +26,20 @@ const createPreissueRequest = () => {
  * @param {String} issueDetails.issueType
  * @returns {Object} - Action
  */
-const createPreissueSuccess = (issueDetails) => {
+const createPreissueSuccess = ({
+  activeIssueId,
+  internalIssueId,
+  issueType,
+  userIdentifier,
+  issueExists
+}) => {
   return {
     type: ACTION_TYPES.CREATE_PREISSUE_SUCCESS,
-    issueDetails
+    activeIssueId,
+    internalIssueId,
+    issueType,
+    userIdentifier,
+    issueExists
   };
 };
 
@@ -162,6 +172,40 @@ const botMessageWithUserInput = ({userInput}) => {
   };
 };
 
+/**
+ * Action to update polling strategy
+ * @param {Object} data
+ * @param {boolean} data.issueExists - True, if issue exists
+ * @param {String} data.issueState - State of issue
+ * @param {boolean} data.widgetIsMinimized - Messenger minimized state
+ * @param {boolean} data.parentPageIsVisible - False, when window is minimized or
+ * focus is on another tab
+ * @param {String} data.pollingStrategy - Current polling strategy
+ */
+const pageVisibilityChange = (data) => {
+  return {
+    type: ACTION_TYPES.PAGE_VISIBILITY_CHANGE,
+    data
+  };
+};
+
+/**
+ * Action to update polling data
+ * @param {Object} data
+ * @param {Number} data.pollingInterval - Time interval to execute the poller call again
+ * @param {String} data.pollingStrategy - Updated polling strategy
+ * @returns {Object} - action
+ */
+const updatePollingData = (data) => {
+  const {pollingStrategy, pollingInterval} = data;
+
+  return {
+    type: ACTION_TYPES.UPDATE_POLLING_DATA,
+    pollingStrategy,
+    pollingInterval
+  };
+};
+
 export {
   createPreissueRequest,
   createPreissueSuccess,
@@ -173,5 +217,7 @@ export {
   botStart,
   botEnd,
   botMessageWithNoUserInput,
-  botMessageWithUserInput
+  botMessageWithUserInput,
+  pageVisibilityChange,
+  updatePollingData
 };
