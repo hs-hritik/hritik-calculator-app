@@ -17,7 +17,7 @@
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.57.0";
+    PATH = "/html/index.html?v=2.57.2";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -460,6 +460,7 @@
    */
   const createLauncherIframe = () => {
     const iframe = doc.createElement("iframe");
+    iframe.setAttribute("role", "none");
     setStyle(iframe, LAUNCHER_IFRAME_STYLES);
 
     // Update z-index of launcher if it was passed with helpshfitConfig
@@ -551,6 +552,7 @@
    */
   const createWebSdkIframe = () => {
     const iframe = doc.createElement("iframe");
+    iframe.setAttribute("role", "none");
     iframe.id = "hs-web-sdk-iframe";
     iframe.src = WEB_SDK_URL;
     setStyle(iframe, {
