@@ -45,7 +45,53 @@ define("helpers/prepareProcessXhrData", ["store", "uaParser"], function(store, U
     return result;
   };
 
+  /**
+   * Prepares xhr data with lite sdk device information
+   * @returns {Object} - Object containing prepared lite sdk device info data
+   */
+  const getPreparedLiteSdkDeviceInfo = () => {
+    const {
+      appState: {
+        liteSdkConfig: {metaData},
+        fullPrivacyEnabled
+      }
+    } = store.getState();
+
+    const result = {
+      "application-version": metaData.appVersion,
+      "application-name": metaData.appName,
+      "application-identifier": metaData.appIdentifier,
+      "library-version": metaData.liteSdkVersion,
+      "device-model": metaData.deviceModel,
+      "battery-level": metaData.batteryLevel,
+      "battery-status": metaData.batteryStatus,
+      "disk-space": {
+        "total-space-phone": metaData.diskSpace,
+        "free-space-phone": metaData.freeSpace
+      },
+      "os-version": metaData.osVersion,
+      "country-code": metaData.countryCode,
+      "language-code": metaData.language
+    };
+
+    if (!fullPrivacyEnabled) {
+      result["carrier-name"] = metaData.carrierName;
+      result["network-type"] = metaData.networkType;
+    }
+
+    // This is done to avoid having multiple if conditions for each key.
+    // if value is undefined then it is unnecessary key & hence it is removed.
+    Object.keys(result).forEach((key) => {
+      if (typeof result[key] === "undefined") {
+        delete result[key];
+      }
+    });
+
+    return result;
+  };
+
   return {
-    getPreparedDeviceInfo
+    getPreparedDeviceInfo,
+    getPreparedLiteSdkDeviceInfo
   };
 });

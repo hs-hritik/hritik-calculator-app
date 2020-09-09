@@ -9,8 +9,11 @@ define("extras/globalEvents", [
   "store",
   "actions/appState",
   "actions/chatView",
-  "domPurify"
-], function(store, appStateActions, chatViewActions, DOMPurify) {
+  "domPurify",
+  "gunpowder/utils/pubsub",
+  "actions/postSdkMessage",
+  "helpers/localStorage"
+], function(store, appStateActions, chatViewActions, DOMPurify, pubsub, postSdkMessage, lsHelpers) {
   "use strict";
 
   const {dispatch} = store;
@@ -73,8 +76,32 @@ define("extras/globalEvents", [
     });
   };
 
+  /**
+   * This function will subscribe to local storage data updates and
+   * pass it to parent site via postMessage API
+   */
+  const subscribeLocalStorageUpdateEvent = () => {
+    pubsub.on("LS_UPDATE", (event) => {
+      const eventDataObj = event.data;
+
+      if (event.type === lsHelpers.LS_UPDATE_TYPES.SET) {
+        store.dispatch(postSdkMessage.onSetLocalStorageData(eventDataObj));
+      } else if (event.type === lsHelpers.LS_UPDATE_TYPES.REMOVE) {
+        store.dispatch(postSdkMessage.onRemoveLocalStorageData(eventDataObj));
+
+        // We need this event explicitly as we can't intercept the onRemoveLocalStorageData
+        // event on the lite sdk side as we can't hardcode the "aui" (ANON_USER_ID) key on the
+        // lite sdk as this will need a lite sdk upgrade if this key gets updated in the future
+        if (eventDataObj.data.indexOf(lsHelpers.LS_KEYS.ANON_USER_ID) !== -1) {
+          store.dispatch(postSdkMessage.onRemoveAnonymousUser());
+        }
+      }
+    });
+  };
+
   return {
     addFocusAndBlurEventListener,
-    addDomPurifyTargetHook
+    addDomPurifyTargetHook,
+    subscribeLocalStorageUpdateEvent
   };
 });

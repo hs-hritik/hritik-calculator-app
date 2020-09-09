@@ -1,0 +1,67 @@
+Branches:
+feature/webchat-cogs-and-lite-sdk
+
+Changelog:
+Webchat primary color is not updating
+Retain conversation when issue flag is stale in config
+Support agressive polling for webchat
+Consume gunpowder version 4.0.15
+Fix property name of shouldPollerRestart argument
+Update gunpowder version to snapshot version
+Fix the data sent in the onUiConfigChange event
+Not remove anon user after 7 days of inactivity in liteSdk
+Fix syncing of updated push token on app load
+Clear config object when local storage is full
+Fix respect pfi value while rehydrating
+Handle user auth token config failure
+Fix config value when multiple users logged-in
+Fix rendering of double chat separators in message list
+Add support to convey removal of anonymous user to parent
+Refactor get config flow
+Remove pushTokenSyncMap from appState
+Not pass userDetails in event data of onPushTokenSync event
+Consume gunpowder snapshot version 4.0.14-lite-sdk.0
+Refactor code of lsHelpers
+Handle auth failure in case of update-push-token xhr
+Pass userDetails in the event data of onPushTokenSync event
+Handle auto retry of xhrs on failure
+Add support to expose auth failure response data
+Sync updated push token with backend sent by lite sdk
+Rehydrate push token sync map in app state
+Store push token sync map in local storage
+Add disable config fetch interval debug mode
+Remove set UI config actions
+Restructure & update actions for the set config flow in appstate
+Restructure the get config flow
+Expose helpshift API to set parent page visibility
+Add support to expose onPushTokenSync event data
+Sync the push token with backend onSuccess of createPreIssue
+Add core-js polyfill
+Handle config failure by using config from local storage
+Store config in localstorage
+Store pfi and last config fetch timestamp in localstorage
+Move close button to the left side of the screen in mobile
+Fix name of setLightSdkConfig method to setLiteSdkConfig
+Fix "set" method of lsHelpers
+Add support to expose ui config changes to parent
+Update the csatView layout in case of mobile & lite SDK
+Send liteSDK device related metadata in createPreissue route
+Store lite sdk config data in appState reducer
+Update embed script to have a callback on webChat.js failure
+Fix height of intent picker in case iOS liteSDK
+Not close virtual keyboard after replying for an issue
+Enqueue data for a registerd event on multiple triggers
+Not expose the events specific to liteSDK in globalApiEvent
+Set the local storage data sent from liteSDK in webchat
+Post a message to parent when localstorage is updated
+Refactor localStorage helper code to have common methods
+Add constant for initialising the pollingInterval
+Add condition to stop & start polling
+Update polling time interval when strategy is conservative
+Update poller strategy on event change
+Add page visibility event
+Subscribe to local storage data updates event
+Add support to expose localStorage keys to parent on removal
+Add support for exposing localStorage keys to parent on addition
+Add support for removing global api event
+Add support for adding global api event

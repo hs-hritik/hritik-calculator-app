@@ -30,9 +30,16 @@ define("constants/errors", function() {
     PRE_ISSUE_TIME_OUT: "PRE_ISSUE_TIME_OUT"
   };
 
+  const XHR_AUTO_RETRY = {
+    BASE_TIMEOUT: 3000, // in milliseconds
+    TIMEOUT_MULTIPLIER: 2,
+    MAXIMUM_RETRY_COUNT: 5
+  };
+
   return {
     FILE_UPLOAD_ERRORS,
     RESPONSE_STATUS_CODE,
-    TYPE
+    TYPE,
+    XHR_AUTO_RETRY
   };
 });

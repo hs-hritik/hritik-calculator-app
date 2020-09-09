@@ -29,7 +29,7 @@ define("actions/appState", [
   "actions/postSdkMessage",
   "actions/common",
   "utils/browser",
-  "utils/dataType"
+  "utils/color"
 ], function(
   ACTION_TYPES,
   routes,
@@ -55,7 +55,7 @@ define("actions/appState", [
   postSdkMessage,
   commonActions,
   browserUtils,
-  dataTypeUtils
+  colorUtils
 ) {
   "use strict";
 
@@ -70,20 +70,24 @@ define("actions/appState", [
     FLATTENED_UI_CONFIG: {
       HEADER_BG_COLOR,
       HEADER_TEXT_COLOR,
-      BASE_COLOR,
       INITIAL_SECONDARY_BG_COLOR,
       INITIAL_SECONDARY_TEXT_COLOR,
-      BASE_FOCUS_RING_COLOR
+      BASE_FOCUS_RING_COLOR,
+      CHAT_WIDGET_BG_COLOR
     },
     SHADES
   } = UI_CONFIG_CONSTANTS;
   const {EVENT} = analyticsConstants;
 
-  const {TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
+  const {TYPE: ERROR_TYPES, RESPONSE_STATUS_CODE} = ERROR_CONSTANTS;
   const LATEST_ISSUE_NOT_AVAILABLE = "NOT_AVAILABLE";
 
   const isCssVarSupported =
     window.CSS && window.CSS.supports && window.CSS.supports("--fake-var", 0);
+
+  const {LS_KEYS} = lsHelpers;
+
+  const THREE_CHAR_HEX_CODE_LENGTH = 4;
 
   let getConfigXhr = null;
 
@@ -94,7 +98,7 @@ define("actions/appState", [
    */
   const setDeviceId = () => {
     return () => {
-      let dId = lsHelpers.getDeviceId();
+      let dId = lsHelpers.get(LS_KEYS.DEVICE_ID);
 
       // Create a new device id if one doesn't exist already.
       // Set it in the local storage.
@@ -115,7 +119,7 @@ define("actions/appState", [
    */
   const setAnalyticsSessionId = () => {
     return (dispatch) => {
-      let sessionId = lsHelpers.getAnalyticsSessionId();
+      let sessionId = lsHelpers.get(LS_KEYS.ANALYTICS_SESSION_ID);
 
       // Create a new session id if one doesn't exist already.
       // Set it in the local storage.
@@ -150,13 +154,13 @@ define("actions/appState", [
      */
   const setAnonUserId = () => {
     return () => {
-      const currentAnonUserId = lsHelpers.getAnonUserId();
+      const currentAnonUserId = lsHelpers.get(LS_KEYS.ANON_USER_ID);
 
       if (!currentAnonUserId) {
         const anonUserId = commonHelpers.getAnonUserId();
 
         store.dispatch(setAnonUserIdValue(anonUserId));
-        lsHelpers.setAnonUserId(anonUserId);
+        lsHelpers.set(LS_KEYS.ANON_USER_ID, anonUserId);
       } else {
         store.dispatch(setAnonUserIdValue(currentAnonUserId));
       }
@@ -181,13 +185,25 @@ define("actions/appState", [
    * there are some values that are web chat client specific and need to be
    * added back to the state. For example - which FAQs have been read by the
    * user so far.
+   * @param {String} uniqueUserIdentifier - Unique identifier of a user
    */
-  const rehydrateState = () => {
+  const rehydrateState = (uniqueUserIdentifier) => {
     // @TODO: feature/ai-powered : Handle rehydration
-    const suggestedFaqReadTracked = lsHelpers.getSuggestedFaqReadTracked(),
-      readFaqList = lsHelpers.getReadFaqList(),
-      reEngagementId = lsHelpers.getReEngagementId(),
-      widgetShouldAutoOpen = lsHelpers.getWidgetShouldAutoOpen();
+    const suggestedFaqReadTracked = lsHelpers.get(LS_KEYS.SUGGESTED_FAQ_READ_TRACKED),
+      readFaqList = lsHelpers.get(LS_KEYS.READ_FAQ_LIST, true),
+      reEngagementId = lsHelpers.get(LS_KEYS.RE_ENGAGEMENT_ID),
+      widgetShouldAutoOpen = lsHelpers.get(LS_KEYS.WIDGET_SHOULD_AUTO_OPEN),
+      pfiValue = lsHelpers.get(LS_KEYS.PFI_VALUE) ? lsHelpers.get(LS_KEYS.PFI_VALUE) : 0,
+      config = lsHelpers.get(LS_KEYS.CONFIG, true),
+      respectPfi = lsHelpers.get(LS_KEYS.RESPECT_PFI, true);
+    let lastConfigFetchTs = null;
+    let issueExistsDataIsStaleInLocalStorage = null;
+
+    if (config && config[uniqueUserIdentifier]) {
+      lastConfigFetchTs = config[uniqueUserIdentifier].lastConfigFetchTs;
+      issueExistsDataIsStaleInLocalStorage =
+        config[uniqueUserIdentifier].issueExistsDataIsStaleInLocalStorage;
+    }
 
     store.dispatch({
       type: ACTION_TYPES.REHYDRATE,
@@ -195,7 +211,11 @@ define("actions/appState", [
         suggestedFaqReadTracked,
         readFaqList,
         reEngagementId,
-        widgetShouldAutoOpen
+        widgetShouldAutoOpen,
+        pfiValue,
+        lastConfigFetchTs,
+        respectPfi,
+        issueExistsDataIsStaleInLocalStorage
       }
     });
   };
@@ -293,7 +313,7 @@ define("actions/appState", [
     // The following action (SET_CLIENT_CONFIG) sets the userId passed by the
     // developer in the state and localstorage. Before setting it in localstorage
     // we need to determine if we should handle the user login change.
-    handleAnonUserReset(config.userId, clearAnonymousUserOnLogin);
+    handleAnonUserReset({userId, clearAnonymousUserOnLogin, isLiteSdk: !!config.liteSdkConfig});
 
     return {
       type: ACTION_TYPES.SET_CLIENT_CONFIG,
@@ -308,16 +328,20 @@ define("actions/appState", [
    * Based on the client's config value of clearAnonymousUserOnLogin, reset the
    * anon user id.
    * Also, clear the anonymous user id after 7 days of inactivity.
-   * @param {string} userId - The userId value passed with `helpshiftConfig`.
-   * @param {boolean} clearAnonymousUserOnLogin
+   * @param {Object} data
+   * @param {string} data.userId - The userId value passed with `helpshiftConfig`.
+   * @param {boolean} data.clearAnonymousUserOnLogin - If true, remove anonymous user
+   * id from local storage
+   * @param {boolean} data.isLiteSdk - If true, do not remove anonymous user id after
+   * 7 days of inactivity from local storage
    */
-  const handleAnonUserReset = (userId, clearAnonymousUserOnLogin) => {
+  const handleAnonUserReset = ({userId, clearAnonymousUserOnLogin, isLiteSdk}) => {
     // Clear anon user id after 7 days of inactivity
-    const lastActivityTime = lsHelpers.getLastActivityTime();
+    const lastActivityTime = lsHelpers.get(LS_KEYS.LAST_ACTIVITY_TIME, true);
     const inactivityDuration = Date.now() - lastActivityTime;
 
-    if (lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
-      lsHelpers.removeAnonUserId();
+    if (!isLiteSdk && lastActivityTime && inactivityDuration > ANON_USER_RESET_TIMEOUT) {
+      lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
 
     // Clear anon user if a user logs in and clearAnonymousUserOnLogin flag is true
@@ -325,14 +349,14 @@ define("actions/appState", [
       return;
     }
 
-    const previousUserId = lsHelpers.getUserId();
+    const previousUserId = lsHelpers.get(LS_KEYS.USER_ID);
 
     if (userId !== previousUserId) {
       // If previousUserId is not present,
       // anon user -> a user logged in
       // If previousUserId is present,
       // A user was logged in -> they logged out -> a new user logged in.
-      lsHelpers.removeAnonUserId();
+      lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
   };
 
@@ -350,45 +374,6 @@ define("actions/appState", [
     if (appState.sdkConfigOptions.fullScreen) {
       page.classList.add("hs-page--full-screen");
     }
-  };
-
-  /**
-   * Set UI configuration in the state using the configuration set in the admin
-   * dashboard and by the custom configuration passed with helpshiftConfig.
-   * @param {Object} helpshiftConfig - The global client config object
-   */
-  const setUiConfig = (helpshiftConfig) => {
-    const {
-      ui: {uiConfig, developerUiConfig}
-    } = store.getState();
-
-    let finalUiConfig;
-
-    // If ui config is passed in helpshift config options, use that
-    // Else use previously set developer config
-    // Else create a ui config having base color set from dashboard
-    if (
-      dataTypeUtils.isObject(helpshiftConfig.uiConfig) &&
-      Object.keys(helpshiftConfig.uiConfig).length
-    ) {
-      finalUiConfig = helpshiftConfig.uiConfig;
-    } else if (developerUiConfig) {
-      finalUiConfig = developerUiConfig;
-    } else {
-      const baseData = BASE_COLOR.split(".");
-      // name of base set
-      const baseSet = baseData[0];
-      // value of base set
-      const baseValue = baseData[1];
-
-      finalUiConfig = {
-        [baseSet]: {
-          [baseValue]: uiConfig[BASE_COLOR].value
-        }
-      };
-    }
-    store.dispatch(uiActions.setUiConfig(finalUiConfig));
-    store.dispatch(uiActions.setDeveloperUiConfig(finalUiConfig));
   };
 
   /**
@@ -469,100 +454,263 @@ define("actions/appState", [
       dispatch(actionCreators.setAppResetTrigger(APP_RESET_TRIGGER.INITIAL));
     }
   };
+  /**
+   * Whether the config call can be made
+   * @param {Object} data
+   * @param {string} data.pfiValue - Periodic fetch interval value
+   * @param {string} data.lastConfigFetchTs - Last config fetched timestamp in milli seconds
+   * @param {number} data.currentTime - Current time in milli seconds
+   * @param {boolean} data.respectPfi - True, if debug mode is enabled
+   * @param {Object} data.configFromLs - Config from local storage
+   * @returns {boolean} - True, if the config xhr should be called
+   */
+  const _shouldFetchConfig = ({
+    pfiValue,
+    lastConfigFetchTs,
+    currentTime,
+    respectPfi,
+    configFromLs,
+    issueExistsDataIsStaleInLocalStorage
+  }) => {
+    // The PFI session gets expired in the following case
+    // 1. Debug mode is enabled through Helpshift API which means not respecting the PFI value
+    // 1. Periodic fetch interval value is not set
+    // 2. Current time is greater than adding pfi value to last fetched ts
+    const pfiSessionIsExpired =
+      !respectPfi ||
+      !pfiValue ||
+      (pfiValue && parseInt(lastConfigFetchTs, 10) + parseInt(pfiValue, 10) <= currentTime);
+
+    return (
+      !(issueExistsDataIsStaleInLocalStorage === false) ||
+      pfiSessionIsExpired ||
+      (!pfiSessionIsExpired && !configFromLs)
+    );
+  };
 
   /**
-   * Action to set the web chat configuration set by the Helpshift admin
-   * and set it to the store. Post message to the client with the config.
-   * This configuration contains settings like if web chat is enabled,
-   * appearance, etc.
-   * @param {Object} options
-   * @param {string} options.trigger - The source that triggered setting the config
-   * @param {Object} options.helpshiftConfig - The global client config object
+   * Get web chat config via the HS API
+   * @param {Object} data
+   * @param {Object} data.callbacks - callbacks passed by the caller e.g. onSuccess
    */
-  const setWmConfig = ({trigger, helpshiftConfig}) => {
+  const _getConfigFromBackend = ({callbacks}) => {
     return (dispatch, getState) => {
-      const state = getState();
-      const {domain} = state.appState;
+      const {
+        appState: {domain}
+      } = getState();
 
-      getWmConfig(domain, {
-        onSuccess: (response) => {
-          dispatch(
-            batchActions([
-              // Set the config values to the store
-              setWmConfigValues(response),
-              actionCreators.setMobileInfo(browserUtils.isMobile()),
-              setUiTextValues(response)
-            ])
-          );
+      // IE 11 caches config call which causes new preIssues to be created for
+      // new user. In order to invalidate browser cache we are sending a new
+      // timestamp in every request.
+      const requestData = xhrHelpers.getPreparedXhrData();
+      requestData.nonce = Date.now();
 
-          const {
-            appState: {featuresEnabled, wcEnabled}
-          } = store.getState();
-
-          // Set the ui configuration flags in the state.
-          setUiConfig(helpshiftConfig);
-
-          if (wcEnabled) {
-            // A side-effect of getting the web chat config would be to
-            // add the stylesheet with the primary color (and any other
-            // configurable CSS value) to the document head.
-            // The `config loaded` event should be sent to the client after the CSS is loaded.
-            setStyles({
-              onSuccess: () => {
-                dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
-              }
-            });
-
-            // Apply styles to page
-            applyPageStyles();
-
-            // Rehydrate the state with localstorage data if applicable
-            rehydrateState();
-
-            // Initialize conversation by either going to the out of business
-            // hours view or by handling the chat view conversation.
-            initializeConversation();
-
-            // If the widget is enabled, track the widget load event
-            // Do not track this event if the config was set via the reset flow.
-            if (trigger !== TRIGGER.RESET) {
-              analyticsHelpers.track(EVENT.WIDGET_LOAD);
-            }
-
-            if (featuresEnabled.audioNotifications) {
-              audioHelpers.init();
-            }
-          } else {
-            // Send the config event loaded back to the client
-            dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
-          }
-        },
-        onFailure: (response) => {
-          xhrHelpers.handleAuthFailure(response);
-        }
+      getConfigXhr = xhr({
+        route: routes.getWmConfig(domain),
+        headers: xhrHelpers.getCommonHeaders(),
+        data: requestData,
+        onSuccess: callbacks.onSuccess,
+        onFailure: callbacks.onFailure
       });
     };
   };
 
   /**
-   * Get web chat config via the HS API.
-   * @param {string} domain
-   * @param {Object} callbacks - callbacks passed by the caller e.g. onSuccess
+   * Return config object from local storage
+   * @param {String} uniqueUserIdentifier - Unique identifier of a user
+   * @returns {Object} - Returns config object
    */
-  const getWmConfig = (domain, callbacks) => {
-    // IE 11 caches config call which causes new preIssues to be created for
-    // new user. In order to invalidate browser cache we are sending a new
-    // timestamp in every request.
-    const requestData = xhrHelpers.getPreparedXhrData();
-    requestData.nonce = Date.now();
+  const _getConfigFromLs = (uniqueUserIdentifier) => {
+    const config = lsHelpers.get(LS_KEYS.CONFIG, true);
 
-    getConfigXhr = xhr({
-      route: routes.getWmConfig(domain),
-      headers: xhrHelpers.getCommonHeaders(),
-      data: requestData,
-      onSuccess: callbacks.onSuccess,
-      onFailure: callbacks.onFailure
+    if (!config || !config[uniqueUserIdentifier]) {
+      return null;
+    }
+
+    return config[uniqueUserIdentifier].config;
+  };
+
+  /**
+   * Callback function for config success
+   * @param {object} data
+   * @param {object} data.response - Config xhr success response
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {string} data.currentTime - Current time in milliseconds
+   * @param {boolean} data.updateLs - True, if config fetched from backend XHR directly
+   */
+  const _onConfigSuccess = ({response, trigger, helpshiftConfig, currentTime, updateLs}) => {
+    const {dispatch, getState} = store;
+    const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+    // Unique user identifier is needed to store the config respective to every person
+    // who login. The user can log in with the userId, email, phone number, and the
+    // combination of the identifier. Multiple users can have the same email, phone
+    // number. As the data of the same user is stored multiple times if the user login with
+    // different identifier. This is not the ideal solution. We need the same mechanism
+    // as the backend to identify the user.
+    const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
+      userId,
+      phoneNumber,
+      userEmail,
+      anonUserIdentifier
     });
+
+    dispatch({
+      type: ACTION_TYPES.FETCH_CONFIG_SUCCESS,
+      config: response,
+      currentTime,
+      updateLs,
+      browserIsMobile: browserUtils.isMobile(),
+      helpshiftConfig,
+      uniqueUserIdentifier
+    });
+
+    const {
+      appState: {featuresEnabled},
+      ui: {
+        uiConfig: {
+          [HEADER_BG_COLOR]: {value: primaryColor},
+          [CHAT_WIDGET_BG_COLOR]: {value: chatWidgetBgColor}
+        }
+      }
+    } = store.getState();
+
+    // Send the ui config change event to the client
+    store.dispatch(
+      postSdkMessage.onUiConfigChange({
+        primaryColor:
+          primaryColor.length === THREE_CHAR_HEX_CODE_LENGTH
+            ? colorUtils.convertThreeToSixCharHexColorCode(primaryColor)
+            : primaryColor,
+        chatWidgetBgColor:
+          chatWidgetBgColor.length === THREE_CHAR_HEX_CODE_LENGTH
+            ? colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
+            : chatWidgetBgColor
+      })
+    );
+
+    if (response.wm_widget_enabled) {
+      // A side-effect of getting the web chat config would be to
+      // add the stylesheet with the primary color (and any other
+      // configurable CSS value) to the document head.
+      // The `config loaded` event should be sent to the client after the CSS is loaded.
+      setStyles({
+        onSuccess: () => {
+          dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+        }
+      });
+
+      // Apply styles to page
+      applyPageStyles();
+
+      // Initialize conversation by either going to the out of business
+      // hours view or by handling the chat view conversation.
+      initializeConversation();
+
+      // If the widget is enabled, track the widget load event
+      // Do not track this event if the config was set via the reset flow.
+      if (trigger !== TRIGGER.RESET) {
+        analyticsHelpers.track(EVENT.WIDGET_LOAD);
+      }
+
+      if (featuresEnabled.audioNotifications) {
+        audioHelpers.init();
+      } else {
+        // Send the config event loaded back to the client
+        dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
+      }
+    }
+  };
+
+  /**
+   * Callback function for config failure
+   * @param {object} data
+   * @param {object} data.response - Config xhr success response
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {String} uniqueUserIdentifier - Unique identifier of a user
+   */
+  const _onConfigFailure = ({response, trigger, helpshiftConfig, uniqueUserIdentifier}) => {
+    // If config fails and config is present in localstorage,
+    // use localstorage config to load webchat
+    const configFromLs = _getConfigFromLs(uniqueUserIdentifier);
+
+    if (response.status === RESPONSE_STATUS_CODE.NO_AUTH_TOKEN || !configFromLs) {
+      xhrHelpers.handleAuthFailure(response);
+    } else {
+      _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
+    }
+  };
+
+  /**
+   * Action to get the config response either from backend or localstorage
+   * @param {Object} data
+   * @param {Object} data.callbacks - Config call success and failure callbacks
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   * @param {string} data.currentTime - Current time in milliseconds
+   */
+  const getConfig = ({callbacks, trigger, helpshiftConfig, currentTime}) => {
+    return (dispatch, getState) => {
+      // Rehydrate pfi and last config fetch timestamp from the local storage
+      // This is done to check if the config should fetch from backend
+      const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+      const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
+        userId,
+        phoneNumber,
+        userEmail,
+        anonUserIdentifier
+      });
+
+      rehydrateState(uniqueUserIdentifier);
+
+      const {issueExistsDataIsStaleInLocalStorage} = getState().appState;
+      const {pfiValue, lastConfigFetchTs, respectPfi} = getState().appState;
+      const configFromLs = _getConfigFromLs(uniqueUserIdentifier);
+      const fetchConfigFromBackend = _shouldFetchConfig({
+        pfiValue,
+        lastConfigFetchTs,
+        currentTime,
+        respectPfi,
+        configFromLs,
+        issueExistsDataIsStaleInLocalStorage
+      });
+
+      if (fetchConfigFromBackend) {
+        dispatch(_getConfigFromBackend({callbacks}));
+      } else {
+        _onConfigSuccess({response: configFromLs, trigger, helpshiftConfig});
+      }
+    };
+  };
+
+  /**
+   * Action to set config object
+   * @param {Object} data
+   * @param {string} data.trigger - The source that triggered setting the config
+   * @param {Object} data.helpshiftConfig - The global client config object
+   */
+  const setConfig = ({trigger, helpshiftConfig}) => {
+    return (dispatch, getState) => {
+      const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+      const uniqueUserIdentifier = commonHelpers.getUniqueUserIdentifier({
+        userId,
+        phoneNumber,
+        userEmail,
+        anonUserIdentifier
+      });
+      const currentTime = Date.now();
+      const callbacks = {
+        onSuccess: (response) => {
+          _onConfigSuccess({response, trigger, helpshiftConfig, currentTime, updateLs: true});
+        },
+        onFailure: (response) => {
+          _onConfigFailure({response, trigger, helpshiftConfig, uniqueUserIdentifier});
+        }
+      };
+
+      dispatch(getConfig({callbacks, trigger, helpshiftConfig, currentTime}));
+    };
   };
 
   /**
@@ -622,26 +770,6 @@ define("actions/appState", [
       }
     };
   };
-
-  /**
-   * Action to set wm config to the store.
-   * @param {Object} config
-   * @returns {Object} - action
-   */
-  const setWmConfigValues = (config) => ({
-    type: ACTION_TYPES.SET_WM_CONFIG,
-    config
-  });
-
-  /**
-   * Action to set UI strings in the store
-   * @param {Object} config
-   * @returns {Object} - action
-   */
-  const setUiTextValues = (config) => ({
-    type: ACTION_TYPES.SET_UI_TEXT,
-    text: config.translations
-  });
 
   /**
    * Get CSS over the wire, add it to the document and
@@ -1080,7 +1208,7 @@ define("actions/appState", [
     setAnalyticsSessionId,
     setAnonUserId,
     setClientConfig,
-    setWmConfig,
+    setConfig,
     toggleMinimized,
     startNewConversation,
     replaceCif,

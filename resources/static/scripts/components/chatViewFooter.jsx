@@ -62,6 +62,10 @@ define("components/chatViewFooter", [
     ACTIVE_FOOTER: "active_footer"
   };
 
+  const LITE_SDK_OS = {
+    IOS: "ios"
+  };
+
   // Max height of intents widget in case of iOS safari
   const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
 
@@ -225,14 +229,16 @@ define("components/chatViewFooter", [
       /**
        * Allowed file mime types list
        */
-      attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired
+      attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
+      liteSdkOs: PropTypes.string
     },
     getInitialState() {
       return {
         pickerMaxHeight: PICKER_MIN_HEIGHT,
         intentsWidgetMaxHeight: PICKER_MIN_HEIGHT,
         intentsWidgetMinHeight: PICKER_MIN_HEIGHT,
-        intentsWidgetIsReadyForRendering: false
+        intentsWidgetIsReadyForRendering: false,
+        shouldVirtualKeyboardRemainOpen: false
       };
     },
 
@@ -495,6 +501,8 @@ define("components/chatViewFooter", [
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
             ariaLabel={ariaLabel}
+            shouldVirtualKeyboardRemainOpen={this.state.shouldVirtualKeyboardRemainOpen}
+            onReplyBoxFocusAfterReplySubmit={this._onReplyBoxFocusAfterReplySubmit}
           />
         );
       } else {
@@ -597,11 +605,14 @@ define("components/chatViewFooter", [
       let intentsWidgetMaxHeight = this.state.intentsWidgetMaxHeight;
 
       // We need to pass fixed height when picker is in opened state for iOS safari
-      // because safari pushes the entire webpage when keyboard is open.
+      // and iOS liteSdk because safari pushes the entire webpage when keyboard is open.
       // This causes the smart intents to hide above the screen and user is not
       // able to see/select the intents. Restricting height in safari ensures
       // even after opening keyboard the intents are displayed to end user.
-      if (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari()) {
+      if (
+        this.props.liteSdkOs === LITE_SDK_OS.IOS ||
+        (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari())
+      ) {
         intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
       }
 
@@ -742,8 +753,14 @@ define("components/chatViewFooter", [
         selector: METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.SELECTOR
       });
 
-      const _onSubmitReply = () => {
+      const _onSubmitReply = (ev) => {
         onSubmitReply();
+        // Cancal the click event to not loose focus from the reply box
+        // (ie. to not collapse the virtual keyboard in case of mobile phones)
+        ev.preventDefault();
+        this.setState({
+          shouldVirtualKeyboardRemainOpen: true
+        });
         _setAxActiveIndex();
       };
       const fieldIsInvalid = !!errorMsg;
@@ -965,6 +982,15 @@ define("components/chatViewFooter", [
       }
 
       return [headingEl, labelEl];
+    },
+
+    /**
+     * Function to set the shouldVirtualKeyboardRemainOpen flag to false
+     */
+    _onReplyBoxFocusAfterReplySubmit() {
+      this.setState({
+        shouldVirtualKeyboardRemainOpen: false
+      });
     },
 
     /**

@@ -17,7 +17,7 @@
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.57.2";
+    PATH = "/html/index.html?v=2.58.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -58,6 +58,7 @@
       position: WIDGET_POSITIONS.BOTTOM_RIGHT
     },
     cssConfig: {},
+    globalApiEventHandler: null,
     apiEvents: [],
     webChatVisibility: {
       launcher: "block",
@@ -99,6 +100,12 @@
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
+    SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
+    SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
+    SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
+    SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
+    SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
+    SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -111,7 +118,10 @@
     CMD_SET_EXEC_PROACTIVE_CHAT_RULES: "cmd-set-execute-proactive-chat-rules",
     CMD_UPDATE_UI_CONFIG: "cmd-update-ui-config",
     CMD_SET_FULL_PRIVACY: "cmd-set-full-privacy",
-    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config"
+    CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
+    CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
+    CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
+    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi"
   };
 
   /**
@@ -129,8 +139,33 @@
     NEW_UNREAD_MESSAGES: "newUnreadMessages",
     USER_CHANGED: "userChanged",
     WIDGET_TOGGLE: "widgetToggle",
-    CONVERSATION_STATUS: "conversationStatus"
+    CONVERSATION_STATUS: "conversationStatus",
+    // This global event will basically expose the other SUPPORTED_EVENTS. We need
+    // this in case liteSDK to minimize the code on its end as instead of handling all
+    // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
+    GLOBAL_API_EVENT: "globalApiEvent",
+    ON_USER_AUTH_FAILURE: "onUserAuthFailure",
+    // The below events are not exposed to developers and are specific to lite SDK
+    // Below events are to be added in the LITE_SDK_SUPPORTED_EVENTS list to not expose
+    // them in the globalApiEvent
+    ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
+    ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
+    ON_UI_CONFIG_CHANGE: "onUiConfigChange",
+    ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
+    ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser"
   };
+
+  /**
+   * List of events that webchat supports but are specific to lite SDK
+   * This is needed to not send these events in the globalApiEvent
+   */
+  const LITE_SDK_SUPPORTED_EVENTS = [
+    SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
+    SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC,
+    SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER
+  ];
 
   // Errors message strings
   const ERROR_MSG = {
@@ -1051,6 +1086,12 @@
   const callApiEventHandler = (eventName, eventData) => {
     let handlerIsFound = false;
 
+    // Expose only those events which are handled internally
+    // [like "onSetLocalStorageData" & "onRemoveLocalStorageData"] in the globalApiEvent
+    if (state.globalApiEventHandler && LITE_SDK_SUPPORTED_EVENTS.indexOf(eventName) === -1) {
+      state.globalApiEventHandler({[eventName]: eventData || null});
+    }
+
     state.apiEvents.forEach((apiEvent) => {
       if (apiEvent.eventName === eventName) {
         apiEvent.eventHandler(eventData);
@@ -1061,10 +1102,19 @@
     // Add event to the eventRegister if the handler is not found.
     // The event handler will be called when developer calls the
     // addEventListener Helpshift API for this event.
-    if (!handlerIsFound && !eventRegister[eventName]) {
+    if (!handlerIsFound) {
+      let cumulativeEventData;
+
+      // If the event is already registered, then enqueue the data to
+      // already registered event's data
+      if (eventRegister[eventName] && eventRegister[eventName].data) {
+        cumulativeEventData = {...eventRegister[eventName].data, ...eventData};
+      } else {
+        cumulativeEventData = eventData;
+      }
       eventRegister[eventName] = {
         eventHasOccured: true,
-        data: eventData
+        data: cumulativeEventData
       };
     }
   };
@@ -1269,6 +1319,32 @@
           case EVENT_TYPES.SDK_UPDATE_UI_CONFIG_ERRORS:
             logUiConfigErrors(data.errors);
             break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA:
+            // Call the event handler on set of local storage items
+            callApiEventHandler(SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA:
+            // Call the event handler on removal of local storage items
+            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_USER_AUTH_FAILURE, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER:
+            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER);
+            break;
         }
       },
       false
@@ -1357,6 +1433,19 @@
   };
 
   /**
+   * JS API to disable periodic fetch config interval
+   */
+  const disableConfigPeriodicFetch = () => {
+    _postMessage(EVENT_TYPES.CMD_SET_DISABLE_PFI, {respectPfi: false});
+  };
+
+  /**
+   * JS API to enable periodic fetch config interval
+   */
+  const enableConfigPeriodicFetch = () => {
+    _postMessage(EVENT_TYPES.CMD_SET_ENABLE_PFI);
+  };
+  /**
    * JS API to set greeting message
    * @param {String} message - greeting message
    */
@@ -1397,8 +1486,14 @@
    * @param {Function} eventHandler - event handler
    */
   const addEventListener = (eventName, eventHandler) => {
-    // If event name is supported, add that event
+    // If event name is supported, add that event in globalEvent
+    // if its the global api event else add it inside apiEvents
     if (isEventSupported(eventName) && eventHandler) {
+      if (eventName === SUPPORTED_EVENTS.GLOBAL_API_EVENT) {
+        state.globalApiEventHandler = eventHandler;
+        return;
+      }
+
       state.apiEvents.push({
         eventName,
         eventHandler
@@ -1423,6 +1518,12 @@
   const removeEventListener = (eventName, eventHandler) => {
     // If event name is supported, remove that event
     if (isEventSupported(eventName) && eventHandler) {
+      if (eventName === SUPPORTED_EVENTS.GLOBAL_API_EVENT) {
+        state.globalApiEventHandler = null;
+
+        return;
+      }
+
       state.apiEvents = state.apiEvents.filter((apiEvent) => {
         return !(apiEvent.eventName === eventName && apiEvent.eventHandler === eventHandler);
       });
@@ -1543,6 +1644,16 @@
     _postMessage(EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG);
   };
 
+  /**
+   * JS API to set parent page visibility
+   * @param {boolean} parentPageIsVisible - True, if the page is visible to user
+   */
+  const updateParentPageVisibility = (parentPageIsVisible = true) => {
+    _postMessage(EVENT_TYPES.CMD_SET_PARENT_PAGE_VISIBILITY, {
+      parentPageIsVisible
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -1562,7 +1673,10 @@
     setFullPrivacy,
     updateHelpshiftConfig,
     hide,
-    show
+    show,
+    updateParentPageVisibility,
+    disableConfigPeriodicFetch,
+    enableConfigPeriodicFetch
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

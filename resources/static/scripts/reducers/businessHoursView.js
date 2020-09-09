@@ -146,7 +146,7 @@ define("reducers/businessHoursView", [
     let attachmentsAreInvalid;
 
     switch (action.type) {
-      case ACTION_TYPES.SET_WM_CONFIG:
+      case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {
           config: {
             business_hours_enabled: businessHoursEnabled,
