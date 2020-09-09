@@ -265,7 +265,7 @@ define("extras/api", [
       },
       chatView: {pollingStrategy}
     } = store.getState();
-    const isLiteSdk = Object.keys(liteSdkConfig).length;
+    const isLiteSdk = !!liteSdkConfig.os;
 
     // For Lite SDK use-case - On toggle, change the polling strategy.
     if (isLiteSdk) {

@@ -331,7 +331,7 @@ define("actions/chatView", [
       chatView: {pollingInterval: currentPollingInterval, pollingStrategy},
       appState: {liteSdkConfig}
     } = store.getState();
-    const isLiteSdk = Object.keys(liteSdkConfig).length;
+    const isLiteSdk = !!liteSdkConfig.os;
 
     // Use default polling interval and strategy for usual (non lite-sdk) use-cases.
     // Poller optimization current applies only to Lite SDK.
@@ -1163,7 +1163,7 @@ define("actions/chatView", [
 
     let conversationEndEventShouldTrigger = false;
 
-    if (Object.keys(liteSdkConfig).length) {
+    if (liteSdkConfig.os) {
       dispatch(_sendSafeAreaColorToLiteSdk());
     }
 

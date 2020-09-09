@@ -619,7 +619,7 @@ define("actions/appState", [
         analyticsHelpers.track(EVENT.WIDGET_LOAD);
       }
 
-      if (featuresEnabled.audioNotifications && !Object.keys(liteSdkConfig).length) {
+      if (featuresEnabled.audioNotifications && !liteSdkConfig.os) {
         audioHelpers.init();
       } else {
         // Send the config event loaded back to the client
