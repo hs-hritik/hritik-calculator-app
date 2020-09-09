@@ -120,6 +120,10 @@
       background-size: cover;
     }
 
+    &--lazy-image-attachment {
+      background-image: none !important; /* stylelint-disable-line declaration-no-important */
+    }
+
     &--right {
       align-self: flex-end;
 

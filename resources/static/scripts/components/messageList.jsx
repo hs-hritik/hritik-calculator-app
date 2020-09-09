@@ -686,6 +686,27 @@ define("components/messageList", [
     },
 
     componentDidUpdate(prevProps) {
+      // Render image attachments lazyly
+      if (commonHelpers.isIntersectionObserverSupported()) {
+        const imageAttachments = document.querySelectorAll(".hs-message__image-attachment");
+
+        if (imageAttachments) {
+          const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const image = entry.target;
+                image.classList.remove("hs-message--lazy-image-attachment");
+                imageObserver.unobserve(image);
+              }
+            });
+          });
+
+          imageAttachments.forEach((image) => {
+            imageObserver.observe(image);
+          });
+        }
+      }
+
       const {messages, minimized, userInput} = this.props;
       const previousMessages = prevProps.messages;
       const messageListHasBeenUpdated = previousMessages.length !== messages.length;

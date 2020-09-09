@@ -13,8 +13,9 @@ define("components/attachment", [
   "gunpowder/widgets/messages/previewableAttachment",
   "helpers/attachments",
   "gunpowder/utils/classes",
-  "constants/errors"
-], function(PreviewableAttachment, attachmentsHelpers, classes, ERROR_CONSTANTS) {
+  "constants/errors",
+  "helpers/common"
+], function(PreviewableAttachment, attachmentsHelpers, classes, ERROR_CONSTANTS, commonHelpers) {
   "use strict";
 
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -155,13 +156,20 @@ define("components/attachment", [
     // b] If it is local image, it should have error
     //    Do not show preview while uploading!
     const attachmentIsPreviewable = isImageAttachment && localAttachmentHasError;
+    const previewableAttachmentClasses = classes(
+      "hs-message__item",
+      "hs-message__image-attachment",
+      {
+        "hs-message--lazy-image-attachment": commonHelpers.isIntersectionObserverSupported()
+      }
+    );
 
     if (attachmentIsPreviewable) {
       return (
         <PreviewableAttachment
           url={url}
           file={file}
-          wrapperClasses="hs-message__item hs-message__image-attachment"
+          wrapperClasses={previewableAttachmentClasses}
           failedImageClassNames="hs-message__failed-img"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
@@ -214,13 +222,20 @@ define("components/attachment", [
         _onAttachmentClick(url);
       };
       const attachmentAriaLabel = _getAttachmentAriaLabel(fileName, ariaLabelOpenFile);
+      const previewableAttachmentClasses = classes(
+        "hs-message__item",
+        "hs-message__image-attachment",
+        {
+          "hs-message--lazy-image-attachment": commonHelpers.isIntersectionObserverSupported()
+        }
+      );
 
       if (attachmentIsPreviewable) {
         return (
           <PreviewableAttachment
             key={`previewable-${index}`}
             url={url}
-            wrapperClasses="hs-message__item hs-message__image-attachment"
+            wrapperClasses={previewableAttachmentClasses}
             failedImageClassNames="hs-message__failed-img"
             onWrapperClick={onWrapperClick}
           />

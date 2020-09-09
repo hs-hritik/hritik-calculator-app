@@ -421,6 +421,17 @@ define("helpers/common", [
     return identifier;
   };
 
+  /**
+   * Returns whether intersectionObserver is supported or not
+   * @returns {Boolean} - True if intersectionObserver is supported
+   */
+  const isIntersectionObserverSupported = () => {
+    return (
+      "IntersectionObserver" in window &&
+      "isIntersecting" in window.IntersectionObserverEntry.prototype
+    );
+  };
+
   return {
     isOutOfBusinessHours,
     isWidgetHiddenOutOfBusinessHours,
@@ -438,6 +449,7 @@ define("helpers/common", [
     areMessagesSeen,
     getSelectorForElement,
     getCbFaqSuggestionReadLsKey,
-    getUniqueUserIdentifier
+    getUniqueUserIdentifier,
+    isIntersectionObserverSupported
   };
 });
