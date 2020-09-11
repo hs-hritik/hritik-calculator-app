@@ -69,7 +69,7 @@
     mouseInteraction: false
   };
 
-  const INIT = "init";
+  const ALLOWED_APIS_WHEN_SDK_IS_NOT_LOADED = ["init", "addEventListener"];
   const FORCE_UPDATE_STYLES = true;
   // Time interval to wait for existence of document's body (in ms)
   const BODY_WAIT_TIMER = 500;
@@ -1706,11 +1706,11 @@
       throw new Error(ERROR_MSG.API_NOT_SUPPORTED);
     }
 
-    // If a] sdk is loaded OR b] the API is init or update, then directly call
+    // If a] sdk is loaded OR b] the API is init or update or addEventListener, then directly call
     // the API
     // Else queue the API in sequence and call them after SDK config is loaded
     // Note :- Allowing init API because it's the first API that will be called
-    if (sdkLoaded || api === INIT) {
+    if (sdkLoaded || ALLOWED_APIS_WHEN_SDK_IS_NOT_LOADED.indexOf(api) !== -1) {
       // Call the Helpshift api with the arguments
       helpshiftApis[api].apply(null, apiArguments);
     } else if (isApiValid(api)) {
