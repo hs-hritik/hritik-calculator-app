@@ -122,7 +122,8 @@
     CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
     CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
     CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
-    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi"
+    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi",
+    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status"
   };
 
   /**
@@ -1656,6 +1657,18 @@
     });
   };
 
+  /**
+   * JS API to start/stop polling for messages
+   * - {status = true}: Start the poller
+   * - {status = false}: Stop the poller
+   * @param {Boolean} status - If true, then the poller has to be started
+   */
+  const togglePollerStatus = (status = true) => {
+    _postMessage(EVENT_TYPES.CMD_TOGGLE_POLLER_STATUS, {
+      status
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -1678,7 +1691,8 @@
     show,
     updateParentPageVisibility,
     disableConfigPeriodicFetch,
-    enableConfigPeriodicFetch
+    enableConfigPeriodicFetch,
+    togglePollerStatus
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

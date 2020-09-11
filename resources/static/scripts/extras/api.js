@@ -385,42 +385,53 @@ define("extras/api", [
       case EVENT_TYPES.CMD_SET_CONFIG:
         setConfig(data);
         break;
+
       case EVENT_TYPES.CMD_MESSENGER_TOGGLED:
         handleMessengerToggle(data);
         break;
+
       case EVENT_TYPES.CMD_SET_INITIAL_USER_MESSAGE:
         handleInitialUserMsg(data);
         break;
+
       case EVENT_TYPES.CMD_SET_DISABLE_PFI:
         handleDisablePfi(data);
         break;
+
       case EVENT_TYPES.CMD_SET_ENABLE_PFI:
         handleEnablePfi();
         break;
       case EVENT_TYPES.CMD_SET_GREETING_MESSAGE:
         store.dispatch(actionCreators.setGreetingMsg(data.message));
         break;
+
       case EVENT_TYPES.CMD_SET_LANGUAGE:
         store.dispatch(actionCreators.setLanguage(data.language));
         break;
+
       case EVENT_TYPES.CMD_SET_CIF:
         store.dispatch(actionCreators.setCif(data.cifData));
         break;
+
       case EVENT_TYPES.CMD_SET_METADATA:
         store.dispatch(actionCreators.setMetadata(data.metadata));
         break;
+
       case EVENT_TYPES.CMD_REPLACE_CIF:
         store.dispatch(appStateActions.replaceCif(data.cifData));
         break;
+
       case EVENT_TYPES.CMD_SET_EXEC_PROACTIVE_CHAT_RULES:
         store.dispatch(appStateActions.setProactiveChatRules(data.proactiveChatRules));
         store.dispatch(appStateActions.executeProactiveChatRules(data));
         break;
+
       case EVENT_TYPES.CMD_UPDATE_UI_CONFIG:
         store.dispatch(uiActions.updateUiConfig(data.uiConfig));
         store.dispatch(uiActions.setDeveloperUiConfig(data.uiConfig));
         appStateActions.updateStyles();
         break;
+
       case EVENT_TYPES.CMD_FOCUS_WEBCHAT:
         let selector;
         let direction;
@@ -437,9 +448,11 @@ define("extras/api", [
         });
         ax.focus(direction);
         break;
+
       case EVENT_TYPES.CMD_SET_FULL_PRIVACY:
         store.dispatch(actionCreators.setFullPrivacy(data.enabled));
         break;
+
       case EVENT_TYPES.CMD_UPDATE_HELPSHIFT_CONFIG:
         store.dispatch(
           commonActions.reloadApp({
@@ -456,6 +469,7 @@ define("extras/api", [
           })
         );
         break;
+
       case EVENT_TYPES.CMD_SET_PARENT_PAGE_VISIBILITY:
         const {
           appState: {minimized: widgetIsMinimized},
@@ -470,7 +484,14 @@ define("extras/api", [
             parentPageIsVisible: data.parentPageIsVisible
           })
         );
+        break;
 
+      case EVENT_TYPES.CMD_TOGGLE_POLLER_STATUS:
+        if (data.status) {
+          chatViewActions.startPollingForMessages();
+        } else {
+          chatViewActions.stopPollingForMessages();
+        }
         break;
     }
   };
