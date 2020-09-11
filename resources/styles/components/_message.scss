@@ -60,8 +60,6 @@
     }
 
     &__details-and-msg-wrapper {
-      display: flex;
-      flex-direction: column;
       width: 100%;
     }
 
@@ -75,6 +73,7 @@
     &__item {
       @include word-break;
       position: relative;
+      display: inline-block;
       max-width: 100%;
       padding: $message-item-padding;
       overflow: hidden;
