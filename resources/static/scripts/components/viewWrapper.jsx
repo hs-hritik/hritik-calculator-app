@@ -150,13 +150,13 @@ define("components/viewWrapper", [
     },
 
     componentDidMount() {
-      document.addEventListener("online", this._onOnline);
-      document.addEventListener("offline", this._onOffline);
+      window.addEventListener("online", this._onOnline);
+      window.addEventListener("offline", this._onOffline);
     },
 
     componentWillUnmount() {
-      document.removeEventListener("online", this._onOnline);
-      document.removeEventListener("offline", this._onOffline);
+      window.removeEventListener("online", this._onOnline);
+      window.removeEventListener("offline", this._onOffline);
     }
   });
 });
