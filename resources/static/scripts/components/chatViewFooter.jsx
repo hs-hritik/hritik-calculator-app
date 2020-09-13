@@ -511,6 +511,15 @@ define("components/chatViewFooter", [
         const _setAxActiveIndex = this._setAxActiveIndex.bind(this, {
           selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.SELECTOR
         });
+        let inputValue = value;
+
+        if (!value && type === USER_INPUT_TYPES.DATE) {
+          const currentDate = new Date();
+
+          // currentDate.toISOString() returns something like this - "2020-09-14T11:21:08.598Z"
+          // We need the date part only, hence we slice this value till "2020-09-14" (length = 10)
+          inputValue = currentDate.toISOString().slice(0, 10);
+        }
 
         const _onFooterFocus = () => {
           onFooterFocus();
@@ -524,7 +533,7 @@ define("components/chatViewFooter", [
             type={htmlInputType}
             dir="auto"
             disabled={disabled}
-            value={value}
+            value={inputValue}
             ref={this._saveUserInputRef}
             placeholder={inputPlaceholder}
             onChange={this._onInputFieldValueChange}
