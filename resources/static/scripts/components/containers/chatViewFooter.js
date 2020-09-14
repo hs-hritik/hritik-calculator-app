@@ -79,7 +79,8 @@ define("components/containers/chatViewFooter", [
       };
     } else if (userIsRedacted) {
       failureConfig = {
-        message: text.userRedactionMessage
+        message: text.userRedactionMessage,
+        allowRetry: true
       };
     } else if (pollerFailureCount >= MAX_POLLER_FAILURES_ALLOWED) {
       failureConfig = {
