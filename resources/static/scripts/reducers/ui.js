@@ -10,14 +10,16 @@ define("reducers/ui", [
   "constants/errors",
   "constants/localization",
   "helpers/ui",
-  "gunpowder/utils/object"
+  "gunpowder/utils/object",
+  "utils/dataType"
 ], function(
   ACTION_TYPES,
   UI_CONFIG_CONSTANTS,
   errorConstants,
   localizationConstants,
   uiHelpers,
-  objUtils
+  objUtils,
+  dataTypeUtils
 ) {
   "use strict";
 
@@ -166,35 +168,70 @@ define("reducers/ui", [
 
   /**
    * Return update object to update text strings in state
-   * @param {Object} xhrTextStrings - map of strings received from XHR
+   * @param {Object} config - XHR returned response
+   * @param {Object} config.translations - map of strings received from XHR
    * @returns {Object} - update object to set values in the store
    */
-  const getUiTextUpdateObj = (xhrTextStrings) => {
-    const updateObj = {};
+  const getUiTextUpdateObj = (config) => {
+    const xhrTextStrings = config.translations;
     const {UI_STRING_KEYS} = localizationConstants;
+    const textUpdateObj = {
+      greetingMsg: {$set: config.greeting},
+      chatViewHeader: {$set: config.appearance.widget_title},
+      csatViewHeader: {$set: config.appearance.widget_title},
+      csatBotRequestMsg: {$set: config.csat_bot.req_msg},
+      chatViewConversationResolutionQuestion: {
+        // @TODO - Confirm the key after BE integration
+        $set: config.resolution_question
+      }
+    };
+    const businessHoursEnabled = config.business_hours_enabled;
+    const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
+
+    if (businessHoursEnabled) {
+      const businessHours = config.business_hours;
+      textUpdateObj.businessHoursViewHeader = {
+        $set: businessHours.offline_title
+      };
+      textUpdateObj.businessHoursContactFormMessage = {
+        $set: businessHours.cf_message
+      };
+      textUpdateObj.businessHoursOfflineMessage = {
+        $set: businessHours.offline_message
+      };
+    }
+
+    if (personalisedConversationIsEnabled) {
+      textUpdateObj.systemNickname = {
+        $set: config.avatar.system_nickname
+      };
+    }
 
     objUtils.forEachKey(xhrTextStrings, (xhrKey, uiString) => {
       const stateKey = UI_STRING_KEYS[xhrKey];
-      updateObj[stateKey] = {$set: uiString};
+      textUpdateObj[stateKey] = {$set: uiString};
     });
 
-    return updateObj;
+    return textUpdateObj;
   };
 
   /**
    * Return update object for given ui config
-   * @param {Object} storeUiConfig - config object already set in ui store
-   * @param {Object} uiConfig - config object passed by developers
+   * @param {Object} state - UI Store object
+   * @param {Object} helpshiftConfig - The global client config object
    * @returns {Object} - update ui object used to set in store
    */
-  const getSetUiConfigUpdateObj = (storeUiConfig, uiConfig) => {
+  const _getSetUiConfigUpdateObj = (state, helpshiftConfig) => {
+    const uiConfig = _getUiConfig(state, helpshiftConfig);
+    const validUiConfig = uiHelpers.getValidUiConfig(uiConfig);
+    const storeUiConfig = state.uiConfig;
     const allowedUpdateKeys = ["key", "value"];
     let baseColor = storeUiConfig[BASE_COLOR].value;
     const updateObj = {};
 
-    for (const key in uiConfig) {
-      if (uiConfig.hasOwnProperty(key)) {
-        const config = uiConfig[key];
+    for (const key in validUiConfig) {
+      if (validUiConfig.hasOwnProperty(key)) {
+        const config = validUiConfig[key];
         updateObj[key] = {};
         // Bypass unwanted keys set in ui config
         allowedUpdateKeys.forEach((allowedKey) => {
@@ -223,7 +260,7 @@ define("reducers/ui", [
       const accentColor = FLATTENED_UI_CONFIG[`${set}_ACCENT_COLOR`];
       const accentColorLight = FLATTENED_UI_CONFIG[`${set}_ACCENT_COLOR_LIGHT`];
       const accentColorConfig =
-        uiConfig[accentColor] || uiConfig[BASE_COLOR] || storeUiConfig[BASE_COLOR];
+        validUiConfig[accentColor] || validUiConfig[BASE_COLOR] || storeUiConfig[BASE_COLOR];
 
       updateObj[accentColor] = {
         value: {$set: accentColorConfig.value}
@@ -242,8 +279,8 @@ define("reducers/ui", [
     // 2. developer config's 'base' set
     // 3. ui state (default)
     const headerBgConfig =
-      uiConfig[INITIAL_PRIMARY_BG_COLOR] ||
-      uiConfig[BASE_COLOR] ||
+      validUiConfig[INITIAL_PRIMARY_BG_COLOR] ||
+      validUiConfig[BASE_COLOR] ||
       storeUiConfig[INITIAL_PRIMARY_BG_COLOR];
     updateObj[HEADER_BG_COLOR] = {
       value: {$set: headerBgConfig.value}
@@ -254,7 +291,7 @@ define("reducers/ui", [
     // 2. ui state (default)
     // @NOTE :- There is no option to set primary text color in 'base' set
     const headerTextConfig =
-      uiConfig[INITIAL_PRIMARY_TEXT_COLOR] || storeUiConfig[INITIAL_PRIMARY_TEXT_COLOR];
+      validUiConfig[INITIAL_PRIMARY_TEXT_COLOR] || storeUiConfig[INITIAL_PRIMARY_TEXT_COLOR];
     updateObj[HEADER_TEXT_COLOR] = {
       value: {$set: headerTextConfig.value}
     };
@@ -339,45 +376,49 @@ define("reducers/ui", [
     return updateObj;
   };
 
+  /**
+   * Returns the UI config
+   * @param {Object} state - UI Store object
+   * @param {Object} helpshiftConfig - The global client config object
+   * @returns {Object} - UI config object
+   */
+  const _getUiConfig = (state, helpshiftConfig) => {
+    const {uiConfig, developerUiConfig} = state;
+
+    let finalUiConfig;
+
+    // If ui config is passed in helpshift config options, use that
+    // Else use previously set developer config
+    // Else create a ui config having base color set from dashboard
+    if (
+      dataTypeUtils.isObject(helpshiftConfig.uiConfig) &&
+      Object.keys(helpshiftConfig.uiConfig).length
+    ) {
+      finalUiConfig = helpshiftConfig.uiConfig;
+    } else if (developerUiConfig) {
+      finalUiConfig = developerUiConfig;
+    } else {
+      const baseData = BASE_COLOR.split(".");
+      // name of base set
+      const baseSet = baseData[0];
+      // value of base set
+      const baseValue = baseData[1];
+
+      finalUiConfig = {
+        [baseSet]: {
+          [baseValue]: uiConfig[BASE_COLOR].value
+        }
+      };
+    }
+
+    return finalUiConfig;
+  };
+
   return (state = INITIAL_STATE, action) => {
     switch (action.type) {
-      case ACTION_TYPES.SET_WM_CONFIG:
+      case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
         const {config} = action;
-
-        const textUpdateObj = {
-          greetingMsg: {$set: config.greeting},
-          chatViewHeader: {$set: config.appearance.widget_title},
-          csatViewHeader: {$set: config.appearance.widget_title},
-          csatBotRequestMsg: {$set: config.csat_bot.req_msg},
-          chatViewConversationResolutionQuestion: {
-            // @TODO - Confirm the key after BE integration
-            $set: config.resolution_question
-          }
-        };
-        const businessHoursEnabled = config.business_hours_enabled;
-        const personalisedConversationIsEnabled = config.personalised_conversation_enabled;
-
-        if (businessHoursEnabled) {
-          const businessHours = config.business_hours;
-          textUpdateObj.businessHoursViewHeader = {
-            $set: businessHours.offline_title
-          };
-          textUpdateObj.businessHoursContactFormMessage = {
-            $set: businessHours.cf_message
-          };
-          textUpdateObj.businessHoursOfflineMessage = {
-            $set: businessHours.offline_message
-          };
-        }
-
-        if (personalisedConversationIsEnabled) {
-          textUpdateObj.systemNickname = {
-            $set: config.avatar.system_nickname
-          };
-        }
-
-        return update(state, {
-          text: textUpdateObj,
+        const updatedConfig = update(state, {
           uiConfig: {
             [BASE_COLOR]: {
               value: {$set: config.appearance.primary_color}
@@ -385,21 +426,24 @@ define("reducers/ui", [
           }
         });
 
+        /**
+         * Set UI configuration in the state using the configuration set in the admin
+         * dashboard and by the custom configuration passed with helpshiftConfig.
+         */
+        const uiConfig = _getSetUiConfigUpdateObj(updatedConfig, action.helpshiftConfig);
+        const developerUiConfig = _getUiConfig(state, action.helpshiftConfig);
+
+        return update(state, {
+          text: getUiTextUpdateObj(config),
+          uiConfig: uiConfig,
+          developerUiConfig: {$set: developerUiConfig}
+        });
+
       case ACTION_TYPES.SET_GREETING_MESSAGE:
         return update(state, {
           text: {
             greetingMsg: {$set: action.message}
           }
-        });
-
-      case ACTION_TYPES.SET_UI_CONFIG:
-        return update(state, {
-          uiConfig: getSetUiConfigUpdateObj(state.uiConfig, action.uiConfig)
-        });
-
-      case ACTION_TYPES.SET_UI_TEXT:
-        return update(state, {
-          text: getUiTextUpdateObj(action.text)
         });
 
       case ACTION_TYPES.UPDATE_UI_CONFIG:

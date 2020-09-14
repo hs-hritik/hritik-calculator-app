@@ -28,16 +28,6 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
   });
 
   /**
-   * Return action to set mobile info
-   * @param {Boolean} browserIsMobile
-   * @returns {Object} - the action object
-   */
-  const setMobileInfo = (browserIsMobile) => ({
-    type: ACTION_TYPES.SET_MOBILE_INFO,
-    browserIsMobile
-  });
-
-  /**
    * Return action to reset state
    * @returns {Object} - the action object
    */
@@ -368,10 +358,29 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     widgetShouldAutoOpen
   });
 
+  /**
+   * Action to set parent page visibility
+   * @param {boolean} parentPageIsVisible - True, when the page is visible to user
+   * @returns {Object} - Action object
+   */
+  const handleParentPageVisibilityChange = (parentPageIsVisible) => ({
+    type: ACTION_TYPES.PARENT_PAGE_IS_VISIBLE,
+    parentPageIsVisible
+  });
+
+  /*
+   * Action to set lite sdk config data
+   * @param {Object[]} data - Config data
+   * @returns {Object} - Action
+   */
+  const setLiteSdkConfig = (data) => ({
+    type: ACTION_TYPES.SET_LITE_SDK_CONFIG,
+    data
+  });
+
   return {
     updateActiveView,
     toggleAgentTyping,
-    setMobileInfo,
     reset,
     setGreetingMsg,
     setLanguage,
@@ -401,6 +410,8 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     intentSelected,
     intentUnselected,
     stopIntentsSearch,
-    setWidgetShouldAutoOpen
+    setWidgetShouldAutoOpen,
+    handleParentPageVisibilityChange,
+    setLiteSdkConfig
   };
 });

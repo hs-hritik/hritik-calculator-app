@@ -35,7 +35,10 @@ define("reducers/chatView", [
     CURSOR_TYPES,
     DEFAULT_LIST_PICKER_NAVIGATION_STATE,
     INTENTS_MINIMUM_CHAR_FOR_SEARCH,
-    INTENTS_SEARCH_ALGO
+    INTENTS_SEARCH_ALGO,
+    POLLING_STRATEGY_TYPES,
+    AGRESSIVE_POLLING_TIMEOUT,
+    CONSERVATIVE_POLLING_INTERVAL
   } = CHAT_VIEW_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
@@ -233,7 +236,9 @@ define("reducers/chatView", [
     error: INITIAL_ERROR_STATE,
     localGreetingMessageId: "",
     // It contains key-value pair of avatarId and last updated timestamp
-    avatarLastUpdatedTs: {}
+    avatarLastUpdatedTs: {},
+    pollingStrategy: POLLING_STRATEGY_TYPES.AGGRESSIVE,
+    pollingInterval: AGRESSIVE_POLLING_TIMEOUT
   };
 
   /**
@@ -295,7 +300,7 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.CREATE_PREISSUE_SUCCESS: {
         // User input should be disabled for preissues.
-        const userInputShouldBeDisabled = action.issueDetails.issueType === ISSUE_TYPE.PRE_ISSUE;
+        const userInputShouldBeDisabled = action.issueType === ISSUE_TYPE.PRE_ISSUE;
         // If the current input type is the default one, reset the value.
         const defaultInputValue = isInputTypeDefault(state)
           ? ""
@@ -524,6 +529,39 @@ define("reducers/chatView", [
         return update(state, {
           unreadIssues: {$merge: action.issues},
           unreadMessageIds: {$push: action.messageIds}
+        });
+
+      case ACTION_TYPES.PAGE_VISIBILITY_CHANGE:
+        const {parentPageIsVisible, pollingStrategy, widgetIsMinimized} = action.data;
+
+        if (
+          (widgetIsMinimized || !parentPageIsVisible) &&
+          pollingStrategy !== POLLING_STRATEGY_TYPES.CONSERVATIVE
+        ) {
+          return update(state, {
+            pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE},
+            pollingInterval: {$set: 0}
+          });
+        } else if (
+          parentPageIsVisible &&
+          !widgetIsMinimized &&
+          pollingStrategy !== POLLING_STRATEGY_TYPES.AGGRESSIVE
+        ) {
+          return update(state, {
+            pollingStrategy: {$set: POLLING_STRATEGY_TYPES.AGGRESSIVE},
+            pollingInterval: {$set: AGRESSIVE_POLLING_TIMEOUT}
+          });
+        }
+
+        return update(state, {
+          pollingStrategy: {$set: state.pollingStrategy},
+          pollingInterval: {$set: state.pollingInterval}
+        });
+
+      case ACTION_TYPES.UPDATE_POLLING_DATA:
+        return update(state, {
+          pollingStrategy: {$set: action.pollingStrategy},
+          pollingInterval: {$set: action.pollingInterval}
         });
 
       case ACTION_TYPES.MARK_MESSAGES_SEEN_XHR_REQUEST:
@@ -910,6 +948,13 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
+
+      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
+        // If lite sdk, change the default value of polling interval stragtegy
+        return update(state, {
+          pollingInterval: {$set: CONSERVATIVE_POLLING_INTERVAL.MINIMUM},
+          pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE}
+        });
 
       default:
         return state;

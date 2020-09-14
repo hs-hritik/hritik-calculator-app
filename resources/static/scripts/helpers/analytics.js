@@ -288,10 +288,7 @@ define("helpers/analytics", [
           // set by the udpated value in state. For now, in case of custom
           // bots we are not storing the faq suggestion read flag in state, we
           // are directly using localstorage.
-          lsHelpers.setSuggestedFaqReadTracked(
-            true,
-            commonHelpers.getCbFaqSuggestionReadLsKey(config.msgId)
-          );
+          lsHelpers.set(commonHelpers.getCbFaqSuggestionReadLsKey(config.msgId), true);
         } else {
           store.dispatch(actionCreators.setSuggestedFaqReadTracked(true));
         }
