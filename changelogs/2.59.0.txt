@@ -1,0 +1,6 @@
+Branches:
+feature/CONEX-1342_change_webchat_default_header_color
+
+Changelog:
+Fix the default webchat color
+Update webchat default header color from #43BF6C to #453FB9
