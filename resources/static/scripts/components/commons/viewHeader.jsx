@@ -18,8 +18,6 @@ define("components/commons/viewHeader", [
 
   const IS_MOBILE = browserUtils.isMobile();
 
-  const HEADER_CLOSE_BUTTON_WIDTH = 24;
-
   return createReactClass({
     displayName: "ViewHeader",
     propTypes: {
@@ -62,15 +60,6 @@ define("components/commons/viewHeader", [
         "hs-header--with-avatar": showAvatar,
         "hs-header--mobile": IS_MOBILE
       });
-
-      if (IS_MOBILE) {
-        return (
-          <div className={headerClasses}>
-            {this._renderCloseButton()}
-            {this._renderTitleAndAvatar()}
-          </div>
-        );
-      }
 
       return (
         <div className={headerClasses}>
@@ -160,22 +149,6 @@ define("components/commons/viewHeader", [
     _onCloseBtnClick() {
       if (this.props.onCloseBtnClick) {
         this.props.onCloseBtnClick();
-      }
-    },
-
-    componentDidMount() {
-      // @TODO: Lite Sdk: Think of another of doing this instead of directly manipulating the DOM
-      if (IS_MOBILE) {
-        const headerWrapperEl = document.querySelector(".hs-header__avatar-title-wrapper");
-
-        if (headerWrapperEl) {
-          const headerWrapperElCurrentMarginLeftValue = window
-            .getComputedStyle(headerWrapperEl)
-            .getPropertyValue("margin-left");
-
-          headerWrapperEl.style.marginLeft =
-            parseInt(headerWrapperElCurrentMarginLeftValue, 10) - HEADER_CLOSE_BUTTON_WIDTH + "px";
-        }
       }
     }
   });
