@@ -17,7 +17,7 @@
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.58.0";
+    PATH = "/html/index.html?v=2.59.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
