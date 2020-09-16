@@ -989,6 +989,7 @@ define("actions/appState", [
    *
    * @param {Object} config - Config object
    * @param {Boolean} config.resetSessionId - Whether to reset the session id or not.
+   * @param {Boolean} config.withoutGreetingMessage - Whether to add greeting message or not
    */
   const startNewConversation = (config) => {
     return (dispatch, getState) => {
@@ -1002,7 +1003,10 @@ define("actions/appState", [
       // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
-        dispatch(chatViewActions.addGreetingMessage());
+
+        if (!config.withoutGreetingMessage) {
+          dispatch(chatViewActions.addGreetingMessage());
+        }
 
         if (config.resetSessionId) {
           dispatch(updateAnalyticsSessionId());
@@ -1194,7 +1198,7 @@ define("actions/appState", [
         case ERROR_TYPES.PRE_ISSUE_FAILURE:
           // For non-specific errors with preissue creation, we assume that the preissue wasn't
           // created successfully, so we try to restart the conversation.
-          dispatch(startNewConversation({resetSessionId: true}));
+          dispatch(startNewConversation({resetSessionId: true, withoutGreetingMessage: true}));
           break;
 
         case ERROR_TYPES.PRE_ISSUE_TIME_OUT:
