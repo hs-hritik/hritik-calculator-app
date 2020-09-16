@@ -155,7 +155,8 @@
     ON_UI_CONFIG_CHANGE: "onUiConfigChange",
     ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
     ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser",
-    SAFE_AREA_COLOR: "safeAreaColor"
+    SAFE_AREA_COLOR: "safeAreaColor",
+    WEB_SDK_CONFIG_LOAD: "webSdkConfigLoad"
   };
 
   /**
@@ -168,7 +169,8 @@
     SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
     SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC,
     SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER,
-    SUPPORTED_EVENTS.SAFE_AREA_COLOR
+    SUPPORTED_EVENTS.SAFE_AREA_COLOR,
+    SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD
   ];
 
   // Errors message strings
@@ -1205,6 +1207,8 @@
           case EVENT_TYPES.SDK_CONFIG_LOADED:
             // Process wm config to set appearance, etc.
             processWmConfig(data.wmConfig);
+
+            callApiEventHandler(SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD);
             break;
 
           case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
