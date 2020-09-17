@@ -768,11 +768,20 @@ define("components/chatViewFooter", [
         // Cancal the click event to not loose focus from the reply box
         // (ie. to not collapse the virtual keyboard in case of mobile phones)
         ev.preventDefault();
+
         this.setState({
           shouldVirtualKeyboardRemainOpen: true
         });
         _setAxActiveIndex();
       };
+
+      const _onSubmitFocus = () => {
+        if (this._userInputRef) {
+          this._userInputRef.focus();
+        }
+        _setAxActiveIndex();
+      };
+
       const fieldIsInvalid = !!errorMsg;
       const inputAriaLabel = ariaLabelSendMessage;
 
@@ -782,7 +791,7 @@ define("components/chatViewFooter", [
           onClick={_onSubmitReply}
           tabIndex="0"
           data-label={METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.DATA_LABEL}
-          onFocus={_setAxActiveIndex}
+          onFocus={_onSubmitFocus}
           aria-label={inputAriaLabel}
           role="button"
           aria-disabled={userInputIsDisabled}
