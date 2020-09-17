@@ -5,12 +5,11 @@
  */
 
 define("helpers/message", [
-  "store",
   "constants/message",
   "helpers/common",
   "gunpowder/utils/uuid",
   "gunpowder/utils/date"
-], function(store, messageConstants, commonHelpers, uuidGenerator, dateUtils) {
+], function(messageConstants, commonHelpers, uuidGenerator, dateUtils) {
   "use strict";
 
   const {
@@ -254,6 +253,7 @@ define("helpers/message", [
    * @param {String} config.latestMessage - latest message
    * @param {Boolean} config.isIssue - issue type is issue
    * @param {Boolean} config.botStepInProgress - Whether bot is in progress currently
+   * @param {array} config.readFaqList - List of FAQs read by the user so far
    * @returns {Object} - prepared xhr data
    */
   const getPreparedMessageDataFromUserInput = (config) => {
@@ -261,7 +261,8 @@ define("helpers/message", [
       input: {value, skipped, skipLabel, selectedOption},
       latestMessage: {type: latestMsgType, id: messageId, chatBotInfo},
       isIssue,
-      botStepInProgress
+      botStepInProgress,
+      readFaqList
     } = config;
 
     const responseMessageType = getUserResponseMessageType(latestMsgType);
@@ -286,9 +287,8 @@ define("helpers/message", [
       // FAQs were read (max 10) so far by the end user to the backend. Backend
       // would then pass that information to data plat.
       // @TODO: Store the max faqs to be sent (10) in a constant
-      const readFaqs = store.getState().chatView.readFaqList;
-      if (readFaqs.length) {
-        requestData.read_faqs = JSON.stringify(readFaqs.slice(0, 10));
+      if (readFaqList.length) {
+        requestData.read_faqs = JSON.stringify(readFaqList.slice(0, 10));
       }
     }
 

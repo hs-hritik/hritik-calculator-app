@@ -2164,7 +2164,8 @@ define("actions/chatView", [
     const {
       chatView: {
         userInput,
-        botState: {botStepInProgress, botStepMessage}
+        botState: {botStepInProgress, botStepMessage},
+        readFaqList
       },
       appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId, liteSdkConfig}
     } = getState();
@@ -2193,7 +2194,8 @@ define("actions/chatView", [
         input: userInput,
         latestMessage,
         isIssue,
-        botStepInProgress
+        botStepInProgress,
+        readFaqList
       });
     }
 
