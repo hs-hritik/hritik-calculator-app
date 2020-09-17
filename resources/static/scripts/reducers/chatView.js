@@ -242,7 +242,8 @@ define("reducers/chatView", [
     // It contains key-value pair of avatarId and last updated timestamp
     avatarLastUpdatedTs: {},
     pollingStrategy: POLLING_STRATEGY_TYPES.AGGRESSIVE,
-    pollingInterval: AGRESSIVE_POLLING_TIMEOUT
+    pollingInterval: AGRESSIVE_POLLING_TIMEOUT,
+    xhrEndedDueToNetworkDisconnect: false
   };
 
   /**
@@ -967,6 +968,25 @@ define("reducers/chatView", [
           pollingInterval: {$set: CONSERVATIVE_POLLING_INTERVAL.MINIMUM},
           pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE}
         });
+
+      case ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT:
+        return update(state, {
+          xhrEndedDueToNetworkDisconnect: {$set: true}
+        });
+
+      case ACTION_TYPES.DEVICE_ONLINE_SUCCESS:
+        const updateObj = {
+          userInput: {
+            disabled: {$set: false}
+          },
+          systemTyping: {$set: false}
+        };
+
+        if (state.userReplyXhrInProgress) {
+          updateObj.userReplyXhrInProgress = {$set: false};
+        }
+
+        return update(state, updateObj);
 
       default:
         return state;

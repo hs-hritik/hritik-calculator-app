@@ -2169,7 +2169,7 @@ define("actions/chatView", [
       },
       appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId, liteSdkConfig}
     } = getState();
-    const {msgBody, msgType, onSuccess, onEnd} = config;
+    const {msgBody, msgType, onSuccess} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
     const isIssue = issueType === ISSUE_TYPE.ISSUE;
     const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage();
@@ -2270,7 +2270,13 @@ define("actions/chatView", [
           dispatch(chatViewActionCreators.userReplyFailure());
         }
       },
-      onEnd
+      onEnd: () => {
+        if (!window.navigator.onLine) {
+          dispatch({
+            type: ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT
+          });
+        }
+      }
     });
   };
 
@@ -2670,6 +2676,13 @@ define("actions/chatView", [
               }
             })
           );
+        },
+        onEnd: () => {
+          if (!window.navigator.onLine) {
+            dispatch({
+              type: ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT
+            });
+          }
         }
       });
     };

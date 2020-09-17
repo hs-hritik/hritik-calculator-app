@@ -378,6 +378,14 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     data
   });
 
+  /**
+   * Action to bring back the default state of user input after
+   * device comes back online after network disconnect
+   */
+  const deviceIsOnline = () => ({
+    type: ACTION_TYPES.DEVICE_ONLINE_SUCCESS
+  });
+
   return {
     updateActiveView,
     toggleAgentTyping,
@@ -412,6 +420,7 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
     stopIntentsSearch,
     setWidgetShouldAutoOpen,
     handleParentPageVisibilityChange,
-    setLiteSdkConfig
+    setLiteSdkConfig,
+    deviceIsOnline
   };
 });
