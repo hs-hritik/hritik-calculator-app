@@ -12,7 +12,8 @@ define("reducers/chatView", [
   "gunpowder/constants/widgets/dragIt",
   "gunpowder/utils/object",
   "gunpowder/utils/array",
-  "helpers/intent"
+  "helpers/intent",
+  "utils/browser"
 ], function(
   APP_STATE_CONSTANTS,
   CHAT_VIEW_CONSTANTS,
@@ -21,7 +22,8 @@ define("reducers/chatView", [
   dragItConstants,
   objUtils,
   arrayUtils,
-  intentHelpers
+  intentHelpers,
+  browserUtils
 ) {
   "use strict";
 
@@ -42,6 +44,8 @@ define("reducers/chatView", [
   } = CHAT_VIEW_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
+
+  const IS_MOBILE = browserUtils.isMobile();
 
   const INITIAL_ERROR_STATE = {
     type: "",
@@ -928,6 +932,14 @@ define("reducers/chatView", [
 
         userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
         userInputUpdateObj.disabled = false;
+
+        if (userInput.type === USER_INPUT_TYPES.DATE && IS_MOBILE) {
+          const currentDate = new Date();
+
+          // currentDate.toISOString() returns something like this - "2020-09-14T11:21:08.598Z"
+          // We need the date part only, hence we slice this value till "2020-09-14" (length = 10)
+          userInputUpdateObj.value = currentDate.toISOString().slice(0, 10);
+        }
 
         return update(state, {
           userInput: {$set: userInputUpdateObj},
