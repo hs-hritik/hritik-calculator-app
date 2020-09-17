@@ -348,13 +348,11 @@ define("actions/appState", [
       return;
     }
 
-    const previousUserId = lsHelpers.get(LS_KEYS.USER_ID);
-
-    if (userId !== previousUserId) {
-      // If previousUserId is not present,
-      // anon user -> a user logged in
-      // If previousUserId is present,
-      // A user was logged in -> they logged out -> a new user logged in.
+    if (userId) {
+      // Cases in which anonymous user has to be remove
+      // - anon user -> a user logged in
+      // - A user was logged in -> they logged out -> a new user logged in.
+      // - A user was logged in -> they logged out -> then the same user logged in.
       lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
   };
