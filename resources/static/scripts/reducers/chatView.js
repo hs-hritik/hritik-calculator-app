@@ -243,7 +243,8 @@ define("reducers/chatView", [
     avatarLastUpdatedTs: {},
     pollingStrategy: POLLING_STRATEGY_TYPES.AGGRESSIVE,
     pollingInterval: AGRESSIVE_POLLING_TIMEOUT,
-    xhrEndedDueToNetworkDisconnect: false
+    xhrEndedDueToNetworkDisconnect: false,
+    userReplyXhrInProgress: false
   };
 
   /**
@@ -360,12 +361,14 @@ define("reducers/chatView", [
         const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
         // Show fake typing indicator for preissues and issues with an ongoing bot
         const systemTypingShouldRender = isPreIssue || (isIssue && botStepInProgress);
+        const userInputShouldBeEnabled = !IS_MOBILE;
 
         return update(state, {
           userInput: {
-            disabled: {$set: true}
+            disabled: {$set: userInputShouldBeEnabled}
           },
-          systemTyping: {$set: systemTypingShouldRender}
+          systemTyping: {$set: systemTypingShouldRender},
+          userReplyXhrInProgress: {$set: true}
         });
       }
 
@@ -391,7 +394,8 @@ define("reducers/chatView", [
             defaultInputValue: {$set: defaultInputValue},
             errorMsg: {$set: ""}
           },
-          messageList: {$set: newMessageList}
+          messageList: {$set: newMessageList},
+          userReplyXhrInProgress: {$set: false}
         };
 
         if (messageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
@@ -408,7 +412,8 @@ define("reducers/chatView", [
           userInput: {
             disabled: {$set: false}
           },
-          systemTyping: {$set: false}
+          systemTyping: {$set: false},
+          userReplyXhrInProgress: {$set: false}
         });
 
       case ACTION_TYPES.SEARCH_INTENTS: {

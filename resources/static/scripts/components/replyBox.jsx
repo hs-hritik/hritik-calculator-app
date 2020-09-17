@@ -44,7 +44,8 @@ define("components/replyBox", [
       onClick: PropTypes.func,
       ariaLabel: PropTypes.string,
       shouldVirtualKeyboardRemainOpen: PropTypes.bool,
-      onReplyBoxFocusAfterReplySubmit: PropTypes.func
+      onReplyBoxFocusAfterReplySubmit: PropTypes.func,
+      userReplyXhrInProgress: PropTypes.bool
     },
 
     render() {
@@ -113,9 +114,14 @@ define("components/replyBox", [
      * Handler for reply text area change event.
      */
     _onReplyTextChange(ev) {
+      if (this.props.userReplyXhrInProgress) {
+        return;
+      }
+
       ax.setActiveIndex({
         selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
       });
+
       this.props.onChangeReplyBoxValue(ev.target.value);
     },
 

@@ -60,7 +60,8 @@ define("components/containers/chatViewFooter", [
         unreadMessageIds,
         error,
         botState: {botStepInProgress},
-        intents
+        intents,
+        userReplyXhrInProgress
       },
       csatView: {rating},
       ui: {text}
@@ -111,7 +112,8 @@ define("components/containers/chatViewFooter", [
       intentsFeatureIsEnabled,
       issueType,
       attachmentsWhitelist,
-      liteSdkOs: os
+      liteSdkOs: os,
+      userReplyXhrInProgress
     };
 
     if (intentsFeatureIsEnabled) {

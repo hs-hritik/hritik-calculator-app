@@ -2309,12 +2309,15 @@ define("actions/chatView", [
       const state = getState();
       const {
         appState: {activeIssueId, issueType, issueState},
-        chatView: {userInput, intents},
+        chatView: {userInput, intents, userReplyXhrInProgress},
         ui: {text}
       } = state;
       const trimmedValue = userInput.value.trim();
 
-      if (!userInput.selectedOption && (userInput.disabled || !trimmedValue)) {
+      if (
+        userReplyXhrInProgress ||
+        (!userInput.selectedOption && (userInput.disabled || !trimmedValue))
+      ) {
         return;
       }
 

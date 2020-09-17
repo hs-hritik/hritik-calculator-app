@@ -230,7 +230,8 @@ define("components/chatViewFooter", [
        * Allowed file mime types list
        */
       attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
-      liteSdkOs: PropTypes.string
+      liteSdkOs: PropTypes.string,
+      userReplyXhrInProgress: PropTypes.bool
     },
     getInitialState() {
       return {
@@ -446,13 +447,14 @@ define("components/chatViewFooter", [
         onFooterBlur,
         browserIsMobile,
         activeFooter,
-        text
+        text,
+        userReplyXhrInProgress
       } = this.props;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
       const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
       const footerClasses = classes("hs-chat-footer", {
         "hs-chat-footer--form-error": errorMsg,
-        "hs-chat-footer--form-invalid": disabled || !value.trim(),
+        "hs-chat-footer--form-invalid": disabled || !value.trim() || userReplyXhrInProgress,
         "hs-chat-footer--mobile": browserIsMobile,
         "hs-chat-footer--no-padding": inputIsListPicker,
         "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened,
@@ -484,6 +486,10 @@ define("components/chatViewFooter", [
           ariaLabel = text.chatViewIssueRejectionQuestion;
         }
 
+        const replyBoxClasses = classes("hs-chat-footer__text-area", {
+          disabled: userReplyXhrInProgress
+        });
+
         inputComponentEl = (
           <ReplyBox
             value={value}
@@ -497,12 +503,13 @@ define("components/chatViewFooter", [
             onFooterFocus={this.props.onFooterFocus}
             onFooterBlur={this.props.onFooterBlur}
             onHeightChange={this._onReplyBoxHeightChange}
-            className="hs-chat-footer__text-area"
+            className={replyBoxClasses}
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
             ariaLabel={ariaLabel}
             shouldVirtualKeyboardRemainOpen={this.state.shouldVirtualKeyboardRemainOpen}
             onReplyBoxFocusAfterReplySubmit={this._onReplyBoxFocusAfterReplySubmit}
+            userReplyXhrInProgress={userReplyXhrInProgress}
           />
         );
       } else {
@@ -517,10 +524,13 @@ define("components/chatViewFooter", [
           _setAxActiveIndex();
         };
         const inputIsInvalid = !!errorMsg;
+        const inputClasses = classes("hs-chat-footer__text-field", {
+          disabled: userReplyXhrInProgress
+        });
 
         inputComponentEl = (
           <input
-            className="hs-chat-footer__text-field"
+            className={inputClasses}
             type={htmlInputType}
             dir="auto"
             disabled={disabled}
@@ -1215,6 +1225,10 @@ define("components/chatViewFooter", [
      * @param {Object} event
      */
     _onInputFieldValueChange(ev) {
+      if (this.props.userReplyXhrInProgress) {
+        return;
+      }
+
       this.props.onValueChangeInputField(ev.target.value);
     },
 
