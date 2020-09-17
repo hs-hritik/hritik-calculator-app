@@ -55,7 +55,8 @@ define("components/replyBox", [
         className,
         placeholder,
         dataLabel,
-        ariaLabel
+        ariaLabel,
+        browserIsMobile
       } = this.props;
 
       return (
@@ -72,7 +73,7 @@ define("components/replyBox", [
           onHeightChange={this._onHeightChange}
           placeholder={placeholder}
           disabled={disabled}
-          autoFocus
+          autoFocus={!browserIsMobile}
           ref={this._saveTextAreaRef}
           dir="auto"
           dataLabel={dataLabel}

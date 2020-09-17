@@ -531,7 +531,7 @@ define("components/chatViewFooter", [
             onKeyUp={this._onInputFieldKeyUp}
             onFocus={_onFooterFocus}
             onBlur={onFooterBlur}
-            autoFocus
+            autoFocus={!browserIsMobile}
             tabIndex="0"
             data-label={METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.DATA_LABEL}
             onClick={_setAxActiveIndex}
@@ -1523,7 +1523,7 @@ define("components/chatViewFooter", [
       ax.setActiveView(activeViewConstants.CHAT);
 
       // In footer is rendered add active footer selectors in meta list
-      if (this._isFooterRendered()) {
+      if (this._isFooterRendered() && !this.props.browserIsMobile) {
         this._replaceAxFooterSelectors();
       }
 
