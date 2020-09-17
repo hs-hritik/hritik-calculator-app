@@ -36,9 +36,10 @@ define("helpers/message", [
   /**
    * Return processed message
    * @param {Object} message - unprocessed message
+   * @param {boolean} contextIsLiteSdk - Is web chat running in the Lite SDK context?
    * @returns {Object} - processed message
    */
-  const getProcessedMessage = (msg) => {
+  const getProcessedMessage = (msg, contextIsLiteSdk) => {
     if (msg.processed) {
       return msg;
     }
@@ -95,7 +96,9 @@ define("helpers/message", [
             switch (actionType) {
               case ACTION_TYPES.LINK:
                 actionData.url = action.data.url;
-                actionData.shouldOpenInNewTab = action.data.open_in_new_tab;
+                // Open an action link in a new tab if web chat is running in the Lite SDK context
+                // irrespective of open_in_new_tab value
+                actionData.shouldOpenInNewTab = contextIsLiteSdk || action.data.open_in_new_tab;
                 break;
               case ACTION_TYPES.CALL:
                 actionData.phoneNumber = action.data.phone_number;
@@ -142,11 +145,15 @@ define("helpers/message", [
 
   /**
    * Return processed messages
-   * @param {Object} messages - unprocessed messages
+   * @param {Object} data
+   * @param {Object} data.messages - unprocessed messages
+   * @param {boolean} data.contextIsLiteSdk - Is web chat running in the Lite SDK context?
    * @returns {Array} - processed messages
    */
-  const getProcessedMessages = (messages) => {
-    return messages.map(getProcessedMessage);
+  const getProcessedMessages = ({messages, contextIsLiteSdk}) => {
+    return messages.map((message) => {
+      return getProcessedMessage(message, contextIsLiteSdk);
+    });
   };
 
   /**

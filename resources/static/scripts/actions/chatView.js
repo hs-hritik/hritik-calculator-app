@@ -208,19 +208,20 @@ define("actions/chatView", [
    * Action to add messages in message list.
    * This action will push given messages to the issue's messages array.
    * @param {Object} config - config
-   * @param {Array} config.messages - array of response messages
-   * @param {Boolean} [config.process] - whether to process messages
-   * @param {Boolean} [config.prepend] - whether to push messages at the start
-   * @param {String} [config.responseType] - Type of response when addMessage is called
+   * @param {array} config.messages - array of response messages
+   * @param {boolean} [config.process] - whether to process messages
+   * @param {boolean} [config.prepend] - whether to push messages at the start
+   * @param {string} [config.responseType] - Type of response when addMessage is called
+   * @param  {string} [config.contextIsLiteSdk]
    * from success of add user reply XHR
    * @returns {Object} - action
    */
   const addMessages = (config) => {
-    const {messages, process = true, prepend = false, responseType} = config;
+    const {messages, process = true, prepend = false, responseType, contextIsLiteSdk} = config;
     let processedMessages = messages;
 
     if (process) {
-      processedMessages = messageHelpers.getProcessedMessages(messages);
+      processedMessages = messageHelpers.getProcessedMessages({messages, contextIsLiteSdk});
     }
 
     if (prepend) {
@@ -1569,7 +1570,8 @@ define("actions/chatView", [
         domain,
         fullPrivacyEnabled,
         featuresEnabled: {conversationHistory: conversationHistoryEnabled},
-        issueType
+        issueType,
+        liteSdkConfig
       },
       chatView: {
         messageCursor: {
@@ -1648,7 +1650,8 @@ define("actions/chatView", [
             setLoadingMoreMsgsFailed(false),
             addMessages({
               messages: linearMsgs,
-              prepend: true
+              prepend: true,
+              contextIsLiteSdk: !!(liteSdkConfig && liteSdkConfig.os)
             }),
             setAllMessagesAreLoaded(!hasOlderMsgs)
           ])
@@ -1699,7 +1702,8 @@ define("actions/chatView", [
         domain,
         fullPrivacyEnabled,
         featuresEnabled: {conversationHistory: conversationHistoryEnabled},
-        issueType: previousIssueType
+        issueType: previousIssueType,
+        liteSdkConfig
       },
       chatView: {
         messageCursor: {forward: forwardMessageCursor},
@@ -1877,8 +1881,12 @@ define("actions/chatView", [
 
           const messagesLength = messages.length;
           if (messagesLength) {
+            const contextIsLiteSdk = !!(liteSdkConfig && liteSdkConfig.os);
             const latestMessage = messages[messagesLength - 1];
-            const processedMessages = messageHelpers.getProcessedMessages(messages);
+            const processedMessages = messageHelpers.getProcessedMessages({
+              messages,
+              contextIsLiteSdk
+            });
             const avatarsTs = messageHelpers.getAvatarTs(messages);
 
             dispatch(handleLatestMessage(latestMessage));
@@ -1887,7 +1895,8 @@ define("actions/chatView", [
             dispatch(
               addMessages({
                 messages: processedMessages,
-                process: false
+                process: false,
+                contextIsLiteSdk
               })
             );
 
@@ -2157,7 +2166,7 @@ define("actions/chatView", [
         userInput,
         botState: {botStepInProgress, botStepMessage}
       },
-      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId}
+      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId, liteSdkConfig}
     } = getState();
     const {msgBody, msgType, onSuccess, onEnd} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
@@ -2204,9 +2213,13 @@ define("actions/chatView", [
       method: "POST",
       headers: xhrHelpers.getCommonHeaders(),
       onSuccess: (response) => {
+        const contextIsLiteSdk = !!(liteSdkConfig && liteSdkConfig.os);
         // Ideally messages should be processed in the reducer, but importing helpers/message in
         // reducer/chatView introduces a cyclic dependency.
-        const processedMessages = messageHelpers.getProcessedMessages([response]);
+        const processedMessages = messageHelpers.getProcessedMessages({
+          messages: [response],
+          contextIsLiteSdk
+        });
 
         dispatch(
           chatViewActionCreators.userReplySuccess({
@@ -2772,7 +2785,11 @@ define("actions/chatView", [
    * @returns {Object} - Action
    */
   const createMessage = (config) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const {
+        appState: {liteSdkConfig}
+      } = getState();
+
       const {
         type: messageType,
         typingTimer = false,
@@ -2787,7 +2804,8 @@ define("actions/chatView", [
       const actionsToDispatch = [
         addMessages({
           messages: [msg],
-          process: false
+          process: false,
+          contextIsLiteSdk: !!(liteSdkConfig && liteSdkConfig.os)
         })
       ];
 
@@ -2867,7 +2885,7 @@ define("actions/chatView", [
   const uploadAttachment = (config) => {
     return (dispatch, getState) => {
       const {
-        appState: {domain, activeIssueId, issueState}
+        appState: {domain, activeIssueId, issueState, liteSdkConfig}
       } = getState();
       const {file, attachmentMsgId} = config;
       const pluralIssueType = chatViewHelpers.getPluralizedIssueType(ISSUE_TYPE.ISSUE);
@@ -2895,7 +2913,8 @@ define("actions/chatView", [
             batchActions([
               removeMessage(attachmentMsgId),
               addMessages({
-                messages: [response]
+                messages: [response],
+                contextIsLiteSdk: !!(liteSdkConfig && liteSdkConfig.os)
               })
             ])
           );
