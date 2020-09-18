@@ -487,8 +487,15 @@ define("extras/api", [
         break;
 
       case EVENT_TYPES.CMD_TOGGLE_POLLER_STATUS:
+        const {
+          appState: {issueState}
+        } = store.getState();
+        const issueIsActive = issueState === ISSUE_STATE.ACTIVE;
+
         if (data.status) {
-          chatViewActions.startPollingForMessages();
+          if (issueIsActive) {
+            chatViewActions.startPollingForMessages();
+          }
         } else {
           chatViewActions.stopPollingForMessages();
         }
