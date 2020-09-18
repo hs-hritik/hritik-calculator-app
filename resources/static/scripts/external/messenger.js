@@ -839,11 +839,6 @@
     updateIframeStyles(config);
 
     const launcherHidden = !state.widgetOptions.showLauncher;
-    // If the launcher iframe is hidden by the widget config options
-    // then mark sdk as ready
-    if (launcherHidden) {
-      markSdkReady();
-    }
 
     // If launcher is hidden or launcher iframe is already created then
     // don't create launcherIframe
@@ -895,8 +890,6 @@
       });
 
       launcherIframe.contentDocument.body.appendChild(launcherBtn);
-
-      markSdkReady();
 
       // If widgetShouldAutoOpen is true then dispatch message to open
       // the widget.
@@ -1192,10 +1185,12 @@
             // config, which along with other settings, determines whether
             // the widget should load or not.
 
+            // Mark SDK as ready so that queued events can be flushed.
             // Pass client config and parent page info to set initial app data.
             // Also, pass the localStorage data to migrate. Passing this with setConfig
             // in order to avoid another asynchronous postMessage call to the web
             // chat iframe.
+            markSdkReady();
             setConfig({
               clientConfig: win.helpshiftConfig,
               parentPageInfo
