@@ -15,7 +15,9 @@ define("components/containers/chatViewFooter", [
   "constants/chatView",
   "constants/analytics",
   "helpers/common",
-  "helpers/analytics"
+  "helpers/analytics",
+  "utils/color",
+  "constants/uiConfig"
 ], function(
   ChatViewFooter,
   chatViewActions,
@@ -27,12 +29,17 @@ define("components/containers/chatViewFooter", [
   chatViewConstants,
   analyticsConstants,
   commonHelpers,
-  analyticsHelpers
+  analyticsHelpers,
+  colorUtils,
+  UI_CONFIG_CONSTANTS
 ) {
   "use strict";
 
   const {MAX_POLLER_FAILURES_ALLOWED} = chatViewConstants;
   const {EVENT} = analyticsConstants;
+  const {
+    FLATTENED_UI_CONFIG: {CHAT_WIDGET_BG_COLOR, FORM_BG_COLOR}
+  } = UI_CONFIG_CONSTANTS;
 
   const mapStateToProps = (state) => {
     const {
@@ -61,10 +68,17 @@ define("components/containers/chatViewFooter", [
         error,
         botState: {botStepInProgress},
         intents,
-        userReplyXhrInProgress
+        userReplyXhrInProgress,
+        systemTyping
       },
       csatView: {rating},
-      ui: {text}
+      ui: {
+        text,
+        uiConfig: {
+          [CHAT_WIDGET_BG_COLOR]: {value: chatWidgetBgColor},
+          [FORM_BG_COLOR]: {value: formBgColor}
+        }
+      }
     } = state;
 
     let failureConfig;
@@ -113,7 +127,10 @@ define("components/containers/chatViewFooter", [
       issueType,
       attachmentsWhitelist,
       liteSdkOs: os,
-      userReplyXhrInProgress
+      userReplyXhrInProgress,
+      systemTyping,
+      chatWidgetBgColor,
+      formBgColor
     };
 
     if (intentsFeatureIsEnabled) {
@@ -200,6 +217,13 @@ define("components/containers/chatViewFooter", [
       },
       onRetry: () => {
         dispatch(appStateActions.handleChatViewFooterRetry());
+      },
+      onSystemType: (safeAreaColor) => {
+        dispatch(
+          postSdkMessage.sendSafeAreaColorToLiteSdk({
+            safeAreaColor: colorUtils.convertThreeToSixCharHexColorCode(safeAreaColor)
+          })
+        );
       }
     };
   };

@@ -231,7 +231,11 @@ define("components/chatViewFooter", [
        */
       attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
       liteSdkOs: PropTypes.string,
-      userReplyXhrInProgress: PropTypes.bool
+      userReplyXhrInProgress: PropTypes.bool,
+      systemTyping: PropTypes.bool,
+      chatWidgetBgColor: PropTypes.string,
+      formBgColor: PropTypes.string,
+      onSystemType: PropTypes.func
     },
     getInitialState() {
       return {
@@ -1467,7 +1471,16 @@ define("components/chatViewFooter", [
     componentDidUpdate(prevProps) {
       ax.clearDelayFocus();
 
-      const {browserIsMobile, userInput, activeFooter} = this.props;
+      const {
+        browserIsMobile,
+        userInput,
+        activeFooter,
+        systemTyping,
+        liteSdkOs,
+        onSystemType,
+        chatWidgetBgColor,
+        formBgColor
+      } = this.props;
       const activeFooterIsChanged = activeFooter !== prevProps.activeFooter;
       const activeFooterIsReply = activeFooter === ACTIVE_FOOTER.REPLY;
       const userInputTypeIsChanged = userInput.type !== prevProps.userInput.type;
@@ -1490,6 +1503,14 @@ define("components/chatViewFooter", [
         ((userInputIsSelectOption && selectOptionIsSubmitted) ||
           (userInputIsEnterText && textValueIsSubmitted));
       const userInputIsSkipable = !userInput.required;
+
+      if (liteSdkOs && prevProps.systemTyping !== systemTyping) {
+        if (systemTyping) {
+          onSystemType(chatWidgetBgColor);
+        } else {
+          onSystemType(formBgColor);
+        }
+      }
 
       if (this._isFooterRendered()) {
         if (!this._isFooterRendered(prevProps)) {
