@@ -2940,6 +2940,11 @@ define("actions/chatView", [
         },
         onFailure: (response) => {
           dispatch(setAttachmentError(attachmentMsgId, response.errorCode));
+        },
+        onEnd: () => {
+          if (!window.navigator.onLine) {
+            dispatch(setAttachmentError(attachmentMsgId, FILE_UPLOAD_ERRORS.RETRY));
+          }
         }
       });
     };
