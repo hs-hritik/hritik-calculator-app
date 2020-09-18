@@ -3141,7 +3141,7 @@ define("actions/chatView", [
    */
   const loadIntentsTree = (callbacks = {}) => {
     return (dispatch, getState) => {
-      const {domain, featuresEnabled} = getState().appState;
+      const {domain, featuresEnabled, liteSdkConfig} = getState().appState;
 
       if (!featuresEnabled.intents) {
         return;
@@ -3160,7 +3160,9 @@ define("actions/chatView", [
           }
         },
         onFailure: () => {
-          dispatch(actionCreators.intentsTreeFailure());
+          const lastFetchTime = liteSdkConfig.os ? Date.now() : 0;
+
+          dispatch(actionCreators.intentsTreeFailure(lastFetchTime));
           if (callbacks.onFailure) {
             callbacks.onFailure();
           }

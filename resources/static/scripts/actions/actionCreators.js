@@ -295,11 +295,17 @@ define("actions/actionCreators", ["constants/actionTypes"], function(ACTION_TYPE
 
   /**
    * Action to handle the failure of intents tree XHR
+   * @param {Number} fetchTime - Fetch time
+   * - Current time in case of lite sdk as we don't want to make another call to
+   * the intent trees xhr (as there is not widget open/close state)
+   * - 0 in other cases as we want to make another call to the intent trees xhr
+   * on widget open
    * @returns {Object} - Action
    */
-  const intentsTreeFailure = () => {
+  const intentsTreeFailure = (fetchTime) => {
     return {
-      type: ACTION_TYPES.INTENTS_TREE_FAILURE
+      type: ACTION_TYPES.INTENTS_TREE_FAILURE,
+      fetchTime
     };
   };
 

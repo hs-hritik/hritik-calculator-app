@@ -778,14 +778,21 @@ define("reducers/chatView", [
         });
       }
 
-      case ACTION_TYPES.INTENTS_TREE_FAILURE:
-        return update(state, {
+      case ACTION_TYPES.INTENTS_TREE_FAILURE: {
+        const updateObj = {
           loading: {$set: false},
           // @TODO: Intents: Confirm enforceIntentSelection flag behavior in case of failure.
           intents: {
             tree: {$set: _getDefaultIntentsTreeData()}
           }
-        });
+        };
+
+        updateObj.intents.tree = {
+          lastFetchTime: {$set: action.fetchTime}
+        };
+
+        return update(state, updateObj);
+      }
 
       case ACTION_TYPES.INTENTS_MODEL_SUCCESS: {
         const {response} = action;
@@ -979,7 +986,7 @@ define("reducers/chatView", [
           xhrEndedDueToNetworkDisconnect: {$set: true}
         });
 
-      case ACTION_TYPES.DEVICE_ONLINE_SUCCESS:
+      case ACTION_TYPES.DEVICE_ONLINE_SUCCESS: {
         const updateObj = {
           userInput: {
             disabled: {$set: false}
@@ -992,6 +999,7 @@ define("reducers/chatView", [
         }
 
         return update(state, updateObj);
+      }
 
       default:
         return state;
