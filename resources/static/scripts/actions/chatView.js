@@ -2662,7 +2662,10 @@ define("actions/chatView", [
 
           startPollingForMessages();
           _trackFirstMessage(response.messages);
-          dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
+
+          if (initialUserMessage) {
+            dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
+          }
         },
         onFailure: (request, statusCode) => {
           const errorType =
