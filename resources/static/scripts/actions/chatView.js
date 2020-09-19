@@ -84,8 +84,6 @@ define("actions/chatView", [
     ACTIVE_FOOTER,
     MESSAGES_FORCE_POLLING_TIMEOUT,
     CURSOR_TYPES,
-    USER_REDACTION_ERR_MSG,
-    USER_REDACTION_ERR_STATUS_CODE,
     INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
     ISSUE_REOPEN_ERR_STATUS_CODE,
     POLLING_STRATEGY_TYPES,
@@ -1712,6 +1710,9 @@ define("actions/chatView", [
         userIsRedacted,
         localGreetingMessageId,
         error: chatViewError
+      },
+      ui: {
+        text: {networkError, retryBtn}
       }
     } = store.getState();
 
@@ -1965,12 +1966,17 @@ define("actions/chatView", [
           return;
         }
 
-        if (
-          response.msg === USER_REDACTION_ERR_MSG &&
-          statusCode === USER_REDACTION_ERR_STATUS_CODE
-        ) {
-          dispatch(setUserIsRedacted(true));
-        }
+        dispatch({
+          type: ACTION_TYPES.POLLER_FAILURE,
+          payload: {
+            response,
+            statusCode,
+            uiErrorText: {
+              networkError,
+              retryBtn
+            }
+          }
+        });
       },
       onEnd: () => {
         const newPollerFailureCount = lastPollerCallSucceeded ? 0 : prevPollerFailureCount + 1;

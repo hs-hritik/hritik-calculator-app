@@ -13,7 +13,8 @@ define("reducers/chatView", [
   "gunpowder/utils/object",
   "gunpowder/utils/array",
   "helpers/intent",
-  "utils/browser"
+  "utils/browser",
+  "constants/errors"
 ], function(
   APP_STATE_CONSTANTS,
   CHAT_VIEW_CONSTANTS,
@@ -23,7 +24,8 @@ define("reducers/chatView", [
   objUtils,
   arrayUtils,
   intentHelpers,
-  browserUtils
+  browserUtils,
+  ERROR_CONSTANTS
 ) {
   "use strict";
 
@@ -40,12 +42,16 @@ define("reducers/chatView", [
     INTENTS_SEARCH_ALGO,
     POLLING_STRATEGY_TYPES,
     AGRESSIVE_POLLING_TIMEOUT,
-    CONSERVATIVE_POLLING_INTERVAL
+    CONSERVATIVE_POLLING_INTERVAL,
+    USER_REDACTION_ERR_MSG,
+    USER_REDACTION_ERR_STATUS_CODE
   } = CHAT_VIEW_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
 
   const IS_MOBILE = browserUtils.isMobile();
+
+  const {TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
 
   const INITIAL_ERROR_STATE = {
     type: "",
@@ -996,6 +1002,26 @@ define("reducers/chatView", [
 
         if (state.userReplyXhrInProgress) {
           updateObj.userReplyXhrInProgress = {$set: false};
+        }
+
+        return update(state, updateObj);
+      }
+
+      case ACTION_TYPES.POLLER_FAILURE: {
+        const {response, statusCode, uiErrorText} = action.payload;
+        let updateObj = {};
+
+        if (
+          response.msg === USER_REDACTION_ERR_MSG &&
+          statusCode === USER_REDACTION_ERR_STATUS_CODE
+        ) {
+          updateObj = {
+            userIsRedacted: {$set: true},
+            error: {
+              type: {$set: ERROR_TYPES.USER_IS_REDACTED},
+              cta: {$set: uiErrorText.retryBtn}
+            }
+          };
         }
 
         return update(state, updateObj);

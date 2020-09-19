@@ -1196,6 +1196,23 @@ define("actions/appState", [
           dispatch(startNewConversation({resetSessionId: true, shouldAddGreetingMessage: false}));
           break;
 
+        case ERROR_TYPES.USER_IS_REDACTED:
+          dispatch(
+            commonActions.reloadApp({
+              trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
+              loading: true,
+              callback: () => {
+                // When app reloads/resets with an updated config, stop existing network
+                // calls so that the application's state doesn't get unintended
+                // values due to previous XHRs returning after reset is complete.
+                abortGetConfigXhr();
+                chatViewActions.stopPollingForMessages();
+                chatViewActions.abortCreatePreissueXhr();
+              }
+            })
+          );
+          break;
+
         case ERROR_TYPES.PRE_ISSUE_TIME_OUT:
         default:
           // For network time-out and other unknown errors, start the poller. This fetches the
