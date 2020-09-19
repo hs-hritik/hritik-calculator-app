@@ -989,9 +989,9 @@ define("actions/appState", [
    *
    * @param {Object} config - Config object
    * @param {Boolean} config.resetSessionId - Whether to reset the session id or not.
-   * @param {Boolean} config.withoutGreetingMessage - Whether to add greeting message or not
+   * @param {Boolean} config.shouldAddGreetingMessage - Whether to add greeting message or not
    */
-  const startNewConversation = (config) => {
+  const startNewConversation = ({resetSessionId, shouldAddGreetingMessage = true}) => {
     return (dispatch, getState) => {
       const {
         featuresEnabled: {conversationHistory: conversationHistoryIsEnabled},
@@ -1004,11 +1004,11 @@ define("actions/appState", [
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
 
-        if (!config.withoutGreetingMessage) {
+        if (shouldAddGreetingMessage) {
           dispatch(chatViewActions.addGreetingMessage());
         }
 
-        if (config.resetSessionId) {
+        if (resetSessionId) {
           dispatch(updateAnalyticsSessionId());
         }
 
@@ -1198,7 +1198,7 @@ define("actions/appState", [
         case ERROR_TYPES.PRE_ISSUE_FAILURE:
           // For non-specific errors with preissue creation, we assume that the preissue wasn't
           // created successfully, so we try to restart the conversation.
-          dispatch(startNewConversation({resetSessionId: true, withoutGreetingMessage: true}));
+          dispatch(startNewConversation({resetSessionId: true, shouldAddGreetingMessage: false}));
           break;
 
         case ERROR_TYPES.PRE_ISSUE_TIME_OUT:
