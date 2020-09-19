@@ -23,7 +23,9 @@ define("components/chatViewFooter", [
   "constants/activeView",
   "gunpowder/widgets/dragIt",
   "gunpowder/widgets/nestedPicker",
-  "utils/browser"
+  "utils/browser",
+  "constants/attachments",
+  "gunpowder/utils/array"
 ], function(
   StarRating,
   JumpToLatestBtn,
@@ -43,7 +45,9 @@ define("components/chatViewFooter", [
   activeViewConstants,
   dragIt,
   NestedPicker,
-  browserUtils
+  browserUtils,
+  ATTACHMENT_CONSTANTS,
+  arrayUtils
 ) {
   "use strict";
 
@@ -65,6 +69,7 @@ define("components/chatViewFooter", [
   const LITE_SDK_OS = {
     IOS: "ios"
   };
+  const {ALLOW_ALL_ATTACHMENT_WHITELIST} = ATTACHMENT_CONSTANTS;
 
   // Max height of intents widget in case of iOS safari
   const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
@@ -813,7 +818,20 @@ define("components/chatViewFooter", [
       const _setAxActiveIndex = this._setAxActiveIndex.bind(this, {
         selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
       });
-      const allowedMimeTypes = attachmentsWhitelist.join(", ");
+      let allowedMimeTypes = null;
+
+      // In case of iOS mobile device and when the attachmentsWhitelist includes
+      // "*/*", then the user is not able to attach any kind of aatachment.
+      // Hence, don't pass the accept attribute to file input in that case
+      if (
+        !(
+          browserUtils.isMobile() &&
+          browserUtils.isPlatformIos() &&
+          arrayUtils.includes(attachmentsWhitelist, ALLOW_ALL_ATTACHMENT_WHITELIST)
+        )
+      ) {
+        allowedMimeTypes = attachmentsWhitelist.join(", ");
+      }
 
       return (
         <div
