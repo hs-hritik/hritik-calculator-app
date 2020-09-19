@@ -617,13 +617,8 @@ define("actions/appState", [
         analyticsHelpers.track(EVENT.WIDGET_LOAD);
       }
 
-      if (!liteSdkConfig.os) {
-        if (featuresEnabled.audioNotifications) {
-          audioHelpers.init();
-        } else {
-          // Send the config event loaded back to the client
-          dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
-        }
+      if (featuresEnabled.audioNotifications && !liteSdkConfig.os) {
+        audioHelpers.init();
       }
     }
   };
