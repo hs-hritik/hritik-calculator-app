@@ -39,6 +39,8 @@ define("helpers/common", [
 
   const {OFFLINE_BEHAVIOUR} = bhConstants;
 
+  let _intersectionObserverIsSupported;
+
   const DOES_BROWSER_SUPPORT_DATE_INPUT = (() => {
     const dateInput = document.createElement("input");
     dateInput.setAttribute("type", "date");
@@ -426,10 +428,13 @@ define("helpers/common", [
    * @returns {Boolean} - True if intersectionObserver is supported
    */
   const isIntersectionObserverSupported = () => {
-    return (
-      "IntersectionObserver" in window &&
-      "isIntersecting" in window.IntersectionObserverEntry.prototype
-    );
+    if (!_intersectionObserverIsSupported) {
+      _intersectionObserverIsSupported =
+        "IntersectionObserver" in window &&
+        "isIntersecting" in window.IntersectionObserverEntry.prototype;
+    }
+
+    return _intersectionObserverIsSupported;
   };
 
   return {
