@@ -9,8 +9,9 @@ define("components/replyBox", [
   "gunpowder/utils/object",
   "gunpowder/widgets/textareaAutosize",
   "extras/accessibility",
-  "constants/accessibility"
-], function(KEY_CODES, objectUtils, TextareaAutosize, ax, axConstants) {
+  "constants/accessibility",
+  "utils/browser"
+], function(KEY_CODES, objectUtils, TextareaAutosize, ax, axConstants, browserUtils) {
   "use strict";
 
   const TEXT_AREA_MIN_ROWS = 1,
@@ -157,6 +158,18 @@ define("components/replyBox", [
       this._textAreaRef = ref;
     },
 
+    _onDeviceOrientationChange() {
+      // In case of iOS mobile devices, while the virtual keyboard is open and if the
+      // device is rotated, then the reply box gets hidden and the user can't see the
+      // typed message.
+      // @TODO: Lite Sdk: Think of a better fix for this
+      // Ideal fix: The reply box should be visible with the keyboard when the screen
+      // orientation is changed
+      if (this._textAreaRef && browserUtils.isMobile() && browserUtils.isPlatformIos()) {
+        this._textAreaRef.refs.ta.blur();
+      }
+    },
+
     componentDidUpdate(prevProps) {
       // Focus the textarea in following cases
       // 1] When message and attachment is added
@@ -175,6 +188,10 @@ define("components/replyBox", [
       }
     },
 
+    componentDidMount() {
+      window.addEventListener("orientationchange", this._onDeviceOrientationChange);
+    },
+
     componentWillUnmount() {
       // In IE 11, the reply box focus remains visible even after this component
       // unmounts resulting in a visible cursor over the other input buttons.
@@ -188,6 +205,8 @@ define("components/replyBox", [
           this._textAreaRef.refs.ta.blur();
         }
       }
+
+      window.removeEventListener("orientationchange", this._onDeviceOrientationChange);
     }
   });
 });
