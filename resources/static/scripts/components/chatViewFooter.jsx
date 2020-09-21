@@ -763,7 +763,7 @@ define("components/chatViewFooter", [
      */
     _renderSendButton() {
       const {
-        userInput: {errorMsg, disabled: userInputIsDisabled},
+        userInput: {errorMsg, disabled: userInputIsDisabled, type},
         onSubmitReply,
         text: {ariaLabelSendMessage}
       } = this.props;
@@ -785,7 +785,10 @@ define("components/chatViewFooter", [
       };
 
       const _onSubmitFocus = () => {
-        if (this._userInputRef) {
+        // In case of input type date, when we click on submit button
+        // the input element was getting into focus which used to open
+        // the date picker widget.
+        if (this._userInputRef && this._getHtmlInputType(type) !== HTML_INPUT_TYPES.DATE) {
           this._userInputRef.focus();
         }
         _setAxActiveIndex();
