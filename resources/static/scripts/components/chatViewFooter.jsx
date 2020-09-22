@@ -664,7 +664,7 @@ define("components/chatViewFooter", [
       // even after opening keyboard the intents are displayed to end user.
       if (
         this.props.liteSdkOs === LITE_SDK_OS.IOS ||
-        (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari())
+        (browserUtils.isMobile() && browserUtils.isPlatformIos() && browserUtils.isBrowserSafari())
       ) {
         intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
       }
