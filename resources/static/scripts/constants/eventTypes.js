@@ -33,6 +33,7 @@ define("constants/eventTypes", function() {
     SDK_EVENT_USER_AUTH_FAILURE: "sdk-event-user-auth-failure",
     SDK_EVENT_REMOVE_ANONYMOUS_USER: "sdk-event-remove-anonymous-user",
     SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
+    SDK_EVENT_CHAT_HEADER_HEIGHT: "sdk-event-chat-header-height",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -49,6 +50,7 @@ define("constants/eventTypes", function() {
     CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
     CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
     CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi",
-    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status"
+    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status",
+    CMD_GET_CHAT_HEADER_HEIGHT: "cmd-get-chat-header-height"
   };
 });

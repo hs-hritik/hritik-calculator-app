@@ -48,6 +48,10 @@
   // This is the default gap of iframes from the edge
   const DEFAULT_FRAME_OFFSET = "28px";
 
+  // Note: This value has to be updated if the chat header height gets
+  // updated in the _header.scss file in future
+  const FIXED_CHAT_HEADER_HEIGHT = 52;
+
   // Local state managed by this script.
   const state = {
     unreadCount: 0,
@@ -107,6 +111,7 @@
     SDK_EVENT_USER_AUTH_FAILURE: "sdk-event-user-auth-failure",
     SDK_EVENT_REMOVE_ANONYMOUS_USER: "sdk-event-remove-anonymous-user",
     SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
+    SDK_EVENT_CHAT_HEADER_HEIGHT: "sdk-event-chat-header-height",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -156,7 +161,8 @@
     PUSH_TOKEN_SYNC: "pushTokenSync",
     REMOVE_ANONYMOUS_USER: "removeAnonymousUser",
     SAFE_AREA_COLOR: "safeAreaColor",
-    WEB_SDK_CONFIG_LOAD: "webSdkConfigLoad"
+    WEB_SDK_CONFIG_LOAD: "webSdkConfigLoad",
+    CHAT_HEADER_HEIGHT: "chatHeaderHeight"
   };
 
   /**
@@ -170,7 +176,8 @@
     SUPPORTED_EVENTS.PUSH_TOKEN_SYNC,
     SUPPORTED_EVENTS.REMOVE_ANONYMOUS_USER,
     SUPPORTED_EVENTS.SAFE_AREA_COLOR,
-    SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD
+    SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD,
+    SUPPORTED_EVENTS.CHAT_HEADER_HEIGHT
   ];
 
   // Errors message strings
@@ -1209,6 +1216,9 @@
             processWmConfig(data.wmConfig);
 
             callApiEventHandler(SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD);
+            callApiEventHandler(SUPPORTED_EVENTS.CHAT_HEADER_HEIGHT, {
+              height: FIXED_CHAT_HEADER_HEIGHT
+            });
             break;
 
           case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
@@ -1351,6 +1361,10 @@
 
           case EVENT_TYPES.SDK_EVENT_SAFE_AREA_COLOR:
             callApiEventHandler(SUPPORTED_EVENTS.SAFE_AREA_COLOR, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_CHAT_HEADER_HEIGHT:
+            callApiEventHandler(SUPPORTED_EVENTS.CHAT_HEADER_HEIGHT, data);
             break;
         }
       },

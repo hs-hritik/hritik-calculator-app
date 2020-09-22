@@ -406,6 +406,24 @@ define("actions/postSdkMessage", [
     };
   };
 
+  /**
+   * Post sdk event to send the header height to lite sdk
+   * We need this event to communicate the chat header height to lite sdk
+   * as we can't hardcode this value on lite sdk side as this value might
+   * change in the future.
+   * @param {Object} data - Event data
+   * @param {Number} data.height - Chat header height
+   */
+  const chatHeaderHeight = (data) => {
+    return (dispatch, getState) => {
+      postMessage({
+        type: EVENT_TYPES.SDK_EVENT_CHAT_HEADER_HEIGHT,
+        data,
+        parentPageInfo: _getParentPageOrigin(getState)
+      });
+    };
+  };
+
   return {
     toggleMessenger,
     reset,
@@ -431,6 +449,7 @@ define("actions/postSdkMessage", [
     pushTokenSync,
     userAuthFailure,
     removeAnonymousUser,
-    sendSafeAreaColorToLiteSdk
+    sendSafeAreaColorToLiteSdk,
+    chatHeaderHeight
   };
 });
