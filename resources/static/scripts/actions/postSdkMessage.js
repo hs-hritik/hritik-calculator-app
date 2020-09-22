@@ -302,10 +302,10 @@ define("actions/postSdkMessage", [
    * Post sdk event to communicate the added data in the local storage
    * @param {Object} data - Key value pair updated in the local storage
    */
-  const onSetLocalStorageData = (data) => {
+  const setLocalStorageData = (data) => {
     return (dispatch, getState) => {
       postMessage({
-        type: EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA,
+        type: EVENT_TYPES.SDK_EVENT_SET_LOCAL_STORAGE_DATA,
         data,
         parentPageOrigin: _getParentPageOrigin(getState)
       });
@@ -316,10 +316,10 @@ define("actions/postSdkMessage", [
    * Post sdk event to communicate the removed data in the local storage
    * @param {Object} data - Key value pair updated in the local storage
    */
-  const onRemoveLocalStorageData = (data) => {
+  const removeLocalStorageData = (data) => {
     return (dispatch, getState) => {
       postMessage({
-        type: EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA,
+        type: EVENT_TYPES.SDK_EVENT_REMOVE_LOCAL_STORAGE_DATA,
         data,
         parentPageOrigin: _getParentPageOrigin(getState)
       });
@@ -332,10 +332,10 @@ define("actions/postSdkMessage", [
    * @param {string} data.primaryColor - Webchat widget primary color
    * @param {string} data.chatWidgetBgColor - Chat widget background color
    */
-  const onUiConfigChange = (data) => {
+  const uiConfigChange = (data) => {
     return (dispatch, getState) => {
       postMessage({
-        type: EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE,
+        type: EVENT_TYPES.SDK_EVENT_UI_CONFIG_CHANGE,
         data,
         parentPageInfo: _getParentPageOrigin(getState)
       });
@@ -349,10 +349,10 @@ define("actions/postSdkMessage", [
    * @param {string} data.requestPayload - Request payload data required for firing an
    * XHR in webchat
    */
-  const onPushTokenSync = (data) => {
+  const pushTokenSync = (data) => {
     return (dispatch, getState) => {
       postMessage({
-        type: EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC,
+        type: EVENT_TYPES.SDK_EVENT_PUSH_TOKEN_SYNC,
         data,
         parentPageInfo: _getParentPageOrigin(getState)
       });
@@ -365,10 +365,10 @@ define("actions/postSdkMessage", [
    * @param {string} data.type - Auth failure status code
    * @param {string} data.message - Auth failure reason
    */
-  const onUserAuthFailure = (data) => {
+  const userAuthFailure = (data) => {
     return (dispatch, getState) => {
       postMessage({
-        type: EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE,
+        type: EVENT_TYPES.SDK_EVENT_USER_AUTH_FAILURE,
         data,
         parentPageInfo: _getParentPageOrigin(getState)
       });
@@ -378,10 +378,10 @@ define("actions/postSdkMessage", [
   /**
    * Post sdk event to communicate the removal of anonymous user
    */
-  const onRemoveAnonymousUser = () => {
+  const removeAnonymousUser = () => {
     return (dispatch, getState) => {
       postMessage({
-        type: EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER,
+        type: EVENT_TYPES.SDK_EVENT_REMOVE_ANONYMOUS_USER,
         parentPageInfo: _getParentPageOrigin(getState)
       });
     };
@@ -425,12 +425,12 @@ define("actions/postSdkMessage", [
     csatSubmitEvent,
     conversationStatusEvent,
     focusLauncher,
-    onSetLocalStorageData,
-    onRemoveLocalStorageData,
-    onUiConfigChange,
-    onPushTokenSync,
-    onUserAuthFailure,
-    onRemoveAnonymousUser,
+    setLocalStorageData,
+    removeLocalStorageData,
+    uiConfigChange,
+    pushTokenSync,
+    userAuthFailure,
+    removeAnonymousUser,
     sendSafeAreaColorToLiteSdk
   };
 });

@@ -587,7 +587,7 @@ define("actions/appState", [
 
     // Send the ui config change event to the client
     store.dispatch(
-      postSdkMessage.onUiConfigChange({
+      postSdkMessage.uiConfigChange({
         primaryColor: colorUtils.convertThreeToSixCharHexColorCode(primaryColor),
         chatWidgetBgColor: colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
       })

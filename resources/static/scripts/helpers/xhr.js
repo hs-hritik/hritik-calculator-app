@@ -201,7 +201,7 @@ define("helpers/xhr", [
     // via postMessage API
     if (response.status === NO_AUTH_RESPONSE || response.status === INVALID_AUTH_RESPONSE) {
       store.dispatch(
-        postSdkMessage.onUserAuthFailure({
+        postSdkMessage.userAuthFailure({
           type: response.status,
           message: response.responseText
         })
@@ -277,7 +277,7 @@ define("helpers/xhr", [
       }),
       onSuccess: (response) => {
         store.dispatch(
-          postSdkMessage.onPushTokenSync({
+          postSdkMessage.pushTokenSync({
             token: response.token,
             route: routes.postPushToken(domain),
             method: "POST",

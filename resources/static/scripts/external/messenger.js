@@ -100,12 +100,12 @@
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
-    SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
-    SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
-    SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
-    SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
-    SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
-    SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
+    SDK_EVENT_SET_LOCAL_STORAGE_DATA: "sdk-event-set-local-storage-data",
+    SDK_EVENT_REMOVE_LOCAL_STORAGE_DATA: "sdk-event-remove-local-storage-data",
+    SDK_EVENT_UI_CONFIG_CHANGE: "sdk-event-ui-config-change",
+    SDK_EVENT_PUSH_TOKEN_SYNC: "sdk-event-push-token-sync",
+    SDK_EVENT_USER_AUTH_FAILURE: "sdk-event-user-auth-failure",
+    SDK_EVENT_REMOVE_ANONYMOUS_USER: "sdk-event-remove-anonymous-user",
     SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
@@ -146,15 +146,15 @@
     // this in case liteSDK to minimize the code on its end as instead of handling all
     // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
     GLOBAL_API_EVENT: "globalApiEvent",
-    ON_USER_AUTH_FAILURE: "onUserAuthFailure",
+    USER_AUTH_FAILURE: "userAuthFailure",
     // The below events are not exposed to developers and are specific to lite SDK
     // Below events are to be added in the LITE_SDK_SUPPORTED_EVENTS list to not expose
     // them in the globalApiEvent
-    ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
-    ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
-    ON_UI_CONFIG_CHANGE: "onUiConfigChange",
-    ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
-    ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser",
+    SET_LOCAL_STORAGE_DATA: "setLocalStorageData",
+    REMOVE_LOCAL_STORAGE_DATA: "removeLocalStorageData",
+    UI_CONFIG_CHANGE: "uiConfigChange",
+    PUSH_TOKEN_SYNC: "pushTokenSync",
+    REMOVE_ANONYMOUS_USER: "removeAnonymousUser",
     SAFE_AREA_COLOR: "safeAreaColor",
     WEB_SDK_CONFIG_LOAD: "webSdkConfigLoad"
   };
@@ -164,11 +164,11 @@
    * This is needed to not send these events in the globalApiEvent
    */
   const LITE_SDK_SUPPORTED_EVENTS = [
-    SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
-    SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA,
-    SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
-    SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC,
-    SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER,
+    SUPPORTED_EVENTS.SET_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.REMOVE_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.UI_CONFIG_CHANGE,
+    SUPPORTED_EVENTS.PUSH_TOKEN_SYNC,
+    SUPPORTED_EVENTS.REMOVE_ANONYMOUS_USER,
     SUPPORTED_EVENTS.SAFE_AREA_COLOR,
     SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD
   ];
@@ -1086,7 +1086,7 @@
     let handlerIsFound = false;
 
     // Expose only those events which are handled internally
-    // [like "onSetLocalStorageData" & "onRemoveLocalStorageData"] in the globalApiEvent
+    // [like "setLocalStorageData" & "removeLocalStorageData"] in the globalApiEvent
     if (state.globalApiEventHandler && LITE_SDK_SUPPORTED_EVENTS.indexOf(eventName) === -1) {
       state.globalApiEventHandler({[eventName]: eventData || null});
     }
@@ -1323,30 +1323,30 @@
             logUiConfigErrors(data.errors);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA:
+          case EVENT_TYPES.SDK_EVENT_SET_LOCAL_STORAGE_DATA:
             // Call the event handler on set of local storage items
-            callApiEventHandler(SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA, data);
+            callApiEventHandler(SUPPORTED_EVENTS.SET_LOCAL_STORAGE_DATA, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA:
+          case EVENT_TYPES.SDK_EVENT_REMOVE_LOCAL_STORAGE_DATA:
             // Call the event handler on removal of local storage items
-            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA, data);
+            callApiEventHandler(SUPPORTED_EVENTS.REMOVE_LOCAL_STORAGE_DATA, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE, data);
+          case EVENT_TYPES.SDK_EVENT_UI_CONFIG_CHANGE:
+            callApiEventHandler(SUPPORTED_EVENTS.UI_CONFIG_CHANGE, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC, data);
+          case EVENT_TYPES.SDK_EVENT_PUSH_TOKEN_SYNC:
+            callApiEventHandler(SUPPORTED_EVENTS.PUSH_TOKEN_SYNC, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_USER_AUTH_FAILURE, data);
+          case EVENT_TYPES.SDK_EVENT_USER_AUTH_FAILURE:
+            callApiEventHandler(SUPPORTED_EVENTS.USER_AUTH_FAILURE, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER);
+          case EVENT_TYPES.SDK_EVENT_REMOVE_ANONYMOUS_USER:
+            callApiEventHandler(SUPPORTED_EVENTS.REMOVE_ANONYMOUS_USER);
             break;
 
           case EVENT_TYPES.SDK_EVENT_SAFE_AREA_COLOR:
