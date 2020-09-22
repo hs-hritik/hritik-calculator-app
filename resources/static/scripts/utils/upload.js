@@ -93,7 +93,7 @@ define("utils/upload", ["constants/errors"], function(errorConstants) {
       }
 
       if (event.target.readyState === 4 && config.onEnd) {
-        config.onEnd();
+        config.onEnd(xhr);
       }
     };
     xhr.send(formData);

@@ -2213,7 +2213,9 @@ define("actions/chatView", [
       chatViewActionCreators.userReplyRequest({issueType, botStepInProgress, reEngagementId})
     );
 
-    xhr({
+    let postUserReplyXhr = null;
+
+    postUserReplyXhr = xhr({
       route: routes.postUserReply(domain, activeIssueId, xhrIssueType),
       data: xhrHelpers.getPreparedXhrData(xhrData, {
         skipPlatformId: true
@@ -2277,7 +2279,15 @@ define("actions/chatView", [
         }
       },
       onEnd: () => {
-        if (!window.navigator.onLine) {
+        // In case of iOS devices, the online/offline events works inconsistently, same is
+        // the case with window.navigator.onLine
+        // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different
+        // from android, so in iOS when the network disconnects,  the xhr gets ended after the
+        // network come back online. Therefore we can dispatch the deviceIsOnline action if the
+        // xhr ends with a status = 0 (ie. UNSENT) in case of iOS.
+        if (browserUtils.isPlatformIos() && !postUserReplyXhr.status) {
+          dispatch(actionCreators.deviceIsOnline());
+        } else if (!window.navigator.onLine) {
           dispatch({
             type: ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT
           });
@@ -2697,7 +2707,15 @@ define("actions/chatView", [
           );
         },
         onEnd: () => {
-          if (!window.navigator.onLine) {
+          // In case of iOS devices, the online/offline events works inconsistently, same is
+          // the case with window.navigator.onLine
+          // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different
+          // from android, so in iOS when the network disconnects,  the xhr gets ended after the
+          // network come back online. Therefore we can dispatch the deviceIsOnline action if the
+          // xhr ends with a status = 0 (ie. UNSENT) in case of iOS.
+          if (browserUtils.isPlatformIos() && !createPreissueXhr.status) {
+            dispatch(actionCreators.deviceIsOnline());
+          } else if (!window.navigator.onLine) {
             dispatch({
               type: ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT
             });
@@ -2957,8 +2975,16 @@ define("actions/chatView", [
         onFailure: (response) => {
           dispatch(setAttachmentError(attachmentMsgId, response.errorCode));
         },
-        onEnd: () => {
-          if (!window.navigator.onLine) {
+        onEnd: (uploadXhr) => {
+          // In case of iOS devices, the online/offline events works inconsistently, same is
+          // the case with window.navigator.onLine
+          // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different
+          // from android, so in iOS when the network disconnects,  the xhr gets ended after the
+          // network come back online. Therefore we can dispatch the deviceIsOnline action if the
+          // xhr ends with a status = 0 (ie. UNSENT) in case of iOS.
+          if (browserUtils.isPlatformIos() && !uploadXhr.status) {
+            dispatch(setAttachmentError(attachmentMsgId, FILE_UPLOAD_ERRORS.RETRY));
+          } else if (!window.navigator.onLine) {
             dispatch(setAttachmentError(attachmentMsgId, FILE_UPLOAD_ERRORS.RETRY));
           }
         }

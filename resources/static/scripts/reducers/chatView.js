@@ -997,12 +997,9 @@ define("reducers/chatView", [
           userInput: {
             disabled: {$set: false}
           },
-          systemTyping: {$set: false}
+          systemTyping: {$set: false},
+          userReplyXhrInProgress: {$set: false}
         };
-
-        if (state.userReplyXhrInProgress) {
-          updateObj.userReplyXhrInProgress = {$set: false};
-        }
 
         return update(state, updateObj);
       }
