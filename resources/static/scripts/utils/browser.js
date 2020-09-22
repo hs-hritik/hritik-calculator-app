@@ -68,12 +68,24 @@ define("utils/browser", function() {
     return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
   };
 
+  /**
+   * Return iOS version
+   */
+  const getIosVersion = () => {
+    return navigator.userAgent
+      .match(/OS [\d_]+/i)[0]
+      .substr(3)
+      .split("_")
+      .map((n) => parseInt(n, 10))[0];
+  };
+
   return {
     isMobile,
     isPlatformIos,
     isBrowserSafari,
     getLanguage,
     isBot,
-    areTouchEventsSupported
+    areTouchEventsSupported,
+    getIosVersion
   };
 });

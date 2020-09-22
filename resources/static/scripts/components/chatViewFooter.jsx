@@ -536,6 +536,23 @@ define("components/chatViewFooter", [
         const inputClasses = classes("hs-chat-footer__text-field", {
           disabled: userReplyXhrInProgress
         });
+        let inputMode = null;
+
+        // In case of iOS version >= 14 on mobile devices, the date picker has changed from
+        // wheel type (where the date picker used to open in the space of virtual keybaord)
+        // to an overlay type (where the date picker opens out of the view of the screen).
+        // So when the keyboard is open and the input changes from type=text to type=date
+        // The margin bottom of reply box doe not go away as it should by the OS itself
+        // which corrupts the UI of the chat screen
+        if (
+          htmlInputType === HTML_INPUT_TYPES.DATE &&
+          browserUtils.isMobile() &&
+          browserUtils.isPlatformIos()
+        ) {
+          if (browserUtils.getIosVersion() >= 14) {
+            inputMode = "none";
+          }
+        }
 
         inputComponentEl = (
           <input
@@ -545,6 +562,7 @@ define("components/chatViewFooter", [
             disabled={disabled}
             value={value}
             ref={this._saveUserInputRef}
+            inputMode={inputMode}
             placeholder={inputPlaceholder}
             onChange={this._onInputFieldValueChange}
             onKeyUp={this._onInputFieldKeyUp}
