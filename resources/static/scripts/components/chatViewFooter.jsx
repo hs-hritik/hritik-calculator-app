@@ -522,7 +522,7 @@ define("components/chatViewFooter", [
           />
         );
       } else {
-        const htmlInputType = this._getHtmlInputType(type);
+        let htmlInputType = this._getHtmlInputType(type);
         const inputPlaceholder = this._getInputPlaceholder(htmlInputType);
         const _setAxActiveIndex = this._setAxActiveIndex.bind(this, {
           selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.SELECTOR
@@ -552,6 +552,22 @@ define("components/chatViewFooter", [
           if (browserUtils.getIosVersion() >= 14) {
             inputMode = "none";
           }
+        }
+
+        // In case of iOS mobile devices, the virtual keyboard that opens up
+        // in input[type=number], it has some special characters in it. Upon
+        // entering those special characters in the reply box, the input[type=number]
+        // auto validates the input element and disable it. Hence our custom validations
+        // don not work on it as in case of invalid value, the value does not get come
+        // in the onChange event of the input element. Therefore keeping the input type
+        // as plain text in case of iOS.
+        // @TODO: Lite Sdk: Think of another way of fixing this
+        if (
+          htmlInputType === HTML_INPUT_TYPES.NUMERIC &&
+          browserUtils.isMobile() &&
+          browserUtils.isPlatformIos()
+        ) {
+          htmlInputType = HTML_INPUT_TYPES.PLAIN_TEXT;
         }
 
         inputComponentEl = (
