@@ -2621,6 +2621,7 @@ define("actions/chatView", [
           anonUserIdentifier,
           issueExists
         },
+        chatView: {intents},
         ui: {
           text: {networkError, retryBtn}
         }
@@ -2669,7 +2670,13 @@ define("actions/chatView", [
           startPollingForMessages();
           _trackFirstMessage(response.messages);
 
-          if (initialUserMessage) {
+          if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
+            dispatch(
+              postSdkMessage.conversationStartEvent(
+                _getIntentLabels(intents.selectedIntentIds, intents.tree.intentsMap).join(", ")
+              )
+            );
+          } else if (initialUserMessage) {
             dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
           }
         },
