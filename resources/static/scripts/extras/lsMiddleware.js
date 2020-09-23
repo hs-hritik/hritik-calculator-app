@@ -113,9 +113,11 @@ define("extras/lsMiddleware", [
 
         if (!issueExists) {
           const configMap = lsHelpers.get(LS_KEYS.CONFIG, true);
-          configMap[userIdentifier].issueExistsDataIsStaleInLocalStorage = !issueExists;
+          if (configMap) {
+            configMap[userIdentifier].issueExistsDataIsStaleInLocalStorage = !issueExists;
 
-          lsHelpers.set(LS_KEYS.CONFIG, configMap);
+            lsHelpers.set(LS_KEYS.CONFIG, configMap);
+          }
         }
         break;
 
