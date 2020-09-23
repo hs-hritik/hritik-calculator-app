@@ -60,6 +60,8 @@
     }
 
     &__details-and-msg-wrapper {
+      display: flex;
+      flex-direction: column;
       width: 100%;
     }
 
@@ -123,8 +125,18 @@
       background-image: none !important; /* stylelint-disable-line declaration-no-important */
     }
 
+    &--left {
+      .hs-message__details-and-msg-wrapper {
+        align-items: flex-start;
+      }
+    }
+
     &--right {
       align-self: flex-end;
+
+      .hs-message__details-and-msg-wrapper {
+        align-items: flex-end;
+      }
 
       .hs-message__item-wrapper {
         align-items: flex-end;
