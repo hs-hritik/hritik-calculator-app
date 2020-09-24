@@ -42,7 +42,6 @@ define("reducers/chatView", [
     INTENTS_SEARCH_ALGO,
     POLLING_STRATEGY_TYPES,
     AGRESSIVE_POLLING_TIMEOUT,
-    CONSERVATIVE_POLLING_INTERVAL,
     USER_REDACTION_ERR_MSG,
     USER_REDACTION_ERR_STATUS_CODE
   } = CHAT_VIEW_CONSTANTS;
@@ -980,13 +979,6 @@ define("reducers/chatView", [
 
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
-
-      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
-        // If lite sdk, change the default value of polling interval stragtegy
-        return update(state, {
-          pollingInterval: {$set: CONSERVATIVE_POLLING_INTERVAL.MINIMUM},
-          pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE}
-        });
 
       case ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT:
         return update(state, {
