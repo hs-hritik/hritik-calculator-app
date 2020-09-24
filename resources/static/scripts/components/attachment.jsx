@@ -100,7 +100,9 @@ define("components/attachment", [
       file,
       attachments,
       onRetryClick,
-      onImageLoad
+      onImageLoad,
+      attachmentUploadIsInProgress,
+      messageId
     } = props;
 
     let name, url, iconClasses, onWrapperClick, contentType;
@@ -119,7 +121,7 @@ define("components/attachment", [
         const errorCode = messageStates.errorCode;
         const failureIsRetriable = errorCode === FILE_UPLOAD_ERRORS.RETRY;
 
-        if (failureIsRetriable) {
+        if (failureIsRetriable && !attachmentUploadIsInProgress[messageId]) {
           onWrapperClick = onRetryClick;
         } else {
           onWrapperClick = null;
@@ -127,7 +129,8 @@ define("components/attachment", [
 
         iconClasses = classes("hs-message__icon-error", {
           "ion-alert-circled": !failureIsRetriable,
-          "ion-reset": failureIsRetriable
+          "ion-reset": failureIsRetriable && !attachmentUploadIsInProgress[messageId],
+          "ion--spinning ion-load-b": attachmentUploadIsInProgress[messageId]
         });
       } else {
         iconClasses = "";
@@ -197,7 +200,9 @@ define("components/attachment", [
     file: PropTypes.object,
     attachments: PropTypes.array,
     onRetryClick: PropTypes.func.isRequired,
-    onImageLoad: PropTypes.func.isRequired
+    onImageLoad: PropTypes.func.isRequired,
+    attachmentUploadIsInProgress: PropTypes.object,
+    messageId: PropTypes.string
   };
 
   /**

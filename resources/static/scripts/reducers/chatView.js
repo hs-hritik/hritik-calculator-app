@@ -250,7 +250,8 @@ define("reducers/chatView", [
     pollingStrategy: POLLING_STRATEGY_TYPES.AGGRESSIVE,
     pollingInterval: AGRESSIVE_POLLING_TIMEOUT,
     xhrEndedDueToNetworkDisconnect: false,
-    userReplyXhrInProgress: false
+    userReplyXhrInProgress: false,
+    attachmentUploadIsInProgress: {}
   };
 
   /**
@@ -1023,6 +1024,14 @@ define("reducers/chatView", [
 
         return update(state, updateObj);
       }
+
+      case ACTION_TYPES.ATTACHMENT_UPLOAD_REQUEST:
+      case ACTION_TYPES.ATTACHMENT_UPLOAD_END:
+        return update(state, {
+          attachmentUploadIsInProgress: {
+            [action.payload.attachmentMsgId]: {$set: action.payload.uploadIsInProgress}
+          }
+        });
 
       default:
         return state;

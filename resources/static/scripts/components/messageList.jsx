@@ -137,7 +137,12 @@ define("components/messageList", [
          */
         appAvatarUrl: PropTypes.string
       }).isRequired,
-      avatarLastUpdatedTs: PropTypes.object.isRequired
+      avatarLastUpdatedTs: PropTypes.object.isRequired,
+
+      /**
+       * Map of attachment message id to its upload in progress status
+       */
+      attachmentUploadIsInProgress: PropTypes.object
     },
 
     render() {
@@ -168,7 +173,7 @@ define("components/messageList", [
      * Render messages and timestamp.
      */
     _renderMessages() {
-      const {messages, showAvatar} = this.props;
+      const {messages, showAvatar, attachmentUploadIsInProgress} = this.props;
       let previousMessage = null;
 
       return messages.map((message) => {
@@ -195,6 +200,7 @@ define("components/messageList", [
               showMessageDetails={showMessageDetails}
               key={key}
               onActionClick={this.props.onActionClick}
+              attachmentUploadIsInProgress={attachmentUploadIsInProgress}
             />
           </ErrorBoundaryWithLogging>
         );

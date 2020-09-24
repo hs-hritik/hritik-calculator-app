@@ -2942,6 +2942,14 @@ define("actions/chatView", [
       const {file, attachmentMsgId} = config;
       const pluralIssueType = chatViewHelpers.getPluralizedIssueType(ISSUE_TYPE.ISSUE);
 
+      dispatch({
+        type: ACTION_TYPES.ATTACHMENT_UPLOAD_REQUEST,
+        payload: {
+          attachmentMsgId,
+          uploadIsInProgress: true
+        }
+      });
+
       upload({
         route: routes.postUserReply(domain, activeIssueId, pluralIssueType),
         formData: xhrHelpers.getPreparedXhrData(
@@ -2976,6 +2984,14 @@ define("actions/chatView", [
           dispatch(setAttachmentError(attachmentMsgId, response.errorCode));
         },
         onEnd: (uploadXhr) => {
+          dispatch({
+            type: ACTION_TYPES.ATTACHMENT_UPLOAD_END,
+            payload: {
+              attachmentMsgId,
+              uploadIsInProgress: false
+            }
+          });
+
           // In case of iOS devices, the online/offline events works inconsistently, same is
           // the case with window.navigator.onLine
           // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different

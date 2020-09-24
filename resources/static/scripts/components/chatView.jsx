@@ -81,7 +81,8 @@ define("components/chatView", [
         onFooterError,
         showAvatar,
         avatar,
-        avatarLastUpdatedTs
+        avatarLastUpdatedTs,
+        attachmentUploadIsInProgress
       } = this.props;
 
       const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -119,6 +120,7 @@ define("components/chatView", [
               showAvatar={showAvatar}
               avatar={avatar}
               avatarLastUpdatedTs={avatarLastUpdatedTs}
+              attachmentUploadIsInProgress={attachmentUploadIsInProgress}
             />
             {this._renderJumpToLatestBtn()}
           </div>
@@ -344,7 +346,12 @@ define("components/chatView", [
     /**
      * Object of avatar id and its last updated timestamp
      */
-    avatarLastUpdatedTs: PropTypes.object.isRequired
+    avatarLastUpdatedTs: PropTypes.object.isRequired,
+
+    /**
+     * Map of attachment message id to its upload in progress status
+     */
+    attachmentUploadIsInProgress: PropTypes.object
   };
 
   return createReactClass({
@@ -444,7 +451,12 @@ define("components/chatView", [
       /**
        * Object of avatar id and its last updated timestamp
        */
-      avatarLastUpdatedTs: PropTypes.object.isRequired
+      avatarLastUpdatedTs: PropTypes.object.isRequired,
+
+      /**
+       * Map of attachment message id to its upload in progress status
+       */
+      attachmentUploadIsInProgress: PropTypes.object
     },
 
     getInitialState() {
@@ -532,7 +544,8 @@ define("components/chatView", [
         personalisedConversationIsEnabled,
         appAvatarUrl,
         avatar,
-        avatarLastUpdatedTs
+        avatarLastUpdatedTs,
+        attachmentUploadIsInProgress
       } = this.props;
       const avatarProps = {...avatar, ...{appAvatarUrl}};
       const avatarShouldRenderInMessageFeed =
@@ -573,6 +586,7 @@ define("components/chatView", [
             showAvatar={avatarShouldRenderInMessageFeed}
             avatar={avatarProps}
             avatarLastUpdatedTs={avatarLastUpdatedTs}
+            attachmentUploadIsInProgress={attachmentUploadIsInProgress}
           />
         </ErrorBoundaryWithLogging>
       );
