@@ -34,16 +34,17 @@ define("extras/lsMiddleware", [
    * Remove all the config stored by removing the config object and
    * store the lastest config in the local storage.
    * @param {Object} action
-   * @param {String} action.uniqueIdentifier - A unique key to identify a user
+   * @param {String} action.uniqueUserIdentifier - A unique key to identify a user
    * @param {Number} action.currentTime - Current time in milliseconds
    * @param {Object} action.config - Config data
    */
   const _onLocalStorageFull = (action) => {
     lsHelpers.remove(LS_KEYS.CONFIG);
     lsHelpers.set(LS_KEYS.CONFIG, {
-      [action.uniqueIdentifier]: {
+      [action.uniqueUserIdentifier]: {
         config: action.config,
-        lastConfigFetchTs: action.currentTime
+        lastConfigFetchTs: action.currentTime,
+        issueExistsDataIsStaleInLocalStorage: false
       }
     });
   };
@@ -113,6 +114,7 @@ define("extras/lsMiddleware", [
 
         if (!issueExists) {
           const configMap = lsHelpers.get(LS_KEYS.CONFIG, true);
+
           if (configMap) {
             configMap[userIdentifier].issueExistsDataIsStaleInLocalStorage = !issueExists;
 
