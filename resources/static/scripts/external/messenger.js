@@ -17,7 +17,7 @@
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.59.0";
+    PATH = "/html/index.html?v=2.60.1";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -48,6 +48,10 @@
   // This is the default gap of iframes from the edge
   const DEFAULT_FRAME_OFFSET = "28px";
 
+  // Note: This value has to be updated if the chat header height gets
+  // updated in the _header.scss file in future
+  const FIXED_CHAT_HEADER_HEIGHT = 52;
+
   // Local state managed by this script.
   const state = {
     unreadCount: 0,
@@ -69,7 +73,7 @@
     mouseInteraction: false
   };
 
-  const INIT = "init";
+  const ALLOWED_APIS_WHEN_SDK_IS_NOT_LOADED = ["init", "addEventListener"];
   const FORCE_UPDATE_STYLES = true;
   // Time interval to wait for existence of document's body (in ms)
   const BODY_WAIT_TIMER = 500;
@@ -100,12 +104,14 @@
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
-    SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
-    SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
-    SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
-    SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
-    SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
-    SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
+    SDK_EVENT_SET_LOCAL_STORAGE_DATA: "sdk-event-set-local-storage-data",
+    SDK_EVENT_REMOVE_LOCAL_STORAGE_DATA: "sdk-event-remove-local-storage-data",
+    SDK_EVENT_UI_CONFIG_CHANGE: "sdk-event-ui-config-change",
+    SDK_EVENT_PUSH_TOKEN_SYNC: "sdk-event-push-token-sync",
+    SDK_EVENT_USER_AUTH_FAILURE: "sdk-event-user-auth-failure",
+    SDK_EVENT_REMOVE_ANONYMOUS_USER: "sdk-event-remove-anonymous-user",
+    SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
+    SDK_EVENT_CHAT_HEADER_HEIGHT: "sdk-event-chat-header-height",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -121,7 +127,8 @@
     CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
     CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
     CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
-    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi"
+    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi",
+    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status"
   };
 
   /**
@@ -144,15 +151,18 @@
     // this in case liteSDK to minimize the code on its end as instead of handling all
     // other SUPPORTED_EVENTS and exposing them, it can use this event to expose them all
     GLOBAL_API_EVENT: "globalApiEvent",
-    ON_USER_AUTH_FAILURE: "onUserAuthFailure",
+    USER_AUTH_FAILURE: "userAuthFailure",
     // The below events are not exposed to developers and are specific to lite SDK
     // Below events are to be added in the LITE_SDK_SUPPORTED_EVENTS list to not expose
     // them in the globalApiEvent
-    ON_SET_LOCAL_STORAGE_DATA: "onSetLocalStorageData",
-    ON_REMOVE_LOCAL_STORAGE_DATA: "onRemoveLocalStorageData",
-    ON_UI_CONFIG_CHANGE: "onUiConfigChange",
-    ON_PUSH_TOKEN_SYNC: "onPushTokenSync",
-    ON_REMOVE_ANONYMOUS_USER: "onRemoveAnonymousUser"
+    SET_LOCAL_STORAGE_DATA: "setLocalStorageData",
+    REMOVE_LOCAL_STORAGE_DATA: "removeLocalStorageData",
+    UI_CONFIG_CHANGE: "uiConfigChange",
+    PUSH_TOKEN_SYNC: "pushTokenSync",
+    REMOVE_ANONYMOUS_USER: "removeAnonymousUser",
+    SAFE_AREA_COLOR: "safeAreaColor",
+    WEB_SDK_CONFIG_LOAD: "webSdkConfigLoad",
+    CHAT_HEADER_HEIGHT: "chatHeaderHeight"
   };
 
   /**
@@ -160,11 +170,14 @@
    * This is needed to not send these events in the globalApiEvent
    */
   const LITE_SDK_SUPPORTED_EVENTS = [
-    SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA,
-    SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA,
-    SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE,
-    SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC,
-    SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER
+    SUPPORTED_EVENTS.SET_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.REMOVE_LOCAL_STORAGE_DATA,
+    SUPPORTED_EVENTS.UI_CONFIG_CHANGE,
+    SUPPORTED_EVENTS.PUSH_TOKEN_SYNC,
+    SUPPORTED_EVENTS.REMOVE_ANONYMOUS_USER,
+    SUPPORTED_EVENTS.SAFE_AREA_COLOR,
+    SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD,
+    SUPPORTED_EVENTS.CHAT_HEADER_HEIGHT
   ];
 
   // Errors message strings
@@ -836,11 +849,6 @@
     updateIframeStyles(config);
 
     const launcherHidden = !state.widgetOptions.showLauncher;
-    // If the launcher iframe is hidden by the widget config options
-    // then mark sdk as ready
-    if (launcherHidden) {
-      markSdkReady();
-    }
 
     // If launcher is hidden or launcher iframe is already created then
     // don't create launcherIframe
@@ -892,8 +900,6 @@
       });
 
       launcherIframe.contentDocument.body.appendChild(launcherBtn);
-
-      markSdkReady();
 
       // If widgetShouldAutoOpen is true then dispatch message to open
       // the widget.
@@ -1087,7 +1093,7 @@
     let handlerIsFound = false;
 
     // Expose only those events which are handled internally
-    // [like "onSetLocalStorageData" & "onRemoveLocalStorageData"] in the globalApiEvent
+    // [like "setLocalStorageData" & "removeLocalStorageData"] in the globalApiEvent
     if (state.globalApiEventHandler && LITE_SDK_SUPPORTED_EVENTS.indexOf(eventName) === -1) {
       state.globalApiEventHandler({[eventName]: eventData || null});
     }
@@ -1189,10 +1195,12 @@
             // config, which along with other settings, determines whether
             // the widget should load or not.
 
+            // Mark SDK as ready so that queued events can be flushed.
             // Pass client config and parent page info to set initial app data.
             // Also, pass the localStorage data to migrate. Passing this with setConfig
             // in order to avoid another asynchronous postMessage call to the web
             // chat iframe.
+            markSdkReady();
             setConfig({
               clientConfig: win.helpshiftConfig,
               parentPageInfo
@@ -1206,6 +1214,11 @@
           case EVENT_TYPES.SDK_CONFIG_LOADED:
             // Process wm config to set appearance, etc.
             processWmConfig(data.wmConfig);
+
+            callApiEventHandler(SUPPORTED_EVENTS.WEB_SDK_CONFIG_LOAD);
+            callApiEventHandler(SUPPORTED_EVENTS.CHAT_HEADER_HEIGHT, {
+              height: FIXED_CHAT_HEADER_HEIGHT
+            });
             break;
 
           case EVENT_TYPES.SDK_TOGGLE_MESSENGER:
@@ -1320,30 +1333,38 @@
             logUiConfigErrors(data.errors);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA:
+          case EVENT_TYPES.SDK_EVENT_SET_LOCAL_STORAGE_DATA:
             // Call the event handler on set of local storage items
-            callApiEventHandler(SUPPORTED_EVENTS.ON_SET_LOCAL_STORAGE_DATA, data);
+            callApiEventHandler(SUPPORTED_EVENTS.SET_LOCAL_STORAGE_DATA, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA:
+          case EVENT_TYPES.SDK_EVENT_REMOVE_LOCAL_STORAGE_DATA:
             // Call the event handler on removal of local storage items
-            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_LOCAL_STORAGE_DATA, data);
+            callApiEventHandler(SUPPORTED_EVENTS.REMOVE_LOCAL_STORAGE_DATA, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_UI_CONFIG_CHANGE:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_UI_CONFIG_CHANGE, data);
+          case EVENT_TYPES.SDK_EVENT_UI_CONFIG_CHANGE:
+            callApiEventHandler(SUPPORTED_EVENTS.UI_CONFIG_CHANGE, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_PUSH_TOKEN_SYNC:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_PUSH_TOKEN_SYNC, data);
+          case EVENT_TYPES.SDK_EVENT_PUSH_TOKEN_SYNC:
+            callApiEventHandler(SUPPORTED_EVENTS.PUSH_TOKEN_SYNC, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_USER_AUTH_FAILURE:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_USER_AUTH_FAILURE, data);
+          case EVENT_TYPES.SDK_EVENT_USER_AUTH_FAILURE:
+            callApiEventHandler(SUPPORTED_EVENTS.USER_AUTH_FAILURE, data);
             break;
 
-          case EVENT_TYPES.SDK_EVENT_ON_REMOVE_ANONYMOUS_USER:
-            callApiEventHandler(SUPPORTED_EVENTS.ON_REMOVE_ANONYMOUS_USER);
+          case EVENT_TYPES.SDK_EVENT_REMOVE_ANONYMOUS_USER:
+            callApiEventHandler(SUPPORTED_EVENTS.REMOVE_ANONYMOUS_USER);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_SAFE_AREA_COLOR:
+            callApiEventHandler(SUPPORTED_EVENTS.SAFE_AREA_COLOR, data);
+            break;
+
+          case EVENT_TYPES.SDK_EVENT_CHAT_HEADER_HEIGHT:
+            callApiEventHandler(SUPPORTED_EVENTS.CHAT_HEADER_HEIGHT, data);
             break;
         }
       },
@@ -1654,6 +1675,18 @@
     });
   };
 
+  /**
+   * JS API to start/stop polling for messages
+   * - {status = true}: Start the poller
+   * - {status = false}: Stop the poller
+   * @param {Boolean} status - If true, then the poller has to be started
+   */
+  const togglePollerStatus = (status = true) => {
+    _postMessage(EVENT_TYPES.CMD_TOGGLE_POLLER_STATUS, {
+      status
+    });
+  };
+
   // A map with all the supported APIs. The global Helpshift () call looks
   // into this map to get the definition of the called API.
   const helpshiftApis = {
@@ -1676,7 +1709,8 @@
     show,
     updateParentPageVisibility,
     disableConfigPeriodicFetch,
-    enableConfigPeriodicFetch
+    enableConfigPeriodicFetch,
+    togglePollerStatus
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them
@@ -1704,11 +1738,11 @@
       throw new Error(ERROR_MSG.API_NOT_SUPPORTED);
     }
 
-    // If a] sdk is loaded OR b] the API is init or update, then directly call
+    // If a] sdk is loaded OR b] the API is init or update or addEventListener, then directly call
     // the API
     // Else queue the API in sequence and call them after SDK config is loaded
     // Note :- Allowing init API because it's the first API that will be called
-    if (sdkLoaded || api === INIT) {
+    if (sdkLoaded || ALLOWED_APIS_WHEN_SDK_IS_NOT_LOADED.indexOf(api) !== -1) {
       // Call the Helpshift api with the arguments
       helpshiftApis[api].apply(null, apiArguments);
     } else if (isApiValid(api)) {

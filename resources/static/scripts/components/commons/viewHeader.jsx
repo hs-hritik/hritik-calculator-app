@@ -18,6 +18,8 @@ define("components/commons/viewHeader", [
 
   const IS_MOBILE = browserUtils.isMobile();
 
+  const HEADER_CLOSE_BUTTON_WIDTH = 24;
+
   return createReactClass({
     displayName: "ViewHeader",
     propTypes: {
@@ -123,7 +125,7 @@ define("components/commons/viewHeader", [
      * Render close button
      */
     _renderCloseButton() {
-      if (!this.props.showCloseBtn) {
+      if (!this.props.showCloseBtn || (IS_MOBILE && this.props.showBackBtn)) {
         return null;
       }
 
@@ -158,6 +160,28 @@ define("components/commons/viewHeader", [
     _onCloseBtnClick() {
       if (this.props.onCloseBtnClick) {
         this.props.onCloseBtnClick();
+      }
+    },
+
+    componentDidMount() {
+      // @TODO: Lite Sdk: Think of another of doing this instead of directly manipulating the DOM
+      if (IS_MOBILE) {
+        const brandingTitleWrapperEl = document.querySelector(".hs-header__avatar-title-wrapper");
+
+        if (brandingTitleWrapperEl) {
+          // Compute the current margin-left value of brandingTitleWrapperEl
+          // and then subtract the width taken by the close button to center align
+          // the branding title wrapper element
+          const brandingTitleWrapperElCurrentMarginLeftValue = parseInt(
+            window.getComputedStyle(brandingTitleWrapperEl).getPropertyValue("margin-left"),
+            10
+          );
+
+          if (brandingTitleWrapperElCurrentMarginLeftValue) {
+            brandingTitleWrapperEl.style.marginLeft =
+              brandingTitleWrapperElCurrentMarginLeftValue - HEADER_CLOSE_BUTTON_WIDTH + "px";
+          }
+        }
       }
     }
   });

@@ -23,7 +23,9 @@ define("components/chatViewFooter", [
   "constants/activeView",
   "gunpowder/widgets/dragIt",
   "gunpowder/widgets/nestedPicker",
-  "utils/browser"
+  "utils/browser",
+  "constants/attachments",
+  "gunpowder/utils/array"
 ], function(
   StarRating,
   JumpToLatestBtn,
@@ -43,7 +45,9 @@ define("components/chatViewFooter", [
   activeViewConstants,
   dragIt,
   NestedPicker,
-  browserUtils
+  browserUtils,
+  ATTACHMENT_CONSTANTS,
+  arrayUtils
 ) {
   "use strict";
 
@@ -65,6 +69,7 @@ define("components/chatViewFooter", [
   const LITE_SDK_OS = {
     IOS: "ios"
   };
+  const {ALLOW_ALL_ATTACHMENT_WHITELIST} = ATTACHMENT_CONSTANTS;
 
   // Max height of intents widget in case of iOS safari
   const INTENTS_IOS_SAFARI_MAX_HEIGHT = 270;
@@ -230,7 +235,12 @@ define("components/chatViewFooter", [
        * Allowed file mime types list
        */
       attachmentsWhitelist: PropTypes.arrayOf(PropTypes.string).isRequired,
-      liteSdkOs: PropTypes.string
+      liteSdkOs: PropTypes.string,
+      userReplyXhrInProgress: PropTypes.bool,
+      systemTyping: PropTypes.bool,
+      chatWidgetBgColor: PropTypes.string,
+      formBgColor: PropTypes.string,
+      onSystemType: PropTypes.func
     },
     getInitialState() {
       return {
@@ -446,13 +456,14 @@ define("components/chatViewFooter", [
         onFooterBlur,
         browserIsMobile,
         activeFooter,
-        text
+        text,
+        userReplyXhrInProgress
       } = this.props;
       const inputIsListPicker = type === USER_INPUT_TYPES.LIST_PICKER;
       const listPickerIsOpened = listPickerNavigationState === NAVIGATION_STATES.OPENED;
       const footerClasses = classes("hs-chat-footer", {
         "hs-chat-footer--form-error": errorMsg,
-        "hs-chat-footer--form-invalid": disabled || !value.trim(),
+        "hs-chat-footer--form-invalid": disabled || !value.trim() || userReplyXhrInProgress,
         "hs-chat-footer--mobile": browserIsMobile,
         "hs-chat-footer--no-padding": inputIsListPicker,
         "hs-chat-footer--list-picker-opened": inputIsListPicker && listPickerIsOpened,
@@ -484,6 +495,10 @@ define("components/chatViewFooter", [
           ariaLabel = text.chatViewIssueRejectionQuestion;
         }
 
+        const replyBoxClasses = classes("hs-chat-footer__text-area", {
+          disabled: userReplyXhrInProgress
+        });
+
         inputComponentEl = (
           <ReplyBox
             value={value}
@@ -497,16 +512,17 @@ define("components/chatViewFooter", [
             onFooterFocus={this.props.onFooterFocus}
             onFooterBlur={this.props.onFooterBlur}
             onHeightChange={this._onReplyBoxHeightChange}
-            className="hs-chat-footer__text-area"
+            className={replyBoxClasses}
             disableSubmit={this._shouldSubmitReplyBeDisabled()}
             dataLabel={replyBoxDataLabel}
             ariaLabel={ariaLabel}
             shouldVirtualKeyboardRemainOpen={this.state.shouldVirtualKeyboardRemainOpen}
             onReplyBoxFocusAfterReplySubmit={this._onReplyBoxFocusAfterReplySubmit}
+            userReplyXhrInProgress={userReplyXhrInProgress}
           />
         );
       } else {
-        const htmlInputType = this._getHtmlInputType(type);
+        let htmlInputType = this._getHtmlInputType(type);
         const inputPlaceholder = this._getInputPlaceholder(htmlInputType);
         const _setAxActiveIndex = this._setAxActiveIndex.bind(this, {
           selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.SELECTOR
@@ -517,21 +533,58 @@ define("components/chatViewFooter", [
           _setAxActiveIndex();
         };
         const inputIsInvalid = !!errorMsg;
+        const inputClasses = classes("hs-chat-footer__text-field", {
+          disabled: userReplyXhrInProgress
+        });
+        let inputMode = null;
+
+        // In case of iOS version >= 14 on mobile devices, the date picker has changed from
+        // wheel type (where the date picker used to open in the space of virtual keybaord)
+        // to an overlay type (where the date picker opens out of the view of the screen).
+        // So when the keyboard is open and the input changes from type=text to type=date
+        // The margin bottom of reply box doe not go away as it should by the OS itself
+        // which corrupts the UI of the chat screen
+        if (
+          htmlInputType === HTML_INPUT_TYPES.DATE &&
+          browserUtils.isMobile() &&
+          browserUtils.isPlatformIos()
+        ) {
+          if (browserUtils.getIosVersion() >= 14) {
+            inputMode = "none";
+          }
+        }
+
+        // In case of iOS mobile devices, the virtual keyboard that opens up
+        // in input[type=number], it has some special characters in it. Upon
+        // entering those special characters in the reply box, the input[type=number]
+        // auto validates the input element and disable it. Hence our custom validations
+        // don not work on it as in case of invalid value, the value does not get come
+        // in the onChange event of the input element. Therefore keeping the input type
+        // as plain text in case of iOS.
+        // @TODO: Lite Sdk: Think of another way of fixing this
+        if (
+          htmlInputType === HTML_INPUT_TYPES.NUMERIC &&
+          browserUtils.isMobile() &&
+          browserUtils.isPlatformIos()
+        ) {
+          htmlInputType = HTML_INPUT_TYPES.PLAIN_TEXT;
+        }
 
         inputComponentEl = (
           <input
-            className="hs-chat-footer__text-field"
+            className={inputClasses}
             type={htmlInputType}
             dir="auto"
             disabled={disabled}
             value={value}
             ref={this._saveUserInputRef}
+            inputMode={inputMode}
             placeholder={inputPlaceholder}
             onChange={this._onInputFieldValueChange}
             onKeyUp={this._onInputFieldKeyUp}
             onFocus={_onFooterFocus}
             onBlur={onFooterBlur}
-            autoFocus
+            autoFocus={!browserIsMobile}
             tabIndex="0"
             data-label={METALIST_ITEMS.CHAT.FOOTER.TEXT_FIELD.DATA_LABEL}
             onClick={_setAxActiveIndex}
@@ -611,7 +664,7 @@ define("components/chatViewFooter", [
       // even after opening keyboard the intents are displayed to end user.
       if (
         this.props.liteSdkOs === LITE_SDK_OS.IOS ||
-        (browserUtils.isPlatformIos() && browserUtils.isBrowserSafari())
+        (browserUtils.isMobile() && browserUtils.isPlatformIos() && browserUtils.isBrowserSafari())
       ) {
         intentsWidgetMaxHeight = INTENTS_IOS_SAFARI_MAX_HEIGHT;
       }
@@ -744,7 +797,7 @@ define("components/chatViewFooter", [
      */
     _renderSendButton() {
       const {
-        userInput: {errorMsg, disabled: userInputIsDisabled},
+        userInput: {errorMsg, disabled: userInputIsDisabled, type},
         onSubmitReply,
         text: {ariaLabelSendMessage}
       } = this.props;
@@ -758,11 +811,23 @@ define("components/chatViewFooter", [
         // Cancal the click event to not loose focus from the reply box
         // (ie. to not collapse the virtual keyboard in case of mobile phones)
         ev.preventDefault();
+
         this.setState({
           shouldVirtualKeyboardRemainOpen: true
         });
         _setAxActiveIndex();
       };
+
+      const _onSubmitFocus = () => {
+        // In case of input type date, when we click on submit button
+        // the input element was getting into focus which used to open
+        // the date picker widget.
+        if (this._userInputRef && this._getHtmlInputType(type) !== HTML_INPUT_TYPES.DATE) {
+          this._userInputRef.focus();
+        }
+        _setAxActiveIndex();
+      };
+
       const fieldIsInvalid = !!errorMsg;
       const inputAriaLabel = ariaLabelSendMessage;
 
@@ -772,7 +837,7 @@ define("components/chatViewFooter", [
           onClick={_onSubmitReply}
           tabIndex="0"
           data-label={METALIST_ITEMS.CHAT.FOOTER.SEND_BTN.DATA_LABEL}
-          onFocus={_setAxActiveIndex}
+          onFocus={_onSubmitFocus}
           aria-label={inputAriaLabel}
           role="button"
           aria-disabled={userInputIsDisabled}
@@ -790,7 +855,20 @@ define("components/chatViewFooter", [
       const _setAxActiveIndex = this._setAxActiveIndex.bind(this, {
         selector: METALIST_ITEMS.CHAT.FOOTER.ATTACHMENT_BTN.SELECTOR
       });
-      const allowedMimeTypes = attachmentsWhitelist.join(", ");
+      let allowedMimeTypes = null;
+
+      // In case of iOS mobile device and when the attachmentsWhitelist includes
+      // "*/*", then the user is not able to attach any kind of aatachment.
+      // Hence, don't pass the accept attribute to file input in that case
+      if (
+        !(
+          browserUtils.isMobile() &&
+          browserUtils.isPlatformIos() &&
+          arrayUtils.includes(attachmentsWhitelist, ALLOW_ALL_ATTACHMENT_WHITELIST)
+        )
+      ) {
+        allowedMimeTypes = attachmentsWhitelist.join(", ");
+      }
 
       return (
         <div
@@ -1215,6 +1293,10 @@ define("components/chatViewFooter", [
      * @param {Object} event
      */
     _onInputFieldValueChange(ev) {
+      if (this.props.userReplyXhrInProgress) {
+        return;
+      }
+
       this.props.onValueChangeInputField(ev.target.value);
     },
 
@@ -1444,7 +1526,16 @@ define("components/chatViewFooter", [
     componentDidUpdate(prevProps) {
       ax.clearDelayFocus();
 
-      const {browserIsMobile, userInput, activeFooter} = this.props;
+      const {
+        browserIsMobile,
+        userInput,
+        activeFooter,
+        systemTyping,
+        liteSdkOs,
+        onSystemType,
+        chatWidgetBgColor,
+        formBgColor
+      } = this.props;
       const activeFooterIsChanged = activeFooter !== prevProps.activeFooter;
       const activeFooterIsReply = activeFooter === ACTIVE_FOOTER.REPLY;
       const userInputTypeIsChanged = userInput.type !== prevProps.userInput.type;
@@ -1467,6 +1558,14 @@ define("components/chatViewFooter", [
         ((userInputIsSelectOption && selectOptionIsSubmitted) ||
           (userInputIsEnterText && textValueIsSubmitted));
       const userInputIsSkipable = !userInput.required;
+
+      if (liteSdkOs && prevProps.systemTyping !== systemTyping) {
+        if (systemTyping) {
+          onSystemType(chatWidgetBgColor);
+        } else {
+          onSystemType(formBgColor);
+        }
+      }
 
       if (this._isFooterRendered()) {
         if (!this._isFooterRendered(prevProps)) {
@@ -1523,7 +1622,7 @@ define("components/chatViewFooter", [
       ax.setActiveView(activeViewConstants.CHAT);
 
       // In footer is rendered add active footer selectors in meta list
-      if (this._isFooterRendered()) {
+      if (this._isFooterRendered() && !this.props.browserIsMobile) {
         this._replaceAxFooterSelectors();
       }
 

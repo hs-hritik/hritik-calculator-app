@@ -5,12 +5,11 @@
  */
 
 define("helpers/message", [
-  "store",
   "constants/message",
   "helpers/common",
   "gunpowder/utils/uuid",
   "gunpowder/utils/date"
-], function(store, messageConstants, commonHelpers, uuidGenerator, dateUtils) {
+], function(messageConstants, commonHelpers, uuidGenerator, dateUtils) {
   "use strict";
 
   const {
@@ -36,9 +35,10 @@ define("helpers/message", [
   /**
    * Return processed message
    * @param {Object} message - unprocessed message
+   * @param {boolean} contextIsLiteSdk - Is web chat running in the Lite SDK context?
    * @returns {Object} - processed message
    */
-  const getProcessedMessage = (msg) => {
+  const getProcessedMessage = (msg, contextIsLiteSdk) => {
     if (msg.processed) {
       return msg;
     }
@@ -95,7 +95,9 @@ define("helpers/message", [
             switch (actionType) {
               case ACTION_TYPES.LINK:
                 actionData.url = action.data.url;
-                actionData.shouldOpenInNewTab = action.data.open_in_new_tab;
+                // Open an action link in a new tab if web chat is running in the Lite SDK context
+                // irrespective of open_in_new_tab value
+                actionData.shouldOpenInNewTab = contextIsLiteSdk || action.data.open_in_new_tab;
                 break;
               case ACTION_TYPES.CALL:
                 actionData.phoneNumber = action.data.phone_number;
@@ -142,11 +144,15 @@ define("helpers/message", [
 
   /**
    * Return processed messages
-   * @param {Object} messages - unprocessed messages
+   * @param {Object} data
+   * @param {Object} data.messages - unprocessed messages
+   * @param {boolean} data.contextIsLiteSdk - Is web chat running in the Lite SDK context?
    * @returns {Array} - processed messages
    */
-  const getProcessedMessages = (messages) => {
-    return messages.map(getProcessedMessage);
+  const getProcessedMessages = ({messages, contextIsLiteSdk}) => {
+    return messages.map((message) => {
+      return getProcessedMessage(message, contextIsLiteSdk);
+    });
   };
 
   /**
@@ -247,6 +253,7 @@ define("helpers/message", [
    * @param {String} config.latestMessage - latest message
    * @param {Boolean} config.isIssue - issue type is issue
    * @param {Boolean} config.botStepInProgress - Whether bot is in progress currently
+   * @param {array} config.readFaqList - List of FAQs read by the user so far
    * @returns {Object} - prepared xhr data
    */
   const getPreparedMessageDataFromUserInput = (config) => {
@@ -254,7 +261,8 @@ define("helpers/message", [
       input: {value, skipped, skipLabel, selectedOption},
       latestMessage: {type: latestMsgType, id: messageId, chatBotInfo},
       isIssue,
-      botStepInProgress
+      botStepInProgress,
+      readFaqList
     } = config;
 
     const responseMessageType = getUserResponseMessageType(latestMsgType);
@@ -279,9 +287,8 @@ define("helpers/message", [
       // FAQs were read (max 10) so far by the end user to the backend. Backend
       // would then pass that information to data plat.
       // @TODO: Store the max faqs to be sent (10) in a constant
-      const readFaqs = store.getState().chatView.readFaqList;
-      if (readFaqs.length) {
-        requestData.read_faqs = JSON.stringify(readFaqs.slice(0, 10));
+      if (readFaqList.length) {
+        requestData.read_faqs = JSON.stringify(readFaqList.slice(0, 10));
       }
     }
 

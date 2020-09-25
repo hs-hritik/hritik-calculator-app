@@ -73,7 +73,8 @@ define("actions/appState", [
       INITIAL_SECONDARY_BG_COLOR,
       INITIAL_SECONDARY_TEXT_COLOR,
       BASE_FOCUS_RING_COLOR,
-      CHAT_WIDGET_BG_COLOR
+      CHAT_WIDGET_BG_COLOR,
+      FORM_BG_COLOR
     },
     SHADES
   } = UI_CONFIG_CONSTANTS;
@@ -86,8 +87,6 @@ define("actions/appState", [
     window.CSS && window.CSS.supports && window.CSS.supports("--fake-var", 0);
 
   const {LS_KEYS} = lsHelpers;
-
-  const THREE_CHAR_HEX_CODE_LENGTH = 4;
 
   let getConfigXhr = null;
 
@@ -349,13 +348,11 @@ define("actions/appState", [
       return;
     }
 
-    const previousUserId = lsHelpers.get(LS_KEYS.USER_ID);
-
-    if (userId !== previousUserId) {
-      // If previousUserId is not present,
-      // anon user -> a user logged in
-      // If previousUserId is present,
-      // A user was logged in -> they logged out -> a new user logged in.
+    if (userId) {
+      // Cases in which anonymous user has to be remove
+      // - anon user -> a user logged in
+      // - A user was logged in -> they logged out -> a new user logged in.
+      // - A user was logged in -> they logged out -> then the same user logged in.
       lsHelpers.remove(LS_KEYS.ANON_USER_ID);
     }
   };
@@ -391,11 +388,24 @@ define("actions/appState", [
       // the out of business hours case, we need to start the conversation on the
       // chat view.
       const {
-        appState: {issueExists, appResetTrigger, minimized}
+        appState: {issueExists, appResetTrigger, minimized, liteSdkConfig},
+        ui: {
+          uiConfig: {
+            [FORM_BG_COLOR]: {value: formBgColor}
+          }
+        }
       } = getState();
       const widgetIsOpen = !minimized;
 
       if (!issueExists) {
+        if (liteSdkConfig.os) {
+          dispatch(
+            postSdkMessage.sendSafeAreaColorToLiteSdk({
+              safeAreaColor: colorUtils.convertThreeToSixCharHexColorCode(formBgColor)
+            })
+          );
+        }
+
         dispatch(
           postSdkMessage.conversationStatusEvent({
             open: false,
@@ -566,7 +576,7 @@ define("actions/appState", [
     });
 
     const {
-      appState: {featuresEnabled},
+      appState: {featuresEnabled, liteSdkConfig},
       ui: {
         uiConfig: {
           [HEADER_BG_COLOR]: {value: primaryColor},
@@ -577,15 +587,9 @@ define("actions/appState", [
 
     // Send the ui config change event to the client
     store.dispatch(
-      postSdkMessage.onUiConfigChange({
-        primaryColor:
-          primaryColor.length === THREE_CHAR_HEX_CODE_LENGTH
-            ? colorUtils.convertThreeToSixCharHexColorCode(primaryColor)
-            : primaryColor,
-        chatWidgetBgColor:
-          chatWidgetBgColor.length === THREE_CHAR_HEX_CODE_LENGTH
-            ? colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
-            : chatWidgetBgColor
+      postSdkMessage.uiConfigChange({
+        primaryColor: colorUtils.convertThreeToSixCharHexColorCode(primaryColor),
+        chatWidgetBgColor: colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
       })
     );
 
@@ -613,11 +617,8 @@ define("actions/appState", [
         analyticsHelpers.track(EVENT.WIDGET_LOAD);
       }
 
-      if (featuresEnabled.audioNotifications) {
+      if (featuresEnabled.audioNotifications && !liteSdkConfig.os) {
         audioHelpers.init();
-      } else {
-        // Send the config event loaded back to the client
-        dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
       }
     }
   };
@@ -983,8 +984,9 @@ define("actions/appState", [
    *
    * @param {Object} config - Config object
    * @param {Boolean} config.resetSessionId - Whether to reset the session id or not.
+   * @param {Boolean} config.shouldAddGreetingMessage - Whether to add greeting message or not
    */
-  const startNewConversation = (config) => {
+  const startNewConversation = ({resetSessionId, shouldAddGreetingMessage = true}) => {
     return (dispatch, getState) => {
       const {
         featuresEnabled: {conversationHistory: conversationHistoryIsEnabled},
@@ -996,9 +998,12 @@ define("actions/appState", [
       // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
-        dispatch(chatViewActions.addGreetingMessage());
 
-        if (config.resetSessionId) {
+        if (shouldAddGreetingMessage) {
+          dispatch(chatViewActions.addGreetingMessage());
+        }
+
+        if (resetSessionId) {
           dispatch(updateAnalyticsSessionId());
         }
 
@@ -1188,7 +1193,24 @@ define("actions/appState", [
         case ERROR_TYPES.PRE_ISSUE_FAILURE:
           // For non-specific errors with preissue creation, we assume that the preissue wasn't
           // created successfully, so we try to restart the conversation.
-          dispatch(startNewConversation({resetSessionId: true}));
+          dispatch(startNewConversation({resetSessionId: true, shouldAddGreetingMessage: false}));
+          break;
+
+        case ERROR_TYPES.USER_IS_REDACTED:
+          dispatch(
+            commonActions.reloadApp({
+              trigger: APP_RESET_TRIGGER.UPDATE_HELPSHIFT_CONFIG_API,
+              loading: true,
+              callback: () => {
+                // When app reloads/resets with an updated config, stop existing network
+                // calls so that the application's state doesn't get unintended
+                // values due to previous XHRs returning after reset is complete.
+                abortGetConfigXhr();
+                chatViewActions.stopPollingForMessages();
+                chatViewActions.abortCreatePreissueXhr();
+              }
+            })
+          );
           break;
 
         case ERROR_TYPES.PRE_ISSUE_TIME_OUT:

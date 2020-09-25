@@ -9,8 +9,9 @@ define("components/replyBox", [
   "gunpowder/utils/object",
   "gunpowder/widgets/textareaAutosize",
   "extras/accessibility",
-  "constants/accessibility"
-], function(KEY_CODES, objectUtils, TextareaAutosize, ax, axConstants) {
+  "constants/accessibility",
+  "utils/browser"
+], function(KEY_CODES, objectUtils, TextareaAutosize, ax, axConstants, browserUtils) {
   "use strict";
 
   const TEXT_AREA_MIN_ROWS = 1,
@@ -44,7 +45,8 @@ define("components/replyBox", [
       onClick: PropTypes.func,
       ariaLabel: PropTypes.string,
       shouldVirtualKeyboardRemainOpen: PropTypes.bool,
-      onReplyBoxFocusAfterReplySubmit: PropTypes.func
+      onReplyBoxFocusAfterReplySubmit: PropTypes.func,
+      userReplyXhrInProgress: PropTypes.bool
     },
 
     render() {
@@ -55,7 +57,8 @@ define("components/replyBox", [
         className,
         placeholder,
         dataLabel,
-        ariaLabel
+        ariaLabel,
+        browserIsMobile
       } = this.props;
 
       return (
@@ -72,7 +75,7 @@ define("components/replyBox", [
           onHeightChange={this._onHeightChange}
           placeholder={placeholder}
           disabled={disabled}
-          autoFocus
+          autoFocus={!browserIsMobile}
           ref={this._saveTextAreaRef}
           dir="auto"
           dataLabel={dataLabel}
@@ -112,9 +115,14 @@ define("components/replyBox", [
      * Handler for reply text area change event.
      */
     _onReplyTextChange(ev) {
+      if (this.props.userReplyXhrInProgress) {
+        return;
+      }
+
       ax.setActiveIndex({
         selector: METALIST_ITEMS.CHAT.FOOTER.TEXT_AREA.SELECTOR
       });
+
       this.props.onChangeReplyBoxValue(ev.target.value);
     },
 
@@ -150,6 +158,18 @@ define("components/replyBox", [
       this._textAreaRef = ref;
     },
 
+    _onDeviceOrientationChange() {
+      // In case of iOS mobile devices, while the virtual keyboard is open and if the
+      // device is rotated, then the reply box gets hidden and the user can't see the
+      // typed message.
+      // @TODO: Lite Sdk: Think of a better fix for this
+      // Ideal fix: The reply box should be visible with the keyboard when the screen
+      // orientation is changed
+      if (this._textAreaRef && browserUtils.isMobile() && browserUtils.isPlatformIos()) {
+        this._textAreaRef.refs.ta.blur();
+      }
+    },
+
     componentDidUpdate(prevProps) {
       // Focus the textarea in following cases
       // 1] When message and attachment is added
@@ -168,6 +188,10 @@ define("components/replyBox", [
       }
     },
 
+    componentDidMount() {
+      window.addEventListener("orientationchange", this._onDeviceOrientationChange);
+    },
+
     componentWillUnmount() {
       // In IE 11, the reply box focus remains visible even after this component
       // unmounts resulting in a visible cursor over the other input buttons.
@@ -181,6 +205,8 @@ define("components/replyBox", [
           this._textAreaRef.refs.ta.blur();
         }
       }
+
+      window.removeEventListener("orientationchange", this._onDeviceOrientationChange);
     }
   });
 });

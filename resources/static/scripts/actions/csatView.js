@@ -17,7 +17,9 @@ define("actions/csatView", [
   "helpers/xhr",
   "helpers/analytics",
   "axios",
-  "extras/accessibility"
+  "extras/accessibility",
+  "constants/uiConfig",
+  "utils/color"
 ], function(
   store,
   actionCreator,
@@ -31,13 +33,19 @@ define("actions/csatView", [
   xhrHelpers,
   analyticsHelpers,
   axios,
-  ax
+  ax,
+  UI_CONFIG_CONSTANTS,
+  colorUtils
 ) {
   "use strict";
 
   const {EVENT, EXPIRY_EVENT} = analyticsConstants;
 
   const CSAT_BOT_EXPIRY_MESSAGE = "csat timer expired";
+
+  const {
+    FLATTENED_UI_CONFIG: {CHAT_WIDGET_BG_COLOR}
+  } = UI_CONFIG_CONSTANTS;
 
   /**
    * Action to set csat save in progress
@@ -134,13 +142,24 @@ define("actions/csatView", [
     // clicks on the star ratings on the chat view footer. Analytics treats this
     // as the `taking survey` event. Track it here.
     const {
-      appState: {activeView}
+      appState: {activeView},
+      ui: {
+        uiConfig: {
+          [CHAT_WIDGET_BG_COLOR]: {value: chatWidgetBgColor}
+        }
+      }
     } = store.getState();
 
     if (activeView === ACTIVE_VIEW.CHAT) {
       analyticsHelpers.track(EVENT.CSAT, {
         event: EVENT.CSAT_TAKING_SURVEY
       });
+
+      store.dispatch(
+        postSdkMessage.sendSafeAreaColorToLiteSdk({
+          safeAreaColor: colorUtils.convertThreeToSixCharHexColorCode(chatWidgetBgColor)
+        })
+      );
     }
 
     return {

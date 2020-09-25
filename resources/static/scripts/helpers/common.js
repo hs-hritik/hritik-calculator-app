@@ -39,6 +39,8 @@ define("helpers/common", [
 
   const {OFFLINE_BEHAVIOUR} = bhConstants;
 
+  let _intersectionObserverIsSupported;
+
   const DOES_BROWSER_SUPPORT_DATE_INPUT = (() => {
     const dateInput = document.createElement("input");
     dateInput.setAttribute("type", "date");
@@ -421,6 +423,20 @@ define("helpers/common", [
     return identifier;
   };
 
+  /**
+   * Returns whether intersectionObserver is supported or not
+   * @returns {Boolean} - True if intersectionObserver is supported
+   */
+  const isIntersectionObserverSupported = () => {
+    if (!_intersectionObserverIsSupported) {
+      _intersectionObserverIsSupported =
+        "IntersectionObserver" in window &&
+        "isIntersecting" in window.IntersectionObserverEntry.prototype;
+    }
+
+    return _intersectionObserverIsSupported;
+  };
+
   return {
     isOutOfBusinessHours,
     isWidgetHiddenOutOfBusinessHours,
@@ -438,6 +454,7 @@ define("helpers/common", [
     areMessagesSeen,
     getSelectorForElement,
     getCbFaqSuggestionReadLsKey,
-    getUniqueUserIdentifier
+    getUniqueUserIdentifier,
+    isIntersectionObserverSupported
   };
 });

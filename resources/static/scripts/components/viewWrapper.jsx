@@ -42,7 +42,9 @@ define("components/viewWrapper", [
       onFocusLauncher: PropTypes.func,
       onKeyDown: PropTypes.func.isRequired,
       onClick: PropTypes.func.isRequired,
-      showLauncher: PropTypes.bool
+      showLauncher: PropTypes.bool,
+      xhrEndedDueToNetworkDisconnect: PropTypes.bool,
+      onDeviceOnline: PropTypes.func.isRequired
     },
 
     render() {
@@ -96,7 +98,12 @@ define("components/viewWrapper", [
     },
 
     _onOnline() {
-      this.props.onToggleOnlineStatus(true);
+      const {onToggleOnlineStatus, xhrEndedDueToNetworkDisconnect, onDeviceOnline} = this.props;
+
+      onToggleOnlineStatus(true);
+      if (xhrEndedDueToNetworkDisconnect) {
+        onDeviceOnline();
+      }
     },
 
     _onOffline() {
@@ -150,13 +157,13 @@ define("components/viewWrapper", [
     },
 
     componentDidMount() {
-      document.addEventListener("online", this._onOnline);
-      document.addEventListener("offline", this._onOffline);
+      window.addEventListener("online", this._onOnline);
+      window.addEventListener("offline", this._onOffline);
     },
 
     componentWillUnmount() {
-      document.removeEventListener("online", this._onOnline);
-      document.removeEventListener("offline", this._onOffline);
+      window.removeEventListener("online", this._onOnline);
+      window.removeEventListener("offline", this._onOffline);
     }
   });
 });

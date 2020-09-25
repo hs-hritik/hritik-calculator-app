@@ -18,9 +18,9 @@ define("helpers/attachments", ["constants/attachments", "gunpowder/utils/array"]
     UNITS_LIST,
     MAX_CHAR_LIMIT,
     MAX_EXTENSION_LIMIT,
-    ELLIPSIS_LENGTH
+    ELLIPSIS_LENGTH,
+    ALLOW_ALL_ATTACHMENT_WHITELIST
   } = ATTACHMENT_CONSTANTS;
-  const ALLOW_ALL_ATTACHMENT_WHITELIST = "*/*";
 
   /**
    * Converts bytes to object containing size and unit

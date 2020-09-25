@@ -26,12 +26,14 @@ define("constants/eventTypes", function() {
     SDK_UPDATE_UI_CONFIG_ERRORS: "sdk-update-ui-config-errors",
     SDK_USER_CHANGED_VIA_RE_ENGAGEMENT: "sdk-user-changed-via-re-engagement",
     SDK_FOCUS_LAUNCHER: "sdk-focus-launcher",
-    SDK_EVENT_ON_SET_LOCAL_STORAGE_DATA: "sdk-on-set-local-storage-data",
-    SDK_EVENT_ON_REMOVE_LOCAL_STORAGE_DATA: "sdk-on-remove-local-storage-data",
-    SDK_EVENT_ON_UI_CONFIG_CHANGE: "sdk-on-ui-config-change",
-    SDK_EVENT_ON_PUSH_TOKEN_SYNC: "sdk-on-push-token-sync",
-    SDK_EVENT_ON_USER_AUTH_FAILURE: "sdk-on-user-auth-failure",
-    SDK_EVENT_ON_REMOVE_ANONYMOUS_USER: "sdk-on-remove-anonymous-user",
+    SDK_EVENT_SET_LOCAL_STORAGE_DATA: "sdk-event-set-local-storage-data",
+    SDK_EVENT_REMOVE_LOCAL_STORAGE_DATA: "sdk-event-remove-local-storage-data",
+    SDK_EVENT_UI_CONFIG_CHANGE: "sdk-event-ui-config-change",
+    SDK_EVENT_PUSH_TOKEN_SYNC: "sdk-event-push-token-sync",
+    SDK_EVENT_USER_AUTH_FAILURE: "sdk-event-user-auth-failure",
+    SDK_EVENT_REMOVE_ANONYMOUS_USER: "sdk-event-remove-anonymous-user",
+    SDK_EVENT_SAFE_AREA_COLOR: "sdk-event-safe-area-color",
+    SDK_EVENT_CHAT_HEADER_HEIGHT: "sdk-event-chat-header-height",
     CMD_FOCUS_WEBCHAT: "cmd-focus-webchat",
     CMD_MESSENGER_TOGGLED: "cmd-messenger-toggled",
     CMD_SET_CONFIG: "cmd-set-config",
@@ -47,6 +49,8 @@ define("constants/eventTypes", function() {
     CMD_UPDATE_HELPSHIFT_CONFIG: "cmd-update-helpshift-config",
     CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
     CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
-    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi"
+    CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi",
+    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status",
+    CMD_GET_CHAT_HEADER_HEIGHT: "cmd-get-chat-header-height"
   };
 });

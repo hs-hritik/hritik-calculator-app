@@ -21,6 +21,8 @@
     align-items: center;
     flex: 0 0 auto;
     justify-content: space-between;
+    // Note: If this value gets updated in future, then also update the
+    // FIXED_CHAT_HEADER_HEIGHT value in messenger.js
     height: 52px;
     padding: $padding;
     font-weight: font-weight(medium);
@@ -73,8 +75,6 @@
 
       .hs-header__avatar-title-wrapper {
         margin: 0 auto;
-        margin-left: calc(50% - 24px);
-        transform: translateX(-50%);
       }
     }
   }

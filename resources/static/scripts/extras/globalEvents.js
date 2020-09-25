@@ -85,15 +85,15 @@ define("extras/globalEvents", [
       const eventDataObj = event.data;
 
       if (event.type === lsHelpers.LS_UPDATE_TYPES.SET) {
-        store.dispatch(postSdkMessage.onSetLocalStorageData(eventDataObj));
+        store.dispatch(postSdkMessage.setLocalStorageData(eventDataObj));
       } else if (event.type === lsHelpers.LS_UPDATE_TYPES.REMOVE) {
-        store.dispatch(postSdkMessage.onRemoveLocalStorageData(eventDataObj));
+        store.dispatch(postSdkMessage.removeLocalStorageData(eventDataObj));
 
         // We need this event explicitly as we can't intercept the onRemoveLocalStorageData
         // event on the lite sdk side as we can't hardcode the "aui" (ANON_USER_ID) key on the
         // lite sdk as this will need a lite sdk upgrade if this key gets updated in the future
         if (eventDataObj.data.indexOf(lsHelpers.LS_KEYS.ANON_USER_ID) !== -1) {
-          store.dispatch(postSdkMessage.onRemoveAnonymousUser());
+          store.dispatch(postSdkMessage.removeAnonymousUser());
         }
       }
     });

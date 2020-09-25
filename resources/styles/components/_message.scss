@@ -75,6 +75,7 @@
     &__item {
       @include word-break;
       position: relative;
+      display: inline-block;
       max-width: 100%;
       padding: $message-item-padding;
       overflow: hidden;
@@ -120,8 +121,22 @@
       background-size: cover;
     }
 
+    &--lazy-image-attachment {
+      background-image: none !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &--left {
+      .hs-message__details-and-msg-wrapper {
+        align-items: flex-start;
+      }
+    }
+
     &--right {
       align-self: flex-end;
+
+      .hs-message__details-and-msg-wrapper {
+        align-items: flex-end;
+      }
 
       .hs-message__item-wrapper {
         align-items: flex-end;

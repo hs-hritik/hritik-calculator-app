@@ -1,0 +1,2 @@
+Changelog:
+Add a dummy constant to invalidate CDN cache
