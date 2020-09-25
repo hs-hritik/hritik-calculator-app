@@ -33,7 +33,9 @@ define("actions/chatView", [
   "utils/browser",
   "utils/upload",
   "extras/accessibility",
-  "utils/debounceAction"
+  "utils/debounceAction",
+  "constants/uiConfig",
+  "utils/color"
 ], function(
   store,
   ACTION_TYPES,
@@ -63,7 +65,9 @@ define("actions/chatView", [
   browserUtils,
   upload,
   ax,
-  debounceAction
+  debounceAction,
+  UI_CONFIG_CONSTANTS,
+  colorUtils
 ) {
   "use strict";
 
@@ -80,13 +84,12 @@ define("actions/chatView", [
     ACTIVE_FOOTER,
     MESSAGES_FORCE_POLLING_TIMEOUT,
     CURSOR_TYPES,
-    USER_REDACTION_ERR_MSG,
-    USER_REDACTION_ERR_STATUS_CODE,
     INTENTS_SEARCH_DEBOUNCE_THRESHOLD,
     ISSUE_REOPEN_ERR_STATUS_CODE,
     POLLING_STRATEGY_TYPES,
     CONSERVATIVE_POLLING_BASE_MULTIPLIER,
-    CONSERVATIVE_POLLING_INTERVAL
+    CONSERVATIVE_POLLING_INTERVAL,
+    USER_INPUT_TYPES
   } = CHAT_VIEW_CONSTANTS;
 
   const {getPreparedDeviceInfo, getPreparedLiteSdkDeviceInfo} = prepareProcessXhrDataHelpers;
@@ -111,6 +114,10 @@ define("actions/chatView", [
 
   const RESOLUTION_QUESTION_EXPIRY_MESSAGE = "resolution question timer expired";
 
+  const {
+    FLATTENED_UI_CONFIG: {CHAT_WIDGET_BG_COLOR, FORM_BG_COLOR}
+  } = UI_CONFIG_CONSTANTS;
+
   let systemTypingTimerId = null,
     pollingEnabled = false,
     createPreissueXhr = null,
@@ -122,7 +129,6 @@ define("actions/chatView", [
     agentActivitySubscribed = false,
     emptyPollerCount = 0,
     markAsSeenXhrs = [];
-
   /**
    * Action to update reply text.
    * @param {String} value - new reply value.
@@ -200,19 +206,20 @@ define("actions/chatView", [
    * Action to add messages in message list.
    * This action will push given messages to the issue's messages array.
    * @param {Object} config - config
-   * @param {Array} config.messages - array of response messages
-   * @param {Boolean} [config.process] - whether to process messages
-   * @param {Boolean} [config.prepend] - whether to push messages at the start
-   * @param {String} [config.responseType] - Type of response when addMessage is called
+   * @param {array} config.messages - array of response messages
+   * @param {boolean} [config.process] - whether to process messages
+   * @param {boolean} [config.prepend] - whether to push messages at the start
+   * @param {string} [config.responseType] - Type of response when addMessage is called
+   * @param  {string} [config.contextIsLiteSdk]
    * from success of add user reply XHR
    * @returns {Object} - action
    */
   const addMessages = (config) => {
-    const {messages, process = true, prepend = false, responseType} = config;
+    const {messages, process = true, prepend = false, responseType, contextIsLiteSdk} = config;
     let processedMessages = messages;
 
     if (process) {
-      processedMessages = messageHelpers.getProcessedMessages(messages);
+      processedMessages = messageHelpers.getProcessedMessages({messages, contextIsLiteSdk});
     }
 
     if (prepend) {
@@ -322,7 +329,7 @@ define("actions/chatView", [
       chatView: {pollingInterval: currentPollingInterval, pollingStrategy},
       appState: {liteSdkConfig}
     } = store.getState();
-    const isLiteSdk = Object.keys(liteSdkConfig).length;
+    const isLiteSdk = !!liteSdkConfig.os;
 
     // Use default polling interval and strategy for usual (non lite-sdk) use-cases.
     // Poller optimization current applies only to Lite SDK.
@@ -1154,6 +1161,10 @@ define("actions/chatView", [
 
     let conversationEndEventShouldTrigger = false;
 
+    if (liteSdkConfig.os) {
+      dispatch(_sendSafeAreaColorToLiteSdk());
+    }
+
     // Do not handle active state as we will wait for user input/bot steps
     if (issueState === ISSUE_STATE.ACTIVE) {
       // Sync push token with backend if liteSdk sends it and
@@ -1226,6 +1237,48 @@ define("actions/chatView", [
         dispatch(postSdkMessage.conversationEndEvent());
       }
     }
+  };
+
+  /**
+   * Send safe area color to lite sdk
+   * In case of brezel-less devices, lite sdk applies a safe
+   * area (which is nothing but an empty ui component having
+   * color similar to chat footer), therefore webchat needs to
+   * send the active footer color.
+   */
+  const _sendSafeAreaColorToLiteSdk = () => {
+    return (dispatch, getState) => {
+      const {
+        chatView: {userInput},
+        ui: {
+          uiConfig: {
+            [FORM_BG_COLOR]: {value: formBgColor},
+            [CHAT_WIDGET_BG_COLOR]: {value: chatWidgetBgColor}
+          }
+        }
+      } = getState();
+      let safeAreaColor = chatWidgetBgColor;
+
+      switch (userInput.type) {
+        case USER_INPUT_TYPES.DEFAULT_INPUT:
+          safeAreaColor = formBgColor;
+          break;
+
+        case USER_INPUT_TYPES.PILL_SELECT:
+          safeAreaColor = chatWidgetBgColor;
+          break;
+
+        case USER_INPUT_TYPES.LIST_PICKER:
+          safeAreaColor = formBgColor;
+          break;
+      }
+
+      dispatch(
+        postSdkMessage.sendSafeAreaColorToLiteSdk({
+          safeAreaColor: colorUtils.convertThreeToSixCharHexColorCode(safeAreaColor)
+        })
+      );
+    };
   };
 
   /**
@@ -1515,7 +1568,8 @@ define("actions/chatView", [
         domain,
         fullPrivacyEnabled,
         featuresEnabled: {conversationHistory: conversationHistoryEnabled},
-        issueType
+        issueType,
+        liteSdkConfig
       },
       chatView: {
         messageCursor: {
@@ -1594,7 +1648,8 @@ define("actions/chatView", [
             setLoadingMoreMsgsFailed(false),
             addMessages({
               messages: linearMsgs,
-              prepend: true
+              prepend: true,
+              contextIsLiteSdk: !!(liteSdkConfig && liteSdkConfig.os)
             }),
             setAllMessagesAreLoaded(!hasOlderMsgs)
           ])
@@ -1645,7 +1700,8 @@ define("actions/chatView", [
         domain,
         fullPrivacyEnabled,
         featuresEnabled: {conversationHistory: conversationHistoryEnabled},
-        issueType: previousIssueType
+        issueType: previousIssueType,
+        liteSdkConfig
       },
       chatView: {
         messageCursor: {forward: forwardMessageCursor},
@@ -1654,6 +1710,9 @@ define("actions/chatView", [
         userIsRedacted,
         localGreetingMessageId,
         error: chatViewError
+      },
+      ui: {
+        text: {networkError, retryBtn}
       }
     } = store.getState();
 
@@ -1823,8 +1882,12 @@ define("actions/chatView", [
 
           const messagesLength = messages.length;
           if (messagesLength) {
+            const contextIsLiteSdk = !!(liteSdkConfig && liteSdkConfig.os);
             const latestMessage = messages[messagesLength - 1];
-            const processedMessages = messageHelpers.getProcessedMessages(messages);
+            const processedMessages = messageHelpers.getProcessedMessages({
+              messages,
+              contextIsLiteSdk
+            });
             const avatarsTs = messageHelpers.getAvatarTs(messages);
 
             dispatch(handleLatestMessage(latestMessage));
@@ -1833,7 +1896,8 @@ define("actions/chatView", [
             dispatch(
               addMessages({
                 messages: processedMessages,
-                process: false
+                process: false,
+                contextIsLiteSdk
               })
             );
 
@@ -1902,12 +1966,17 @@ define("actions/chatView", [
           return;
         }
 
-        if (
-          response.msg === USER_REDACTION_ERR_MSG &&
-          statusCode === USER_REDACTION_ERR_STATUS_CODE
-        ) {
-          dispatch(setUserIsRedacted(true));
-        }
+        dispatch({
+          type: ACTION_TYPES.POLLER_FAILURE,
+          payload: {
+            response,
+            statusCode,
+            uiErrorText: {
+              networkError,
+              retryBtn
+            }
+          }
+        });
       },
       onEnd: () => {
         const newPollerFailureCount = lastPollerCallSucceeded ? 0 : prevPollerFailureCount + 1;
@@ -2101,11 +2170,12 @@ define("actions/chatView", [
     const {
       chatView: {
         userInput,
-        botState: {botStepInProgress, botStepMessage}
+        botState: {botStepInProgress, botStepMessage},
+        readFaqList
       },
-      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId}
+      appState: {domain, activeIssueId, issueType, reEngagementId, internalIssueId, liteSdkConfig}
     } = getState();
-    const {msgBody, msgType, onSuccess, onEnd} = config;
+    const {msgBody, msgType, onSuccess} = config;
     const xhrIssueType = chatViewHelpers.getPluralizedIssueType(issueType);
     const isIssue = issueType === ISSUE_TYPE.ISSUE;
     const latestMessage = botStepInProgress ? botStepMessage : getLatestMessage();
@@ -2130,7 +2200,8 @@ define("actions/chatView", [
         input: userInput,
         latestMessage,
         isIssue,
-        botStepInProgress
+        botStepInProgress,
+        readFaqList
       });
     }
 
@@ -2142,7 +2213,9 @@ define("actions/chatView", [
       chatViewActionCreators.userReplyRequest({issueType, botStepInProgress, reEngagementId})
     );
 
-    xhr({
+    let postUserReplyXhr = null;
+
+    postUserReplyXhr = xhr({
       route: routes.postUserReply(domain, activeIssueId, xhrIssueType),
       data: xhrHelpers.getPreparedXhrData(xhrData, {
         skipPlatformId: true
@@ -2150,9 +2223,13 @@ define("actions/chatView", [
       method: "POST",
       headers: xhrHelpers.getCommonHeaders(),
       onSuccess: (response) => {
+        const contextIsLiteSdk = !!(liteSdkConfig && liteSdkConfig.os);
         // Ideally messages should be processed in the reducer, but importing helpers/message in
         // reducer/chatView introduces a cyclic dependency.
-        const processedMessages = messageHelpers.getProcessedMessages([response]);
+        const processedMessages = messageHelpers.getProcessedMessages({
+          messages: [response],
+          contextIsLiteSdk
+        });
 
         dispatch(
           chatViewActionCreators.userReplySuccess({
@@ -2201,7 +2278,21 @@ define("actions/chatView", [
           dispatch(chatViewActionCreators.userReplyFailure());
         }
       },
-      onEnd
+      onEnd: () => {
+        // In case of iOS devices, the online/offline events works inconsistently, same is
+        // the case with window.navigator.onLine
+        // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different
+        // from android, so in iOS when the network disconnects,  the xhr gets ended after the
+        // network come back online. Therefore we can dispatch the deviceIsOnline action if the
+        // xhr ends with a status = 0 (ie. UNSENT) in case of iOS.
+        if (browserUtils.isPlatformIos() && !postUserReplyXhr.status) {
+          dispatch(actionCreators.deviceIsOnline());
+        } else if (!window.navigator.onLine) {
+          dispatch({
+            type: ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT
+          });
+        }
+      }
     });
   };
 
@@ -2234,12 +2325,15 @@ define("actions/chatView", [
       const state = getState();
       const {
         appState: {activeIssueId, issueType, issueState},
-        chatView: {userInput, intents},
+        chatView: {userInput, intents, userReplyXhrInProgress},
         ui: {text}
       } = state;
       const trimmedValue = userInput.value.trim();
 
-      if (!userInput.selectedOption && (userInput.disabled || !trimmedValue)) {
+      if (
+        userReplyXhrInProgress ||
+        (!userInput.selectedOption && (userInput.disabled || !trimmedValue))
+      ) {
         return;
       }
 
@@ -2537,6 +2631,7 @@ define("actions/chatView", [
           // initialUserMessage is used with the conversationStart event (check the success cb)
           sdkConfigOptions: {initialUserMessage}
         },
+        chatView: {intents},
         ui: {
           text: {networkError, retryBtn}
         }
@@ -2584,7 +2679,16 @@ define("actions/chatView", [
 
           startPollingForMessages();
           _trackFirstMessage(response.messages);
-          dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
+
+          if (_wasLeafIntentSelected(intents.selectedIntentIds, intents.tree.intentsMap)) {
+            dispatch(
+              postSdkMessage.conversationStartEvent(
+                _getIntentLabels(intents.selectedIntentIds, intents.tree.intentsMap).join(", ")
+              )
+            );
+          } else if (initialUserMessage) {
+            dispatch(postSdkMessage.conversationStartEvent(initialUserMessage));
+          }
         },
         onFailure: (request, statusCode) => {
           const errorType =
@@ -2601,6 +2705,21 @@ define("actions/chatView", [
               }
             })
           );
+        },
+        onEnd: () => {
+          // In case of iOS devices, the online/offline events works inconsistently, same is
+          // the case with window.navigator.onLine
+          // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different
+          // from android, so in iOS when the network disconnects,  the xhr gets ended after the
+          // network come back online. Therefore we can dispatch the deviceIsOnline action if the
+          // xhr ends with a status = 0 (ie. UNSENT) in case of iOS.
+          if (browserUtils.isPlatformIos() && !createPreissueXhr.status) {
+            dispatch(actionCreators.deviceIsOnline());
+          } else if (!window.navigator.onLine) {
+            dispatch({
+              type: ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT
+            });
+          }
         }
       });
     };
@@ -2718,7 +2837,11 @@ define("actions/chatView", [
    * @returns {Object} - Action
    */
   const createMessage = (config) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const {
+        appState: {liteSdkConfig}
+      } = getState();
+
       const {
         type: messageType,
         typingTimer = false,
@@ -2733,7 +2856,8 @@ define("actions/chatView", [
       const actionsToDispatch = [
         addMessages({
           messages: [msg],
-          process: false
+          process: false,
+          contextIsLiteSdk: !!(liteSdkConfig && liteSdkConfig.os)
         })
       ];
 
@@ -2813,10 +2937,18 @@ define("actions/chatView", [
   const uploadAttachment = (config) => {
     return (dispatch, getState) => {
       const {
-        appState: {domain, activeIssueId, issueState}
+        appState: {domain, activeIssueId, issueState, liteSdkConfig}
       } = getState();
       const {file, attachmentMsgId} = config;
       const pluralIssueType = chatViewHelpers.getPluralizedIssueType(ISSUE_TYPE.ISSUE);
+
+      dispatch({
+        type: ACTION_TYPES.ATTACHMENT_UPLOAD_REQUEST,
+        payload: {
+          attachmentMsgId,
+          uploadIsInProgress: true
+        }
+      });
 
       upload({
         route: routes.postUserReply(domain, activeIssueId, pluralIssueType),
@@ -2841,7 +2973,8 @@ define("actions/chatView", [
             batchActions([
               removeMessage(attachmentMsgId),
               addMessages({
-                messages: [response]
+                messages: [response],
+                contextIsLiteSdk: !!(liteSdkConfig && liteSdkConfig.os)
               })
             ])
           );
@@ -2849,6 +2982,27 @@ define("actions/chatView", [
         },
         onFailure: (response) => {
           dispatch(setAttachmentError(attachmentMsgId, response.errorCode));
+        },
+        onEnd: (uploadXhr) => {
+          dispatch({
+            type: ACTION_TYPES.ATTACHMENT_UPLOAD_END,
+            payload: {
+              attachmentMsgId,
+              uploadIsInProgress: false
+            }
+          });
+
+          // In case of iOS devices, the online/offline events works inconsistently, same is
+          // the case with window.navigator.onLine
+          // And the behaviour of xhrs getting interrupted on network disconnect in iOS is different
+          // from android, so in iOS when the network disconnects,  the xhr gets ended after the
+          // network come back online. Therefore we can dispatch the deviceIsOnline action if the
+          // xhr ends with a status = 0 (ie. UNSENT) in case of iOS.
+          if (browserUtils.isPlatformIos() && !uploadXhr.status) {
+            dispatch(setAttachmentError(attachmentMsgId, FILE_UPLOAD_ERRORS.RETRY));
+          } else if (!window.navigator.onLine) {
+            dispatch(setAttachmentError(attachmentMsgId, FILE_UPLOAD_ERRORS.RETRY));
+          }
         }
       });
     };
@@ -3042,7 +3196,7 @@ define("actions/chatView", [
    */
   const loadIntentsTree = (callbacks = {}) => {
     return (dispatch, getState) => {
-      const {domain, featuresEnabled} = getState().appState;
+      const {domain, featuresEnabled, liteSdkConfig} = getState().appState;
 
       if (!featuresEnabled.intents) {
         return;
@@ -3061,7 +3215,9 @@ define("actions/chatView", [
           }
         },
         onFailure: () => {
-          dispatch(actionCreators.intentsTreeFailure());
+          const lastFetchTime = liteSdkConfig.os ? Date.now() : 0;
+
+          dispatch(actionCreators.intentsTreeFailure(lastFetchTime));
           if (callbacks.onFailure) {
             callbacks.onFailure();
           }

@@ -10,6 +10,8 @@ define("utils/color", function() {
 
   const hexRegExp = /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i;
 
+  const THREE_CHAR_HEX_CODE_LENGTH = 4;
+
   /**
    * Predicate to check given value is hex value
    * @param {String} value - value to check
@@ -21,11 +23,16 @@ define("utils/color", function() {
 
   /**
    * Converts a three charater to six character hex color code
-   * @param {String} threeCharHexColorCode - Three character hex color code
+   * @param {String} hexColorCode - Hex color code
    * @returns {String} - Six character hex color code
    */
-  const convertThreeToSixCharHexColorCode = (threeCharHexColorCode) => {
-    const threeCharHexColor = threeCharHexColorCode.slice(1, threeCharHexColorCode.length);
+  const convertThreeToSixCharHexColorCode = (hexColorCode) => {
+    // Return early if the color code is already of six characters
+    if (hexColorCode !== THREE_CHAR_HEX_CODE_LENGTH) {
+      return hexColorCode;
+    }
+
+    const threeCharHexColor = hexColorCode.slice(1, hexColorCode.length);
 
     return `#${threeCharHexColor
       .split("")

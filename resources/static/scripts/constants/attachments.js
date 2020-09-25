@@ -28,6 +28,8 @@ define("constants/attachments", function() {
   const ELLIPSIS_LENGTH = 3;
   const BUSINESS_HOURS_ALLOWED_REMOVE_COUNT = 1;
 
+  const ALLOW_ALL_ATTACHMENT_WHITELIST = "*/*";
+
   return {
     MAX_ATTACHMENT_LIMIT,
     ATTACHMENT_OPERATIONS,
@@ -37,6 +39,7 @@ define("constants/attachments", function() {
     MAX_CHAR_LIMIT,
     MAX_EXTENSION_LIMIT,
     ELLIPSIS_LENGTH,
-    BUSINESS_HOURS_ALLOWED_REMOVE_COUNT
+    BUSINESS_HOURS_ALLOWED_REMOVE_COUNT,
+    ALLOW_ALL_ATTACHMENT_WHITELIST
   };
 });

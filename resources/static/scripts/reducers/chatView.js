@@ -12,7 +12,9 @@ define("reducers/chatView", [
   "gunpowder/constants/widgets/dragIt",
   "gunpowder/utils/object",
   "gunpowder/utils/array",
-  "helpers/intent"
+  "helpers/intent",
+  "utils/browser",
+  "constants/errors"
 ], function(
   APP_STATE_CONSTANTS,
   CHAT_VIEW_CONSTANTS,
@@ -21,7 +23,9 @@ define("reducers/chatView", [
   dragItConstants,
   objUtils,
   arrayUtils,
-  intentHelpers
+  intentHelpers,
+  browserUtils,
+  ERROR_CONSTANTS
 ) {
   "use strict";
 
@@ -38,10 +42,15 @@ define("reducers/chatView", [
     INTENTS_SEARCH_ALGO,
     POLLING_STRATEGY_TYPES,
     AGRESSIVE_POLLING_TIMEOUT,
-    CONSERVATIVE_POLLING_INTERVAL
+    USER_REDACTION_ERR_MSG,
+    USER_REDACTION_ERR_STATUS_CODE
   } = CHAT_VIEW_CONSTANTS;
 
   const {TYPE: MESSAGE_TYPE} = msgConstants;
+
+  const IS_MOBILE = browserUtils.isMobile();
+
+  const {TYPE: ERROR_TYPES} = ERROR_CONSTANTS;
 
   const INITIAL_ERROR_STATE = {
     type: "",
@@ -238,7 +247,10 @@ define("reducers/chatView", [
     // It contains key-value pair of avatarId and last updated timestamp
     avatarLastUpdatedTs: {},
     pollingStrategy: POLLING_STRATEGY_TYPES.AGGRESSIVE,
-    pollingInterval: AGRESSIVE_POLLING_TIMEOUT
+    pollingInterval: AGRESSIVE_POLLING_TIMEOUT,
+    xhrEndedDueToNetworkDisconnect: false,
+    userReplyXhrInProgress: false,
+    attachmentUploadIsInProgress: {}
   };
 
   /**
@@ -355,12 +367,14 @@ define("reducers/chatView", [
         const isPreIssue = issueType === ISSUE_TYPE.PRE_ISSUE;
         // Show fake typing indicator for preissues and issues with an ongoing bot
         const systemTypingShouldRender = isPreIssue || (isIssue && botStepInProgress);
+        const userInputShouldBeEnabled = !IS_MOBILE;
 
         return update(state, {
           userInput: {
-            disabled: {$set: true}
+            disabled: {$set: userInputShouldBeEnabled}
           },
-          systemTyping: {$set: systemTypingShouldRender}
+          systemTyping: {$set: systemTypingShouldRender},
+          userReplyXhrInProgress: {$set: true}
         });
       }
 
@@ -386,7 +400,8 @@ define("reducers/chatView", [
             defaultInputValue: {$set: defaultInputValue},
             errorMsg: {$set: ""}
           },
-          messageList: {$set: newMessageList}
+          messageList: {$set: newMessageList},
+          userReplyXhrInProgress: {$set: false}
         };
 
         if (messageType === MESSAGE_TYPE.RESP_FAQ_LIST_WITH_OPTION_INPUT) {
@@ -403,7 +418,8 @@ define("reducers/chatView", [
           userInput: {
             disabled: {$set: false}
           },
-          systemTyping: {$set: false}
+          systemTyping: {$set: false},
+          userReplyXhrInProgress: {$set: false}
         });
 
       case ACTION_TYPES.SEARCH_INTENTS: {
@@ -768,14 +784,21 @@ define("reducers/chatView", [
         });
       }
 
-      case ACTION_TYPES.INTENTS_TREE_FAILURE:
-        return update(state, {
+      case ACTION_TYPES.INTENTS_TREE_FAILURE: {
+        const updateObj = {
           loading: {$set: false},
           // @TODO: Intents: Confirm enforceIntentSelection flag behavior in case of failure.
           intents: {
             tree: {$set: _getDefaultIntentsTreeData()}
           }
-        });
+        };
+
+        updateObj.intents.tree = {
+          lastFetchTime: {$set: action.fetchTime}
+        };
+
+        return update(state, updateObj);
+      }
 
       case ACTION_TYPES.INTENTS_MODEL_SUCCESS: {
         const {response} = action;
@@ -929,6 +952,14 @@ define("reducers/chatView", [
         userInputUpdateObj.defaultInputValue = state.userInput.defaultInputValue;
         userInputUpdateObj.disabled = false;
 
+        if (userInput.type === USER_INPUT_TYPES.DATE && IS_MOBILE) {
+          const currentDate = new Date();
+
+          // currentDate.toISOString() returns something like this - "2020-09-14T11:21:08.598Z"
+          // We need the date part only, hence we slice this value till "2020-09-14" (length = 10)
+          userInputUpdateObj.value = currentDate.toISOString().slice(0, 10);
+        }
+
         return update(state, {
           userInput: {$set: userInputUpdateObj},
           activeFooter: {$set: ACTIVE_FOOTER.REPLY},
@@ -949,11 +980,49 @@ define("reducers/chatView", [
       case ACTION_TYPES.RESET:
         return INITIAL_STATE;
 
-      case ACTION_TYPES.SET_LITE_SDK_CONFIG:
-        // If lite sdk, change the default value of polling interval stragtegy
+      case ACTION_TYPES.XHR_ENDED_DUE_TO_NETWORK_DISCONNECT:
         return update(state, {
-          pollingInterval: {$set: CONSERVATIVE_POLLING_INTERVAL.MINIMUM},
-          pollingStrategy: {$set: POLLING_STRATEGY_TYPES.CONSERVATIVE}
+          xhrEndedDueToNetworkDisconnect: {$set: true}
+        });
+
+      case ACTION_TYPES.DEVICE_ONLINE_SUCCESS: {
+        const updateObj = {
+          userInput: {
+            disabled: {$set: false}
+          },
+          systemTyping: {$set: false},
+          userReplyXhrInProgress: {$set: false}
+        };
+
+        return update(state, updateObj);
+      }
+
+      case ACTION_TYPES.POLLER_FAILURE: {
+        const {response, statusCode, uiErrorText} = action.payload;
+        let updateObj = {};
+
+        if (
+          response.msg === USER_REDACTION_ERR_MSG &&
+          statusCode === USER_REDACTION_ERR_STATUS_CODE
+        ) {
+          updateObj = {
+            userIsRedacted: {$set: true},
+            error: {
+              type: {$set: ERROR_TYPES.USER_IS_REDACTED},
+              cta: {$set: uiErrorText.retryBtn}
+            }
+          };
+        }
+
+        return update(state, updateObj);
+      }
+
+      case ACTION_TYPES.ATTACHMENT_UPLOAD_REQUEST:
+      case ACTION_TYPES.ATTACHMENT_UPLOAD_END:
+        return update(state, {
+          attachmentUploadIsInProgress: {
+            [action.payload.attachmentMsgId]: {$set: action.payload.uploadIsInProgress}
+          }
         });
 
       default:

@@ -47,7 +47,7 @@ define("utils/upload", ["constants/errors"], function(errorConstants) {
       }
     }
 
-    xhr.onload = function(event) {
+    xhr.onreadystatechange = function(event) {
       switch (event.target.status) {
         case 201:
           if (config.onSuccess) {
@@ -93,7 +93,7 @@ define("utils/upload", ["constants/errors"], function(errorConstants) {
       }
 
       if (event.target.readyState === 4 && config.onEnd) {
-        config.onEnd();
+        config.onEnd(xhr);
       }
     };
     xhr.send(formData);

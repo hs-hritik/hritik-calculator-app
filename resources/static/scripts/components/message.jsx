@@ -95,7 +95,12 @@ define("components/message", [
       /**
        * Unique key of a message
        */
-      key: PropTypes.string
+      key: PropTypes.string,
+
+      /**
+       * Map of attachment message id to its upload in progress status
+       */
+      attachmentUploadIsInProgress: PropTypes.object
     },
 
     getDefaultProps() {
@@ -350,9 +355,16 @@ define("components/message", [
      */
     _renderUserAttachmentMessage() {
       const {
-        message: {isSystemMsg: messageIsClientGenerated, states: messageStates, file, attachments},
+        message: {
+          isSystemMsg: messageIsClientGenerated,
+          states: messageStates,
+          file,
+          attachments,
+          id
+        },
         text: {ariaLabelOpenFile},
-        onImageLoad
+        onImageLoad,
+        attachmentUploadIsInProgress
       } = this.props;
 
       return (
@@ -364,6 +376,8 @@ define("components/message", [
           ariaLabelOpenFile={ariaLabelOpenFile}
           onImageLoad={onImageLoad}
           onRetryClick={this._onRetryClick}
+          attachmentUploadIsInProgress={attachmentUploadIsInProgress}
+          messageId={id}
         />
       );
     },

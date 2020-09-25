@@ -7,6 +7,11 @@
 define("utils/browser", function() {
   "use strict";
 
+  const MAC_REGEX = /Macintosh/i;
+  const isMac = MAC_REGEX.test(navigator.userAgent);
+  // This check is needed for iPad Pro as currently, there is no regex to test for it
+  const isIPadPro = isMac && "ontouchend" in document;
+
   /**
    * Detects if the current environment is mobile or not.
    * @returns {Boolean}
@@ -14,7 +19,8 @@ define("utils/browser", function() {
   const isMobile = () => {
     // eslint-disable-next-line max-len
     const isMobileRegEx = /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop|XBLWP7/i;
-    return isMobileRegEx.test(navigator.userAgent);
+
+    return isMobileRegEx.test(navigator.userAgent) || isIPadPro;
   };
 
   /**
@@ -57,7 +63,7 @@ define("utils/browser", function() {
    * @returns {boolean} - whether current platform is iOS
    */
   const isPlatformIos = () => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    return (isMac || /iPad|iPhone|iPod/.test(navigator.userAgent) || isIPadPro) && !window.MSStream;
   };
 
   /**
@@ -68,12 +74,24 @@ define("utils/browser", function() {
     return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
   };
 
+  /**
+   * Return iOS version
+   */
+  const getIosVersion = () => {
+    return navigator.userAgent
+      .match(/OS [\d_]+/i)[0]
+      .substr(3)
+      .split("_")
+      .map((n) => parseInt(n, 10))[0];
+  };
+
   return {
     isMobile,
     isPlatformIos,
     isBrowserSafari,
     getLanguage,
     isBot,
-    areTouchEventsSupported
+    areTouchEventsSupported,
+    getIosVersion
   };
 });

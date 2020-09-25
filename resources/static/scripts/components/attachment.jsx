@@ -13,8 +13,9 @@ define("components/attachment", [
   "gunpowder/widgets/messages/previewableAttachment",
   "helpers/attachments",
   "gunpowder/utils/classes",
-  "constants/errors"
-], function(PreviewableAttachment, attachmentsHelpers, classes, ERROR_CONSTANTS) {
+  "constants/errors",
+  "helpers/common"
+], function(PreviewableAttachment, attachmentsHelpers, classes, ERROR_CONSTANTS, commonHelpers) {
   "use strict";
 
   const {FILE_UPLOAD_ERRORS} = ERROR_CONSTANTS;
@@ -99,7 +100,9 @@ define("components/attachment", [
       file,
       attachments,
       onRetryClick,
-      onImageLoad
+      onImageLoad,
+      attachmentUploadIsInProgress,
+      messageId
     } = props;
 
     let name, url, iconClasses, onWrapperClick, contentType;
@@ -118,7 +121,7 @@ define("components/attachment", [
         const errorCode = messageStates.errorCode;
         const failureIsRetriable = errorCode === FILE_UPLOAD_ERRORS.RETRY;
 
-        if (failureIsRetriable) {
+        if (failureIsRetriable && !attachmentUploadIsInProgress[messageId]) {
           onWrapperClick = onRetryClick;
         } else {
           onWrapperClick = null;
@@ -126,7 +129,8 @@ define("components/attachment", [
 
         iconClasses = classes("hs-message__icon-error", {
           "ion-alert-circled": !failureIsRetriable,
-          "ion-reset": failureIsRetriable
+          "ion-reset": failureIsRetriable && !attachmentUploadIsInProgress[messageId],
+          "ion--spinning ion-load-b": attachmentUploadIsInProgress[messageId]
         });
       } else {
         iconClasses = "";
@@ -155,13 +159,20 @@ define("components/attachment", [
     // b] If it is local image, it should have error
     //    Do not show preview while uploading!
     const attachmentIsPreviewable = isImageAttachment && localAttachmentHasError;
+    const previewableAttachmentClasses = classes(
+      "hs-message__item",
+      "hs-message__image-attachment",
+      {
+        "hs-message--lazy-image-attachment": commonHelpers.isIntersectionObserverSupported()
+      }
+    );
 
     if (attachmentIsPreviewable) {
       return (
         <PreviewableAttachment
           url={url}
           file={file}
-          wrapperClasses="hs-message__item hs-message__image-attachment"
+          wrapperClasses={previewableAttachmentClasses}
           failedImageClassNames="hs-message__failed-img"
           onImageLoad={onImageLoad}
           onWrapperClick={onWrapperClick}
@@ -189,7 +200,9 @@ define("components/attachment", [
     file: PropTypes.object,
     attachments: PropTypes.array,
     onRetryClick: PropTypes.func.isRequired,
-    onImageLoad: PropTypes.func.isRequired
+    onImageLoad: PropTypes.func.isRequired,
+    attachmentUploadIsInProgress: PropTypes.object,
+    messageId: PropTypes.string
   };
 
   /**
@@ -214,13 +227,20 @@ define("components/attachment", [
         _onAttachmentClick(url);
       };
       const attachmentAriaLabel = _getAttachmentAriaLabel(fileName, ariaLabelOpenFile);
+      const previewableAttachmentClasses = classes(
+        "hs-message__item",
+        "hs-message__image-attachment",
+        {
+          "hs-message--lazy-image-attachment": commonHelpers.isIntersectionObserverSupported()
+        }
+      );
 
       if (attachmentIsPreviewable) {
         return (
           <PreviewableAttachment
             key={`previewable-${index}`}
             url={url}
-            wrapperClasses="hs-message__item hs-message__image-attachment"
+            wrapperClasses={previewableAttachmentClasses}
             failedImageClassNames="hs-message__failed-img"
             onWrapperClick={onWrapperClick}
           />

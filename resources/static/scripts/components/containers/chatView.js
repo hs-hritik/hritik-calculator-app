@@ -43,7 +43,8 @@ define("components/containers/chatView", [
         allMessagesAreLoaded,
         botState: {botStepInProgress},
         activeFooter,
-        avatarLastUpdatedTs
+        avatarLastUpdatedTs,
+        attachmentUploadIsInProgress
       },
       ui: {text}
     } = state;
@@ -78,7 +79,8 @@ define("components/containers/chatView", [
       showHeaderAvatar,
       appAvatarUrl,
       avatar,
-      avatarLastUpdatedTs
+      avatarLastUpdatedTs,
+      attachmentUploadIsInProgress
     };
   };
 

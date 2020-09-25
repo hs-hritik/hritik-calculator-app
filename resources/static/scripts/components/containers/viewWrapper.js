@@ -21,7 +21,8 @@ define("components/containers/viewWrapper", [
         showHeaderCloseButton,
         sdkConfigOptions: {fullScreen: allowFullScreen, showLauncher},
         keyboardInteractionIsActive
-      }
+      },
+      chatView: {xhrEndedDueToNetworkDisconnect}
     } = state;
 
     return {
@@ -32,7 +33,8 @@ define("components/containers/viewWrapper", [
         fontFamily: state.ui.uiConfig[BASE_FONT].value
       },
       keyboardInteractionIsActive,
-      showLauncher
+      showLauncher,
+      xhrEndedDueToNetworkDisconnect
     };
   };
 
@@ -52,6 +54,9 @@ define("components/containers/viewWrapper", [
       },
       onClick: ({keyboardInteractionIsActive}) => {
         dispatch(actionCreators.setKeyboardInteractionIsActive(keyboardInteractionIsActive));
+      },
+      onDeviceOnline: () => {
+        dispatch(actionCreators.deviceIsOnline());
       }
     };
   };
