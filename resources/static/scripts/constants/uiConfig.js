@@ -12,7 +12,7 @@ define("constants/uiConfig", function() {
 
   // Colors map like we maintain in global scss
   const COLORS = {
-    PRIMARY: "#43BF6C",
+    PRIMARY: "#453FB9",
     HIGHLIGHT: "rgba(0, 103, 244, .4)",
     TRANSPARENT: "transparent",
     BLACK: {

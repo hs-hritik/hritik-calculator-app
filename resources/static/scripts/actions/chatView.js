@@ -2621,15 +2621,15 @@ define("actions/chatView", [
       const {
         appState: {
           domain,
-          // initialUserMessage is used with the conversationStart event (check the success cb)
-          sdkConfigOptions: {initialUserMessage},
           liteSdkConfig,
           isPushTokenSynced,
           userId,
           phoneNumber,
           userEmail,
           anonUserIdentifier,
-          issueExists
+          issueExists,
+          // initialUserMessage is used with the conversationStart event (check the success cb)
+          sdkConfigOptions: {initialUserMessage}
         },
         chatView: {intents},
         ui: {

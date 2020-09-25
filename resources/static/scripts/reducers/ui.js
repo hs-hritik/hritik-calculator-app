@@ -431,12 +431,11 @@ define("reducers/ui", [
          * dashboard and by the custom configuration passed with helpshiftConfig.
          */
         const uiConfig = _getSetUiConfigUpdateObj(updatedConfig, action.helpshiftConfig);
-        const developerUiConfig = _getUiConfig(state, action.helpshiftConfig);
 
         return update(state, {
           text: getUiTextUpdateObj(config),
           uiConfig: uiConfig,
-          developerUiConfig: {$set: developerUiConfig}
+          developerUiConfig: {$set: action.helpshiftConfig.uiConfig}
         });
 
       case ACTION_TYPES.SET_GREETING_MESSAGE:
