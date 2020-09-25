@@ -1,0 +1,56 @@
+Branches:
+feature/lite-sdk-bug-fixes-v1
+
+Changelog:
+Consume gunpowder version 4.0.16
+Fix a typo in _onLocalStorageFull callback
+Not set the polling strategy to conservative in liteSdk
+Fix multiple uploads on multiple click on attachment retry
+Fix the msg wrapper to take width as the content's width
+Add check for configMap if its not present in localstorage
+Fix the smart intent picker height in case of iOS desktop
+Fix user reply behaviour in device online/offline state
+Add a check for iPad pro in isMobile browser utility method
+Change the input type from number to text in iOS devices
+Send the selected intent in conversationStart event
+Add inputmode="none" in case of date picker on iOS >= v14
+Expose an event to communicate the chat header height value
+Rename the supported events according to JS convention
+Not focus the user input in case of date picker on submit
+Reset the app on retry btn click in case of user redaction
+Remove the unnecessary sending of config event to the client
+Rename the argument passed to startNewConversation method
+Refactor the code around isIntersectionObserverSupported fn
+Fix the width of the message bubble
+Not pass allowedMimeTypes in iOS when all types are allowed
+Fix the keyboard behavior on screen rotation in iOS devices
+Fix multiple calls to getIntentTree xhr in case of lite sdk
+Call conversationStartEvent if initialUserMessage is present
+Fix safe area color event
+Fix attachment upload state in case of network disconnect
+Fix the start/stop poller api
+Fix user input from collapsing when disabled on submit click
+Fix sudden collapse/expand of keyboard in android devices
+Fix the user input state when the network disconnects
+Remove autoFocus on replyBox in case of mobile devices
+Fix removal of "aui" when clearAnonymousUserOnLogin is true
+Consume gunpowder snapshot v4.0.16-lite-sdk-bug-fixes.0
+Fix submit reply action in case of date type user input
+Align the close button to the left in mobile devices
+Expose web sdk config loaded event to the parent
+Fix behaviour of preIssue flow for 4xx/5xx status codes
+Align the close button to the right in mobile devices
+Render retry button in case of user redaction failure
+Set default value in the input type date text field
+Fix the branding title in the chat header
+Fix online/offline events in viewWrapper
+Expose an API to start/stop polling for messages
+Fix exposure of onUserAuthFailure event
+Change the check to define lite sdk context
+Lazy load image attachments in messageList
+Mark web chat as ready when iframe's JS is loaded
+Remove dependency of store from helpers/message
+Open action card links in a new tab for Lite SDK
+Not fetch audio files in case of lite sdk
+Expose an event to convey safe area color to Lite sdk
+Refactor conversion of hex color code method in colorUtils
