@@ -1,0 +1,2 @@
+Changelog:
+Revert "Mark web chat as ready when iframe's JS is loaded"
