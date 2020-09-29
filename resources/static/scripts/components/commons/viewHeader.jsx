@@ -18,7 +18,15 @@ define("components/commons/viewHeader", [
 
   const IS_MOBILE = browserUtils.isMobile();
 
+  // @TODO: Lite Sdk - Remove when this is fixed without manipulating the DOM in
+  // the componentDidMount
+  const SAFARI_MOBILE_ELLIPSES_FIX_IS_NEEDED =
+    IS_MOBILE && browserUtils.isPlatformIos() && browserUtils.getIosVersion() <= 12;
   const HEADER_CLOSE_BUTTON_WIDTH = 24;
+  // left/right header margin(32px) + avatar width in the header (36px)
+  // + header close button width (24px)
+  const HEADER_TEXT_OFFSET_WIDTH_WITH_AVATAR = 92;
+  const HEADER_TEXT_OFFSET_WIDTH_WITHOUT_AVATAR = 56;
 
   return createReactClass({
     displayName: "ViewHeader",
@@ -60,7 +68,8 @@ define("components/commons/viewHeader", [
       const {showAvatar} = this.props;
       const headerClasses = classes("hs-header", {
         "hs-header--with-avatar": showAvatar,
-        "hs-header--mobile": IS_MOBILE
+        "hs-header--mobile": IS_MOBILE,
+        "hs-header--safari-mobile-ellipses-fix": SAFARI_MOBILE_ELLIPSES_FIX_IS_NEEDED
       });
 
       if (IS_MOBILE) {
@@ -165,6 +174,10 @@ define("components/commons/viewHeader", [
 
     componentDidMount() {
       // @TODO: Lite Sdk: Think of another of doing this instead of directly manipulating the DOM
+      const HEADER_TEXT_OFFSET_WIDTH = this.props.showAvatar
+        ? HEADER_TEXT_OFFSET_WIDTH_WITH_AVATAR
+        : HEADER_TEXT_OFFSET_WIDTH_WITHOUT_AVATAR;
+
       if (IS_MOBILE) {
         const brandingTitleWrapperEl = document.querySelector(".hs-header__avatar-title-wrapper");
 
@@ -180,6 +193,29 @@ define("components/commons/viewHeader", [
           if (brandingTitleWrapperElCurrentMarginLeftValue) {
             brandingTitleWrapperEl.style.marginLeft =
               brandingTitleWrapperElCurrentMarginLeftValue - HEADER_CLOSE_BUTTON_WIDTH + "px";
+          }
+        }
+
+        // In mobile devices with iOS version less than and equal to 12, the branding header
+        // title text does not get ellipses. So, to fix that we are setting a min width to
+        // the header title text and then after the the header width gets computed, we manipulate
+        // the width of the header title text here by removing the header text offset width
+        // (margins to the header + avatar width + close button width)
+        if (SAFARI_MOBILE_ELLIPSES_FIX_IS_NEEDED) {
+          const headerEl = document.querySelector(".hs-header");
+
+          if (headerEl) {
+            const headerElWidthValue = parseInt(
+              window.getComputedStyle(headerEl).getPropertyValue("width"),
+              10
+            );
+
+            const brandingTitleTextEl = document.querySelector(".hs-header__title-text");
+
+            if (brandingTitleTextEl && headerElWidthValue) {
+              brandingTitleTextEl.style.maxWidth =
+                headerElWidthValue - HEADER_TEXT_OFFSET_WIDTH + "px";
+            }
           }
         }
       }
