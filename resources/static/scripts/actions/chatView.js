@@ -2839,7 +2839,7 @@ define("actions/chatView", [
   const createMessage = (config) => {
     return (dispatch, getState) => {
       const {
-        appState: {liteSdkConfig}
+        appState: {liteSdkConfig, internalIssueId}
       } = getState();
 
       const {
@@ -2849,6 +2849,8 @@ define("actions/chatView", [
         messageConfig,
         onAddMessage
       } = config;
+      messageConfig.issueId = internalIssueId;
+
       const msg = messageHelpers.createMessage(messageType, messageConfig);
 
       // As this message is created on frontend, it is already in processed format.
