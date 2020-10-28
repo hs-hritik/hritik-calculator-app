@@ -17,7 +17,7 @@
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.60.2";
+    PATH = "/html/index.html?v=2.60.3";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -73,7 +73,7 @@
     mouseInteraction: false
   };
 
-  const ALLOWED_APIS_WHEN_SDK_IS_NOT_LOADED = ["init", "addEventListener"];
+  const INIT = "init";
   const FORCE_UPDATE_STYLES = true;
   // Time interval to wait for existence of document's body (in ms)
   const BODY_WAIT_TIMER = 500;
@@ -639,7 +639,7 @@
   /**
    * Set sdk loaded as true and clear api queue
    */
-  const markSdkReady = () => {
+  const markSdkReadyAndFlushApiQueue = () => {
     sdkLoaded = true;
     clearApiQueue();
   };
@@ -852,7 +852,7 @@
     // If the launcher iframe is hidden by the widget config options
     // then mark sdk as ready
     if (launcherHidden) {
-      markSdkReady();
+      markSdkReadyAndFlushApiQueue();
     }
 
     // If launcher is hidden or launcher iframe is already created then
@@ -906,7 +906,7 @@
 
       launcherIframe.contentDocument.body.appendChild(launcherBtn);
 
-      markSdkReady();
+      markSdkReadyAndFlushApiQueue();
 
       // If widgetShouldAutoOpen is true then dispatch message to open
       // the widget.
@@ -1357,6 +1357,11 @@
             break;
 
           case EVENT_TYPES.SDK_EVENT_USER_AUTH_FAILURE:
+            // As the api queue gets cleared only on success of config when
+            // we call markSdkReadyAndFlushApiQueue method
+            // Therefore we need to explicitly clear out api queue in case of
+            // user auth failure.
+            clearApiQueue();
             callApiEventHandler(SUPPORTED_EVENTS.USER_AUTH_FAILURE, data);
             break;
 
@@ -1413,13 +1418,13 @@
     // Check for showLauncher widget option as existence of launcher button is
     // dependant on it
     // If the launcher button is already hidden, don't do anything
-    if (state.widgetOptions.showLauncher && launcherBtn.style.display !== "none") {
+    if (state.widgetOptions.showLauncher && launcherBtn && launcherBtn.style.display !== "none") {
       state.webChatVisibility.launcher = launcherBtn.style.display;
       launcherBtn.style.display = "none";
     }
 
     // If the webSdkIframe iframe is already hidden, don't do anything
-    if (webSdkIframe.style.display !== "none") {
+    if (webSdkIframe && webSdkIframe.style.display !== "none") {
       state.webChatVisibility.widget = webSdkIframe.style.display;
       webSdkIframe.style.display = "none";
     }
@@ -1433,15 +1438,17 @@
    */
   const show = () => {
     // Restore the previous display properties of webchat (launcher + widget)
-    webSdkIframe.style.display = state.webChatVisibility.widget;
+    if (webSdkIframe) {
+      webSdkIframe.style.display = state.webChatVisibility.widget;
 
-    // Check for showLauncher widget option as existence of launcher button is
-    // dependant on it
-    if (state.widgetOptions.showLauncher) {
-      launcherBtn.style.display = state.webChatVisibility.launcher;
+      // Check for showLauncher widget option as existence of launcher button is
+      // dependant on it
+      if (state.widgetOptions.showLauncher && launcherBtn) {
+        launcherBtn.style.display = state.webChatVisibility.launcher;
+      }
+
+      state.webChatVisibility.hiddenByApi = false;
     }
-
-    state.webChatVisibility.hiddenByApi = false;
   };
 
   /**
@@ -1747,7 +1754,7 @@
     // the API
     // Else queue the API in sequence and call them after SDK config is loaded
     // Note :- Allowing init API because it's the first API that will be called
-    if (sdkLoaded || ALLOWED_APIS_WHEN_SDK_IS_NOT_LOADED.indexOf(api) !== -1) {
+    if (sdkLoaded || api === INIT) {
       // Call the Helpshift api with the arguments
       helpshiftApis[api].apply(null, apiArguments);
     } else if (isApiValid(api)) {

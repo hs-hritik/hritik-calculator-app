@@ -1,0 +1,4 @@
+Changelog:
+Consume gunpowder version 4.0.18
+Fix execution of user auth failure event handler
+Fix branding title ellipses bug on mobile safari(iOS <= v12)

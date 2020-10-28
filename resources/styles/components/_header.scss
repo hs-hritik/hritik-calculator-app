@@ -16,6 +16,10 @@
   $header-text-color: var(--hs-header-text-color);
   $avatar-size: 32px;
 
+  // This value gets overriden in the componentDidMount of viewHeader
+  // component by computing the width of the header
+  $header-title-text-fixed-max-width: 300px;
+
   .hs-header {
     display: flex;
     align-items: center;
@@ -75,6 +79,12 @@
 
       .hs-header__avatar-title-wrapper {
         margin: 0 auto;
+      }
+    }
+
+    &--safari-mobile-ellipses-fix {
+      .hs-header__title-text {
+        max-width: $header-title-text-fixed-max-width;
       }
     }
   }
