@@ -99,10 +99,11 @@ define("helpers/analytics", [
     const {
       appState: {deviceId, developerSetLanguage}
     } = store.getState();
+    const liteSdkAnalyticsData = _getLiteSdkAnalyticsData();
 
     // @TODO: Backend needs `cc` (country code) as well, but we don't have this
     // information. Add it to the following object when we implement it.
-    const payload = {
+    let payload = {
       [PAYLOAD_EVENT.ID]: deviceId,
       [PAYLOAD_EVENT.TIMESTAMP]: Date.now(), // Timestamp of when the event is tracked
       [PAYLOAD_EVENT.LANGUAGE]: _lang
@@ -112,7 +113,28 @@ define("helpers/analytics", [
       payload[PAYLOAD_EVENT.DEV_SET_LANGUAGE] = developerSetLanguage;
     }
 
+    if (liteSdkAnalyticsData) {
+      payload = {...payload, ...liteSdkAnalyticsData};
+    }
+
     return xhrHelpers.getPreparedXhrData(payload);
+  };
+
+  /**
+   * Returns Lite SDK analytics data
+   * @returns {Object} - Analytics data
+   */
+  const _getLiteSdkAnalyticsData = () => {
+    const {
+      appState: {liteSdkConfig}
+    } = store.getState();
+    const isLiteSdk = !!liteSdkConfig.os;
+
+    if (!isLiteSdk || !liteSdkConfig.analyticsData) {
+      return null;
+    }
+
+    return liteSdkConfig.analyticsData;
   };
 
   /**
@@ -258,10 +280,11 @@ define("helpers/analytics", [
         activeFaq: {id: faqId}
       }
     } = store.getState();
+    const liteSdkAnalyticsData = _getLiteSdkAnalyticsData();
 
     // @TODO: Backend doesn't send publish id with the GET faq API. Get the
     // publish_id in order to send it with this xhr.
-    const xhrData = {
+    let xhrData = {
       faq_id: faqId
     };
 
@@ -271,6 +294,10 @@ define("helpers/analytics", [
     } else {
       xhrData.preissue_id = internalIssueId;
       xhrData.message_id = commonHelpers.getFaqSuggestionMessageId();
+    }
+
+    if (liteSdkAnalyticsData) {
+      xhrData = {...xhrData, liteSdkAnalyticsData};
     }
 
     xhr({

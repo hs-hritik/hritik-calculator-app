@@ -582,7 +582,8 @@ define("reducers/appState", [
           liteSdkConfig: {
             os: {$set: action.data.os},
             metaData: {$set: action.data.metaData},
-            pushToken: {$set: action.data.pushToken}
+            pushToken: {$set: action.data.pushToken},
+            analyticsData: {$set: action.data.analyticsData}
           }
         });
 
