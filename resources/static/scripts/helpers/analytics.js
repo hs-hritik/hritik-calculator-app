@@ -297,7 +297,7 @@ define("helpers/analytics", [
     }
 
     if (liteSdkAnalyticsData) {
-      xhrData = {...xhrData, liteSdkAnalyticsData};
+      xhrData = {...xhrData, ...liteSdkAnalyticsData};
     }
 
     xhr({
