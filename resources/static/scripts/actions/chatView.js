@@ -1770,7 +1770,12 @@ define("actions/chatView", [
             dispatch(chatViewActionCreators.clearErrors());
           }
 
-          const {has_older_messages: hasOlderMsgs, issues = [], cursor} = response;
+          const {
+            has_older_messages: hasOlderMsgs,
+            issues = [],
+            cursor,
+            hs_session_id: hsSessionId
+          } = response;
 
           if (!issues.length) {
             // If cursor is empty then only increment empty poller count.
@@ -1828,10 +1833,10 @@ define("actions/chatView", [
           // Refactor this to event-based actions and dispatch the success action
           // in every success callback with updating the state based on whether a
           // value is present or not.
-          if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+          if (hsSessionId || resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
             dispatch({
               type: ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS,
-              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp, hsSessionId}
             });
           }
 

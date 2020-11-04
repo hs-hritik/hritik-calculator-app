@@ -174,7 +174,9 @@ define("reducers/appState", [
     // True, when issueExists is false in config and the issue is created
     issueExistsDataIsStaleInLocalStorage: false,
     // websocket config object containing info for setting up the connection
-    wsConfig: {}
+    wsConfig: {},
+    // Idenfifier used while creating websocket connection
+    hsSessionId: ""
   };
 
   /**
@@ -560,12 +562,29 @@ define("reducers/appState", [
 
       case ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS:
       case ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS:
-        return update(state, {
-          expiryTimestamps: {
-            resolutionQuestion: {$set: action.payload.resolutionQuestionExpiryTimestamp || 0},
-            csatBot: {$set: action.payload.csatBotExpiryTimestamp || 0}
-          }
-        });
+        const updObj = {
+          expiryTimestamps: {}
+        };
+
+        if (action.payload.resolutionQuestionExpiryTimestamp) {
+          updObj.expiryTimestamps.resolutionQuestion = {
+            $set: action.payload.resolutionQuestionExpiryTimestamp
+          };
+        }
+
+        if (action.payload.csatBotExpiryTimestamp) {
+          updObj.expiryTimestamps.csatBot = {
+            $set: action.payload.csatBotExpiryTimestamp
+          };
+        }
+
+        if (action.payload.hsSessionId) {
+          updObj.hsSessionId = {
+            $set: action.payload.hsSessionId
+          };
+        }
+
+        return update(state, updObj);
 
       case ACTION_TYPES.USER_REPLY_REQUEST:
         const userReplyRequestUpdateObj = {
