@@ -37,25 +37,16 @@ define("helpers/liveUpdates", [
       return;
     }
 
-    const {platformId, domain} = store.getState().appState;
+    xhrHelpers.getWsConfig({
+      onGetWsConfig: ({endpoint, token}) => {
+        const {platformId, domain} = store.getState().appState;
 
-    xhr({
-      route: routes.getWsConfig(domain),
-      headers: xhrHelpers.getCommonHeaders(),
-      data: {
-        "platform-id": platformId
-      },
-      onSuccess: (response) => {
         subscribedToLiveUpdates = true;
-
-        const token = encodeURIComponent(response.token),
-          {endpoint} = response;
-
-        callbacks.onWsConfigFromBackend({endpoint, token});
 
         const wsRoute = routes.webSocket(domain, platformId, endpoint, token);
         liveUpdatesUtil.init(wsRoute);
-      }
+      },
+      onWsConfigFromBackend: callbacks.onWsConfigFromBackend
     });
   };
 

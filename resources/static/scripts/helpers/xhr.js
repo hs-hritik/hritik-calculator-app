@@ -13,8 +13,7 @@ define("helpers/xhr", [
   "constants/routes",
   "gunpowder/utils/xhr",
   "helpers/errors",
-  "actions/postSdkMessage",
-  "constants/actionTypes"
+  "actions/postSdkMessage"
 ], function(
   actionTypes,
   errorConstants,
@@ -292,11 +291,47 @@ define("helpers/xhr", [
     });
   };
 
+  /**
+   * Fetch ws-config from backend if its not already present in the
+   * state
+   *
+   * @param {Object} callbacks - Object containing all the callbacks
+   * @param {Function} callbacks.onWsConfigFromBackend - Callback function to dispatch
+   * ws config success action
+   * @param {Function} callbacks.onGetWsConfig - Callback function to open ws connection
+   */
+  const getWsConfig = (callbacks) => {
+    const {platformId, domain, wsConfig} = store.getState().appState;
+    let endpoint = "",
+      token = "";
+
+    if (wsConfig.endpoint) {
+      callbacks.onGetWsConfig({endpoint: wsConfig.endpoint, token: wsConfig.token});
+      return;
+    }
+
+    xhr({
+      route: routes.getWsConfig(domain),
+      headers: getCommonHeaders(),
+      data: {
+        "platform-id": platformId
+      },
+      onSuccess: (response) => {
+        token = encodeURIComponent(response.token);
+        endpoint = response.endpoint;
+
+        callbacks.onWsConfigFromBackend({endpoint, token});
+        callbacks.onGetWsConfig({endpoint, token});
+      }
+    });
+  };
+
   return {
     getCommonHeaders,
     getCommonHeadersForAxios,
     getPreparedXhrData,
     handleAuthFailure,
-    syncPushToken
+    syncPushToken,
+    getWsConfig
   };
 });
