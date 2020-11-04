@@ -198,6 +198,12 @@ define("actions/appState", [
     let lastConfigFetchTs = null;
     let issueExistsDataIsStaleInLocalStorage = null;
 
+    const base64encodedWsConfig = lsHelpers.get(LS_KEYS.WS_CONFIG);
+    let wsConfig = null;
+    if (base64encodedWsConfig) {
+      wsConfig = JSON.parse(atob(base64encodedWsConfig));
+    }
+
     if (config && config[uniqueUserIdentifier]) {
       lastConfigFetchTs = config[uniqueUserIdentifier].lastConfigFetchTs;
       issueExistsDataIsStaleInLocalStorage =
@@ -214,7 +220,8 @@ define("actions/appState", [
         pfiValue,
         lastConfigFetchTs,
         respectPfi,
-        issueExistsDataIsStaleInLocalStorage
+        issueExistsDataIsStaleInLocalStorage,
+        wsConfig
       }
     });
   };

@@ -222,6 +222,12 @@ define("reducers/appState", [
           };
         }
 
+        if (action.data.wsConfig) {
+          updateObj.wsConfig = {
+            $set: action.data.wsConfig
+          };
+        }
+
         return update(state, updateObj);
 
       case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
