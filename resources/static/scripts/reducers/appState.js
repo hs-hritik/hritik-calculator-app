@@ -172,7 +172,9 @@ define("reducers/appState", [
     respectPfi: true,
     isPushTokenSynced: false,
     // True, when issueExists is false in config and the issue is created
-    issueExistsDataIsStaleInLocalStorage: false
+    issueExistsDataIsStaleInLocalStorage: false,
+    // websocket config object containing info for setting up the connection
+    wsConfig: {}
   };
 
   /**
@@ -589,6 +591,11 @@ define("reducers/appState", [
       case ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS:
         return update(state, {
           isPushTokenSynced: {$set: action.payload}
+        });
+
+      case ACTION_TYPES.WS_CONFIG_SUCCESS:
+        return update(state, {
+          wsConfig: {$set: action.payload}
         });
 
       default:
