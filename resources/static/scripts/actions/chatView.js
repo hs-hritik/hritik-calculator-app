@@ -372,7 +372,14 @@ define("actions/chatView", [
       return;
     }
 
-    liveUpdatesHelpers.openWsConnection();
+    liveUpdatesHelpers.openWsConnection({
+      onWsConfigFromBackend: (wsConfig) => {
+        store.dispatch({
+          type: ACTION_TYPES.WS_CONFIG_SUCCESS,
+          payload: wsConfig
+        });
+      }
+    });
     // Since the ws connection is asynchronous, this call to subscribe
     // to agent activity will go to the buffer and actual subscription
     // will take place when the web socket connection is completed.

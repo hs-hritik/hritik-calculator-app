@@ -28,8 +28,11 @@ define("helpers/liveUpdates", [
   /**
    * Opens a new web socket connection.
    * Do nothing if web socket connection is already opened.
+   * @param {Object} callbacks - Object containing all the callbacks
+   * @param {Function} callbacks.onWsConfigFromBackend - Callback function to dispatch
+   * ws config success action
    */
-  const openWsConnection = () => {
+  const openWsConnection = (callbacks) => {
     if (subscribedToLiveUpdates) {
       return;
     }
@@ -47,6 +50,8 @@ define("helpers/liveUpdates", [
 
         const token = encodeURIComponent(response.token),
           {endpoint} = response;
+
+        callbacks.onWsConfigFromBackend({endpoint, token});
 
         const wsRoute = routes.webSocket(domain, platformId, endpoint, token);
         liveUpdatesUtil.init(wsRoute);
