@@ -44,9 +44,9 @@ define("constants/routes", function() {
   const getWsConfig = (domain) => `${BASE}${domain}/ws-config`;
 
   // Route to open web socket connection
-  const webSocket = (domain, platformId, endpoint, token) =>
+  const webSocket = ({domain, platformId, endpoint, token, hsSessionId}) =>
     `${endpoint}/subscribe/websocket/?origin_v3=${token}&` +
-    `platform_id=${platformId}&domain=${domain}`;
+    `platform_id=${platformId}&domain=${domain}&hs_session_id=${hsSessionId}`;
 
   const postAnalyticsEvent = (domain) => `${WEB_SDK_API_ROOT}/events/v1/${domain}/websdk/`;
 

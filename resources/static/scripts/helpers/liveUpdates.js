@@ -39,11 +39,11 @@ define("helpers/liveUpdates", [
 
     xhrHelpers.getWsConfig({
       onGetWsConfig: ({endpoint, token}) => {
-        const {platformId, domain} = store.getState().appState;
+        const {platformId, domain, hsSessionId} = store.getState().appState;
 
         subscribedToLiveUpdates = true;
 
-        const wsRoute = routes.webSocket(domain, platformId, endpoint, token);
+        const wsRoute = routes.webSocket({domain, platformId, endpoint, token, hsSessionId});
         liveUpdatesUtil.init(wsRoute);
       },
       onWsConfigFromBackend: callbacks.onWsConfigFromBackend
