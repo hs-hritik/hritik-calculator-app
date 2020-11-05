@@ -20,6 +20,9 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     PING: 107,
     PONG: 109
   };
+  // Ref: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
+  const WEBSOCKET_NORMAL_CLOSURE_CODE = 1000;
+  const WEBSOCKET_NORMAL_CLOSURE_REASON = "normal_closure";
 
   let connection, lastMsgId, pingChecker, wsEndpoint;
   let connected = false,
@@ -132,14 +135,14 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
       }
     };
 
-    connection.onclose = () => {
+    connection.onclose = (ev) => {
       connection = null;
       connected = false;
 
       if (smartRetry.getRetryCount() > 4) {
         pubsub.fire("internet:disconnected:maybe");
       }
-      if (!smartRetry.hasRetryEnded()) {
+      if (!smartRetry.hasRetryEnded() && ev.reason !== WEBSOCKET_NORMAL_CLOSURE_REASON) {
         smartRetry.retry(open);
       } else {
         pubsub.fire("internet:disconnected");
@@ -185,11 +188,18 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     }
   };
 
+  const close = () => {
+    if (connection) {
+      connection.close(WEBSOCKET_NORMAL_CLOSURE_CODE, WEBSOCKET_NORMAL_CLOSURE_REASON);
+    }
+  };
+
   return {
     init,
     open,
     subscribe,
     reconnect,
-    unsubscribe
+    unsubscribe,
+    close
   };
 });

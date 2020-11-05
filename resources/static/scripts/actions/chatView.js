@@ -35,7 +35,8 @@ define("actions/chatView", [
   "extras/accessibility",
   "utils/debounceAction",
   "constants/uiConfig",
-  "utils/color"
+  "utils/color",
+  "utils/liveUpdates"
 ], function(
   store,
   ACTION_TYPES,
@@ -67,7 +68,8 @@ define("actions/chatView", [
   ax,
   debounceAction,
   UI_CONFIG_CONSTANTS,
-  colorUtils
+  colorUtils,
+  liveUpdateUtils
 ) {
   "use strict";
 
@@ -369,6 +371,12 @@ define("actions/chatView", [
     //    chat features like resolution question, csat etc
     // b] Agent typing activity is already subscribed
     if (!pollingEnabled || agentActivitySubscribed) {
+      // Close the websocket connection if the issue is not in active state
+      if (!pollingEnabled) {
+        liveUpdateUtils.close();
+        agentActivitySubscribed = false;
+      }
+
       return;
     }
 
