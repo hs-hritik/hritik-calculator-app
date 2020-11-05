@@ -176,7 +176,8 @@ define("reducers/appState", [
     // websocket config object containing info for setting up the connection
     wsConfig: {},
     // Idenfifier used while creating websocket connection
-    hsSessionId: ""
+    hsSessionId: "",
+    subscribedToLiveUpdates: false
   };
 
   /**
@@ -620,7 +621,13 @@ define("reducers/appState", [
 
       case ACTION_TYPES.WS_CONFIG_SUCCESS:
         return update(state, {
-          wsConfig: {$set: action.payload}
+          wsConfig: {$set: action.payload},
+          subscribedToLiveUpdates: {$set: true}
+        });
+
+      case ACTION_TYPES.ISSUE_INACTIVE:
+        return update(state, {
+          subscribedToLiveUpdates: {$set: false}
         });
 
       default:

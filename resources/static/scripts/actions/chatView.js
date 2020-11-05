@@ -366,35 +366,44 @@ define("actions/chatView", [
    * Handle agent live updates
    */
   const handleAgentLiveUpdates = () => {
-    // Do not open websocket connection if
-    // a] Polling is disabled i.e. when conversation is over, user is on post
-    //    chat features like resolution question, csat etc
-    // b] Agent typing activity is already subscribed
-    if (!pollingEnabled || agentActivitySubscribed) {
-      // Close the websocket connection if the issue is not in active state
-      if (!pollingEnabled) {
-        liveUpdateUtils.close();
-        agentActivitySubscribed = false;
+    return (dispatch, getState) => {
+      // Do not open websocket connection if
+      // a] Polling is disabled i.e. when conversation is over, user is on post
+      //    chat features like resolution question, csat etc
+      // b] Agent typing activity is already subscribed
+      if (!pollingEnabled || agentActivitySubscribed) {
+        // Close the websocket connection if the issue is not in active state
+        if (!pollingEnabled) {
+          dispatch({
+            type: ACTION_TYPES.ISSUE_INACTIVE
+          });
+          liveUpdateUtils.close();
+          agentActivitySubscribed = false;
+        }
+
+        return;
       }
 
-      return;
-    }
+      const {
+        appState: {subscribedToLiveUpdates}
+      } = getState();
 
-    liveUpdatesHelpers.openWsConnection({
-      onWsConfigFromBackend: (wsConfig) => {
-        store.dispatch({
-          type: ACTION_TYPES.WS_CONFIG_SUCCESS,
-          payload: wsConfig
-        });
-      }
-    });
-    // Since the ws connection is asynchronous, this call to subscribe
-    // to agent activity will go to the buffer and actual subscription
-    // will take place when the web socket connection is completed.
-    liveUpdatesHelpers.subscribeAgentActivityTopic();
-    liveUpdatesHelpers.attachAgentActivityListener();
+      liveUpdatesHelpers.openWsConnection(subscribedToLiveUpdates, {
+        onWsConfigFromBackend: (wsConfig) => {
+          dispatch({
+            type: ACTION_TYPES.WS_CONFIG_SUCCESS,
+            payload: wsConfig
+          });
+        }
+      });
+      // Since the ws connection is asynchronous, this call to subscribe
+      // to agent activity will go to the buffer and actual subscription
+      // will take place when the web socket connection is completed.
+      liveUpdatesHelpers.subscribeAgentActivityTopic();
+      liveUpdatesHelpers.attachAgentActivityListener();
 
-    agentActivitySubscribed = true;
+      agentActivitySubscribed = true;
+    };
   };
 
   /**
@@ -1897,7 +1906,7 @@ define("actions/chatView", [
           );
 
           if (!isPreIssue) {
-            handleAgentLiveUpdates();
+            dispatch(handleAgentLiveUpdates());
           }
 
           const messagesLength = messages.length;
@@ -3123,7 +3132,7 @@ define("actions/chatView", [
    * @returns {Function} - Action
    */
   const rejectResolutionQuestion = () => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
       postUserMessage({
         msgBody: MESSAGE_BODY.SOLUTION_REJECTED,
         msgType: MESSAGE_TYPE.REJECTED,
@@ -3134,6 +3143,19 @@ define("actions/chatView", [
               setChatViewFooter(ACTIVE_FOOTER.SOLUTION_REJECTED)
             ])
           );
+
+          const {
+            appState: {subscribedToLiveUpdates}
+          } = getState();
+
+          liveUpdatesHelpers.openWsConnection(subscribedToLiveUpdates, {
+            onWsConfigFromBackend: (wsConfig) => {
+              dispatch({
+                type: ACTION_TYPES.WS_CONFIG_SUCCESS,
+                payload: wsConfig
+              });
+            }
+          });
         }
       });
     };
