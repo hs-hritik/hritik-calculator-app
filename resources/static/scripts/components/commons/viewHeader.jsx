@@ -225,11 +225,11 @@ define("components/commons/viewHeader", [
     componentDidMount() {
       this._setTitleWrapperStyles();
 
-      window.addEventListener("orientationchange", this._setTitleWrapperStyles);
+      window.addEventListener("resize", this._setTitleWrapperStyles);
     },
 
     componentWillUnmount() {
-      window.removeEventListener("orientationchange", this._setTitleWrapperStyles);
+      window.removeEventListener("resize", this._setTitleWrapperStyles);
     }
   });
 });
