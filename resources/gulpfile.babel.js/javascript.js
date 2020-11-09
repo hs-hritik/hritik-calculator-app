@@ -65,7 +65,7 @@ const PATHS = {
   localhostDest: "localhost/",
 
   // Specific paths to run the local server
-  webChatSrcDev: "localhost/scripts/external/messenger.js",
+  webChatSrcDev: "localhost/scripts/external/webChat.js",
 
   // Library bundle specific path
   // @NOTE - Any new file added to libs folder will not be automatically minified

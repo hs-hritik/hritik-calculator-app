@@ -142,7 +142,15 @@ define("components/messageList", [
       /**
        * Map of attachment message id to its upload in progress status
        */
-      attachmentUploadIsInProgress: PropTypes.object
+      attachmentUploadIsInProgress: PropTypes.object,
+      /**
+       * Current issue id
+       */
+      currentIssueId: PropTypes.string,
+      /**
+       * Current issue state
+       */
+      issueState: PropTypes.string
     },
 
     render() {
@@ -173,7 +181,13 @@ define("components/messageList", [
      * Render messages and timestamp.
      */
     _renderMessages() {
-      const {messages, showAvatar, attachmentUploadIsInProgress} = this.props;
+      const {
+        messages,
+        showAvatar,
+        attachmentUploadIsInProgress,
+        currentIssueId,
+        issueState
+      } = this.props;
       let previousMessage = null;
 
       return messages.map((message) => {
@@ -201,6 +215,8 @@ define("components/messageList", [
               key={key}
               onActionClick={this.props.onActionClick}
               attachmentUploadIsInProgress={attachmentUploadIsInProgress}
+              currentIssueId={currentIssueId}
+              issueState={issueState}
             />
           </ErrorBoundaryWithLogging>
         );

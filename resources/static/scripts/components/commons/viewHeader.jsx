@@ -172,7 +172,7 @@ define("components/commons/viewHeader", [
       }
     },
 
-    componentDidMount() {
+    _setTitleWrapperStyles() {
       // @TODO: Lite Sdk: Think of another of doing this instead of directly manipulating the DOM
       const HEADER_TEXT_OFFSET_WIDTH = this.props.showAvatar
         ? HEADER_TEXT_OFFSET_WIDTH_WITH_AVATAR
@@ -182,6 +182,7 @@ define("components/commons/viewHeader", [
         const brandingTitleWrapperEl = document.querySelector(".hs-header__avatar-title-wrapper");
 
         if (brandingTitleWrapperEl) {
+          brandingTitleWrapperEl.style.margin = "0 auto";
           // Compute the current margin-left value of brandingTitleWrapperEl
           // and then subtract the width taken by the close button to center align
           // the branding title wrapper element
@@ -219,6 +220,16 @@ define("components/commons/viewHeader", [
           }
         }
       }
+    },
+
+    componentDidMount() {
+      this._setTitleWrapperStyles();
+
+      window.addEventListener("resize", this._setTitleWrapperStyles);
+    },
+
+    componentWillUnmount() {
+      window.removeEventListener("resize", this._setTitleWrapperStyles);
     }
   });
 });

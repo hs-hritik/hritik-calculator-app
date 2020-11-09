@@ -17,7 +17,8 @@ define("components/message", [
   "gunpowder/utils/object",
   "helpers/common",
   "extras/accessibility",
-  "components/commons/avatar"
+  "components/commons/avatar",
+  "constants/appState"
 ], function(
   attachmentComponents,
   customPropTypes,
@@ -31,7 +32,8 @@ define("components/message", [
   objUtils,
   commonHelper,
   ax,
-  avatarEsm
+  avatarEsm,
+  APP_STATE_CONSTANTS
 ) {
   "use strict";
   const Avatar = avatarEsm.default;
@@ -45,6 +47,7 @@ define("components/message", [
     redactedMessageElement: "hs-message__item hs-message--redacted",
     messageElement: "hs-message__item"
   };
+  const {ISSUE_STATE} = APP_STATE_CONSTANTS;
 
   return createReactClass({
     displayName: "Message",
@@ -100,7 +103,15 @@ define("components/message", [
       /**
        * Map of attachment message id to its upload in progress status
        */
-      attachmentUploadIsInProgress: PropTypes.object
+      attachmentUploadIsInProgress: PropTypes.object,
+      /**
+       * Current issue id
+       */
+      currentIssueId: PropTypes.string,
+      /**
+       * Current issue state
+       */
+      issueState: PropTypes.string
     },
 
     getDefaultProps() {
@@ -481,12 +492,17 @@ define("components/message", [
      * Render attachment errors
      */
     _renderAttachmentErrors() {
-      const {message} = this.props;
+      const {message, currentIssueId, issueState} = this.props;
 
       let attachmentsErrorEl = null;
 
       if (message.type === MESSAGE_TYPE.ATTACHMENT && message.isSystemMsg && message.states.error) {
-        const errorTextEl = this._getAttachmentErrorMessageEl(message.states.errorCode);
+        const attachmentErrorIsForActiveIssue =
+          message.issueId === currentIssueId && issueState === ISSUE_STATE.ACTIVE;
+        const errorTextEl = this._getAttachmentErrorMessageEl(
+          message.states.errorCode,
+          attachmentErrorIsForActiveIssue
+        );
 
         attachmentsErrorEl = <div className="hs-message__attachment-error">{errorTextEl}</div>;
       }
@@ -592,11 +608,14 @@ define("components/message", [
     /**
      * Returns error text depending on error code
      * @param {Number} errorCode - error code of failure
+     * @param {Boolean} attachmentErrorIsForActiveIssue - False, error is in resolved or
+     * rejected state
      * @returns {Element} - The attachment error message element
      */
-    _getAttachmentErrorMessageEl(errorCode) {
+    _getAttachmentErrorMessageEl(errorCode, attachmentErrorIsForActiveIssue) {
       const {text} = this.props;
-      const failureIsRetriable = errorCode === FILE_UPLOAD_ERRORS.RETRY;
+      const failureIsRetriable =
+        errorCode === FILE_UPLOAD_ERRORS.RETRY && attachmentErrorIsForActiveIssue;
 
       const iconClasses = classes("hs-message__icon-error", {
         "ion-alert-circled": !failureIsRetriable,
@@ -607,9 +626,12 @@ define("components/message", [
 
       switch (errorCode) {
         case FILE_UPLOAD_ERRORS.RETRY:
+          const errorText = attachmentErrorIsForActiveIssue
+            ? text.attachmentRetryError
+            : text.attachmentDefaultError;
           errorTextEl = [
             <i className={iconClasses} key="retry-icon" />,
-            <small key="retry-text">{text.attachmentRetryError}</small>
+            <small key="retry-text">{errorText}</small>
           ];
           break;
 
