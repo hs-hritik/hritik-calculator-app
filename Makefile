@@ -108,7 +108,7 @@ bundle-libs:
 	@echo ">> Finished task: $@"
 
 # Minify external JS files. The bundle-js task doesn't minify the external
-# JS files like messenger.js and redirection.js because these files are not
+# JS files like webChat.js and redirection.js because these files are not
 # a part of the dependency tree of the app's entry point (pages/webSdk). Also,
 # these files are not supposed to be bundled together.
 minify-ext-js:
@@ -128,7 +128,7 @@ sri:
 # All resources to be deployed must be copied to the `dist` directory.
 # The styles, gunpowder, and reactjs tasks already copy files to the dist
 # directory, so copying html, libs, and fonts to dist here.
-# Create a symlink for messenger.js (the web messenger entry script file) to
+# Create a symlink for webChat.js (the webChat entry script file) to
 # the dist directory.
 dist: prepare-dist npminstall \
 	styles gunpowder reactjs copy-html-libs \
@@ -182,7 +182,7 @@ ec2:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for EC2"
 	@cp -R resources/build/* resources/dist/ec2/
-	@cd resources/dist/ec2; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/ec2; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
 	$(GULP) build-ec2
 	@echo ">> Finished task: $@"
@@ -191,7 +191,7 @@ azure:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for Azure"
 	@cp -R resources/build/* resources/dist/azure/
-	@cd resources/dist/azure; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/azure; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/azure/demo; ln -sv ../html/demo/index.html .;
 	$(GULP) build-azure
 	@echo ">> Finished task: $@"
@@ -200,7 +200,7 @@ localshiva:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for localshiva"
 	@cp -R resources/build/* resources/dist/localshiva/
-	@cd resources/dist/localshiva; ln -sv scripts/external/messenger.js webChat.js;
+	@cd resources/dist/localshiva; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
 	$(GULP) build-localshiva
 	@echo ">> Finished task: $@"

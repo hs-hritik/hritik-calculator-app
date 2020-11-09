@@ -1,0 +1,13 @@
+Branches:
+feature/webchat-unity-beta
+
+Changelog:
+Change event form orientation to resize
+Fix header styles on orientation change
+Fix syntax error to create analytic xhr data
+Add Lite SDK payload in all analytic XHRs
+Add local date separator when new conversation btn is clicked
+Rename messenger.js to webChat.js
+Remove retry btn when msg is not from active issue
+Fix console error "Unexpected end of JSON input"
+Fix the unread message mark on jump to bottom btn

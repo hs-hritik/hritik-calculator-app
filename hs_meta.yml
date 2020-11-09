@@ -27,7 +27,7 @@ release:
       replacement: 'v={{ version }}'
       num_expected: 1
 
-    - file: resources/static/scripts/external/messenger.js
+    - file: resources/static/scripts/external/webChat.js
       pattern: 'v=\d+\.\d+\.\d+'
       replacement: 'v={{ version }}'
       num_expected: 1

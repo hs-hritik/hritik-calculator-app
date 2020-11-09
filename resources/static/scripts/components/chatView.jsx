@@ -82,7 +82,9 @@ define("components/chatView", [
         showAvatar,
         avatar,
         avatarLastUpdatedTs,
-        attachmentUploadIsInProgress
+        attachmentUploadIsInProgress,
+        currentIssueId,
+        issueState
       } = this.props;
 
       const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
@@ -121,6 +123,8 @@ define("components/chatView", [
               avatar={avatar}
               avatarLastUpdatedTs={avatarLastUpdatedTs}
               attachmentUploadIsInProgress={attachmentUploadIsInProgress}
+              currentIssueId={currentIssueId}
+              issueState={issueState}
             />
             {this._renderJumpToLatestBtn()}
           </div>
@@ -351,7 +355,15 @@ define("components/chatView", [
     /**
      * Map of attachment message id to its upload in progress status
      */
-    attachmentUploadIsInProgress: PropTypes.object
+    attachmentUploadIsInProgress: PropTypes.object,
+    /**
+     * Current issue id
+     */
+    currentIssueId: PropTypes.string,
+    /**
+     * Current issue state
+     */
+    issueState: PropTypes.string
   };
 
   return createReactClass({
@@ -456,7 +468,15 @@ define("components/chatView", [
       /**
        * Map of attachment message id to its upload in progress status
        */
-      attachmentUploadIsInProgress: PropTypes.object
+      attachmentUploadIsInProgress: PropTypes.object,
+      /**
+       * Current issue id
+       */
+      currentIssueId: PropTypes.string,
+      /**
+       * Current issue state
+       */
+      issueState: PropTypes.string
     },
 
     getInitialState() {
@@ -545,7 +565,9 @@ define("components/chatView", [
         appAvatarUrl,
         avatar,
         avatarLastUpdatedTs,
-        attachmentUploadIsInProgress
+        attachmentUploadIsInProgress,
+        currentIssueId,
+        issueState
       } = this.props;
       const avatarProps = {...avatar, ...{appAvatarUrl}};
       const avatarShouldRenderInMessageFeed =
@@ -587,6 +609,8 @@ define("components/chatView", [
             avatar={avatarProps}
             avatarLastUpdatedTs={avatarLastUpdatedTs}
             attachmentUploadIsInProgress={attachmentUploadIsInProgress}
+            currentIssueId={currentIssueId}
+            issueState={issueState}
           />
         </ErrorBoundaryWithLogging>
       );

@@ -25,7 +25,9 @@ define("components/containers/chatView", [
         online,
         showHeaderAvatar,
         appAvatarUrl,
-        avatar
+        avatar,
+        internalIssueId,
+        issueState
       },
       chatView: {
         messageList: messages,
@@ -80,7 +82,9 @@ define("components/containers/chatView", [
       appAvatarUrl,
       avatar,
       avatarLastUpdatedTs,
-      attachmentUploadIsInProgress
+      attachmentUploadIsInProgress,
+      currentIssueId: internalIssueId,
+      issueState
     };
   };
 

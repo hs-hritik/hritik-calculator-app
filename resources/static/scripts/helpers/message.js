@@ -402,7 +402,8 @@ define("helpers/message", [
         uploadInProgress: true,
         error: false,
         errorCode: null
-      }
+      },
+      issueId: option.issueId
     };
   };
 

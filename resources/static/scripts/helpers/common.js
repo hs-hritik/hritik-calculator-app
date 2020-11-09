@@ -313,20 +313,18 @@ define("helpers/common", [
 
   /*
    * Predicate for checking if user has seen messages or not.
-   * If the window is in focus & chat view is active,
-   * Web Chat is not in minimized state, and the user is not
-   * viewing past messages that means the user has seen the messages.
+   * If the chat view is active, web Chat is not in minimized state, and
+   * the user is not viewing past messages that means the user has seen the messages.
    * @returns {Boolean}
    */
   const areMessagesSeen = () => {
     const {
-      appState: {minimized, activeView, windowIsFocused},
+      appState: {minimized, activeView},
       chatView: {userIsViewingPastMessages, unreadMessageIds}
     } = store.getState();
 
     return (
       !!unreadMessageIds.length &&
-      windowIsFocused &&
       !minimized &&
       ACTIVE_VIEW.CHAT === activeView &&
       !userIsViewingPastMessages

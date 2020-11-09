@@ -26,7 +26,7 @@
     flex: 0 0 auto;
     justify-content: space-between;
     // Note: If this value gets updated in future, then also update the
-    // FIXED_CHAT_HEADER_HEIGHT value in messenger.js
+    // FIXED_CHAT_HEADER_HEIGHT value in webChat.js
     height: 52px;
     padding: $padding;
     font-weight: font-weight(medium);
@@ -76,10 +76,6 @@
 
     &--mobile {
       justify-content: initial;
-
-      .hs-header__avatar-title-wrapper {
-        margin: 0 auto;
-      }
     }
 
     &--safari-mobile-ellipses-fix {
