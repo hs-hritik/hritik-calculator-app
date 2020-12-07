@@ -12,7 +12,8 @@ define("helpers/common", [
   "constants/message",
   "constants/businessHoursView",
   "constants/appState",
-  "constants/activeView"
+  "constants/activeView",
+  "gunpowder/utils/validation"
 ], function(
   store,
   arrayUtils,
@@ -20,15 +21,12 @@ define("helpers/common", [
   messageConstants,
   bhConstants,
   appStateConstants,
-  ACTIVE_VIEW
+  ACTIVE_VIEW,
+  validationUtil
 ) {
   "use strict";
 
   const {ISSUE_TYPE} = appStateConstants;
-
-  /* eslint-disable max-len */
-  const EMAIL_REGEX = /^[\p{L}\p{N}\p{M}\p{S}\p{Po}A-Z0-9._%'-]{1,64}(\+.*)?@(?:[\p{L}\p{M}\p{N}\p{S}A-Z0-9'-]+\.){1,246}[\p{L}\p{M}\p{N}\p{S}A-Z]{1,8}[^\s]$/i;
-  /* eslint-enable max-len */
 
   /**
    * Number regex which allows single '.' in between digits
@@ -137,16 +135,11 @@ define("helpers/common", [
   };
 
   /**
-   * Validate email.
-   * Ideally this should be a part of `gunpowder`, but it already has an email
-   * validation fn and its email regex doesn't match exactly with what BE and
-   * mobile SDKs use. In web chat, we are going to have the same email regex
-   * as elsewhere.
-   * TODO: Consider updating `gunpowder's` email regex.
+   * Validate email
    * @param {string} value - email to validate.
    * @returns {boolean} - true if the email is valid.
    */
-  const isEmailValid = (value) => EMAIL_REGEX.test(value);
+  const isEmailValid = (value) => validationUtil.email(value);
 
   /**
    * Predicate to return whether date format is valid
