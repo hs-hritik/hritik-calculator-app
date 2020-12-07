@@ -211,10 +211,12 @@ define("components/commons/viewHeader", [
               10
             );
 
-            const brandingTitleTextEl = document.querySelector(".hs-header__title-text");
+            const brandingTitleTextWrapperEl = document.querySelector(
+              ".hs-header__avatar-title-wrapper"
+            );
 
-            if (brandingTitleTextEl && headerElWidthValue) {
-              brandingTitleTextEl.style.maxWidth =
+            if (brandingTitleTextWrapperEl && headerElWidthValue) {
+              brandingTitleTextWrapperEl.style.maxWidth =
                 headerElWidthValue - HEADER_TEXT_OFFSET_WIDTH + "px";
             }
           }
