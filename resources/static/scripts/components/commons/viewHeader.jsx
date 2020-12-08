@@ -192,8 +192,11 @@ define("components/commons/viewHeader", [
           );
 
           if (brandingTitleWrapperElCurrentMarginLeftValue) {
+            const updatedMarginLeftValue =
+              brandingTitleWrapperElCurrentMarginLeftValue - HEADER_CLOSE_BUTTON_WIDTH;
+
             brandingTitleWrapperEl.style.marginLeft =
-              brandingTitleWrapperElCurrentMarginLeftValue - HEADER_CLOSE_BUTTON_WIDTH + "px";
+              updatedMarginLeftValue < 0 ? "0px" : updatedMarginLeftValue + "px";
           }
         }
 
