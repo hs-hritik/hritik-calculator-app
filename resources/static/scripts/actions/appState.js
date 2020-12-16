@@ -804,6 +804,8 @@ define("actions/appState", [
         if (callbacks.onSuccess) {
           callbacks.onSuccess();
         }
+
+        _addFontStyleToDocument();
       }
     });
   };
@@ -861,6 +863,34 @@ define("actions/appState", [
       head.removeChild(existingStyles);
     }
 
+    head.appendChild(style);
+  };
+
+  /**
+   * Create a style tag which contains font-face CSS and add it to document's head
+   */
+  const _addFontStyleToDocument = () => {
+    const {liteSdkConfig} = store.getState().appState;
+    const contextIsLiteSdk = !!liteSdkConfig?.os;
+    const style = document.createElement("style");
+    const head = document.head;
+    let platform = "";
+
+    if (contextIsLiteSdk && liteSdkConfig.os === "ios") {
+      platform = "/ios";
+    } else if (contextIsLiteSdk && liteSdkConfig.os === "android") {
+      platform = "/android";
+    }
+
+    const font =
+      "@font-face {font-family: hesticons; font-style: normal; font-weight: normal; " +
+      `src: url('${platform}/fonts/hesticons/hesticons.eot?t=20190314'); ` +
+      `src: url('${platform}/fonts/hesticons/hesticons.eot?t=20190314#iefix') format('eot'), ` +
+      `url('${platform}/fonts/hesticons/hesticons.woff?t=20190314') format('woff'), ` +
+      `url('${platform}/fonts/hesticons/hesticons.ttf?t=20190314') format('truetype'), ` +
+      `url('${platform}/fonts/hesticons/hesticons.svg?t=20190314#hesticons') format('svg');}`;
+
+    style.appendChild(document.createTextNode(font));
     head.appendChild(style);
   };
 
