@@ -813,8 +813,10 @@ define("actions/appState", [
    * @param {Object} - callbacks, the object typically with onSuccess, etc.
    */
   const getCss = (callbacks) => {
+    const {liteSdkConfig} = store.getState().appState;
+
     xhr({
-      route: routes.getCss(),
+      route: routes.getCss(liteSdkConfig),
       parse: false,
       headers: xhrHelpers.getCommonHeaders(),
       onSuccess: (response) => {
