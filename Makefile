@@ -162,18 +162,27 @@ prepare-ec2:
 	@echo ">> Starting task: $@"
 	@echo "Creating ec2 subdirectory in the dist directory"
 	@mkdir resources/dist/ec2
+	@mkdir resources/dist/ec2/web
+	@mkdir resources/dist/ec2/android
+	@mkdir resources/dist/ec2/ios
 	@echo ">> Finished task: $@"
 
 prepare-azure:
 	@echo ">> Starting task: $@"
 	@echo "Creating azure subdirectory in the dist directory"
 	@mkdir resources/dist/azure
+	@mkdir resources/dist/azure/web
+	@mkdir resources/dist/azure/android
+	@mkdir resources/dist/azure/ios
 	@echo ">> Finished task: $@"
 
 prepare-locashiva:
 	@echo ">> Starting task: $@"
 	@echo "Creating localshiva subdirectory in the dist directory"
 	@mkdir resources/dist/localshiva
+	@mkdir resources/dist/localshiva/web
+	@mkdir resources/dist/localshiva/android
+	@mkdir resources/dist/localshiva/ios
 	@echo ">> Finished task: $@"
 
 prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
