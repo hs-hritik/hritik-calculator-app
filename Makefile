@@ -190,27 +190,69 @@ prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
 ec2:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for EC2"
+	# @TODO - SDKX GA Release
+	# After SDKX GA Release remove webchat resources directly inside ec2 directory
+	# Remove after GA release to avoid any release time impacts
+	# Web chat will be serve from /web directory through routing at nginx level
 	@cp -R resources/build/* resources/dist/ec2/
 	@cd resources/dist/ec2; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
+
+	@cp -R resources/build/* resources/dist/ec2/web
+	@cd resources/dist/ec2/web; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/ec2/web/demo; ln -sv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/ec2/android
+	@cd resources/dist/ec2/android; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/ec2/android/demo; ln -sv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/ec2/ios
+	@cd resources/dist/ec2/ios; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/ec2/ios/demo; ln -sv ../html/demo/index.html .;
 	$(GULP) build-ec2
 	@echo ">> Finished task: $@"
 
 azure:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for Azure"
+	# @TODO - SDKX GA Release
+	# After SDKX GA Release remove webchat resources directly inside azure directory
+	# Remove after GA release to avoid any release time impacts
+	# Web chat will be serve from /web directory through routing at nginx level
 	@cp -R resources/build/* resources/dist/azure/
 	@cd resources/dist/azure; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/azure/demo; ln -sv ../html/demo/index.html .;
+
+	@cp -R resources/build/* resources/dist/azure/web
+	@cd resources/dist/azure/web; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/azure/web/demo; ln -sv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/azure/android
+	@cd resources/dist/azure/android; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/azure/android/demo; ln -sv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/azure/ios
+	@cd resources/dist/azure/ios; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/azure/ios/demo; ln -sv ../html/demo/index.html .;
 	$(GULP) build-azure
 	@echo ">> Finished task: $@"
 
 localshiva:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for localshiva"
+	# @TODO - SDKX GA Release
+	# After SDKX GA Release remove webchat resources directly inside localshiva directory
+	# Remove after GA release to avoid any release time impacts
+	# Web chat will be serve from /web directory through routing at nginx level
 	@cp -R resources/build/* resources/dist/localshiva/
 	@cd resources/dist/localshiva; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
+
+	@cp -R resources/build/* resources/dist/localshiva/web
+	@cd resources/dist/localshiva/web; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/localshiva/web/demo; ln -sv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/localshiva/android
+	@cd resources/dist/localshiva/android; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/localshiva/android/demo; ln -sv ../html/demo/index.html .;
+	@cp -R resources/build/* resources/dist/localshiva/ios
+	@cd resources/dist/localshiva/ios; ln -sv scripts/external/webChat.js .;
+	@cd resources/dist/localshiva/ios/demo; ln -sv ../html/demo/index.html .;
 	$(GULP) build-localshiva
 	@echo ">> Finished task: $@"
 
