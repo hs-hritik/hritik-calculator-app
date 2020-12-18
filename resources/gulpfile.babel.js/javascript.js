@@ -33,7 +33,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.61.2";
+const WEB_CHAT_VERSION = "2.61.3";
 
 /**
  * Name of app bundle
