@@ -27,7 +27,8 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
   let connection, lastMsgId, pingChecker, wsEndpoint;
   let connected = false,
     subscribedTopics = [],
-    buffer = [];
+    buffer = [],
+    authorPresenceDetectionIsEnabled = false;
 
   // Make sure topics is an array
   const prepareTopics = (topics) => {
@@ -67,7 +68,8 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     };
   })();
 
-  const init = (wsRoute) => {
+  const init = (wsRoute, authorPresenceIsEnabled) => {
+    authorPresenceDetectionIsEnabled = authorPresenceIsEnabled;
     wsEndpoint = wsRoute;
     open();
   };
@@ -117,7 +119,9 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
           break;
 
         case DIRI_V1.PING:
-          connection.send(JSON.stringify([DIRI_V1.PONG]));
+          if (authorPresenceDetectionIsEnabled) {
+            connection.send(JSON.stringify([DIRI_V1.PONG]));
+          }
           nextPing = (data[1] + 1) * 1000; // One extra second for buffer
           pingCheckerUpdate(nextPing);
           break;

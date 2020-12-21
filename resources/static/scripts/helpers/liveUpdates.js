@@ -40,10 +40,15 @@ define("helpers/liveUpdates", [
 
     xhrHelpers.getWsConfig({
       onGetWsConfig: ({endpoint, token}) => {
-        const {platformId, domain, hsSessionId} = store.getState().appState;
+        const {
+          platformId,
+          domain,
+          hsSessionId,
+          featuresEnabled: {authorPresenceDetectionIsEnabled}
+        } = store.getState().appState;
 
         const wsRoute = routes.webSocket({domain, platformId, endpoint, token, hsSessionId});
-        liveUpdatesUtil.init(wsRoute);
+        liveUpdatesUtil.init(wsRoute, authorPresenceDetectionIsEnabled);
       },
       onWsConfigFromBackend: callbacks.onWsConfigFromBackend
     });

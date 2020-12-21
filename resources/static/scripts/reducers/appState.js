@@ -112,7 +112,8 @@ define("reducers/appState", [
       userAttachments: true,
       branding: true,
       intents: false,
-      personalisedConversationIsEnabled: false
+      personalisedConversationIsEnabled: false,
+      authorPresenceDetectionIsEnabled: false
     },
     // The time after which the intents tree should be updated from the backend.
     intentsTreeSla: 0,
@@ -253,7 +254,8 @@ define("reducers/appState", [
             branding: {$set: !config.disable_helpshift_branding},
             audioNotifications: {$set: config.audio_notifications_enabled},
             intents: {$set: intentsAreEnabled},
-            personalisedConversationIsEnabled: {$set: personalisedConversationIsEnabled}
+            personalisedConversationIsEnabled: {$set: personalisedConversationIsEnabled},
+            authorPresenceDetectionIsEnabled: {$set: config.author_presence_detection_enabled}
           },
           issueExists: {$set: config.issue_exists},
           attachmentsWhitelist: {$set: attachmentsWhitelist},
