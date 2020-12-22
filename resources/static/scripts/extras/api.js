@@ -22,7 +22,9 @@ define("extras/api", [
   "helpers/localStorage",
   "gunpowder/utils/object",
   "extras/accessibility",
-  "constants/accessibility"
+  "constants/accessibility",
+  "utils/liveUpdates",
+  "utils/browser"
 ], function(
   store,
   EVENT_TYPES,
@@ -41,7 +43,9 @@ define("extras/api", [
   lsHelpers,
   objUtils,
   ax,
-  axConstants
+  axConstants,
+  liveUpdateUtils,
+  browserUtils
 ) {
   "use strict";
 
@@ -63,6 +67,8 @@ define("extras/api", [
   const {DIRECTIONS} = axConstants;
 
   const {LS_KEYS} = lsHelpers;
+
+  const IS_MOBILE = browserUtils.isMobile();
 
   /**
    * Check if preIssue reset is applicable.
@@ -498,6 +504,19 @@ define("extras/api", [
           }
         } else {
           chatViewActions.stopPollingForMessages();
+        }
+        break;
+
+      case EVENT_TYPES.CMD_TOGGLE_AUTHOR_PRESENCE_STATUS:
+        const {liteSdkConfig} = store.getState().appState;
+        const contextIsLiteSdk = !!(liteSdkConfig && liteSdkConfig.os);
+
+        // The presence detection should be toggle only if
+        // 1) it gets fired inside the visibilitychange event handler
+        //    (ie. IS_MOBILE && !contextIsLiteSdk)
+        // 2) it gets fired from inside the liteSdk (ie. data.fromLiteSdk)
+        if (data.fromLiteSdk || (IS_MOBILE && !contextIsLiteSdk)) {
+          liveUpdateUtils.toggleAuthorPresenceDetection(data.authorIsOnline);
         }
         break;
     }

@@ -28,6 +28,7 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
   let connected = false,
     subscribedTopics = [],
     buffer = [],
+    // PONGs are sent in reply to PINGs based on this flag
     authorPresenceDetectionIsEnabled = false;
 
   // Make sure topics is an array
@@ -198,12 +199,22 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     }
   };
 
+  /**
+   * Updates the local `authorPresenceDetectionIsEnabled` variable with the boolean of
+   * whether is author is online or not.
+   * @param {Boolean} authorIsOnline - If true, then the author(end user) is online
+   */
+  const toggleAuthorPresenceDetection = (authorIsOnline) => {
+    authorPresenceDetectionIsEnabled = authorIsOnline;
+  };
+
   return {
     init,
     open,
     subscribe,
     reconnect,
     unsubscribe,
-    close
+    close,
+    toggleAuthorPresenceDetection
   };
 });
