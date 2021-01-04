@@ -99,10 +99,30 @@ const PATHS = {
       },
       WEB_CHAT_ROOT: "https://webchat-a.helpshift.com",
       API_ROOT: "https://api-a.helpshift.com"
+    },
+    LOCALSHIVA: {
+      SOURCE: {
+        ROOT: [
+          "dist/localshiva/**/*.*",
+          "!dist/localshiva/fonts/**/*.*",
+          "!dist/localshiva/web/**/*.*",
+          "!dist/localshiva/android/**/*.*",
+          "!dist/localshiva/ios/**/*.*"
+        ],
+        ANDROID: ["dist/localshiva/android/**/*.*", "!dist/localshiva/android/fonts/**/*.*"],
+        IOS: ["dist/localshiva/ios/**/*.*", "!dist/localshiva/ios/fonts/**/*.*"],
+        WEB: ["dist/localshiva/web/**/*.*", "!dist/localshiva/web/fonts/**/*.*"]
+      },
+      DEST: {
+        ROOT: "dist/localshiva/",
+        ANDROID: "dist/localshiva/android/",
+        IOS: "dist/localshiva/ios/",
+        WEB: "dist/localshiva/web/"
+      },
+      WEB_CHAT_ROOT: "https://webchat.helpshift.mobi",
+      API_ROOT: "https://api.helpshift.mobi"
     }
   },
-  localshivaSource: ["dist/localshiva/**/*.*", "!dist/localshiva/fonts/**/*.*"],
-  localshivaDest: "dist/localshiva/",
   localhostSource: ["localhost/**/*.*", "!localhost/fonts/**/*.*"],
   localhostDest: "localhost/",
 
@@ -208,7 +228,9 @@ const TEMPLATE_PATHS = {
       EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
 integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
       AZURE: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"\
-></script>`
+></script>`,
+      LOCALSHIVA: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
     }
   },
   APP: {
@@ -217,7 +239,9 @@ integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
       EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
 integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
       AZURE: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"\
-></script>`
+></script>`,
+      LOCALSHIVA: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
     }
   }
 };
@@ -342,34 +366,18 @@ const buildAzureRoot = () => replaceEnvString({platform: PLATFORM.ROOT, cloud: C
 
 const buildAzureWeb = () => replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.AZURE});
 
-/**
- * Production task.
- * Replace localshiva (staging) specific template strings with given values
- */
-const buildLocalshivaTask = () =>
-  gulp
-    .src(PATHS.localshivaSource)
-    .pipe(
-      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
-        skipBinary: true
-      })
-    )
-    .pipe(gulp.dest(PATHS.localshivaDest));
+const buildLocalshivaIos = () =>
+  replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.LOCALSHIVA});
+
+const buildLocalshivaAndroid = () =>
+  replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
+
+// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
+const buildLocalshivaRoot = () =>
+  replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.LOCALSHIVA});
+
+const buildLocalshivaWeb = () =>
+  replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.LOCALSHIVA});
 
 /**
  * Copy libs from source dir (workspace) to destination dir (server)
@@ -604,7 +612,12 @@ exports.updateAzureSri = updateAzureSriTask;
 exports.updateEc2Sri = updateEc2SriTask;
 exports.updateSriList = updateSriListTask;
 exports.bundleLibs = bundleLibsTask;
-exports.buildLocalshiva = buildLocalshivaTask;
+exports.buildLocalshiva = gulp.parallel(
+  buildLocalshivaIos,
+  buildLocalshivaAndroid,
+  buildLocalshivaRoot,
+  buildLocalshivaWeb
+);
 exports.buildAzure = gulp.parallel(buildAzureAndroid, buildAzureRoot, buildAzureIos, buildAzureWeb);
 exports.compileScriptsProd = compileScriptsProdTask;
 exports.buildEc2 = gulp.parallel(buildEc2Android, buildEc2Root, buildEc2Ios, buildEc2Web);
