@@ -233,12 +233,35 @@ const PATHS = {
         DEST: "dist/azure/ios/html/index.html"
       }
     },
-    localshiva: {
-      source: {
-        app: "dist/localshiva/scripts/app-min.js",
-        libs: "dist/localshiva/libs/libs-min.js"
+    LOCALSHIVA: {
+      ROOT: {
+        SOURCE: {
+          APP: "dist/localshiva/scripts/app-min.js",
+          LIBS: "dist/localshiva/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/html/index.html"
       },
-      dest: "dist/localshiva/html/index.html"
+      WEB: {
+        SOURCE: {
+          APP: "dist/localshiva/web/scripts/app-min.js",
+          LIBS: "dist/localshiva/web/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/web/html/index.html"
+      },
+      ANDROID: {
+        SOURCE: {
+          APP: "dist/localshiva/android/scripts/app-min.js",
+          LIBS: "dist/localshiva/android/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/android/html/index.html"
+      },
+      IOS: {
+        SOURCE: {
+          APP: "dist/localshiva/ios/scripts/app-min.js",
+          LIBS: "dist/localshiva/ios/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/ios/html/index.html"
+      }
     }
   },
 
@@ -469,7 +492,7 @@ const cleanUnwantedJsTask = () => del(PATHS.unwantedAppSource);
  */
 const sriTask = () => {
   const {
-    SRI: {EC2, AZURE, localshiva}
+    SRI: {EC2, AZURE, LOCALSHIVA}
   } = PATHS;
 
   const DEST_PATHS = [
@@ -489,8 +512,14 @@ const sriTask = () => {
     AZURE.ANDROID.SOURCE.LIBS,
     AZURE.IOS.SOURCE.APP,
     AZURE.IOS.SOURCE.LIBS,
-    localshiva.source.app,
-    localshiva.source.libs
+    LOCALSHIVA.ROOT.SOURCE.APP,
+    LOCALSHIVA.ROOT.SOURCE.LIBS,
+    LOCALSHIVA.WEB.SOURCE.APP,
+    LOCALSHIVA.WEB.SOURCE.LIBS,
+    LOCALSHIVA.ANDROID.SOURCE.APP,
+    LOCALSHIVA.ANDROID.SOURCE.LIBS,
+    LOCALSHIVA.IOS.SOURCE.APP,
+    LOCALSHIVA.IOS.SOURCE.LIBS
   ];
 
   return gulp
@@ -588,20 +617,18 @@ const updateAzureIosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CL
 
 const updateAzureWebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.AZURE});
 
-const updateLocalshivaSriTask = () =>
-  gulp
-    .src(PATHS.SRI.localshiva.dest)
-    .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.localshiva.source.libs), {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.localshiva.source.app), {
-        skipBinary: true
-      })
-    )
-    .pipe(gulp.dest("dist/localshiva/html/"));
+const updateLocalshivaAndroidSri = () =>
+  updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
+
+// @TODO - SDKX GA Release - Remove this function after GA release
+const updateLocalshivaRootSri = () =>
+  updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.LOCALSHIVA});
+
+const updateLocalshivaIosSri = () =>
+  updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.LOCALSHIVA});
+
+const updateLocalshivaWebSri = () =>
+  updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.LOCALSHIVA});
 
 /**
  * Babel compile JavaScript resources.
@@ -673,7 +700,12 @@ exports.copyWebchat = copyWebchatTask;
 exports.sri = sriTask;
 exports.cleanUnwantedJs = cleanUnwantedJsTask;
 exports.minifyExtJs = minifyExtJsTask;
-exports.updateLocalshivaSri = updateLocalshivaSriTask;
+exports.updateLocalshivaSri = gulp.parallel(
+  updateLocalshivaAndroidSri,
+  updateLocalshivaRootSri,
+  updateLocalshivaIosSri,
+  updateLocalshivaWebSri
+);
 exports.updateAzureSri = gulp.parallel(
   updateAzureAndroidSri,
   updateAzureRootSri,
