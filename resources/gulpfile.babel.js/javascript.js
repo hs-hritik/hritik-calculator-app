@@ -13,6 +13,7 @@ const fs = require("fs");
 const uglify = require("gulp-uglify");
 const cache = require("gulp-cached");
 const gulpIf = require("gulp-if");
+const path = require("path");
 
 /**
  * Maximum hashes to add to the integrity attribute of script tag.
@@ -171,13 +172,36 @@ const PATHS = {
   tempSri: "./sri.json",
 
   // Environment specific SRI related paths
-  sri: {
-    ec2: {
-      source: {
-        app: "dist/ec2/scripts/app-min.js",
-        libs: "dist/ec2/libs/libs-min.js"
+  SRI: {
+    EC2: {
+      ROOT: {
+        SOURCE: {
+          APP: "dist/ec2/scripts/app-min.js",
+          LIBS: "dist/ec2/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/html/index.html"
       },
-      dest: "dist/ec2/html/index.html"
+      WEB: {
+        SOURCE: {
+          APP: "dist/ec2/web/scripts/app-min.js",
+          LIBS: "dist/ec2/web/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/web/html/index.html"
+      },
+      ANDROID: {
+        SOURCE: {
+          APP: "dist/ec2/android/scripts/app-min.js",
+          LIBS: "dist/ec2/android/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/android/html/index.html"
+      },
+      IOS: {
+        SOURCE: {
+          APP: "dist/ec2/ios/scripts/app-min.js",
+          LIBS: "dist/ec2/ios/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/ios/html/index.html"
+      }
     },
     azure: {
       source: {
@@ -309,12 +333,12 @@ const compileScriptsProdTask = (done) =>
 /**
  * Returns a string by combining the latest three SRI hashes corresponding
  * to a given path from the hs-sri.json file.
- * @param {String} path - bundle path from the dist directory
+ * @param {String} bundlePath - bundle path from the dist directory
  * @returns {String} A string of latest three hashes.
  */
-const getBundleHash = (path) => {
+const getBundleHash = (bundlePath) => {
   const hsSri = require(PATHS.requirePath.hsSri);
-  return hsSri[path].slice(0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join(" ");
+  return hsSri[bundlePath].slice(0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join(" ");
 };
 
 /**
@@ -422,12 +446,18 @@ const cleanUnwantedJsTask = () => del(PATHS.unwantedAppSource);
  */
 const sriTask = () => {
   const {
-    sri: {ec2, azure, localshiva}
+    SRI: {EC2, azure, localshiva}
   } = PATHS;
 
   const DEST_PATHS = [
-    ec2.source.app,
-    ec2.source.libs,
+    EC2.ROOT.SOURCE.APP,
+    EC2.ROOT.SOURCE.LIBS,
+    EC2.WEB.SOURCE.APP,
+    EC2.WEB.SOURCE.LIBS,
+    EC2.ANDROID.SOURCE.APP,
+    EC2.ANDROID.SOURCE.LIBS,
+    EC2.IOS.SOURCE.APP,
+    EC2.IOS.SOURCE.LIBS,
     azure.source.app,
     azure.source.libs,
     localshiva.source.app,
@@ -492,31 +522,44 @@ const updateSriListTask = (done) => {
   });
 };
 
-const updateEc2SriTask = () =>
-  gulp
-    .src(PATHS.sri.ec2.dest)
+const updateSriTask = ({platform, cloud}) => {
+  const platformPath = platform === PLATFORM.ROOT ? "" : "/" + platform.toLowerCase();
+  const cloudPath = "/" + cloud.toLowerCase();
+
+  return gulp
+    .src(PATHS.SRI[cloud][platform].DEST)
     .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.ec2.source.libs), {
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI[cloud][platform].SOURCE.LIBS), {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.ec2.source.app), {
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI[cloud][platform].SOURCE.APP), {
         skipBinary: true
       })
     )
-    .pipe(gulp.dest("dist/ec2/html/"));
+    .pipe(gulp.dest(path.join("dist", cloudPath, platformPath, "/html/")));
+};
+
+const updateEc2AndroidSri = () => updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2});
+
+// @TODO - SDKX GA Release - Remove this function after GA release
+const updateEc2RootSri = () => updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.EC2});
+
+const updateEc2IosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.EC2});
+
+const updateEc2WebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
 const updateAzureSriTask = () =>
   gulp
-    .src(PATHS.sri.azure.dest)
+    .src(PATHS.SRI.azure.dest)
     .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.azure.source.libs), {
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.azure.source.libs), {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.azure.source.app), {
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.azure.source.app), {
         skipBinary: true
       })
     )
@@ -524,14 +567,14 @@ const updateAzureSriTask = () =>
 
 const updateLocalshivaSriTask = () =>
   gulp
-    .src(PATHS.sri.localshiva.dest)
+    .src(PATHS.SRI.localshiva.dest)
     .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.localshiva.source.libs), {
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.localshiva.source.libs), {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.localshiva.source.app), {
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.localshiva.source.app), {
         skipBinary: true
       })
     )
@@ -609,7 +652,12 @@ exports.cleanUnwantedJs = cleanUnwantedJsTask;
 exports.minifyExtJs = minifyExtJsTask;
 exports.updateLocalshivaSri = updateLocalshivaSriTask;
 exports.updateAzureSri = updateAzureSriTask;
-exports.updateEc2Sri = updateEc2SriTask;
+exports.updateEc2Sri = gulp.parallel(
+  updateEc2AndroidSri,
+  updateEc2RootSri,
+  updateEc2IosSri,
+  updateEc2WebSri
+);
 exports.updateSriList = updateSriListTask;
 exports.bundleLibs = bundleLibsTask;
 exports.buildLocalshiva = gulp.parallel(
