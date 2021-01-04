@@ -55,8 +55,30 @@ const PATHS = {
   libsDestDev: "localhost/libs/",
 
   // Env specific paths
-  ec2Source: ["dist/ec2/**/*.*", "!dist/ec2/fonts/**/*.*"],
-  ec2Dest: "dist/ec2/",
+  ENV_PATH: {
+    EC2: {
+      SOURCE: {
+        ROOT: [
+          "dist/ec2/**/*.*",
+          "!dist/ec2/fonts/**/*.*",
+          "!dist/ec2/web/**/*.*",
+          "!dist/ec2/android/**/*.*",
+          "!dist/ec2/ios/**/*.*"
+        ],
+        ANDROID: ["dist/ec2/android/**/*.*", "!dist/ec2/android/fonts/**/*.*"],
+        IOS: ["dist/ec2/ios/**/*.*", "!dist/ec2/ios/fonts/**/*.*"],
+        WEB: ["dist/ec2/web/**/*.*", "!dist/ec2/web/fonts/**/*.*"]
+      },
+      DEST: {
+        ROOT: "dist/ec2/",
+        ANDROID: "dist/ec2/android/",
+        IOS: "dist/ec2/ios/",
+        WEB: "dist/ec2/web/"
+      },
+      WEB_CHAT_ROOT: "https://webchat.helpshift.com",
+      API_ROOT: "https://api.helpshift.com"
+    }
+  },
   azureSource: ["dist/azure/**/*.*", "!dist/azure/fonts/**/*.*"],
   azureDest: "dist/azure/",
   localshivaSource: ["dist/localshiva/**/*.*", "!dist/localshiva/fonts/**/*.*"],
@@ -180,6 +202,19 @@ integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
   }
 };
 
+const PLATFORM = {
+  ANDROID: "ANDROID",
+  IOS: "IOS",
+  WEB: "WEB",
+  ROOT: "ROOT"
+};
+
+const CLOUD = {
+  EC2: "EC2",
+  AZURE: "AZURE",
+  LOCALSHIVA: "LOCALSHIVA"
+};
+
 /**
  * Run babel on a given source folder
  * @param {string} srcFolder - Source directory to compile
@@ -239,34 +274,44 @@ const getBundleHash = (path) => {
 };
 
 /**
- * Production task.
- * Replace EC2 specific template strings with given values
+ * Replace env specific template strings with given values
  */
-const buildEc2Task = () =>
-  gulp
-    .src(PATHS.ec2Source)
-    .pipe(
-      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
-        skipBinary: true
-      })
-    )
-    .pipe(gulp.dest(PATHS.ec2Dest));
+const replaceEnvString = ({platform, cloud}) => {
+  const platformPath = platform === PLATFORM.ROOT ? "" : "/" + platform.toLowerCase();
 
+  return gulp
+    .src(PATHS.ENV_PATH[cloud].SOURCE[platform])
+    .pipe(
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD[cloud], {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD[cloud], {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{ENV_WEB_CHAT_ROOT}}", PATHS.ENV_PATH[cloud].WEB_CHAT_ROOT + platformPath, {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{ENV_API_ROOT}}", PATHS.ENV_PATH[cloud].API_ROOT, {
+        skipBinary: true
+      })
+    )
+    .pipe(gulp.dest(PATHS.ENV_PATH[cloud].DEST[platform]));
+};
+
+const buildEc2Ios = () => replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.EC2});
+
+const buildEc2Android = () => replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2});
+
+// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
+const buildEc2Root = () => replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.EC2});
+
+const buildEc2Web = () => replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 /**
  * Production task.
  * Replace Azure specific template strings with given values
@@ -561,5 +606,5 @@ exports.bundleLibs = bundleLibsTask;
 exports.buildLocalshiva = buildLocalshivaTask;
 exports.buildAzure = buildAzureTask;
 exports.compileScriptsProd = compileScriptsProdTask;
-exports.buildEc2 = buildEc2Task;
+exports.buildEc2 = gulp.parallel(buildEc2Android, buildEc2Root, buildEc2Ios, buildEc2Web);
 exports.libs = libsTask;
