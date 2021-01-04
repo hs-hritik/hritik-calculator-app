@@ -203,12 +203,35 @@ const PATHS = {
         DEST: "dist/ec2/ios/html/index.html"
       }
     },
-    azure: {
-      source: {
-        app: "dist/azure/scripts/app-min.js",
-        libs: "dist/azure/libs/libs-min.js"
+    AZURE: {
+      ROOT: {
+        SOURCE: {
+          APP: "dist/azure/scripts/app-min.js",
+          LIBS: "dist/azure/libs/libs-min.js"
+        },
+        DEST: "dist/azure/html/index.html"
       },
-      dest: "dist/azure/html/index.html"
+      WEB: {
+        SOURCE: {
+          APP: "dist/azure/web/scripts/app-min.js",
+          LIBS: "dist/azure/web/libs/libs-min.js"
+        },
+        DEST: "dist/azure/web/html/index.html"
+      },
+      ANDROID: {
+        SOURCE: {
+          APP: "dist/azure/android/scripts/app-min.js",
+          LIBS: "dist/azure/android/libs/libs-min.js"
+        },
+        DEST: "dist/azure/android/html/index.html"
+      },
+      IOS: {
+        SOURCE: {
+          APP: "dist/azure/ios/scripts/app-min.js",
+          LIBS: "dist/azure/ios/libs/libs-min.js"
+        },
+        DEST: "dist/azure/ios/html/index.html"
+      }
     },
     localshiva: {
       source: {
@@ -446,7 +469,7 @@ const cleanUnwantedJsTask = () => del(PATHS.unwantedAppSource);
  */
 const sriTask = () => {
   const {
-    SRI: {EC2, azure, localshiva}
+    SRI: {EC2, AZURE, localshiva}
   } = PATHS;
 
   const DEST_PATHS = [
@@ -458,8 +481,14 @@ const sriTask = () => {
     EC2.ANDROID.SOURCE.LIBS,
     EC2.IOS.SOURCE.APP,
     EC2.IOS.SOURCE.LIBS,
-    azure.source.app,
-    azure.source.libs,
+    AZURE.ROOT.SOURCE.APP,
+    AZURE.ROOT.SOURCE.LIBS,
+    AZURE.WEB.SOURCE.APP,
+    AZURE.WEB.SOURCE.LIBS,
+    AZURE.ANDROID.SOURCE.APP,
+    AZURE.ANDROID.SOURCE.LIBS,
+    AZURE.IOS.SOURCE.APP,
+    AZURE.IOS.SOURCE.LIBS,
     localshiva.source.app,
     localshiva.source.libs
   ];
@@ -550,20 +579,14 @@ const updateEc2IosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOU
 
 const updateEc2WebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
-const updateAzureSriTask = () =>
-  gulp
-    .src(PATHS.SRI.azure.dest)
-    .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.azure.source.libs), {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.azure.source.app), {
-        skipBinary: true
-      })
-    )
-    .pipe(gulp.dest("dist/azure/html/"));
+const updateAzureAndroidSri = () => updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.AZURE});
+
+// @TODO - SDKX GA Release - Remove this function after GA release
+const updateAzureRootSri = () => updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.AZURE});
+
+const updateAzureIosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.AZURE});
+
+const updateAzureWebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.AZURE});
 
 const updateLocalshivaSriTask = () =>
   gulp
@@ -651,7 +674,12 @@ exports.sri = sriTask;
 exports.cleanUnwantedJs = cleanUnwantedJsTask;
 exports.minifyExtJs = minifyExtJsTask;
 exports.updateLocalshivaSri = updateLocalshivaSriTask;
-exports.updateAzureSri = updateAzureSriTask;
+exports.updateAzureSri = gulp.parallel(
+  updateAzureAndroidSri,
+  updateAzureRootSri,
+  updateAzureIosSri,
+  updateAzureWebSri
+);
 exports.updateEc2Sri = gulp.parallel(
   updateEc2AndroidSri,
   updateEc2RootSri,
