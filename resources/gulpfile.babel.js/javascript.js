@@ -269,6 +269,18 @@ const PATHS = {
   externalJsDest: "dist/scripts/external/"
 };
 
+const URL_PATHS = {
+  WEBCHAT: "/{{platform}}/webChat.js",
+  APP_MIN: "/{{platform}}/scripts/app-min.js",
+  LIB_MIN: "/{{platform}}/libs/libs-min.js",
+  INDEX_HTML: "/{{platform}}/html/index.html",
+  STYLE: "/{{platform}}/css/style.css",
+  FONT: "/{{platform}}/fonts/hesticons/",
+  AVATAR: "/assets.helpshift{{domain}}/"
+};
+
+const ANDROID_STATIC_FILE_CACHE_TIME = 86400000;
+
 /**
  * Paths used in templating
  * @TODO: Enable SRI for Azure - Use the same PROD path for LIBS and APP for Azure
@@ -534,6 +546,49 @@ const sriTask = () => {
 };
 
 /**
+ * This task generates whitelist static resources url mapping
+ * that we will use to download and cache the mentioned resources in android
+ * When user first launches the chat screen, android downloads these
+ * resources by intercepting https calls from webview.
+ * On next launch of chat screen, it will serve resources from local
+ * when intercepting the corresponding https calls.
+ */
+const generateMappingFileTask = ({platform, cloud}, done) => {
+  const domain = cloud === CLOUD.LOCALSHIVA ? ".mobi" : ".com";
+  const filePath = path.join(
+    "dist",
+    cloud.toLowerCase(),
+    platform.toLowerCase(),
+    "android-mapping.json"
+  );
+  const mapping = {
+    url_paths: [],
+    ttl: ANDROID_STATIC_FILE_CACHE_TIME
+  };
+
+  Object.keys(URL_PATHS).forEach((urlPath) => {
+    let whitelistPath = URL_PATHS[urlPath].replace("{{platform}}", platform.toLowerCase());
+    whitelistPath = whitelistPath.replace("{{domain}}", domain);
+
+    mapping.url_paths.push({
+      path: whitelistPath,
+      ttl: ANDROID_STATIC_FILE_CACHE_TIME
+    });
+  });
+
+  fs.writeFile(filePath, JSON.stringify(mapping), done);
+};
+
+const generateLocalshivaAndroidWhitelistedMappingFile = (done) =>
+  generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA}, done);
+
+const generateEc2AndroidWhitelistedMappingFile = (done) =>
+  generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2}, done);
+
+const generateAzureAndroidWhitelistedMappingFile = (done) =>
+  generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.AZURE}, done);
+
+/**
  * Task to update hs-sri.json file
  * It checks if newly generated hash for bundles matches with the first three
  * hashes of the previous versions of the same bundle, if it does then the
@@ -724,9 +779,22 @@ exports.buildLocalshiva = gulp.parallel(
   buildLocalshivaIos,
   buildLocalshivaAndroid,
   buildLocalshivaRoot,
-  buildLocalshivaWeb
+  buildLocalshivaWeb,
+  generateLocalshivaAndroidWhitelistedMappingFile
 );
-exports.buildAzure = gulp.parallel(buildAzureAndroid, buildAzureRoot, buildAzureIos, buildAzureWeb);
+exports.buildAzure = gulp.parallel(
+  buildAzureAndroid,
+  buildAzureRoot,
+  buildAzureIos,
+  buildAzureWeb,
+  generateAzureAndroidWhitelistedMappingFile
+);
 exports.compileScriptsProd = compileScriptsProdTask;
-exports.buildEc2 = gulp.parallel(buildEc2Android, buildEc2Root, buildEc2Ios, buildEc2Web);
+exports.buildEc2 = gulp.parallel(
+  buildEc2Android,
+  buildEc2Root,
+  buildEc2Ios,
+  buildEc2Web,
+  generateEc2AndroidWhitelistedMappingFile
+);
 exports.libs = libsTask;
