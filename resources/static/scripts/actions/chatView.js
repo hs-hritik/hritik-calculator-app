@@ -2415,6 +2415,22 @@ define("actions/chatView", [
           onSuccess: () => {
             handleIssueReopen(issueState);
             audioHelpers.playSend();
+
+            const {
+              appState: {subscribedToLiveUpdates},
+              chatView: {activeFooter}
+            } = getState();
+
+            if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+              liveUpdatesHelpers.openWsConnection(subscribedToLiveUpdates, {
+                onWsConfigFromBackend: (wsConfig) => {
+                  dispatch({
+                    type: ACTION_TYPES.WS_CONFIG_SUCCESS,
+                    payload: wsConfig
+                  });
+                }
+              });
+            }
           }
         });
       } else {
@@ -3132,7 +3148,7 @@ define("actions/chatView", [
    * @returns {Function} - Action
    */
   const rejectResolutionQuestion = () => {
-    return (dispatch, getState) => {
+    return (dispatch) => {
       postUserMessage({
         msgBody: MESSAGE_BODY.SOLUTION_REJECTED,
         msgType: MESSAGE_TYPE.REJECTED,
@@ -3143,19 +3159,6 @@ define("actions/chatView", [
               setChatViewFooter(ACTIVE_FOOTER.SOLUTION_REJECTED)
             ])
           );
-
-          const {
-            appState: {subscribedToLiveUpdates}
-          } = getState();
-
-          liveUpdatesHelpers.openWsConnection(subscribedToLiveUpdates, {
-            onWsConfigFromBackend: (wsConfig) => {
-              dispatch({
-                type: ACTION_TYPES.WS_CONFIG_SUCCESS,
-                payload: wsConfig
-              });
-            }
-          });
         }
       });
     };
