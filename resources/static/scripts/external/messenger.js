@@ -1403,7 +1403,7 @@
   };
 
   /**
-   * JS API to toggle author presence status
+   * Methods to toggle author presence status
    * This API get called in two places:
    * 1) From inside lite SDK when the app goes in foreground/background
    * 2) From inside the handler of `visibilitychange` event when the a tab goes in
@@ -1413,6 +1413,14 @@
    */
   const toggleAuthorPresenceStatus = (authorIsOnline = true, fromLiteSdk = true) => {
     _postMessage(EVENT_TYPES.CMD_TOGGLE_AUTHOR_PRESENCE_STATUS, {authorIsOnline, fromLiteSdk});
+  };
+
+  /**
+   * JS API to toggle author presence status from lite SDK
+   * @param {Boolean} authorIsOnline - If true, then the author (end-user) is online
+   */
+  const toggleAuthorPresenceStatusFromLiteSdk = (authorIsOnline = true) => {
+    toggleAuthorPresenceStatus(authorIsOnline, true);
   };
 
   /**
@@ -1755,7 +1763,8 @@
     updateParentPageVisibility,
     disableConfigPeriodicFetch,
     enableConfigPeriodicFetch,
-    togglePollerStatus
+    togglePollerStatus,
+    toggleAuthorPresenceStatusFromLiteSdk
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them

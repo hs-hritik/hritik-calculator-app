@@ -508,14 +508,19 @@ define("extras/api", [
         break;
 
       case EVENT_TYPES.CMD_TOGGLE_AUTHOR_PRESENCE_STATUS:
-        const {liteSdkConfig} = store.getState().appState;
+        const {liteSdkConfig, featuresEnabled} = store.getState().appState;
         const contextIsLiteSdk = !!(liteSdkConfig && liteSdkConfig.os);
 
-        // The presence detection should be toggle only if
+        // The presence detection should toggle only if
         // 1) it gets fired inside the visibilitychange event handler
         //    (ie. IS_MOBILE && !contextIsLiteSdk)
         // 2) it gets fired from inside the liteSdk (ie. data.fromLiteSdk)
-        if (data.fromLiteSdk || (IS_MOBILE && !contextIsLiteSdk)) {
+        // 3) The above conditions should apply only if the user presence
+        //    detection feature is enabled
+        if (
+          (data.fromLiteSdk || (IS_MOBILE && !contextIsLiteSdk)) &&
+          featuresEnabled.authorPresenceDetectionIsEnabled
+        ) {
           liveUpdateUtils.toggleAuthorPresenceDetection(data.authorIsOnline);
         }
         break;
