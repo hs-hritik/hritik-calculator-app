@@ -80,26 +80,8 @@ const PATHS = {
       API_ROOT: "https://api.helpshift.com"
     },
     AZURE: {
-      SOURCE: {
-        ROOT: [
-          "dist/azure/**/*.*",
-          "!dist/azure/fonts/**/*.*",
-          "!dist/azure/web/**/*.*",
-          "!dist/azure/android/**/*.*",
-          "!dist/azure/ios/**/*.*"
-        ],
-        ANDROID: ["dist/azure/android/**/*.*", "!dist/azure/android/fonts/**/*.*"],
-        IOS: ["dist/azure/ios/**/*.*", "!dist/azure/ios/fonts/**/*.*"],
-        WEB: ["dist/azure/web/**/*.*", "!dist/azure/web/fonts/**/*.*"]
-      },
-      DEST: {
-        ROOT: "dist/azure/",
-        ANDROID: "dist/azure/android/",
-        IOS: "dist/azure/ios/",
-        WEB: "dist/azure/web/"
-      },
-      WEB_CHAT_ROOT: "https://webchat-a.helpshift.com",
-      API_ROOT: "https://api-a.helpshift.com"
+      SOURCE: ["dist/azure/**/*.*", "!dist/azure/fonts/**/*.*"],
+      DEST: "dist/azure/"
     },
     LOCALSHIVA: {
       SOURCE: {
@@ -204,34 +186,11 @@ const PATHS = {
       }
     },
     AZURE: {
-      ROOT: {
-        SOURCE: {
-          APP: "dist/azure/scripts/app-min.js",
-          LIBS: "dist/azure/libs/libs-min.js"
-        },
-        DEST: "dist/azure/html/index.html"
+      SOURCE: {
+        APP: "dist/azure/scripts/app-min.js",
+        LIBS: "dist/azure/libs/libs-min.js"
       },
-      WEB: {
-        SOURCE: {
-          APP: "dist/azure/web/scripts/app-min.js",
-          LIBS: "dist/azure/web/libs/libs-min.js"
-        },
-        DEST: "dist/azure/web/html/index.html"
-      },
-      ANDROID: {
-        SOURCE: {
-          APP: "dist/azure/android/scripts/app-min.js",
-          LIBS: "dist/azure/android/libs/libs-min.js"
-        },
-        DEST: "dist/azure/android/html/index.html"
-      },
-      IOS: {
-        SOURCE: {
-          APP: "dist/azure/ios/scripts/app-min.js",
-          LIBS: "dist/azure/ios/libs/libs-min.js"
-        },
-        DEST: "dist/azure/ios/html/index.html"
-      }
+      DEST: "dist/azure/html/index.html"
     },
     LOCALSHIVA: {
       ROOT: {
@@ -439,14 +398,34 @@ const buildEc2Root = () => replaceEnvString({platform: PLATFORM.ROOT, cloud: CLO
 
 const buildEc2Web = () => replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
-const buildAzureIos = () => replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.AZURE});
-
-const buildAzureAndroid = () => replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.AZURE});
-
-// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
-const buildAzureRoot = () => replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.AZURE});
-
-const buildAzureWeb = () => replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.AZURE});
+/**
+ * Production task.
+ * Replace Azure specific template strings with given values
+ */
+const buildAzureTask = () =>
+  gulp
+    .src(PATHS.ENV_PATH.AZURE.SOURCE)
+    .pipe(
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.AZURE, {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.AZURE, {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat-a.helpshift.com", {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{ENV_API_ROOT}}", "https://api-a.helpshift.com", {
+        skipBinary: true
+      })
+    )
+    .pipe(gulp.dest(PATHS.ENV_PATH.AZURE.DEST));
 
 const buildLocalshivaIos = () =>
   replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.LOCALSHIVA});
@@ -516,14 +495,8 @@ const sriTask = () => {
     EC2.ANDROID.SOURCE.LIBS,
     EC2.IOS.SOURCE.APP,
     EC2.IOS.SOURCE.LIBS,
-    AZURE.ROOT.SOURCE.APP,
-    AZURE.ROOT.SOURCE.LIBS,
-    AZURE.WEB.SOURCE.APP,
-    AZURE.WEB.SOURCE.LIBS,
-    AZURE.ANDROID.SOURCE.APP,
-    AZURE.ANDROID.SOURCE.LIBS,
-    AZURE.IOS.SOURCE.APP,
-    AZURE.IOS.SOURCE.LIBS,
+    AZURE.SOURCE.APP,
+    AZURE.SOURCE.LIBS,
     LOCALSHIVA.ROOT.SOURCE.APP,
     LOCALSHIVA.ROOT.SOURCE.LIBS,
     LOCALSHIVA.WEB.SOURCE.APP,
@@ -584,9 +557,6 @@ const generateLocalshivaAndroidWhitelistedMappingFile = (done) =>
 
 const generateEc2AndroidWhitelistedMappingFile = (done) =>
   generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2}, done);
-
-const generateAzureAndroidWhitelistedMappingFile = (done) =>
-  generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.AZURE}, done);
 
 /**
  * Task to update hs-sri.json file
@@ -663,14 +633,20 @@ const updateEc2IosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOU
 
 const updateEc2WebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
-const updateAzureAndroidSri = () => updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.AZURE});
-
-// @TODO - SDKX GA Release - Remove this function after GA release
-const updateAzureRootSri = () => updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.AZURE});
-
-const updateAzureIosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.AZURE});
-
-const updateAzureWebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.AZURE});
+const updateAzureSriTask = () =>
+  gulp
+    .src(PATHS.SRI.AZURE.DEST)
+    .pipe(
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.AZURE.SOURCE.LIBS), {
+        skipBinary: true
+      })
+    )
+    .pipe(
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.AZURE.SOURCE.APP), {
+        skipBinary: true
+      })
+    )
+    .pipe(gulp.dest("dist/azure/html/"));
 
 const updateLocalshivaAndroidSri = () =>
   updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
@@ -761,12 +737,7 @@ exports.updateLocalshivaSri = gulp.parallel(
   updateLocalshivaIosSri,
   updateLocalshivaWebSri
 );
-exports.updateAzureSri = gulp.parallel(
-  updateAzureAndroidSri,
-  updateAzureRootSri,
-  updateAzureIosSri,
-  updateAzureWebSri
-);
+exports.updateAzureSri = updateAzureSriTask;
 exports.updateEc2Sri = gulp.parallel(
   updateEc2AndroidSri,
   updateEc2RootSri,
@@ -782,13 +753,7 @@ exports.buildLocalshiva = gulp.parallel(
   buildLocalshivaWeb,
   generateLocalshivaAndroidWhitelistedMappingFile
 );
-exports.buildAzure = gulp.parallel(
-  buildAzureAndroid,
-  buildAzureRoot,
-  buildAzureIos,
-  buildAzureWeb,
-  generateAzureAndroidWhitelistedMappingFile
-);
+exports.buildAzure = buildAzureTask;
 exports.compileScriptsProd = compileScriptsProdTask;
 exports.buildEc2 = gulp.parallel(
   buildEc2Android,
