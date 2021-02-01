@@ -187,14 +187,6 @@ prepare-subdir: copy-temp prepare-ec2 prepare-azure prepare-locashiva
 ec2:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for EC2"
-	# @TODO - SDKX GA Release
-	# After SDKX GA Release remove webchat resources directly inside ec2 directory
-	# Remove after GA release to avoid any release time impacts
-	# Web chat will be serve from /web directory through routing at nginx level
-	@cp -R resources/build/* resources/dist/ec2/
-	@cd resources/dist/ec2; ln -sv scripts/external/webChat.js .;
-	@cd resources/dist/ec2/demo; ln -sv ../html/demo/index.html .;
-
 	@cp -R resources/build/* resources/dist/ec2/web
 	@cd resources/dist/ec2/web; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/ec2/web/demo; ln -sv ../html/demo/index.html .;
@@ -219,14 +211,6 @@ azure:
 localshiva:
 	@echo ">> Starting task: $@"
 	@echo "Preparing build dir for localshiva"
-	# @TODO - SDKX GA Release
-	# After SDKX GA Release remove webchat resources directly inside localshiva directory
-	# Remove after GA release to avoid any release time impacts
-	# Web chat will be serve from /web directory through routing at nginx level
-	@cp -R resources/build/* resources/dist/localshiva/
-	@cd resources/dist/localshiva; ln -sv scripts/external/webChat.js .;
-	@cd resources/dist/localshiva/demo; ln -sv ../html/demo/index.html .;
-
 	@cp -R resources/build/* resources/dist/localshiva/web
 	@cd resources/dist/localshiva/web; ln -sv scripts/external/webChat.js .;
 	@cd resources/dist/localshiva/web/demo; ln -sv ../html/demo/index.html .;
