@@ -1054,6 +1054,9 @@ define("actions/chatView", [
    */
   const createLinearMessageList = (issueList, config) => {
     const {lastGroupId, hasOlderMsgs, conversationHistoryEnabled} = config;
+    const {
+      chatView: {localGreetingMessageId}
+    } = store.getState();
 
     const orderedIssues = getOrderedIssueList(issueList);
     const issuesToRender = conversationHistoryEnabled
@@ -1073,9 +1076,12 @@ define("actions/chatView", [
       return [];
     }
 
-    // if there are no more messages remaining to be fetched, we should
-    // render the timestamp without a <hr> at the top of list
-    if (latestConvHasLoaded) {
+    // Date separator is added for every local greeting message. Whenever the user sends
+    // a message, a local greeting message is replaced by a message from the backend.
+    // If there are no more messages remaining to be fetched and there is no local
+    // greeting message which means the date separator is missing off the oldest issue,
+    // we should render the timestamp without a <hr> at the top of the list
+    if (latestConvHasLoaded && !localGreetingMessageId) {
       const oldestIssue = issueList[issueList.length - 1];
 
       linearMsgList.unshift(_getIssueDateSeparator(oldestIssue.created_at, false));
@@ -2884,7 +2890,7 @@ define("actions/chatView", [
   const createMessage = (config) => {
     return (dispatch, getState) => {
       const {
-        appState: {liteSdkConfig}
+        appState: {liteSdkConfig, internalIssueId}
       } = getState();
 
       const {
@@ -2894,6 +2900,8 @@ define("actions/chatView", [
         messageConfig,
         onAddMessage
       } = config;
+      messageConfig.issueId = internalIssueId;
+
       const msg = messageHelpers.createMessage(messageType, messageConfig);
 
       // As this message is created on frontend, it is already in processed format.
@@ -3192,6 +3200,24 @@ define("actions/chatView", [
     };
   };
 
+  /*
+   * Create date separator and add it to the message list.
+   * @returns {Object} - the action object
+   */
+  const createIssueDateSeparator = () => {
+    return (dispatch) => {
+      dispatch(
+        createMessage({
+          type: MESSAGE_TYPE.CHAT_SEPARATOR,
+          messageConfig: {
+            hr: false,
+            timestamp: dateUtils.format(Date.now(), "{dddd}, {mmmm} {dd}, {yyyy}")
+          }
+        })
+      );
+    };
+  };
+
   /**
    * Create greeting message and add it to the message list. Check if this
    * feature is enabled before doing so.
@@ -3382,6 +3408,7 @@ define("actions/chatView", [
     setUserSelectedOption,
     handleErrorAction,
     skipUserInput,
+    createIssueDateSeparator,
     addGreetingMessage,
     loadIntentsTree,
     loadIntentsModel,

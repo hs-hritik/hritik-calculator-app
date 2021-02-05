@@ -33,7 +33,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.60.3";
+const WEB_CHAT_VERSION = "2.61.3";
 
 /**
  * Name of app bundle
@@ -65,7 +65,7 @@ const PATHS = {
   localhostDest: "localhost/",
 
   // Specific paths to run the local server
-  webChatSrcDev: "localhost/scripts/external/messenger.js",
+  webChatSrcDev: "localhost/scripts/external/webChat.js",
 
   // Library bundle specific path
   // @NOTE - Any new file added to libs folder will not be automatically minified

@@ -1005,7 +1005,7 @@ define("actions/appState", [
       // create a web issue.
       if (!commonHelpers.isOutOfBusinessHours()) {
         dispatch(conversationStarted(conversationHistoryIsEnabled));
-
+        dispatch(chatViewActions.createIssueDateSeparator());
         if (shouldAddGreetingMessage) {
           dispatch(chatViewActions.addGreetingMessage());
         }

@@ -1,0 +1,4 @@
+Changelog:
+Handle the edge case of not adding negative margin value
+Update the email regex used inside mirkwood
+Fix ellipses issue for long branding title in the header

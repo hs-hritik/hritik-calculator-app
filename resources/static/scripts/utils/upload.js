@@ -48,7 +48,7 @@ define("utils/upload", ["constants/errors"], function(errorConstants) {
     }
 
     xhr.onreadystatechange = function(event) {
-      switch (event.target.status) {
+      switch (xhr.readyState === 4 && event.target.status) {
         case 201:
           if (config.onSuccess) {
             config.onSuccess(JSON.parse(this.responseText));
