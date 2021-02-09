@@ -194,6 +194,10 @@ define("extras/lsMiddleware", [
           lsHelpers.set(LS_KEYS.CONFIG, config, onLocalStorageOutOfSpace);
         }
         break;
+
+      case ACTION_TYPES.WS_CONFIG_SUCCESS:
+        lsHelpers.set(LS_KEYS.WS_CONFIG, btoa(JSON.stringify(action.payload)));
+        break;
     }
   };
 

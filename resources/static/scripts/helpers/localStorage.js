@@ -28,7 +28,8 @@ define("helpers/localStorage", [
     WIDGET_SHOULD_AUTO_OPEN: "wsao",
     PFI_VALUE: "pfi",
     CONFIG: "config",
-    RESPECT_PFI: "rf"
+    RESPECT_PFI: "rf",
+    WS_CONFIG: "wsc"
   };
 
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];
@@ -38,7 +39,13 @@ define("helpers/localStorage", [
   // same irrespective of who (the user) is using it.
   // The analytics session id should not reset. It is supposed to be reset
   // only when a new conversation starts.
-  const NON_RESETABLE_KEYS = ["USER_ID", "ANON_USER_ID", "DEVICE_ID", "ANALYTICS_SESSION_ID"];
+  const NON_RESETABLE_KEYS = [
+    "USER_ID",
+    "ANON_USER_ID",
+    "DEVICE_ID",
+    "ANALYTICS_SESSION_ID",
+    "WS_CONFIG"
+  ];
 
   const LS_UPDATE_TYPES = {
     SET: "set",

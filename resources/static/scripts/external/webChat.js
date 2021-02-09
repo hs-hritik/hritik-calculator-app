@@ -128,7 +128,8 @@
     CMD_SET_PARENT_PAGE_VISIBILITY: "cmd-set-parent-page-visibility",
     CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
     CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi",
-    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status"
+    CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status",
+    CMD_TOGGLE_AUTHOR_PRESENCE_STATUS: "cmd-toggle-author-presence-status"
   };
 
   /**
@@ -1380,6 +1381,46 @@
       },
       false
     );
+
+    // Page visibility event provides the current visibility state of the page.
+    // Visibility states of iframes are the same as the parent document.
+    // @NOTE - This is to make sure that toggleAuthorPresenceStatus is called even if
+    // event results in an exception.
+    try {
+      doc.addEventListener("visibilitychange", () => {
+        const visibilityHidden =
+          document.hidden || document.mozHidden || document.msHidden || document.webkitHidden;
+
+        if (visibilityHidden) {
+          toggleAuthorPresenceStatus(false, false);
+        } else {
+          toggleAuthorPresenceStatus(true, false);
+        }
+      });
+    } catch (err) {
+      toggleAuthorPresenceStatus(true, false);
+    }
+  };
+
+  /**
+   * Methods to toggle author presence status
+   * This API get called in two places:
+   * 1) From inside lite SDK when the app goes in foreground/background
+   * 2) From inside the handler of `visibilitychange` event when the a tab goes in
+   * background or is switched in case of mobile browsers
+   * @param {Boolean} authorIsOnline
+   * @param {Boolean} fromLiteSdk
+   */
+  const toggleAuthorPresenceStatus = (authorIsOnline = true, fromLiteSdk = true) => {
+    _postMessage(EVENT_TYPES.CMD_TOGGLE_AUTHOR_PRESENCE_STATUS, {authorIsOnline, fromLiteSdk});
+  };
+
+  /**
+   * JS API to toggle author presence status from lite SDK
+   * @param {Boolean} authorIsOnline - If true, then the author (end-user) is online
+   */
+  const toggleAuthorPresenceStatusFromLiteSdk = (authorIsOnline = true) => {
+    toggleAuthorPresenceStatus(authorIsOnline, true);
   };
 
   /**
@@ -1722,7 +1763,8 @@
     updateParentPageVisibility,
     disableConfigPeriodicFetch,
     enableConfigPeriodicFetch,
-    togglePollerStatus
+    togglePollerStatus,
+    toggleAuthorPresenceStatusFromLiteSdk
   };
 
   // Append the APIs to the local apiQueue variable in order to execute them
