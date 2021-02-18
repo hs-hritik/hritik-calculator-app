@@ -66,6 +66,8 @@ define("constants/routes", function() {
 
   const postPushToken = (domain) => `${BASE}${domain}/update-push-token`;
 
+  const getLogUiConfig = (domain) => `${BASE}${domain}/log-hs-config`;
+
   return {
     getWmConfig,
     getCss,
@@ -84,6 +86,7 @@ define("constants/routes", function() {
     postIssue,
     getIntentTree,
     getIntentModel,
-    postPushToken
+    postPushToken,
+    getLogUiConfig
   };
 });
