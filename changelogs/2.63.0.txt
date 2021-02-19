@@ -1,0 +1,5 @@
+Branches:
+feature/log-uiconfig
+
+Changelog:
+Log helpshiftConfig.uiConfig for feature analysis
