@@ -20,6 +20,7 @@ define("extras/api", [
   "components/app",
   "helpers/analytics",
   "helpers/localStorage",
+  "helpers/common",
   "gunpowder/utils/object",
   "extras/accessibility",
   "constants/accessibility",
@@ -41,6 +42,7 @@ define("extras/api", [
   app,
   analyticsHelpers,
   lsHelpers,
+  commonHelpers,
   objUtils,
   ax,
   axConstants,
@@ -436,6 +438,21 @@ define("extras/api", [
         store.dispatch(uiActions.updateUiConfig(data.uiConfig));
         store.dispatch(uiActions.setDeveloperUiConfig(data.uiConfig));
         appStateActions.updateStyles();
+
+        // TEMP: This change is for data analysis and should be reverted after the analysis is done
+        // More details - With SDK X GA release (Apr 2021), we are removing helpshiftConfig.uiConfig
+        // for UI customization. This capability is moving to the dashboard. In order to seamlessly
+        // migrate the customers that are using uiConfig, we want to analyze helpshiftConfig.
+        // This XHR hits a non-existent endpoint with uiConfig as a param. We will then check
+        // the nginx logs for analysis. This is the same approach that we follow with React error
+        // boundary, check gunpowder/utils/withErrorBoundary for details.
+        // Note: This logging is also done in actions/appState after CSS is loaded (end of the
+        // initial set of XHR calls).
+        if (data.uiConfig) {
+          commonHelpers.logUiConfig(store.getState().appState.domain, {
+            uiConfig: JSON.stringify(data.uiConfig)
+          });
+        }
         break;
 
       case EVENT_TYPES.CMD_FOCUS_WEBCHAT:
