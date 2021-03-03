@@ -13,10 +13,7 @@ define("helpers/common", [
   "constants/businessHoursView",
   "constants/appState",
   "constants/activeView",
-  "gunpowder/utils/validation",
-  "constants/routes",
-  "helpers/xhr",
-  "gunpowder/utils/xhr"
+  "gunpowder/utils/validation"
 ], function(
   store,
   arrayUtils,
@@ -25,10 +22,7 @@ define("helpers/common", [
   bhConstants,
   appStateConstants,
   ACTIVE_VIEW,
-  validationUtil,
-  routes,
-  xhrHelpers,
-  xhr
+  validationUtil
 ) {
   "use strict";
 
@@ -434,22 +428,6 @@ define("helpers/common", [
     return _intersectionObserverIsSupported;
   };
 
-  /**
-   * Fire a non-existent XHR with helpshiftConfig.uiConfig as a param. This is used for analysis
-   * purpose.
-   *
-   * @param {string} domain
-   * @param {object} uiConfig - The property of the global helpshiftConfig object that the developer
-   *    uses to customize the UI (colors and font)
-   */
-  const logUiConfig = (domain, uiConfig) => {
-    xhr({
-      route: routes.getLogUiConfig(domain),
-      data: xhrHelpers.getPreparedXhrData(uiConfig),
-      headers: xhrHelpers.getCommonHeaders()
-    });
-  };
-
   return {
     isOutOfBusinessHours,
     isWidgetHiddenOutOfBusinessHours,
@@ -468,7 +446,6 @@ define("helpers/common", [
     getSelectorForElement,
     getCbFaqSuggestionReadLsKey,
     getUniqueUserIdentifier,
-    isIntersectionObserverSupported,
-    logUiConfig
+    isIntersectionObserverSupported
   };
 });
