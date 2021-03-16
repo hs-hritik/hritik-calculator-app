@@ -5,17 +5,6 @@
 
 @import "./hestia/data/hesticons-icon-code";
 
-@font-face {
-  font-family: "hesticons";
-  font-style: normal;
-  font-weight: normal;
-  src: url("/fonts/hesticons/hesticons.eot?t=20190314");
-  src: url("/fonts/hesticons/hesticons.eot?t=20190314#iefix") format("eot"),
-    url("/fonts/hesticons/hesticons.woff?t=20190314") format("woff"),
-    url("/fonts/hesticons/hesticons.ttf?t=20190314") format("truetype"),
-    url("/fonts/hesticons/hesticons.svg?t=20190314#hesticons") format("svg");
-}
-
 %ion {
   display: inline-block;
   font-family: "hesticons";
