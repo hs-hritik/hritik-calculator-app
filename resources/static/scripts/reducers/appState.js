@@ -112,7 +112,8 @@ define("reducers/appState", [
       userAttachments: true,
       branding: true,
       intents: false,
-      personalisedConversationIsEnabled: false
+      personalisedConversationIsEnabled: false,
+      authorPresenceDetectionIsEnabled: false
     },
     // The time after which the intents tree should be updated from the backend.
     intentsTreeSla: 0,
@@ -172,7 +173,12 @@ define("reducers/appState", [
     respectPfi: true,
     isPushTokenSynced: false,
     // True, when issueExists is false in config and the issue is created
-    issueExistsDataIsStaleInLocalStorage: false
+    issueExistsDataIsStaleInLocalStorage: false,
+    // websocket config object containing info for setting up the connection
+    wsConfig: {},
+    // Idenfifier used while creating websocket connection
+    hsSessionId: "",
+    subscribedToLiveUpdates: false
   };
 
   /**
@@ -220,6 +226,12 @@ define("reducers/appState", [
           };
         }
 
+        if (action.data.wsConfig) {
+          updateObj.wsConfig = {
+            $set: action.data.wsConfig
+          };
+        }
+
         return update(state, updateObj);
 
       case ACTION_TYPES.FETCH_CONFIG_SUCCESS:
@@ -242,7 +254,8 @@ define("reducers/appState", [
             branding: {$set: !config.disable_helpshift_branding},
             audioNotifications: {$set: config.audio_notifications_enabled},
             intents: {$set: intentsAreEnabled},
-            personalisedConversationIsEnabled: {$set: personalisedConversationIsEnabled}
+            personalisedConversationIsEnabled: {$set: personalisedConversationIsEnabled},
+            authorPresenceDetectionIsEnabled: {$set: config.author_presence_detection_enabled}
           },
           issueExists: {$set: config.issue_exists},
           attachmentsWhitelist: {$set: attachmentsWhitelist},
@@ -552,12 +565,29 @@ define("reducers/appState", [
 
       case ACTION_TYPES.GET_CONVERSATION_HISTORY_SUCCESS:
       case ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS:
-        return update(state, {
-          expiryTimestamps: {
-            resolutionQuestion: {$set: action.payload.resolutionQuestionExpiryTimestamp || 0},
-            csatBot: {$set: action.payload.csatBotExpiryTimestamp || 0}
-          }
-        });
+        const updObj = {
+          expiryTimestamps: {}
+        };
+
+        if (action.payload.resolutionQuestionExpiryTimestamp) {
+          updObj.expiryTimestamps.resolutionQuestion = {
+            $set: action.payload.resolutionQuestionExpiryTimestamp
+          };
+        }
+
+        if (action.payload.csatBotExpiryTimestamp) {
+          updObj.expiryTimestamps.csatBot = {
+            $set: action.payload.csatBotExpiryTimestamp
+          };
+        }
+
+        if (action.payload.hsSessionId) {
+          updObj.hsSessionId = {
+            $set: action.payload.hsSessionId
+          };
+        }
+
+        return update(state, updObj);
 
       case ACTION_TYPES.USER_REPLY_REQUEST:
         const userReplyRequestUpdateObj = {
@@ -590,6 +620,17 @@ define("reducers/appState", [
       case ACTION_TYPES.PUSH_TOKEN_SYNC_SUCCESS:
         return update(state, {
           isPushTokenSynced: {$set: action.payload}
+        });
+
+      case ACTION_TYPES.WS_CONFIG_SUCCESS:
+        return update(state, {
+          wsConfig: {$set: action.payload},
+          subscribedToLiveUpdates: {$set: true}
+        });
+
+      case ACTION_TYPES.ISSUE_INACTIVE:
+        return update(state, {
+          subscribedToLiveUpdates: {$set: false}
         });
 
       default:

@@ -21,36 +21,36 @@ define("helpers/liveUpdates", [
       STOP: "stop"
     };
 
-  let subscribedToLiveUpdates = false,
-    agentActivityListener = null,
+  let agentActivityListener = null,
     agentActivityTimer = null;
 
   /**
    * Opens a new web socket connection.
    * Do nothing if web socket connection is already opened.
+   * @param {Object} callbacks - Object containing all the callbacks
+   * @param {boolean} subscribedToLiveUpdates - If true, then ws connection is open
+   * and the app is subcribed to live updates
+   * @param {Function} callbacks.onWsConfigFromBackend - Callback function to dispatch
+   * ws config success action
    */
-  const openWsConnection = () => {
+  const openWsConnection = (subscribedToLiveUpdates, callbacks) => {
     if (subscribedToLiveUpdates) {
       return;
     }
 
-    const {platformId, domain} = store.getState().appState;
+    xhrHelpers.getWsConfig({
+      onGetWsConfig: ({endpoint, token}) => {
+        const {
+          platformId,
+          domain,
+          hsSessionId,
+          featuresEnabled: {authorPresenceDetectionIsEnabled}
+        } = store.getState().appState;
 
-    xhr({
-      route: routes.getWsConfig(domain),
-      headers: xhrHelpers.getCommonHeaders(),
-      data: {
-        "platform-id": platformId
+        const wsRoute = routes.webSocket({domain, platformId, endpoint, token, hsSessionId});
+        liveUpdatesUtil.init(wsRoute, authorPresenceDetectionIsEnabled);
       },
-      onSuccess: (response) => {
-        subscribedToLiveUpdates = true;
-
-        const token = encodeURIComponent(response.token),
-          {endpoint} = response;
-
-        const wsRoute = routes.webSocket(domain, platformId, endpoint, token);
-        liveUpdatesUtil.init(wsRoute);
-      }
+      onWsConfigFromBackend: callbacks.onWsConfigFromBackend
     });
   };
 

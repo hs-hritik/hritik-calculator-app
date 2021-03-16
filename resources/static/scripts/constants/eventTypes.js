@@ -51,6 +51,7 @@ define("constants/eventTypes", function() {
     CMD_SET_DISABLE_PFI: "cmd-set-disable-pfi",
     CMD_SET_ENABLE_PFI: "cmd-set-enable-pfi",
     CMD_TOGGLE_POLLER_STATUS: "cmd-toggle-poller-status",
-    CMD_GET_CHAT_HEADER_HEIGHT: "cmd-get-chat-header-height"
+    CMD_GET_CHAT_HEADER_HEIGHT: "cmd-get-chat-header-height",
+    CMD_TOGGLE_AUTHOR_PRESENCE_STATUS: "cmd-toggle-author-presence-status"
   };
 });

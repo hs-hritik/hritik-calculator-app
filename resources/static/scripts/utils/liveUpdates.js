@@ -20,11 +20,16 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     PING: 107,
     PONG: 109
   };
+  // Ref: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
+  const WEBSOCKET_NORMAL_CLOSURE_CODE = 1000;
+  const WEBSOCKET_NORMAL_CLOSURE_REASON = "normal_closure";
 
   let connection, lastMsgId, pingChecker, wsEndpoint;
   let connected = false,
     subscribedTopics = [],
-    buffer = [];
+    buffer = [],
+    // PONGs are sent in reply to PINGs based on this flag
+    authorPresenceDetectionIsEnabled = false;
 
   // Make sure topics is an array
   const prepareTopics = (topics) => {
@@ -64,7 +69,8 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     };
   })();
 
-  const init = (wsRoute) => {
+  const init = (wsRoute, authorPresenceIsEnabled) => {
+    authorPresenceDetectionIsEnabled = authorPresenceIsEnabled;
     wsEndpoint = wsRoute;
     open();
   };
@@ -114,7 +120,9 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
           break;
 
         case DIRI_V1.PING:
-          connection.send(JSON.stringify([DIRI_V1.PONG]));
+          if (authorPresenceDetectionIsEnabled) {
+            connection.send(JSON.stringify([DIRI_V1.PONG]));
+          }
           nextPing = (data[1] + 1) * 1000; // One extra second for buffer
           pingCheckerUpdate(nextPing);
           break;
@@ -132,14 +140,14 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
       }
     };
 
-    connection.onclose = () => {
+    connection.onclose = (ev) => {
       connection = null;
       connected = false;
 
       if (smartRetry.getRetryCount() > 4) {
         pubsub.fire("internet:disconnected:maybe");
       }
-      if (!smartRetry.hasRetryEnded()) {
+      if (!smartRetry.hasRetryEnded() && ev.reason !== WEBSOCKET_NORMAL_CLOSURE_REASON) {
         smartRetry.retry(open);
       } else {
         pubsub.fire("internet:disconnected");
@@ -185,11 +193,28 @@ define("utils/liveUpdates", ["gunpowder/utils/pubsub"], function(pubsub) {
     }
   };
 
+  const close = () => {
+    if (connection) {
+      connection.close(WEBSOCKET_NORMAL_CLOSURE_CODE, WEBSOCKET_NORMAL_CLOSURE_REASON);
+    }
+  };
+
+  /**
+   * Updates the local `authorPresenceDetectionIsEnabled` variable with the boolean of
+   * whether is author is online or not.
+   * @param {Boolean} authorIsOnline - If true, then the author(end user) is online
+   */
+  const toggleAuthorPresenceDetection = (authorIsOnline) => {
+    authorPresenceDetectionIsEnabled = authorIsOnline;
+  };
+
   return {
     init,
     open,
     subscribe,
     reconnect,
-    unsubscribe
+    unsubscribe,
+    close,
+    toggleAuthorPresenceDetection
   };
 });

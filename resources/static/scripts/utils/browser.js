@@ -76,13 +76,24 @@ define("utils/browser", function() {
 
   /**
    * Return iOS version
+   * Return iOS version
+   * From the iOS 13 version, the iOS version is not available in userAgent.
+   * The computation logic to find the iOS version throws an error.
+   * Add try-catch to capture the error and send the iOS version 13 from
+   * which the ios version is not available in userAgent
+   * @TODO - Fix this function to return the correct versions for 13 and above
+   * JIRA - https://helpshift.atlassian.net/browse/FRON-5642
    */
   const getIosVersion = () => {
-    return navigator.userAgent
-      .match(/OS [\d_]+/i)[0]
-      .substr(3)
-      .split("_")
-      .map((n) => parseInt(n, 10))[0];
+    try {
+      return navigator.userAgent
+        .match(/OS [\d_]+/i)[0]
+        .substr(3)
+        .split("_")
+        .map((n) => parseInt(n, 10))[0];
+    } catch (err) {
+      return 13;
+    }
   };
 
   return {
