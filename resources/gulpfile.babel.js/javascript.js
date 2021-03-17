@@ -59,19 +59,11 @@ const PATHS = {
   ENV_PATH: {
     EC2: {
       SOURCE: {
-        ROOT: [
-          "dist/ec2/**/*.*",
-          "!dist/ec2/fonts/**/*.*",
-          "!dist/ec2/web/**/*.*",
-          "!dist/ec2/android/**/*.*",
-          "!dist/ec2/ios/**/*.*"
-        ],
         ANDROID: ["dist/ec2/android/**/*.*", "!dist/ec2/android/fonts/**/*.*"],
         IOS: ["dist/ec2/ios/**/*.*", "!dist/ec2/ios/fonts/**/*.*"],
         WEB: ["dist/ec2/web/**/*.*", "!dist/ec2/web/fonts/**/*.*"]
       },
       DEST: {
-        ROOT: "dist/ec2/",
         ANDROID: "dist/ec2/android/",
         IOS: "dist/ec2/ios/",
         WEB: "dist/ec2/web/"
@@ -85,19 +77,11 @@ const PATHS = {
     },
     LOCALSHIVA: {
       SOURCE: {
-        ROOT: [
-          "dist/localshiva/**/*.*",
-          "!dist/localshiva/fonts/**/*.*",
-          "!dist/localshiva/web/**/*.*",
-          "!dist/localshiva/android/**/*.*",
-          "!dist/localshiva/ios/**/*.*"
-        ],
         ANDROID: ["dist/localshiva/android/**/*.*", "!dist/localshiva/android/fonts/**/*.*"],
         IOS: ["dist/localshiva/ios/**/*.*", "!dist/localshiva/ios/fonts/**/*.*"],
         WEB: ["dist/localshiva/web/**/*.*", "!dist/localshiva/web/fonts/**/*.*"]
       },
       DEST: {
-        ROOT: "dist/localshiva/",
         ANDROID: "dist/localshiva/android/",
         IOS: "dist/localshiva/ios/",
         WEB: "dist/localshiva/web/"
@@ -156,13 +140,6 @@ const PATHS = {
   // Environment specific SRI related paths
   SRI: {
     EC2: {
-      ROOT: {
-        SOURCE: {
-          APP: "dist/ec2/scripts/app-min.js",
-          LIBS: "dist/ec2/libs/libs-min.js"
-        },
-        DEST: "dist/ec2/html/index.html"
-      },
       WEB: {
         SOURCE: {
           APP: "dist/ec2/web/scripts/app-min.js",
@@ -193,13 +170,6 @@ const PATHS = {
       DEST: "dist/azure/html/index.html"
     },
     LOCALSHIVA: {
-      ROOT: {
-        SOURCE: {
-          APP: "dist/localshiva/scripts/app-min.js",
-          LIBS: "dist/localshiva/libs/libs-min.js"
-        },
-        DEST: "dist/localshiva/html/index.html"
-      },
       WEB: {
         SOURCE: {
           APP: "dist/localshiva/web/scripts/app-min.js",
@@ -290,8 +260,7 @@ integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
 const PLATFORM = {
   ANDROID: "ANDROID",
   IOS: "IOS",
-  WEB: "WEB",
-  ROOT: "ROOT"
+  WEB: "WEB"
 };
 
 const CLOUD = {
@@ -362,7 +331,11 @@ const getBundleHash = (bundlePath) => {
  * Replace env specific template strings with given values
  */
 const replaceEnvString = ({platform, cloud}) => {
-  const platformPath = platform === PLATFORM.ROOT ? "" : "/" + platform.toLowerCase();
+  let platformPath = "";
+
+  if (platform !== PLATFORM.WEB) {
+    platformPath = "/" + platform.toLowerCase();
+  }
 
   return gulp
     .src(PATHS.ENV_PATH[cloud].SOURCE[platform])
@@ -392,9 +365,6 @@ const replaceEnvString = ({platform, cloud}) => {
 const buildEc2Ios = () => replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.EC2});
 
 const buildEc2Android = () => replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2});
-
-// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
-const buildEc2Root = () => replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.EC2});
 
 const buildEc2Web = () => replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
@@ -432,10 +402,6 @@ const buildLocalshivaIos = () =>
 
 const buildLocalshivaAndroid = () =>
   replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
-
-// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
-const buildLocalshivaRoot = () =>
-  replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.LOCALSHIVA});
 
 const buildLocalshivaWeb = () =>
   replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.LOCALSHIVA});
@@ -487,8 +453,6 @@ const sriTask = () => {
   } = PATHS;
 
   const DEST_PATHS = [
-    EC2.ROOT.SOURCE.APP,
-    EC2.ROOT.SOURCE.LIBS,
     EC2.WEB.SOURCE.APP,
     EC2.WEB.SOURCE.LIBS,
     EC2.ANDROID.SOURCE.APP,
@@ -497,8 +461,6 @@ const sriTask = () => {
     EC2.IOS.SOURCE.LIBS,
     AZURE.SOURCE.APP,
     AZURE.SOURCE.LIBS,
-    LOCALSHIVA.ROOT.SOURCE.APP,
-    LOCALSHIVA.ROOT.SOURCE.LIBS,
     LOCALSHIVA.WEB.SOURCE.APP,
     LOCALSHIVA.WEB.SOURCE.LIBS,
     LOCALSHIVA.ANDROID.SOURCE.APP,
@@ -606,7 +568,7 @@ const updateSriListTask = (done) => {
 };
 
 const updateSriTask = ({platform, cloud}) => {
-  const platformPath = platform === PLATFORM.ROOT ? "" : "/" + platform.toLowerCase();
+  const platformPath = "/" + platform.toLowerCase();
   const cloudPath = "/" + cloud.toLowerCase();
 
   return gulp
@@ -625,9 +587,6 @@ const updateSriTask = ({platform, cloud}) => {
 };
 
 const updateEc2AndroidSri = () => updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2});
-
-// @TODO - SDKX GA Release - Remove this function after GA release
-const updateEc2RootSri = () => updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.EC2});
 
 const updateEc2IosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.EC2});
 
@@ -650,10 +609,6 @@ const updateAzureSriTask = () =>
 
 const updateLocalshivaAndroidSri = () =>
   updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
-
-// @TODO - SDKX GA Release - Remove this function after GA release
-const updateLocalshivaRootSri = () =>
-  updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.LOCALSHIVA});
 
 const updateLocalshivaIosSri = () =>
   updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.LOCALSHIVA});
@@ -733,23 +688,16 @@ exports.cleanUnwantedJs = cleanUnwantedJsTask;
 exports.minifyExtJs = minifyExtJsTask;
 exports.updateLocalshivaSri = gulp.parallel(
   updateLocalshivaAndroidSri,
-  updateLocalshivaRootSri,
   updateLocalshivaIosSri,
   updateLocalshivaWebSri
 );
 exports.updateAzureSri = updateAzureSriTask;
-exports.updateEc2Sri = gulp.parallel(
-  updateEc2AndroidSri,
-  updateEc2RootSri,
-  updateEc2IosSri,
-  updateEc2WebSri
-);
+exports.updateEc2Sri = gulp.parallel(updateEc2AndroidSri, updateEc2IosSri, updateEc2WebSri);
 exports.updateSriList = updateSriListTask;
 exports.bundleLibs = bundleLibsTask;
 exports.buildLocalshiva = gulp.parallel(
   buildLocalshivaIos,
   buildLocalshivaAndroid,
-  buildLocalshivaRoot,
   buildLocalshivaWeb,
   generateLocalshivaAndroidWhitelistedMappingFile
 );
@@ -757,7 +705,6 @@ exports.buildAzure = buildAzureTask;
 exports.compileScriptsProd = compileScriptsProdTask;
 exports.buildEc2 = gulp.parallel(
   buildEc2Android,
-  buildEc2Root,
   buildEc2Ios,
   buildEc2Web,
   generateEc2AndroidWhitelistedMappingFile
