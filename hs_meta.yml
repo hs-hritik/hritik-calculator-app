@@ -25,7 +25,7 @@ release:
     - file: resources/static/scripts/constants/routes.js
       pattern: 'v=\d+\.\d+\.\d+'
       replacement: 'v={{ version }}'
-      num_expected: 1
+      num_expected: 2
 
     - file: resources/static/scripts/external/webChat.js
       pattern: 'v=\d+\.\d+\.\d+'

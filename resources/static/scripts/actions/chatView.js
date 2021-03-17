@@ -35,7 +35,8 @@ define("actions/chatView", [
   "extras/accessibility",
   "utils/debounceAction",
   "constants/uiConfig",
-  "utils/color"
+  "utils/color",
+  "utils/liveUpdates"
 ], function(
   store,
   ACTION_TYPES,
@@ -67,7 +68,8 @@ define("actions/chatView", [
   ax,
   debounceAction,
   UI_CONFIG_CONSTANTS,
-  colorUtils
+  colorUtils,
+  liveUpdateUtils
 ) {
   "use strict";
 
@@ -364,22 +366,44 @@ define("actions/chatView", [
    * Handle agent live updates
    */
   const handleAgentLiveUpdates = () => {
-    // Do not open websocket connection if
-    // a] Polling is disabled i.e. when conversation is over, user is on post
-    //    chat features like resolution question, csat etc
-    // b] Agent typing activity is already subscribed
-    if (!pollingEnabled || agentActivitySubscribed) {
-      return;
-    }
+    return (dispatch, getState) => {
+      // Do not open websocket connection if
+      // a] Polling is disabled i.e. when conversation is over, user is on post
+      //    chat features like resolution question, csat etc
+      // b] Agent typing activity is already subscribed
+      if (!pollingEnabled || agentActivitySubscribed) {
+        // Close the websocket connection if the issue is not in active state
+        if (!pollingEnabled) {
+          dispatch({
+            type: ACTION_TYPES.ISSUE_INACTIVE
+          });
+          liveUpdateUtils.close();
+          agentActivitySubscribed = false;
+        }
 
-    liveUpdatesHelpers.openWsConnection();
-    // Since the ws connection is asynchronous, this call to subscribe
-    // to agent activity will go to the buffer and actual subscription
-    // will take place when the web socket connection is completed.
-    liveUpdatesHelpers.subscribeAgentActivityTopic();
-    liveUpdatesHelpers.attachAgentActivityListener();
+        return;
+      }
 
-    agentActivitySubscribed = true;
+      const {
+        appState: {subscribedToLiveUpdates}
+      } = getState();
+
+      liveUpdatesHelpers.openWsConnection(subscribedToLiveUpdates, {
+        onWsConfigFromBackend: (wsConfig) => {
+          dispatch({
+            type: ACTION_TYPES.WS_CONFIG_SUCCESS,
+            payload: wsConfig
+          });
+        }
+      });
+      // Since the ws connection is asynchronous, this call to subscribe
+      // to agent activity will go to the buffer and actual subscription
+      // will take place when the web socket connection is completed.
+      liveUpdatesHelpers.subscribeAgentActivityTopic();
+      liveUpdatesHelpers.attachAgentActivityListener();
+
+      agentActivitySubscribed = true;
+    };
   };
 
   /**
@@ -1769,7 +1793,12 @@ define("actions/chatView", [
             dispatch(chatViewActionCreators.clearErrors());
           }
 
-          const {has_older_messages: hasOlderMsgs, issues = [], cursor} = response;
+          const {
+            has_older_messages: hasOlderMsgs,
+            issues = [],
+            cursor,
+            hs_session_id: hsSessionId
+          } = response;
 
           if (!issues.length) {
             // If cursor is empty then only increment empty poller count.
@@ -1827,10 +1856,10 @@ define("actions/chatView", [
           // Refactor this to event-based actions and dispatch the success action
           // in every success callback with updating the state based on whether a
           // value is present or not.
-          if (resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
+          if (hsSessionId || resolutionQuestionExpiryTimestamp || csatBotExpiryTimestamp) {
             dispatch({
               type: ACTION_TYPES.GET_CONVERSATION_UPDATES_SUCCESS,
-              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp}
+              payload: {resolutionQuestionExpiryTimestamp, csatBotExpiryTimestamp, hsSessionId}
             });
           }
 
@@ -1883,7 +1912,7 @@ define("actions/chatView", [
           );
 
           if (!isPreIssue) {
-            handleAgentLiveUpdates();
+            dispatch(handleAgentLiveUpdates());
           }
 
           const messagesLength = messages.length;
@@ -2392,6 +2421,22 @@ define("actions/chatView", [
           onSuccess: () => {
             handleIssueReopen(issueState);
             audioHelpers.playSend();
+
+            const {
+              appState: {subscribedToLiveUpdates},
+              chatView: {activeFooter}
+            } = getState();
+
+            if (activeFooter === ACTIVE_FOOTER.SOLUTION_REJECTED) {
+              liveUpdatesHelpers.openWsConnection(subscribedToLiveUpdates, {
+                onWsConfigFromBackend: (wsConfig) => {
+                  dispatch({
+                    type: ACTION_TYPES.WS_CONFIG_SUCCESS,
+                    payload: wsConfig
+                  });
+                }
+              });
+            }
           }
         });
       } else {

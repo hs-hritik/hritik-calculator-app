@@ -1,0 +1,5 @@
+Branches:
+feature/log-uiconfig-revert
+
+Changelog:
+Revert "Log helpshiftConfig.uiConfig for feature analysis"

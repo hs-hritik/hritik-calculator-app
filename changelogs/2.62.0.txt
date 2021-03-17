@@ -1,0 +1,17 @@
+Branches:
+feature/end-user-presence-detection
+
+Changelog:
+Add API to toggle author presence from Lite SDK
+Fix reopening of ws connection when the issue gets reopened
+Detect end users on the basis of visibility change event
+Detect end users on the basis config feature enabled flag
+Not add hs_session_id in websocket route if it's undefined
+Reopen ws connection if the issue is reopened
+Close the websocket connection when the issue is not active
+Add hs_session_id in the query params of webSocket route
+Store hs_session_id in app state reducer
+Not fire ws-config xhr if it is already present in app state
+Rehydrate wsConfig in appState
+Store wsConfig in state and local storage
+Fire an action on wsconfig xhr success

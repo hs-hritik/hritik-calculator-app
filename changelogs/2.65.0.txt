@@ -1,0 +1,17 @@
+Branches:
+feature/sdkx-release-process
+
+Changelog:
+Revert Azure changes
+Add whitelist url map for android
+Generate platform type parameterized hesticon files path
+Generate platform type parameterized CSS route
+Generate platform type parameterized web SDK url
+Add gulp tasks to generate sri for localshiva android, ios & web
+Add gulp tasks to generate sri for azure android, ios & web
+Add gulp tasks to generate sri for ec2 android, ios & web
+Update Localshiva task to handle environments for android, iOS & web
+Update Azure task to handle environments for android, iOS & web
+Update EC2 task to handle environments for android, iOS & web
+Update ec2, azure & localshiva task to copy resources from build dir
+Add subdirectories inside ec2, azure, and localshiva subdirectory
