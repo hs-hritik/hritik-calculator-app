@@ -16,8 +16,9 @@
   const urlParts = WEB_CHAT_ROOT.split("://"),
     PROTOCOL = `${urlParts[0]}://`,
     PLAT_ID = win.helpshiftConfig.platformId,
-    HOST = urlParts[1],
-    PATH = "/html/index.html?v=2.64.0";
+    HOST = urlParts[1].split("/")[0],
+    platform = urlParts[1].split("/")[1],
+    PATH = "/html/index.html?v=2.65.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c
@@ -36,7 +37,13 @@
 
   // @TODO: Use `&` or `?` appropriately. PATH already contains hard-coded `?` so
   // it's safe to use `&` here but this must be made generic when `?` is removed.
-  const WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}&${PARENT_ORIGIN_QUERY_STRING}`;
+  let WEB_SDK_URL;
+
+  if (platform) {
+    WEB_SDK_URL = `${WEB_SDK_DOMAIN}/${platform}${PATH}&${PARENT_ORIGIN_QUERY_STRING}`;
+  } else {
+    WEB_SDK_URL = `${WEB_SDK_DOMAIN}${PATH}&${PARENT_ORIGIN_QUERY_STRING}`;
+  }
 
   const WIDGET_POSITIONS = {
     TOP_LEFT: "top-left",

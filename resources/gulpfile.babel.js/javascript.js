@@ -13,6 +13,7 @@ const fs = require("fs");
 const uglify = require("gulp-uglify");
 const cache = require("gulp-cached");
 const gulpIf = require("gulp-if");
+const path = require("path");
 
 /**
  * Maximum hashes to add to the integrity attribute of script tag.
@@ -33,7 +34,7 @@ const MAX_SRI_LIMIT_PER_RESOURCE = 10;
 /**
  * Web Chat version
  */
-const WEB_CHAT_VERSION = "2.64.0";
+const WEB_CHAT_VERSION = "2.65.0";
 
 /**
  * Name of app bundle
@@ -55,12 +56,56 @@ const PATHS = {
   libsDestDev: "localhost/libs/",
 
   // Env specific paths
-  ec2Source: ["dist/ec2/**/*.*", "!dist/ec2/fonts/**/*.*"],
-  ec2Dest: "dist/ec2/",
-  azureSource: ["dist/azure/**/*.*", "!dist/azure/fonts/**/*.*"],
-  azureDest: "dist/azure/",
-  localshivaSource: ["dist/localshiva/**/*.*", "!dist/localshiva/fonts/**/*.*"],
-  localshivaDest: "dist/localshiva/",
+  ENV_PATH: {
+    EC2: {
+      SOURCE: {
+        ROOT: [
+          "dist/ec2/**/*.*",
+          "!dist/ec2/fonts/**/*.*",
+          "!dist/ec2/web/**/*.*",
+          "!dist/ec2/android/**/*.*",
+          "!dist/ec2/ios/**/*.*"
+        ],
+        ANDROID: ["dist/ec2/android/**/*.*", "!dist/ec2/android/fonts/**/*.*"],
+        IOS: ["dist/ec2/ios/**/*.*", "!dist/ec2/ios/fonts/**/*.*"],
+        WEB: ["dist/ec2/web/**/*.*", "!dist/ec2/web/fonts/**/*.*"]
+      },
+      DEST: {
+        ROOT: "dist/ec2/",
+        ANDROID: "dist/ec2/android/",
+        IOS: "dist/ec2/ios/",
+        WEB: "dist/ec2/web/"
+      },
+      WEB_CHAT_ROOT: "https://webchat.helpshift.com",
+      API_ROOT: "https://api.helpshift.com"
+    },
+    AZURE: {
+      SOURCE: ["dist/azure/**/*.*", "!dist/azure/fonts/**/*.*"],
+      DEST: "dist/azure/"
+    },
+    LOCALSHIVA: {
+      SOURCE: {
+        ROOT: [
+          "dist/localshiva/**/*.*",
+          "!dist/localshiva/fonts/**/*.*",
+          "!dist/localshiva/web/**/*.*",
+          "!dist/localshiva/android/**/*.*",
+          "!dist/localshiva/ios/**/*.*"
+        ],
+        ANDROID: ["dist/localshiva/android/**/*.*", "!dist/localshiva/android/fonts/**/*.*"],
+        IOS: ["dist/localshiva/ios/**/*.*", "!dist/localshiva/ios/fonts/**/*.*"],
+        WEB: ["dist/localshiva/web/**/*.*", "!dist/localshiva/web/fonts/**/*.*"]
+      },
+      DEST: {
+        ROOT: "dist/localshiva/",
+        ANDROID: "dist/localshiva/android/",
+        IOS: "dist/localshiva/ios/",
+        WEB: "dist/localshiva/web/"
+      },
+      WEB_CHAT_ROOT: "https://webchat.helpshift.mobi",
+      API_ROOT: "https://api.helpshift.mobi"
+    }
+  },
   localhostSource: ["localhost/**/*.*", "!localhost/fonts/**/*.*"],
   localhostDest: "localhost/",
 
@@ -109,33 +154,91 @@ const PATHS = {
   tempSri: "./sri.json",
 
   // Environment specific SRI related paths
-  sri: {
-    ec2: {
-      source: {
-        app: "dist/ec2/scripts/app-min.js",
-        libs: "dist/ec2/libs/libs-min.js"
+  SRI: {
+    EC2: {
+      ROOT: {
+        SOURCE: {
+          APP: "dist/ec2/scripts/app-min.js",
+          LIBS: "dist/ec2/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/html/index.html"
       },
-      dest: "dist/ec2/html/index.html"
+      WEB: {
+        SOURCE: {
+          APP: "dist/ec2/web/scripts/app-min.js",
+          LIBS: "dist/ec2/web/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/web/html/index.html"
+      },
+      ANDROID: {
+        SOURCE: {
+          APP: "dist/ec2/android/scripts/app-min.js",
+          LIBS: "dist/ec2/android/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/android/html/index.html"
+      },
+      IOS: {
+        SOURCE: {
+          APP: "dist/ec2/ios/scripts/app-min.js",
+          LIBS: "dist/ec2/ios/libs/libs-min.js"
+        },
+        DEST: "dist/ec2/ios/html/index.html"
+      }
     },
-    azure: {
-      source: {
-        app: "dist/azure/scripts/app-min.js",
-        libs: "dist/azure/libs/libs-min.js"
+    AZURE: {
+      SOURCE: {
+        APP: "dist/azure/scripts/app-min.js",
+        LIBS: "dist/azure/libs/libs-min.js"
       },
-      dest: "dist/azure/html/index.html"
+      DEST: "dist/azure/html/index.html"
     },
-    localshiva: {
-      source: {
-        app: "dist/localshiva/scripts/app-min.js",
-        libs: "dist/localshiva/libs/libs-min.js"
+    LOCALSHIVA: {
+      ROOT: {
+        SOURCE: {
+          APP: "dist/localshiva/scripts/app-min.js",
+          LIBS: "dist/localshiva/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/html/index.html"
       },
-      dest: "dist/localshiva/html/index.html"
+      WEB: {
+        SOURCE: {
+          APP: "dist/localshiva/web/scripts/app-min.js",
+          LIBS: "dist/localshiva/web/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/web/html/index.html"
+      },
+      ANDROID: {
+        SOURCE: {
+          APP: "dist/localshiva/android/scripts/app-min.js",
+          LIBS: "dist/localshiva/android/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/android/html/index.html"
+      },
+      IOS: {
+        SOURCE: {
+          APP: "dist/localshiva/ios/scripts/app-min.js",
+          LIBS: "dist/localshiva/ios/libs/libs-min.js"
+        },
+        DEST: "dist/localshiva/ios/html/index.html"
+      }
     }
   },
 
   externalJsSrc: "dist/scripts/external/*.js",
   externalJsDest: "dist/scripts/external/"
 };
+
+const URL_PATHS = {
+  WEBCHAT: "/{{platform}}/webChat.js",
+  APP_MIN: "/{{platform}}/scripts/app-min.js",
+  LIB_MIN: "/{{platform}}/libs/libs-min.js",
+  INDEX_HTML: "/{{platform}}/html/index.html",
+  STYLE: "/{{platform}}/css/style.css",
+  FONT: "/{{platform}}/fonts/hesticons/",
+  AVATAR: "/assets.helpshift{{domain}}/"
+};
+
+const ANDROID_STATIC_FILE_CACHE_TIME = 86400000;
 
 /**
  * Paths used in templating
@@ -166,7 +269,9 @@ const TEMPLATE_PATHS = {
       EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
 integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
       AZURE: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}"\
-></script>`
+></script>`,
+      LOCALSHIVA: `<script src="{{ENV_WEB_CHAT_ROOT}}/libs/libs-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
     }
   },
   APP: {
@@ -175,9 +280,24 @@ integrity="{{LIBS_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
       EC2: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
 integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`,
       AZURE: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}"\
-></script>`
+></script>`,
+      LOCALSHIVA: `<script src="{{ENV_WEB_CHAT_ROOT}}/scripts/app-min.js?v=${WEB_CHAT_VERSION}" \
+integrity="{{APP_BUNDLE_HASH}}" crossorigin="anonymous"></script>`
     }
   }
+};
+
+const PLATFORM = {
+  ANDROID: "ANDROID",
+  IOS: "IOS",
+  WEB: "WEB",
+  ROOT: "ROOT"
+};
+
+const CLOUD = {
+  EC2: "EC2",
+  AZURE: "AZURE",
+  LOCALSHIVA: "LOCALSHIVA"
 };
 
 /**
@@ -230,42 +350,53 @@ const compileScriptsProdTask = (done) =>
 /**
  * Returns a string by combining the latest three SRI hashes corresponding
  * to a given path from the hs-sri.json file.
- * @param {String} path - bundle path from the dist directory
+ * @param {String} bundlePath - bundle path from the dist directory
  * @returns {String} A string of latest three hashes.
  */
-const getBundleHash = (path) => {
+const getBundleHash = (bundlePath) => {
   const hsSri = require(PATHS.requirePath.hsSri);
-  return hsSri[path].slice(0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join(" ");
+  return hsSri[bundlePath].slice(0, MAX_SRI_LIMIT_PER_INTEGRITY_ATTRIBUTE).join(" ");
 };
 
 /**
- * Production task.
- * Replace EC2 specific template strings with given values
+ * Replace env specific template strings with given values
  */
-const buildEc2Task = () =>
-  gulp
-    .src(PATHS.ec2Source)
+const replaceEnvString = ({platform, cloud}) => {
+  const platformPath = platform === PLATFORM.ROOT ? "" : "/" + platform.toLowerCase();
+
+  return gulp
+    .src(PATHS.ENV_PATH[cloud].SOURCE[platform])
     .pipe(
-      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
+      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD[cloud], {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
+      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD[cloud], {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.com", {
+      replace("{{ENV_WEB_CHAT_ROOT}}", PATHS.ENV_PATH[cloud].WEB_CHAT_ROOT + platformPath, {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{ENV_API_ROOT}}", "https://api.helpshift.com", {
+      replace("{{ENV_API_ROOT}}", PATHS.ENV_PATH[cloud].API_ROOT, {
         skipBinary: true
       })
     )
-    .pipe(gulp.dest(PATHS.ec2Dest));
+    .pipe(gulp.dest(PATHS.ENV_PATH[cloud].DEST[platform]));
+};
+
+const buildEc2Ios = () => replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.EC2});
+
+const buildEc2Android = () => replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2});
+
+// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
+const buildEc2Root = () => replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.EC2});
+
+const buildEc2Web = () => replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
 /**
  * Production task.
@@ -273,7 +404,7 @@ const buildEc2Task = () =>
  */
 const buildAzureTask = () =>
   gulp
-    .src(PATHS.azureSource)
+    .src(PATHS.ENV_PATH.AZURE.SOURCE)
     .pipe(
       replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.AZURE, {
         skipBinary: true
@@ -294,36 +425,20 @@ const buildAzureTask = () =>
         skipBinary: true
       })
     )
-    .pipe(gulp.dest(PATHS.azureDest));
+    .pipe(gulp.dest(PATHS.ENV_PATH.AZURE.DEST));
 
-/**
- * Production task.
- * Replace localshiva (staging) specific template strings with given values
- */
-const buildLocalshivaTask = () =>
-  gulp
-    .src(PATHS.localshivaSource)
-    .pipe(
-      replace("{{TEMPLATES_LIB_PATH}}", TEMPLATE_PATHS.LIBS.PROD.EC2, {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{TEMPLATES_APP_PATH}}", TEMPLATE_PATHS.APP.PROD.EC2, {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{ENV_WEB_CHAT_ROOT}}", "https://webchat.helpshift.mobi", {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{ENV_API_ROOT}}", "https://api.helpshift.mobi", {
-        skipBinary: true
-      })
-    )
-    .pipe(gulp.dest(PATHS.localshivaDest));
+const buildLocalshivaIos = () =>
+  replaceEnvString({platform: PLATFORM.IOS, cloud: CLOUD.LOCALSHIVA});
+
+const buildLocalshivaAndroid = () =>
+  replaceEnvString({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
+
+// @TODO - SDKX GA Release - Remove this function after GA release as web chat serves from /web dir
+const buildLocalshivaRoot = () =>
+  replaceEnvString({platform: PLATFORM.ROOT, cloud: CLOUD.LOCALSHIVA});
+
+const buildLocalshivaWeb = () =>
+  replaceEnvString({platform: PLATFORM.WEB, cloud: CLOUD.LOCALSHIVA});
 
 /**
  * Copy libs from source dir (workspace) to destination dir (server)
@@ -368,16 +483,28 @@ const cleanUnwantedJsTask = () => del(PATHS.unwantedAppSource);
  */
 const sriTask = () => {
   const {
-    sri: {ec2, azure, localshiva}
+    SRI: {EC2, AZURE, LOCALSHIVA}
   } = PATHS;
 
   const DEST_PATHS = [
-    ec2.source.app,
-    ec2.source.libs,
-    azure.source.app,
-    azure.source.libs,
-    localshiva.source.app,
-    localshiva.source.libs
+    EC2.ROOT.SOURCE.APP,
+    EC2.ROOT.SOURCE.LIBS,
+    EC2.WEB.SOURCE.APP,
+    EC2.WEB.SOURCE.LIBS,
+    EC2.ANDROID.SOURCE.APP,
+    EC2.ANDROID.SOURCE.LIBS,
+    EC2.IOS.SOURCE.APP,
+    EC2.IOS.SOURCE.LIBS,
+    AZURE.SOURCE.APP,
+    AZURE.SOURCE.LIBS,
+    LOCALSHIVA.ROOT.SOURCE.APP,
+    LOCALSHIVA.ROOT.SOURCE.LIBS,
+    LOCALSHIVA.WEB.SOURCE.APP,
+    LOCALSHIVA.WEB.SOURCE.LIBS,
+    LOCALSHIVA.ANDROID.SOURCE.APP,
+    LOCALSHIVA.ANDROID.SOURCE.LIBS,
+    LOCALSHIVA.IOS.SOURCE.APP,
+    LOCALSHIVA.IOS.SOURCE.LIBS
   ];
 
   return gulp
@@ -390,6 +517,46 @@ const sriTask = () => {
     .pipe(gulp.dest("."))
     .pipe(print(() => "Temporary resources/sri.json file generated"));
 };
+
+/**
+ * This task generates whitelist static resources url mapping
+ * that we will use to download and cache the mentioned resources in android
+ * When user first launches the chat screen, android downloads these
+ * resources by intercepting https calls from webview.
+ * On next launch of chat screen, it will serve resources from local
+ * when intercepting the corresponding https calls.
+ */
+const generateMappingFileTask = ({platform, cloud}, done) => {
+  const domain = cloud === CLOUD.LOCALSHIVA ? ".mobi" : ".com";
+  const filePath = path.join(
+    "dist",
+    cloud.toLowerCase(),
+    platform.toLowerCase(),
+    "android-mapping.json"
+  );
+  const mapping = {
+    url_paths: [],
+    ttl: ANDROID_STATIC_FILE_CACHE_TIME
+  };
+
+  Object.keys(URL_PATHS).forEach((urlPath) => {
+    let whitelistPath = URL_PATHS[urlPath].replace("{{platform}}", platform.toLowerCase());
+    whitelistPath = whitelistPath.replace("{{domain}}", domain);
+
+    mapping.url_paths.push({
+      path: whitelistPath,
+      ttl: ANDROID_STATIC_FILE_CACHE_TIME
+    });
+  });
+
+  fs.writeFile(filePath, JSON.stringify(mapping), done);
+};
+
+const generateLocalshivaAndroidWhitelistedMappingFile = (done) =>
+  generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA}, done);
+
+const generateEc2AndroidWhitelistedMappingFile = (done) =>
+  generateMappingFileTask({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2}, done);
 
 /**
  * Task to update hs-sri.json file
@@ -438,50 +605,61 @@ const updateSriListTask = (done) => {
   });
 };
 
-const updateEc2SriTask = () =>
-  gulp
-    .src(PATHS.sri.ec2.dest)
+const updateSriTask = ({platform, cloud}) => {
+  const platformPath = platform === PLATFORM.ROOT ? "" : "/" + platform.toLowerCase();
+  const cloudPath = "/" + cloud.toLowerCase();
+
+  return gulp
+    .src(PATHS.SRI[cloud][platform].DEST)
     .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.ec2.source.libs), {
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI[cloud][platform].SOURCE.LIBS), {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.ec2.source.app), {
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI[cloud][platform].SOURCE.APP), {
         skipBinary: true
       })
     )
-    .pipe(gulp.dest("dist/ec2/html/"));
+    .pipe(gulp.dest(path.join("dist", cloudPath, platformPath, "/html/")));
+};
+
+const updateEc2AndroidSri = () => updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.EC2});
+
+// @TODO - SDKX GA Release - Remove this function after GA release
+const updateEc2RootSri = () => updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.EC2});
+
+const updateEc2IosSri = () => updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.EC2});
+
+const updateEc2WebSri = () => updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.EC2});
 
 const updateAzureSriTask = () =>
   gulp
-    .src(PATHS.sri.azure.dest)
+    .src(PATHS.SRI.AZURE.DEST)
     .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.azure.source.libs), {
+      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.AZURE.SOURCE.LIBS), {
         skipBinary: true
       })
     )
     .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.azure.source.app), {
+      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.SRI.AZURE.SOURCE.APP), {
         skipBinary: true
       })
     )
     .pipe(gulp.dest("dist/azure/html/"));
 
-const updateLocalshivaSriTask = () =>
-  gulp
-    .src(PATHS.sri.localshiva.dest)
-    .pipe(
-      replace("{{LIBS_BUNDLE_HASH}}", getBundleHash(PATHS.sri.localshiva.source.libs), {
-        skipBinary: true
-      })
-    )
-    .pipe(
-      replace("{{APP_BUNDLE_HASH}}", getBundleHash(PATHS.sri.localshiva.source.app), {
-        skipBinary: true
-      })
-    )
-    .pipe(gulp.dest("dist/localshiva/html/"));
+const updateLocalshivaAndroidSri = () =>
+  updateSriTask({platform: PLATFORM.ANDROID, cloud: CLOUD.LOCALSHIVA});
+
+// @TODO - SDKX GA Release - Remove this function after GA release
+const updateLocalshivaRootSri = () =>
+  updateSriTask({platform: PLATFORM.ROOT, cloud: CLOUD.LOCALSHIVA});
+
+const updateLocalshivaIosSri = () =>
+  updateSriTask({platform: PLATFORM.IOS, cloud: CLOUD.LOCALSHIVA});
+
+const updateLocalshivaWebSri = () =>
+  updateSriTask({platform: PLATFORM.WEB, cloud: CLOUD.LOCALSHIVA});
 
 /**
  * Babel compile JavaScript resources.
@@ -553,13 +731,35 @@ exports.copyWebchat = copyWebchatTask;
 exports.sri = sriTask;
 exports.cleanUnwantedJs = cleanUnwantedJsTask;
 exports.minifyExtJs = minifyExtJsTask;
-exports.updateLocalshivaSri = updateLocalshivaSriTask;
+exports.updateLocalshivaSri = gulp.parallel(
+  updateLocalshivaAndroidSri,
+  updateLocalshivaRootSri,
+  updateLocalshivaIosSri,
+  updateLocalshivaWebSri
+);
 exports.updateAzureSri = updateAzureSriTask;
-exports.updateEc2Sri = updateEc2SriTask;
+exports.updateEc2Sri = gulp.parallel(
+  updateEc2AndroidSri,
+  updateEc2RootSri,
+  updateEc2IosSri,
+  updateEc2WebSri
+);
 exports.updateSriList = updateSriListTask;
 exports.bundleLibs = bundleLibsTask;
-exports.buildLocalshiva = buildLocalshivaTask;
+exports.buildLocalshiva = gulp.parallel(
+  buildLocalshivaIos,
+  buildLocalshivaAndroid,
+  buildLocalshivaRoot,
+  buildLocalshivaWeb,
+  generateLocalshivaAndroidWhitelistedMappingFile
+);
 exports.buildAzure = buildAzureTask;
 exports.compileScriptsProd = compileScriptsProdTask;
-exports.buildEc2 = buildEc2Task;
+exports.buildEc2 = gulp.parallel(
+  buildEc2Android,
+  buildEc2Root,
+  buildEc2Ios,
+  buildEc2Web,
+  generateEc2AndroidWhitelistedMappingFile
+);
 exports.libs = libsTask;
