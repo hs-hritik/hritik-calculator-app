@@ -331,7 +331,11 @@ const getBundleHash = (bundlePath) => {
  * Replace env specific template strings with given values
  */
 const replaceEnvString = ({platform, cloud}) => {
-  const platformPath = "/" + platform.toLowerCase();
+  let platformPath = "";
+
+  if (platform !== PLATFORM.WEB) {
+    platformPath = "/" + platform.toLowerCase();
+  }
 
   return gulp
     .src(PATHS.ENV_PATH[cloud].SOURCE[platform])
