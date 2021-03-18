@@ -1,0 +1,6 @@
+Branches:
+feature/release-process-change-phase2
+
+Changelog:
+Fix value of ENV_WEB_CHAT_ROOT
+Remove webchat resources from the root directory of ec2 & localshiva
