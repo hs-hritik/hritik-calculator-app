@@ -34,7 +34,6 @@ exports[`ChatView should render correctly (snapshot) 1`] = `
       }
       avatarLastUpdatedTs={Object {}}
       isTyping={true}
-      issueIsCreated={true}
       messages={Array []}
       onFilesDrop={[MockFunction]}
       onFooterError={[Function]}
