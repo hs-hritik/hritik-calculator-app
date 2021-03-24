@@ -131,6 +131,7 @@ define("components/chatView", [
               onJumpBtnClick={this._onJumpBtnClick}
               onScrollMessageListToBottom={this._onScrollMessageListToBottom}
               onListPickerOptionSelect={onListPickerOptionSelect}
+              userAttachmentsAreAllowed={userAttachmentsAreAllowed}
             />
           </ErrorBoundaryWithLogging>
         </DnDWrapper>
