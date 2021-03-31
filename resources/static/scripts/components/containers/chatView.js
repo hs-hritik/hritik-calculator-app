@@ -27,7 +27,9 @@ define("components/containers/chatView", [
         appAvatarUrl,
         avatar,
         internalIssueId,
-        issueState
+        issueState,
+        fullPrivacyEnabled,
+        featuresEnabled: {userAttachments: userAttachmentsAreEnabled}
       },
       chatView: {
         messageList: messages,
@@ -84,7 +86,9 @@ define("components/containers/chatView", [
       avatarLastUpdatedTs,
       attachmentUploadIsInProgress,
       currentIssueId: internalIssueId,
-      issueState
+      issueState,
+      fullPrivacyEnabled,
+      userAttachmentsAreEnabled
     };
   };
 
