@@ -1,0 +1,6 @@
+Branches:
+feature/attachment-backlog
+
+Changelog:
+Refactor logic for showing footer attachment icon
+Fix condition for adding attachments via drag & drop
