@@ -225,10 +225,7 @@ define("components/chatViewFooter", [
       onSkipUserInput: PropTypes.func,
       onFilesChange: PropTypes.func,
       issueIsCreated: PropTypes.bool,
-      fullPrivacyEnabled: PropTypes.bool,
-      userAttachmentsEnabled: PropTypes.bool,
       onCloseConversation: PropTypes.func.isRequired,
-      botStepInProgress: PropTypes.bool.isRequired,
       onSelectStarRating: PropTypes.func,
       onUpdateStarRating: PropTypes.func,
       /**
@@ -240,7 +237,12 @@ define("components/chatViewFooter", [
       systemTyping: PropTypes.bool,
       chatWidgetBgColor: PropTypes.string,
       formBgColor: PropTypes.string,
-      onSystemType: PropTypes.func
+      onSystemType: PropTypes.func,
+
+      /**
+       * Flag that tells whether the chat prompt allows user to attach files
+       */
+      userAttachmentsAreAllowed: PropTypes.bool.isRequired
     },
     getInitialState() {
       return {
@@ -702,20 +704,11 @@ define("components/chatViewFooter", [
       }
 
       const {
-        userInput: {value},
-        issueIsCreated,
-        fullPrivacyEnabled,
-        userAttachmentsEnabled,
-        botStepInProgress
+        userInput: {value: userInputValue},
+        userAttachmentsAreAllowed
       } = this.props;
 
-      if (
-        value ||
-        !issueIsCreated ||
-        fullPrivacyEnabled ||
-        botStepInProgress ||
-        !userAttachmentsEnabled
-      ) {
+      if (userInputValue || !userAttachmentsAreAllowed) {
         return this._renderSendButton();
       }
 

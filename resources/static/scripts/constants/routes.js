@@ -19,10 +19,10 @@ define("constants/routes", function() {
     const contextIsLiteSdk = !!liteSdkConfig?.os;
 
     if (contextIsLiteSdk) {
-      return "/" + liteSdkConfig.os + "/css/style.css?v=2.66.0";
+      return "/" + liteSdkConfig.os + "/css/style.css?v=2.67.0";
     }
 
-    return "/css/style.css?v=2.66.0";
+    return "/css/style.css?v=2.67.0";
   };
 
   // @NOTE - Used to create issue out of business hours

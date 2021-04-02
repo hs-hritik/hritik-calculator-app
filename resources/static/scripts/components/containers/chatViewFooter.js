@@ -48,14 +48,10 @@ define("components/containers/chatViewFooter", [
         activeIssueId,
         issueType,
         footerIsActive,
-        fullPrivacyEnabled,
         online,
         browserIsMobile,
         attachmentsWhitelist,
-        featuresEnabled: {
-          userAttachments: userAttachmentsEnabled,
-          intents: intentsFeatureIsEnabled
-        },
+        featuresEnabled: {intents: intentsFeatureIsEnabled},
         liteSdkConfig: {os}
       },
       chatView: {
@@ -66,7 +62,6 @@ define("components/containers/chatViewFooter", [
         userIsViewingPastMessages,
         unreadMessageIds,
         error,
-        botState: {botStepInProgress},
         intents,
         userReplyXhrInProgress,
         systemTyping
@@ -116,12 +111,9 @@ define("components/containers/chatViewFooter", [
       text: text,
       footerIsActive: footerIsActive,
       userInput,
-      fullPrivacyEnabled,
       userIsViewingPastMessages,
-      userAttachmentsEnabled,
       unreadCount: unreadMessageIds.length,
       failureConfig,
-      botStepInProgress,
       browserIsMobile,
       intentsFeatureIsEnabled,
       issueType,

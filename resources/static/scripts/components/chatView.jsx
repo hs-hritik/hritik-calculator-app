@@ -70,12 +70,10 @@ define("components/chatView", [
         onScrollPastExistingConversation,
         onSkipUserInput,
         userInput,
-        issueIsCreated,
         loading,
         hasFailure,
         pastConversationsLoading,
         userIsViewingPastMessages,
-        botStepInProgress,
         minimized,
         onMessageError,
         onFooterError,
@@ -84,10 +82,9 @@ define("components/chatView", [
         avatarLastUpdatedTs,
         attachmentUploadIsInProgress,
         currentIssueId,
-        issueState
+        issueState,
+        userAttachmentsAreAllowed
       } = this.props;
-
-      const dragAndDropEnabled = issueIsCreated && !botStepInProgress;
 
       if (loading) {
         return <InfoView loading={loading} />;
@@ -97,7 +94,7 @@ define("components/chatView", [
         <DnDWrapper
           onDrop={this._onFilesDrop}
           dragInfoText={text.dndInfoText}
-          enabled={dragAndDropEnabled}>
+          enabled={userAttachmentsAreAllowed}>
           {this._renderLoader()}
           <div className="hs-view__content">
             <MessageList
@@ -134,6 +131,7 @@ define("components/chatView", [
               onJumpBtnClick={this._onJumpBtnClick}
               onScrollMessageListToBottom={this._onScrollMessageListToBottom}
               onListPickerOptionSelect={onListPickerOptionSelect}
+              userAttachmentsAreAllowed={userAttachmentsAreAllowed}
             />
           </ErrorBoundaryWithLogging>
         </DnDWrapper>
@@ -286,7 +284,6 @@ define("components/chatView", [
     onFilesDrop: PropTypes.func.isRequired,
     onRetryAttachmentClick: PropTypes.func.isRequired,
     userInput: USER_INPUT_PROP_TYPE,
-    issueIsCreated: PropTypes.bool.isRequired,
     onPillOptionSelect: PropTypes.func.isRequired,
     onListPickerOptionSelect: PropTypes.func,
     onSkipUserInput: PropTypes.func,
@@ -307,7 +304,6 @@ define("components/chatView", [
      * If chat view footer has any failure
      */
     hasFailure: PropTypes.bool,
-    botStepInProgress: PropTypes.bool,
     /**
      * If true, render avatar in message feed
      */
@@ -363,7 +359,12 @@ define("components/chatView", [
     /**
      * Current issue state
      */
-    issueState: PropTypes.string
+    issueState: PropTypes.string,
+
+    /**
+     * Flag that tells whether the chat prompt allows user to attach files
+     */
+    userAttachmentsAreAllowed: PropTypes.bool.isRequired
   };
 
   return createReactClass({
@@ -476,7 +477,17 @@ define("components/chatView", [
       /**
        * Current issue state
        */
-      issueState: PropTypes.string
+      issueState: PropTypes.string,
+
+      /**
+       * Flag that tells whether full privacy mode is enabled via Helpshift JS API.
+       */
+      fullPrivacyEnabled: PropTypes.bool,
+
+      /**
+       * Whether user attachments are enabled from dashboard config.
+       */
+      userAttachmentsAreEnabled: PropTypes.bool
     },
 
     getInitialState() {
@@ -548,13 +559,11 @@ define("components/chatView", [
         onLoadMoreMessages,
         onRetryAttachmentClick,
         userInput,
-        issueIsCreated,
         onPillOptionSelect,
         onListPickerOptionSelect,
         onSkipUserInput,
         onFilesDrop,
         text,
-        botStepInProgress,
         hasFailure,
         unreadCount,
         latestConversationHasLoaded,
@@ -591,14 +600,12 @@ define("components/chatView", [
             onFilesDrop={onFilesDrop}
             onRetryAttachmentClick={onRetryAttachmentClick}
             userInput={userInput}
-            issueIsCreated={issueIsCreated}
             onPillOptionSelect={onPillOptionSelect}
             onListPickerOptionSelect={onListPickerOptionSelect}
             onSkipUserInput={onSkipUserInput}
             text={text}
             onMessageError={this._showNonBlockingError}
             onFooterError={this._showNonBlockingError}
-            botStepInProgress={botStepInProgress}
             hasFailure={hasFailure}
             unreadCount={unreadCount}
             latestConversationHasLoaded={latestConversationHasLoaded}
@@ -611,6 +618,7 @@ define("components/chatView", [
             attachmentUploadIsInProgress={attachmentUploadIsInProgress}
             currentIssueId={currentIssueId}
             issueState={issueState}
+            userAttachmentsAreAllowed={this._areUserAttachmentsAllowed()}
           />
         </ErrorBoundaryWithLogging>
       );
@@ -642,6 +650,23 @@ define("components/chatView", [
      */
     _onFilesDrop(files) {
       this.props.onFilesDrop(files);
+    },
+
+    /**
+     * Checks whether chat prompt allows user to attach files
+     * @returns {boolean}
+     */
+    _areUserAttachmentsAllowed() {
+      const {
+        issueIsCreated,
+        fullPrivacyEnabled,
+        userAttachmentsAreEnabled,
+        botStepInProgress
+      } = this.props;
+
+      return (
+        issueIsCreated && !fullPrivacyEnabled && !botStepInProgress && userAttachmentsAreEnabled
+      );
     },
 
     componentDidMount() {
