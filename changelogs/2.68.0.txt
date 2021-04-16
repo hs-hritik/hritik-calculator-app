@@ -1,0 +1,5 @@
+Branches:
+feature/log-hs-config
+
+Changelog:
+Log helpshiftConfig object for feature analysis
