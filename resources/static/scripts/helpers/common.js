@@ -13,11 +13,7 @@ define("helpers/common", [
   "constants/businessHoursView",
   "constants/appState",
   "constants/activeView",
-  "gunpowder/utils/validation",
-  "constants/routes",
-  "helpers/xhr",
-  "helpers/localStorage",
-  "gunpowder/utils/xhr"
+  "gunpowder/utils/validation"
 ], function(
   store,
   arrayUtils,
@@ -26,16 +22,11 @@ define("helpers/common", [
   bhConstants,
   appStateConstants,
   ACTIVE_VIEW,
-  validationUtil,
-  routes,
-  xhrHelpers,
-  lsHelpers,
-  xhr
+  validationUtil
 ) {
   "use strict";
 
   const {ISSUE_TYPE} = appStateConstants;
-  const {LS_KEYS} = lsHelpers;
 
   /**
    * Number regex which allows single '.' in between digits
@@ -437,25 +428,6 @@ define("helpers/common", [
     return _intersectionObserverIsSupported;
   };
 
-  /**
-   * Fire a non-existent XHR with helpshiftConfig as a param. This is used for analysis
-   * purpose.
-   *
-   * @param {string} domain
-   * @param {object} hsConfig - the global helpshiftConfig object
-   */
-  const logHsConfig = (domain, hsConfig) => {
-    xhr({
-      route: routes.getLogHsConfig(domain),
-      data: xhrHelpers.getPreparedXhrData(hsConfig),
-      headers: xhrHelpers.getCommonHeaders(),
-      onEnd: () => {
-        // Update localstorage to denote that helpshiftConfig has been logged
-        lsHelpers.set(LS_KEYS.HS_CONFIG_LOGGED, "true");
-      }
-    });
-  };
-
   return {
     isOutOfBusinessHours,
     isWidgetHiddenOutOfBusinessHours,
@@ -474,7 +446,6 @@ define("helpers/common", [
     getSelectorForElement,
     getCbFaqSuggestionReadLsKey,
     getUniqueUserIdentifier,
-    isIntersectionObserverSupported,
-    logHsConfig
+    isIntersectionObserverSupported
   };
 });
