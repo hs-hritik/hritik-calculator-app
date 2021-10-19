@@ -558,7 +558,7 @@ define("actions/appState", [
    */
   const _onConfigSuccess = ({response, trigger, helpshiftConfig, currentTime, updateLs}) => {
     const {dispatch, getState} = store;
-    const {domain, userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
+    const {userId, phoneNumber, userEmail, anonUserIdentifier} = getState().appState;
     // Unique user identifier is needed to store the config respective to every person
     // who login. The user can log in with the userId, email, phone number, and the
     // combination of the identifier. Multiple users can have the same email, phone
@@ -605,7 +605,7 @@ define("actions/appState", [
       // add the stylesheet with the primary color (and any other
       // configurable CSS value) to the document head.
       // The `config loaded` event should be sent to the client after the CSS is loaded.
-      setStyles(domain, helpshiftConfig, {
+      setStyles({
         onSuccess: () => {
           dispatch(postSdkMessage.wmConfig(getClientWmConfig()));
         }
@@ -782,11 +782,10 @@ define("actions/appState", [
   /**
    * Get CSS over the wire, add it to the document and
    * update the custom CSS variables.
-   * @param {Object} helpshiftConfig - The global client config object
    * @param {Object} [callbacks]
    * @param {Function} [callbacks.onSuccess]
    */
-  const setStyles = (domain, helpshiftConfig, callbacks = {}) => {
+  const setStyles = (callbacks = {}) => {
     getCss({
       onSuccess: (css) => {
         // Check if CSS variable is supported by the client. If yes,
@@ -814,22 +813,6 @@ define("actions/appState", [
         }
 
         _addFontStyleToDocument();
-      },
-      onEnd: () => {
-        // TEMP: This change is for data analysis and should be reverted after the analysis is done
-        // More details - With SDK X GA release (May 2021), we are removing helpshiftConfig.uiConfig
-        // for UI customization. This capability is moving to the dashboard. In order to seamlessly
-        // migrate the customers that are using uiConfig, we want to analyze helpshiftConfig.
-        // This XHR hits a non-existent endpoint with helpshiftConfig as a param. We will then check
-        // the nginx logs for analysis. This is the same approach that we follow with React error
-        // boundary, check gunpowder/utils/withErrorBoundary for details.
-        // Note: This logging is also done in extras/api where updateUiConfig is called.
-        // Use localstorage to not fire this request every time the page is loaded.
-        if (helpshiftConfig && !lsHelpers.get(LS_KEYS.HS_CONFIG_LOGGED)) {
-          commonHelpers.logHsConfig(domain, {
-            hsConfig: JSON.stringify(helpshiftConfig)
-          });
-        }
       }
     });
   };
@@ -848,11 +831,6 @@ define("actions/appState", [
       onSuccess: (response) => {
         if (callbacks.onSuccess) {
           callbacks.onSuccess(response);
-        }
-      },
-      onEnd: () => {
-        if (callbacks.onEnd) {
-          callbacks.onEnd();
         }
       }
     });
