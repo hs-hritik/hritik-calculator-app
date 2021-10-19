@@ -1,0 +1,5 @@
+Branches:
+feature/revert-config-logging
+
+Changelog:
+Revert "Log helpshiftConfig object for feature analysis"
