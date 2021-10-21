@@ -18,7 +18,7 @@
     PLAT_ID = win.helpshiftConfig.platformId,
     HOST = urlParts[1].split("/")[0],
     platform = urlParts[1].split("/")[1],
-    PATH = "/html/index.html?v=2.68.0";
+    PATH = "/html/index.html?v=2.69.0";
 
   // Truncate platform id to a fixed length (24 in this implementation).
   // Here's an example platform id - testdomain_platform_20170901110844149-0319dffe2b25f9c

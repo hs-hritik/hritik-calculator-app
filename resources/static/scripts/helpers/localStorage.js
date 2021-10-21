@@ -29,8 +29,7 @@ define("helpers/localStorage", [
     PFI_VALUE: "pfi",
     CONFIG: "config",
     RESPECT_PFI: "rf",
-    WS_CONFIG: "wsc",
-    HS_CONFIG_LOGGED: "hcl"
+    WS_CONFIG: "wsc"
   };
 
   const PROACTIVE_CHAT_KEYS = ["SITE_ACTIVITY_START_TIME", "PROACTIVE_CHAT_HAS_TRIGGERED"];

@@ -19,10 +19,10 @@ define("constants/routes", function() {
     const contextIsLiteSdk = !!liteSdkConfig?.os;
 
     if (contextIsLiteSdk) {
-      return "/" + liteSdkConfig.os + "/css/style.css?v=2.68.0";
+      return "/" + liteSdkConfig.os + "/css/style.css?v=2.69.0";
     }
 
-    return "/css/style.css?v=2.68.0";
+    return "/css/style.css?v=2.69.0";
   };
 
   // @NOTE - Used to create issue out of business hours
@@ -74,8 +74,6 @@ define("constants/routes", function() {
 
   const postPushToken = (domain) => `${BASE}${domain}/update-push-token`;
 
-  const getLogHsConfig = (domain) => `${BASE}${domain}/log-hs-config`;
-
   return {
     getWmConfig,
     getCss,
@@ -94,7 +92,6 @@ define("constants/routes", function() {
     postIssue,
     getIntentTree,
     getIntentModel,
-    postPushToken,
-    getLogHsConfig
+    postPushToken
   };
 });
